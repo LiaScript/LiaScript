@@ -1,7 +1,7 @@
-module Port.Service.Share exposing (link)
+module Service.Service.Share exposing (link)
 
 import Json.Encode as JE
-import Port.Event as Event exposing (Event)
+import Service.Event as Event exposing (Event)
 
 
 {-| Create a share event that allows to send the resource `url` with a `title`

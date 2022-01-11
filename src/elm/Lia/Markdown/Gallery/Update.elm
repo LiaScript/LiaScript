@@ -7,8 +7,8 @@ module Lia.Markdown.Gallery.Update exposing
 import Array
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Gallery.Types exposing (Vector)
-import Port.Event exposing (Event)
 import Return exposing (Return)
+import Service.Event exposing (Event)
 
 
 type Msg sub

@@ -30,7 +30,7 @@ const Service = {
       case 'connect': {
         if (sync) sync = undefined
 
-        switch (event.message.param.backend {
+        switch (event.message.param.backend) {
           case 'beaker':
             sync = new Beaker.Sync(elmSend)
             break

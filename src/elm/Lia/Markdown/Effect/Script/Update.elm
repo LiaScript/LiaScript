@@ -16,10 +16,10 @@ import Lia.Markdown.Effect.Script.Types as Script exposing (Msg(..), Script, Scr
 import Lia.Parser.Parser exposing (parse_subsection)
 import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (focus)
-import Port.Eval as Eval exposing (Eval)
-import Port.Event as Event exposing (Event)
 import Process
 import Return exposing (Return)
+import Service.Eval as Eval exposing (Eval)
+import Service.Event as Event exposing (Event)
 import Task
 
 

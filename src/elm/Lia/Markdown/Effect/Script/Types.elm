@@ -20,9 +20,9 @@ import Array exposing (Array)
 import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
 import Lia.Markdown.Effect.Script.Intl as Intl exposing (Intl)
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
-import Port.Eval as Eval
-import Port.Event exposing (Event)
 import Regex
+import Service.Eval as Eval
+import Service.Event exposing (Event)
 
 
 type alias Scripts a =

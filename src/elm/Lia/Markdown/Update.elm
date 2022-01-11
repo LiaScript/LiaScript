@@ -29,11 +29,11 @@ import Lia.Section as Section exposing (Section, SubSection(..))
 import Lia.Sync.Container.Local as Container
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
-import Port.Event as Event exposing (Event)
-import Port.Service.Console as Console
-import Port.Service.Sync as Sync_
-import Port.Service.TTS as TTS
 import Return exposing (Return)
+import Service.Event as Event exposing (Event)
+import Service.Service.Console as Console
+import Service.Service.Sync as Sync_
+import Service.Service.TTS as TTS
 import Translations exposing (Lang(..))
 
 

@@ -1,4 +1,4 @@
-module Port.Event exposing
+module Service.Event exposing
     ( Event
     , decode
     , destructure

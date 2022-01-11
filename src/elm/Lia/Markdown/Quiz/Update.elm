@@ -16,9 +16,9 @@ import Lia.Markdown.Quiz.Matrix.Update as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type(..), Vector, comp, toState)
 import Lia.Markdown.Quiz.Vector.Update as Vector
-import Port.Eval as Eval
-import Port.Event as Event exposing (Event)
 import Return exposing (Return)
+import Service.Eval as Eval
+import Service.Event as Event exposing (Event)
 import Translations exposing (Lang(..))
 
 

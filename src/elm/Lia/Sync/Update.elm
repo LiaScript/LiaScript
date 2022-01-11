@@ -15,10 +15,10 @@ import Lia.Section as Section exposing (Sections)
 import Lia.Sync.Container.Global as Global
 import Lia.Sync.Types exposing (Settings, State(..), id)
 import Lia.Sync.Via as Via exposing (Backend)
-import Port.Event as Event exposing (Event, message)
-import Port.Service.Sync as Sync
 import Random
 import Return exposing (Return)
+import Service.Event as Event exposing (Event, message)
+import Service.Service.Sync as Sync
 import Session exposing (Session)
 import Set
 

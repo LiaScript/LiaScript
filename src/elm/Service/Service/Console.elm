@@ -1,11 +1,11 @@
-module Port.Service.Console exposing
+module Service.Service.Console exposing
     ( error
     , log
     , warn
     )
 
 import Json.Encode as JE
-import Port.Event as Event exposing (Event)
+import Service.Event as Event exposing (Event)
 
 
 {-| Create a log event, that will output the message string with `console.log`.

@@ -22,11 +22,11 @@ import Lia.Section exposing (Section)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
-import Port.Eval exposing (event)
-import Port.Event as Event exposing (Event)
-import Port.Service.Console as Console
-import Port.Service.Slide as Slide
 import Return exposing (Return)
+import Service.Eval exposing (event)
+import Service.Event as Event exposing (Event)
+import Service.Service.Console as Console
+import Service.Service.Slide as Slide
 import Session exposing (Session)
 import Translations exposing (Lang(..))
 

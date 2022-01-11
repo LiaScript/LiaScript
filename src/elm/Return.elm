@@ -15,7 +15,7 @@ module Return exposing
     )
 
 import Lia.Markdown.Effect.Script.Types as Script
-import Port.Event as Event exposing (Event)
+import Service.Event as Event exposing (Event)
 
 
 type alias Return model msg sub =

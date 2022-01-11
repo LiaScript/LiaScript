@@ -1,11 +1,11 @@
-module Port.Service.Slide exposing
+module Service.Service.Slide exposing
     ( initialize
     , scrollIntoView
     , scrollUp
     )
 
 import Json.Encode as JE
-import Port.Event as Event exposing (Event)
+import Service.Event as Event exposing (Event)
 
 
 {-| This event shall be called on every slide load and will move the slide back

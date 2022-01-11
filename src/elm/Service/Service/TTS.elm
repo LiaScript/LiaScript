@@ -1,4 +1,4 @@
-module Port.Service.TTS exposing
+module Service.Service.TTS exposing
     ( Msg(..)
     , cancel
     , decode
@@ -9,7 +9,7 @@ module Port.Service.TTS exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Port.Event as Event exposing (Event)
+import Service.Event as Event exposing (Event)
 import String
 
 

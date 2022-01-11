@@ -30,7 +30,7 @@ import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame, newline, spaces)
 import Lia.Parser.Indentation as Indent
-import Port.Eval exposing (Eval)
+import Service.Eval exposing (Eval)
 
 
 parse : Parser Context Parameters -> Parser Context Code

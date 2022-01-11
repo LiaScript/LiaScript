@@ -1,10 +1,10 @@
-module Port.Service.Resource exposing
+module Service.Service.Resource exposing
     ( link
     , script
     )
 
 import Json.Encode as JE
-import Port.Event as Event exposing (Event)
+import Service.Event as Event exposing (Event)
 
 
 {-| Generate an event that will dynamically load (inject) a custom

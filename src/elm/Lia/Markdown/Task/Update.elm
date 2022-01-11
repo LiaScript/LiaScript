@@ -11,9 +11,9 @@ import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Task.Json as Json
 import Lia.Markdown.Task.Types exposing (Element, Vector, toString)
-import Port.Eval as Eval
-import Port.Event as Event exposing (Event)
 import Return exposing (Return)
+import Service.Eval as Eval
+import Service.Event as Event exposing (Event)
 
 
 {-| Interaction associated to LiaScript task list:

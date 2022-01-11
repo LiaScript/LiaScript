@@ -20,8 +20,8 @@ import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
-import Port.Event as Event exposing (Event)
-import Port.Service.Share as Share
+import Service.Event as Event exposing (Event)
+import Service.Service.Share as Share
 
 
 type Msg

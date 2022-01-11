@@ -17,9 +17,9 @@ import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (File, Project, Repo, Vector)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
-import Port.Eval as Eval exposing (Eval)
-import Port.Event as Event exposing (Event)
 import Return exposing (Return)
+import Service.Eval as Eval exposing (Eval)
+import Service.Event as Event exposing (Event)
 
 
 stop : Int -> Event

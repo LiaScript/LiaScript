@@ -14,8 +14,8 @@ import Lia.Section exposing (Sections)
 import Lia.Settings.Json
 import Lia.Settings.Types as Settings exposing (Settings)
 import Lia.Sync.Types as Sync
-import Port.Event exposing (Event)
-import Port.Service.Resource as Resource
+import Service.Event exposing (Event)
+import Service.Service.Resource as Resource
 import Translations
 
 

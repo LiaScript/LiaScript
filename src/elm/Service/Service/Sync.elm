@@ -1,8 +1,8 @@
-module Port.Service.Sync exposing (..)
+module Service.Service.Sync exposing (..)
 
 import Json.Encode as JE
 import Lia.Sync.Via as Via
-import Port.Event as Event exposing (Event)
+import Service.Event as Event exposing (Event)
 
 
 connect :

@@ -23,9 +23,9 @@ import Lia.Definition.Types as Definition
 import Lia.Json.Decode
 import Lia.Script
 import Model exposing (Model, State(..))
-import Port.Event as Event exposing (Event)
 import Process
 import Return exposing (Return)
+import Service.Event as Event exposing (Event)
 import Session exposing (Screen)
 import Task
 import Translations

@@ -35,8 +35,8 @@ import Lia.Section as Section exposing (Sections)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
 import Lia.View
-import Port.Event as Event exposing (Event)
 import Return exposing (Return)
+import Service.Event as Event exposing (Event)
 import Session exposing (Screen, Session)
 import Translations
 

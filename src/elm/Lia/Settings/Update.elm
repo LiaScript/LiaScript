@@ -14,11 +14,11 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Settings.Json as Json
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Utils exposing (focus)
-import Port.Event as Event exposing (Event)
-import Port.Service.Share as Share
-import Port.Service.TTS as TTS
-import Port.Service.Translate as Translate
 import Return exposing (Return)
+import Service.Event as Event exposing (Event)
+import Service.Service.Share as Share
+import Service.Service.TTS as TTS
+import Service.Service.Translate as Translate
 
 
 type Msg

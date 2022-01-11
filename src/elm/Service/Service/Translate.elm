@@ -1,7 +1,7 @@
-module Port.Service.Translate exposing (google)
+module Service.Service.Translate exposing (google)
 
 import Json.Encode as JE
-import Port.Event as Event exposing (Event)
+import Service.Event as Event exposing (Event)
 
 
 google : Event

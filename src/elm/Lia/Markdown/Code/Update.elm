@@ -14,9 +14,9 @@ import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Model, Project, loadVersion, updateVersion)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
-import Port.Eval exposing (Eval, event)
-import Port.Event as PEvent exposing (Event)
 import Return exposing (Return)
+import Service.Eval exposing (Eval, event)
+import Service.Event as PEvent exposing (Event)
 
 
 type Msg

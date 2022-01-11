@@ -1,4 +1,4 @@
-module Port.Eval exposing
+module Service.Eval exposing
     ( Eval
     , decode
     , decoder
@@ -12,7 +12,7 @@ module Port.Eval exposing
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Utils exposing (toEscapeString, toJSstring)
-import Port.Event as Event exposing (Event)
+import Service.Event as Event exposing (Event)
 
 
 type alias Eval =

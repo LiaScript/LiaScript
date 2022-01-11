@@ -22,11 +22,11 @@ import Lia.Markdown.Effect.Model
 import Lia.Markdown.Effect.Script.Types as Script_ exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Section exposing (SubSection)
-import Port.Event as Event exposing (Event)
-import Port.Service.Console as Console
-import Port.Service.Slide as Slide
-import Port.Service.TTS as TTS
 import Return exposing (Return)
+import Service.Event as Event exposing (Event)
+import Service.Service.Console as Console
+import Service.Service.Slide as Slide
+import Service.Service.TTS as TTS
 import Task
 
 
@@ -125,7 +125,7 @@ update main sound msg model =
                     |> Return.mapValCmd (\v -> { model | javascript = v }) Script
 
             Handle event ->
-                case Event.topicWithId event |> Debug.log "QQQQQQQQQQQQQQQQQQQQQQQQQQ" of
+                case Event.topicWithId event of
                     Just ( "tts", section ) ->
                         case TTS.decode event of
                             TTS.Start ->
