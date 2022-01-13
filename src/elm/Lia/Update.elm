@@ -24,8 +24,8 @@ import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Return exposing (Return)
 import Service.Console
-import Service.Eval exposing (event)
 import Service.Event as Event exposing (Event)
+import Service.Script
 import Service.Slide
 import Session exposing (Session)
 import Translations exposing (Lang(..))
@@ -182,10 +182,12 @@ update session msg model =
                 Just ( "reset", _ ) ->
                     model
                         |> Return.val
-                        |> Return.batchEvent (Event.init Nothing "reset" JE.null)
+                        -- TODO
+                        -- |> Return.batchEvent (Event.init Nothing "reset" JE.null)
+                        |> Return.batchEvent Event.todo
 
                 Just ( "goto", _ ) ->
-                    case Event.id_ event of
+                    case Event.id event of
                         Just id ->
                             update session (Load True id) model
 
@@ -198,7 +200,7 @@ update session msg model =
                         Just ( "sync", _, e_ ) ->
                             e_
                                 |> Sync.handle session
-                                    (case Event.topic_ e_ of
+                                    (case Event.topic e_ of
                                         Just "connect" ->
                                             { model | settings = Settings.closeSync model.settings }
 
@@ -237,6 +239,8 @@ update session msg model =
                     case
                         e
                             |> Event.message
+                            -- TODO
+                            |> Tuple.second
                             |> JD.decodeValue JD.string
                     of
                         Ok "left" ->
@@ -250,8 +254,9 @@ update session msg model =
 
                 Just ( topic, e ) ->
                     case
+                        -- TODO
                         event
-                            |> Event.id_
+                            |> Event.id
                             |> Maybe.map (\id -> ( id, Array.get id model.sections ))
                     of
                         Just ( id, Just sec ) ->
@@ -357,6 +362,7 @@ update session msg model =
                     case Markdown.ttsReplay model.settings.sound bool sec of
                         Just event ->
                             Return.val model
+                                -- todo: important, this might be the reason for failures in tts
                                 |> Return.batchEvent event
 
                         Nothing ->
@@ -376,7 +382,9 @@ add_load vector sectionID name logs =
         logs
 
     else
-        (Event.initWithId Nothing "load" sectionID <| JE.string name) :: logs
+        -- TODO
+        -- (Event.initWithId Nothing "load" sectionID <| JE.string name) :: logs
+        Event.todo :: logs
 
 
 {-| **@private:** shortcut for returning the active section in from the model.

@@ -12,8 +12,8 @@ import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Task.Json as Json
 import Lia.Markdown.Task.Types exposing (Element, Vector, toString)
 import Return exposing (Return)
-import Service.Eval as Eval
 import Service.Event as Event exposing (Event)
+import Service.Script
 
 
 {-| Interaction associated to LiaScript task list:
@@ -63,8 +63,10 @@ update scripts msg vector =
                                             |> Maybe.map .script
                                      of
                                         Just code ->
-                                            [ [ toString element ]
-                                                |> Eval.event x code (outputs scripts)
+                                            [ -- TODO:
+                                              -- [ toString element ]
+                                              --  |> Eval.eval x code (outputs scripts)
+                                              Event.todo
                                             ]
 
                                         Nothing ->
@@ -83,15 +85,15 @@ update scripts msg vector =
 
         Handle event ->
             case Event.destructure event of
-                Just ( "restore", _, message ) ->
-                    message
+                ( Just "restore", _, { cmd, param } ) ->
+                    param
                         |> Json.toVector
                         |> Result.map (merge vector)
                         |> Result.withDefault vector
                         |> Return.val
                         |> init execute
 
-                Just ( "eval", section, message ) ->
+                ( Just "eval", section, { cmd, param } ) ->
                     case
                         vector
                             |> Array.get section
@@ -101,8 +103,10 @@ update scripts msg vector =
                             vector
                                 |> Return.val
                                 |> Return.script
-                                    (message
-                                        |> Event.initWithId Nothing "code" scriptID
+                                    -- TODO:
+                                    -- message
+                                    --  |> Event.initWithId Nothing "code" scriptID
+                                    (Event.todo
                                         |> JS.handle
                                     )
 
@@ -134,10 +138,11 @@ store : Return Vector msg sub -> Return Vector msg sub
 store return =
     return
         |> Return.batchEvent
-            (return.value
-                |> Json.fromVector
-                |> Event.store
-            )
+            -- TODO
+            -- return.value
+            -- |> Json.fromVector
+            -- |> Event.store
+            Event.todo
 
 
 {-| Pass events from parent update function to the Task update function.

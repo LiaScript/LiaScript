@@ -6,12 +6,14 @@ module Service.Event exposing
     , encode
     , id
     , init
+    , initGeneric
     , message
     , poi
     , pop
     , popWithId
     , push
     , pushWithId
+    , todo
     , topic
     , withNoReply
     )
@@ -108,6 +110,20 @@ init =
     Event True []
 
 
+{-| This is a simplified event initialization to be used in pipes
+
+    initGeneric "ServiceID" False "cmd" JE.null
+        == ({ cmd = "cmd", param = JE.null }
+                |> init "ServiceID"
+                |> withNoReply
+           )
+
+-}
+initGeneric : String -> Bool -> String -> JE.Value -> Event
+initGeneric service doReply cmd param =
+    Event doReply [] service { cmd = cmd, param = param }
+
+
 {-| Simply set the default `reply` value to `False`, which will result in an
 event to which no response message will be send from Typescript.
 -}
@@ -195,19 +211,22 @@ checkId ( _, i ) =
 {-| This can be used at the final decoding step of the event, if only the:
 
     destructure event
-        == ( "topic", 12, { cmd = "stop", param = JE.null } )
+        == ( Just "topic", 12, { cmd = "stop", param = JE.null } )
+
+    destructure event2
+        == ( Nothing, -1, { cmd = "stop", param = JE.null } )
 
 final values are required to react onto a message.
 
 -}
-destructure : Event -> Maybe ( String, Int, { cmd : String, param : JE.Value } )
+destructure : Event -> ( Maybe String, Int, { cmd : String, param : JE.Value } )
 destructure event =
     case poi event of
         Just ( po, i ) ->
-            Just ( po, i, event.message )
+            ( Just po, i, event.message )
 
         _ ->
-            Nothing
+            ( Nothing, -1, event.message )
 
 
 {-| Return the message as a tuple of the string cmd and a json value, which
@@ -264,3 +283,10 @@ encPoint ( po, i ) =
         [ JE.string po
         , JE.int i
         ]
+
+
+{-| Dummy event to replace current events while refactoring.
+-}
+todo : Event
+todo =
+    init "TODO" { cmd = "todo", param = JE.string "todo not implemented event" }

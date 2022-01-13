@@ -125,12 +125,14 @@ update sync globals msg section =
                 |> Return.mapEvents "table" section.id
 
         Sync event ->
-            case Event.topic_ event of
+            case Event.topic event of
                 Just "quiz" ->
                     case
                         ( Maybe.andThen .quiz section.sync
                         , event
                             |> Event.message
+                            -- TODO
+                            |> Tuple.second
                             |> Container.decode Quiz_.decoder
                         )
                     of
@@ -166,6 +168,8 @@ update sync globals msg section =
                         ( Maybe.andThen .survey section.sync
                         , event
                             |> Event.message
+                            -- TODO
+                            |> Tuple.second
                             |> Container.decode Survey_.decoder
                         )
                     of
@@ -504,10 +508,6 @@ handle sync globals topic event section =
 
 ttsReplay : Bool -> Bool -> Maybe Section -> Maybe Event
 ttsReplay sound true section =
-    let
-        _ =
-            Debug.log "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW" ( sound, true )
-    in
     -- replay if possible
     if sound then
         if true then

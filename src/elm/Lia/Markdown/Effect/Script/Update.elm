@@ -18,8 +18,8 @@ import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (focus)
 import Process
 import Return exposing (Return)
-import Service.Eval as Eval exposing (Eval)
 import Service.Event as Event exposing (Event)
+import Service.Script exposing (Eval)
 import Task
 
 
@@ -63,13 +63,14 @@ update main msg scripts =
                                 | input = Input.value value node.input
                                 , updated = True
                             }
-                        |> update main
-                            (Eval True value []
-                                |> Eval.encode
-                                |> Event.initWithId Nothing "code" id
-                                |> Handle
-                            )
+                        |> update main (Handle Event.todo)
 
+                -- TODO:
+                -- (Eval True value []
+                --     |> Service.Script.encode
+                --     |> Event.initWithId Nothing "code" id
+                --     |> Handle
+                -- )
                 Nothing ->
                     Return.val scripts
 
@@ -195,12 +196,12 @@ update main msg scripts =
                 |> Return.val
 
         Handle event ->
-            case Event.topicWithId event of
-                Just ( "code", section ) ->
+            case Event.destructure event of
+                ( Just "code", section, { cmd, param } ) ->
                     let
                         ( publish, javascript ) =
                             scripts
-                                |> update_ main.globals section (Event.message event)
+                                |> update_ main.globals section param
 
                         node =
                             javascript
@@ -245,11 +246,11 @@ update main msg scripts =
                                         []
                                     )
 
-                Just ( "codeX", section ) ->
+                ( Just "codeX", section, { cmd, param } ) ->
                     let
                         ( publish, javascript ) =
                             scripts
-                                |> update_ main.globals section (Event.message event)
+                                |> update_ main.globals section param
 
                         node =
                             javascript
@@ -272,11 +273,11 @@ update main msg scripts =
                                         []
                                     )
 
-                Just ( "sub", section ) ->
+                ( Just "sub", section, { cmd, param } ) ->
                     case scripts |> Array.get section |> Maybe.andThen .result of
                         Just (IFrame lia) ->
                             lia
-                                |> main.handle scripts (Event.message event)
+                                |> main.handle scripts param
                                 |> Return.mapValCmd (\v -> Script.set section (\s -> { s | result = Just (IFrame v) }) scripts) (Sub section)
                                 |> Return.mapEvents "sub" section
 
@@ -323,12 +324,15 @@ reRun fn cmd id scripts =
 
 execute : Int -> ( Int, String ) -> Event
 execute delay ( id, code ) =
-    [ ( "delay", JE.int delay )
-    , ( "code", JE.string code )
-    , ( "id", JE.int id )
-    ]
-        |> JE.object
-        |> Event.initWithId Nothing "execute" id
+    { cmd = "execute"
+    , param =
+        [ ( "delay", JE.int delay )
+        , ( "code", JE.string code )
+        , ( "id", JE.int id )
+        ]
+            |> JE.object
+    }
+        |> Event.init "executeTODO"
 
 
 update_ : Maybe Definition -> Int -> JE.Value -> Scripts SubSection -> ( Bool, Scripts SubSection )
@@ -337,7 +341,7 @@ update_ defintion id e scripts =
         Just js ->
             let
                 new =
-                    eval_ defintion id (Eval.decode e) js
+                    eval_ defintion id (Service.Script.decode e) js
             in
             ( new.result /= js.result
             , Array.set id new scripts

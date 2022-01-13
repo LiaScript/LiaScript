@@ -1,6 +1,8 @@
 module Lia.Markdown.Code.Events exposing
-    ( eval
-    , evalDecode
+    (  eval
+       -- TODO:
+       -- , evalDecode
+
     , flip_view
     , fullscreen
     , input
@@ -18,39 +20,48 @@ import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (File, Project, Repo, Vector)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
 import Return exposing (Return)
-import Service.Eval as Eval exposing (Eval)
 import Service.Event as Event exposing (Event)
+import Service.Script exposing (Eval)
 
 
 stop : Int -> Event
 stop id =
-    Event.initWithId Nothing "stop" id JE.null
+    -- TODO:
+    -- Event.initWithId Nothing "stop" id JE.null
+    event "stop" JE.null
 
 
 input : Int -> String -> Event
-input id =
-    JE.string
-        >> Event.initWithId Nothing "input" id
+input id value =
+    [ projectID id
+    , ( "value", JE.string value )
+    ]
+        |> JE.object
+        |> event "input"
 
 
 eval : Scripts a -> Int -> Project -> Event
 eval scripts idx project =
-    project.file
-        |> Array.map .code
-        |> Array.toList
-        |> Eval.event idx project.evaluation (outputs scripts)
+    -- TODO:
+    -- project.file
+    --    |> Array.map .code
+    --    |> Array.toList
+    --    |> Eval.eval idx project.evaluation (outputs scripts)
+    event "eval" JE.null
 
 
 store : Vector -> Event
 store model =
     model
         |> Json.fromVector
-        |> Event.store
+        |> event "store"
 
 
-evalDecode : Event -> Eval
-evalDecode =
-    Event.message >> Eval.decode
+
+-- TODO:
+-- evalDecode : Event -> Eval
+-- evalDecode =
+--     Event.message >> Eval.decode
 
 
 version_update : Int -> Return Project msg sub -> Return Project msg sub
@@ -67,60 +78,76 @@ version_update id return =
                     Nothing ->
                         JE.null
                )
+             , projectID id
              ]
                 |> JE.object
-                |> Event.initWithId Nothing "version_update" id
+                |> event "version_update"
             )
 
 
 version_append : Int -> Project -> Repo -> Event
 version_append id project repo_update =
-    Event.initWithId Nothing "version_append" id <|
-        JE.object
-            [ ( "version_active", JE.int project.version_active )
-            , ( "log", Log.encode project.log )
-            , ( "file", JE.array Json.fromFile project.file )
-            , ( "version"
-              , case Array.get (Array.length project.version - 1) project.version of
-                    Just version ->
-                        Json.fromVersion version
+    [ ( "version_active", JE.int project.version_active )
+    , ( "log", Log.encode project.log )
+    , ( "file", JE.array Json.fromFile project.file )
+    , ( "version"
+      , case Array.get (Array.length project.version - 1) project.version of
+            Just version ->
+                Json.fromVersion version
 
-                    Nothing ->
-                        JE.null
-              )
-            , ( "repository", JE.dict identity JE.string repo_update )
-            ]
+            Nothing ->
+                JE.null
+      )
+    , ( "repository", JE.dict identity JE.string repo_update )
+    , projectID id
+    ]
+        |> JE.object
+        |> event "version_append"
 
 
 load : Int -> Return Project msg sub -> Return Project msg sub
 load id return =
     return
         |> Return.batchEvent
-            (Event.initWithId Nothing "load" id <|
-                JE.object
-                    [ ( "file", JE.array Json.fromFile return.value.file )
-                    , ( "version_active", JE.int return.value.version_active )
-                    , ( "log", Log.encode return.value.log )
-                    ]
+            ([ ( "file", JE.array Json.fromFile return.value.file )
+             , ( "version_active", JE.int return.value.version_active )
+             , ( "log", Log.encode return.value.log )
+             , projectID id
+             ]
+                |> JE.object
+                |> event "load"
             )
 
 
 flip_view : Int -> Int -> File -> List Event
 flip_view id1 id2 file =
     file.visible
-        |> toggle "view" id1 id2
+        |> toggle "toggle_view" id1 id2
 
 
 fullscreen : Int -> Int -> File -> List Event
 fullscreen id1 id2 file =
     file.fullscreen
-        |> toggle "fullscreen" id1 id2
+        |> toggle "toggle_fullscreen" id1 id2
 
 
 toggle : String -> Int -> Int -> Bool -> List Event
-toggle message id1 id2 value =
-    [ value
-        |> JE.bool
-        |> Event.initWithId Nothing message id2
-        |> Event.pushWithId "flip" id1
+toggle cmd project file value =
+    [ [ ( "value", JE.bool value )
+      , projectID project
+      , ( "file_id", JE.int file )
+      ]
+        |> JE.object
+        |> event cmd
     ]
+
+
+projectID : Int -> ( String, JE.Value )
+projectID id =
+    ( "project_id", JE.int id )
+
+
+event : String -> JE.Value -> Event
+event cmd param =
+    { cmd = cmd, param = param }
+        |> Event.init "code"

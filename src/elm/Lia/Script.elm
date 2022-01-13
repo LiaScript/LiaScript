@@ -102,9 +102,14 @@ load_first_slide session model =
             | title = get_title model.sections
             , search_index = search_index
             , to_do =
-                (model
-                    |> Json.encode
-                    |> Event.initWithId Nothing "init" model.section_active
+                -- TODO
+                ({ cmd = "init"
+                 , param =
+                    model
+                        |> Json.encode
+                 }
+                    |> Event.init "init"
+                    |> Event.pushWithId "init" model.section_active
                 )
                     :: Settings.customizeEvent model.settings
                     :: model.to_do

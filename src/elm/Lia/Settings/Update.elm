@@ -16,6 +16,7 @@ import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Utils exposing (focus)
 import Return exposing (Return)
 import Service.Event as Event exposing (Event)
+import Service.Settings
 import Service.Share
 import Service.TTS
 import Service.Translate
@@ -53,16 +54,15 @@ update :
 update main msg model =
     case msg of
         Handle event ->
-            case Event.topic_ event |> Debug.log "'''''''''''''''''''''''''''''''''" of
-                Just "init" ->
-                    event
-                        |> Event.message
+            case Event.message event of
+                ( "init", settings ) ->
+                    settings
                         |> load { model | initialized = True }
                         |> no_log Nothing
 
                 _ ->
                     case event.service of
-                        Just "tts" ->
+                        "tts" ->
                             no_log Nothing
                                 { model
                                     | speaking =
@@ -165,7 +165,7 @@ update main msg model =
         Reset ->
             model
                 |> Return.val
-                |> Return.batchEvent (Event.empty Nothing "reset")
+                |> Return.batchEvent Service.Settings.reset
 
         ShareCourse url ->
             model
@@ -224,18 +224,15 @@ log elementID settings =
 
 customizeEvent : Settings -> Event
 customizeEvent settings =
-    [ settings
+    settings
         |> Json.fromModel
-    , if settings.theme == "custom" then
-        settings.customTheme
-            |> Maybe.map JE.string
-            |> Maybe.withDefault JE.null
+        |> Service.Settings.update
+            (if settings.theme == "custom" then
+                settings.customTheme
 
-      else
-        JE.null
-    ]
-        |> JE.list identity
-        |> Event.init Nothing "settings"
+             else
+                Nothing
+            )
 
 
 no_log : Maybe String -> Settings -> Return Settings Msg sub

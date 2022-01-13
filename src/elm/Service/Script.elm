@@ -1,9 +1,9 @@
-module Service.Eval exposing
+module Service.Script exposing
     ( Eval
     , decode
     , decoder
     , encode
-    , event
+    , eval
     , replace_0
     , replace_id
     , replace_input
@@ -22,8 +22,8 @@ type alias Eval =
     }
 
 
-event : Int -> String -> List ( String, String ) -> List String -> Event
-event id code scripts inputs =
+eval : Int -> String -> List ( String, String ) -> List String -> Event
+eval id code scripts inputs =
     let
         default =
             inputs
@@ -42,7 +42,7 @@ event id code scripts inputs =
         |> JE.string
         -- TODO
         -- |> Event.init "eval" id
-        |> event_ "eval"
+        |> event "eval"
 
 
 replace_0 : String -> String -> String
@@ -90,7 +90,7 @@ encode { ok, result, details } =
         ]
 
 
-event_ : String -> JE.Value -> Event
-event_ cmd param =
+event : String -> JE.Value -> Event
+event cmd param =
     { cmd = cmd, param = param }
         |> Event.init "code"

@@ -125,8 +125,8 @@ update main sound msg model =
                     |> Return.mapValCmd (\v -> { model | javascript = v }) Script
 
             Handle event ->
-                case Event.topicWithId event of
-                    Just ( "tts", section ) ->
+                case Event.destructure event of
+                    ( Just "tts", section, { cmd, param } ) ->
                         case Service.TTS.decode event of
                             Service.TTS.Start ->
                                 { model | speaking = Just section }
@@ -156,7 +156,7 @@ markRunning return =
                     | javascript =
                         List.foldl
                             (\e js ->
-                                case Event.id_ e of
+                                case Event.id e of
                                     Just id ->
                                         if id < 0 then
                                             js

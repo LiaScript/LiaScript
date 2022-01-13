@@ -18,7 +18,7 @@ import Html.Attributes as Attr
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Utils exposing (array_getLast, array_setLast)
-import Service.Eval exposing (Eval)
+import Service.Script exposing (Eval)
 
 
 type Level

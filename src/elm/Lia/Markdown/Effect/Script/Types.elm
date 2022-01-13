@@ -21,8 +21,8 @@ import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
 import Lia.Markdown.Effect.Script.Intl as Intl exposing (Intl)
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
 import Regex
-import Service.Eval as Eval
 import Service.Event exposing (Event)
+import Service.Script
 
 
 type alias Scripts a =
@@ -162,11 +162,11 @@ replaceInputs javascript =
         (\( id, script, input_ ) ->
             ( id
             , inputs
-                |> List.foldl Eval.replace_input script
+                |> List.foldl Service.Script.replace_input script
                 |> (\code ->
                         case input_ of
                             Just str ->
-                                Eval.replace_0 str code
+                                Service.Script.replace_0 str code
 
                             Nothing ->
                                 code

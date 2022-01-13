@@ -62,8 +62,8 @@ update session model msg =
     case msg of
         Handle event ->
             case Event.destructure event of
-                Just ( "connect", _, message ) ->
-                    case ( JD.decodeValue JD.string message, sync.sync.select ) of
+                ( Just "connect", _, { cmd, param } ) ->
+                    case ( JD.decodeValue JD.string param, sync.sync.select ) of
                         ( Ok hashID, Just backend ) ->
                             { model
                                 | sync =
@@ -98,7 +98,7 @@ update session model msg =
                                         |> Session.update
                                     )
 
-                Just ( "disconnect", _, _ ) ->
+                ( Just "disconnect", _, _ ) ->
                     { model
                         | sync =
                             { sync
@@ -114,18 +114,18 @@ update session model msg =
                             )
 
                 --|> leave (id model.sync.state)
-                Just ( "join", _, message ) ->
-                    case ( JD.decodeValue (JD.field "id" JD.string) message, id sync.state ) of
+                ( Just "join", _, { cmd, param } ) ->
+                    case ( JD.decodeValue (JD.field "id" JD.string) param, id sync.state ) of
                         ( Ok peerID, Just ownID ) ->
                             if ownID == peerID then
                                 Return.val model
 
                             else
                                 case
-                                    ( message
+                                    ( param
                                         |> JD.decodeValue (JD.field "quiz" (Global.decoder Quiz.decoder))
                                         |> Result.map (Global.union (globalGet .quiz model.sections))
-                                    , message
+                                    , param
                                         |> JD.decodeValue (JD.field "survey" (Global.decoder Survey.decoder))
                                         |> Result.map (Global.union (globalGet .survey model.sections))
                                     )
@@ -148,12 +148,12 @@ update session model msg =
                         _ ->
                             Return.val model
 
-                Just ( "leave", _, message ) ->
+                ( Just "leave", _, { cmd, param } ) ->
                     { model
                         | sync =
                             { sync
                                 | peers =
-                                    case JD.decodeValue JD.string message of
+                                    case JD.decodeValue JD.string param of
                                         Ok peerID ->
                                             Set.remove peerID sync.peers
 

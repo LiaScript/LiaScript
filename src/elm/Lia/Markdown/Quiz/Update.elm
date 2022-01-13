@@ -17,8 +17,8 @@ import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type(..), Vector, comp, toState)
 import Lia.Markdown.Quiz.Vector.Update as Vector
 import Return exposing (Return)
-import Service.Eval as Eval
 import Service.Event as Event exposing (Event)
+import Service.Script
 import Translations exposing (Lang(..))
 
 
@@ -59,22 +59,21 @@ update scripts msg vector =
                         Just scriptID ->
                             vector
                                 |> Return.val
-                                --|> Return.script (execute scriptID e)
-                                |> Return.batchEvents
-                                    (case
-                                        scripts
-                                            |> Array.get scriptID
-                                            |> Maybe.map .script
-                                     of
-                                        Just code ->
-                                            [ [ toString e.state ]
-                                                |> Eval.event id code (outputs scripts)
-                                            ]
 
-                                        Nothing ->
-                                            []
-                                    )
-
+                -- TODO:
+                -- |> Return.batchEvents
+                --     (case
+                --         scripts
+                --             |> Array.get scriptID
+                --             |> Maybe.map .script
+                --      of
+                --         Just code ->
+                --             [ [ toString e.state ]
+                --                 |> Eval.eval id code (outputs scripts)
+                --             ]
+                --         Nothing ->
+                --             []
+                --     )
                 Nothing ->
                     vector
                         |> Return.val
@@ -112,40 +111,35 @@ update scripts msg vector =
                 |> Return.doSync
 
         Handle event ->
-            case Event.topicWithId event of
-                Just ( "eval", section ) ->
+            case Event.destructure event of
+                ( Just "eval", section, { cmd, param } ) ->
                     case
                         vector
                             |> Array.get section
                             |> Maybe.andThen .scriptID
                     of
                         Just scriptID ->
-                            let
-                                message =
-                                    Event.message event
-                            in
-                            message
+                            param
                                 |> evalEventDecoder
                                 |> update_ section vector
                                 |> store
                                 |> Return.doSync
-                                |> Return.script
-                                    (message
-                                        |> Event.initWithId Nothing "code" scriptID
-                                        |> JS.handle
-                                    )
 
+                        -- TODO:
+                        -- |> Return.script
+                        --     (message
+                        --         |> Event.initWithId Nothing "code" scriptID
+                        --         |> JS.handle
+                        --     )
                         Nothing ->
-                            event
-                                |> Event.message
+                            param
                                 |> evalEventDecoder
                                 |> update_ section vector
                                 |> store
                                 |> Return.doSync
 
-                Just ( "restore", _ ) ->
-                    event
-                        |> Event.message
+                ( Just "restore", _, { cmd, param } ) ->
+                    param
                         |> Json.toVector
                         |> Result.map (merge vector)
                         |> Result.withDefault vector
@@ -307,7 +301,9 @@ evalEventDecoder : JE.Value -> Element -> Return Element msg sub
 evalEventDecoder json =
     let
         eval =
-            Eval.decode json
+            -- TODO:
+            -- Eval.decode json
+            Service.Script.decode json
     in
     if eval.ok then
         if eval.result == "true" then
@@ -347,9 +343,11 @@ store : Return Vector msg sub -> Return Vector msg sub
 store return =
     return
         |> Return.batchEvent
-            (return.value
-                |> Json.fromVector
-                |> Event.store
+            (Event.todo
+             -- TODO:
+             -- return.value
+             -- |> Json.fromVector
+             -- |> Event.store
             )
 
 

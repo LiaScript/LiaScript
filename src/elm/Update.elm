@@ -26,6 +26,7 @@ import Model exposing (Model, State(..))
 import Process
 import Return exposing (Return)
 import Service.Event as Event exposing (Event)
+import Service.Index
 import Session exposing (Screen)
 import Task
 import Translations
@@ -128,11 +129,10 @@ update msg model =
             )
 
         Handle event ->
-            case Event.topic_ event of
+            case Event.topic event of
                 Just "index" ->
                     update
                         (event
-                            |> Event.message
                             |> Index.handle
                             |> UpdateIndex
                         )
@@ -141,8 +141,7 @@ update msg model =
                 Just "getIndex" ->
                     let
                         ( id, course ) =
-                            event
-                                |> Event.message
+                            event.message.param
                                 |> Index.decodeGet
                     in
                     ( { model | preload = course }
@@ -151,8 +150,7 @@ update msg model =
 
                 Just "restore" ->
                     case
-                        event
-                            |> Event.message
+                        event.message.param
                             |> Lia.Json.Decode.decode model.lia.sync
                     of
                         Ok lia ->
@@ -170,8 +168,7 @@ update msg model =
 
                 Just "lang" ->
                     case
-                        event
-                            |> Event.message
+                        event.message.param
                             |> JD.decodeValue JD.string
                     of
                         Ok str ->
@@ -313,9 +310,10 @@ update msg model =
                     |> Tuple.mapSecond
                         (\cmd ->
                             Cmd.batch
-                                [ url
-                                    |> JE.string
-                                    |> Event.init Nothing "offline"
+                                [ { cmd = "offline_todo"
+                                  , param = JE.string url
+                                  }
+                                    |> Event.init "offline"
                                     |> event2js
                                 , cmd
                                 ]
@@ -466,8 +464,8 @@ load_readme readme model =
             |> Maybe.withDefault False
     then
         ( model
-        , lia.readme
-            |> Index.restore lia.definition.version
+        , { version = lia.definition.version, url = lia.readme }
+            |> Service.Index.restore
             |> event2js
         )
 
@@ -526,9 +524,9 @@ download msg url =
 
 getIndex : String -> Model -> ( Model, Cmd Msg )
 getIndex url model =
-    ( model, Index.get url |> event2js )
+    ( model, Service.Index.get url |> event2js )
 
 
 initIndex : Model -> ( Model, Cmd Msg )
 initIndex model =
-    ( model, event2js Index.init )
+    ( model, event2js Service.Index.list )
