@@ -12,6 +12,7 @@ import Conditional.List as CList
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr exposing (width)
+import Html.Keyed
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types exposing (Msg, Scripts)
 import Lia.Markdown.Effect.Script.View as JS
@@ -415,15 +416,22 @@ reference config ref attr =
 
             else
                 figure config title_ Nothing "movie" <|
-                    Html.div [ Attr.class "lia-video-wrapper" ]
-                        [ Html.video
-                            (Attr.controls True
-                                :: Attr.attribute "preload" "none"
-                                :: toAttribute attr
-                                |> CList.addWhen (title config title_)
-                                |> CList.addWhen (alt config alt_)
-                            )
-                            [ Html.source [ Attr.src url_ ] [] ]
+                    -- This fixes if multiple videos appear on different sites, but on the same
+                    -- position, then only the attributes are changed, which does not affect the
+                    -- video at all. By using Html.Keyed the system is forced to update the
+                    -- entire video tag.
+                    Html.Keyed.node "div"
+                        [ Attr.class "lia-video-wrapper" ]
+                        [ ( url_
+                          , Html.video
+                                (Attr.controls True
+                                    :: Attr.attribute "preload" "none"
+                                    :: toAttribute attr
+                                    |> CList.addWhen (title config title_)
+                                    |> CList.addWhen (alt config alt_)
+                                )
+                                [ Html.source [ Attr.src url_ ] [] ]
+                          )
                         ]
 
         Embed _ url title_ ->
