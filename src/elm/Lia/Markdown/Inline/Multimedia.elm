@@ -35,6 +35,13 @@ movie =
     , { by = \_ w -> "https://www.teachertube.com/embed/video/" ++ w
       , pattern = root "(?:teachertube\\.com).*?(\\d+.*)"
       }
+    , { by =
+            \url w ->
+                "https://video.tu-freiberg.de/media/embed?key="
+                    ++ w
+                    ++ preserve url tuFreibergRules
+      , pattern = root "(?:video\\.tu\\-freiberg\\.de/video/[^/]+/)(.+)"
+      }
     ]
         |> replace
 
@@ -85,6 +92,14 @@ preserve url =
         >> String.concat
         >> (++) "?"
         >> fragment url
+        >> (\parameters ->
+                case parameters of
+                    "?" ->
+                        ""
+
+                    _ ->
+                        parameters
+           )
 
 
 fragment : String -> String -> String
@@ -148,4 +163,19 @@ vimeoRules =
     , "texttrack"
     , "title"
     , "transparent"
+    ]
+
+
+tuFreibergRules : List String
+tuFreibergRules =
+    [ "key"
+    , "width"
+    , "height"
+    , "autoplay"
+    , "autolightsoff"
+    , "loop"
+    , "chapters"
+    , "related"
+    , "responsive"
+    , "t"
     ]
