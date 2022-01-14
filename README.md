@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.46
+version:  0.9.47
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,22 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.47** (14/01/2022)
+
+- improve: Video resources via Multimedia links
+
+  - Add support for the TU Bergakademie Freiberg video platform 
+    
+    https://video.tu-freiberg.de
+
+    Links like for YouTube can simply be copied into the URL part of a link and
+    it will be automatically inserted as an responsive video:
+
+    `!?[video](https://video.tu-freiberg.de/video/Zahlensysteme/e54f8df0ac5d94701b277f9bc63863f6)`
+
+  - fix: Videos on subsequent sites with an equal structure have not been
+    updated properly
 
 **0.9.46** (09/01/2022)
 
