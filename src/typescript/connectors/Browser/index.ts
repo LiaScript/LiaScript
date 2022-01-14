@@ -1,5 +1,6 @@
 import Lia from '../../liascript/types/lia.d'
 import Port from '../../liascript/types/ports'
+import log from '../../liascript/log'
 
 import { LiaDB } from './database'
 import { Connector as Base } from '../Base/index'
@@ -16,7 +17,7 @@ class Connector extends Base {
       this.send = send
     }
 
-    this.database = new LiaDB(this.send)
+    this.database = new LiaDB()
     this.initSettings(this.getSettings(), true)
   }
 
@@ -33,16 +34,81 @@ class Connector extends Base {
       })
   }
 
-  load(event: Lia.Event) {
-    if (this.database) this.database.load(event)
+  async load(event: Lia.Event) {
+    if (this.database) {
+      const item = await this.database.load(event.message.param)
+
+      if (item) {
+        event.message.param = item
+        this.send(event)
+      }
+    }
   }
 
   store(event: Lia.Event) {
-    if (this.database) this.database.store(event)
+    if (this.database) {
+      this.database.store(event.message.param)
+    }
   }
 
   update(event: Lia.Event, id: number) {
-    if (this.database) this.database.update(event, id)
+    if (this.database) {
+      /** let project = vector.data[event.track[0][1]]
+
+        switch (event.track[0][0]) {
+          case 'flip': {
+            if (event.track[1][0] === 'view') {
+              project.file[event.track[1][1]].visible = event.message
+            } else if (
+              event.track[1][0] === 'fullscreen' &&
+              event.track[1][1] !== -1
+            ) {
+              project.file[event.track[1][1]].fullscreen = event.message
+            }
+            break
+          }
+          case 'load': {
+            let e_ = event.message
+            project.version_active = e_.version_active
+            project.log = e_.log
+            project.file = e_.file
+            break
+          }
+          case 'version_update': {
+            let e_ = event.message
+            project.version_active = e_.version_active
+            project.log = e_.log
+            project.version[e_.version_active] = e_.version
+            break
+          }
+          case 'version_append': {
+            let e_ = event.message
+            project.version_active = e_.version_active
+            project.log = e_.log
+            project.file = e_.file
+            project.version.push(e_.version)
+            project.repository = {
+              ...project.repository,
+              ...e_.repository,
+            }
+            break
+          }
+          default: {
+            log.warn('unknown update cmd: ', event)
+          }
+        }
+
+        vector.data[event.track[0][1]] = project */
+
+      let fn
+
+      switch (event.message.cmd) {
+        default:
+          log.warn('unknown update cmd: ', event)
+      }
+
+      if (fn) this.database.transaction(event.message.param, fn)
+    }
   }
 
   slide(id: number) {

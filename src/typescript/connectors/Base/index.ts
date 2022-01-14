@@ -79,9 +79,12 @@ export class Connector {
   getFromIndex(_uidDB: string) {
     this.send({
       reply: true,
-      track: [[Port.RESTORE, -1]],
-      service: null,
-      message: null,
+      track: [],
+      service: 'index',
+      message: {
+        cmd: 'reset',
+        param: null,
+      },
     })
   }
 }
