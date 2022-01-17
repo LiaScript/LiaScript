@@ -7,6 +7,7 @@ import * as GUN from '../../sync/Gun/index'
 import log from '../log'
 
 var sync: any
+var elmSend: Lia.Send | null
 
 const Service = {
   PORT: 'sync',
@@ -25,34 +26,40 @@ const Service = {
       : []
   },
 
-  handle: function (elmSend: any, event: Lia.Event) {
+  init: function (elmSend_: Lia.Send) {
+    elmSend = elmSend_
+  },
+
+  handle: function (event: Lia.Event) {
     switch (event.message.cmd) {
       case 'connect': {
         if (sync) sync = undefined
 
-        switch (event.message.param.backend) {
-          case 'beaker':
-            sync = new Beaker.Sync(elmSend)
-            break
+        if (elmSend) {
+          switch (event.message.param.backend) {
+            case 'beaker':
+              sync = new Beaker.Sync(elmSend)
+              break
 
-          case 'gun':
-            sync = new GUN.Sync(elmSend)
-            break
+            case 'gun':
+              sync = new GUN.Sync(elmSend)
+              break
 
-          case 'jitsi':
-            sync = new Jitsi.Sync(elmSend)
-            break
+            case 'jitsi':
+              sync = new Jitsi.Sync(elmSend)
+              break
 
-          case 'matrix':
-            sync = new Matrix.Sync(elmSend)
-            break
+            case 'matrix':
+              sync = new Matrix.Sync(elmSend)
+              break
 
-          case 'pubnub':
-            sync = new PubNub.Sync(elmSend)
-            break
+            case 'pubnub':
+              sync = new PubNub.Sync(elmSend)
+              break
 
-          default:
-            log.error('could not load =>', event.message)
+            default:
+              log.error('could not load =>', event.message)
+          }
         }
 
         if (sync) sync.connect(event.message.param.config)

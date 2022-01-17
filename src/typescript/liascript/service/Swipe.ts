@@ -172,12 +172,7 @@ const Service = {
   init: function initNavigation(elem: HTMLElement, elmSend: Lia.Send) {
     detect(elem, function (swipeDir) {
       if (document.getElementsByClassName('lia-modal').length === 0) {
-        elmSend({
-          reply: true,
-          track: [[Port, -1]],
-          service: null,
-          message: swipeDir,
-        })
+        sendReply(elmSend, swipeDir)
       }
     })
 
@@ -187,23 +182,13 @@ const Service = {
         switch (e.key) {
           case 'ArrowRight': {
             if (document.getElementsByClassName('lia-modal').length === 0) {
-              elmSend({
-                reply: true,
-                track: [[Port, -1]],
-                service: null,
-                message: Dir.left,
-              })
+              sendReply(elmSend, Dir.left)
             }
             break
           }
           case 'ArrowLeft': {
             if (document.getElementsByClassName('lia-modal').length === 0) {
-              elmSend({
-                reply: true,
-                track: [[Port, -1]],
-                service: null,
-                message: Dir.right,
-              })
+              sendReply(elmSend, Dir.right)
             }
             break
           }
@@ -212,6 +197,18 @@ const Service = {
       false
     )
   },
+}
+
+function sendReply(elmSend: Lia.Send, swipeDir: Dir) {
+  elmSend({
+    reply: true,
+    track: [[Port, -1]],
+    service: Port,
+    message: {
+      cmd: 'swipe',
+      param: swipeDir,
+    },
+  })
 }
 
 export default Service

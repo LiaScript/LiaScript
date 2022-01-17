@@ -330,6 +330,7 @@ class LiaScript {
     TTS.init(elmSend)
     Swipe.init(elem, elmSend)
     Translate.init(elmSend)
+    Sync.init(elmSend)
 
     jsSubscribe((event: Lia.Event) => {
       process(true, self, elmSend, event)
@@ -375,7 +376,7 @@ function process(
       break
 
     case Sync.PORT:
-      Sync.handle(elmSend, event)
+      Sync.handle(event)
       break
 
     case Share.PORT:
