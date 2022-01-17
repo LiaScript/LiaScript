@@ -2,6 +2,7 @@ import log from '../log'
 
 import Lia from '../../liascript/types/lia.d'
 import { Connector } from '../../connectors/Base/index'
+import TTS from './TTS'
 
 var connector: Connector | null = null
 var elmSend: Lia.Send | null
@@ -28,12 +29,16 @@ const Service = {
         break
 
       case 'index_get':
-        console.warn('#################################', event.message.param)
         event.message.param = await connector.getFromIndex(event.message.param)
         sendReply(event)
         break
 
       case 'index_list':
+        // this might be necessary to stop talking, if the user switches back
+        // from a course to the home screen
+        try {
+          TTS.mute()
+        } catch (e) {}
         event.message.param = await connector.getIndex()
         sendReply(event)
         break
@@ -44,6 +49,14 @@ const Service = {
 
       case 'index_delete':
         connector.deleteFromIndex(event.message.param)
+        break
+
+      case 'index_restore':
+        event.message.param = connector.restoreFromIndex(
+          event.message.param.url,
+          event.message.param.version
+        )
+        sendReply(event)
         break
 
       default:

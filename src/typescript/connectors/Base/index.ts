@@ -54,7 +54,7 @@ export class Connector {
     return json
   }
 
-  open(_uidDB: string, _versionDB: number, _slide: number, _data?: Lia.Event) {}
+  open(_uidDB: string, _versionDB: number, _slide: number) {}
 
   load(_event: Lia.Event) {}
 

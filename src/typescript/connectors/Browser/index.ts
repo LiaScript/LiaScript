@@ -21,17 +21,13 @@ class Connector extends Base {
     this.initSettings(this.getSettings(), true)
   }
 
-  open(uidDB: string, versionDB: number, slide: number, _data?: Lia.Event) {
-    if (this.database)
-      this.database.open(uidDB, versionDB, {
-        reply: true,
-        track: [
-          [Port.CODE, slide],
-          [Port.RESTORE, -1],
-        ],
-        service: null,
-        message: null,
+  async open(uidDB: string, versionDB: number, slide: number) {
+    if (this.database) {
+      return await this.database.open(uidDB, versionDB, {
+        table: 'code',
+        id: slide,
       })
+    }
   }
 
   async load(event: Lia.Event) {
@@ -130,14 +126,18 @@ class Connector extends Base {
   }
 
   restoreFromIndex(uidDB: string, versionDB?: number) {
-    if (this.database) this.database.restore(uidDB, versionDB)
+    if (this.database) {
+      this.database.restore(uidDB, versionDB)
+
+      log.info('DB: restore => ', uidDB, versionDB)
+    }
   }
 
   async reset(uidDB?: string, versionDB?: number) {
     if (this.database && uidDB && versionDB) {
       await this.database.reset(uidDB, versionDB)
 
-      log.info('DB: resetting => ', uidDB, versionDB)
+      log.info('DB: reset => ', uidDB, versionDB)
     }
   }
 
