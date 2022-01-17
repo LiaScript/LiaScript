@@ -129,69 +129,69 @@ update msg model =
             )
 
         Handle event ->
-            case Event.topic event of
-                Just "index" ->
+            case Event.pop event of
+                Just ( "index", event_ ) ->
                     update
-                        (event
+                        (event_
                             |> Index.handle
                             |> UpdateIndex
                         )
                         model
 
-                Just "getIndex" ->
-                    let
-                        ( id, course ) =
-                            event.message.param
-                                |> Index.decodeGet
-                    in
-                    ( { model | preload = course }
-                    , download Load_ReadMe_Result id
-                    )
+                {- Just "getIndex" ->
+                          let
+                              ( id, course ) =
+                                  event.message.param
+                                      |> Index.decodeGet
+                          in
+                          ( { model | preload = course }
+                          , download Load_ReadMe_Result id
+                          )
 
-                Just "restore" ->
-                    case
-                        event.message.param
-                            |> Lia.Json.Decode.decode model.lia.sync
-                    of
-                        Ok lia ->
-                            start
-                                { model
-                                    | lia =
-                                        Lia.Script.add_todos lia.definition
-                                            { lia | settings = model.lia.settings }
-                                }
+                      Just "restore" ->
+                          case
+                              event.message.param
+                                  |> Lia.Json.Decode.decode model.lia.sync
+                          of
+                              Ok lia ->
+                                  start
+                                      { model
+                                          | lia =
+                                              Lia.Script.add_todos lia.definition
+                                                  { lia | settings = model.lia.settings }
+                                      }
 
-                        Err _ ->
-                            ( { model | preload = Nothing }
-                            , download Load_ReadMe_Result model.lia.readme
-                            )
+                              Err _ ->
+                                  ( { model | preload = Nothing }
+                                  , download Load_ReadMe_Result model.lia.readme
+                                  )
 
-                Just "lang" ->
-                    case
-                        event.message.param
-                            |> JD.decodeValue JD.string
-                    of
-                        Ok str ->
-                            let
-                                lia =
-                                    model.lia
-                            in
-                            ( { model
-                                | lia =
-                                    { lia
-                                        | translation =
-                                            str
-                                                |> Translations.getLnFromCode
-                                                |> Maybe.withDefault lia.translation
-                                        , langCode = str
-                                    }
-                              }
-                            , Cmd.none
-                            )
+                   Just "lang" ->
+                       case
+                           event.message.param
+                               |> JD.decodeValue JD.string
+                       of
+                           Ok str ->
+                               let
+                                   lia =
+                                       model.lia
+                               in
+                               ( { model
+                                   | lia =
+                                       { lia
+                                           | translation =
+                                               str
+                                                   |> Translations.getLnFromCode
+                                                   |> Maybe.withDefault lia.translation
+                                           , langCode = str
+                                       }
+                                 }
+                               , Cmd.none
+                               )
 
-                        _ ->
-                            ( model, Cmd.none )
-
+                           _ ->
+                               ( model, Cmd.none )
+                -}
                 _ ->
                     update
                         (event
@@ -529,4 +529,8 @@ getIndex url model =
 
 initIndex : Model -> ( Model, Cmd Msg )
 initIndex model =
-    ( model, event2js Service.Index.list )
+    ( model
+    , Service.Index.list
+        |> Event.push "index"
+        |> event2js
+    )

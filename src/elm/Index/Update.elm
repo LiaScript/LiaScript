@@ -12,10 +12,12 @@ import Index.Model exposing (Course, Model, Release)
 import Index.Version as Version
 import Json.Decode as JD
 import Lia.Definition.Json.Decode as Definition
+import Lia.Markdown.Code.Editor exposing (mode)
 import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
+import Service.Console
 import Service.Event exposing (Event)
 import Service.Index
 import Service.Share
@@ -113,8 +115,17 @@ update msg settings model =
                 )
 
             Handle event ->
-                update (decode event.message.param) settings model
-                    |> Tuple.second
+                case Service.Event.message event of
+                    ( "index_list", param ) ->
+                        model
+                            |> update (decode param) settings
+                            |> Tuple.second
+
+                    ( unknown, _ ) ->
+                        ( model
+                        , Cmd.none
+                        , [ Service.Console.warn <| "Index: unknown cmd => " ++ unknown ]
+                        )
 
             Input url ->
                 ( { model | input = url }, Cmd.none, [] )
@@ -210,7 +221,6 @@ decode json =
 decList : JD.Decoder Msg
 decList =
     JD.list decCourse
-        |> JD.field "list"
         |> JD.map IndexList
 
 

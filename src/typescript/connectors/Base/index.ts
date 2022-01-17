@@ -64,7 +64,7 @@ export class Connector {
 
   slide(_id: number) {}
 
-  getIndex() {}
+  getIndex(_event: Lia.Event) {}
 
   deleteFromIndex(_uidDB: string) {}
 

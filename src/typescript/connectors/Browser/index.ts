@@ -115,8 +115,12 @@ class Connector extends Base {
     if (this.database) this.database.slide(id)
   }
 
-  getIndex() {
-    if (this.database) this.database.listIndex()
+  async getIndex(event: Lia.Event) {
+    if (this.database) {
+      event.message.param = await this.database.listIndex()
+
+      this.send(event)
+    }
   }
 
   deleteFromIndex(uidDB: string) {

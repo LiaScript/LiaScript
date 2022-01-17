@@ -79,5 +79,5 @@ by the service module `Index.ts`.
 -}
 event : String -> JE.Value -> Event
 event cmd param =
-    { cmd = cmd, param = param }
-        |> Event.init "index"
+    { cmd = "index_" ++ cmd, param = param }
+        |> Event.init "db"

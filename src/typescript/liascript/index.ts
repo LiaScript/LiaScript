@@ -15,6 +15,7 @@ import { initTooltip } from '../webcomponents/tooltip/index'
 
 // Services
 import Console from './service/Console'
+import Database from './service/Database'
 import Resource from './service/Resource'
 import Share from './service/Share'
 import Slide from './service/Slide'
@@ -268,7 +269,7 @@ class LiaScript {
     }
 
     this.connector = connector
-    this.connector.connect(sender)
+
     this.initEventSystem(elem, this.app.ports.event2js.subscribe, sender)
 
     liaStorage = this.connector.storage()
@@ -323,6 +324,7 @@ class LiaScript {
 
     let self = this
 
+    Database.init(elmSend, this.connector)
     TTS.init(elmSend)
     Swipe.init(elem, elmSend)
     Translate.init(elmSend)
@@ -339,46 +341,54 @@ function process(
   elmSend: Lia.Send,
   event: Lia.Event
 ) {
-  log.info(`LIA >>> (${JSON.stringify(event.track)})`, event.message)
+  log.info(
+    `LIA >>> (${JSON.stringify(event.track)})`,
+    event.service,
+    event.message
+  )
 
-  if (event.service) {
-    switch (event.service) {
-      case Slide.PORT:
-        if (event.message.param.slide) {
-          // store the current slide number within the backend
-          self.connector.slide(event.message.param.slide)
-        }
-        Slide.handle(event)
-        break
+  switch (event.service) {
+    case Database.PORT:
+      Database.handle(event)
+      break
 
-      case TTS.PORT:
-        TTS.handle(elmSend, event)
-        break
+    case Slide.PORT:
+      if (event.message.param.slide) {
+        // store the current slide number within the backend
+        self.connector.slide(event.message.param.slide)
+      }
+      Slide.handle(event)
+      break
 
-      case Console.PORT:
-        Console.handle(event)
-        break
+    case TTS.PORT:
+      TTS.handle(elmSend, event)
+      break
 
-      case Sync.PORT:
-        Sync.handle(elmSend, event)
-        break
+    case Console.PORT:
+      Console.handle(event)
+      break
 
-      case Share.PORT:
-        Share.handle(event)
-        break
+    case Sync.PORT:
+      Sync.handle(elmSend, event)
+      break
 
-      case Resource.PORT:
-        Resource.handle(event)
-        break
+    case Share.PORT:
+      Share.handle(event)
+      break
 
-      case Translate.PORT:
-        Translate.handle(event)
-        break
+    case Resource.PORT:
+      Resource.handle(event)
+      break
 
-      default:
-        console.warn('Unknown Service => ', event)
-    }
-  } else
+    case Translate.PORT:
+      Translate.handle(event)
+      break
+
+    default:
+      console.warn('Unknown Service => ', event)
+  }
+
+  /*else
     switch (event.track[0][0]) {
       case Port.LOAD: {
         self.connector.load(
@@ -590,6 +600,7 @@ function process(
       default:
         log.error('Command not found => ', event)
     }
+    */
 }
 
 export default LiaScript
