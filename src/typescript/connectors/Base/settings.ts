@@ -15,7 +15,6 @@ export const defaultSettings: Lia.Settings = {
 }
 
 export function initSettings(
-  send: Lia.Send | null,
   data: Lia.Settings = defaultSettings,
   local = false
 ) {
@@ -25,20 +24,7 @@ export function initSettings(
 
   updateClassName(data)
 
-  if (send) {
-    send({
-      reply: true,
-      track: [
-        [Port.SETTINGS, -1],
-        ['init', -1],
-      ],
-      service: Port.SETTINGS,
-      message: {
-        cmd: 'init',
-        param: data,
-      },
-    })
-  }
+  return data
 }
 
 export function updateClassName(data: Lia.Settings) {

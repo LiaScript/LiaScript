@@ -3,17 +3,7 @@ import Dexie from 'dexie'
 
 import log from '../../liascript/log'
 
-/** Internal abstraction to query the database. All entries are organized with
- * tables, which represent either `code`, `quiz`, `survey`, `task`, `offline`.
- * Since LiaScript communicates the via slides, the slide numbers are also used
- * as the `id` for an entry. And the data per slide is mostly also organized as
- * and array, where each element has to be identified separately.
- */
-type Record = {
-  table: string
-  id: number
-  data?: any
-}
+import { Record } from '../Base/index'
 
 if (process.env.NODE_ENV === 'development') {
   Dexie.debug = true

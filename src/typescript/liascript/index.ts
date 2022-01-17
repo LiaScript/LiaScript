@@ -325,7 +325,7 @@ class LiaScript {
 
     let self = this
 
-    Settings.init(elmSend)
+    Settings.init(elmSend, this.connector)
     Database.init(elmSend, this.connector)
     TTS.init(elmSend)
     Swipe.init(elem, elmSend)

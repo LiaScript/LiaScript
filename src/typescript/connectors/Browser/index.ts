@@ -3,51 +3,36 @@ import Port from '../../liascript/types/ports'
 import log from '../../liascript/log'
 
 import { LiaDB } from './database'
-import { Connector as Base } from '../Base/index'
+import { Connector as Base, Record } from '../Base/index'
 
 class Connector extends Base {
-  private database?: LiaDB
+  private database: LiaDB
+
+  constructor() {
+    super()
+    this.database = new LiaDB()
+  }
 
   hasIndex() {
     return true
   }
 
-  connect(send: Lia.Send | null) {
-    if (send) {
-      this.send = send
-    }
-
-    this.database = new LiaDB()
-    this.initSettings(this.getSettings(), true)
-  }
-
   async open(uidDB: string, versionDB: number, slide: number) {
-    if (this.database) {
-      return await this.database.open(uidDB, versionDB, {
-        table: 'code',
-        id: slide,
-      })
-    }
+    return await this.database.open(uidDB, versionDB, {
+      table: 'code',
+      id: slide,
+    })
   }
 
-  async load(event: Lia.Event) {
-    if (this.database) {
-      const item = await this.database.load(event.message.param)
-
-      if (item) {
-        event.message.param = item
-        this.send(event)
-      }
-    }
+  load(record: Record) {
+    return this.database.load(record)
   }
 
-  store(event: Lia.Event) {
-    if (this.database) {
-      this.database.store(event.message.param)
-    }
+  store(record: Record) {
+    return this.database.store(record)
   }
 
-  update(event: Lia.Event, id: number) {
+  update(cmd: string, record: Record, id: number) {
     if (this.database) {
       /** let project = vector.data[event.track[0][1]]
 
@@ -96,45 +81,40 @@ class Connector extends Base {
 
         vector.data[event.track[0][1]] = project */
 
-      let fn
+      let fn = (a: any) => a
 
-      switch (event.message.cmd) {
+      switch (cmd) {
         default:
-          log.warn('unknown update cmd: ', event)
+          log.warn('unknown update cmd: ', record)
       }
 
-      if (fn) this.database.transaction(event.message.param, fn)
+      if (fn) this.database.transaction(record, fn)
     }
   }
 
   slide(id: number) {
-    if (this.database) this.database.slide(id)
+    this.database.slide(id)
   }
 
   async getIndex() {
-    if (this.database) {
-      return await this.database.listIndex()
-    }
+    return await this.database.listIndex()
   }
 
   deleteFromIndex(uidDB: string) {
-    if (this.database) this.database.deleteIndex(uidDB)
+    this.database.deleteIndex(uidDB)
   }
 
   storeToIndex(json: any) {
-    if (this.database) this.database.storeIndex(json)
+    this.database.storeIndex(json)
   }
 
   restoreFromIndex(uidDB: string, versionDB?: number) {
-    if (this.database) {
-      this.database.restore(uidDB, versionDB)
-
-      log.info('DB: restore => ', uidDB, versionDB)
-    }
+    this.database.restore(uidDB, versionDB)
+    log.info('DB: restore => ', uidDB, versionDB)
   }
 
   async reset(uidDB?: string, versionDB?: number) {
-    if (this.database && uidDB && versionDB) {
+    if (uidDB && versionDB) {
       await this.database.reset(uidDB, versionDB)
 
       log.info('DB: reset => ', uidDB, versionDB)
@@ -142,9 +122,7 @@ class Connector extends Base {
   }
 
   getFromIndex(uidDB: string) {
-    if (this.database) {
-      return this.database.getIndex(uidDB)
-    }
+    return this.database.getIndex(uidDB)
   }
 }
 

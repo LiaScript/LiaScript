@@ -4,19 +4,23 @@ import Port from '../../liascript/types/ports'
 import { LiaStorage } from './storage'
 import { initSettings, defaultSettings } from './settings'
 
-export class Connector {
-  protected send: Lia.Send
+/** Internal abstraction to query the database. All entries are organized with
+ * tables, which represent either `code`, `quiz`, `survey`, `task`, `offline`.
+ * Since LiaScript communicates the via slides, the slide numbers are also used
+ * as the `id` for an entry. And the data per slide is mostly also organized as
+ * and array, where each element has to be identified separately.
+ */
+export type Record = {
+  table: string
+  id: number
+  data?: any
+}
 
-  constructor() {
-    this.send = (_) => null
-  }
+export class Connector {
+  constructor() {}
 
   hasIndex() {
     return false
-  }
-
-  connect(send: Lia.Send | null) {
-    if (send) this.send = send
   }
 
   storage() {
@@ -24,7 +28,7 @@ export class Connector {
   }
 
   initSettings(data: Lia.Settings | null, local = false) {
-    initSettings(this.send, data ? data : undefined, local)
+    return initSettings(data ? data : undefined, local)
   }
 
   setSettings(data: Lia.Settings) {
@@ -56,11 +60,11 @@ export class Connector {
 
   open(_uidDB: string, _versionDB: number, _slide: number) {}
 
-  load(_event: Lia.Event) {}
+  load(_record: Record) {}
 
-  store(_event: Lia.Event) {}
+  store(_record: Record) {}
 
-  update(_event: Lia.Event, _id: number) {}
+  update(_cmd: string, _record: Record, _id: number) {}
 
   slide(_id: number) {}
 
@@ -76,15 +80,5 @@ export class Connector {
     this.initSettings(null, true)
   }
 
-  getFromIndex(_uidDB: string) {
-    this.send({
-      reply: true,
-      track: [],
-      service: 'index',
-      message: {
-        cmd: 'reset',
-        param: null,
-      },
-    })
-  }
+  getFromIndex(_uidDB: string) {}
 }

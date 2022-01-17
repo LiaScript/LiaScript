@@ -13,7 +13,6 @@ const Service = {
   init: function (elmSend_: Lia.Send, connector_: Connector) {
     connector = connector_
     elmSend = elmSend_
-    connector.connect(elmSend)
   },
 
   handle: async function (event: Lia.Event) {
@@ -21,11 +20,11 @@ const Service = {
 
     switch (event.message.cmd) {
       case 'load':
-        connector.load(event)
+        //connector.load(event)
         break
 
       case 'store':
-        connector.store(event)
+        //connector.store(event)
         break
 
       case 'index_get':
