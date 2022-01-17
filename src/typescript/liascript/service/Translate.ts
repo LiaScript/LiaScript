@@ -46,9 +46,9 @@ const Service = {
 
         elmSend({
           reply: true,
-          track: [['lang', -1]],
-          service: null,
-          message: document.documentElement.lang,
+          track: [],
+          service: 'translate',
+          message: { cmd: 'lang', param: document.documentElement.lang },
         })
       })
     })

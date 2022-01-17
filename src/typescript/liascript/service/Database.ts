@@ -28,6 +28,7 @@ const Service = {
         break
 
       case 'index_get':
+        console.warn('#################################', event.message.param)
         event.message.param = await connector.getFromIndex(event.message.param)
         sendReply(event)
         break

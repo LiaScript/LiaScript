@@ -142,7 +142,9 @@ class Connector extends Base {
   }
 
   getFromIndex(uidDB: string) {
-    if (this.database) this.database.getIndex(uidDB)
+    if (this.database) {
+      return this.database.getIndex(uidDB)
+    }
   }
 }
 

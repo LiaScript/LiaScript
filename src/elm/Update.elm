@@ -130,6 +130,47 @@ update msg model =
 
         Handle event ->
             case Event.pop event of
+                Nothing ->
+                    case Event.message event of
+                        ( "index_get", param ) ->
+                            let
+                                ( id, course ) =
+                                    Index.decodeGet param
+                            in
+                            ( { model | preload = course }
+                            , download Load_ReadMe_Result id
+                            )
+
+                        ( "lang", param ) ->
+                            case JD.decodeValue JD.string param of
+                                Ok str ->
+                                    let
+                                        lia =
+                                            model.lia
+                                    in
+                                    ( { model
+                                        | lia =
+                                            { lia
+                                                | translation =
+                                                    str
+                                                        |> Translations.getLnFromCode
+                                                        |> Maybe.withDefault lia.translation
+                                                , langCode = str
+                                            }
+                                      }
+                                    , Cmd.none
+                                    )
+
+                                Err info ->
+                                    ( model, Cmd.none )
+
+                        ( unknown, _ ) ->
+                            let
+                                _ =
+                                    Debug.log "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ" unknown
+                            in
+                            ( model, Cmd.none )
+
                 Just ( "index", event_ ) ->
                     update
                         (event_
@@ -138,59 +179,25 @@ update msg model =
                         )
                         model
 
-                {- Just "getIndex" ->
-                          let
-                              ( id, course ) =
-                                  event.message.param
-                                      |> Index.decodeGet
-                          in
-                          ( { model | preload = course }
-                          , download Load_ReadMe_Result id
-                          )
-
-                      Just "restore" ->
-                          case
-                              event.message.param
-                                  |> Lia.Json.Decode.decode model.lia.sync
-                          of
-                              Ok lia ->
-                                  start
-                                      { model
-                                          | lia =
-                                              Lia.Script.add_todos lia.definition
-                                                  { lia | settings = model.lia.settings }
-                                      }
-
-                              Err _ ->
-                                  ( { model | preload = Nothing }
-                                  , download Load_ReadMe_Result model.lia.readme
-                                  )
-
-                   Just "lang" ->
-                       case
-                           event.message.param
-                               |> JD.decodeValue JD.string
-                       of
-                           Ok str ->
-                               let
-                                   lia =
-                                       model.lia
-                               in
-                               ( { model
+                {- Just "restore" ->
+                   case
+                       event.message.param
+                           |> Lia.Json.Decode.decode model.lia.sync
+                   of
+                       Ok lia ->
+                           start
+                               { model
                                    | lia =
-                                       { lia
-                                           | translation =
-                                               str
-                                                   |> Translations.getLnFromCode
-                                                   |> Maybe.withDefault lia.translation
-                                           , langCode = str
-                                       }
-                                 }
-                               , Cmd.none
-                               )
+                                       Lia.Script.add_todos lia.definition
+                                           { lia | settings = model.lia.settings }
+                               }
 
-                           _ ->
-                               ( model, Cmd.none )
+                       Err _ ->
+                           ( { model | preload = Nothing }
+                           , download Load_ReadMe_Result model.lia.readme
+                           )
+
+
                 -}
                 _ ->
                     update
