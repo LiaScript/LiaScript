@@ -115,11 +115,9 @@ class Connector extends Base {
     if (this.database) this.database.slide(id)
   }
 
-  async getIndex(event: Lia.Event) {
+  async getIndex() {
     if (this.database) {
-      event.message.param = await this.database.listIndex()
-
-      this.send(event)
+      return await this.database.listIndex()
     }
   }
 
@@ -135,9 +133,12 @@ class Connector extends Base {
     if (this.database) this.database.restore(uidDB, versionDB)
   }
 
-  reset(uidDB?: string, versionDB?: number) {
-    if (this.database && uidDB && versionDB)
-      this.database.reset(uidDB, versionDB)
+  async reset(uidDB?: string, versionDB?: number) {
+    if (this.database && uidDB && versionDB) {
+      await this.database.reset(uidDB, versionDB)
+
+      log.info('DB: resetting => ', uidDB, versionDB)
+    }
   }
 
   getFromIndex(uidDB: string) {
