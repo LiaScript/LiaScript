@@ -8,16 +8,20 @@ var backup: {
   text: string
 }
 
+var elmSend: Lia.Send | null
+
 const Service = {
   PORT: 'tts',
 
-  init: function (elmSend: Lia.Send) {
+  init: function (elmSend_: Lia.Send) {
     setTimeout(function () {
       firstSpeak = false
     }, 2000)
 
+    elmSend = elmSend_
+
     window.playback = function (event: Lia.Event) {
-      playback(elmSend, event)
+      playback(event)
     }
   },
 
@@ -25,22 +29,18 @@ const Service = {
     TTS.cancel()
   },
 
-  handle: function (elmSend: Lia.Send, event: Lia.Event) {
+  handle: function (event: Lia.Event) {
     switch (event.message.cmd) {
       case 'cancel': {
-        console.warn('SSSSSSSSSSSSSSSSSSSSSSSSSSSSSS', event)
-
         TTS.cancel()
         event.message.cmd = 'stop'
-        event.message.param = 'WWWWWWWWWWWWWWW'
+        event.message.param = 'TODO'
 
         if (event.track[0][1] < 0) {
           event.track[0][0] = Port.SETTINGS
         }
 
-        console.warn('SSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2', event)
-
-        elmSend(event)
+        sendReply(event)
         break
       }
 
@@ -70,19 +70,19 @@ const Service = {
                   event.track[0][0] = Port.SETTINGS
                   event.message.cmd = 'start'
                   event.message.param = undefined
-                  elmSend(event)
+                  sendReply(event)
                 },
                 function () {
                   event.track[0][0] = Port.SETTINGS
                   event.message.cmd = 'stop'
                   event.message.param = undefined
-                  elmSend(event)
+                  sendReply(event)
                 },
                 function (e: any) {
                   event.track[0][0] = Port.SETTINGS
                   event.message.cmd = 'error'
                   event.message.param = e.toString()
-                  elmSend(event)
+                  sendReply(event)
                 }
               )
             }
@@ -94,15 +94,13 @@ const Service = {
       }
 
       case 'repeat': {
-        console.warn('WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWllllll', backup)
-
         event.message.param = backup
-        playback(elmSend, event)
+        playback(event)
         break
       }
 
       case 'playback': {
-        playback(elmSend, event)
+        playback(event)
         break
       }
 
@@ -112,7 +110,7 @@ const Service = {
   },
 }
 
-function playback(elmSend: Lia.Send, event: Lia.Event) {
+function playback(event: Lia.Event) {
   backup = event.message.param
 
   TTS.speak(
@@ -121,19 +119,25 @@ function playback(elmSend: Lia.Send, event: Lia.Event) {
     function () {
       event.message.cmd = 'start'
       event.message.param = undefined
-      elmSend(event)
+      sendReply(event)
     },
     function () {
       event.message.cmd = 'stop'
       event.message.param = undefined
-      elmSend(event)
+      sendReply(event)
     },
     function (e: any) {
       event.message.cmd = 'error'
       event.message.param = e.toString()
-      elmSend(event)
+      sendReply(event)
     }
   )
+}
+
+function sendReply(event: Lia.Event) {
+  if (elmSend) {
+    elmSend(event)
+  }
 }
 
 export default Service

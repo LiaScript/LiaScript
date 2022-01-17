@@ -17,6 +17,7 @@ import { initTooltip } from '../webcomponents/tooltip/index'
 import Console from './service/Console'
 import Database from './service/Database'
 import Resource from './service/Resource'
+import Settings from './service/Settings'
 import Share from './service/Share'
 import Slide from './service/Slide'
 import Swipe from './service/Swipe'
@@ -324,6 +325,7 @@ class LiaScript {
 
     let self = this
 
+    Settings.init(elmSend)
     Database.init(elmSend, this.connector)
     TTS.init(elmSend)
     Swipe.init(elem, elmSend)
@@ -361,7 +363,11 @@ function process(
       break
 
     case TTS.PORT:
-      TTS.handle(elmSend, event)
+      TTS.handle(event)
+      break
+
+    case Settings.PORT:
+      Settings.handle(event)
       break
 
     case Console.PORT:
