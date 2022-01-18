@@ -2,6 +2,7 @@ import log from '../log'
 
 import Lia from '../../liascript/types/lia.d'
 import { Connector } from '../../connectors/Base/index'
+import { updateClassName } from '../../connectors/Base/settings'
 import TTS from './TTS'
 
 var connector: Connector | null = null
@@ -13,6 +14,16 @@ const Service = {
   init: function (elmSend_: Lia.Send, connector_: Connector) {
     connector = connector_
     elmSend = elmSend_
+
+    elmSend({
+      reply: true,
+      track: [['settings', -1]],
+      service: 'db',
+      message: {
+        cmd: 'init',
+        param: connector.initSettings(connector.getSettings(), false),
+      },
+    })
   },
 
   handle: async function (event: Lia.Event) {
@@ -57,6 +68,38 @@ const Service = {
         )
         sendReply(event)
         break
+
+      case 'settings': {
+        try {
+          updateClassName(event.message.param.config)
+
+          const conf = connector.getSettings()
+
+          setTimeout(function () {
+            window.dispatchEvent(new Event('resize'))
+          }, 333)
+
+          let style = document.getElementById('lia-custom-style')
+
+          if (typeof event.message.param.custom === 'string') {
+            if (style == null) {
+              style = document.createElement('style')
+              style.id = 'lia-custom-style'
+              document.head.appendChild(style)
+            }
+
+            style.innerHTML = ':root {' + event.message.param.custom + '}'
+          } else if (style !== null) {
+            style.innerHTML = ''
+          }
+        } catch (e: any) {
+          log.warn('DB: settings => ', e.message)
+        }
+
+        connector.setSettings(event.message.param.config)
+
+        break
+      }
 
       default:
         log.warn('(Service DB) unknown message =>', event.message)

@@ -15,8 +15,8 @@ import Lia.Settings.Json as Json
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Utils exposing (focus)
 import Return exposing (Return)
+import Service.Database
 import Service.Event as Event exposing (Event)
-import Service.Settings
 import Service.Share
 import Service.TTS
 import Service.Translate
@@ -29,7 +29,6 @@ type Msg
     | ChangeLang String
     | ChangeFontSize Int
     | SwitchMode Mode
-    | Reset
     | Handle Event
     | ShareCourse String
     | Ignore
@@ -162,11 +161,6 @@ update main msg model =
         ChangeLang lang ->
             log Nothing { model | lang = lang }
 
-        Reset ->
-            model
-                |> Return.val
-                |> Return.batchEvent Service.Settings.reset
-
         ShareCourse url ->
             model
                 |> Return.val
@@ -226,7 +220,7 @@ customizeEvent : Settings -> Event
 customizeEvent settings =
     settings
         |> Json.fromModel
-        |> Service.Settings.update
+        |> Service.Database.settings
             (if settings.theme == "custom" then
                 settings.customTheme
 

@@ -203,14 +203,6 @@ modeToString show =
             Trans.modeTextbook
 
 
-
---reset : Html Msg
---reset =
---    Html.button
---        [ onClick Reset ]
---        [ Html.text "reset course" ]
-
-
 viewSizing : Lang -> Bool -> Int -> Html Msg
 viewSizing lang tabbable size =
     Html.div [ Attr.class "lia-fontscale" ]
