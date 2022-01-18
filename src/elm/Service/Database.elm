@@ -9,7 +9,9 @@ import Service.Event as Event exposing (Event)
 
 load : String -> Int -> Event
 load table id =
-    [ ( "table", JE.string table ), ( "id", JE.int id ) ]
+    [ ( "table", JE.string table )
+    , ( "id", JE.int id )
+    ]
         |> JE.object
         |> event "load"
 

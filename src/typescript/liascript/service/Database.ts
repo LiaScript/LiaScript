@@ -29,6 +29,8 @@ const Service = {
   handle: async function (event: Lia.Event) {
     if (!connector) return
 
+    const param = event.message.param
+
     switch (event.message.cmd) {
       case 'load':
         //connector.load(event)
@@ -39,7 +41,7 @@ const Service = {
         break
 
       case 'index_get':
-        event.message.param = await connector.getFromIndex(event.message.param)
+        event.message.param = await connector.getFromIndex(param)
         sendReply(event)
         break
 
@@ -54,20 +56,59 @@ const Service = {
         break
 
       case 'index_reset':
-        connector.reset(event.message.param.url, event.message.param.version)
+        connector.reset(param.url, param.version)
         break
 
       case 'index_delete':
-        connector.deleteFromIndex(event.message.param)
+        connector.deleteFromIndex(param)
         break
 
       case 'index_restore':
         event.message.param = connector.restoreFromIndex(
-          event.message.param.url,
-          event.message.param.version
+          param.url,
+          param.version
         )
         sendReply(event)
         break
+
+      case 'index_store': {
+        let isPersistent = true
+
+        try {
+          isPersistent = !(
+            param.definition.macro['persistent'].trim().toLowerCase() ===
+            'false'
+          )
+        } catch (e) {}
+
+        if (isPersistent) {
+          connector.open(param.readme, param.version, param.section_active)
+        }
+
+        if (param.definition.onload !== '') {
+          // TODO
+          //lia_execute_event({
+          //  code: data.definition.onload,
+          //  delay: 350,
+          //})
+        }
+
+        document.documentElement.lang = param.definition.language
+
+        meta('author', param.definition.author)
+        meta('og:description', param.comment)
+        meta('og:title', param.str_title)
+        meta('og:type', 'website')
+        meta('og:url', '')
+        meta('og:image', param.definition.logo)
+
+        // store the basic info in the offline-repositories
+        if (isPersistent) {
+          connector.storeToIndex(param)
+        }
+
+        break
+      }
 
       case 'settings': {
         try {
@@ -105,6 +146,15 @@ const Service = {
         log.warn('(Service DB) unknown message =>', event.message)
     }
   },
+}
+
+function meta(name: string, content: string) {
+  if (content !== '') {
+    let meta = document.createElement('meta')
+    meta.name = name
+    meta.content = content
+    document.getElementsByTagName('head')[0].appendChild(meta)
+  }
 }
 
 function sendReply(event: Lia.Event) {

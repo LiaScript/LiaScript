@@ -4,10 +4,13 @@ module Service.Index exposing
     , list
     , reset
     , restore
+    , store
     )
 
 import Index.Version
 import Json.Encode as JE
+import Lia.Json.Encode as Json
+import Lia.Model
 import Service.Event as Event exposing (Event)
 
 
@@ -16,6 +19,13 @@ import Service.Event as Event exposing (Event)
 get : String -> Event
 get =
     JE.string >> event "get"
+
+
+{-| Store an entire LiaScript model within the backend persistently.
+-}
+store : Lia.Model.Model -> Event
+store =
+    Json.encode >> event "store"
 
 
 {-| Restore a certain course from the index, identified by a URL and by the version.

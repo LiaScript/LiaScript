@@ -37,6 +37,7 @@ import Lia.Update exposing (Msg(..))
 import Lia.View
 import Return exposing (Return)
 import Service.Event as Event exposing (Event)
+import Service.Index
 import Session exposing (Screen, Session)
 import Translations
 
@@ -102,15 +103,7 @@ load_first_slide session model =
             | title = get_title model.sections
             , search_index = search_index
             , to_do =
-                -- TODO
-                ({ cmd = "init"
-                 , param =
-                    model
-                        |> Json.encode
-                 }
-                    |> Event.init "init"
-                    |> Event.pushWithId "init" model.section_active
-                )
+                Service.Index.store model
                     :: Settings.customizeEvent model.settings
                     :: model.to_do
         }
