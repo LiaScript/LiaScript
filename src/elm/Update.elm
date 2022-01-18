@@ -20,6 +20,7 @@ import Index.Update as Index
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types as Definition
+import Lia.Json.Decode
 import Lia.Script
 import Model exposing (Model, State(..))
 import Process
@@ -129,6 +130,16 @@ update msg model =
 
         Handle event ->
             case Event.destructure event of
+                ( Just "index", _, _ ) ->
+                    update
+                        (event
+                            |> Event.pop
+                            |> Tuple.second
+                            |> Index.handle
+                            |> UpdateIndex
+                        )
+                        model
+
                 ( Nothing, _, ( "index_get", param ) ) ->
                     let
                         ( id, course ) =
@@ -137,6 +148,21 @@ update msg model =
                     ( { model | preload = course }
                     , download Load_ReadMe_Result id
                     )
+
+                ( Nothing, _, ( "index_restore", param ) ) ->
+                    case Lia.Json.Decode.decode model.lia.sync param of
+                        Ok lia ->
+                            start
+                                { model
+                                    | lia =
+                                        Lia.Script.add_todos lia.definition
+                                            { lia | settings = model.lia.settings }
+                                }
+
+                        Err _ ->
+                            ( { model | preload = Nothing }
+                            , download Load_ReadMe_Result model.lia.readme
+                            )
 
                 ( Nothing, _, ( "lang", param ) ) ->
                     case JD.decodeValue JD.string param of
@@ -158,39 +184,9 @@ update msg model =
                             , Cmd.none
                             )
 
-                        Err info ->
+                        _ ->
                             ( model, Cmd.none )
 
-                ( Just "index", _, _ ) ->
-                    update
-                        (event
-                            |> Event.pop
-                            |> Tuple.second
-                            |> Index.handle
-                            |> UpdateIndex
-                        )
-                        model
-
-                {- Just "restore" ->
-                   case
-                       event.message.param
-                           |> Lia.Json.Decode.decode model.lia.sync
-                   of
-                       Ok lia ->
-                           start
-                               { model
-                                   | lia =
-                                       Lia.Script.add_todos lia.definition
-                                           { lia | settings = model.lia.settings }
-                               }
-
-                       Err _ ->
-                           ( { model | preload = Nothing }
-                           , download Load_ReadMe_Result model.lia.readme
-                           )
-
-
-                -}
                 _ ->
                     update
                         (event

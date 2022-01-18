@@ -65,15 +65,11 @@ const Service = {
         break
 
       case 'index_restore':
-        console.warn(
-          "''''''''''''''''''''''''''''''''''''''''''''''''''''''",
-          param
-        )
-
-        event.message.param = connector.restoreFromIndex(
+        event.message.param = await connector.restoreFromIndex(
           param.url,
           param.version
         )
+
         sendReply(event)
         break
 

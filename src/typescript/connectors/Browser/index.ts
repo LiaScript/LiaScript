@@ -109,8 +109,7 @@ class Connector extends Base {
   }
 
   restoreFromIndex(uidDB: string, versionDB?: number) {
-    this.database.restore(uidDB, versionDB)
-    log.info('DB: restore => ', uidDB, versionDB)
+    return this.database.restore(uidDB, versionDB)
   }
 
   async reset(uidDB?: string, versionDB?: number) {

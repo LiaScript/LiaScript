@@ -42,7 +42,7 @@ decodeGet : JD.Value -> ( String, Maybe Course )
 decodeGet event =
     case
         ( JD.decodeValue (JD.field "id" JD.string) event
-        , JD.decodeValue (JD.field "course" decCourse) event
+        , JD.decodeValue decCourse event
         )
     of
         ( Ok uri, Ok course ) ->

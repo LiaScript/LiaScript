@@ -218,9 +218,7 @@ class LiaDB {
    */
   async getIndex(uidDB: string) {
     try {
-      const course = await this.dbIndex.courses.get(uidDB)
-
-      return course
+      return await this.dbIndex.courses.get(uidDB)
     } catch (e: any) {
       log.warn('DB: getIndex -> ', e.message)
     }

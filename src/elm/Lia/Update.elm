@@ -270,7 +270,7 @@ update session msg model =
 
                 ( Nothing, _ ) ->
                     Return.val model
-                        |> Return.batchEvent (Service.Console.error "unknown main topic")
+                        |> Return.batchEvent (Service.Console.warn "unknown main topic")
 
         Script ( id, sub ) ->
             case Array.get id model.sections of
