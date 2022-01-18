@@ -45,28 +45,6 @@ window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   }
 }
 
-function isInViewport(elem: HTMLElement) {
-  const bounding = elem.getBoundingClientRect()
-  return (
-    bounding.top >= 85 &&
-    bounding.left >= 0 &&
-    bounding.bottom <=
-      (window.innerHeight - 40 || document.documentElement.clientHeight - 40) &&
-    bounding.right <=
-      (window.innerWidth || document.documentElement.clientWidth)
-  )
-}
-
-function scrollIntoView(id: string, delay: number) {
-  setTimeout(function () {
-    const elem = document.getElementById(id)
-
-    if (elem) {
-      elem.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, delay)
-}
-
 function handleEffects(
   event: Lia.Event,
   elmSend: Lia.Send,
@@ -215,8 +193,6 @@ function handleEffects(
 
 var eventHandler: LiaEvents
 var liaStorage: any
-var ttsBackup: [string, string]
-var firstSpeak = true
 
 class LiaScript {
   private app: any
@@ -383,19 +359,7 @@ function process(
 
   /*else
     switch (event.track[0][0]) {
-      case Port.LOAD: {
-        self.connector.load(
-          // generate the return message ...
-          // the previous topic is mapped with the current message to match the return path
-          {
-            reply: true,
-            track: [[event.message, event.track[0][1]]],
-            service: null,
-            message: event.message,
-          }
-        )
-        break
-      }
+      
       case Port.CODE: {
         switch (event.track[1][0]) {
           case 'eval':
