@@ -34,9 +34,6 @@ const Service = {
     switch (event.message.cmd) {
       case 'load':
         event.message.param = await connector.load(param)
-
-        console.warn('WWWWWWWWWWWWWWWWWWWW', event.message.param)
-
         sendReply(event)
         break
 
@@ -68,6 +65,11 @@ const Service = {
         break
 
       case 'index_restore':
+        console.warn(
+          "''''''''''''''''''''''''''''''''''''''''''''''''''''''",
+          param
+        )
+
         event.message.param = connector.restoreFromIndex(
           param.url,
           param.version

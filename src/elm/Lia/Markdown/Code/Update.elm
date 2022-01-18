@@ -38,8 +38,8 @@ handle =
     Handle
 
 
-restore : JE.Value -> Model -> Return Model msg sub
-restore json model =
+restore : Maybe Int -> JE.Value -> Model -> Return Model msg sub
+restore sectionID json model =
     case
         model.evaluate
             |> Array.map .attr
@@ -58,7 +58,7 @@ restore json model =
                         []
 
                      else
-                        [ Event.store model.evaluate ]
+                        Event.store sectionID model.evaluate
                     )
 
         Err _ ->
@@ -66,8 +66,8 @@ restore json model =
                 |> Return.val
 
 
-update : Scripts a -> Msg -> Model -> Return Model msg sub
-update scripts msg model =
+update : Maybe Int -> Scripts a -> Msg -> Model -> Return Model msg sub
+update sectionID scripts msg model =
     case msg of
         Eval idx ->
             execute scripts model idx
@@ -141,106 +141,109 @@ update scripts msg model =
             load model idx version
 
         Handle event ->
-            -- TODO:
-            -- case PEvent.destructure eval of
-            --     Just ( "eval", section, _ ) ->
-            --         let
-            --             e =
-            --                 Event.evalDecode eval
-            --         in
-            --         case e.result of
-            --             "LIA: wait" ->
-            --                 model
-            --                     |> maybe_project section (\p -> { p | log = Log.empty })
-            --                     |> maybe_update section model
-            --             "LIA: stop" ->
-            --                 model
-            --                     |> maybe_project section stop
-            --                     |> Maybe.map (Event.version_update section)
-            --                     |> maybe_update section model
-            --             "LIA: clear" ->
-            --                 model
-            --                     |> maybe_project section clr
-            --                     |> maybe_update section model
-            --             -- preserve previous logging by setting ok to false
-            --             "LIA: terminal" ->
-            --                 model
-            --                     |> maybe_project section (\p -> { p | terminal = Just <| Terminal.init })
-            --                     |> maybe_update section model
-            --             _ ->
-            --                 model
-            --                     |> maybe_project section (set_result False e)
-            --                     |> Maybe.map (Event.version_update section)
-            --                     |> maybe_update section model
-            --     Just ( "restore", _, message ) ->
-            --         restore message model
-            --     Just ( "debug", section, message ) ->
-            --         model
-            --             |> maybe_project section (logger Log.add Log.Debug message)
-            --             |> maybe_update section model
-            --     Just ( "info", section, message ) ->
-            --         model
-            --             |> maybe_project section (logger Log.add Log.Info message)
-            --             |> maybe_update section model
-            --     Just ( "warn", section, message ) ->
-            --         model
-            --             |> maybe_project section (logger Log.add Log.Warn message)
-            --             |> maybe_update section model
-            --     Just ( "error", section, message ) ->
-            --         model
-            --             |> maybe_project section (logger Log.add Log.Error message)
-            --             |> maybe_update section model
-            --     Just ( "html", section, message ) ->
-            --         model
-            --             |> maybe_project section (logger Log.add Log.HTML message)
-            --             |> maybe_update section model
-            --     Just ( "stream", section, message ) ->
-            --         model
-            --             |> maybe_project section (logger Log.add Log.Stream message)
-            --             |> maybe_update section model
-            --     {- Just ( "sync", _, message ) ->
-            --        case PEvent.topicWithId event of
-            --            Just ( "flip_eval", Just id ) ->
-            --                message
-            --                    |> JD.decodeValue JD.int
-            --                    |> Result.map (flipEval model id)
-            --                    |> Result.withDefault (Return.val model)
-            --            Just ( "flip_high", Just id ) ->
-            --                message
-            --                    |> JD.decodeValue JD.int
-            --                    |> Result.map (flipHigh model id)
-            --                    |> Result.withDefault (Return.val model)
-            --            Just ( "eval", Just id ) ->
-            --                execute scripts model id
-            --            Just ( "update", Just id_1 ) ->
-            --                case
-            --                    JD.decodeValue
-            --                        (JD.map2 Tuple.pair
-            --                            (JD.field "id" JD.int)
-            --                            (JD.field "code" JD.string)
-            --                        )
-            --                        message
-            --                of
-            --                    Ok ( id_2, code ) ->
-            --                        update_file
-            --                            id_1
-            --                            id_2
-            --                            model
-            --                            (\f -> { f | code = code })
-            --                            (\_ -> [])
-            --                    _ ->
-            --                        Return.val model
-            --            Just ( "load", Just id ) ->
-            --                message
-            --                    |> JD.decodeValue JD.int
-            --                    |> Result.map (load model id)
-            --                    |> Result.withDefault (Return.val model)
-            --            _ ->
-            --                Return.val model
-            --     -}
-            --     _ ->
-            Return.val model
+            case PEvent.destructure event of
+                ( Nothing, _, ( "load", param ) ) ->
+                    restore sectionID param model
 
+                _ ->
+                    Return.val model
+
+        -- TODO:
+        -- case PEvent.destructure eval of
+        --     Just ( "eval", section, _ ) ->
+        --         let
+        --             e =
+        --                 Event.evalDecode eval
+        --         in
+        --         case e.result of
+        --             "LIA: wait" ->
+        --                 model
+        --                     |> maybe_project section (\p -> { p | log = Log.empty })
+        --                     |> maybe_update section model
+        --             "LIA: stop" ->
+        --                 model
+        --                     |> maybe_project section stop
+        --                     |> Maybe.map (Event.version_update section)
+        --                     |> maybe_update section model
+        --             "LIA: clear" ->
+        --                 model
+        --                     |> maybe_project section clr
+        --                     |> maybe_update section model
+        --             -- preserve previous logging by setting ok to false
+        --             "LIA: terminal" ->
+        --                 model
+        --                     |> maybe_project section (\p -> { p | terminal = Just <| Terminal.init })
+        --                     |> maybe_update section model
+        --             _ ->
+        --                 model
+        --                     |> maybe_project section (set_result False e)
+        --                     |> Maybe.map (Event.version_update section)
+        --                     |> maybe_update section model
+        --     Just ( "debug", section, message ) ->
+        --         model
+        --             |> maybe_project section (logger Log.add Log.Debug message)
+        --             |> maybe_update section model
+        --     Just ( "info", section, message ) ->
+        --         model
+        --             |> maybe_project section (logger Log.add Log.Info message)
+        --             |> maybe_update section model
+        --     Just ( "warn", section, message ) ->
+        --         model
+        --             |> maybe_project section (logger Log.add Log.Warn message)
+        --             |> maybe_update section model
+        --     Just ( "error", section, message ) ->
+        --         model
+        --             |> maybe_project section (logger Log.add Log.Error message)
+        --             |> maybe_update section model
+        --     Just ( "html", section, message ) ->
+        --         model
+        --             |> maybe_project section (logger Log.add Log.HTML message)
+        --             |> maybe_update section model
+        --     Just ( "stream", section, message ) ->
+        --         model
+        --             |> maybe_project section (logger Log.add Log.Stream message)
+        --             |> maybe_update section model
+        --     {- Just ( "sync", _, message ) ->
+        --        case PEvent.topicWithId event of
+        --            Just ( "flip_eval", Just id ) ->
+        --                message
+        --                    |> JD.decodeValue JD.int
+        --                    |> Result.map (flipEval model id)
+        --                    |> Result.withDefault (Return.val model)
+        --            Just ( "flip_high", Just id ) ->
+        --                message
+        --                    |> JD.decodeValue JD.int
+        --                    |> Result.map (flipHigh model id)
+        --                    |> Result.withDefault (Return.val model)
+        --            Just ( "eval", Just id ) ->
+        --                execute scripts model id
+        --            Just ( "update", Just id_1 ) ->
+        --                case
+        --                    JD.decodeValue
+        --                        (JD.map2 Tuple.pair
+        --                            (JD.field "id" JD.int)
+        --                            (JD.field "code" JD.string)
+        --                        )
+        --                        message
+        --                of
+        --                    Ok ( id_2, code ) ->
+        --                        update_file
+        --                            id_1
+        --                            id_2
+        --                            model
+        --                            (\f -> { f | code = code })
+        --                            (\_ -> [])
+        --                    _ ->
+        --                        Return.val model
+        --            Just ( "load", Just id ) ->
+        --                message
+        --                    |> JD.decodeValue JD.int
+        --                    |> Result.map (load model id)
+        --                    |> Result.withDefault (Return.val model)
+        --            _ ->
+        --                Return.val model
+        --     -}
+        --     _ ->
         Stop idx ->
             model
                 |> maybe_project idx (\p -> { p | running = False, terminal = Nothing })

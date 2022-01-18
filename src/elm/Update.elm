@@ -128,51 +128,44 @@ update msg model =
             )
 
         Handle event ->
-            case Event.pop event of
-                Nothing ->
-                    case Event.message event of
-                        ( "index_get", param ) ->
+            case Event.destructure event of
+                ( Nothing, _, ( "index_get", param ) ) ->
+                    let
+                        ( id, course ) =
+                            Index.decodeGet param
+                    in
+                    ( { model | preload = course }
+                    , download Load_ReadMe_Result id
+                    )
+
+                ( Nothing, _, ( "lang", param ) ) ->
+                    case JD.decodeValue JD.string param of
+                        Ok str ->
                             let
-                                ( id, course ) =
-                                    Index.decodeGet param
+                                lia =
+                                    model.lia
                             in
-                            ( { model | preload = course }
-                            , download Load_ReadMe_Result id
+                            ( { model
+                                | lia =
+                                    { lia
+                                        | translation =
+                                            str
+                                                |> Translations.getLnFromCode
+                                                |> Maybe.withDefault lia.translation
+                                        , langCode = str
+                                    }
+                              }
+                            , Cmd.none
                             )
 
-                        ( "lang", param ) ->
-                            case JD.decodeValue JD.string param of
-                                Ok str ->
-                                    let
-                                        lia =
-                                            model.lia
-                                    in
-                                    ( { model
-                                        | lia =
-                                            { lia
-                                                | translation =
-                                                    str
-                                                        |> Translations.getLnFromCode
-                                                        |> Maybe.withDefault lia.translation
-                                                , langCode = str
-                                            }
-                                      }
-                                    , Cmd.none
-                                    )
-
-                                Err info ->
-                                    ( model, Cmd.none )
-
-                        ( unknown, _ ) ->
-                            let
-                                _ =
-                                    Debug.log "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ" unknown
-                            in
+                        Err info ->
                             ( model, Cmd.none )
 
-                Just ( "index", event_ ) ->
+                ( Just "index", _, _ ) ->
                     update
-                        (event_
+                        (event
+                            |> Event.pop
+                            |> Tuple.second
                             |> Index.handle
                             |> UpdateIndex
                         )

@@ -20,6 +20,7 @@ import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (File, Project, Repo, Vector)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
 import Return exposing (Return)
+import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Script exposing (Eval)
 
@@ -50,11 +51,17 @@ eval scripts idx project =
     event "eval" JE.null
 
 
-store : Vector -> Event
-store model =
-    model
-        |> Json.fromVector
-        |> event "store"
+store : Maybe Int -> Vector -> List Event
+store sectionID model =
+    case sectionID of
+        Just id ->
+            [ model
+                |> Json.fromVector
+                |> Service.Database.store "code" id
+            ]
+
+        Nothing ->
+            []
 
 
 

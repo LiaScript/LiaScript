@@ -168,7 +168,7 @@ update session msg model =
 
         Handle event ->
             case Event.pop event of
-                Just ( "settings", e ) ->
+                ( Just "settings", e ) ->
                     update
                         session
                         (e
@@ -177,17 +177,17 @@ update session msg model =
                         )
                         model
 
-                Just ( "load", _ ) ->
+                ( Just "load", _ ) ->
                     update session InitSection (generate model)
 
-                Just ( "reset", _ ) ->
+                ( Just "reset", _ ) ->
                     model
                         |> Return.val
                         -- TODO
                         -- |> Return.batchEvent (Event.init Nothing "reset" JE.null)
                         |> Return.batchEvent Event.todo
 
-                Just ( "goto", _ ) ->
+                ( Just "goto", _ ) ->
                     case Event.id event of
                         Just id ->
                             update session (Load True id) model
@@ -196,7 +196,7 @@ update session msg model =
                             Return.val model
                                 |> Return.batchEvent (Service.Console.warn "message goto with no id")
 
-                Just ( "sync", e ) ->
+                ( Just "sync", e ) ->
                     case Event.popWithId e of
                         Just ( "sync", _, e_ ) ->
                             e_
@@ -236,7 +236,7 @@ update session msg model =
                         _ ->
                             Return.val model
 
-                Just ( "swipe", e ) ->
+                ( Just "swipe", e ) ->
                     case
                         e
                             |> Event.message
@@ -253,7 +253,7 @@ update session msg model =
                         _ ->
                             Return.val model
 
-                Just ( topic, e ) ->
+                ( Just topic, e ) ->
                     case
                         -- TODO
                         event
@@ -268,7 +268,7 @@ update session msg model =
                         _ ->
                             Return.val model
 
-                Nothing ->
+                ( Nothing, _ ) ->
                     Return.val model
                         |> Return.batchEvent (Service.Console.error "unknown main topic")
 

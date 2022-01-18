@@ -150,19 +150,19 @@ pushWithId po i to =
 {-| Pop the latest point from the event track, while ignoring the integer
 value.
 
-    pop event == Just ( "stringPOI", newEvent )
+    pop event == ( Just "stringPOI", newEvent )
 
-    pop noTrail == Nothing
+    pop noTrail == ( Nothing, noTrail )
 
 -}
-pop : Event -> Maybe ( String, Event )
+pop : Event -> ( Maybe String, Event )
 pop event =
     case event.track of
         ( po, _ ) :: track ->
-            Just ( po, { event | track = track } )
+            ( Just po, { event | track = track } )
 
         _ ->
-            Nothing
+            ( Nothing, event )
 
 
 {-| Similar to `pop`, but both `POI` values as well as the new event with the

@@ -83,7 +83,7 @@ update sync globals msg section =
 
         UpdateCode childMsg ->
             section.code_model
-                |> Code.update section.effect_model.javascript childMsg
+                |> Code.update (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | code_model = v })
                 |> Return.mapEvents "code" section.id
                 |> updateScript
@@ -327,7 +327,7 @@ subUpdate js msg section =
 
                 UpdateCode childMsg ->
                     subsection.code_model
-                        |> Code.update js childMsg
+                        |> Code.update Nothing js childMsg
                         |> Return.mapValCmd (\v -> SubSection { subsection | code_model = v }) UpdateCode
                         |> Return.mapEvents "code" subsection.id
 
@@ -452,24 +452,24 @@ subHandle js json section =
         json
             |> Event.decode
             |> Result.toMaybe
-            |> Maybe.andThen Event.pop
+            |> Maybe.map Event.pop
     of
-        Just ( "code", event ) ->
+        Just ( Just "code", event ) ->
             subUpdate js (UpdateCode (Code.handle event)) section
 
-        Just ( "quiz", event ) ->
+        Just ( Just "quiz", event ) ->
             subUpdate js (UpdateQuiz (Quiz.handle event)) section
 
-        Just ( "survey", event ) ->
+        Just ( Just "survey", event ) ->
             subUpdate js (UpdateSurvey (Survey.handle event)) section
 
-        Just ( "effect", event ) ->
+        Just ( Just "effect", event ) ->
             subUpdate js (UpdateEffect True (Effect.handle event)) section
 
-        Just ( "task", event ) ->
+        Just ( Just "task", event ) ->
             subUpdate js (UpdateTask (Task.handle event)) section
 
-        Just ( "table", event ) ->
+        Just ( Just "table", event ) ->
             subUpdate js (UpdateTable (Table.handle event)) section
 
         _ ->
