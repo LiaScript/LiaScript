@@ -14,6 +14,7 @@ import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Types exposing (Element, State(..), Vector, toString)
 import Return exposing (Return)
+import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Script
 import Translations exposing (Lang(..))
@@ -31,8 +32,8 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Scripts a -> Msg sub -> Vector -> Return Vector msg sub
-update scripts msg vector =
+update : Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector msg sub
+update sectionID scripts msg vector =
     case msg of
         TextUpdate idx str ->
             update_text vector idx str
@@ -56,7 +57,7 @@ update scripts msg vector =
 
         KeyDown id char ->
             if char == 13 then
-                update scripts (Submit id) vector
+                update sectionID scripts (Submit id) vector
 
             else
                 Return.val vector
@@ -74,13 +75,7 @@ update scripts msg vector =
                                 new_vector
                                     |> Return.val
                                     |> Return.doSync
-                                    |> Return.batchEvent
-                                        (Event.todo
-                                         -- TODO:
-                                         -- new_vector
-                                         --   |> Json.fromVector
-                                         --   |> Event.store
-                                        )
+                                    |> store sectionID
 
                             else
                                 vector
@@ -122,6 +117,21 @@ update scripts msg vector =
 
         Handle event ->
             case Event.destructure event of
+                ( Nothing, _, { cmd, param } ) ->
+                    case cmd of
+                        "load" ->
+                            param
+                                |> Json.toVector
+                                |> Result.map (merge vector)
+                                |> Result.withDefault vector
+                                |> Return.val
+                                |> Return.doSync
+                                |> init (\i s -> execute i s.state)
+
+                        _ ->
+                            vector
+                                |> Return.val
+
                 ( Just "eval", section, { cmd, param } ) ->
                     case
                         vector
@@ -132,7 +142,7 @@ update scripts msg vector =
                             param
                                 |> evalEventDecoder
                                 |> update_ section vector
-                                |> store
+                                |> store sectionID
                                 |> Return.doSync
                                 |> Return.script
                                     -- TODO
@@ -145,7 +155,7 @@ update scripts msg vector =
                             param
                                 |> evalEventDecoder
                                 |> update_ section vector
-                                |> store
+                                |> store sectionID
 
                 {- let
                        eval =
@@ -189,15 +199,19 @@ update_ idx vector fn =
             Return.val vector
 
 
-store : Return Vector msg sub -> Return Vector msg sub
-store return =
-    return
-        |> Return.batchEvent
-            -- TODO:
-            -- return.value
-            -- |> Json.fromVector
-            -- |> Event.store
-            Event.todo
+store : Maybe Int -> Return Vector msg sub -> Return Vector msg sub
+store sectionID return =
+    case sectionID of
+        Just id ->
+            return
+                |> Return.batchEvent
+                    (return.value
+                        |> Json.fromVector
+                        |> Service.Database.store "survey" id
+                    )
+
+        Nothing ->
+            return
 
 
 execute : Int -> State -> Script.Msg sub

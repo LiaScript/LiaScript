@@ -112,7 +112,7 @@ update sync globals msg section =
 
         UpdateSurvey childMsg ->
             section.survey_vector
-                |> Survey.update section.effect_model.javascript childMsg
+                |> Survey.update (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | survey_vector = v })
                 |> Return.mapEvents "survey" section.id
                 |> updateScript
@@ -350,7 +350,7 @@ subUpdate js msg section =
                 UpdateSurvey childMsg ->
                     let
                         result =
-                            Survey.update js childMsg subsection.survey_vector
+                            Survey.update Nothing js childMsg subsection.survey_vector
                     in
                     case result.sub of
                         Just _ ->
