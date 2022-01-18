@@ -36,8 +36,8 @@ import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
 import Lia.View
 import Return exposing (Return)
+import Service.Database
 import Service.Event as Event exposing (Event)
-import Service.Index
 import Session exposing (Screen, Session)
 import Translations
 
@@ -103,7 +103,7 @@ load_first_slide session model =
             | title = get_title model.sections
             , search_index = search_index
             , to_do =
-                Service.Index.store model
+                Service.Database.index_store model
                     :: Settings.customizeEvent model.settings
                     :: model.to_do
         }

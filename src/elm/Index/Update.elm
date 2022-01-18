@@ -18,8 +18,8 @@ import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
 import Service.Console
+import Service.Database
 import Service.Event exposing (Event)
-import Service.Index
 import Service.Share
 
 
@@ -83,13 +83,13 @@ update msg settings model =
                             |> List.filter (.id >> (/=) courseID)
                   }
                 , Cmd.none
-                , [ Service.Index.delete courseID ]
+                , [ Service.Database.index_delete courseID ]
                 )
 
             Reset courseID version ->
                 ( model
                 , Cmd.none
-                , [ Service.Index.reset
+                , [ Service.Database.index_reset
                         { url = courseID
                         , version =
                             case version of
@@ -133,7 +133,7 @@ update msg settings model =
             Restore course version ->
                 ( model
                 , Cmd.none
-                , [ Service.Index.restore
+                , [ Service.Database.index_restore
                         { version = Maybe.withDefault "0.0.0" version
                         , url = course
                         }

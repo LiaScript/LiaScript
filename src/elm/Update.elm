@@ -20,13 +20,12 @@ import Index.Update as Index
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types as Definition
-import Lia.Json.Decode
 import Lia.Script
 import Model exposing (Model, State(..))
 import Process
 import Return exposing (Return)
+import Service.Database
 import Service.Event as Event exposing (Event)
-import Service.Index
 import Session exposing (Screen)
 import Task
 import Translations
@@ -472,7 +471,7 @@ load_readme readme model =
     then
         ( model
         , { version = lia.definition.version, url = lia.readme }
-            |> Service.Index.restore
+            |> Service.Database.index_restore
             |> event2js
         )
 
@@ -531,13 +530,13 @@ download msg url =
 
 getIndex : String -> Model -> ( Model, Cmd Msg )
 getIndex url model =
-    ( model, Service.Index.get url |> event2js )
+    ( model, Service.Database.index_get url |> event2js )
 
 
 initIndex : Model -> ( Model, Cmd Msg )
 initIndex model =
     ( model
-    , Service.Index.list
+    , Service.Database.index_list
         |> Event.push "index"
         |> event2js
     )
