@@ -458,42 +458,6 @@ function process(
         break
       }
 
-      case Port.SETTINGS: {
-        // if (self.channel) {
-        //  self.channel.push('lia', {settings: event.message});
-        // } else {
-
-        try {
-          updateClassName(event.message[0])
-
-          const conf = self.connector.getSettings()
-
-          setTimeout(function () {
-            window.dispatchEvent(new Event('resize'))
-          }, 333)
-
-          let style = document.getElementById('lia-custom-style')
-
-          if (typeof event.message[1] === 'string') {
-            if (style == null) {
-              style = document.createElement('style')
-              style.id = 'lia-custom-style'
-              document.head.appendChild(style)
-            }
-
-            style.innerHTML = ':root {' + event.message[1] + '}'
-          } else if (style !== null) {
-            style.innerHTML = ''
-          }
-        } catch (e) {}
-
-        if (isConnected) {
-          self.connector.setSettings(event.message[0])
-        }
-
-        break
-      }
-
       case Port.PERSISTENT: {
         if (event.message === 'store') {
           // todo, needs to be moved back
@@ -508,90 +472,12 @@ function process(
 
         break
       }
-      case Port.INIT: {
-        let data = event.message
-
-        let isPersistent = true
-
-        try {
-          isPersistent = !(
-            data.definition.macro['persistent'].trim().toLowerCase() === 'false'
-          )
-        } catch (e) {}
-
-        if (isConnected && isPersistent) {
-          self.connector.open(
-            data.readme,
-            data.version,
-            data.section_active,
-            data
-          )
-        }
-
-        if (data.definition.onload !== '') {
-          lia_execute_event({
-            code: data.definition.onload,
-            delay: 350,
-          })
-        }
-
-        document.documentElement.lang = data.definition.language
-
-        meta('author', data.definition.author)
-        meta('og:description', data.comment)
-        meta('og:title', data.str_title)
-        meta('og:type', 'website')
-        meta('og:url', '')
-        meta('og:image', data.definition.logo)
-
-        // store the basic info in the offline-repositories
-        if (isConnected && isPersistent) {
-          self.connector.storeToIndex(data)
-        }
-
-        break
-      }
-      case Port.INDEX: {
-        if (!isConnected) break
-
-        switch (event.track[1][0]) {
-          case 'list': {
-            try {
-              TTS.mute()
-            } catch (e) {}
-            self.connector.getIndex()
-            break
-          }
-          case 'delete': {
-            self.connector.deleteFromIndex(event.message)
-            break
-          }
-          case 'restore': {
-            self.connector.restoreFromIndex(event.message, event.track[1][1])
-            break
-          }
-          case 'reset': {
-            self.connector.reset(event.message, event.track[1][1])
-            break
-          }
-          case 'get': {
-            self.connector.getFromIndex(event.message)
-            break
-          }
-          default:
-            log.error('Command not found => ', event)
-        }
-        break
-      }
 
       case Port.RESET: {
         self.connector.reset()
         window.location.reload()
         break
       }
-
-      default:
-        log.error('Command not found => ', event)
     }
     */
 }
