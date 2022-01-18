@@ -24,6 +24,7 @@ import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Return exposing (Return)
 import Service.Console
+import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Script
 import Service.Slide
@@ -382,9 +383,10 @@ add_load vector sectionID name logs =
         logs
 
     else
-        -- TODO
-        -- (Event.initWithId Nothing "load" sectionID <| JE.string name) :: logs
-        Event.todo :: logs
+        (Service.Database.load name sectionID
+            |> Event.pushWithId name sectionID
+        )
+            :: logs
 
 
 {-| **@private:** shortcut for returning the active section in from the model.

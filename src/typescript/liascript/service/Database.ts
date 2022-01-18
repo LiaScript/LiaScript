@@ -33,11 +33,15 @@ const Service = {
 
     switch (event.message.cmd) {
       case 'load':
-        //connector.load(event)
+        event.message.param = await connector.load(param)
+
+        console.warn('WWWWWWWWWWWWWWWWWWWW', event.message.param)
+
+        sendReply(event)
         break
 
       case 'store':
-        //connector.store(event)
+        connector.store(param)
         break
 
       case 'index_get':

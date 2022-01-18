@@ -7,6 +7,7 @@ module Service.Database exposing
     , index_store
     , load
     , settings
+    , store
     )
 
 import Index.Version
@@ -23,6 +24,16 @@ load table id =
     ]
         |> JE.object
         |> event "load"
+
+
+store : String -> Int -> JE.Value -> Event
+store table id data =
+    [ ( "table", JE.string table )
+    , ( "id", JE.int id )
+    , ( "data", data )
+    ]
+        |> JE.object
+        |> event "store"
 
 
 settings : Maybe String -> JE.Value -> Event

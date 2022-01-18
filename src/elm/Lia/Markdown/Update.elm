@@ -90,7 +90,7 @@ update sync globals msg section =
 
         UpdateQuiz childMsg ->
             section.quiz_vector
-                |> Quiz.update section.effect_model.javascript childMsg
+                |> Quiz.update (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | quiz_vector = v })
                 |> Return.mapEvents "quiz" section.id
                 |> updateScript
@@ -334,7 +334,7 @@ subUpdate js msg section =
                 UpdateQuiz childMsg ->
                     let
                         result =
-                            Quiz.update js childMsg subsection.quiz_vector
+                            Quiz.update Nothing js childMsg subsection.quiz_vector
                     in
                     case result.sub of
                         Just _ ->
