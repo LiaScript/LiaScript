@@ -85,7 +85,7 @@ update scripts msg vector =
 
         Handle event ->
             case Event.destructure event of
-                ( Just "restore", _, { cmd, param } ) ->
+                ( Just "restore", _, ( cmd, param ) ) ->
                     param
                         |> Json.toVector
                         |> Result.map (merge vector)
@@ -93,7 +93,7 @@ update scripts msg vector =
                         |> Return.val
                         |> init execute
 
-                ( Just "eval", section, { cmd, param } ) ->
+                ( Just "eval", section, ( cmd, param ) ) ->
                     case
                         vector
                             |> Array.get section

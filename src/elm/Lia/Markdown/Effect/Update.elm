@@ -126,7 +126,7 @@ update main sound msg model =
 
             Handle event ->
                 case Event.destructure event of
-                    ( Just "tts", section, { cmd, param } ) ->
+                    ( Just "tts", section, ( cmd, param ) ) ->
                         case Service.TTS.decode event of
                             Service.TTS.Start ->
                                 { model | speaking = Just section }

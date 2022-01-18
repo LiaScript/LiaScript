@@ -117,22 +117,16 @@ update sectionID scripts msg vector =
 
         Handle event ->
             case Event.destructure event of
-                ( Nothing, _, { cmd, param } ) ->
-                    case cmd of
-                        "load" ->
-                            param
-                                |> Json.toVector
-                                |> Result.map (merge vector)
-                                |> Result.withDefault vector
-                                |> Return.val
-                                |> Return.doSync
-                                |> init (\i s -> execute i s.state)
+                ( Nothing, _, ( "load", param ) ) ->
+                    param
+                        |> Json.toVector
+                        |> Result.map (merge vector)
+                        |> Result.withDefault vector
+                        |> Return.val
+                        |> Return.doSync
+                        |> init (\i s -> execute i s.state)
 
-                        _ ->
-                            vector
-                                |> Return.val
-
-                ( Just "eval", section, { cmd, param } ) ->
+                ( Just "eval", section, ( cmd, param ) ) ->
                     case
                         vector
                             |> Array.get section
@@ -172,7 +166,7 @@ update sectionID scripts msg vector =
                    else
                        Return.val vector
                 -}
-                ( Just "restore", _, { cmd, param } ) ->
+                ( Just "restore", _, ( cmd, param ) ) ->
                     param
                         |> Json.toVector
                         |> Result.map (merge vector)

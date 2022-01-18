@@ -211,22 +211,22 @@ checkId ( _, i ) =
 {-| This can be used at the final decoding step of the event, if only the:
 
     destructure event
-        == ( Just "topic", 12, { cmd = "stop", param = JE.null } )
+        == ( Just "topic", 12, ( "stop", JE.null ) )
 
     destructure event2
-        == ( Nothing, -1, { cmd = "stop", param = JE.null } )
+        == ( Nothing, -1, ( "stop", JE.null ) )
 
 final values are required to react onto a message.
 
 -}
-destructure : Event -> ( Maybe String, Int, { cmd : String, param : JE.Value } )
+destructure : Event -> ( Maybe String, Int, ( String, JE.Value ) )
 destructure event =
     case poi event of
         Just ( po, i ) ->
-            ( Just po, i, event.message )
+            ( Just po, i, message event )
 
         _ ->
-            ( Nothing, -1, event.message )
+            ( Nothing, -1, message event )
 
 
 {-| Return the message as a tuple of the string cmd and a json value, which

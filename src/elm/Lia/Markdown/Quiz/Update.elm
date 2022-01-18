@@ -114,27 +114,16 @@ update sectionID scripts msg vector =
 
         Handle event ->
             case Event.destructure event of
-                ( Nothing, _, { cmd, param } ) ->
-                    case cmd of
-                        "load" ->
-                            param
-                                |> Json.toVector
-                                |> Result.map (merge vector)
-                                |> Result.withDefault vector
-                                |> Return.val
-                                |> init (\i s -> execute i s.state)
-                                |> Return.doSync
+                ( Nothing, _, ( "load", param ) ) ->
+                    param
+                        |> Json.toVector
+                        |> Result.map (merge vector)
+                        |> Result.withDefault vector
+                        |> Return.val
+                        |> init (\i s -> execute i s.state)
+                        |> Return.doSync
 
-                        _ ->
-                            vector
-                                |> Return.val
-                                |> Return.batchEvent
-                                    ("Quiz: unknown command => "
-                                        ++ cmd
-                                        |> Service.Console.warn
-                                    )
-
-                ( Just "eval", section, { cmd, param } ) ->
+                ( Just "eval", section, ( cmd, param ) ) ->
                     case
                         vector
                             |> Array.get section
@@ -160,7 +149,7 @@ update sectionID scripts msg vector =
                                 |> store sectionID
                                 |> Return.doSync
 
-                ( Just "restore", _, { cmd, param } ) ->
+                ( Just "restore", _, ( cmd, param ) ) ->
                     param
                         |> Json.toVector
                         |> Result.map (merge vector)
@@ -189,8 +178,14 @@ update sectionID scripts msg vector =
                        |> Event.message
                        |> syncUpdate vector section
                 -}
-                _ ->
-                    Return.val vector
+                ( _, _, ( cmd, _ ) ) ->
+                    vector
+                        |> Return.val
+                        |> Return.batchEvent
+                            ("Quiz: unknown command => "
+                                ++ cmd
+                                |> Service.Console.warn
+                            )
 
         Script sub ->
             vector

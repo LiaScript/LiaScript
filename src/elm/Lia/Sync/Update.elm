@@ -62,7 +62,7 @@ update session model msg =
     case msg of
         Handle event ->
             case Event.destructure event of
-                ( Just "connect", _, { cmd, param } ) ->
+                ( Just "connect", _, ( cmd, param ) ) ->
                     case ( JD.decodeValue JD.string param, sync.sync.select ) of
                         ( Ok hashID, Just backend ) ->
                             { model
@@ -114,7 +114,7 @@ update session model msg =
                             )
 
                 --|> leave (id model.sync.state)
-                ( Just "join", _, { cmd, param } ) ->
+                ( Just "join", _, ( cmd, param ) ) ->
                     case ( JD.decodeValue (JD.field "id" JD.string) param, id sync.state ) of
                         ( Ok peerID, Just ownID ) ->
                             if ownID == peerID then
@@ -148,7 +148,7 @@ update session model msg =
                         _ ->
                             Return.val model
 
-                ( Just "leave", _, { cmd, param } ) ->
+                ( Just "leave", _, ( cmd, param ) ) ->
                     { model
                         | sync =
                             { sync
