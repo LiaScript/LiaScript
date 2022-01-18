@@ -98,7 +98,7 @@ update sync globals msg section =
 
         UpdateTask childMsg ->
             section.task_vector
-                |> Task.update section.effect_model.javascript childMsg
+                |> Task.update (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | task_vector = v })
                 |> Return.mapEvents "task" section.id
                 |> updateScript
@@ -366,7 +366,7 @@ subUpdate js msg section =
                 UpdateTask childMsg ->
                     let
                         result =
-                            Task.update js childMsg subsection.task_vector
+                            Task.update Nothing js childMsg subsection.task_vector
                     in
                     case result.sub of
                         Just _ ->

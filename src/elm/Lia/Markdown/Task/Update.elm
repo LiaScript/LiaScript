@@ -12,6 +12,7 @@ import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Task.Json as Json
 import Lia.Markdown.Task.Types exposing (Element, Vector, toString)
 import Return exposing (Return)
+import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Script
 
@@ -32,11 +33,12 @@ type Msg sub
 
 
 update :
-    Scripts a
+    Maybe Int
+    -> Scripts a
     -> Msg sub
     -> Vector
     -> Return Vector msg sub
-update scripts msg vector =
+update sectionID scripts msg vector =
     case msg of
         -- simple toggle
         Toggle x y ->
@@ -51,7 +53,7 @@ update scripts msg vector =
                             vector
                                 |> Array.set x element
                                 |> Return.val
-                                |> store
+                                |> store sectionID
 
                         Just scriptID ->
                             vector
@@ -72,7 +74,7 @@ update scripts msg vector =
                                         Nothing ->
                                             []
                                     )
-                                |> store
+                                |> store sectionID
 
                 --|> Return.script (execute id state)
                 Nothing ->
@@ -85,7 +87,7 @@ update scripts msg vector =
 
         Handle event ->
             case Event.destructure event of
-                ( Just "restore", _, ( cmd, param ) ) ->
+                ( Nothing, _, ( "load", param ) ) ->
                     param
                         |> Json.toVector
                         |> Result.map (merge vector)
@@ -134,15 +136,19 @@ toggle y element =
 {-| Create a store event, that will store the state of the task persistently
 within the backend.
 -}
-store : Return Vector msg sub -> Return Vector msg sub
-store return =
-    return
-        |> Return.batchEvent
-            -- TODO
-            -- return.value
-            -- |> Json.fromVector
-            -- |> Event.store
-            Event.todo
+store : Maybe Int -> Return Vector msg sub -> Return Vector msg sub
+store sectionID return =
+    case sectionID of
+        Just id ->
+            return
+                |> Return.batchEvent
+                    (return.value
+                        |> Json.fromVector
+                        |> Service.Database.store "task" id
+                    )
+
+        Nothing ->
+            return
 
 
 {-| Pass events from parent update function to the Task update function.
