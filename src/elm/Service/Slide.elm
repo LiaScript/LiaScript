@@ -23,7 +23,7 @@ initialize slide =
 -}
 scrollUp : Event
 scrollUp =
-    event "scrollUp" JE.null
+    event "scroll_up" JE.null
 
 
 {-| Pass the id of an element that should be scrolled into the visible area as
@@ -36,7 +36,7 @@ scrollIntoView elementID delay =
     , ( "delay", JE.int delay )
     ]
         |> JE.object
-        |> event "scrollIntoView"
+        |> event "scroll_into_view"
 
 
 {-| **private:** Helper function to generate event - stubs that will be handled
