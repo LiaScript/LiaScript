@@ -1,5 +1,7 @@
 import log from '../log'
 
+import { loadScript } from './Resource'
+
 // Checks if there has been a code injection jet
 var googleTranslate = false
 
@@ -46,16 +48,12 @@ function googleTranslateElementInit() {
 function injectGoogleTranslate() {
   // inject the google translator
   if (!googleTranslate) {
-    let tag = document.createElement('script')
-
     // TODO:
-    // the general src attribute without protocol needs to be checked with
-    // other protocols IPFS, Hyper, etc.
-    //
-    tag.src =
+    // the general URL without protocol needs to be checked with other
+    // protocols IPFS, Hyper, etc.
+    loadScript(
       '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
-    tag.type = 'text/javascript'
-    document.head.appendChild(tag)
+    )
 
     // Setup the global init function, this function is called by google as a
     // bootstrap and the name has to mach the `cp` parameter of the upper
