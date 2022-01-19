@@ -4,6 +4,9 @@ declare global {
   }
 }
 
+/**
+ * Touch directions used for internal communication
+ */
 enum Dir {
   none = 'none',
   left = 'left',
@@ -12,6 +15,12 @@ enum Dir {
   down = 'down',
 }
 
+/**
+ * **Helper:** Simple Swipe detection function.
+ *
+ * @param el - HTML to look for touch events
+ * @param callback - send swipe directions
+ */
 function detect(el: HTMLElement, callback: (_: Dir) => void) {
   let touchSurface = el
   let swipeDir: Dir
@@ -164,32 +173,40 @@ function detect(el: HTMLElement, callback: (_: Dir) => void) {
   }
 }
 
+// Used multiple times, that is why it is defined as a constant here
 const Port = 'swipe'
 
+/**
+ * This 'swipe' Service for key navigation via the left-right arrow-keys or via
+ * touch events (swipe left/right), sends navigation events to LiaScript.
+ */
 const Service = {
+  /**
+   * Service identifier 'swipe', that is used to while service routing.
+   */
   PORT: Port,
 
-  init: function initNavigation(elem: HTMLElement, elmSend: Lia.Send) {
-    detect(elem, function (swipeDir) {
-      if (document.getElementsByClassName('lia-modal').length === 0) {
-        sendReply(elmSend, swipeDir)
-      }
+  /**
+   * Attach an event listener for key pressed and swipe event to the DOM-`element`
+   * @param element - DOM element to be observed for key
+   * @param elmSend - callback for sending back to Lia
+   */
+  init: function initNavigation(element: HTMLElement, elmSend: Lia.Send) {
+    detect(element, function (swipeDir) {
+      sendReply(elmSend, swipeDir)
     })
 
-    elem.addEventListener(
+    element.addEventListener(
       'keydown',
       (e) => {
         switch (e.key) {
           case 'ArrowRight': {
-            if (document.getElementsByClassName('lia-modal').length === 0) {
-              sendReply(elmSend, Dir.left)
-            }
+            sendReply(elmSend, Dir.left)
             break
           }
           case 'ArrowLeft': {
-            if (document.getElementsByClassName('lia-modal').length === 0) {
-              sendReply(elmSend, Dir.right)
-            }
+            sendReply(elmSend, Dir.right)
+
             break
           }
         }
@@ -199,16 +216,28 @@ const Service = {
   },
 }
 
+/**
+ * Helper function for sending, which also test for the necessity to send
+ * messages to LiaScript.
+ * @param elmSend - callback function
+ * @param swipeDir - Direction parameter to be send
+ */
 function sendReply(elmSend: Lia.Send, swipeDir: Dir) {
-  elmSend({
-    reply: true,
-    track: [[Port, -1]],
-    service: Port,
-    message: {
-      cmd: 'swipe',
-      param: swipeDir,
-    },
-  })
+  // navigation messages are only send, if and only if, there is no element of
+  // class 'lia-modal'. To all LiaScript modals this class is added to prevent
+  // a slide change in background...
+  if (document.getElementsByClassName('lia-modal').length === 0) {
+    elmSend({
+      reply: true,
+      track: [[Port, -1]],
+      service: Port,
+      message: {
+        cmd: Port,
+        param: swipeDir,
+      },
+    })
+  }
+  // TODO: Navigation could also be useful for galleries and might another track!
 }
 
 export default Service
