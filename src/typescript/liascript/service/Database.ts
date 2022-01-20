@@ -18,7 +18,7 @@ const Service = {
     elmSend({
       reply: true,
       track: [['settings', -1]],
-      service: 'db',
+      service: this.PORT,
       message: {
         cmd: 'init',
         param: connector.initSettings(connector.getSettings(), false),
@@ -145,7 +145,7 @@ const Service = {
       }
 
       default:
-        log.warn('(Service DB) unknown message =>', event.message)
+        log.warn('(Service ', this.PORT, ') unknown message =>', event.message)
     }
   },
 }

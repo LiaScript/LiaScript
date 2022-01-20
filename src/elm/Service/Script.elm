@@ -92,5 +92,4 @@ encode { ok, result, details } =
 
 event : String -> JE.Value -> Event
 event cmd param =
-    { cmd = cmd, param = param }
-        |> Event.init "code"
+    Event.init "script" { cmd = cmd, param = param }

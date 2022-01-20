@@ -7,16 +7,14 @@ import log from './log'
 import './types/globals'
 import Lia from './types/lia.d'
 import Port from './types/ports'
-//import TTS from './tts'
 import { Connector } from '../connectors/Base/index'
-import { updateClassName } from '../connectors/Base/settings'
 
 import { initTooltip } from '../webcomponents/tooltip/index'
 
 // Services
 import Console from './service/Console'
 import Database from './service/Database'
-import Resource from './service/Resource'
+import { Service as Resource } from './service/Resource'
 import Share from './service/Share'
 import Slide from './service/Slide'
 import Swipe from './service/Swipe'

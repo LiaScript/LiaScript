@@ -17,7 +17,7 @@ const Service = {
         break
 
       default:
-        log.warn('(Service Console) unknown message =>', event.message)
+        log.warn('(Service ', this.PORT, ') unknown message =>', event.message)
     }
   },
 }

@@ -17,23 +17,29 @@ import Lia.Model
 import Service.Event as Event exposing (Event)
 
 
+{-| Load a specific record from the backend service in charge.
+-}
 load : String -> Int -> Event
 load table id =
-    [ ( "table", JE.string table )
-    , ( "id", JE.int id )
-    ]
-        |> JE.object
+    Nothing
+        |> record table id
         |> event "load"
 
 
 store : String -> Int -> JE.Value -> Event
 store table id data =
+    Just data
+        |> record table id
+        |> event "store"
+
+
+record : String -> Int -> Maybe JE.Value -> JE.Value
+record table id data =
     [ ( "table", JE.string table )
     , ( "id", JE.int id )
-    , ( "data", data )
+    , ( "data", Maybe.withDefault JE.null data )
     ]
         |> JE.object
-        |> event "store"
 
 
 settings : Maybe String -> JE.Value -> Event
@@ -53,14 +59,14 @@ settings customStyle config =
 -}
 index_get : String -> Event
 index_get =
-    JE.string >> index "get"
+    JE.string >> index_ "get"
 
 
 {-| Store an entire LiaScript model within the backend persistently.
 -}
 index_store : Lia.Model.Model -> Event
 index_store =
-    Json.encode >> index "store"
+    Json.encode >> index_ "store"
 
 
 {-| Restore a certain course from the index, identified by a URL and by the version.
@@ -70,14 +76,14 @@ index_store =
 -}
 index_restore : { version : String, url : String } -> Event
 index_restore =
-    toJson >> index "restore"
+    toJson >> index_ "restore"
 
 
 {-| Query for a list of all courses within the index.
 -}
 index_list : Event
 index_list =
-    index "list" JE.null
+    index_ "list" JE.null
 
 
 {-| Delete all entries for a certain course identified by its.
@@ -86,7 +92,7 @@ index_delete : String -> Event
 index_delete url =
     url
         |> JE.string
-        |> index "delete"
+        |> index_ "delete"
 
 
 {-| Reset all stored states, including code, tasks, surveys, etc. for a certain
@@ -97,7 +103,14 @@ course identified by `url` and for a specific `version`.
 -}
 index_reset : { version : String, url : String } -> Event
 index_reset =
-    toJson >> index "reset"
+    toJson >> index_ "reset"
+
+
+{-| **private:** Helper function to generate index\_commands.
+-}
+index_ : String -> JE.Value -> Event
+index_ cmd =
+    event ("index_" ++ cmd)
 
 
 {-| **private:** Helper for generating a JSON value from `version` and `url`.
@@ -125,10 +138,3 @@ by the service module `Database.ts`.
 event : String -> JE.Value -> Event
 event cmd param =
     Event.init "db" { cmd = cmd, param = param }
-
-
-{-| **private:** Helper function to generate index\_commands.
--}
-index : String -> JE.Value -> Event
-index cmd =
-    event ("index_" ++ cmd)
