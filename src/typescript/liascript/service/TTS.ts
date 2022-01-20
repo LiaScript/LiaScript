@@ -1,6 +1,6 @@
 import log from '../log'
-import TTS from '../tts'
-import Port from '../types/ports'
+
+import '../types/responsiveVoice'
 
 var firstSpeak = true
 var backup: {
@@ -9,6 +9,8 @@ var backup: {
 }
 
 var elmSend: Lia.Send | null
+
+const SETTINGS = 'settings'
 
 const Service = {
   PORT: 'tts',
@@ -26,18 +28,18 @@ const Service = {
   },
 
   mute: function () {
-    TTS.cancel()
+    cancel()
   },
 
   handle: function (event: Lia.Event) {
     switch (event.message.cmd) {
       case 'cancel': {
-        TTS.cancel()
+        cancel()
         event.message.cmd = 'stop'
         event.message.param = 'TODO'
 
         if (event.track[0][1] < 0) {
-          event.track[0][0] = Port.SETTINGS
+          event.track[0][0] = SETTINGS
         }
 
         sendReply(event)
@@ -63,23 +65,23 @@ const Service = {
             if (text !== '' && element[0]) {
               backup = { voice: voice, text: text }
 
-              TTS.speak(
+              speak(
                 text,
                 voice,
                 function () {
-                  event.track[0][0] = Port.SETTINGS
+                  event.track[0][0] = SETTINGS
                   event.message.cmd = 'start'
                   event.message.param = undefined
                   sendReply(event)
                 },
                 function () {
-                  event.track[0][0] = Port.SETTINGS
+                  event.track[0][0] = SETTINGS
                   event.message.cmd = 'stop'
                   event.message.param = undefined
                   sendReply(event)
                 },
                 function (e: any) {
-                  event.track[0][0] = Port.SETTINGS
+                  event.track[0][0] = SETTINGS
                   event.message.cmd = 'error'
                   event.message.param = e.toString()
                   sendReply(event)
@@ -113,7 +115,7 @@ const Service = {
 function playback(event: Lia.Event) {
   backup = event.message.param
 
-  TTS.speak(
+  speak(
     event.message.param.text,
     event.message.param.voice,
     function () {
@@ -138,6 +140,41 @@ function sendReply(event: Lia.Event) {
   if (elmSend) {
     elmSend(event)
   }
+}
+
+export function inject(key: string) {
+  if (typeof key === 'string') {
+    setTimeout(function () {
+      const script = document.createElement('script')
+      script.src =
+        'https://code.responsivevoice.org/responsivevoice.js?key=' + key
+      script.async = true
+      script.defer = true
+      document.head.appendChild(script)
+
+      script.onload = () => {
+        window.responsiveVoice.init()
+      }
+    }, 250)
+  }
+}
+
+function cancel() {
+  window.responsiveVoice.cancel()
+}
+
+function speak(
+  text: string,
+  voice: string,
+  onstart?: () => void,
+  onend?: () => void,
+  onerror?: (_: any) => void
+) {
+  window.responsiveVoice.speak(text, voice, {
+    onstart: onstart,
+    onend: onend,
+    onerror: onerror,
+  })
 }
 
 export default Service
