@@ -39,6 +39,7 @@ type Toggle
     | Action Action
     | SupportMenu
     | TranslateWithGoogle
+    | Tooltips
 
 
 update :
@@ -86,6 +87,9 @@ update main msg model =
 
         Toggle Light ->
             log Nothing { model | light = not model.light }
+
+        Toggle Tooltips ->
+            log Nothing { model | tooltips = not model.tooltips }
 
         Toggle (Action action) ->
             no_log

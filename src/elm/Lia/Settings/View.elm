@@ -20,7 +20,7 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onCheck, onClick, onInput)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
@@ -75,6 +75,8 @@ viewSettings lang tabbable settings =
     , viewEditorTheme lang tabbable settings.editor
     , divider
     , viewSizing lang tabbable settings.font_size
+    , divider
+    , viewTooltips lang tabbable settings.tooltips
     ]
 
 
@@ -214,6 +216,21 @@ viewSizing lang tabbable size =
         ]
 
 
+viewTooltips : Lang -> Bool -> Bool -> Html Msg
+viewTooltips lang tabbable enabled =
+    Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
+        [ Html.input
+            [ Attr.class "lia-checkbox"
+            , Attr.type_ "checkbox"
+            , Attr.checked enabled
+            , onClick (Toggle Tooltips)
+            , A11y_Key.tabbable tabbable
+            ]
+            []
+        , Html.text "Tooltips"
+        ]
+
+
 fontButton : Lang -> Bool -> Int -> Int -> String -> Html Msg
 fontButton lang tabbable size i title =
     btn
@@ -312,7 +329,7 @@ thanks lang to =
 
 inlines : Lang -> Inlines -> Html Msg
 inlines lang =
-    List.map (view_inf Array.empty lang Nothing Nothing)
+    List.map (view_inf Array.empty lang False Nothing Nothing)
         >> Html.div []
         >> Html.map (always Ignore)
 

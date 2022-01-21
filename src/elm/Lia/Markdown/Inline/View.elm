@@ -279,9 +279,16 @@ viewMedia config inline =
             view config inline
 
 
-view_inf : Scripts SubSection -> Lang -> Maybe ( String, String ) -> Maybe (Dict String ( Int, Int )) -> Inline -> Html (Msg sub)
-view_inf scripts lang translations media =
-    Config.init -1 Textbook 0 Nothing scripts lang Nothing translations (media |> Maybe.withDefault Dict.empty) |> view
+view_inf :
+    Scripts SubSection
+    -> Lang
+    -> Bool
+    -> Maybe ( String, String )
+    -> Maybe (Dict String ( Int, Int ))
+    -> Inline
+    -> Html (Msg sub)
+view_inf scripts lang tooltips translations media =
+    Config.init -1 Textbook 0 Nothing scripts lang Nothing tooltips translations (media |> Maybe.withDefault Dict.empty) |> view
 
 
 stringFrom : Config sub -> Maybe Inlines -> Maybe String
@@ -522,17 +529,26 @@ oembed option url =
 
 view_url : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
 view_url config alt_ url_ title_ attr =
-    Html.Keyed.node "span"
-        []
-        [ ( url_
-          , Html.node "preview-link"
-                [ Attr.attribute "src" url_ ]
-                [ Attr.href url_
-                    :: Attr.target "_blank"
-                    :: annotation "lia-link" attr
-                    |> CList.addWhen (title config title_)
-                    |> Html.a
-                    |> (\a -> a (viewer config alt_))
-                ]
-          )
-        ]
+    if config.tooltips then
+        Html.Keyed.node "span"
+            []
+            [ ( url_
+              , Html.node "preview-link"
+                    [ Attr.attribute "src" url_ ]
+                    [ Attr.href url_
+                        :: Attr.target "_blank"
+                        :: annotation "lia-link" attr
+                        |> CList.addWhen (title config title_)
+                        |> Html.a
+                        |> (\a -> a (viewer config alt_))
+                    ]
+              )
+            ]
+
+    else
+        Attr.href url_
+            :: Attr.target "_blank"
+            :: annotation "lia-link" attr
+            |> CList.addWhen (title config title_)
+            |> Html.a
+            |> (\a -> a (viewer config alt_))

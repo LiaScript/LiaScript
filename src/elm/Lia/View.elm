@@ -10,6 +10,7 @@ import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
+import Lia.Markdown.Code.Editor exposing (mode)
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.View exposing (state)
@@ -136,6 +137,7 @@ viewSlide screen model =
                 ]
             , slideA11y
                 model.translation
+                model.settings.tooltips
                 ( model.langCodeOriginal, model.langCode )
                 model.settings.mode
                 model.media
@@ -234,8 +236,8 @@ btnStop lang settings =
         [ Attr.id "lia-btn-sound", Attr.class "lia-btn--transparent" ]
 
 
-slideA11y : Lang -> ( String, String ) -> Mode -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
-slideA11y lang translations mode media effect id =
+slideA11y : Lang -> Bool -> ( String, String ) -> Mode -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
+slideA11y lang tooltips translations mode media effect id =
     case mode of
         Slides ->
             effect
@@ -248,7 +250,7 @@ slideA11y lang translations mode media effect id =
                                     List.map
                                         (\c ->
                                             c.content
-                                                |> List.map (view_inf effect.javascript lang (Just translations) (Just media))
+                                                |> List.map (view_inf effect.javascript lang tooltips (Just translations) (Just media))
                                                 |> Html.p
                                                     (narrator
                                                         |> Markdown.addTranslation False (Just translations) counter

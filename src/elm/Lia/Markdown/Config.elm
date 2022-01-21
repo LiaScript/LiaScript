@@ -59,6 +59,7 @@ inline lang translations settings effect id media =
         effect.javascript
         lang
         (Just settings.editor)
+        settings.tooltips
         (Just translations)
         media
 
