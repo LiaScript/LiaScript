@@ -18,7 +18,7 @@ function fetch(self: PreviewLink, trial = 0) {
 
     http.onerror = function (_e) {
       if (self.sourceUrl && trial === 0) {
-        self.sourceUrl = `https://api.allorigins.win/get?url=${self.sourceUrl}`
+        self.sourceUrl = PROXY + self.sourceUrl
         fetch(self, 1)
       }
     }
@@ -182,6 +182,8 @@ class PreviewLink extends HTMLElement {
   }
 
   mouseenter(e: any) {
+    console.warn('QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ', backup)
+
     if (this.parentNode && this.parentNode.container) {
       this.parentNode.container.style.left = `${e.clientX}px`
       this.parentNode.container.style.top = `${e.clientY + 10}px`
@@ -193,6 +195,9 @@ class PreviewLink extends HTMLElement {
 
       if (this.parentNode.cache) {
         this.parentNode.show()
+      } else if (backup[this.parentNode.sourceUrl]) {
+        this.parentNode.cache = backup[this.parentNode.sourceUrl]
+        this.parentNode.show()
       } else if (!this.parentNode.isFetching) {
         this.parentNode.isFetching = true
         try {
@@ -202,9 +207,10 @@ class PreviewLink extends HTMLElement {
               parent.cache = toCard(
                 parent.sourceUrl,
                 data.title,
-                data.description,
+                undefined,
                 data.thumbnail_url
               )
+
               parent.show()
             })
             .catch((e) => {
@@ -259,7 +265,7 @@ class PreviewLink extends HTMLElement {
           }
         }
 
-        self.cache = toCard(domain || self.sourceUrl, title, description, image)
+        self.cache = toCard(self.sourceUrl, title, description, image)
 
         if (self.cache === '') {
           self.container = undefined
@@ -285,6 +291,10 @@ class PreviewLink extends HTMLElement {
   }
 }
 
+const TOOLTIP = 'lia-tooltip'
+const PROXY = 'https://api.allorigins.win/get?url='
+var backup = Object()
+
 function toCard(
   url: string,
   title?: string,
@@ -298,13 +308,13 @@ function toCard(
   if (description) card += description
 
   if (card != '') {
-    card += url
+    card += `<div style="font-size:small">${url}</div>`
   }
+
+  backup[url.replace(PROXY, '')] = card
 
   return card
 }
-
-const TOOLTIP = 'lia-tooltip'
 
 export function initTooltip() {
   if (!document.getElementById(TOOLTIP)) {
