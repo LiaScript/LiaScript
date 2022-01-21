@@ -1,153 +1,13 @@
-import { extract } from './embed/index'
+import { extract } from '../embed/index'
+import { getTitle, getDescription, getImage } from './iframe'
 
-function fetch(self: PreviewLink, trial = 0) {
-  if (self.sourceUrl) {
-    let http = new XMLHttpRequest()
-    http.open('GET', self.sourceUrl, true)
-    //http.setRequestHeader('User-Agent', 'bla')
+const TOOLTIP_ID = 'lia-tooltip'
+const PROXY = 'https://api.allorigins.win/get?url='
 
-    http.onload = function (_e) {
-      if (http.readyState === 4 && http.status === 200) {
-        try {
-          self.parse(http.responseText)
-        } catch (e) {
-          console.warn('fetching', e)
-        }
-      }
-    }
-
-    http.onerror = function (_e) {
-      if (self.sourceUrl && trial === 0) {
-        self.sourceUrl = PROXY + self.sourceUrl
-        fetch(self, 1)
-      }
-    }
-    http.send()
-  }
-}
-
-function getTitle(doc: Document | null): string | undefined {
-  if (doc === null) return
-
-  const ogTitle = <HTMLMetaElement>(
-    doc.querySelector('meta[property="og:title"]')
-  )
-  if (ogTitle && ogTitle.content.length > 0) {
-    return ogTitle.content
-  }
-
-  const twitterTitle = <HTMLMetaElement>(
-    doc.querySelector('meta[name="twitter:title"]')
-  )
-  if (twitterTitle && twitterTitle.content.length > 0) {
-    return twitterTitle.content
-  }
-
-  const docTitle = doc.title
-  if (docTitle && docTitle.length > 0) {
-    return docTitle
-  }
-
-  const h1 = <HTMLHeadElement>doc.querySelector('h1')
-  if (h1 && h1.innerHTML) {
-    return h1.innerHTML
-  }
-  const h2 = <HTMLHeadElement>doc.querySelector('h2')
-  if (h2 && h2.innerHTML) {
-    return h2.innerHTML
-  }
-}
-
-function getDescription(doc: Document | null): string | undefined {
-  if (doc === null) return
-
-  const ogDescription = <HTMLMetaElement>(
-    doc.querySelector('meta[property="og:description"]')
-  )
-  if (ogDescription && ogDescription.content.length > 0) {
-    return ogDescription.content
-  }
-
-  const twitterDescription = <HTMLMetaElement>(
-    doc.querySelector('meta[name="twitter:description"]')
-  )
-  if (twitterDescription && twitterDescription.content.length > 0) {
-    return twitterDescription.content
-  }
-
-  const metaDescription = <HTMLMetaElement>(
-    doc.querySelector('meta[name="description"]')
-  )
-  if (metaDescription && metaDescription.content.length > 0) {
-    return metaDescription.content
-  }
-
-  const paragraphs = doc.querySelectorAll('p')
-  for (let i = 0; i < paragraphs.length; i++) {
-    const par = paragraphs[i]
-    if (
-      // if object is visible in dom
-      par.offsetParent !== null &&
-      par.childElementCount !== 0 &&
-      par.textContent
-    ) {
-      return par.textContent
-    }
-  }
-}
-
-function getDomainName(doc: Document | null, uri: string) {
-  let domainName = null
-
-  if (doc) {
-    const canonicalLink = <HTMLLinkElement>(
-      doc.querySelector('link[rel=canonical]')
-    )
-    if (canonicalLink && canonicalLink.href.length > 0) {
-      domainName = canonicalLink.href
-    } else {
-      const ogUrlMeta = <HTMLMetaElement>(
-        doc.querySelector('meta[property="og:url"]')
-      )
-      if (ogUrlMeta && ogUrlMeta.content.length > 0) {
-        domainName = ogUrlMeta.content
-      }
-    }
-  }
-
-  return domainName != null
-    ? new URL(domainName).hostname.replace('www.', '')
-    : new URL(uri).hostname.replace('www.', '')
-}
-
-function getImage(doc: Document | null) {
-  if (doc === null) return
-
-  const ogImg = <HTMLMetaElement>doc.querySelector('meta[property="og:image"]')
-  if (ogImg != null && ogImg.content.length > 0) {
-    return ogImg.content
-  }
-
-  const imgRelLink = <HTMLLinkElement>doc.querySelector('link[rel="image_src"]')
-  if (imgRelLink != null && imgRelLink.href.length > 0) {
-    return imgRelLink.href
-  }
-
-  const twitterImg = <HTMLMetaElement>(
-    doc.querySelector('meta[name="twitter:image"]')
-  )
-  if (twitterImg != null && twitterImg.content.length > 0) {
-    return twitterImg.content
-  }
-
-  try {
-    return Array.from(doc.getElementsByTagName('img'))[0].src
-  } catch (e) {}
-}
+var backup = Object()
 
 class PreviewLink extends HTMLElement {
   public sourceUrl: string | null = null
-  private baseUrl: string | null = null
 
   public cache: string | null = null
   public isFetching = false
@@ -164,9 +24,8 @@ class PreviewLink extends HTMLElement {
     this.style.cursor = 'pointer'
 
     this.sourceUrl = this.getAttribute('src')
-    this.baseUrl = this.sourceUrl
 
-    this.container = document.getElementById(TOOLTIP) || undefined
+    this.container = document.getElementById(TOOLTIP_ID) || undefined
 
     if (this.container && this.firstChild) {
       this.firstChild.addEventListener('mouseenter', this.mouseenter)
@@ -248,14 +107,9 @@ class PreviewLink extends HTMLElement {
       this.iframe.onload = function () {
         let title = getTitle(iframe.contentDocument)
         let description = getDescription(iframe.contentDocument)
-        let domain = self.baseUrl
-          ? getDomainName(iframe.contentDocument, self.baseUrl)
-          : undefined
         let image = getImage(iframe.contentDocument)
 
         iframe.style.display = 'none'
-
-        console.warn('-----------------------------------------------', image)
 
         if (typeof image == 'string') {
           const url = image.match(/.*?%22(.*)\/%22/)
@@ -291,10 +145,6 @@ class PreviewLink extends HTMLElement {
   }
 }
 
-const TOOLTIP = 'lia-tooltip'
-const PROXY = 'https://api.allorigins.win/get?url='
-var backup = Object()
-
 function toCard(
   url: string,
   title?: string,
@@ -323,11 +173,11 @@ function toCard(
 }
 
 export function initTooltip() {
-  if (!document.getElementById(TOOLTIP)) {
+  if (!document.getElementById(TOOLTIP_ID)) {
     setTimeout(function () {
       const div = document.createElement('div')
 
-      div.id = TOOLTIP
+      div.id = TOOLTIP_ID
 
       div.style.zIndex = '20000'
       div.style.width = '425px'
@@ -350,6 +200,32 @@ export function initTooltip() {
 
       document.body.appendChild(div)
     }, 0)
+  }
+}
+
+function fetch(self: PreviewLink, trial = 0) {
+  if (self.sourceUrl) {
+    let http = new XMLHttpRequest()
+    http.open('GET', self.sourceUrl, true)
+    //http.setRequestHeader('User-Agent', 'bla')
+
+    http.onload = function (_e) {
+      if (http.readyState === 4 && http.status === 200) {
+        try {
+          self.parse(http.responseText)
+        } catch (e) {
+          console.warn('fetching', e)
+        }
+      }
+    }
+
+    http.onerror = function (_e) {
+      if (self.sourceUrl && trial === 0) {
+        self.sourceUrl = PROXY + self.sourceUrl
+        fetch(self, 1)
+      }
+    }
+    http.send()
   }
 }
 

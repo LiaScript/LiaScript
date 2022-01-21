@@ -12,7 +12,7 @@ import TTS from './tts'
 import { Connector } from '../connectors/Base/index'
 import { updateClassName } from '../connectors/Base/settings'
 
-import { initTooltip } from '../webcomponents/preview-link'
+import { initTooltip } from '../webcomponents/tooltip/index'
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   const target = e.target as HTMLImageElement
