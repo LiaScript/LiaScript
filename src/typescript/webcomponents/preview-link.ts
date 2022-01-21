@@ -301,17 +301,23 @@ function toCard(
   description?: string,
   image?: string
 ) {
+  url = url.replace(PROXY, '')
+
   let card = ''
 
-  if (image) card += `<img src="${image}">`
+  if (image) {
+    if (!image.startsWith('./')) {
+      card += `<img src="${image}">`
+    }
+  }
   if (title) card += `<h4>${title}</h4>`
   if (description) card += description
 
   if (card != '') {
-    card += `<div style="font-size:small">${url}</div>`
+    card += `<div style="font-size:x-small">${url}</div>`
   }
 
-  backup[url.replace(PROXY, '')] = card
+  backup[url] = card
 
   return card
 }
@@ -325,7 +331,7 @@ export function initTooltip() {
 
       div.style.zIndex = '20000'
       div.style.width = '425px'
-      div.style.minHeight = '200px'
+      //div.style.minHeight = '200px'
       div.style.height = 'auto'
       div.style.padding = '15px'
       div.style.background = 'white'
@@ -333,14 +339,14 @@ export function initTooltip() {
       div.style.position = 'absolute'
       div.style.display = 'none'
 
+      /*
       div.addEventListener('mouseenter', () => {
-        //div.style.display = 'block'
+        div.style.display = 'block'
       })
       div.addEventListener('mouseout', () => {
-        console.warn('QQQQQQQQQQQQQQQQQQQQQQQQQQQQ')
-
-        //div.style.display = 'none'
+        div.style.display = 'none'
       })
+      */
 
       document.body.appendChild(div)
     }, 0)
