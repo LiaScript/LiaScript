@@ -49,12 +49,13 @@ async function fetchEmbed(
   return json
 }
 
-async function extract(link: string, params: Params) {
+export async function extract(link: string, params: Params) {
   const p = findProvider(link)
 
   if (!p) {
     throw new Error(`No provider found with given url "${link}"`)
   }
+
   let data
 
   try {

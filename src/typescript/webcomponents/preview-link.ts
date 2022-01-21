@@ -1,4 +1,4 @@
-import { debounce } from '../helper'
+import { extract } from './embed/index'
 
 function fetch(self: PreviewLink, trial = 0) {
   if (self.sourceUrl) {
@@ -195,7 +195,22 @@ class PreviewLink extends HTMLElement {
         this.parentNode.show()
       } else if (!this.parentNode.isFetching) {
         this.parentNode.isFetching = true
-        fetch(this.parentNode)
+        try {
+          let parent = this.parentNode
+          extract(this.parentNode.sourceUrl, {})
+            .then((data) => {
+              parent.cache = toCard(
+                parent.sourceUrl,
+                data.title,
+                data.description,
+                data.thumbnail_url
+              )
+              parent.show()
+            })
+            .catch((e) => {
+              fetch(parent)
+            })
+        } catch (e) {}
       }
     }
 
@@ -244,11 +259,7 @@ class PreviewLink extends HTMLElement {
           }
         }
 
-        self.cache = ''
-
-        if (image) self.cache += `<img src="${image}">`
-        if (title) self.cache += `<h4>${title}</h4>`
-        if (description) self.cache += description
+        self.cache = toCard(domain || self.sourceUrl, title, description, image)
 
         if (self.cache === '') {
           self.container = undefined
@@ -272,6 +283,25 @@ class PreviewLink extends HTMLElement {
       this.container.innerHTML = this.cache
     }
   }
+}
+
+function toCard(
+  url: string,
+  title?: string,
+  description?: string,
+  image?: string
+) {
+  let card = ''
+
+  if (image) card += `<img src="${image}">`
+  if (title) card += `<h4>${title}</h4>`
+  if (description) card += description
+
+  if (card != '') {
+    card += url
+  }
+
+  return card
 }
 
 const TOOLTIP = 'lia-tooltip'
