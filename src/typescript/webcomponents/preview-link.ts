@@ -1,3 +1,5 @@
+import { debounce } from '../helper'
+
 function fetch(self: PreviewLink, trial = 0) {
   if (self.sourceUrl) {
     let http = new XMLHttpRequest()
@@ -16,7 +18,7 @@ function fetch(self: PreviewLink, trial = 0) {
 
     http.onerror = function (_e) {
       if (self.sourceUrl && trial === 0) {
-        self.sourceUrl = `https://cors-anywhere.herokuapp.com/${self.sourceUrl}`
+        self.sourceUrl = `https://api.allorigins.win/get?url=${self.sourceUrl}`
         fetch(self, 1)
       }
     }
@@ -144,73 +146,164 @@ function getImage(doc: Document | null) {
 }
 
 class PreviewLink extends HTMLElement {
-  private container: ShadowRoot
-  public sourceUrl: string | null
-  private baseUrl: string | null
+  public sourceUrl: string | null = null
+  private baseUrl: string | null = null
 
-  private _title?: string
-  private _description?: string
-  private _domain?: string
-  private _image?: string
+  public cache: string | null = null
+  public isFetching = false
+
+  public container?: HTMLElement
+  private iframe: HTMLIFrameElement
 
   constructor() {
     super()
-
-    this.container = this.attachShadow({ mode: 'closed' })
-
-    this.sourceUrl = null
-    this.baseUrl = null
+    this.iframe = document.createElement('iframe')
   }
 
   connectedCallback() {
+    this.style.cursor = 'pointer'
+
     this.sourceUrl = this.getAttribute('src')
     this.baseUrl = this.sourceUrl
 
-    if (this.sourceUrl) {
-      const template = document.createElement('template')
+    this.container = document.getElementById(TOOLTIP) || undefined
 
-      template.innerHTML = `
-      <style></style>
-      <a href="${this.sourceUrl}" id="container_" style="display: inline-block;">preview-link</a>
-      <iframe id="iframe" style="display: none;"></iframe>`
-
-      this.container.appendChild(template.content.cloneNode(true))
-
-      let self = this
-      fetch(self)
+    if (this.container && this.firstChild) {
+      this.firstChild.addEventListener('mouseenter', this.mouseenter)
+      this.firstChild.addEventListener('mouseout', this.mouseout)
     }
   }
 
-  disconnectedCallback() {}
+  disconnectedCallback() {
+    if (this.firstChild) {
+      this.firstChild.removeEventListener('mouseenter', this.mouseenter)
+      this.firstChild.removeEventListener('mouseout', this.mouseout)
+    }
+  }
+
+  mouseenter(e: any) {
+    if (this.parentNode && this.parentNode.container) {
+      this.parentNode.container.style.left = `${e.clientX}px`
+      this.parentNode.container.style.top = `${e.clientY + 10}px`
+
+      this.parentNode.container.className = 'lds-dual-ring'
+      this.parentNode.container.style.display = 'block'
+      this.parentNode.container.innerHTML = ''
+      console.warn(e)
+
+      if (this.parentNode.cache) {
+        this.parentNode.show()
+      } else if (!this.parentNode.isFetching) {
+        this.parentNode.isFetching = true
+        fetch(this.parentNode)
+      }
+    }
+
+    // console.warn(e)
+  }
+
+  mouseout(e: any) {
+    if (this.parentNode.container) {
+      this.parentNode.container.style.display = 'none'
+      console.warn('out')
+    }
+  }
 
   parse(index: string) {
-    let iframe = <HTMLIFrameElement>this.container.getElementById('iframe')
+    console.warn(index)
 
-    if (iframe) {
+    if (this.cache !== null) {
+      this.show()
+    } else if (this.iframe) {
       let self = this
-      iframe.onload = function () {
-        self._title = getTitle(iframe.contentDocument)
-        self._description = getDescription(iframe.contentDocument)
-        self._domain = self.baseUrl
+      let iframe = this.iframe
+
+      iframe.style.width = '0px'
+      iframe.style.height = '0px'
+      iframe.style.border = '0'
+      iframe.style.display = 'inline'
+      this.appendChild(iframe)
+
+      this.iframe.onload = function () {
+        let title = getTitle(iframe.contentDocument)
+        let description = getDescription(iframe.contentDocument)
+        let domain = self.baseUrl
           ? getDomainName(iframe.contentDocument, self.baseUrl)
           : undefined
-        self._image = getImage(iframe.contentDocument)
+        let image = getImage(iframe.contentDocument)
+
+        iframe.style.display = 'none'
+
+        console.warn('-----------------------------------------------', image)
+
+        if (typeof image == 'string') {
+          const url = image.match(/.*?%22(.*)\/%22/)
+
+          if (url && url.length == 2) {
+            image = url[1]
+          }
+        }
+
+        self.cache = ''
+
+        if (image) self.cache += `<img src="${image}">`
+        if (title) self.cache += `<h4>${title}</h4>`
+        if (description) self.cache += description
+
+        if (self.cache === '') {
+          self.container = undefined
+        }
 
         self.show()
+        //iframe.srcdoc = ''
       }
+
+      try {
+        index = JSON.parse(index).contents
+      } catch (e) {}
+
       iframe.srcdoc = index
     }
   }
 
   show() {
-    const div = this.container.getElementById('container_')
+    if (this.container && this.cache) {
+      this.container.className = ''
+      this.container.innerHTML = this.cache
+    }
+  }
+}
 
-    if (div)
-      div.innerHTML = `<div style="float: left">
-                        <h4>${this._title}</h4>
-                        <p style="max-width: 400px">${this._description}</p>
-                      </div>
-                      <img src="${this._image}" style="height:100%; float: right;">`
+const TOOLTIP = 'lia-tooltip'
+
+export function initTooltip() {
+  if (!document.getElementById(TOOLTIP)) {
+    setTimeout(function () {
+      const div = document.createElement('div')
+
+      div.id = TOOLTIP
+
+      div.style.zIndex = '20000'
+      div.style.width = '425px'
+      div.style.minHeight = '200px'
+      div.style.height = 'auto'
+      div.style.padding = '15px'
+      div.style.background = 'white'
+      div.style.boxShadow = '0 30px 90px -20px rgba(0, 0, 0, 0.3)'
+      div.style.position = 'absolute'
+      div.style.display = 'none'
+
+      div.addEventListener('mouseenter', () => {
+        //div.style.display = 'block'
+      })
+      div.addEventListener('mouseout', () => {
+        console.warn('QQQQQQQQQQQQQQQQQQQQQQQQQQQQ')
+
+        //div.style.display = 'none'
+      })
+
+      document.body.appendChild(div)
+    }, 0)
   }
 }
 

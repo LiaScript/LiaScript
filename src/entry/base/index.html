@@ -30,7 +30,8 @@
   <meta name="msapplication-tap-highlight" content="no">
   <meta name="theme-color" content="#000000">
 
-  <meta name="description" content="LiaScript is a service for running free and interactive online courses, build with its own Markup-language. So check out the following course ;-)">
+  <meta name="description"
+    content="LiaScript is a service for running free and interactive online courses, build with its own Markup-language. So check out the following course ;-)">
 
   <!-- Favicons -->
   <link rel="apple-touch-icon" href="../../assets/logo.png">
@@ -64,16 +65,35 @@
         transform: rotate(360deg);
       }
     }
+
+    .tooltip-container {
+      width: 425px;
+      min-height: 200px;
+      height: auto;
+      padding: 15px;
+      background: white;
+      box-shadow: 0 30px 90px -20px rgba(0, 0, 0, 0.3);
+      position: absolute;
+      z-index: 20000;
+      display: none;
+    }
   </style>
 
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/icon/fonts/icon.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-code-pro/source-code-pro-v13-latin-600.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-code-pro/source-code-pro-v13-latin-regular.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-sans-pro/source-sans-pro-v14-latin-600.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-sans-pro/source-sans-pro-v14-latin-700.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-sans-pro/source-sans-pro-v14-latin-regular.woff2">  
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-serif-pro/source-serif-pro-v10-latin-600.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-serif-pro/source-serif-pro-v10-latin-700.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../assets/fonts/source-code-pro/source-code-pro-v13-latin-600.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../assets/fonts/source-code-pro/source-code-pro-v13-latin-regular.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../assets/fonts/source-sans-pro/source-sans-pro-v14-latin-600.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../assets/fonts/source-sans-pro/source-sans-pro-v14-latin-700.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../assets/fonts/source-sans-pro/source-sans-pro-v14-latin-regular.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../assets/fonts/source-serif-pro/source-serif-pro-v10-latin-600.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../assets/fonts/source-serif-pro/source-serif-pro-v10-latin-700.woff2">
 
   <link rel="stylesheet" href="../../scss/main.scss">
 </head>

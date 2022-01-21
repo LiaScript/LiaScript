@@ -20,7 +20,7 @@
   <script>
     if (process.env.NODE_ENV !== 'development') {
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
           let sw = "./sw.js"
           try {
             navigator.serviceWorker.register(sw).then(console.log).catch(console.error);
@@ -45,7 +45,8 @@
   <meta name="msapplication-tap-highlight" content="no">
   <meta name="theme-color" content="#000000">
 
-  <meta name="description" content="LiaScript is a service for running free and interactive online courses, build with its own Markup-language. So check out the following course ;-)">
+  <meta name="description"
+    content="LiaScript is a service for running free and interactive online courses, build with its own Markup-language. So check out the following course ;-)">
 
   <link rel="manifest" href="../app/manifest.webmanifest">
 
@@ -81,43 +82,52 @@
         transform: rotate(360deg);
       }
     }
-  </style>
 
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/icon/fonts/icon.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-code-pro/source-code-pro-v13-latin-600.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-code-pro/source-code-pro-v13-latin-regular.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-sans-pro/source-sans-pro-v14-latin-600.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-sans-pro/source-sans-pro-v14-latin-700.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-sans-pro/source-sans-pro-v14-latin-regular.woff2">  
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-serif-pro/source-serif-pro-v10-latin-600.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-serif-pro/source-serif-pro-v10-latin-700.woff2">
+    .tooltip-container {
+      width: 425px;
+      min-height: 200px;
+      height: auto;
+      padding: 15px;
+      background: white;
+      box-shadow: 0 30px 90px -20px rgba(0, 0, 0, 0.3);
+      position: absolute;
+      z-index: 2000;
+      display: none;
+    }
+  </style>
 
   <link rel="stylesheet" href="../../scss/main.scss">
 </head>
 
 <body>
-  <noscript>
-    This page requires JavaScript to be enabled!
-  </noscript>
+  
+    <noscript>
+      This page requires JavaScript to be enabled!
+    </noscript>
 
-  <div id="IE-message" hidden="true">
-    <h1>LiaScript - Problem</h1>
-    <p>
-      Hello! Welcome to LiaScript. This site is not fully supported in
-      Internet Explorer 11 (and earlier) versions.
-    </p>
-    <p>
-      As an alternative, you can use either of the options below to browse the
-      site:
-    </p>
-    <ol>
-      <li>Use Firefox browser. Here is the <a href="http://www.mozilla.org/en-US/firefox/new/">download link.</a></li>
-      <li>Use Google Chrome browser. Here is the <a href="https://support.google.com/chrome/answer/95346?hl=en">download link.</a></li>
-    </ol>
-    <p>
-      Thanks.
-    </p>
-  </div>
+    <div id="IE-message" hidden="true">
+      <h1>LiaScript - Problem</h1>
+      <p>
+        Hello! Welcome to LiaScript. This site is not fully supported in
+        Internet Explorer 11 (and earlier) versions.
+      </p>
+      <p>
+        As an alternative, you can use either of the options below to browse the
+        site:
+      </p>
+      <ol>
+        <li>Use Firefox browser. Here is the <a href="http://www.mozilla.org/en-US/firefox/new/">download link.</a></li>
+        <li>Use Google Chrome browser. Here is the <a
+            href="https://support.google.com/chrome/answer/95346?hl=en">download link.</a></li>
+      </ol>
+      <p>
+        Thanks.
+      </p>
+    </div>
+  
+  
+
 </body>
+
 
 </html>
