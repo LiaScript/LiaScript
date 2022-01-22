@@ -2,6 +2,8 @@ import { extract } from '../embed/index'
 import { getTitle, getDescription, getImage } from './iframe'
 
 const TOOLTIP_ID = 'lia-tooltip'
+const IFRAME_ID = 'lia-iframe-container'
+
 const PROXY = 'https://api.allorigins.win/get?url='
 
 var backup = Object()
@@ -80,55 +82,59 @@ class PreviewLink extends HTMLElement {
     this.parentNode.isActive = false
     if (this.parentNode.container) {
       this.parentNode.container.style.display = 'none'
-      console.warn('out')
     }
   }
 
   parse(index: string) {
-    console.warn(index)
-
     if (this.cache !== null) {
       this.show()
     } else if (this.iframe) {
-      let self = this
-      let iframe = this.iframe
+      const iframeContainer = document.getElementById(IFRAME_ID)
 
-      iframe.style.width = '0px'
-      iframe.style.height = '0px'
-      iframe.style.border = '0'
-      iframe.style.display = 'inline'
-      iframe.ariaHidden = 'true'
-      this.appendChild(iframe)
+      if (iframeContainer) {
+        let self = this
+        let iframe = this.iframe
 
-      this.iframe.onload = function () {
-        let title = getTitle(iframe.contentDocument)
-        let description = getDescription(iframe.contentDocument)
-        let image = getImage(iframe.contentDocument)
+        iframe.style.width = '0px'
+        iframe.style.height = '0px'
+        iframe.style.border = '0'
+        iframe.style.display = 'inline'
+        iframe.ariaHidden = 'true'
 
-        iframe.style.display = 'none'
+        iframeContainer.appendChild(iframe)
 
-        if (typeof image == 'string') {
-          const url = image.match(/.*?%22(.*)\/%22/)
+        this.iframe.onload = function () {
+          let title = getTitle(iframe.contentDocument)
+          let description = getDescription(iframe.contentDocument)
+          let image = getImage(iframe.contentDocument)
 
-          if (url && url.length == 2) {
-            image = url[1]
+          iframe.style.display = 'none'
+
+          if (typeof image == 'string') {
+            const url = image.match(/.*?%22(.*)\/%22/)
+
+            if (url && url.length == 2) {
+              image = url[1]
+            }
           }
+
+          self.cache = toCard(self.sourceUrl, title, description, image)
+
+          if (self.cache === '') {
+            self.container = undefined
+          }
+
+          self.show()
+
+          iframe.remove()
         }
 
-        self.cache = toCard(self.sourceUrl, title, description, image)
+        try {
+          index = JSON.parse(index).contents
+        } catch (e) {}
 
-        if (self.cache === '') {
-          self.container = undefined
-        }
-
-        self.show()
+        iframe.srcdoc = index
       }
-
-      try {
-        index = JSON.parse(index).contents
-      } catch (e) {}
-
-      iframe.srcdoc = index
     }
   }
 
@@ -195,6 +201,20 @@ export function initTooltip() {
         div.style.display = 'none'
       })
       */
+
+      document.body.appendChild(div)
+    }, 0)
+  }
+
+  if (!document.getElementById(IFRAME_ID)) {
+    setTimeout(function () {
+      const div = document.createElement('div')
+
+      div.id = IFRAME_ID
+      div.style.width = '0px'
+      div.style.height = '0px'
+      div.style.display = 'inline'
+      div.ariaHidden = 'true'
 
       document.body.appendChild(div)
     }, 0)
