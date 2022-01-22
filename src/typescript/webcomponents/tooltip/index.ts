@@ -11,6 +11,7 @@ class PreviewLink extends HTMLElement {
 
   public cache: string | null = null
   public isFetching = false
+  public isActive = false
 
   public container?: HTMLElement
   private iframe: HTMLIFrameElement
@@ -18,11 +19,10 @@ class PreviewLink extends HTMLElement {
   constructor() {
     super()
     this.iframe = document.createElement('iframe')
+    this.iframe.sandbox.add('allow-same-origin')
   }
 
   connectedCallback() {
-    this.style.cursor = 'pointer'
-
     this.sourceUrl = this.getAttribute('src')
 
     this.container = document.getElementById(TOOLTIP_ID) || undefined
@@ -41,16 +41,11 @@ class PreviewLink extends HTMLElement {
   }
 
   mouseenter(e: any) {
-    console.warn('QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ', backup)
-
     if (this.parentNode && this.parentNode.container) {
+      this.parentNode.isActive = true
+
       this.parentNode.container.style.left = `${e.clientX}px`
       this.parentNode.container.style.top = `${e.clientY + 10}px`
-
-      this.parentNode.container.className = 'lds-dual-ring'
-      this.parentNode.container.style.display = 'block'
-      this.parentNode.container.innerHTML = ''
-      console.warn(e)
 
       if (this.parentNode.cache) {
         this.parentNode.show()
@@ -58,6 +53,7 @@ class PreviewLink extends HTMLElement {
         this.parentNode.cache = backup[this.parentNode.sourceUrl]
         this.parentNode.show()
       } else if (!this.parentNode.isFetching) {
+        this.style.cursor = 'progress'
         this.parentNode.isFetching = true
         try {
           let parent = this.parentNode
@@ -72,17 +68,16 @@ class PreviewLink extends HTMLElement {
 
               parent.show()
             })
-            .catch((e) => {
+            .catch((_) => {
               fetch(parent)
             })
         } catch (e) {}
       }
     }
-
-    // console.warn(e)
   }
 
   mouseout(e: any) {
+    this.parentNode.isActive = false
     if (this.parentNode.container) {
       this.parentNode.container.style.display = 'none'
       console.warn('out')
@@ -102,6 +97,7 @@ class PreviewLink extends HTMLElement {
       iframe.style.height = '0px'
       iframe.style.border = '0'
       iframe.style.display = 'inline'
+      iframe.ariaHidden = 'true'
       this.appendChild(iframe)
 
       this.iframe.onload = function () {
@@ -126,7 +122,6 @@ class PreviewLink extends HTMLElement {
         }
 
         self.show()
-        //iframe.srcdoc = ''
       }
 
       try {
@@ -138,8 +133,11 @@ class PreviewLink extends HTMLElement {
   }
 
   show() {
-    if (this.container && this.cache) {
-      this.container.className = ''
+    if (this.container && this.cache && this.isActive) {
+      if (this.firstChild) {
+        this.firstChild.style.cursor = 'pointer'
+      }
+      this.container.style.display = 'block'
       this.container.innerHTML = this.cache
     }
   }
