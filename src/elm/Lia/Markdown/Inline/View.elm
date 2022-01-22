@@ -529,26 +529,23 @@ oembed option url =
 
 view_url : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
 view_url config alt_ url_ title_ attr =
-    if config.tooltips then
+    if not config.tooltips || String.startsWith "#" url_ then
+        link config alt_ url_ title_ attr
+
+    else
         Html.Keyed.node "span"
             []
             [ ( url_
-              , Html.node "preview-link"
-                    [ Attr.attribute "src" url_ ]
-                    [ Attr.href url_
-                        :: Attr.target "_blank"
-                        :: annotation "lia-link" attr
-                        |> CList.addWhen (title config title_)
-                        |> Html.a
-                        |> (\a -> a (viewer config alt_))
-                    ]
+              , Html.node "preview-link" [ Attr.attribute "src" url_ ] [ link config alt_ url_ title_ attr ]
               )
             ]
 
-    else
-        Attr.href url_
-            :: Attr.target "_blank"
-            :: annotation "lia-link" attr
-            |> CList.addWhen (title config title_)
-            |> Html.a
-            |> (\a -> a (viewer config alt_))
+
+link : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
+link config alt_ url_ title_ attr =
+    Attr.href url_
+        :: Attr.target "_blank"
+        :: annotation "lia-link" attr
+        |> CList.addWhen (title config title_)
+        |> Html.a
+        |> (\a -> a (viewer config alt_))
