@@ -9,7 +9,7 @@ const PROXY = 'https://api.allorigins.win/get?url='
 var backup = Object()
 
 class PreviewLink extends HTMLElement {
-  public sourceUrl: string | null = null
+  public sourceUrl?: string
 
   public cache: string | null = null
   public isFetching = false
@@ -25,7 +25,7 @@ class PreviewLink extends HTMLElement {
   }
 
   connectedCallback() {
-    this.sourceUrl = this.getAttribute('src')
+    this.sourceUrl = this.getAttribute('src') || undefined
 
     this.container = document.getElementById(TOOLTIP_ID) || undefined
 
@@ -43,45 +43,50 @@ class PreviewLink extends HTMLElement {
   }
 
   mouseenter(e: any) {
-    if (this.parentNode && this.parentNode.container) {
-      this.parentNode.isActive = true
+    const parent = this.parentElement as PreviewLink
 
-      this.parentNode.container.style.left = `${e.clientX}px`
-      this.parentNode.container.style.top = `${e.clientY + 10}px`
+    if (parent && parent.container) {
+      parent.isActive = true
 
-      if (this.parentNode.cache) {
-        this.parentNode.show()
-      } else if (backup[this.parentNode.sourceUrl]) {
-        this.parentNode.cache = backup[this.parentNode.sourceUrl]
-        this.parentNode.show()
-      } else if (!this.parentNode.isFetching) {
-        this.style.cursor = 'progress'
-        this.parentNode.isFetching = true
-        try {
-          let parent = this.parentNode
-          extract(this.parentNode.sourceUrl, {})
-            .then((data) => {
-              parent.cache = toCard(
-                parent.sourceUrl,
-                data.title,
-                undefined,
-                data.thumbnail_url
-              )
+      parent.container.style.left = `${e.clientX}px`
+      parent.container.style.top = `${e.clientY + 10}px`
 
-              parent.show()
-            })
-            .catch((_) => {
-              fetch(parent)
-            })
-        } catch (e) {}
+      if (parent.cache) {
+        parent.show()
+      } else if (parent.sourceUrl) {
+        if (backup[parent.sourceUrl]) {
+          parent.cache = backup[parent.sourceUrl]
+          parent.show()
+        } else if (!parent.isFetching) {
+          this.style.cursor = 'progress'
+          parent.isFetching = true
+          try {
+            extract(parent.sourceUrl, {})
+              .then((data) => {
+                parent.cache = toCard(
+                  parent.sourceUrl,
+                  data.title,
+                  undefined,
+                  data.thumbnail_url
+                )
+
+                parent.show()
+              })
+              .catch((_) => {
+                fetch(parent)
+              })
+          } catch (e) {}
+        }
       }
     }
   }
 
   mouseout(e: any) {
-    this.parentNode.isActive = false
-    if (this.parentNode.container) {
-      this.parentNode.container.style.display = 'none'
+    const parent = this.parentElement as PreviewLink
+
+    parent.isActive = false
+    if (parent.container) {
+      parent.container.style.display = 'none'
     }
   }
 
@@ -140,21 +145,22 @@ class PreviewLink extends HTMLElement {
 
   show() {
     if (this.container && this.cache && this.isActive) {
-      if (this.firstChild) {
-        this.firstChild.style.cursor = 'pointer'
-      }
       this.container.style.display = 'block'
       this.container.innerHTML = this.cache
     }
+
+    if (this.firstChild) (this.firstChild as HTMLElement).style.cursor = ''
   }
 }
 
 function toCard(
-  url: string,
+  url?: string,
   title?: string,
   description?: string,
   image?: string
 ) {
+  if (!url) return ''
+
   url = url.replace(PROXY, '')
 
   let card = ''
