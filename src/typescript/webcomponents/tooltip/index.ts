@@ -48,8 +48,17 @@ class PreviewLink extends HTMLElement {
     if (parent && parent.container) {
       parent.isActive = true
 
-      parent.container.style.left = `${e.clientX}px`
-      parent.container.style.top = `${e.clientY + 10}px`
+      parent.container.style.left = `${
+        e.clientX - (425 * e.clientX) / window.innerWidth
+      }px`
+
+      if (e.clientY * 1.5 > window.innerHeight) {
+        parent.container.style.top = ''
+        parent.container.style.bottom = `${window.innerHeight - e.clientY}px`
+      } else {
+        parent.container.style.top = `${e.clientY + 20}px`
+        parent.container.style.bottom = ''
+      }
 
       if (parent.cache) {
         parent.show()
@@ -85,6 +94,7 @@ class PreviewLink extends HTMLElement {
     const parent = this.parentElement as PreviewLink
 
     parent.isActive = false
+
     if (parent.container) {
       parent.container.style.display = 'none'
     }
