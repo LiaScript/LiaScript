@@ -1,9 +1,13 @@
+// @ts-ignore
+import { Elm } from '../../../elm/Worker.elm'
 import { extract } from '../embed/index'
 import { getTitle, getDescription, getImage } from './iframe'
+import { allowedProtocol } from '../../helper'
 
 const TOOLTIP_ID = 'lia-tooltip'
 const IFRAME_ID = 'lia-iframe-container'
-
+const LIASCRIPT_PATTERN =
+  /(?:https?:)(?:\/\/)liascript\.github\.io\/course\/\?(.*\.md)/i
 const PROXY = 'https://api.allorigins.win/get?url='
 
 var backup = Object()
@@ -54,7 +58,9 @@ class PreviewLink extends HTMLElement {
 
       if (e.clientY * 1.5 > window.innerHeight) {
         parent.container.style.top = ''
-        parent.container.style.bottom = `${window.innerHeight - e.clientY}px`
+        parent.container.style.bottom = `${
+          window.innerHeight - e.clientY + 10
+        }px`
       } else {
         parent.container.style.top = `${e.clientY + 20}px`
         parent.container.style.bottom = ''
@@ -69,22 +75,29 @@ class PreviewLink extends HTMLElement {
         } else if (!parent.isFetching) {
           this.style.cursor = 'progress'
           parent.isFetching = true
-          try {
-            extract(parent.sourceUrl, {})
-              .then((data) => {
-                parent.cache = toCard(
-                  parent.sourceUrl,
-                  data.title,
-                  undefined,
-                  data.thumbnail_url
-                )
 
-                parent.show()
-              })
-              .catch((_) => {
-                fetch(parent)
-              })
-          } catch (e) {}
+          let liascript_url = parent.sourceUrl.match(LIASCRIPT_PATTERN)
+          if (liascript_url) {
+            console.warn(parent.sourceUrl, liascript_url)
+            fetch_LiaScript(parent, liascript_url[1])
+          } else {
+            try {
+              extract(parent.sourceUrl, {})
+                .then((data) => {
+                  parent.cache = toCard(
+                    parent.sourceUrl,
+                    data.title,
+                    undefined,
+                    data.thumbnail_url
+                  )
+
+                  parent.show()
+                })
+                .catch((_) => {
+                  fetch(parent)
+                })
+            } catch (e) {}
+          }
         }
       }
     }
@@ -261,6 +274,61 @@ function fetch(self: PreviewLink, trial = 0) {
     }
     http.send()
   }
+}
+
+function fetch_LiaScript(self: PreviewLink, url: string) {
+  let http = new XMLHttpRequest()
+
+  http.open('GET', url, true)
+
+  http.onload = function (_e) {
+    if (http.readyState === 4 && http.status === 200) {
+      try {
+        const lia = Elm.Worker.init({
+          flags: {
+            cmd: '',
+          },
+        })
+
+        lia.ports.output.subscribe(function (event: [boolean, any]) {
+          let [ok, json] = event
+
+          if (ok) {
+            json = JSON.parse(json)
+
+            let image
+            if (json.definition.logo !== '') {
+              image = addBase(url, json.definition.logo)
+            }
+
+            self.cache = toCard(
+              self.sourceUrl,
+              json.str_title,
+              json.comment,
+              image
+            )
+
+            self.show()
+          }
+        })
+
+        lia.ports.input.send(['defines', http.responseText])
+      } catch (e) {
+        console.warn('fetching', e)
+      }
+    }
+  }
+  http.send()
+}
+
+function addBase(source_url: string, url: string) {
+  if (allowedProtocol(url)) {
+    return url
+  }
+
+  let base = source_url.split('/')
+  base.pop()
+  return base.join('/') + '/' + url
 }
 
 customElements.define('preview-link', PreviewLink)
