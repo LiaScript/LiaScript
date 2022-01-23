@@ -1,8 +1,7 @@
 // @ts-ignore
-import { Elm } from '../../../elm/Worker.elm'
 import { extract } from '../embed/index'
 import { getTitle, getDescription, getImage } from './iframe'
-import { allowedProtocol } from '../../helper'
+import { fetch as fetch_LiaScript } from '../preview-lia'
 
 const TOOLTIP_ID = 'lia-tooltip'
 const IFRAME_ID = 'lia-iframe-container'
@@ -78,8 +77,24 @@ class PreviewLink extends HTMLElement {
 
           let liascript_url = parent.sourceUrl.match(LIASCRIPT_PATTERN)
           if (liascript_url) {
-            console.warn(parent.sourceUrl, liascript_url)
-            fetch_LiaScript(parent, liascript_url[1])
+            fetch_LiaScript(
+              liascript_url[1],
+              function (
+                url?: string,
+                title?: string,
+                description?: string,
+                image?: string
+              ) {
+                parent.cache = toCard(
+                  parent.sourceUrl,
+                  title,
+                  description,
+                  image
+                )
+
+                parent.show()
+              }
+            )
           } else {
             try {
               extract(parent.sourceUrl, {})
@@ -214,7 +229,6 @@ export function initTooltip() {
 
       div.style.zIndex = '20000'
       div.style.width = '425px'
-      //div.style.minHeight = '200px'
       div.style.height = 'auto'
       div.style.padding = '15px'
       div.style.background = 'white'
@@ -274,61 +288,6 @@ function fetch(self: PreviewLink, trial = 0) {
     }
     http.send()
   }
-}
-
-function fetch_LiaScript(self: PreviewLink, url: string) {
-  let http = new XMLHttpRequest()
-
-  http.open('GET', url, true)
-
-  http.onload = function (_e) {
-    if (http.readyState === 4 && http.status === 200) {
-      try {
-        const lia = Elm.Worker.init({
-          flags: {
-            cmd: '',
-          },
-        })
-
-        lia.ports.output.subscribe(function (event: [boolean, any]) {
-          let [ok, json] = event
-
-          if (ok) {
-            json = JSON.parse(json)
-
-            let image
-            if (json.definition.logo !== '') {
-              image = addBase(url, json.definition.logo)
-            }
-
-            self.cache = toCard(
-              self.sourceUrl,
-              json.str_title,
-              json.comment,
-              image
-            )
-
-            self.show()
-          }
-        })
-
-        lia.ports.input.send(['defines', http.responseText])
-      } catch (e) {
-        console.warn('fetching', e)
-      }
-    }
-  }
-  http.send()
-}
-
-function addBase(source_url: string, url: string) {
-  if (allowedProtocol(url)) {
-    return url
-  }
-
-  let base = source_url.split('/')
-  base.pop()
-  return base.join('/') + '/' + url
 }
 
 customElements.define('preview-link', PreviewLink)
