@@ -2,12 +2,12 @@
 import { extract } from '../embed/index'
 import { getTitle, getDescription, getImage } from './iframe'
 import { fetch as fetch_LiaScript } from '../preview-lia'
+import { PROXY } from '../../helper'
 
 const TOOLTIP_ID = 'lia-tooltip'
 const IFRAME_ID = 'lia-iframe-container'
 const LIASCRIPT_PATTERN =
   /(?:https?:)(?:\/\/)liascript\.github\.io\/course\/\?(.*\.md)/i
-const PROXY = 'https://api.allorigins.win/get?url='
 
 var backup = Object()
 
