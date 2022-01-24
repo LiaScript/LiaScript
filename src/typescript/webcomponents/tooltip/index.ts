@@ -33,26 +33,40 @@ class PreviewLink extends HTMLElement {
     this.container = document.getElementById(TOOLTIP_ID) || undefined
 
     if (this.container && this.firstChild) {
-      this.firstChild.addEventListener('mouseenter', this.mouseenter)
-      this.firstChild.addEventListener('mouseout', this.mouseout)
+      this.firstChild.addEventListener('mouseenter', this._mouseenter)
+      this.firstChild.addEventListener('mouseout', this._out)
+
+      this.firstChild.addEventListener('focus', this._onfocus)
+      this.firstChild.addEventListener('blur', this._out)
     }
   }
 
   disconnectedCallback() {
     if (this.firstChild) {
-      this.firstChild.removeEventListener('mouseenter', this.mouseenter)
-      this.firstChild.removeEventListener('mouseout', this.mouseout)
+      this.firstChild.removeEventListener('mouseenter', this._mouseenter)
+      this.firstChild.removeEventListener('mouseout', this._out)
+
+      this.firstChild.removeEventListener('focus', this._onfocus)
+      this.firstChild.removeEventListener('blur', this._out)
     }
   }
 
-  mouseenter(e: any) {
+  _mouseenter(e: any) {
     this.style.cursor = 'progress'
 
     const parent = this.parentElement as PreviewLink
     parent.activate(e.clientX, e.clientY)
   }
 
-  mouseout(e: any) {
+  _onfocus(e: any) {
+    const boundingBox = this.getBoundingClientRect()
+    ;(this.parentElement as PreviewLink).activate(
+      boundingBox.left + boundingBox.width / 2,
+      boundingBox.top + boundingBox.height / 2
+    )
+  }
+
+  _out(e: any) {
     ;(this.parentElement as PreviewLink).deactivate()
   }
 
