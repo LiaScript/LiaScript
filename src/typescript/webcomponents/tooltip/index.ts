@@ -46,7 +46,7 @@ var backup = Object()
  * It is added to the HTML-DOM by:
  *
  * ```html
- * <preview-link src="url">
+ * <preview-link src="url" light="false">
  *    <a href="url">...</a>
  * </preview-link>
  * ```
@@ -54,6 +54,8 @@ var backup = Object()
  * In most cases, the internal element will contain a link, however, the
  * doubling of `src` and `href` is required, since the internal element can
  * als be something else.
+ * With the second attribute is it possible to change the light mode of this
+ * web component.
  */
 class PreviewLink extends HTMLElement {
   /**
@@ -395,7 +397,14 @@ class PreviewLink extends HTMLElement {
       this.cache && // HTML string
       this.isActive // has not been deactivated so far
     ) {
-      this.container.style.background = this.lightMode ? 'white' : 'black'
+      if (this.lightMode) {
+        this.container.style.background = 'white'
+        this.container.style.boxShadow = '0 30px 90px -20px rgba(0, 0, 0, 0.3)'
+      } else {
+        this.container.style.background = '#202020'
+        this.container.style.boxShadow =
+          '0 30px 90px -20px rgba(120, 120, 120, 0.3)'
+      }
 
       this.container.style.zIndex = '20000'
       this.container.style.display = 'block'
@@ -406,16 +415,17 @@ class PreviewLink extends HTMLElement {
     if (this.firstChild) (this.firstChild as HTMLElement).style.cursor = ''
   }
 
+  // via this attribute it is possible to use the tooltip either in dark or
+  // light-mode
+  set light(value) {
+    // redraw only if the light mode has changed
+    if (this.lightMode !== value) {
+      this.lightMode = value
+      this.show()
+    }
+  }
   get light() {
     return this.lightMode
-  }
-
-  set light(value) {
-    if (this.lightMode === value) return
-
-    this.lightMode = value
-
-    this.show()
   }
 }
 
