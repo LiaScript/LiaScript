@@ -38,6 +38,7 @@ class PreviewLink extends HTMLElement {
 
       this.firstChild.addEventListener('focus', this._onfocus)
       this.firstChild.addEventListener('blur', this._out)
+      this.firstChild.addEventListener('keyup', this._escape)
     }
   }
 
@@ -48,6 +49,13 @@ class PreviewLink extends HTMLElement {
 
       this.firstChild.removeEventListener('focus', this._onfocus)
       this.firstChild.removeEventListener('blur', this._out)
+      this.firstChild.removeEventListener('keyup', this._escape)
+    }
+  }
+
+  _escape(e: any) {
+    if (e.keyCode === 27) {
+      ;(this.parentElement as PreviewLink).deactivate()
     }
   }
 
@@ -66,7 +74,7 @@ class PreviewLink extends HTMLElement {
     )
   }
 
-  _out(e: any) {
+  _out() {
     ;(this.parentElement as PreviewLink).deactivate()
   }
 
