@@ -46,36 +46,43 @@ class PreviewLink extends HTMLElement {
   }
 
   mouseenter(e: any) {
+    this.style.cursor = 'progress'
+
     const parent = this.parentElement as PreviewLink
+    parent.activate(e.clientX, e.clientY)
+  }
 
-    if (parent && parent.container) {
-      parent.isActive = true
+  mouseout(e: any) {
+    ;(this.parentElement as PreviewLink).deactivate()
+  }
 
-      parent.container.style.left = `${
-        e.clientX - (425 * e.clientX) / window.innerWidth
+  activate(positionX: number, positionY: number) {
+    if (this.container) {
+      this.isActive = true
+
+      this.container.style.left = `${
+        positionX - (425 * positionX) / window.innerWidth
       }px`
 
-      if (e.clientY * 1.5 > window.innerHeight) {
-        parent.container.style.top = ''
-        parent.container.style.bottom = `${
-          window.innerHeight - e.clientY + 10
-        }px`
+      if (positionY * 1.5 > window.innerHeight) {
+        this.container.style.top = ''
+        this.container.style.bottom = `${window.innerHeight - positionY + 10}px`
       } else {
-        parent.container.style.top = `${e.clientY + 20}px`
-        parent.container.style.bottom = ''
+        this.container.style.top = `${positionY + 20}px`
+        this.container.style.bottom = ''
       }
 
-      if (parent.cache) {
-        parent.show()
-      } else if (parent.sourceUrl) {
-        if (backup[parent.sourceUrl]) {
-          parent.cache = backup[parent.sourceUrl]
-          parent.show()
-        } else if (!parent.isFetching) {
-          this.style.cursor = 'progress'
-          parent.isFetching = true
+      if (this.cache) {
+        this.show()
+      } else if (this.sourceUrl) {
+        if (backup[this.sourceUrl]) {
+          this.cache = backup[this.sourceUrl]
+          this.show()
+        } else if (!this.isFetching) {
+          this.isFetching = true
 
-          let liascript_url = parent.sourceUrl.match(LIASCRIPT_PATTERN)
+          let self = this
+          let liascript_url = this.sourceUrl.match(LIASCRIPT_PATTERN)
           if (liascript_url) {
             fetch_LiaScript(
               liascript_url[1],
@@ -85,31 +92,26 @@ class PreviewLink extends HTMLElement {
                 description?: string,
                 image?: string
               ) {
-                parent.cache = toCard(
-                  parent.sourceUrl,
-                  title,
-                  description,
-                  image
-                )
+                self.cache = toCard(self.sourceUrl, title, description, image)
 
-                parent.show()
+                self.show()
               }
             )
           } else {
             try {
-              extract(parent.sourceUrl, {})
+              extract(this.sourceUrl, {})
                 .then((data) => {
-                  parent.cache = toCard(
-                    parent.sourceUrl,
+                  self.cache = toCard(
+                    self.sourceUrl,
                     data.title,
                     undefined,
                     data.thumbnail_url
                   )
 
-                  parent.show()
+                  self.show()
                 })
                 .catch((_) => {
-                  fetch(parent)
+                  fetch(this)
                 })
             } catch (e) {}
           }
@@ -118,13 +120,11 @@ class PreviewLink extends HTMLElement {
     }
   }
 
-  mouseout(e: any) {
-    const parent = this.parentElement as PreviewLink
+  deactivate() {
+    this.isActive = false
 
-    parent.isActive = false
-
-    if (parent.container) {
-      parent.container.style.display = 'none'
+    if (this.container) {
+      this.container.style.display = 'none'
     }
   }
 
