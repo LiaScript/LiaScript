@@ -283,12 +283,26 @@ view_inf :
     Scripts SubSection
     -> Lang
     -> Bool
+    -> Bool
     -> Maybe ( String, String )
     -> Maybe (Dict String ( Int, Int ))
     -> Inline
     -> Html (Msg sub)
-view_inf scripts lang tooltips translations media =
-    Config.init -1 Textbook 0 Nothing scripts lang Nothing tooltips translations (media |> Maybe.withDefault Dict.empty) |> view
+view_inf scripts lang light tooltips translations media =
+    { mode = Textbook
+    , visible = Nothing
+    , slide = -1
+    , speaking = Nothing
+    , lang = lang
+    , theme = Nothing
+    , light = light
+    , tooltips = tooltips
+    , media = media |> Maybe.withDefault Dict.empty
+    , scripts = scripts
+    , translations = translations
+    }
+        |> Config.init
+        |> view
 
 
 stringFrom : Config sub -> Maybe Inlines -> Maybe String
@@ -536,7 +550,13 @@ view_url config alt_ url_ title_ attr =
         Html.Keyed.node "span"
             []
             [ ( url_
-              , Html.node "preview-link" [ Attr.attribute "src" url_ ] [ link config alt_ url_ title_ attr ]
+              , Html.node "preview-link"
+                    [ Attr.attribute "src" url_
+                    , config.light
+                        |> JE.bool
+                        |> Attr.property "light"
+                    ]
+                    [ link config alt_ url_ title_ attr ]
               )
             ]
 

@@ -14,49 +14,53 @@ import Translations exposing (Lang)
 
 type alias Config sub =
     { view : Maybe (Int -> SubSection -> List (Html (Msg sub)))
-    , slide : Int
+    , oEmbed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool }
     , visible : Maybe Int
+    , slide : Int
     , speaking : Maybe Int
     , lang : Lang
     , theme : Maybe String
+    , light : Bool
     , tooltips : Bool
     , media : Dict String ( Int, Int )
-    , oEmbed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool }
     , scripts : Scripts SubSection
     , translations : Maybe ( String, String )
     }
 
 
 init :
-    Int
-    -> Mode
-    -> Int
-    -> Maybe Int
-    -> Scripts SubSection
-    -> Lang
-    -> Maybe String
-    -> Bool
-    -> Maybe ( String, String )
-    -> Dict String ( Int, Int )
+    { mode : Mode
+    , visible : Maybe Int
+    , slide : Int
+    , speaking : Maybe Int
+    , lang : Lang
+    , theme : Maybe String
+    , light : Bool
+    , tooltips : Bool
+    , media : Dict String ( Int, Int )
+    , scripts : Scripts SubSection
+    , translations : Maybe ( String, String )
+    }
     -> Config sub
-init slide mode visible speaking effects lang theme tooltips translations media =
-    Config
-        Nothing
-        slide
-        (if mode == Textbook then
+init config =
+    { view = Nothing
+    , oEmbed = Nothing
+    , visible =
+        if config.mode == Textbook then
             Nothing
 
-         else
-            Just visible
-        )
-        speaking
-        lang
-        theme
-        tooltips
-        media
-        Nothing
-        effects
-        translations
+        else
+            config.visible
+    , slide = config.slide
+    , speaking = config.speaking
+    , lang = config.lang
+    , theme = config.theme
+    , light = config.light
+    , tooltips = config.tooltips
+    , media = config.media
+    , scripts = config.scripts
+    , translations = config.translations
+    }
 
 
 setViewer : (Int -> SubSection -> List (Html (Msg sub))) -> Config sub -> Config sub

@@ -52,16 +52,19 @@ init lang translations settings screen section id media =
 
 inline : Lang -> ( String, String ) -> Settings -> Effect.Model SubSection -> Int -> Dict String ( Int, Int ) -> Inline.Config sub
 inline lang translations settings effect id media =
-    Inline.init id
-        settings.mode
-        effect.visible
-        effect.speaking
-        effect.javascript
-        lang
-        (Just settings.editor)
-        settings.tooltips
-        (Just translations)
-        media
+    Inline.init
+        { mode = settings.mode
+        , visible = Just effect.visible
+        , slide = id
+        , speaking = effect.speaking
+        , lang = lang
+        , theme = Just settings.editor
+        , light = settings.light
+        , tooltips = settings.tooltips
+        , media = media
+        , scripts = effect.javascript
+        , translations = Just translations
+        }
 
 
 setSubViewer : (Int -> SubSection -> List (Html (Script.Msg Msg))) -> Config Msg -> Config Msg

@@ -85,6 +85,11 @@ class PreviewLink extends HTMLElement {
    */
   public container?: HTMLElement
 
+  /**
+   * defines weather the tooltip should be displayed in dark or in light-mode
+   */
+  public lightMode: boolean = true
+
   constructor() {
     super()
   }
@@ -214,7 +219,7 @@ class PreviewLink extends HTMLElement {
         this.container.style.bottom = `${window.innerHeight - positionY + 10}px`
       } else {
         // placed above, on the lower part of the screen
-        this.container.style.top = `${positionY + 20}px`
+        this.container.style.top = `${positionY + 10}px`
         this.container.style.bottom = ''
       }
 
@@ -284,13 +289,14 @@ class PreviewLink extends HTMLElement {
   deactivate() {
     if (
       this.container &&
-      // this is true, when the mouse is above the tooltip
-      this.container.getAttribute('data-active') === 'true'
+      // this is false, when the mouse is above the tooltip
+      this.container.getAttribute('data-active') === 'false'
     ) {
       // this has to be set to false in order to prevent a later displayed
       // tooltip, due to some loading delay
       this.isActive = false
       this.container.style.display = 'none'
+      this.container.style.zIndex = '-1000'
     }
   }
 
@@ -389,12 +395,27 @@ class PreviewLink extends HTMLElement {
       this.cache && // HTML string
       this.isActive // has not been deactivated so far
     ) {
+      this.container.style.background = this.lightMode ? 'white' : 'black'
+
+      this.container.style.zIndex = '20000'
       this.container.style.display = 'block'
       this.container.innerHTML = this.cache
     }
 
     // remove the progress cursor from the internal link and set it to default
     if (this.firstChild) (this.firstChild as HTMLElement).style.cursor = ''
+  }
+
+  get light() {
+    return this.lightMode
+  }
+
+  set light(value) {
+    if (this.lightMode === value) return
+
+    this.lightMode = value
+
+    this.show()
   }
 }
 
@@ -467,7 +488,7 @@ export function initTooltip() {
       div.id = TOOLTIP_ID
 
       // since LiaScript modals can have a z-Index larger than 10000
-      div.style.zIndex = '20000'
+      div.style.zIndex = '-1000'
 
       div.style.width = '425px'
       //div.style.height = '400px '
@@ -486,10 +507,12 @@ export function initTooltip() {
       // to stay visible or close it ...
       div.addEventListener('mouseenter', () => {
         div.style.display = 'block'
+        div.style.zIndex = '20000'
         div.setAttribute('data-active', 'true')
       })
       div.addEventListener('mouseleave', () => {
         div.style.display = 'none'
+        div.style.zIndex = '-1000'
         div.setAttribute('data-active', 'false')
       })
 
