@@ -26,6 +26,7 @@ export type Settings = {
   font_size: number
   sound: boolean
   lang: Lang
+  tooltips: boolean
 }
 
 type Mode = 'Slides' | 'Presentation' | 'Textbook'

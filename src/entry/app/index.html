@@ -15,7 +15,7 @@
   <script defer type="module" src="../../typescript/webcomponents/embed/index.ts"></script>
   <script defer type="module" src="../../typescript/webcomponents/chart.ts"></script>
   <script defer type="module" src="../../typescript/webcomponents/preview-lia.ts"></script>
-  <script defer type="module" src="../../typescript/webcomponents/preview-link.ts"></script>
+  <script defer type="module" src="../../typescript/webcomponents/tooltip/index.ts"></script>
   <script defer type="module" src="../../typescript/webcomponents/format.ts"></script>
   <script defer type="module" src="../../typescript/webcomponents/terminal.ts"></script>
   <script>
@@ -82,6 +82,18 @@
         transform: rotate(360deg);
       }
     }
+
+    .tooltip-container {
+      width: 425px;
+      min-height: 200px;
+      height: auto;
+      padding: 15px;
+      background: white;
+      box-shadow: 0 30px 90px -20px rgba(0, 0, 0, 0.3);
+      position: static;
+      z-index: 1000;
+      display: none;
+    }
   </style>
 
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/icon/fonts/icon.woff2">
@@ -97,10 +109,11 @@
 </head>
 
 <body>
-  <noscript>
-    This page requires JavaScript to be enabled!
+  
+    <noscript>
+      This page requires JavaScript to be enabled!
   </noscript>
-
+  
   <div id="IE-message" hidden="true">
     <h1>LiaScript - Problem</h1>
     <p>
@@ -119,12 +132,14 @@
       Thanks.
     </p>
   </div>
-
+  
   <div style="width:100%;text-align:center;top:25%;position:absolute"> 
     <h1>Loading</h1>
     <br>
     <div class="lds-dual-ring"></div>
   </div>
+  
+  
 </body>
 
 </html>

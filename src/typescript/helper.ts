@@ -43,3 +43,5 @@ export function allowedProtocol(url: string) {
     url.startsWith('ipns://')
   )
 }
+
+export const PROXY = 'https://api.allorigins.win/get?url='

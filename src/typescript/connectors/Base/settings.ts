@@ -10,6 +10,8 @@ export const defaultSettings: Lia.Settings = {
   font_size: 1,
   sound: true,
   lang: 'en',
+
+  tooltips: false,
 }
 
 export function initSettings(

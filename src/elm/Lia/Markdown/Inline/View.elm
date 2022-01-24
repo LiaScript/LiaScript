@@ -279,9 +279,30 @@ viewMedia config inline =
             view config inline
 
 
-view_inf : Scripts SubSection -> Lang -> Maybe ( String, String ) -> Maybe (Dict String ( Int, Int )) -> Inline -> Html (Msg sub)
-view_inf scripts lang translations media =
-    Config.init -1 Textbook 0 Nothing scripts lang Nothing translations (media |> Maybe.withDefault Dict.empty) |> view
+view_inf :
+    Scripts SubSection
+    -> Lang
+    -> Bool
+    -> Bool
+    -> Maybe ( String, String )
+    -> Maybe (Dict String ( Int, Int ))
+    -> Inline
+    -> Html (Msg sub)
+view_inf scripts lang light tooltips translations media =
+    { mode = Textbook
+    , visible = Nothing
+    , slide = -1
+    , speaking = Nothing
+    , lang = lang
+    , theme = Nothing
+    , light = light
+    , tooltips = tooltips
+    , media = media |> Maybe.withDefault Dict.empty
+    , scripts = scripts
+    , translations = translations
+    }
+        |> Config.init
+        |> view
 
 
 stringFrom : Config sub -> Maybe Inlines -> Maybe String
@@ -447,7 +468,7 @@ reference config ref attr =
                 []
 
         Preview_Link url ->
-            Html.node "preview-link"
+            Html.Keyed.node "preview-link"
                 (Attr.attribute "src" url :: annotation "" attr)
                 []
 
@@ -522,6 +543,26 @@ oembed option url =
 
 view_url : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
 view_url config alt_ url_ title_ attr =
+    if not config.tooltips || String.startsWith "#" url_ then
+        link config alt_ url_ title_ attr
+
+    else
+        Html.Keyed.node "span"
+            []
+            [ ( url_
+              , Html.node "preview-link"
+                    [ Attr.attribute "src" url_
+                    , config.light
+                        |> JE.bool
+                        |> Attr.property "light"
+                    ]
+                    [ link config alt_ url_ title_ attr ]
+              )
+            ]
+
+
+link : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
+link config alt_ url_ title_ attr =
     Attr.href url_
         :: Attr.target "_blank"
         :: annotation "lia-link" attr

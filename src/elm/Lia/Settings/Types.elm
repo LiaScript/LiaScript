@@ -22,6 +22,7 @@ type alias Settings =
     , hasShareApi : Bool
     , translateWithGoogle : Bool
     , customTheme : Maybe String
+    , tooltips : Bool
     }
 
 
@@ -57,4 +58,5 @@ init hasShareApi mode =
     , hasShareApi = hasShareApi
     , translateWithGoogle = False
     , customTheme = Nothing
+    , tooltips = False
     }
