@@ -19,6 +19,7 @@ fromModel model =
         , ( "font_size", JE.int model.font_size )
         , ( "sound", JE.bool model.sound )
         , ( "lang", JE.string model.lang )
+        , ( "tooltips", JE.bool model.tooltips )
         ]
 
 
@@ -36,8 +37,8 @@ fromMode mode =
                 "Slides"
 
 
-settings : Settings -> Bool -> Mode -> String -> Bool -> String -> Int -> Bool -> String -> Settings
-settings model toc mode theme light editor font_size sound lang =
+settings : Settings -> Bool -> Mode -> String -> Bool -> String -> Int -> Bool -> String -> Bool -> Settings
+settings model toc mode theme light editor font_size sound lang tooltips =
     { model
         | table_of_contents = toc
         , mode = mode
@@ -47,6 +48,7 @@ settings model toc mode theme light editor font_size sound lang =
         , font_size = font_size
         , sound = sound
         , lang = lang
+        , tooltips = tooltips
     }
 
 
@@ -62,6 +64,13 @@ toModel model =
             (JD.field "font_size" JD.int)
             (JD.field "sound" JD.bool)
             (JD.field "lang" JD.string)
+            -- these tooltips have been integrated later, that is
+            -- why they might not be stored within the settings
+            -- and treated differently
+            |> JD.map2 (|>)
+                (JD.maybe (JD.field "tooltips" JD.bool)
+                    |> JD.map (Maybe.withDefault False)
+                )
         )
 
 

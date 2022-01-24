@@ -1,5 +1,6 @@
 import { endpoints } from './endpoints'
 import { Params, Endpoint } from './types.d'
+import { PROXY } from '../../helper'
 
 function findProvider(link: string): string | undefined {
   const candidate = endpoints.find((endpoint: Endpoint) => {
@@ -49,23 +50,19 @@ async function fetchEmbed(
   return json
 }
 
-async function extract(link: string, params: Params) {
+export async function extract(link: string, params: Params) {
   const p = findProvider(link)
 
   if (!p) {
     throw new Error(`No provider found with given url "${link}"`)
   }
+
   let data
 
   try {
     data = await fetchEmbed(link, p, params)
   } catch (error) {
-    data = await fetchEmbed(
-      link,
-      p,
-      params,
-      'https://api.allorigins.win/get?url='
-    )
+    data = await fetchEmbed(link, p, params, PROXY)
   }
 
   return data
