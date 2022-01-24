@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.47
+version:  0.9.48
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,19 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.48** (24/01/2022)
+
+- feature: Add tooltips to links, which work by hovering or by putting the
+  focus onto a link. This feature has to be activated within the settings,
+  since it creates additional http traffic. Currently supported types of
+  links:
+
+  - Links to LiaScript courses, which have to contain the URL of the
+    Markdown file
+  - Links to services that support oEmbend
+  - Other sites with meta information as OpenGraph, TwitterCards, otherwise
+    the first image, header, and paragraphs are grabbed to create the tooltip
 
 **0.9.47** (14/01/2022)
 
