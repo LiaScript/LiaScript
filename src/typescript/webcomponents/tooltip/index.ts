@@ -522,7 +522,7 @@ export function initTooltip() {
       div.style.padding = '15px'
       div.style.background = 'white'
       div.style.boxShadow = '0 30px 90px -20px rgba(0, 0, 0, 0.3)'
-      div.style.position = 'absolute'
+      div.style.position = 'fixed'
       div.style.display = 'none'
 
       // this additional marker is used to not close the tooltip, if the user
