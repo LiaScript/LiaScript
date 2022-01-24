@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.48
+version:  0.9.49
 language: en
 narrator: UK English Male
 
@@ -282,7 +282,7 @@ This will apply the following three patches:
 
 ## Version-Changes
 
-**0.9.48** (24/01/2022)
+**0.9.49** (24/01/2022)
 
 - feature: Add tooltips to links, which work by hovering or by putting the
   focus onto a link. This feature has to be activated within the settings,
