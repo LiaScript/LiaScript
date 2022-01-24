@@ -77,7 +77,7 @@ export function fetch(
   http.send()
 }
 
-function addBase(base: string, url: string) {
+export function addBase(base: string, url: string) {
   if (allowedProtocol(url)) {
     return url
   }
