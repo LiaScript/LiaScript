@@ -348,17 +348,23 @@ class PreviewLink extends HTMLElement {
 
         // getting images from iframes might be tricky, since the proxy might
         // be involved
-        if (typeof image == 'string') {
+        if (typeof image.url == 'string') {
           // this cleans up the image url, if it is behind the proxy, which
           // looks like this `https://proxy.../"realImageURL"`
-          const url = image.match(/.*?%22(.*)\/%22/)
+          const url = image.url.match(/.*?%22(.*)\/%22/)
           if (url && url.length == 2) {
-            image = url[1]
+            image.url = url[1]
           }
         }
 
         // create a new tooltip
-        self.cache = toCard(self.sourceUrl, title, description, image)
+        self.cache = toCard(
+          self.sourceUrl,
+          title,
+          description,
+          image.url,
+          image.alt
+        )
 
         // if there is no tooltip, the reference to the tooltip container gets
         // deleted to prevent it from loading an empty div
@@ -453,7 +459,8 @@ function toCard(
   url?: string,
   title?: string,
   description?: string,
-  image?: string
+  image?: string,
+  image_alt?: string
 ) {
   if (!url) return ''
 
@@ -465,8 +472,11 @@ function toCard(
   if (image) {
     // TODO: relative images are ignored at the moment
     if (!image.startsWith('./')) {
+      // add a possible alt attribute if exists
+      image_alt = image_alt ? `alt="${image_alt}"` : ''
+
       // the light background is required for transparent images in dark mode
-      card += `<img src="${image}" style="background-color:white; margin-bottom: 1.5rem;">`
+      card += `<img src="${image}" ${image_alt} style="background-color:white; margin-bottom: 1.5rem;">`
     }
   }
   if (title) card += `<h4>${title}</h4>`

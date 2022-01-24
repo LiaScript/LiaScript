@@ -92,27 +92,51 @@ export function getDomainName(doc: Document | null, uri: string) {
     : new URL(uri).hostname.replace('www.', '')
 }
 
-export function getImage(doc: Document | null) {
-  if (doc === null) return
+export function getImage(doc: Document | null): {
+  url?: string
+  alt?: string
+} {
+  if (doc === null) return {}
 
+  // according to OpenGraph <https://ogp.me>
   const ogImg = <HTMLMetaElement>doc.querySelector('meta[property="og:image"]')
   if (ogImg != null && ogImg.content.length > 0) {
-    return ogImg.content
+    const alt = <HTMLMetaElement>(
+      doc.querySelector('meta[property="og:image:alt"]')
+    )
+
+    return {
+      url: ogImg.content,
+      alt: alt != null && alt.content.length > 0 ? alt.content : undefined,
+    }
   }
 
   const imgRelLink = <HTMLLinkElement>doc.querySelector('link[rel="image_src"]')
   if (imgRelLink != null && imgRelLink.href.length > 0) {
-    return imgRelLink.href
+    return {
+      url: imgRelLink.href,
+    }
   }
 
+  // Twitter cards: https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/summary
   const twitterImg = <HTMLMetaElement>(
     doc.querySelector('meta[name="twitter:image"]')
   )
   if (twitterImg != null && twitterImg.content.length > 0) {
-    return twitterImg.content
+    const alt = <HTMLMetaElement>(
+      doc.querySelector('meta[property="twitter:image:alt"]')
+    )
+
+    return {
+      url: twitterImg.content,
+      alt: alt != null && alt.content.length > 0 ? alt.content : undefined,
+    }
   }
 
   try {
-    return Array.from(doc.getElementsByTagName('img'))[0].src
+    const img = Array.from(doc.getElementsByTagName('img'))[0]
+    return { url: img.src, alt: img.alt }
   } catch (e) {}
+
+  return {}
 }
