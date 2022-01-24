@@ -251,9 +251,16 @@ class PreviewLink extends HTMLElement {
               url?: string,
               title?: string,
               description?: string,
-              image?: string
+              image?: string,
+              image_alt?: string
             ) {
-              self.cache = toCard(self.sourceUrl, title, description, image)
+              self.cache = toCard(
+                self.sourceUrl,
+                title,
+                description,
+                image,
+                image_alt
+              )
               self.show()
             }
           )

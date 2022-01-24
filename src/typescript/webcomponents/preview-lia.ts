@@ -9,6 +9,7 @@ export function fetch(
     title?: string,
     description?: string,
     logo?: string,
+    logo_alt?: string,
     icon?: string,
     author?: string,
     email?: string,
@@ -40,6 +41,11 @@ export function fetch(
               image = addBase(url, json.definition.logo)
             }
 
+            let alt
+            try {
+              alt = json.definition.macro.logo_alt
+            } catch (e) {}
+
             let tags
             try {
               tags = json.definition.macro.tags
@@ -59,6 +65,7 @@ export function fetch(
               json.str_title,
               json.comment,
               image,
+              alt,
               icon,
               json.definition.author,
               json.definition.email,
@@ -247,6 +254,7 @@ class PreviewLia extends HTMLElement {
           title?: string,
           description?: string,
           logo?: string,
+          logo_alt?: string,
           icon?: string,
           author?: string,
           email?: string,
@@ -259,10 +267,11 @@ class PreviewLia extends HTMLElement {
           }
 
           if (logo) {
+            logo_alt = logo_alt ? `alt="${logo_alt}"` : ''
             logo = `<div class="card__media">
               <aside class="card__aside">
                 <figure class="card__figure">
-                  <img src="${logo}" class="card__image">
+                  <img src="${logo}" ${logo_alt} class="card__image">
                 </figure>
               </aside>
             </div>`
