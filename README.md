@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.49
+version:  0.9.50
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,14 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.50** (25/01/2022)
+
+- fix: Tooltip
+  
+  - tabbing on touch devices works by long press
+  - tooltips is deactivated on small screens
+  - improved performance on parsing & links are preserved and clickable too
 
 **0.9.49** (24/01/2022)
 
