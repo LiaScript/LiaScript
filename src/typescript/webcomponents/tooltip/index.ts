@@ -76,6 +76,12 @@ class PreviewLink extends HTMLElement {
   public isFetching = false
 
   /**
+   * This variable is used to prevent a tooltip from being loaded, if the user
+   * clicks or long-presses on a tablet. Such that the link should be clicked.
+   */
+  public isClicked = false
+
+  /**
    * this marker is used to prevent a tooltip from loading, if the mouse has
    * left the link, but the loading/parsing is still in progress
    */
@@ -112,13 +118,14 @@ class PreviewLink extends HTMLElement {
       // to the first child additional events have to be associated
       if (this.container && this.firstChild) {
         // basic mouse events to cover hovering
-        this.firstChild.addEventListener('mouseenter', this._mouseenter)
-        this.firstChild.addEventListener('mouseout', this._mouseout)
+        this.firstChild.addEventListener('mouseenter', this._onmouseenter)
+        this.firstChild.addEventListener('mouseout', this._onmouseout)
+        this.firstChild.addEventListener('click', this._onclick)
 
         // Accessibility events which are required for keyboard navigation
         this.firstChild.addEventListener('focus', this._onfocus)
-        this.firstChild.addEventListener('blur', this._onblur)
-        this.firstChild.addEventListener('keyup', this._escape)
+        this.firstChild.addEventListener('focusout', this._onfocusout)
+        this.firstChild.addEventListener('keyup', this._onescape)
       }
     }
   }
@@ -129,14 +136,26 @@ class PreviewLink extends HTMLElement {
   disconnectedCallback() {
     if (this.firstChild) {
       // delete all mouse hovering event-listeners
-      this.firstChild.removeEventListener('mouseenter', this._mouseenter)
-      this.firstChild.removeEventListener('mouseout', this._mouseout)
+      this.firstChild.removeEventListener('mouseenter', this._onmouseenter)
+      this.firstChild.removeEventListener('mouseout', this._onmouseout)
+      this.firstChild.removeEventListener('click', this._onclick)
 
       // delete all keyboard related event-listeners
       this.firstChild.removeEventListener('focus', this._onfocus)
-      this.firstChild.removeEventListener('blur', this._onblur)
-      this.firstChild.removeEventListener('keyup', this._escape)
+      this.firstChild.removeEventListener('focusout', this._onfocusout)
+      this.firstChild.removeEventListener('keyup', this._onescape)
     }
+  }
+
+  /**
+   * Handler for click-events is used to prevent a tooltip from being loaded,
+   * if the user clicks onto the link.
+   */
+  _onclick() {
+    const parent = this.parentElement as PreviewLink
+
+    parent.isActive = false
+    parent.isClicked = true
   }
 
   /**
@@ -145,7 +164,7 @@ class PreviewLink extends HTMLElement {
    *
    * @param event
    */
-  _escape(event: any) {
+  _onescape(event: any) {
     if (event.code === 'Escape') {
       const parent = this.parentElement as PreviewLink
 
@@ -162,7 +181,7 @@ class PreviewLink extends HTMLElement {
    *
    * @param event
    */
-  _mouseenter(event: any) {
+  _onmouseenter(event: any) {
     // show, that there is some progress going on
     this.style.cursor = 'progress'
 
@@ -174,7 +193,7 @@ class PreviewLink extends HTMLElement {
   /**
    * this event handler is called, if the mouse is not hovering anymore.
    */
-  _mouseout() {
+  _onmouseout() {
     ;(this.parentElement as PreviewLink).deactivate()
   }
 
@@ -197,7 +216,7 @@ class PreviewLink extends HTMLElement {
    * as the opposite to onfocus, this closed the tooltip, when the link looses
    * its focus
    */
-  _onblur() {
+  _onfocusout() {
     const parent = this.parentElement as PreviewLink
 
     // without this, the deactivate function might not trigger on tablets
@@ -219,6 +238,11 @@ class PreviewLink extends HTMLElement {
     if (this.container) {
       // of course, mark the tooltip as activated
       this.isActive = true
+
+      if (this.isClicked) {
+        this.isClicked = false
+        return
+      }
 
       // This adds some space to the vertical position of the tooltip,
       // which places the tooltip more to the right or to the left, depending
