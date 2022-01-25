@@ -113,11 +113,11 @@ class PreviewLink extends HTMLElement {
       if (this.container && this.firstChild) {
         // basic mouse events to cover hovering
         this.firstChild.addEventListener('mouseenter', this._mouseenter)
-        this.firstChild.addEventListener('mouseout', this._out)
+        this.firstChild.addEventListener('mouseout', this._mouseout)
 
         // Accessibility events which are required for keyboard navigation
         this.firstChild.addEventListener('focus', this._onfocus)
-        this.firstChild.addEventListener('blur', this._out)
+        this.firstChild.addEventListener('blur', this._onblur)
         this.firstChild.addEventListener('keyup', this._escape)
       }
     }
@@ -130,11 +130,11 @@ class PreviewLink extends HTMLElement {
     if (this.firstChild) {
       // delete all mouse hovering event-listeners
       this.firstChild.removeEventListener('mouseenter', this._mouseenter)
-      this.firstChild.removeEventListener('mouseout', this._out)
+      this.firstChild.removeEventListener('mouseout', this._mouseout)
 
       // delete all keyboard related event-listeners
       this.firstChild.removeEventListener('focus', this._onfocus)
-      this.firstChild.removeEventListener('blur', this._out)
+      this.firstChild.removeEventListener('blur', this._onblur)
       this.firstChild.removeEventListener('keyup', this._escape)
     }
   }
@@ -172,6 +172,13 @@ class PreviewLink extends HTMLElement {
   }
 
   /**
+   * this event handler is called, if the mouse is not hovering anymore.
+   */
+  _mouseout() {
+    ;(this.parentElement as PreviewLink).deactivate()
+  }
+
+  /**
    * activate the tooltip if the current link received the focus
    *
    * @param _event - not required
@@ -187,11 +194,18 @@ class PreviewLink extends HTMLElement {
   }
 
   /**
-   * this event handler is multiple times used to, when the element looses the
-   * focus or if the mouse is not hovering anymore
+   * as the opposite to onfocus, this closed the tooltip, when the link looses
+   * its focus
    */
-  _out() {
-    ;(this.parentElement as PreviewLink).deactivate()
+  _onblur() {
+    const parent = this.parentElement as PreviewLink
+
+    // without this, the deactivate function might not trigger on tablets
+    // the "data-active" is only required for mouse manipulation
+    if (parent.container) {
+      parent.container.setAttribute('data-active', 'false')
+    }
+    parent.deactivate()
   }
 
   /**
