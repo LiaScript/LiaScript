@@ -3,6 +3,7 @@ module Lia.View exposing (view)
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Widget as A11y_Widget
+import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -138,7 +139,7 @@ viewSlide screen model =
             , slideA11y
                 model.translation
                 model.settings.light
-                model.settings.tooltips
+                (model.settings.tooltips && (screen.width >= Const.tooltipBreakpoint))
                 ( model.langCodeOriginal, model.langCode )
                 model.settings.mode
                 model.media
@@ -340,7 +341,7 @@ navButton title id class msg =
 slideTopBar : Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> Html Msg
 slideTopBar lang screen url repositoryURL settings def =
     [ ( Settings.menuMode, "mode" )
-    , ( Settings.menuSettings, "settings" )
+    , ( Settings.menuSettings screen.width, "settings" )
     , ( Settings.menuTranslations def, "lang" )
     , ( Settings.menuShare url, "share" )
     , ( Settings.menuInformation repositoryURL def, "info" )

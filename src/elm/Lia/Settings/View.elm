@@ -19,7 +19,7 @@ import Conditional.List as CList
 import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
-import Html.Attributes as Attr
+import Html.Attributes as Attr exposing (width)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -64,8 +64,8 @@ design model =
     ]
 
 
-viewSettings : Lang -> Bool -> Settings -> List (Html Msg)
-viewSettings lang tabbable settings =
+viewSettings : Lang -> Bool -> Int -> Settings -> List (Html Msg)
+viewSettings lang tabbable width settings =
     [ viewLightMode lang tabbable settings.light
     , divider
     , settings.customTheme
@@ -76,7 +76,7 @@ viewSettings lang tabbable settings =
     , divider
     , viewSizing lang tabbable settings.font_size
     , divider
-    , viewTooltips lang tabbable settings.tooltips
+    , viewTooltips lang tabbable width settings.tooltips
     ]
 
 
@@ -216,19 +216,26 @@ viewSizing lang tabbable size =
         ]
 
 
-viewTooltips : Lang -> Bool -> Bool -> Html Msg
-viewTooltips lang tabbable enabled =
-    Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
-        [ Html.input
-            [ Attr.class "lia-checkbox"
-            , Attr.type_ "checkbox"
-            , Attr.checked enabled
-            , onClick (Toggle Tooltips)
-            , A11y_Key.tabbable tabbable
+viewTooltips : Lang -> Bool -> Int -> Bool -> Html Msg
+viewTooltips lang tabbable width enabled =
+    if width >= Const.tooltipBreakpoint then
+        Html.label
+            [ Attr.class "lia-label"
+            , A11y_Widget.hidden (not tabbable)
             ]
-            []
-        , Html.text "Tooltips"
-        ]
+            [ Html.input
+                [ Attr.class "lia-checkbox"
+                , Attr.type_ "checkbox"
+                , Attr.checked enabled
+                , onClick (Toggle Tooltips)
+                , A11y_Key.tabbable tabbable
+                ]
+                []
+            , Html.text "Tooltips"
+            ]
+
+    else
+        Html.text ""
 
 
 fontButton : Lang -> Bool -> Int -> Int -> String -> Html Msg
@@ -519,14 +526,14 @@ menuMode lang tabbable settings =
     ]
 
 
-menuSettings : Lang -> Bool -> Settings -> List (Html Msg)
-menuSettings lang tabbable settings =
+menuSettings : Int -> Lang -> Bool -> Settings -> List (Html Msg)
+menuSettings width lang tabbable settings =
     [ lang
         |> Trans.confSettings
         |> actionBtn ShowSettings
             (settings.action == Just ShowSettings)
             "icon-settings"
-    , viewSettings lang tabbable settings
+    , viewSettings lang tabbable width settings
         |> submenu (settings.action == Just ShowSettings)
     ]
 
