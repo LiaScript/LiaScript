@@ -1,21 +1,14 @@
 // @ts-ignore
 import { extract } from '../embed/index'
-import { getTitle, getDescription, getImage } from './iframe'
 import { fetch as fetch_LiaScript } from '../preview-lia'
 import { PROXY } from '../../helper'
+import { parse as parseHTML } from './html'
 
 /**
  * Tooltips are presented in one single div that is attached to the very end of
  * the DOM. This ID is used as the main unit to identify this element.
  */
 const TOOLTIP_ID = 'lia-tooltip'
-
-/**
- * IFrames are used to load content dynamically if, oEmbed fails and it is also
- * no LiaScript course. To not change the DOM, all iframes are loaded within a
- * div at the end, which is identified by this container ID.
- */
-const IFRAME_ID = 'lia-iframe-container'
 
 /**
  * Currently links pointing to LiaScript-courses are identified by this regular
@@ -111,6 +104,11 @@ class PreviewLink extends HTMLElement {
 
     // if such an URL exists
     if (this.sourceUrl) {
+      // this makes urls more equal
+      if (this.sourceUrl.endsWith('/')) {
+        this.sourceUrl = this.sourceUrl.slice(0, -1)
+      }
+
       // get the tooltip container
       this.container = document.getElementById(TOOLTIP_ID) || undefined
 
@@ -321,7 +319,7 @@ class PreviewLink extends HTMLElement {
                 // if there is no oEmbed-service defined for this URL, then
                 // fetch the content from the website and parse it
                 fetch(this.sourceUrl, function (doc: string) {
-                  self.parseIframe(doc)
+                  self.parse(doc)
                 })
               })
           } catch (e) {}
@@ -353,90 +351,45 @@ class PreviewLink extends HTMLElement {
    *
    * @param doc
    */
-  parseIframe(doc: string) {
+  parse(html: string) {
     // if for some reason, there has already been a tooltip cached
     if (this.cache !== null) {
       this.show()
       return
     }
 
-    // this is the main iframe-container where all iframes are put into
-    // see `initTooltip`
-    const iframeContainer = document.getElementById(IFRAME_ID)
+    // run a local extractor to get all required values
+    let data = parseHTML(this.sourceUrl, html)
 
-    if (iframeContainer) {
-      // create a secure sandbox
-      const iframe = document.createElement('iframe')
-      iframe.sandbox.add('allow-same-origin')
-
-      let self = this
-
-      // make it as invisible as possible
-      iframe.style.width = '0px'
-      iframe.style.height = '0px'
-      iframe.style.border = '0'
-      iframe.style.display = 'inline'
-      iframe.ariaHidden = 'true'
-
-      // add it to the main
-      iframeContainer.appendChild(iframe)
-
-      // parse the iframe document after it has been loaded successfully
-      iframe.onload = function () {
-        let title = getTitle(iframe.contentDocument)
-        let description = getDescription(iframe.contentDocument)
-        let image = getImage(iframe.contentDocument)
-
-        // if this is set before, the iframe might not be loaded, still
-        // removes some more visibility
-        iframe.style.display = 'none'
-
-        // getting images from iframes might be tricky, since the proxy might
-        // be involved
-        if (typeof image.url == 'string') {
-          // this cleans up the image url, if it is behind the proxy, which
-          // looks like this `https://proxy.../"realImageURL"`
-          const url = image.url.match(/.*?%22(.*)\/%22/)
-          if (url && url.length == 2) {
-            image.url = url[1]
-          }
-        }
-
-        // create a new tooltip
-        self.cache = toCard(
-          self.sourceUrl,
-          title,
-          description,
-          image.url,
-          image.alt
-        )
-
-        // if there is no tooltip, the reference to the tooltip container gets
-        // deleted to prevent it from loading an empty div
-        if (self.cache === '') {
-          self.container = undefined
-        }
-
-        self.show() // show the tooltip
-
-        // remove the iframe from the DOM, since it is not needed anymore
-        iframe.remove()
+    // for some reason this might be required to get images from the proxy
+    // version, which might change the url
+    if (typeof data.image == 'string') {
+      // this cleans up the image url, if it is behind the proxy, which
+      // looks like this `https://proxy.../"realImageURL"`
+      const url = data.image.match(/.*?%22(.*)\/%22/)
+      if (url && url.length == 2) {
+        data.image = url[1]
       }
-
-      // also remove the iframe, if there is an error
-      iframe.onabort = function () {
-        self.container = undefined
-        iframe.remove()
-      }
-
-      try {
-        // get the real HTML file
-        doc = JSON.parse(doc).contents
-      } catch (e) {}
-
-      // load the iframe
-      iframe.srcdoc = doc
     }
+
+    // create a new tooltip
+    this.cache = toCard(
+      data.url,
+      data.title,
+      data.description,
+      data.image,
+      data.image_alt
+    )
+
+    // if there is no tooltip, the reference to the tooltip container gets
+    // deleted to prevent it from loading an empty div
+    if (this.cache === '') {
+      this.container = undefined
+    }
+
+    this.show() // show the tooltip
+
+    // remove the iframe from the DOM, since it is not needed anymore
   }
 
   /**
@@ -528,7 +481,7 @@ function toCard(
   if (description) card += description
 
   if (card != '') {
-    card += `<a style="font-size:x-small; display:block" href="${url}" target="_blank">${url}</a>`
+    card += `<hr style="border: 0px; height:1px; background:#888;"/><a style="font-size:x-small; display:block" href="${url}" target="_blank">${url}</a>`
   }
 
   // backup the result globally, so that a second parsing will not be necessary
@@ -586,22 +539,6 @@ export function initTooltip() {
       document.body.appendChild(div)
     }, 0)
   }
-
-  // create the Iframe-container
-  if (!document.getElementById(IFRAME_ID)) {
-    setTimeout(function () {
-      const div = document.createElement('div')
-
-      div.id = IFRAME_ID
-      // as small as possible
-      div.style.width = '0px'
-      div.style.height = '0px'
-      div.style.display = 'inline'
-      div.ariaHidden = 'true'
-
-      document.body.appendChild(div)
-    }, 0)
-  }
 }
 
 /**
@@ -614,6 +551,12 @@ export function initTooltip() {
  * @param trial - by default 0, the proxy-trial is 1
  */
 function fetch(url: string, callback: (doc: string) => void, trial = 0) {
+  // shortcut for directly use the proxy
+  if (trial == 0 && proxy(url)) {
+    fetch(PROXY + url, callback, 1)
+    return
+  }
+
   let http = new XMLHttpRequest()
   http.open('GET', url, true) // async fetch
 
@@ -621,7 +564,12 @@ function fetch(url: string, callback: (doc: string) => void, trial = 0) {
     // everything went fine
     if (http.readyState === 4 && http.status === 200) {
       try {
-        callback(http.responseText)
+        let html = http.responseText
+        try {
+          // get the real HTML file
+          html = JSON.parse(html).contents
+        } catch (e) {}
+        callback(html)
       } catch (e) {
         console.warn('fetching', e)
       }
@@ -637,6 +585,20 @@ function fetch(url: string, callback: (doc: string) => void, trial = 0) {
 
   // start fetching
   http.send()
+}
+
+/**
+ * helper which checks the url against different servers, which require a
+ * proxy and do not allow direct calling.
+ *
+ * - wikipedia
+ */
+function proxy(url: string): boolean {
+  if (url.search(/wikipedia\.org/gi)) {
+    return true
+  }
+
+  return false
 }
 
 customElements.define('preview-link', PreviewLink)
