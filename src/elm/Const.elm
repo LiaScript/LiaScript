@@ -2,6 +2,7 @@ module Const exposing
     ( align
     , globalBreakpoints
     , icon
+    , tooltipBreakpoint
     , urlLiascript
     , urlLiascriptCourse
     , urlProxy
@@ -27,6 +28,19 @@ align =
     }
 
 
+{-| Breakpoints as used by the styling
+
+    globalBreakpoints.xs == 480
+
+    globalBreakpoints.sm == 768
+
+    globalBreakpoints.md == 1024
+
+    globalBreakpoints.lg == 1440
+
+    globalBreakpoints.xl == 1680
+
+-}
 globalBreakpoints :
     { xs : Int
     , sm : Int
@@ -41,6 +55,13 @@ globalBreakpoints =
     , lg = 1440
     , xl = 1680
     }
+
+
+{-| This defines the maximum allowed size on which tooltips can be enabled
+-}
+tooltipBreakpoint : Int
+tooltipBreakpoint =
+    globalBreakpoints.sm
 
 
 {-| If a Markdown-file cannot be downloaded, for some reasons

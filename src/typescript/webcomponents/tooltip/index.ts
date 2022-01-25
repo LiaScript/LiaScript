@@ -538,6 +538,8 @@ export function initTooltip() {
       div.style.boxShadow = '0 30px 90px -20px rgba(0, 0, 0, 0.3)'
       div.style.position = 'fixed'
       div.style.display = 'none'
+      div.style.maxHeight = '480px'
+      div.style.overflow = 'auto'
 
       // this additional marker is used to not close the tooltip, if the user
       // moves the mouse onto the tooltip, this way, the original link triggers
