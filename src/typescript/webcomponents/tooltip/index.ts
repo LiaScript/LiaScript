@@ -176,16 +176,17 @@ class PreviewLink extends HTMLElement {
 
   /**
    * handler for basic mouse hovering
-   *
-   * @param event
    */
-  _onmouseenter(event: any) {
+  _onmouseenter() {
     // show, that there is some progress going on
     this.style.cursor = 'progress'
 
     // activate the tooltip at the current mouse-position
-    const parent = this.parentElement as PreviewLink
-    parent.activate(event.clientX, event.clientY)
+    const boundingBox = this.getBoundingClientRect()
+    ;(this.parentElement as PreviewLink).activate(
+      boundingBox.left + boundingBox.width / 2,
+      boundingBox.top + boundingBox.height / 2
+    )
   }
 
   /**
@@ -411,7 +412,7 @@ class PreviewLink extends HTMLElement {
       }
 
       this.container.style.zIndex = '20000'
-      this.container.style.display = 'block'
+      this.container.style.display = 'inline-block'
       this.container.innerHTML = this.cache
     }
 
@@ -526,7 +527,7 @@ export function initTooltip() {
       // these two listeners are required when the mouse hovers the tooltip
       // to stay visible or close it ...
       div.addEventListener('mouseenter', () => {
-        div.style.display = 'block'
+        div.style.display = 'inline-block'
         div.style.zIndex = '20000'
         div.setAttribute('data-active', 'true')
       })
