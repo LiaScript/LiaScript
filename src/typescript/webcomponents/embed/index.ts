@@ -2,6 +2,13 @@ import { endpoints } from './endpoints'
 import { Params, Endpoint } from './types.d'
 import { PROXY } from '../../helper'
 
+/**
+ * All retrieved embeds are stored within this global variable. The key is
+ * defined by the URL, whereby the body is a string that should replace the
+ * innerHTML.
+ */
+var backup = Object()
+
 function findProvider(link: string): string | undefined {
   link = link.replace('https://', '')
   link = link.replace('http://', '')
@@ -54,6 +61,16 @@ async function fetchEmbed(
 }
 
 export async function extract(link: string, params: Params) {
+  // this makes urls more equal
+  if (link.endsWith('/')) {
+    link = link.slice(0, -1)
+  }
+
+  // check if it has been loaded so far
+  if (backup[link] && backup[link][JSON.stringify(params)]) {
+    return backup[link][JSON.stringify(params)]
+  }
+
   const p = findProvider(link)
 
   if (!p) {
@@ -66,6 +83,16 @@ export async function extract(link: string, params: Params) {
     data = await fetchEmbed(link, p, params)
   } catch (error) {
     data = await fetchEmbed(link, p, params, PROXY)
+  }
+
+  const key = JSON.stringify(params)
+
+  if (!backup[link]) {
+    let x = {}
+    x[key] = data
+    backup[link] = x
+  } else {
+    backup[link][key] = data
   }
 
   return data
