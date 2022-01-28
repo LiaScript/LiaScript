@@ -6,6 +6,11 @@ def toHTTPS(url):
     url = url.replace("http:", "https:")
     return url
 
+def cleanProtocol(url):
+    url = toHTTPS(url)
+    url = url.replace("https://", "")
+    return url
+
 print("Start downloading ... ")
 _, content = httplib2.Http().request("https://oembed.com/providers.json")
 print("done")
@@ -26,11 +31,11 @@ for d in data:
             schemes = []
             for scheme in e["schemes"]:
                 if not scheme.__contains__("\""):
-                    schemes.append(toHTTPS(scheme))
+                    schemes.append(cleanProtocol(scheme))
 
-            collection += [[ toHTTPS(e["url"]), schemes]]
+            collection += [[ cleanProtocol(e["url"]), schemes]]
         else:
-            collection += [[ toHTTPS(e["url"]), [] ]]
+            collection += [[ cleanProtocol(e["url"]), [] ]]
 
 collection = json.dumps(collection).replace(" ", "")
 

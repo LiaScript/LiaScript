@@ -3,6 +3,9 @@ import { Params, Endpoint } from './types.d'
 import { PROXY } from '../../helper'
 
 function findProvider(link: string): string | undefined {
+  link = link.replace('https://', '')
+  link = link.replace('http://', '')
+
   const candidate = endpoints.find((endpoint: Endpoint) => {
     const [url, schema] = endpoint
 
@@ -16,7 +19,7 @@ function findProvider(link: string): string | undefined {
   })
 
   if (candidate) {
-    return candidate[0]
+    return 'https://' + candidate[0]
   }
 }
 
