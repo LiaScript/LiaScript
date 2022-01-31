@@ -1,7 +1,16 @@
 import log from '../log'
 
+type ErrType = 'error' | 'warning' | 'info'
+
+export type ErrMessage = {
+  row: number
+  column?: number
+  text: string
+  type: ErrType
+}
+
 type SendEval = {
-  lia: (result: string, details?: Lia.ErrMessage[][], ok?: boolean) => void
+  lia: (result: string, details?: ErrMessage[][], ok?: boolean) => void
   log: (topic: string, sep: string, ...args: any) => void
   handle: (name: string, fn: any) => void
   register: (name: string, fn: any) => void
@@ -9,8 +18,8 @@ type SendEval = {
 }
 
 type SendExec = {
-  lia: (result: string, details?: Lia.ErrMessage[][], ok?: boolean) => void
-  output: (result: string, details?: Lia.ErrMessage[][], ok?: boolean) => void
+  lia: (result: string, details?: ErrMessage[][], ok?: boolean) => void
+  output: (result: string, details?: ErrMessage[][], ok?: boolean) => void
   wait: () => void
   stop: () => void
   clear: () => void
@@ -19,7 +28,7 @@ type SendExec = {
 }
 
 class LiaError extends Error {
-  public details: Lia.ErrMessage[][]
+  public details: ErrMessage[][]
 
   constructor(message: string, files: number, ...params: any) {
     super(...params)
@@ -38,7 +47,7 @@ class LiaError extends Error {
   add_detail(
     fileId: number,
     msg: string,
-    type: Lia.ErrType,
+    type: ErrType,
     line: number,
     column?: number
   ) {
@@ -50,7 +59,7 @@ class LiaError extends Error {
     })
   }
 
-  get_detail(msg: string, type: Lia.ErrType, line: number, column = 0) {
+  get_detail(msg: string, type: ErrType, line: number, column = 0) {
     return {
       row: line,
       column: column,
