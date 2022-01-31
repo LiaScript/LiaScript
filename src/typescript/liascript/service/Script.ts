@@ -329,7 +329,9 @@ function list_to_string(sep: string, list: any) {
   let str = ''
 
   for (let i = 0; i < list[0].length; i++) {
-    str += list[0][i].toString() + ' '
+    str +=
+      typeof list[0][i] === 'string' ? list[0][i] : JSON.stringify(list[0][i])
+    str += ' '
   }
 
   return str.slice(0, -1) + sep
