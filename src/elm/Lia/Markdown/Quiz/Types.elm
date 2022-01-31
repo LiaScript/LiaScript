@@ -35,11 +35,6 @@ type alias Element =
     , hint : Int
     , error_msg : String
     , scriptID : Maybe Int
-    , sync :
-        Maybe
-            { solved : Int
-            , resolved : Int
-            }
     }
 
 

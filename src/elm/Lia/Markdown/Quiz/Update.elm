@@ -53,7 +53,7 @@ update sectionID scripts msg vector =
                     case e.scriptID of
                         Nothing ->
                             check solution
-                                >> syncSolution id
+                                -->> syncSolution id
                                 |> update_ id vector
                                 |> store sectionID
                                 |> Return.doSync
@@ -79,12 +79,6 @@ update sectionID scripts msg vector =
                 Nothing ->
                     vector
                         |> Return.val
-
-        Check id solution Nothing ->
-            check solution
-                >> syncSolution id
-                |> update_ id vector
-                |> store
 
         ShowHint idx ->
             (\e -> Return.val { e | hint = e.hint + 1 })

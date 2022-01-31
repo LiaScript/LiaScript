@@ -7,7 +7,6 @@ module Lia.Markdown.Quiz.View exposing
 {-| This module defines the basic frame for all subsequent and specialized
 quizzes. It adds a common checkButton, hintButton, and resolveButton and shows
 hints.
-
 TODO:
 
   - Add translations for web accessability also:
@@ -27,6 +26,8 @@ import Accessibility.Widget as A11y_Widget
 import Array
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
+import Json.Encode as JE
+import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
@@ -48,7 +49,8 @@ import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
 import Lia.Sync.Container.Local exposing (Container)
 import Lia.Sync.Types as Sync
-import Lia.Utils exposing (btn, btnIcon)
+import Lia.Utils exposing (btn, btnIcon, percentage)
+import List.Extra
 import Translations
     exposing
         ( Lang
@@ -71,23 +73,123 @@ view config labeledBy quiz vector sync =
             ( elem.scriptID
             , viewState config elem quiz
                 |> viewQuiz config labeledBy elem quiz
-                |> viewSync quiz.id config.sync sync
+                |> viewSync config (Sync.get config.sync quiz.id sync)
             )
 
         _ ->
             ( Nothing, [] )
 
 
-viewSync id conf sync quiz =
-    case
-        sync
-            |> Maybe.andThen (Container.get id)
-            |> Maybe.map (Sync.filter conf)
-    of
-        Just data ->
-            List.append quiz [ Html.text (Debug.toString data) ]
+viewSync : Config sub -> Maybe (List Sync) -> List (Html msg) -> List (Html msg)
+viewSync config syncData quiz =
+    case ( syncData, syncData |> Maybe.map List.length ) of
+        ( Just _, Just 0 ) ->
+            quiz
 
-        Nothing ->
+        ( Just data, Just length ) ->
+            let
+                total =
+                    toFloat length
+
+                chartData =
+                    data
+                        |> List.Extra.gatherEquals
+                        |> List.map
+                            (\( i, list ) ->
+                                let
+                                    absolute =
+                                        1 + List.length list
+
+                                    relative =
+                                        percentage total absolute
+                                in
+                                case i of
+                                    Just i_ ->
+                                        ( JE.string ("Trial " ++ String.fromInt i_)
+                                        , JE.object
+                                            [ ( "value", JE.float relative )
+                                            , ( "label"
+                                              , JE.object
+                                                    [ ( "show", JE.bool True )
+                                                    , ( "formatter"
+                                                      , String.fromInt absolute
+                                                            ++ " ("
+                                                            ++ String.fromFloat relative
+                                                            ++ "%)"
+                                                            |> JE.string
+                                                      )
+                                                    ]
+                                              )
+                                            ]
+                                        )
+
+                                    Nothing ->
+                                        ( JE.string "Resolved"
+                                        , JE.object
+                                            [ ( "value"
+                                              , JE.float relative
+                                              )
+                                            , ( "itemStyle"
+                                              , JE.object [ ( "color", JE.string "#888" ) ]
+                                              )
+                                            , ( "label"
+                                              , JE.object
+                                                    [ ( "show", JE.bool True )
+                                                    , ( "formatter"
+                                                      , String.fromInt absolute
+                                                            ++ " ("
+                                                            ++ String.fromFloat relative
+                                                            ++ "%)"
+                                                            |> JE.string
+                                                      )
+                                                    ]
+                                              )
+                                            ]
+                                        )
+                            )
+            in
+            JE.object
+                [ ( "grid"
+                  , JE.object
+                        [ ( "left", JE.int 10 )
+                        , ( "top", JE.int 20 )
+                        , ( "bottom", JE.int 20 )
+                        , ( "right", JE.int 10 )
+                        ]
+                  )
+                , ( "xAxis"
+                  , JE.object
+                        [ ( "type", JE.string "category" )
+                        , ( "data"
+                          , chartData
+                                |> List.map Tuple.first
+                                |> JE.list identity
+                          )
+                        ]
+                  )
+                , ( "yAxis"
+                  , JE.object
+                        [ ( "type", JE.string "value" )
+                        , ( "show", JE.bool False )
+                        ]
+                  )
+                , ( "series"
+                  , [ [ ( "type", JE.string "bar" )
+                      , ( "data"
+                        , chartData
+                            |> List.map Tuple.second
+                            |> JE.list identity
+                        )
+                      ]
+                    ]
+                        |> JE.list JE.object
+                  )
+                ]
+                |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
+                |> List.singleton
+                |> List.append quiz
+
+        _ ->
             quiz
 
 
@@ -166,7 +268,6 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
             |> viewHintButton quiz.id (quiz.hints /= []) (Solution.Open == state.solved && state.hint < List.length quiz.hints)
         ]
     , viewFeedback config.lang state
-    , viewSync state
     , viewHints config state.hint quiz.hints
     ]
 
@@ -175,7 +276,6 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
 {- case e.sync of
    Nothing ->
        Html.text ""
-
    Just { solved, resolved } ->
        Html.text
            ("solved: "
@@ -183,7 +283,6 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
                    (solved
                        + (if e.solved == Solution.Solved then
                            1
-
                           else
                            0
                          )
@@ -193,7 +292,6 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
                    (resolved
                        + (if e.solved == Solution.ReSolved then
                            1
-
                           else
                            0
                          )
@@ -325,13 +423,9 @@ viewHintButton id show active title =
 
 
 {-| Check the state of quiz:
-
-    Open -> False
-
-    Solved -> True
-
-    Resolved -> True
-
+Open -> False
+Solved -> True
+Resolved -> True
 -}
 showSolution : Quiz -> Vector -> Bool
 showSolution quiz =

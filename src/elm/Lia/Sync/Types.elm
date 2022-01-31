@@ -2,19 +2,22 @@ module Lia.Sync.Types exposing
     ( Settings
     , State(..)
     , Sync
-    , filter
+    , get
     , id
     , init
-    , isConnected
+    , initRoom
     , isSupported
     , title
     )
 
---import Lia.Sync.Update exposing (Msg(..))
-
 import Dict exposing (Dict)
-import Lia.Sync.Via as Via
+import Html exposing (Html)
+import Html.Attributes as Attr
+import Lia.Sync.Container.Local as Local
+import Lia.Sync.Via as Via exposing (Backend)
+import Lia.Utils exposing (icon)
 import Set exposing (Set)
+import Translations exposing (Lang(..))
 
 
 type State
@@ -24,19 +27,19 @@ type State
 
 
 type alias Settings =
-    { state : State
-    , sync : Sync
-    , course : String
+    { sync : Sync
+    , state : State
     , room : String
     , username : String
     , password : String
     , peers : Set String
+    , error : Maybe String
     }
 
 
 type alias Sync =
-    { support : List Via.Backend
-    , select : Maybe Via.Backend
+    { support : List Backend
+    , select : Maybe Backend
     , open : Bool
     }
 
@@ -49,22 +52,55 @@ init supportedBackends =
         , open = False
         }
     , state = Disconnected
-    , course = "www"
-    , room = "test123"
-    , username = "unknown"
+    , room = ""
+    , username = ""
     , password = ""
     , peers = Set.empty
+    , error = Nothing
     }
 
 
-filter : Maybe Settings -> Dict String sync -> Maybe (List sync)
+initRoom : { backend : String, course : String, room : String } -> Settings -> Settings
+initRoom config settings =
+    case Via.fromString config.backend of
+        Just backend ->
+            if List.member backend settings.sync.support then
+                let
+                    sync =
+                        settings.sync
+                in
+                { settings
+                    | sync = { sync | select = Just backend }
+                    , room = config.room
+                }
+
+            else
+                { settings | error = Just ("Unsupported Backend type: " ++ config.backend) }
+
+        Nothing ->
+            { settings | error = Just ("Unknown Backend type: " ++ config.backend) }
+
+
+filter : Settings -> Dict String sync -> Maybe (List sync)
 filter settings container =
-    case ( Maybe.andThen (.state >> id) settings, settings ) of
-        ( Just main, Just s ) ->
+    case id settings.state of
+        Just main ->
             container
-                |> Dict.filter (filter_ (Set.insert main s.peers))
+                |> Dict.filter (filter_ (Set.insert main settings.peers))
                 |> Dict.values
                 |> Just
+
+        _ ->
+            Nothing
+
+
+get : Maybe Settings -> Int -> Maybe (Local.Container sync) -> Maybe (List sync)
+get settings id_ container =
+    case ( settings, container ) of
+        ( Just s, Just local ) ->
+            local
+                |> Local.get id_
+                |> Maybe.andThen (filter s)
 
         _ ->
             Nothing
@@ -90,24 +126,23 @@ isSupported =
     .sync >> .support >> List.isEmpty >> not
 
 
-isConnected : Settings -> Bool
-isConnected sync =
-    case sync.state of
-        Connected _ ->
-            True
-
-        _ ->
-            False
-
-
-title : Settings -> String
+title : Settings -> Html msg
 title sync =
     case sync.state of
         Disconnected ->
-            "Classroom"
+            Html.text "Classroom"
 
         Connected _ ->
-            "Classroom (" ++ String.fromInt (Set.size sync.peers) ++ ")"
+            Html.span []
+                [ Html.text "Classroom ("
+                , icon "icon-person icon-sm" [ Attr.style "padding-right" "4px" ]
+                , sync.peers
+                    |> Set.size
+                    |> (+) 1
+                    |> String.fromInt
+                    |> Html.text
+                , Html.text ")"
+                ]
 
         Pending ->
-            "Classroom (pending)"
+            Html.text "Classroom (pending)"
