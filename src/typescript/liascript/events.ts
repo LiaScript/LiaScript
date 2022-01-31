@@ -376,14 +376,3 @@ export function lia_execute_event(
     }
   }, event.delay)
 }
-
-function websocket(channel?: any[]) {
-  if (channel) {
-    return function (eventID: string, message: string) {
-      return channel.push('lia', {
-        event_id: eventID,
-        message: message,
-      })
-    }
-  }
-}
