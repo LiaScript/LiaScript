@@ -27,6 +27,28 @@ type SendExec = {
   liascript: (msg: string) => void
 }
 
+enum JS {
+  exec = 'exec',
+  eval = 'eval',
+}
+
+type JSEval = {
+  type: JS.eval
+  code: string
+  send: SendEval
+}
+
+type JSExec = {
+  type: JS.exec
+  section: number
+  event: {
+    code: string
+    delay: number
+    id?: number
+  }
+  send?: Lia.Send
+}
+
 class LiaError extends Error {
   public details: ErrMessage[][]
 
@@ -132,16 +154,21 @@ export class LiaEvents {
 
 var eventHandler = new LiaEvents()
 window.event_semaphore = 0
-//var lia_queue: JSEvent[] = []
+var lia_queue = []
+var elmSend: Lia.Send | null
 
 const Service = {
   PORT: 'script',
+
+  init: function (elmSend_: Lia.Send) {
+    elmSend = elmSend_
+  },
 
   handle: function (event: Lia.Event) {
     switch (event.message.cmd) {
       case 'eval':
         console.warn('EVAL', event)
-
+        liaEval(event)
         break
 
       case 'exec':
@@ -188,6 +215,123 @@ function getLineNumber(error: Error): number | null {
   }
 
   return null
+}
+
+function liaEval(event: Lia.Event) {
+  liaEvalCode(event.message.param, {
+    lia: (result: string, details = [], ok = true) => {
+      event.message.param = {
+        result: result,
+        details: details,
+        ok: ok,
+      }
+      sendReply(event)
+    },
+    log: (topic: string, sep: string, ...args: any) => {
+      event.message.cmd = topic
+      event.message.param = list_to_string(sep, args)
+      sendReply(event)
+    },
+    handle: (name: string, fn: any) => {
+      // TODO: These parameters have to be corrected
+      const e1 = event.track[0][1]
+      const e2 = event.track[1][1]
+      eventHandler.register_input(e1, e2, name, fn)
+    },
+    register: (name: string, fn: any) => {
+      eventHandler.register(name, fn)
+    },
+    dispatch: (name: string, data: any) => {
+      eventHandler.dispatch(name, data)
+    },
+  })
+}
+
+function sendReply(event: Lia.Event) {
+  if (elmSend) {
+    elmSend(event)
+  }
+}
+
+function liaEvalCode(code: string, send: SendEval) {
+  if (window.event_semaphore > 0) {
+    lia_queue.push({
+      type: JS.eval,
+      code: code,
+      send: send,
+    })
+
+    if (lia_queue.length === 1) {
+      wait()
+    }
+    return
+  }
+
+  try {
+    const console = {
+      debug: (...args: any) => {
+        return send.log('debug', '\n', args)
+      },
+      log: (...args: any) => {
+        return send.log('info', '\n', args)
+      },
+      warn: (...args: any) => {
+        return send.log('warn', '\n', args)
+      },
+      error: (...args: any) => {
+        return send.log('error', '\n', args)
+      },
+      stream: (...args: any) => {
+        return send.log('stream', '', args)
+      },
+      html: (...args: any) => {
+        return send.log('html', '\n', args)
+      },
+      clear: () => send.lia('LIA: clear'),
+    }
+
+    console.clear()
+
+    send.lia(String(eval(code + '\n'))) //, send, console)))
+  } catch (e: any) {
+    if (e instanceof LiaError) {
+      send.lia(e.message, e.details, false)
+    } else {
+      send.lia(e.message, [], false)
+    }
+  }
+}
+
+function wait() {
+  if (window.event_semaphore > 0) {
+    setTimeout(wait, 100)
+  } else {
+    let event
+    while ((event = lia_queue.pop())) {
+      switch (event.type) {
+        case JS.eval: {
+          liaEvalCode(event.code, event.send)
+          break
+        }
+        case JS.exec: {
+          //lia_execute_event(event.event, event.send, event.section)
+          break
+        }
+        default:
+          log.warn('lia_queue => unknown event => ', JSON.stringify(event))
+      }
+    }
+  }
+}
+
+function list_to_string(sep: string, list: any) {
+  let str = ''
+
+  for (let i = 0; i < list[0].length; i++) {
+    str += list[0][i].toString() + ' '
+  }
+
+  return str.slice(0, -1) + sep
 }
 
 export default Service

@@ -22,7 +22,7 @@ import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
 import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
-import Service.Script exposing (Eval)
+import Service.Script as Script
 
 
 stop : Int -> Event
@@ -41,14 +41,19 @@ input id value =
         |> event "input"
 
 
-eval : Scripts a -> Int -> Project -> Event
-eval scripts idx project =
-    -- TODO:
-    -- project.file
-    --    |> Array.map .code
-    --    |> Array.toList
-    --    |> Eval.eval idx project.evaluation (outputs scripts)
-    event "eval" JE.null
+eval : Int -> Scripts a -> Project -> Event
+eval id scripts project =
+    project.file
+        |> Array.map .code
+        |> Array.toList
+        |> Script.eval project.evaluation (outputs scripts)
+        -- navigate the evaluation within the Code module
+        |> toProject id
+
+
+toProject : Int -> Event -> Event
+toProject id =
+    Event.pushWithId "project" id
 
 
 store : Maybe Int -> Vector -> List Event

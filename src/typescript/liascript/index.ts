@@ -46,7 +46,6 @@ window.img_Zoom = function (e: MouseEvent | TouchEvent) {
 
 // -----------------------------------------------------------------------------
 
-var eventHandler: LiaEvents
 var liaStorage: any
 
 class LiaScript {
@@ -149,6 +148,7 @@ class LiaScript {
 
     Database.init(elmSend, this.connector)
     TTS.init(elmSend)
+    Script.init(elmSend)
     Swipe.init(elem, elmSend)
     Translate.init(elmSend)
     Sync.init(elmSend)

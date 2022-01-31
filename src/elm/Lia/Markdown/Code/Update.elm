@@ -16,7 +16,7 @@ import Lia.Markdown.Code.Types exposing (Code(..), File, Model, Project, loadVer
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Return exposing (Return)
 import Service.Event as PEvent exposing (Event)
-import Service.Script exposing (Eval)
+import Service.Script as Script exposing (Eval)
 
 
 type Msg
@@ -141,9 +141,43 @@ update sectionID scripts msg model =
             load model idx version
 
         Handle event ->
-            case PEvent.destructure event of
+            case PEvent.destructure event |> Debug.log "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS" of
                 ( Nothing, _, ( "load", param ) ) ->
                     restore sectionID param model
+
+                ( Just "project", id, ( "eval", param ) ) ->
+                    let
+                        e =
+                            Script.decode param
+                    in
+                    case e.result of
+                        "LIA: wait" ->
+                            model
+                                |> maybe_project id (\p -> { p | log = Log.empty })
+                                |> maybe_update id model
+
+                        "LIA: stop" ->
+                            model
+                                |> maybe_project id stop
+                                |> Maybe.map (Event.version_update id)
+                                |> maybe_update id model
+
+                        "LIA: clear" ->
+                            model
+                                |> maybe_project id clr
+                                |> maybe_update id model
+
+                        -- preserve previous logging by setting ok to false
+                        "LIA: terminal" ->
+                            model
+                                |> maybe_project id (\p -> { p | terminal = Just <| Terminal.init })
+                                |> maybe_update id model
+
+                        _ ->
+                            model
+                                |> maybe_project id (set_result False e)
+                                |> Maybe.map (Event.version_update id)
+                                |> maybe_update id model
 
                 _ ->
                     Return.val model
@@ -292,11 +326,11 @@ update_terminal f msg project =
             Return.val project
 
 
-eval : Scripts a -> Int -> Project -> Return Project msg sub
-eval scripts idx project =
+eval : Int -> Scripts a -> Project -> Return Project msg sub
+eval id scripts project =
     { project | running = True }
         |> Return.val
-        |> Return.batchEvent (Event.eval scripts idx project)
+        |> Return.batchEvent (Event.eval id scripts project)
 
 
 maybe_project : Int -> (Project -> x) -> Model -> Maybe (Return x cmd sub)
@@ -467,7 +501,7 @@ flipHigh model id_1 id_2 =
 execute : Scripts a -> Model -> Int -> Return Model msg sub
 execute scripts model id =
     model
-        |> maybe_project id (eval scripts id)
+        |> maybe_project id (eval id scripts)
         |> Maybe.map (.value >> is_version_new id)
         |> maybe_update id model
 
