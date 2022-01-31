@@ -220,6 +220,7 @@ function getLineNumber(error: Error): number | null {
 function liaEval(event: Lia.Event) {
   liaEvalCode(event.message.param, {
     lia: (result: string, details = [], ok = true) => {
+      event.message.cmd = 'eval'
       event.message.param = {
         result: result,
         details: details,
@@ -228,8 +229,8 @@ function liaEval(event: Lia.Event) {
       sendReply(event)
     },
     log: (topic: string, sep: string, ...args: any) => {
-      event.message.cmd = topic
-      event.message.param = list_to_string(sep, args)
+      event.message.cmd = 'log'
+      event.message.param = [topic, list_to_string(sep, args)]
       sendReply(event)
     },
     handle: (name: string, fn: any) => {

@@ -141,7 +141,7 @@ update sectionID scripts msg model =
             load model idx version
 
         Handle event ->
-            case PEvent.destructure event |> Debug.log "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS" of
+            case PEvent.destructure event of
                 ( Nothing, _, ( "load", param ) ) ->
                     restore sectionID param model
 
@@ -179,64 +179,21 @@ update sectionID scripts msg model =
                                 |> Maybe.map (Event.version_update id)
                                 |> maybe_update id model
 
+                ( Just "project", id, ( "log", param ) ) ->
+                    case JD.decodeValue (JD.list JD.string) param of
+                        Ok [ log, message ] ->
+                            model
+                                |> maybe_project id (logger log message)
+                                |> maybe_update id model
+
+                        _ ->
+                            Return.val model
+
                 _ ->
                     Return.val model
 
         -- TODO:
         -- case PEvent.destructure eval of
-        --     Just ( "eval", section, _ ) ->
-        --         let
-        --             e =
-        --                 Event.evalDecode eval
-        --         in
-        --         case e.result of
-        --             "LIA: wait" ->
-        --                 model
-        --                     |> maybe_project section (\p -> { p | log = Log.empty })
-        --                     |> maybe_update section model
-        --             "LIA: stop" ->
-        --                 model
-        --                     |> maybe_project section stop
-        --                     |> Maybe.map (Event.version_update section)
-        --                     |> maybe_update section model
-        --             "LIA: clear" ->
-        --                 model
-        --                     |> maybe_project section clr
-        --                     |> maybe_update section model
-        --             -- preserve previous logging by setting ok to false
-        --             "LIA: terminal" ->
-        --                 model
-        --                     |> maybe_project section (\p -> { p | terminal = Just <| Terminal.init })
-        --                     |> maybe_update section model
-        --             _ ->
-        --                 model
-        --                     |> maybe_project section (set_result False e)
-        --                     |> Maybe.map (Event.version_update section)
-        --                     |> maybe_update section model
-        --     Just ( "debug", section, message ) ->
-        --         model
-        --             |> maybe_project section (logger Log.add Log.Debug message)
-        --             |> maybe_update section model
-        --     Just ( "info", section, message ) ->
-        --         model
-        --             |> maybe_project section (logger Log.add Log.Info message)
-        --             |> maybe_update section model
-        --     Just ( "warn", section, message ) ->
-        --         model
-        --             |> maybe_project section (logger Log.add Log.Warn message)
-        --             |> maybe_update section model
-        --     Just ( "error", section, message ) ->
-        --         model
-        --             |> maybe_project section (logger Log.add Log.Error message)
-        --             |> maybe_update section model
-        --     Just ( "html", section, message ) ->
-        --         model
-        --             |> maybe_project section (logger Log.add Log.HTML message)
-        --             |> maybe_update section model
-        --     Just ( "stream", section, message ) ->
-        --         model
-        --             |> maybe_project section (logger Log.add Log.Stream message)
-        --             |> maybe_update section model
         --     {- Just ( "sync", _, message ) ->
         --        case PEvent.topicWithId event of
         --            Just ( "flip_eval", Just id ) ->
@@ -441,17 +398,23 @@ clr project =
             project
 
 
-logger : (Log.Level -> String -> Log.Log -> Log.Log) -> Log.Level -> JD.Value -> Project -> Project
-logger fn level event_str project =
-    case ( project.version |> Array.get project.version_active, JD.decodeValue JD.string event_str ) of
-        ( Just ( code, _ ), Ok str ) ->
+logger : String -> String -> Project -> Project
+logger level message project =
+    case
+        ( project.version
+            |> Array.get project.version_active
+            |> Maybe.map Tuple.first
+        , Log.fromString level
+        )
+    of
+        ( Just code, Just level_ ) ->
             { project
                 | version =
                     Array.set
                         project.version_active
-                        ( code, fn level str project.log )
+                        ( code, Log.add level_ message project.log )
                         project.version
-                , log = fn level str project.log
+                , log = Log.add level_ message project.log
             }
 
         _ ->

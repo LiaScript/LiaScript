@@ -7,6 +7,7 @@ module Lia.Markdown.Code.Log exposing
     , decoder
     , empty
     , encode
+    , fromString
     , isEmpty
     , length
     , view
@@ -42,6 +43,31 @@ type alias Log =
     , messages : Array Message
     , details : List JE.Value
     }
+
+
+fromString : String -> Maybe Level
+fromString level =
+    case level of
+        "debug" ->
+            Just Debug
+
+        "info" ->
+            Just Info
+
+        "warn" ->
+            Just Warn
+
+        "error" ->
+            Just Error
+
+        "html" ->
+            Just HTML
+
+        "stream" ->
+            Just Stream
+
+        _ ->
+            Nothing
 
 
 empty : Log
