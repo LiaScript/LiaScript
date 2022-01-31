@@ -41,6 +41,14 @@ const Service = {
         connector.store(param)
         break
 
+      case 'update':
+        connector.update(
+          param.data.cmd,
+          { table: param.table, id: param.id, data: param.data.data },
+          param.data.id
+        )
+        break
+
       case 'index_get':
         event.message.param = await connector.getFromIndex(param)
         sendReply(event)

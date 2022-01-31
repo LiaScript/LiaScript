@@ -33,8 +33,9 @@ class Connector extends Base {
   }
 
   update(cmd: string, record: Record, id: number) {
-    if (this.database) {
-      /** let project = vector.data[event.track[0][1]]
+    console.warn(cmd, record, id)
+
+    /** let project = vector.data[event.track[0][1]]
 
         switch (event.track[0][0]) {
           case 'flip': {
@@ -81,15 +82,41 @@ class Connector extends Base {
 
         vector.data[event.track[0][1]] = project */
 
-      let fn = (a: any) => a
+    let fn = (a: any) => a
+    const new_ = record.data
 
-      switch (cmd) {
-        default:
-          log.warn('unknown update cmd: ', record)
-      }
+    switch (cmd) {
+      // update the current version and logs
+      case 'version':
+        fn = (project: any) => {
+          project[id].version_active = new_.version_active
+          project[id].log = new_.log
+          project[id].version[new_.version_active] = new_.version
 
-      if (fn) this.database.transaction(record, fn)
+          return project
+        }
+        break
+
+      // append a new version of files and logs
+      case 'append':
+        fn = (project: any) => {
+          project[id].version_active = new_.version_active
+          project[id].log = new_.log
+          project[id].file = new_.file
+          project[id].version.push(new_.version)
+          project[id].repository = {
+            ...project[id].repository,
+            ...new_.repository,
+          }
+
+          return project
+        }
+        break
+      default:
+        log.warn('unknown update cmd: ', cmd)
     }
+
+    if (fn) this.database.transaction(record, fn)
   }
 
   slide(id: number) {

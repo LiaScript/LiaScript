@@ -8,6 +8,7 @@ module Service.Database exposing
     , load
     , settings
     , store
+    , update
     )
 
 import Index.Version
@@ -31,6 +32,23 @@ store table id data =
     Just data
         |> record table id
         |> event "store"
+
+
+{-| This event-type contains different instructions on how to update certain
+entries. The `sub` command is currently only used to update specific elements
+within the "code" table. The `sub.id` is required to only target one specific
+element within the state-arrays, that are stored per slide ...
+-}
+update : String -> Int -> { cmd : String, id : Int } -> JE.Value -> Event
+update table id sub data =
+    [ ( "cmd", JE.string sub.cmd )
+    , ( "id", JE.int sub.id )
+    , ( "data", data )
+    ]
+        |> JE.object
+        |> Just
+        |> record table id
+        |> event "update"
 
 
 record : String -> Int -> Maybe JE.Value -> JE.Value

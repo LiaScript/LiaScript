@@ -70,7 +70,7 @@ update : Maybe Int -> Scripts a -> Msg -> Model -> Return Model msg sub
 update sectionID scripts msg model =
     case msg of
         Eval idx ->
-            execute scripts model idx
+            execute sectionID scripts model idx
 
         --|> Return.sync (PEvent.initWithId "eval" idx JE.null)
         Update id_1 id_2 code_str ->
@@ -159,7 +159,7 @@ update sectionID scripts msg model =
                         "LIA: stop" ->
                             model
                                 |> maybe_project id stop
-                                |> Maybe.map (Event.version_update id)
+                                |> Maybe.map2 (Event.updateVersion id) sectionID
                                 |> maybe_update id model
 
                         "LIA: clear" ->
@@ -176,7 +176,7 @@ update sectionID scripts msg model =
                         _ ->
                             model
                                 |> maybe_project id (set_result False e)
-                                |> Maybe.map (Event.version_update id)
+                                |> Maybe.map2 (Event.updateVersion id) sectionID
                                 |> maybe_update id model
 
                 ( Just "project", id, ( "log", param ) ) ->
@@ -307,7 +307,11 @@ update_file : Int -> Int -> Model -> (File -> File) -> (File -> List Event) -> R
 update_file id_1 id_2 model f f_log =
     case Array.get id_1 model.evaluate of
         Just project ->
-            case project.file |> Array.get id_2 |> Maybe.map f of
+            case
+                project.file
+                    |> Array.get id_2
+                    |> Maybe.map f
+            of
                 Just file ->
                     { model
                         | evaluate =
@@ -327,15 +331,15 @@ update_file id_1 id_2 model f f_log =
             Return.val model
 
 
-is_version_new : Int -> Return Project msg sub -> Return Project msg sub
-is_version_new idx return =
-    case updateVersion return.value of
-        Just ( new_project, repo_update ) ->
+is_version_new : Maybe Int -> Int -> Return Project msg sub -> Return Project msg sub
+is_version_new sectionID idx return =
+    case ( sectionID, updateVersion return.value ) of
+        ( Just sectionID_, Just ( new_project, repo_update ) ) ->
             new_project
                 |> Return.replace return
-                |> Return.batchEvent (Event.version_append idx new_project repo_update)
+                |> Return.batchEvent (Event.updateAppend idx new_project repo_update sectionID_)
 
-        Nothing ->
+        _ ->
             return
 
 
@@ -461,11 +465,11 @@ flipHigh model id_1 id_2 =
         |> Return.val
 
 
-execute : Scripts a -> Model -> Int -> Return Model msg sub
-execute scripts model id =
+execute : Maybe Int -> Scripts a -> Model -> Int -> Return Model msg sub
+execute sectionID scripts model id =
     model
         |> maybe_project id (eval id scripts)
-        |> Maybe.map (.value >> is_version_new id)
+        |> Maybe.map (.value >> is_version_new sectionID id)
         |> maybe_update id model
 
 

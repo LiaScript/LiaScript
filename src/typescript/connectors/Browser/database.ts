@@ -179,7 +179,8 @@ class LiaDB {
       })
 
       if (vector.data) {
-        await db[record.table].put(modify(vector))
+        vector.data = modify(vector.data)
+        await db[record.table].put(vector)
       }
     })
   }
@@ -196,12 +197,12 @@ class LiaDB {
    *    restore("httsp://.../README.md")
    */
   async restore(uidDB: string, versionDB?: number) {
-    const course = await this.dbIndex.courses.get(uidDB)
+    const course = await this.dbIndex['courses'].get(uidDB)
 
     if (course) {
       let db = this.open_(uidDB)
 
-      const offline = await db.offline.get({
+      const offline = await db['offline'].get({
         id: 0,
         version: versionDB != null ? versionDB : this.version,
       })
@@ -218,7 +219,7 @@ class LiaDB {
    */
   async getIndex(uidDB: string) {
     try {
-      return await this.dbIndex.courses.get(uidDB)
+      return await this.dbIndex['courses'].get(uidDB)
     } catch (e: any) {
       log.warn('DB: getIndex -> ', e.message)
     }
@@ -231,7 +232,7 @@ class LiaDB {
    * @returns
    */
   async listIndex(order = 'updated', desc = false) {
-    const courses = await this.dbIndex.courses.orderBy(order).toArray()
+    const courses = await this.dbIndex['courses'].orderBy(order).toArray()
 
     if (!desc) {
       courses.reverse()
@@ -254,7 +255,7 @@ class LiaDB {
     }
 
     const date = new Date()
-    let item = await this.dbIndex.courses.get(data.readme)
+    let item = await this.dbIndex['courses'].get(data.readme)
 
     // If there is no item, then create an initial one
     if (!item) {
@@ -296,7 +297,7 @@ class LiaDB {
       let db = this.open_(data.readme)
       await db.open()
 
-      await db.offline.put({
+      await db['offline'].put({
         id: 0,
         version: data.version,
         data: data,
@@ -304,7 +305,7 @@ class LiaDB {
       })
     }
 
-    this.dbIndex.courses.put(item).then(function (result: any) {
+    this.dbIndex['courses'].put(item).then(function (result: any) {
       log.info('DB: storeIndex', result)
     })
   }
@@ -316,7 +317,10 @@ class LiaDB {
    * @param uidDB - A string URL or URI, which identifies the source of a course.
    */
   async deleteIndex(uidDB: string) {
-    await Promise.all([this.dbIndex.courses.delete(uidDB), Dexie.delete(uidDB)])
+    await Promise.all([
+      this.dbIndex['courses'].delete(uidDB),
+      Dexie.delete(uidDB),
+    ])
   }
 
   /** Delete all state information for a particular course and a particular version.
@@ -329,10 +333,10 @@ class LiaDB {
     await db.open()
 
     await Promise.all([
-      db.code.where('version').equals(versionDB).delete(),
-      db.quiz.where('version').equals(versionDB).delete(),
-      db.survey.where('version').equals(versionDB).delete(),
-      db.task.where('version').equals(versionDB).delete(),
+      db['code'].where('version').equals(versionDB).delete(),
+      db['quiz'].where('version').equals(versionDB).delete(),
+      db['survey'].where('version').equals(versionDB).delete(),
+      db['task'].where('version').equals(versionDB).delete(),
     ])
   }
 }
