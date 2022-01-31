@@ -162,11 +162,11 @@ replaceInputs javascript =
         (\( id, script, input_ ) ->
             ( id
             , inputs
-                |> List.foldl Service.Script.replace_input script
+                |> List.foldl Service.Script.replace_inputKey script
                 |> (\code ->
                         case input_ of
                             Just str ->
-                                Service.Script.replace_0 str code
+                                Service.Script.replace_input str code
 
                             Nothing ->
                                 code

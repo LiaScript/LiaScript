@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Elm } from '../../elm/Main.elm'
-import { LiaEvents, lia_execute_event, lia_eval_event } from './events'
+// import { LiaEvents, lia_execute_event, lia_eval_event } from './events'
 // import persistent from './persistent.ts'
 import log from './log'
 
@@ -15,6 +15,7 @@ import { initTooltip } from '../webcomponents/tooltip/index'
 import Console from './service/Console'
 import Database from './service/Database'
 import { Service as Resource } from './service/Resource'
+import Script from './service/Script'
 import Share from './service/Share'
 import Slide from './service/Slide'
 import Swipe from './service/Swipe'
@@ -43,150 +44,6 @@ window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   }
 }
 
-function handleEffects(
-  event: Lia.Event,
-  elmSend: Lia.Send,
-  section: number = -1,
-  self?: LiaScript
-) {
-  switch (event.track[0][0]) {
-    case 'persistent':
-      // Todo
-      // setTimeout((e) => { persistent.load(event.section) }, 10)
-      break
-    case 'execute':
-      lia_execute_event(event.message, elmSend, event.track[0][1])
-      break
-    /*case 'speak': {
-      let msg: Lia.Event = {
-        reply: true,
-        track: [
-          [Port.SETTINGS, -1],
-          ['speak', -1],
-        ],
-        service: null,
-        message: 'stop',
-      }
-
-      if (section >= 0) {
-        msg = {
-          reply: true,
-          track: [
-            [Port.EFFECT, section],
-            ['speak', event.track[0][1]],
-          ],
-          service: null,
-          message: 'stop',
-        }
-      }
-
-      try {
-        if (event.message === 'cancel') {
-          TTS.cancel()
-          msg.message = 'stop'
-          elmSend(msg)
-        } else if (event.message === 'repeat') {
-          event.message = [ttsBackup[0], ttsBackup[1], 'true']
-          handleEffects(event, elmSend)
-        } else if (
-          typeof event.message === 'string' &&
-          event.message.startsWith('lia-tts-')
-        ) {
-          setTimeout(function () {
-            let element = document.getElementsByClassName(event.message)
-            let voice = element[0].getAttribute('data-voice') || 'default'
-
-            let text = ''
-
-            for (let i = 0; i < element.length; i++) {
-              text +=
-                (element[i] as HTMLElement).innerText || element[i].textContent
-            }
-
-            // This is used to clean up effect numbers, which are marked by a \b
-            text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
-
-            if (text !== '' && element[0]) {
-              TTS.speak(
-                text,
-                voice,
-                function () {
-                  msg.track[0][0] = Port.SETTINGS
-                  msg.message = 'start'
-
-                  elmSend(msg)
-                },
-                function () {
-                  msg.track[0][0] = Port.SETTINGS
-                  msg.message = 'stop'
-                  elmSend(msg)
-                },
-                function (e: any) {
-                  msg.message = e.toString()
-                  elmSend(msg)
-                }
-              )
-            }
-          }, 500)
-        } else if (firstSpeak) {
-          // this is a hack to deal with the delay in responsivevoice
-          firstSpeak = false
-          setTimeout(function () {
-            handleEffects(event, elmSend)
-          }, 200)
-        } else {
-          ttsBackup = event.message
-          if (event.message[2] === 'true') {
-            TTS.speak(
-              event.message[1],
-              event.message[0],
-              function () {
-                msg.message = 'start'
-                elmSend(msg)
-              },
-              function () {
-                msg.message = 'stop'
-                elmSend(msg)
-              },
-              function (e: any) {
-                msg.message = e.toString()
-                elmSend(msg)
-              }
-            )
-          }
-        }
-      } catch (e: any) {
-        msg.message = e.toString()
-        elmSend(msg)
-      }
-      break
-    }
-    */
-    case 'sub': {
-      if (self != undefined && event.track.length != 0) {
-        const newSend = function (subEvent: Lia.Event) {
-          elmSend({
-            reply: true,
-            track: [
-              [Port.EFFECT, section],
-              ['sub', event.track[0][1]],
-            ],
-            service: null,
-            message: subEvent,
-          })
-        }
-
-        process(false, self, newSend, event)
-      }
-      break
-    }
-    default: {
-      // checking for sub-events
-      log.warn('effect missed => ', event, section)
-    }
-  }
-}
-
 // -----------------------------------------------------------------------------
 
 var eventHandler: LiaEvents
@@ -207,7 +64,7 @@ class LiaScript {
   ) {
     if (debug) window.debug__ = true
 
-    eventHandler = new LiaEvents()
+    //eventHandler = new LiaEvents()
 
     this.app = Elm.Main.init({
       //node: elem,
@@ -329,6 +186,10 @@ function process(
 
     case TTS.PORT:
       TTS.handle(event)
+      break
+
+    case Script.PORT:
+      Script.handle(event)
       break
 
     case Console.PORT:
