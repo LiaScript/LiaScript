@@ -458,7 +458,7 @@ showModal model =
                             |> Maybe.withDefault (Attr.class "")
                         , Attr.style "background-image" ("url('" ++ url ++ "')")
                         , Attr.class "lia-figure__zoom"
-                        , Attr.attribute "onmousemove" "img_Zoom(event)"
+                        , Attr.attribute "onmousemove" "window.LIA.img.zoom(event)"
                         ]
                         [ Html.img
                             [ Attr.src url

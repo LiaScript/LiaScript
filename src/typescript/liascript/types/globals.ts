@@ -5,10 +5,6 @@ declare global {
     playback: (_: Lia.Event) => void
     showFootnote: (_: any) => void
 
-    img_: (src: string, width: number, height: number) => void
-    img_Click: (url: string) => void
-    img_Zoom: (_: MouseEvent) => void
-
     googleTranslateElementInit: () => void
 
     LIA: {
@@ -26,6 +22,21 @@ declare global {
       // port to send messages to the internal LiaScript, should only be used
       // for very seldomly, since it offers a direct port
       send: Lia.Send
+
+      // All interface functions required by LiaScript
+      // Only for internal usage
+      img: {
+        // submit the image dimensions to LiaScript after an image has been loaded
+        // this is required to calculate the optimal placement
+        load: (src: string, width: number, height: number) => void
+
+        // external handler to open an image as Modal in LiaScript
+        click: (url: string) => void
+
+        // zoom handler for dealing with mouse hovers
+        // TODO: touch events to not work yet
+        zoom: (_: MouseEvent) => void
+      }
     }
   }
 }

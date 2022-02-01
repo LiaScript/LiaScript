@@ -23,27 +23,6 @@ import TTS from './service/TTS'
 import Translate from './service/Translate'
 import { LiaStorage } from '../connectors/Base/storage'
 
-window.img_Zoom = function (e: MouseEvent | TouchEvent) {
-  const target = e.target as HTMLImageElement
-
-  if (target) {
-    const zooming = e.currentTarget as HTMLImageElement
-
-    if (zooming) {
-      if (target.width < target.naturalWidth) {
-        var offsetX = e instanceof MouseEvent ? e.offsetX : e.touches[0].pageX
-        var offsetY = e instanceof MouseEvent ? e.offsetY : e.touches[0].pageY
-        var x = (offsetX / zooming.offsetWidth) * 100
-        var y = (offsetY / zooming.offsetHeight) * 100
-        zooming.style.backgroundPosition = x + '% ' + y + '%'
-        zooming.style.cursor = 'zoom-in'
-      } else {
-        zooming.style.cursor = ''
-      }
-    }
-  }
-}
-
 // ----------------------------------------------------------------------------
 // GLOBAL INITIALIZATION
 
@@ -54,6 +33,36 @@ if (!window.LIA) {
     eventSemaphore: 0,
     send: (_event: Lia.Event) => {
       console.warn('send not defined')
+    },
+    img: {
+      load: function (_url: string, _width: number, _height: number) {
+        console.warn('img.load not defined')
+      },
+      click: function (_url: string) {
+        console.warn('img.click not defined')
+      },
+      zoom: function (e: MouseEvent | TouchEvent) {
+        const target = e.target as HTMLImageElement
+
+        if (target) {
+          const zooming = e.currentTarget as HTMLImageElement
+
+          if (zooming) {
+            if (target.width < target.naturalWidth) {
+              var offsetX =
+                e instanceof MouseEvent ? e.offsetX : e.touches[0].pageX
+              var offsetY =
+                e instanceof MouseEvent ? e.offsetY : e.touches[0].pageY
+              var x = (offsetX / zooming.offsetWidth) * 100
+              var y = (offsetY / zooming.offsetHeight) * 100
+              zooming.style.backgroundPosition = x + '% ' + y + '%'
+              zooming.style.cursor = 'zoom-in'
+            } else {
+              zooming.style.cursor = ''
+            }
+          }
+        }
+      },
     },
   }
 }
@@ -119,11 +128,16 @@ class LiaScript {
     window.showFootnote = (key) => {
       self.footnote(key)
     }
-    window.img_ = (src: string, width: number, height: number) => {
-      self.img_(src, width, height)
+
+    window.LIA.img.load = (src: string, width: number, height: number) => {
+      self.app.ports.media.send([src, width, height])
     }
-    window.img_Click = (url: string) => {
-      self.img_Click(url)
+
+    window.LIA.img.click = (url: string) => {
+      // abuse media port to open modals
+      if (document.getElementsByClassName('lia-modal').length === 0) {
+        self.app.ports.media.send([url, null, null])
+      }
     }
 
     initTooltip()
@@ -131,17 +145,6 @@ class LiaScript {
 
   footnote(key: string) {
     this.app.ports.footnote.send(key)
-  }
-
-  img_(src: string, width: number, height: number) {
-    this.app.ports.media.send([src, width, height])
-  }
-
-  img_Click(url: string) {
-    // abuse media port to open modals
-    if (document.getElementsByClassName('lia-modal').length === 0) {
-      this.app.ports.media.send([url, null, null])
-    }
   }
 
   reset() {
