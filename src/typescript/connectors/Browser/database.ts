@@ -224,6 +224,7 @@ class LiaDB {
       return await this.dbIndex['courses'].get(uidDB)
     } catch (e: any) {
       log.warn('DB: getIndex -> ', e.message)
+      return null
     }
   }
 

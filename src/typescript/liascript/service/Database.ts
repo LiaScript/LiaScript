@@ -49,7 +49,10 @@ const Service = {
         break
 
       case 'index_get':
-        event.message.param = await connector.getFromIndex(param)
+        event.message.param = {
+          id: param,
+          course: await connector.getFromIndex(param),
+        }
         sendReply(event)
         break
 
@@ -157,29 +160,13 @@ const Service = {
   },
 }
 
-/** let project = vector.data[event.track[0][1]]
-
-        switch (event.track[0][0]) {
-          case 'flip': {
-            if (event.track[1][0] === 'view') {
-              project.file[event.track[1][1]].visible = event.message
-            } else if (
-              event.track[1][0] === 'fullscreen' &&
-              event.track[1][1] !== -1
-            ) {
-              project.file[event.track[1][1]].fullscreen = event.message
-            }
-            break
-          }
-          
-          
-          default: {
-            log.warn('unknown update cmd: ', event)
-          }
-        }
-
-        vector.data[event.track[0][1]] = project */
-
+/**
+ * **private helper:** defines a couple of transaction only for the data stored
+ * in the "code" table.
+ *
+ * @param def
+ * @returns a function that modifies a certain sub-entry within the database
+ */
 function transaction(def: {
   cmd: string
   id: number

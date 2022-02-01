@@ -21,6 +21,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types as Definition
 import Lia.Json.Decode
+import Lia.Markdown.Code.Log exposing (Level(..))
 import Lia.Script
 import Model exposing (Model, State(..))
 import Process
