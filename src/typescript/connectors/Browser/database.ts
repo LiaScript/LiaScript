@@ -138,6 +138,7 @@ class LiaDB {
 
       return item.data
     }
+    return null
   }
 
   /** This is a shorthand for updating the stored slide number within the
