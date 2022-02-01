@@ -39,12 +39,24 @@ val model =
 
 batchEvent : Event -> Return model msg sub -> Return model msg sub
 batchEvent e r =
-    { r | events = e :: r.events }
+    { r
+        | events =
+            if Event.notNone e then
+                e :: r.events
+
+            else
+                r.events
+    }
 
 
 batchEvents : List Event -> Return model msg sub -> Return model msg sub
 batchEvents e r =
-    { r | events = List.append r.events e }
+    { r
+        | events =
+            e
+                |> List.filter Event.notNone
+                |> List.append r.events
+    }
 
 
 upgrade : String -> Int -> List Event -> List Event

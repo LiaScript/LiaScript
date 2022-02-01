@@ -61,21 +61,22 @@ update sectionID scripts msg vector =
                         Just scriptID ->
                             vector
                                 |> Return.val
+                                |> Return.batchEvents
+                                    (case
+                                        scripts
+                                            |> Array.get scriptID
+                                            |> Maybe.map .script
+                                     of
+                                        Just code ->
+                                            [ [ toString e.state ]
+                                                |> Service.Script.eval code (outputs scripts)
+                                                |> Event.pushWithId "quiz" id
+                                            ]
 
-                -- TODO:
-                -- |> Return.batchEvents
-                --     (case
-                --         scripts
-                --             |> Array.get scriptID
-                --             |> Maybe.map .script
-                --      of
-                --         Just code ->
-                --             [ [ toString e.state ]
-                --                 |> Eval.eval id code (outputs scripts)
-                --             ]
-                --         Nothing ->
-                --             []
-                --     )
+                                        _ ->
+                                            []
+                                    )
+
                 Nothing ->
                     vector
                         |> Return.val
@@ -117,16 +118,16 @@ update sectionID scripts msg vector =
                         |> init (\i s -> execute i s.state)
                         |> Return.doSync
 
-                ( Just "eval", section, ( cmd, param ) ) ->
+                ( Just "quiz", id, ( "eval", param ) ) ->
                     case
                         vector
-                            |> Array.get section
+                            |> Array.get id
                             |> Maybe.andThen .scriptID
                     of
                         Just scriptID ->
                             param
                                 |> evalEventDecoder
-                                |> update_ section vector
+                                |> update_ id vector
                                 |> store sectionID
                                 |> Return.doSync
 
@@ -139,7 +140,7 @@ update sectionID scripts msg vector =
                         Nothing ->
                             param
                                 |> evalEventDecoder
-                                |> update_ section vector
+                                |> update_ id vector
                                 |> store sectionID
                                 |> Return.doSync
 

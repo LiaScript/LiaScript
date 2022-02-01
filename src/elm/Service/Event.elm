@@ -8,6 +8,8 @@ module Service.Event exposing
     , init
     , initGeneric
     , message
+    , none
+    , notNone
     , poi
     , pop
     , popWithId
@@ -92,6 +94,34 @@ be set to `null`.
 empty : String -> String -> Event
 empty service command =
     init service { cmd = command, param = JE.null }
+
+
+{-| Similar to `Cmd.none` these empty events are ignored when submitted.
+A Event is called none, when it has not associated to a "service".
+This comes handy when dealing with conditions:
+
+    if True then
+        init "TTS" "cancel"
+
+    else
+        none
+
+-}
+none : Event
+none =
+    empty "" ""
+
+
+{-| Check it the event shall be ignored or not.
+-}
+notNone : Event -> Bool
+notNone event =
+    case event.service of
+        "" ->
+            False
+
+        _ ->
+            True
 
 
 {-| Initialize a new event, a reply is awaited by default.
