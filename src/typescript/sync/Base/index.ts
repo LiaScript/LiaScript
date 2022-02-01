@@ -83,7 +83,7 @@ export class Sync {
     this.send(this.syncMsg(topic, message))
   }
 
-  syncMsg(topic: string, message: any = null) {
+  syncMsg(topic: string, message: any = null): Lia.Event {
     return {
       reply: true,
       track: [
@@ -92,7 +92,10 @@ export class Sync {
         [topic, -1],
       ],
       service: null,
-      message: message,
+      message: {
+        cmd: 'sync',
+        param: message,
+      },
     }
   }
 
