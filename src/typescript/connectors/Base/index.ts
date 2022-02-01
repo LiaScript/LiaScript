@@ -64,7 +64,7 @@ export class Connector {
 
   store(_record: Record) {}
 
-  update(_cmd: string, _record: Record, _id: number) {}
+  update(_record: Record, _fn: (a: any) => any) {}
 
   slide(_id: number) {}
 

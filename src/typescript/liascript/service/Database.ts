@@ -43,9 +43,8 @@ const Service = {
 
       case 'update':
         connector.update(
-          param.data.cmd,
-          { table: param.table, id: param.id, data: param.data.data },
-          param.data.id
+          { table: param.table, id: param.id },
+          transaction(param.data)
         )
         break
 
@@ -156,6 +155,75 @@ const Service = {
         log.warn('(Service ', this.PORT, ') unknown message =>', event.message)
     }
   },
+}
+
+/** let project = vector.data[event.track[0][1]]
+
+        switch (event.track[0][0]) {
+          case 'flip': {
+            if (event.track[1][0] === 'view') {
+              project.file[event.track[1][1]].visible = event.message
+            } else if (
+              event.track[1][0] === 'fullscreen' &&
+              event.track[1][1] !== -1
+            ) {
+              project.file[event.track[1][1]].fullscreen = event.message
+            }
+            break
+          }
+          case 'load': {
+            let e_ = event.message
+            project.version_active = e_.version_active
+            project.log = e_.log
+            project.file = e_.file
+            break
+          }
+          
+          default: {
+            log.warn('unknown update cmd: ', event)
+          }
+        }
+
+        vector.data[event.track[0][1]] = project */
+
+function transaction(def: {
+  cmd: string
+  id: number
+  data: any
+}): (project: any) => any {
+  switch (def.cmd) {
+    // update the current version and logs
+    case 'version':
+      return (project: any) => {
+        project[def.id].version_active = def.data.version_active
+        project[def.id].log = def.data.log
+        project[def.id].version[def.data.version_active] = def.data.version
+
+        return project
+      }
+
+    // append a new version of files and logs
+    case 'append':
+      return (project: any) => {
+        project[def.id].version_active = def.data.version_active
+        project[def.id].log = def.data.log
+        project[def.id].file = def.data.file
+        project[def.id].version.push(def.data.version)
+        project[def.id].repository = {
+          ...project[def.id].repository,
+          ...def.data.repository,
+        }
+
+        return project
+      }
+
+    default:
+      log.warn('unknown update cmd: ', def.cmd)
+
+      return (project: any) => {
+        return project
+      }
+  }
 }
 
 function meta(name: string, content: string) {
