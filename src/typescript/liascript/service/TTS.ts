@@ -160,7 +160,7 @@ export function inject(key: string) {
 }
 
 function cancel() {
-  window.responsiveVoice.cancel()
+  if (window.responsiveVoice) window.responsiveVoice.cancel()
 }
 
 function speak(
@@ -170,11 +170,12 @@ function speak(
   onend?: () => void,
   onerror?: (_: any) => void
 ) {
-  window.responsiveVoice.speak(text, voice, {
-    onstart: onstart,
-    onend: onend,
-    onerror: onerror,
-  })
+  if (window.responsiveVoice)
+    window.responsiveVoice.speak(text, voice, {
+      onstart: onstart,
+      onend: onend,
+      onerror: onerror,
+    })
 }
 
 export default Service

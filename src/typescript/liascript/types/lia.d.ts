@@ -4,13 +4,15 @@ export type Send = (_: Event) => void
 
 export type Event = {
   reply: boolean
-  track: POI[]
+  track: TRACK
   service: string
   message: {
     cmd: string
     param: any
   }
 }
+
+export type TRACK = POI[]
 
 type POI = [string, number]
 

@@ -108,7 +108,7 @@ class LiaError extends Error {
 
 export class LiaEvents {
   private event: { [key: string]: any }
-  private input: { [key: number]: { [key: number]: any } }
+  private input: { [track: string]: any }
 
   constructor() {
     this.event = {}
@@ -119,23 +119,21 @@ export class LiaEvents {
     this.event[name] = fn
   }
 
-  register_input(id1: number, id2: number, name: string, fn: any) {
-    if (this.input[id1] === undefined) {
-      this.input[id1] = {}
-    }
-    if (this.input[id1][id2] === undefined) {
-      this.input[id1][id2] = {}
+  register_input(track: Lia.TRACK, name: string, fn: any) {
+    const id = JSON.stringify(track)
+
+    if (this.input[id] === undefined) {
+      this.input[id] = {}
     }
 
-    this.input[id1][id2][name] = fn
+    this.input[id][name] = fn
   }
 
   dispatch_input(event: Lia.Event) {
+    const id = JSON.stringify(event.track)
+
     try {
-      if (event.track[0][1] !== -1 && event.track[1][1] !== -1)
-        this.input[event.track[0][1]][event.track[1][1]][event.track[1][0]](
-          event.message
-        )
+      if (this.input[id]) this.input[id][event.message.cmd](event.message.param)
     } catch (e) {
       log.error('unable to dispatch message', event.message)
     }
@@ -167,7 +165,6 @@ const Service = {
   handle: function (event: Lia.Event) {
     switch (event.message.cmd) {
       case 'eval':
-        console.warn('EVAL', event)
         liaEval(event)
         break
 
@@ -176,11 +173,11 @@ const Service = {
         break
 
       case 'input':
-        console.warn('INPUT', event)
+        eventHandler.dispatch_input(event)
         break
 
       case 'stop':
-        console.warn('STOP', event)
+        eventHandler.dispatch_input(event)
         break
 
       default:
@@ -234,10 +231,7 @@ function liaEval(event: Lia.Event) {
       sendReply(event)
     },
     handle: (name: string, fn: any) => {
-      // TODO: These parameters have to be corrected
-      const e1 = event.track[0][1]
-      const e2 = event.track[1][1]
-      eventHandler.register_input(e1, e2, name, fn)
+      eventHandler.register_input(event.track, name, fn)
     },
     register: (name: string, fn: any) => {
       eventHandler.register(name, fn)

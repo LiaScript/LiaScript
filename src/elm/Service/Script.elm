@@ -3,9 +3,11 @@ module Service.Script exposing
     , decode
     , decoder
     , eval
+    , input
     , replace_input
     , replace_inputID
     , replace_inputKey
+    , stop
     )
 
 import Json.Decode as JD
@@ -124,6 +126,24 @@ as those in debugging mode `@'input`.
 replace_ pattern replacement =
     String.replace ("@'input" ++ pattern) (toEscapeString replacement)
         >> String.replace ("@input" ++ pattern) replacement
+
+
+{-| Send stop notification to the evaluated script, the handling has to be
+implemented manually.
+-}
+stop : Event
+stop =
+    event "stop" JE.null
+
+
+{-| Send a typed string from the terminal to the evaluated script, the handler
+has to be implemented manually.
+-}
+input : String -> Event
+input string =
+    string
+        |> JE.string
+        |> event "input"
 
 
 {-| Send an evaluation request to the Script-Service, defined in `Script.ts`.

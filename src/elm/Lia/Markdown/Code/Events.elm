@@ -23,25 +23,15 @@ import Service.Script
 
 
 stop : Int -> Event
-stop id =
-    -- TODO:
-    -- Event.initWithId Nothing "stop" id JE.null
-    event "stop" JE.null
+stop projectID =
+    Service.Script.stop
+        |> toProject projectID
 
 
 input : Int -> String -> Event
-input id value =
-    [ --projectID id
-      ( "value", JE.string value )
-    ]
-        |> JE.object
-        |> event "input"
-
-
-event : String -> JE.Value -> Event
-event cmd param =
-    { cmd = cmd, param = param }
-        |> Event.init "code"
+input projectID value =
+    Service.Script.input value
+        |> toProject projectID
 
 
 eval : Int -> Scripts a -> Project -> Event
