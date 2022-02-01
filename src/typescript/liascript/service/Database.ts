@@ -171,13 +171,7 @@ const Service = {
             }
             break
           }
-          case 'load': {
-            let e_ = event.message
-            project.version_active = e_.version_active
-            project.log = e_.log
-            project.file = e_.file
-            break
-          }
+          
           
           default: {
             log.warn('unknown update cmd: ', event)
@@ -223,6 +217,18 @@ function transaction(def: {
         project[def.id].log = def.data.log
         project[def.id].file = def.data.file
 
+        return project
+      }
+
+    case 'flip_view':
+      return (project: any) => {
+        project[def.id].file[def.data.file_id].visible = def.data.value
+        return project
+      }
+
+    case 'flip_fullscreen':
+      return (project: any) => {
+        project[def.id].file[def.data.file_id].fullscreen = def.data.value
         return project
       }
 

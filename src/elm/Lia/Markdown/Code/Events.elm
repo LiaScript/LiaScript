@@ -38,6 +38,12 @@ input id value =
         |> event "input"
 
 
+event : String -> JE.Value -> Event
+event cmd param =
+    { cmd = cmd, param = param }
+        |> Event.init "code"
+
+
 eval : Int -> Scripts a -> Project -> Event
 eval projectID scripts project =
     project.file
@@ -117,40 +123,37 @@ updateActive projectID sectionID return =
             )
 
 
-flip_view : Int -> Int -> File -> List Event
-flip_view id1 id2 file =
-    file.visible
-        |> toggle "toggle_view" id1 id2
+flip_view : Maybe Int -> Int -> Int -> File -> List Event
+flip_view sectionID projectID fileID file =
+    case sectionID of
+        Just secID ->
+            [ file.visible
+                |> toggle fileID
+                |> update_ secID { cmd = "flip_view", id = projectID }
+            ]
+
+        Nothing ->
+            []
 
 
-fullscreen : Int -> Int -> File -> List Event
-fullscreen id1 id2 file =
-    file.fullscreen
-        |> toggle "toggle_fullscreen" id1 id2
+fullscreen : Maybe Int -> Int -> Int -> File -> List Event
+fullscreen sectionID projectID fileID file =
+    case sectionID of
+        Just secID ->
+            [ file.fullscreen
+                |> toggle fileID
+                |> update_ secID { cmd = "flip_fullscreen", id = projectID }
+            ]
+
+        Nothing ->
+            []
 
 
-toggle : String -> Int -> Int -> Bool -> List Event
-toggle cmd projectID file value =
-    [ [ ( "value", JE.bool value )
-
-      --, projectID project
-      , ( "file_id", JE.int file )
-      ]
-        |> JE.object
-        |> event cmd
+toggle : Int -> Bool -> List ( String, JE.Value )
+toggle file value =
+    [ ( "value", JE.bool value )
+    , ( "file_id", JE.int file )
     ]
-
-
-
---projectID : Int -> ( String, JE.Value )
---projectID id =
--- ( "project_id", JE.int id )
-
-
-event : String -> JE.Value -> Event
-event cmd param =
-    { cmd = cmd, param = param }
-        |> Event.init "code"
 
 
 update_ : Int -> { cmd : String, id : Int } -> List ( String, JE.Value ) -> Event

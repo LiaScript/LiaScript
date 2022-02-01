@@ -88,12 +88,12 @@ update sectionID scripts msg model =
         --        |> JE.object
         --        |> PEvent.initWithId "update" id_1
         --    )
-        FlipView (Evaluate id_1) id_2 ->
-            flipEval model id_1 id_2
+        FlipView (Evaluate projectID) fileID ->
+            flipEval sectionID model projectID fileID
 
         --|> Return.sync (PEvent.initWithId "flip_eval" id_1 (JE.int id_2))
-        FlipView (Highlight id_1) id_2 ->
-            flipHigh model id_1 id_2
+        FlipView (Highlight projectID) fileID ->
+            flipHigh model projectID fileID
 
         --|> Return.sync (PEvent.initWithId "flip_high" id_1 (JE.int id_2))
         FlipFullscreen (Highlight id_1) id_2 ->
@@ -114,13 +114,13 @@ update sectionID scripts msg model =
             }
                 |> Return.val
 
-        FlipFullscreen (Evaluate id_1) id_2 ->
+        FlipFullscreen (Evaluate projectID) fileID ->
             update_file
-                id_1
-                id_2
+                projectID
+                fileID
                 model
                 (\f -> { f | fullscreen = not f.fullscreen })
-                (Event.fullscreen id_1 id_2)
+                (Event.fullscreen sectionID projectID fileID)
 
         Load idx version ->
             load sectionID model idx version
@@ -435,14 +435,14 @@ updateArray fn i array =
         array
 
 
-flipEval : Model -> Int -> Int -> Return Model msg sub
-flipEval model id_1 id_2 =
+flipEval : Maybe Int -> Model -> Int -> Int -> Return Model msg sub
+flipEval sectionID model projectID fileID =
     update_file
-        id_1
-        id_2
+        projectID
+        fileID
         model
         (\f -> { f | visible = not f.visible })
-        (Event.flip_view id_1 id_2)
+        (Event.flip_view sectionID projectID fileID)
 
 
 flipHigh : Model -> Int -> Int -> Return Model msg sub
