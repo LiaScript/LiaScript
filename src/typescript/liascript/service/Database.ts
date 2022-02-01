@@ -216,6 +216,15 @@ function transaction(def: {
 
         return project
       }
+    // change the active version of the project
+    case 'active':
+      return (project: any) => {
+        project[def.id].version_active = def.data.version_active
+        project[def.id].log = def.data.log
+        project[def.id].file = def.data.file
+
+        return project
+      }
 
     default:
       log.warn('unknown update cmd: ', def.cmd)

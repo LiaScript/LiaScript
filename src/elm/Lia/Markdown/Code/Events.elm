@@ -3,9 +3,9 @@ module Lia.Markdown.Code.Events exposing
     , flip_view
     , fullscreen
     , input
-    , load
     , stop
     , store
+    , updateActive
     , updateAppend
     , updateVersion
     )
@@ -105,18 +105,15 @@ updateAppend projectID project repo_update sectionID =
         |> update_ sectionID { cmd = "append", id = projectID }
 
 
-load : Int -> Return Project msg sub -> Return Project msg sub
-load id return =
+updateActive : Int -> Int -> Return Project msg sub -> Return Project msg sub
+updateActive projectID sectionID return =
     return
         |> Return.batchEvent
             ([ ( "file", JE.array Json.fromFile return.value.file )
              , ( "version_active", JE.int return.value.version_active )
              , ( "log", Log.encode return.value.log )
-
-             --, projectID id
              ]
-                |> JE.object
-                |> event "load"
+                |> update_ sectionID { cmd = "active", id = projectID }
             )
 
 

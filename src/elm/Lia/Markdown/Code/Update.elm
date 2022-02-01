@@ -123,22 +123,22 @@ update sectionID scripts msg model =
                 (Event.fullscreen id_1 id_2)
 
         Load idx version ->
-            load model idx version
+            load sectionID model idx version
 
         --|> Return.sync (PEvent.initWithId "load" idx (JE.int version))
         First idx ->
-            load model idx 0
+            load sectionID model idx 0
 
         --|> Return.sync (PEvent.initWithId "load" idx (JE.int 0))
-        Last idx ->
+        Last projectID ->
             let
                 version =
                     model
-                        |> maybe_project idx (.version >> Array.length >> (+) -1)
+                        |> maybe_project projectID (.version >> Array.length >> (+) -1)
                         |> Maybe.map .value
                         |> Maybe.withDefault 0
             in
-            load model idx version
+            load sectionID model projectID version
 
         Handle event ->
             case PEvent.destructure event of
@@ -473,9 +473,9 @@ execute sectionID scripts model id =
         |> maybe_update id model
 
 
-load : Model -> Int -> Int -> Return Model msg sub
-load model id version =
+load : Maybe Int -> Model -> Int -> Int -> Return Model msg sub
+load sectionID model id version =
     model
         |> maybe_project id (loadVersion version)
-        |> Maybe.map (Event.load id)
+        |> Maybe.map2 (Event.updateActive id) sectionID
         |> maybe_update id model
