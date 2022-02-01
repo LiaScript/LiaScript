@@ -1,7 +1,6 @@
 // @ts-ignore
 import { Elm } from '../../elm/Main.elm'
-// import { LiaEvents, lia_execute_event, lia_eval_event } from './events'
-// import persistent from './persistent.ts'
+
 import log from './log'
 
 import './types/globals'
@@ -22,6 +21,7 @@ import Swipe from './service/Swipe'
 import Sync from './service/Sync'
 import TTS from './service/TTS'
 import Translate from './service/Translate'
+import { LiaStorage } from '../connectors/Base/storage'
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   const target = e.target as HTMLImageElement
@@ -44,10 +44,27 @@ window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   }
 }
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// GLOBAL INITIALIZATION
 
-var liaStorage: any
+// TODO: CHECK window.LIA.defaultCourse functionality
 
+if (!window.LIA) {
+  window.LIA = {
+    eventSemaphore: 0,
+    send: (_event: Lia.Event) => {
+      console.warn('send not defined')
+    },
+  }
+}
+
+if (window.LIA.debug === undefined) {
+  window.LIA.debug = false
+}
+
+var liaStorage = null
+
+// ----------------------------------------------------------------------------
 class LiaScript {
   private app: any
   public connector: Connector
@@ -61,14 +78,12 @@ class LiaScript {
     courseUrl: string | null = null,
     script: string | null = null
   ) {
-    if (debug) window.debug__ = true
-
-    //eventHandler = new LiaEvents()
+    window.LIA.debug = debug
 
     this.app = Elm.Main.init({
       //node: elem,
       flags: {
-        courseUrl: window.liaDefaultCourse || courseUrl,
+        courseUrl: window.LIA.defaultCourseURL || courseUrl,
         script: script,
         settings: connector.getSettings(),
         screen: {
@@ -85,10 +100,14 @@ class LiaScript {
 
     const sender = function (msg: Lia.Event) {
       if (msg.reply) {
-        log.info(`LIA <<< (${msg.track}) :`, msg.message)
+        if (window.LIA.debug) {
+          log.info(`LIA <<< (${msg.track}) :`, msg.message)
+        }
         sendTo(msg)
       }
     }
+
+    window.LIA.send = sender
 
     this.connector = connector
 
@@ -144,8 +163,6 @@ class LiaScript {
   ) {
     log.info('initEventSystem')
 
-    let self = this
-
     Database.init(elmSend, this.connector)
     TTS.init(elmSend)
     Script.init(elmSend)
@@ -153,99 +170,67 @@ class LiaScript {
     Translate.init(elmSend)
     Sync.init(elmSend)
 
+    let connector = this.connector
     jsSubscribe((event: Lia.Event) => {
-      process(true, self, elmSend, event)
+      if (window.LIA.debug)
+        log.info(
+          `LIA >>> (${JSON.stringify(event.track)})`,
+          event.service,
+          event.message
+        )
+
+      switch (event.service) {
+        case Database.PORT:
+          Database.handle(event)
+          break
+
+        case Slide.PORT:
+          if (event.message.param.slide) {
+            // store the current slide number within the backend
+            connector.slide(event.message.param.slide)
+          }
+          Slide.handle(event)
+          break
+
+        case TTS.PORT:
+          TTS.handle(event)
+          break
+
+        case Script.PORT:
+          Script.handle(event)
+          break
+
+        case Console.PORT:
+          Console.handle(event)
+          break
+
+        case Sync.PORT:
+          Sync.handle(event)
+          break
+
+        case Share.PORT:
+          Share.handle(event)
+          break
+
+        case Resource.PORT:
+          Resource.handle(event)
+          break
+
+        case Translate.PORT:
+          Translate.handle(event)
+          break
+
+        default:
+          console.warn('Unknown Service => ', event)
+      }
     })
   }
 }
 
-function process(
-  isConnected: boolean,
-  self: LiaScript,
-  elmSend: Lia.Send,
-  event: Lia.Event
-) {
-  log.info(
-    `LIA >>> (${JSON.stringify(event.track)})`,
-    event.service,
-    event.message
-  )
-
-  switch (event.service) {
-    case Database.PORT:
-      Database.handle(event)
-      break
-
-    case Slide.PORT:
-      if (event.message.param.slide) {
-        // store the current slide number within the backend
-        self.connector.slide(event.message.param.slide)
-      }
-      Slide.handle(event)
-      break
-
-    case TTS.PORT:
-      TTS.handle(event)
-      break
-
-    case Script.PORT:
-      Script.handle(event)
-      break
-
-    case Console.PORT:
-      Console.handle(event)
-      break
-
-    case Sync.PORT:
-      Sync.handle(event)
-      break
-
-    case Share.PORT:
-      Share.handle(event)
-      break
-
-    case Resource.PORT:
-      Resource.handle(event)
-      break
-
-    case Translate.PORT:
-      Translate.handle(event)
-      break
-
-    default:
-      console.warn('Unknown Service => ', event)
-  }
-
-  /*else
+/*else
     switch (event.track[0][0]) {
       
-      case Port.CODE: {
-        switch (event.track[1][0]) {
-          case 'eval':
-            lia_eval_event(elmSend, eventHandler, event)
-            break
-          case 'store':
-            if (isConnected) {
-              //event.track = event.track.slice(1)
-              self.connector.store(event)
-            }
-            break
-          case 'input':
-            eventHandler.dispatch_input(event)
-            break
-          case 'stop':
-            eventHandler.dispatch_input(event)
-            break
-          default: {
-            if (isConnected) {
-              const slide = event.track[0][1]
-              event.track = event.track.slice(1)
-              self.connector.update(event, slide)
-            }
-          }
-        }
-        break
-      }
+     
       case Port.QUIZ: {
         if (isConnected && event.track[1][0] === 'store') {
           // event.track.slice(1)
@@ -303,6 +288,5 @@ function process(
       }
     }
     */
-}
 
 export default LiaScript

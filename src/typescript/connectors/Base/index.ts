@@ -16,10 +16,24 @@ export type Record = {
   data?: any
 }
 
+/** This Abstract class shall be implemented by any Connector-Class. If any the
+ * base class is used instead, that means, that no data ist stored.
+ *
+ */
 export class Connector {
   constructor() {}
 
-  hasIndex() {
+  /** If your connector defines functionalities to store and cache entire
+   * courses, then set this to `true`. This will result in an home-button
+   * within the table of contents and an overview on all previously loaded
+   * courses.
+   *
+   * If this this is true, then all the other methods within the INDEX part
+   * have to be implemented too.
+   *
+   * @returns boolean (default `false`)
+   */
+  hasIndex(): boolean {
     return false
   }
 
@@ -68,6 +82,8 @@ export class Connector {
 
   slide(_id: number) {}
 
+  // ----------------------- INDEX functionalities ----------------------------
+
   getIndex() {}
 
   deleteFromIndex(_uidDB: string) {}
@@ -80,5 +96,7 @@ export class Connector {
     this.initSettings(null, true)
   }
 
-  getFromIndex(_uidDB: string) {}
+  getFromIndex(_uidDB: string) {
+    return null
+  }
 }

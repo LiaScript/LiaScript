@@ -151,7 +151,7 @@ export class LiaEvents {
 }
 
 var eventHandler = new LiaEvents()
-window.event_semaphore = 0
+
 var lia_queue = []
 var elmSend: Lia.Send | null
 
@@ -249,7 +249,7 @@ function sendReply(event: Lia.Event) {
 }
 
 function liaEvalCode(code: string, send: SendEval) {
-  if (window.event_semaphore > 0) {
+  if (window.LIA.eventSemaphore > 0) {
     lia_queue.push({
       type: JS.eval,
       code: code,
@@ -257,7 +257,7 @@ function liaEvalCode(code: string, send: SendEval) {
     })
 
     if (lia_queue.length === 1) {
-      wait()
+      delayExecution()
     }
     return
   }
@@ -297,9 +297,9 @@ function liaEvalCode(code: string, send: SendEval) {
   }
 }
 
-function wait() {
-  if (window.event_semaphore > 0) {
-    setTimeout(wait, 100)
+function delayExecution() {
+  if (window.LIA.eventSemaphore > 0) {
+    setTimeout(delayExecution, 100)
   } else {
     let event
     while ((event = lia_queue.pop())) {

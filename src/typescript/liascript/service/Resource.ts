@@ -54,15 +54,15 @@ export function loadScript(url: string, withSemaphore = false) {
     if (withSemaphore) {
       // this semaphore is used by the system to block the evaluation of scripts
       // originating from a course until all javascript resources are loaded
-      window.event_semaphore++
+      window.LIA.eventSemaphore++
 
       // Decrease the semaphore counter in both cases
       tag.onload = function () {
-        window.event_semaphore--
+        window.LIA.eventSemaphore--
         log.info('successfully loaded =>', url)
       }
       tag.onerror = function (e: any) {
-        window.event_semaphore--
+        window.LIA.eventSemaphore--
         log.warn('could not load =>', url, e)
       }
     }
