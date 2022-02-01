@@ -6,6 +6,7 @@ import log from '../../liascript/log'
 import { Record } from '../Base/index'
 
 if (process.env.NODE_ENV === 'development') {
+  // @ts-ignore
   Dexie.debug = true
 }
 
