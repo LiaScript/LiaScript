@@ -3,6 +3,7 @@ module Service.Script exposing
     , decode
     , decoder
     , eval
+    , exec
     , input
     , replace_input
     , replace_inputID
@@ -178,6 +179,23 @@ eval code scripts inputs =
         |> replace_input default
         |> JE.string
         |> event "eval"
+
+
+exec : Int -> String -> Event
+exec delay code =
+    [ ( "delay"
+      , JE.int delay
+      )
+    , ( "code"
+      , code
+            -- scripts
+            --|> List.foldl replace_inputKey code
+            --|> replace_input input0
+            |> JE.string
+      )
+    ]
+        |> JE.object
+        |> event "exec"
 
 
 {-| **private:** Helper function to generate event - stubs that will be handled

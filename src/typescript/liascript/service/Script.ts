@@ -297,6 +297,69 @@ function liaEvalCode(code: string, send: SendEval) {
   }
 }
 
+export function liaExecute(
+  //event: { code: string; delay: number; id?: number },
+  //sender?: Lia.Send,
+  //section?: number
+  event: Lia.Event
+) {
+  if (window.LIA.eventSemaphore > 0) {
+    lia_queue.push({
+      type: JS.exec,
+      event: event,
+      send: sender,
+      section: section || -1,
+    })
+
+    if (lia_queue.length === 1) {
+      delayExecution()
+    }
+    return
+  }
+
+  setTimeout(() => {
+    let send: SendExec | undefined
+
+    if (sender && event.id != null && section !== undefined) {
+      const id = event.id
+      send = {
+        lia: execute_response('code', id, sender, section),
+        output: execute_response('codeX', id, sender, section),
+        wait: () => {
+          execute_response('code', id, sender, section)('LIA: wait')
+        },
+        stop: () => {
+          execute_response('code', id, sender, section)('LIA: stop')
+        },
+        clear: () => {
+          execute_response('code', id, sender, section)('LIA: clear')
+        },
+        html: (msg: string) => {
+          execute_response('code', id, sender, section)('HTML: ' + msg)
+        },
+        liascript: (msg: string) => {
+          execute_response('code', id, sender, section)('LIASCRIPT: ' + msg)
+        },
+      }
+    }
+
+    try {
+      const result = eval(event.code)
+
+      if (
+        send != undefined &&
+        section != null &&
+        typeof event.id === 'number'
+      ) {
+        send.lia(result === undefined ? 'LIA: stop' : result)
+      }
+    } catch (e: any) {
+      log.error('exec => ', e.message)
+      if (!!send) send.lia(e.message, [], false)
+    }
+  }, event.delay)
+}
+
 function delayExecution() {
   if (window.LIA.eventSemaphore > 0) {
     setTimeout(delayExecution, 100)
@@ -309,7 +372,7 @@ function delayExecution() {
           break
         }
         case JS.exec: {
-          //lia_execute_event(event.event, event.send, event.section)
+          lia_execute_event(event.event, event.send, event.section)
           break
         }
         default:
