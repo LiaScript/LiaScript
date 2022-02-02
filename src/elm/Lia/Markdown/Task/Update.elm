@@ -11,7 +11,7 @@ import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Task.Json as Json
 import Lia.Markdown.Task.Types exposing (Element, Vector, toString)
-import Return exposing (Return)
+import Return exposing (Return, script)
 import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Script
@@ -59,23 +59,23 @@ update sectionID scripts msg vector =
                             vector
                                 |> Array.set x element
                                 |> Return.val
-                                |> Return.batchEvents
+                                |> Return.batchEvent
                                     (case
-                                        Array.get scriptID scripts
+                                        scripts
+                                            |> Array.get scriptID
                                             |> Maybe.map .script
                                      of
-                                        Just code ->
-                                            [ -- TODO:
-                                              -- [ toString element ]
-                                              --  |> Eval.eval x code (outputs scripts)
-                                              Event.todo
-                                            ]
-
                                         Nothing ->
-                                            []
+                                            Event.none
+
+                                        Just code ->
+                                            [ toString element ]
+                                                |> Service.Script.eval code (outputs scripts)
+                                                |> Event.pushWithId "eval" x
                                     )
                                 |> store sectionID
 
+                -- TODO:
                 --|> Return.script (execute id state)
                 Nothing ->
                     Return.val vector
@@ -95,7 +95,7 @@ update sectionID scripts msg vector =
                         |> Return.val
                         |> init execute
 
-                ( Just "eval", section, ( cmd, param ) ) ->
+                ( Just "eval", section, ( "eval", _ ) ) ->
                     case
                         vector
                             |> Array.get section
@@ -104,13 +104,7 @@ update sectionID scripts msg vector =
                         Just scriptID ->
                             vector
                                 |> Return.val
-                                |> Return.script
-                                    -- TODO:
-                                    -- message
-                                    --  |> Event.initWithId Nothing "code" scriptID
-                                    (Event.todo
-                                        |> JS.handle
-                                    )
+                                |> Return.script (JS.submit scriptID event)
 
                         Nothing ->
                             Return.val vector
