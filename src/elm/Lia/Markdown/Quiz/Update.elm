@@ -16,7 +16,7 @@ import Lia.Markdown.Quiz.Matrix.Update as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type(..), Vector, comp, toState)
 import Lia.Markdown.Quiz.Vector.Update as Vector
-import Return exposing (Return)
+import Return exposing (Return, script)
 import Service.Console
 import Service.Database
 import Service.Event as Event exposing (Event)
@@ -70,7 +70,7 @@ update sectionID scripts msg vector =
                                         Just code ->
                                             [ [ toString e.state ]
                                                 |> Service.Script.eval code (outputs scripts)
-                                                |> Event.pushWithId "quiz" id
+                                                |> Event.pushWithId "eval" id
                                             ]
 
                                         _ ->
@@ -118,7 +118,7 @@ update sectionID scripts msg vector =
                         |> init (\i s -> execute i s.state)
                         |> Return.doSync
 
-                ( Just "quiz", id, ( "eval", param ) ) ->
+                ( Just "eval", id, ( "eval", param ) ) ->
                     case
                         vector
                             |> Array.get id
@@ -130,13 +130,8 @@ update sectionID scripts msg vector =
                                 |> update_ id vector
                                 |> store sectionID
                                 |> Return.doSync
+                                |> Return.script (JS.submit scriptID event)
 
-                        -- TODO:
-                        -- |> Return.script
-                        --     (message
-                        --         |> Event.initWithId Nothing "code" scriptID
-                        --         |> JS.handle
-                        --     )
                         Nothing ->
                             param
                                 |> evalEventDecoder
