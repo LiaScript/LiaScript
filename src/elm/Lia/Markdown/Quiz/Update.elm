@@ -129,8 +129,8 @@ update sectionID scripts msg vector =
                                 |> evalEventDecoder
                                 |> update_ id vector
                                 |> store sectionID
-                                |> Return.doSync
                                 |> Return.script (JS.submit scriptID event)
+                                |> Return.doSync
 
                         Nothing ->
                             param

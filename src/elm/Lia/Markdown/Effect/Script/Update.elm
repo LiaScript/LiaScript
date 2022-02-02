@@ -5,6 +5,7 @@ module Lia.Markdown.Effect.Script.Update exposing
     , handle
     , run
     , setRunning
+    , submit
     , update
     )
 
@@ -31,6 +32,19 @@ run =
 handle : Event -> Msg sub
 handle =
     Handle
+
+
+{-| Used by external models with associated scripts, such as Quizzes, Tasks,
+etc. to indicate that an evaluated script that contains an output, should
+trigger the execution of all scripts, that are subscribed to this topic.
+-}
+submit : Int -> Event -> Msg sub
+submit scriptID event =
+    Handle
+        { event
+            | service = "script"
+            , track = [ ( "code", scriptID ) ]
+        }
 
 
 update :

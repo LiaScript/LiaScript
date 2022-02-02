@@ -89,22 +89,19 @@ update sectionID scripts msg vector =
                                 updateError vector id Nothing
                             )
                                 |> Return.val
-                                --|> Return.script (execute scriptID state)
-                                |> Return.batchEvents
+                                |> Return.batchEvent
                                     (case
                                         scripts
                                             |> Array.get scriptID
                                             |> Maybe.map .script
                                      of
                                         Just code ->
-                                            [ -- TODO:
-                                              -- [ toString element.state ]
-                                              -- |> Eval.eval id code (outputs scripts)
-                                              Event.todo
-                                            ]
+                                            [ toString element.state ]
+                                                |> Service.Script.eval code (outputs scripts)
+                                                |> Event.pushWithId "eval" id
 
                                         Nothing ->
-                                            []
+                                            Event.none
                                     )
 
                 _ ->
@@ -126,7 +123,7 @@ update sectionID scripts msg vector =
                         |> Return.doSync
                         |> init (\i s -> execute i s.state)
 
-                ( Just "eval", section, ( cmd, param ) ) ->
+                ( Just "eval", section, ( "eval", param ) ) ->
                     case
                         vector
                             |> Array.get section
@@ -137,19 +134,15 @@ update sectionID scripts msg vector =
                                 |> evalEventDecoder
                                 |> update_ section vector
                                 |> store sectionID
+                                |> Return.script (JS.submit scriptID event)
                                 |> Return.doSync
-                                |> Return.script
-                                    -- TODO
-                                    -- param
-                                    -- |> Event.initWithId Nothing "code" scriptID
-                                    -- |> JS.handle
-                                    (JS.handle Event.todo)
 
                         Nothing ->
                             param
                                 |> evalEventDecoder
                                 |> update_ section vector
                                 |> store sectionID
+                                |> Return.doSync
 
                 {- let
                        eval =
