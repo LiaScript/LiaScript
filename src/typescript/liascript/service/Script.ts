@@ -15,13 +15,7 @@ export type Eval = {
 
 export type Exec = {
   type: JS.exec
-  section: number
-  event: {
-    code: string
-    delay: number
-    id?: number
-  }
-  send?: Lia.Send
+  event: Lia.Event
 }
 
 class LiaError extends Error {
@@ -145,6 +139,7 @@ const Service = {
 
       case 'exec':
         console.warn('EXEC', event)
+        liaExec(event)
         break
 
       case 'input':
@@ -272,18 +267,11 @@ function liaEvalCode(code: string, send: Script.SendEval) {
   }
 }
 
-export function liaExecute(
-  //event: { code: string; delay: number; id?: number },
-  //sender?: Lia.Send,
-  //section?: number
-  event: Lia.Event
-) {
+export function liaExec(event: Lia.Event) {
   if (window.LIA.eventSemaphore > 0) {
     lia_queue.push({
       type: JS.exec,
       event: event,
-      send: sender,
-      section: section || -1,
     })
 
     if (lia_queue.length === 1) {
@@ -293,46 +281,52 @@ export function liaExecute(
   }
 
   setTimeout(() => {
-    let send: Script.SendExec | undefined
-
-    if (sender && event.id != null && section !== undefined) {
-      const id = event.id
-      send = {
-        lia: execute_response('code', id, sender, section),
-        output: execute_response('codeX', id, sender, section),
-        wait: () => {
-          execute_response('code', id, sender, section)('LIA: wait')
-        },
-        stop: () => {
-          execute_response('code', id, sender, section)('LIA: stop')
-        },
-        clear: () => {
-          execute_response('code', id, sender, section)('LIA: clear')
-        },
-        html: (msg: string) => {
-          execute_response('code', id, sender, section)('HTML: ' + msg)
-        },
-        liascript: (msg: string) => {
-          execute_response('code', id, sender, section)('LIASCRIPT: ' + msg)
-        },
-      }
+    const send = {
+      lia: execute_response('code', event),
+      output: execute_response('codeX', event),
+      wait: () => {
+        execute_response('code', event)('LIA: wait')
+      },
+      stop: () => {
+        execute_response('code', event)('LIA: stop')
+      },
+      clear: () => {
+        execute_response('code', event)('LIA: clear')
+      },
+      html: (msg: string) => {
+        execute_response('code', event)('HTML: ' + msg)
+      },
+      liascript: (msg: string) => {
+        execute_response('code', event)('LIASCRIPT: ' + msg)
+      },
     }
 
     try {
-      const result = eval(event.code)
+      const result = eval(event.message.param.code)
 
-      if (
-        send != undefined &&
-        section != null &&
-        typeof event.id === 'number'
-      ) {
-        send.lia(result === undefined ? 'LIA: stop' : result)
-      }
+      send.lia(result === undefined ? 'LIA: stop' : result)
     } catch (e: any) {
       log.error('exec => ', e.message)
-      if (!!send) send.lia(e.message, [], false)
+
+      send.lia(e.message, false, [])
     }
-  }, event.delay)
+  }, event.message.param.delay)
+}
+
+function execute_response(cmd: string, event: Lia.Event) {
+  return (msg: any, ok = true, details: Script.ErrMessage[][] = []) => {
+    if (typeof msg !== 'string') {
+      msg = JSON.stringify(msg)
+    }
+
+    event.message.cmd = cmd
+    event.message.param = {
+      ok: ok,
+      result: msg,
+      details: details,
+    }
+    sendReply(event)
+  }
 }
 
 function delayExecution() {
@@ -347,7 +341,7 @@ function delayExecution() {
           break
         }
         case JS.exec: {
-          lia_execute_event(event.event, event.send, event.section)
+          liaExec(event.event)
           break
         }
         default:

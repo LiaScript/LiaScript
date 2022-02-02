@@ -338,15 +338,8 @@ reRun fn cmd id scripts =
 
 execute : Int -> ( Int, String ) -> Event
 execute delay ( id, code ) =
-    { cmd = "execute"
-    , param =
-        [ ( "delay", JE.int delay )
-        , ( "code", JE.string code )
-        , ( "id", JE.int id )
-        ]
-            |> JE.object
-    }
-        |> Event.init "executeTODO"
+    Service.Script.exec delay code
+        |> Event.pushWithId "script" id
 
 
 update_ : Maybe Definition -> Int -> JE.Value -> Scripts SubSection -> ( Bool, Scripts SubSection )
