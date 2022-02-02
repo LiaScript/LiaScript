@@ -232,42 +232,6 @@ class LiaScript {
 
 /*else
     switch (event.track[0][0]) {
-      
-     
-      case Port.QUIZ: {
-        if (isConnected && event.track[1][0] === 'store') {
-          // event.track.slice(1)
-          self.connector.store(event)
-        } else if (event.track[1][0] === 'eval') {
-          lia_eval_event(elmSend, eventHandler, event)
-        }
-
-        break
-      }
-      case Port.SURVEY: {
-        if (isConnected && event.track[1][0] === 'store') {
-          // event.track.slice(1)
-          self.connector.store(event)
-        } else if (event.track[1][0] === 'eval') {
-          lia_eval_event(elmSend, eventHandler, event)
-        }
-        break
-      }
-      case Port.TASK: {
-        if (isConnected && event.track[1][0] === 'store') {
-          // event.track.slice(1)
-          self.connector.store(event)
-        } else if (event.track[1][0] === 'eval') {
-          lia_eval_event(elmSend, eventHandler, event)
-        }
-        break
-      }
-      case Port.EFFECT: {
-        const id = event.track[0][1]
-        event.track = event.track.slice(1)
-        handleEffects(event, elmSend, id, self)
-        break
-      }
 
       case Port.PERSISTENT: {
         if (event.message === 'store') {

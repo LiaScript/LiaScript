@@ -3,6 +3,7 @@ module Service.Script exposing
     , decode
     , decoder
     , eval
+    , evalDummy
     , exec
     , input
     , replace_input
@@ -11,6 +12,7 @@ module Service.Script exposing
     , stop
     )
 
+import Html exposing (details)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Utils exposing (toEscapeString, toJSstring)
@@ -72,6 +74,15 @@ decode json =
 
         Err info ->
             Eval False (JD.errorToString info) []
+
+
+encode : Eval -> JD.Value
+encode { ok, result, details } =
+    JE.object
+        [ ( "ok", JE.bool ok )
+        , ( "result", JE.string result )
+        , ( "details", JE.list identity details )
+        ]
 
 
 {-| Replace all appearances of the `@input` macro within the code, which is
@@ -179,6 +190,13 @@ eval code scripts inputs =
         |> replace_input default
         |> JE.string
         |> event "eval"
+
+
+evalDummy : String -> Event
+evalDummy result =
+    Eval True result []
+        |> encode
+        |> event "exec"
 
 
 exec : Int -> String -> Event

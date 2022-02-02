@@ -81,14 +81,13 @@ update main msg scripts =
                                 | input = Input.value value node.input
                                 , updated = True
                             }
-                        |> update main (Handle Event.todo)
+                        |> update main
+                            (value
+                                |> Service.Script.evalDummy
+                                |> Event.pushWithId "script" id
+                                |> Handle
+                            )
 
-                -- TODO:
-                -- (Eval True value []
-                --     |> Service.Script.encode
-                --     |> Event.initWithId Nothing "code" id
-                --     |> Handle
-                -- )
                 Nothing ->
                     Return.val scripts
 
@@ -291,7 +290,7 @@ update main msg scripts =
                                         []
                                     )
 
-                ( Just "sub", section, ( cmd, param ) ) ->
+                ( Just "sub", section, ( _, param ) ) ->
                     case scripts |> Array.get section |> Maybe.andThen .result of
                         Just (IFrame lia) ->
                             lia

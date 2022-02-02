@@ -180,13 +180,6 @@ update session msg model =
                 ( Just "load", _ ) ->
                     update session InitSection (generate model)
 
-                ( Just "reset", _ ) ->
-                    model
-                        |> Return.val
-                        -- TODO
-                        -- |> Return.batchEvent (Event.init Nothing "reset" JE.null)
-                        |> Return.batchEvent Event.todo
-
                 ( Just "goto", _ ) ->
                     case Event.id event of
                         Just id ->

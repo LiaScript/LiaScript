@@ -15,7 +15,6 @@ module Service.Event exposing
     , popWithId
     , push
     , pushWithId
-    , todo
     , topic
     , withNoReply
     )
@@ -313,10 +312,3 @@ encPoint ( po, i ) =
         [ JE.string po
         , JE.int i
         ]
-
-
-{-| Dummy event to replace current events while refactoring.
--}
-todo : Event
-todo =
-    init "TODO" { cmd = "todo", param = JE.string "todo not implemented event" }
