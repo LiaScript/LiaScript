@@ -1,44 +1,19 @@
 import log from '../log'
 
-type ErrType = 'error' | 'warning' | 'info'
+import Script from './Script'
 
-export type ErrMessage = {
-  row: number
-  column?: number
-  text: string
-  type: ErrType
-}
-
-type SendEval = {
-  lia: (result: string, details?: ErrMessage[][], ok?: boolean) => void
-  log: (topic: string, sep: string, ...args: any) => void
-  handle: (name: string, fn: any) => void
-  register: (name: string, fn: any) => void
-  dispatch: (name: string, data: any) => void
-}
-
-type SendExec = {
-  lia: (result: string, details?: ErrMessage[][], ok?: boolean) => void
-  output: (result: string, details?: ErrMessage[][], ok?: boolean) => void
-  wait: () => void
-  stop: () => void
-  clear: () => void
-  html: (msg: string) => void
-  liascript: (msg: string) => void
-}
-
-enum JS {
+export enum JS {
   exec = 'exec',
   eval = 'eval',
 }
 
-type JSEval = {
+export type Eval = {
   type: JS.eval
   code: string
-  send: SendEval
+  send: Script.SendEval
 }
 
-type JSExec = {
+export type Exec = {
   type: JS.exec
   section: number
   event: {
@@ -50,7 +25,7 @@ type JSExec = {
 }
 
 class LiaError extends Error {
-  public details: ErrMessage[][]
+  public details: Script.ErrMessage[][]
 
   constructor(message: string, files: number, ...params: any) {
     super(...params)
@@ -69,7 +44,7 @@ class LiaError extends Error {
   add_detail(
     fileId: number,
     msg: string,
-    type: ErrType,
+    type: Script.ErrType,
     line: number,
     column?: number
   ) {
@@ -81,7 +56,7 @@ class LiaError extends Error {
     })
   }
 
-  get_detail(msg: string, type: ErrType, line: number, column = 0) {
+  get_detail(msg: string, type: Script.ErrType, line: number, column = 0) {
     return {
       row: line,
       column: column,
@@ -248,7 +223,7 @@ function sendReply(event: Lia.Event) {
   }
 }
 
-function liaEvalCode(code: string, send: SendEval) {
+function liaEvalCode(code: string, send: Script.SendEval) {
   if (window.LIA.eventSemaphore > 0) {
     lia_queue.push({
       type: JS.eval,
@@ -318,7 +293,7 @@ export function liaExecute(
   }
 
   setTimeout(() => {
-    let send: SendExec | undefined
+    let send: Script.SendExec | undefined
 
     if (sender && event.id != null && section !== undefined) {
       const id = event.id
