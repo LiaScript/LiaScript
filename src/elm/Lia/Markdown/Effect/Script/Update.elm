@@ -210,8 +210,8 @@ update main msg scripts =
                 |> Return.val
 
         Handle event ->
-            case Event.destructure event of
-                ( Just "code", section, ( cmd, param ) ) ->
+            case Event.destructure event |> Debug.log "YYYYYYYYYYYYYYYYYYYY" of
+                ( Just "script", section, ( "exec", param ) ) ->
                     let
                         ( publish, javascript ) =
                             scripts
@@ -260,7 +260,7 @@ update main msg scripts =
                                         []
                                     )
 
-                ( Just "codeX", section, ( cmd, param ) ) ->
+                ( Just "script", section, ( "async", param ) ) ->
                     let
                         ( publish, javascript ) =
                             scripts

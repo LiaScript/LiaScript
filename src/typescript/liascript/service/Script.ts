@@ -138,7 +138,6 @@ const Service = {
         break
 
       case 'exec':
-        console.warn('EXEC', event)
         liaExec(event)
         break
 
@@ -282,22 +281,22 @@ export function liaExec(event: Lia.Event) {
 
   setTimeout(() => {
     const send = {
-      lia: execute_response('code', event),
-      output: execute_response('codeX', event),
+      lia: execute_response(event),
+      output: execute_response(event, 'async'),
       wait: () => {
-        execute_response('code', event)('LIA: wait')
+        execute_response(event)('LIA: wait')
       },
       stop: () => {
-        execute_response('code', event)('LIA: stop')
+        execute_response(event)('LIA: stop')
       },
       clear: () => {
-        execute_response('code', event)('LIA: clear')
+        execute_response(event)('LIA: clear')
       },
       html: (msg: string) => {
-        execute_response('code', event)('HTML: ' + msg)
+        execute_response(event)('HTML: ' + msg)
       },
       liascript: (msg: string) => {
-        execute_response('code', event)('LIASCRIPT: ' + msg)
+        execute_response(event)('LIASCRIPT: ' + msg)
       },
     }
 
@@ -313,13 +312,15 @@ export function liaExec(event: Lia.Event) {
   }, event.message.param.delay)
 }
 
-function execute_response(cmd: string, event: Lia.Event) {
+function execute_response(event: Lia.Event, cmd?: string) {
   return (msg: any, ok = true, details: Script.ErrMessage[][] = []) => {
     if (typeof msg !== 'string') {
       msg = JSON.stringify(msg)
     }
 
-    event.message.cmd = cmd
+    if (cmd) {
+      event.message.cmd = cmd
+    }
     event.message.param = {
       ok: ok,
       result: msg,
