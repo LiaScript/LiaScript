@@ -43,7 +43,11 @@ submit scriptID event =
     Handle
         { event
             | service = "script"
-            , track = [ ( "code", scriptID ) ]
+            , track = [ ( "script", scriptID ) ]
+            , message =
+                { cmd = "exec"
+                , param = event.message.param
+                }
         }
 
 
@@ -211,7 +215,7 @@ update main msg scripts =
 
         Handle event ->
             case Event.destructure event of
-                ( Just "code", section, ( cmd, param ) ) ->
+                ( Just "script", section, ( "exec", param ) ) ->
                     let
                         ( publish, javascript ) =
                             scripts
@@ -260,7 +264,7 @@ update main msg scripts =
                                         []
                                     )
 
-                ( Just "codeX", section, ( cmd, param ) ) ->
+                ( Just "script", section, ( "async", param ) ) ->
                     let
                         ( publish, javascript ) =
                             scripts
