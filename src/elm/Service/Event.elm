@@ -81,7 +81,7 @@ be set to `null`.
 
     empty "TTS" "cancel"
         == { reply = True
-           , route = []
+           , track = []
            , service = "TTS"
            , message =
                 { cmd = "cancel"
@@ -285,7 +285,7 @@ decode =
     JD.decodeValue
         (JD.map4 Event
             (JD.field "reply" JD.bool)
-            (JD.field "route" (JD.list decPoint))
+            (JD.field "track" (JD.list decPoint))
             (JD.field "service" JD.string)
             (JD.field "message" decMessage)
         )
@@ -295,7 +295,7 @@ encode : Event -> JE.Value
 encode event =
     JE.object
         [ ( "reply", JE.bool event.reply )
-        , ( "route", JE.list encPoint event.track )
+        , ( "track", JE.list encPoint event.track )
         , ( "service", JE.string event.service )
         , ( "message"
           , JE.object

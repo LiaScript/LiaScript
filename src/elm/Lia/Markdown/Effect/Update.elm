@@ -11,6 +11,7 @@ module Lia.Markdown.Effect.Update exposing
     , updateSub
     )
 
+import Array exposing (Array)
 import Browser.Dom as Dom
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
@@ -89,10 +90,7 @@ update main sound msg model =
             Mute id ->
                 { model | speaking = Nothing }
                     |> Return.val
-                    |> Return.batchEvent
-                        (Service.TTS.cancel
-                            |> Event.pushWithId "playback" id
-                        )
+                    |> Return.batchEvent (Service.TTS.cancel |> Event.pushWithId "playback" id)
 
             Send event ->
                 let
@@ -140,6 +138,17 @@ update main sound msg model =
                                 model
                                     |> Return.val
                                     |> Return.batchEvent (Service.Console.warn info)
+
+                    ( Just "playback", id, ( "start", _ ) ) ->
+                        Return.val { model | speaking = Just id }
+
+                    ( Just "playback", _, ( "stop", _ ) ) ->
+                        Return.val { model | speaking = Nothing }
+
+                    ( Just "playback", _, ( "error", _ ) ) ->
+                        { model | speaking = Nothing }
+                            |> Return.val
+                            |> Return.batchEvent (Service.Console.warn "effects: local playback error")
 
                     _ ->
                         model.javascript

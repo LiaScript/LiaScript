@@ -1,5 +1,6 @@
 module Service.TTS exposing
     ( Msg(..)
+    , abort
     , cancel
     , decode
     , playback
@@ -19,9 +20,55 @@ type Msg
     | Error String
 
 
+{-| Simple abort of any talking without sending a response
+-}
+abort : Event
+abort =
+    cancel
+        |> Event.withNoReply
+
+
+{-| Like abort, but a response is send to the sending module
+-}
+cancel : Event
+cancel =
+    event "cancel" JE.null
+
+
+{-| Repeat the last spoken words, the TTS module will backup these automatically
+-}
 repeat : Event
 repeat =
     event "repeat" JE.null
+
+
+{-| Read the content from a specific HTML element, which is marked with
+`id="lia-tts-{number}"`. The number is passed as the id and represents the
+current animation step. The additional meta data such as language and voice
+have to be added to the HTML element as attributes:
+
+  - `data-voice`
+  - `data-lang`
+
+-}
+readFrom : Int -> Event
+readFrom id =
+    "lia-tts-"
+        ++ String.fromInt id
+        |> JE.string
+        |> event "read"
+
+
+{-| Used for inline playback, the text and the voice can be passed as
+parameters...
+-}
+playback : { voice : String, text : String } -> Event
+playback { voice, text } =
+    [ ( "voice", JE.string voice )
+    , ( "text", JE.string text )
+    ]
+        |> JE.object
+        |> event "playback"
 
 
 decode : Event -> Msg
@@ -48,28 +95,6 @@ decode e =
 
         _ ->
             Error <| "Wrong Service -> " ++ e.service
-
-
-playback : String -> String -> Event
-playback voice text =
-    [ ( "voice", JE.string voice )
-    , ( "text", JE.string text )
-    ]
-        |> JE.object
-        |> event "playback"
-
-
-readFrom : Int -> Event
-readFrom id =
-    "lia-tts-"
-        ++ String.fromInt id
-        |> JE.string
-        |> event "read"
-
-
-cancel : Event
-cancel =
-    event "cancel" JE.null
 
 
 {-| **private:** Helper function to generate event - stubs that will be handled

@@ -2,7 +2,6 @@ import Lia from './lia.d'
 
 declare global {
   interface Window {
-    playback: (_: Lia.Event) => void
     showFootnote: (_: any) => void
 
     googleTranslateElementInit: () => void
@@ -37,6 +36,11 @@ declare global {
         // TODO: touch events to not work yet
         zoom: (_: MouseEvent) => void
       }
+
+      // reference function to TTS functionality, this is mostly used, to
+      // define `onclick` handlers so enable speech from inline elements from
+      // within LiaScript
+      playback: (_: Lia.Event) => void
     }
   }
 }

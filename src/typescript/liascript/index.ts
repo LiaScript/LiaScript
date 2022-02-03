@@ -64,6 +64,9 @@ if (!window.LIA) {
         }
       },
     },
+    playback: function (_event: Lia.Event) {
+      console.warn('playback not defined')
+    },
   }
 }
 

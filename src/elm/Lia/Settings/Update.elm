@@ -144,13 +144,7 @@ update main msg model =
 
         ChangeTheme theme ->
             log Nothing
-                { model
-                    | theme =
-                        -- if theme == "custom" && model.customTheme /= Nothing then
-                        --    theme
-                        --else
-                        theme
-                }
+                { model | theme = theme }
 
         ChangeEditor theme ->
             log Nothing { model | editor = theme }
