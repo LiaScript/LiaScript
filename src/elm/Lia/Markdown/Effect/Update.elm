@@ -11,7 +11,6 @@ module Lia.Markdown.Effect.Update exposing
     , updateSub
     )
 
-import Array exposing (Array)
 import Browser.Dom as Dom
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
@@ -124,10 +123,10 @@ update main sound msg model =
 
             Handle event ->
                 case Event.destructure event of
-                    ( Just "tts", section, ( cmd, param ) ) ->
+                    ( Nothing, _, ( cmd, param ) ) ->
                         case Service.TTS.decode event of
                             Service.TTS.Start ->
-                                { model | speaking = Just section }
+                                { model | speaking = Just -1 }
                                     |> Return.val
 
                             Service.TTS.Stop ->

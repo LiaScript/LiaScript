@@ -47,14 +47,15 @@ type Toggle
 
 update :
     Maybe { title : String, comment : Inlines }
+    -> Maybe Int
     -> Msg
     -> Settings
     -> Return Settings Msg sub
-update main msg model =
+update main effectID msg model =
     case msg of
         Handle event ->
-            case Event.message event of
-                ( "init", settings ) ->
+            case Event.destructure event of
+                ( Nothing, _, ( "init", settings ) ) ->
                     settings
                         |> load { model | initialized = True }
                         |> no_log Nothing
@@ -96,7 +97,9 @@ update main msg model =
                             Service.TTS.cancel
 
                         else
-                            Service.TTS.repeat
+                            effectID
+                                |> Maybe.map Service.TTS.readFrom
+                                |> Maybe.withDefault Event.none
                     )
 
         Toggle Light ->

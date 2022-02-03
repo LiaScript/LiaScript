@@ -5,7 +5,6 @@ module Service.TTS exposing
     , decode
     , playback
     , readFrom
-    , repeat
     )
 
 import Json.Decode as JD
@@ -33,13 +32,6 @@ abort =
 cancel : Event
 cancel =
     event "cancel" JE.null
-
-
-{-| Repeat the last spoken words, the TTS module will backup these automatically
--}
-repeat : Event
-repeat =
-    event "repeat" JE.null
 
 
 {-| Read the content from a specific HTML element, which is marked with

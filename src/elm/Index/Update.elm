@@ -169,7 +169,7 @@ updateSettings msg settings ( model, cmd, events ) =
         UpdateSettings subMsg ->
             let
                 return =
-                    Settings.update Nothing subMsg settings
+                    Settings.update Nothing Nothing subMsg settings
             in
             ( return.value
             , ( model

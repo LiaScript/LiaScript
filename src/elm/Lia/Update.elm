@@ -11,7 +11,6 @@ import Const
 import Dict
 import Html.Attributes exposing (width)
 import Json.Decode as JD
-import Json.Encode as JE
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Effect.Update as Effect
@@ -146,11 +145,6 @@ update session msg model =
             model
                 |> Return.val
                 |> Return.cmd (Session.navToHome session)
-
-        UpdateSettings childMsg ->
-            model.settings
-                |> Settings.update (Just { title = model.title, comment = model.definition.comment }) childMsg
-                |> Return.mapValCmd (\v -> { model | settings = v }) UpdateSettings
 
         UpdateIndex childMsg ->
             let
@@ -351,6 +345,11 @@ update session msg model =
                         in
                         return
                             |> Return.mapValCmd (set_active_section model) UpdateMarkdown
+
+                ( UpdateSettings childMsg, Just sec ) ->
+                    model.settings
+                        |> Settings.update (Just { title = model.title, comment = model.definition.comment }) (Just sec.effect_model.visible) childMsg
+                        |> Return.mapValCmd (\v -> { model | settings = v }) UpdateSettings
 
                 ( TTSReplay bool, sec ) ->
                     case Markdown.ttsReplay model.settings.sound bool sec of

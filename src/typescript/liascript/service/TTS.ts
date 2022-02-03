@@ -3,10 +3,6 @@ import log from '../log'
 import '../types/responsiveVoice'
 
 var firstSpeak = true
-var backup: {
-  voice: string
-  text: string
-}
 
 var elmSend: Lia.Send | null
 
@@ -44,18 +40,18 @@ const Service = {
       }
 
       case 'read': {
+        // TODO: this is a hack to guide TTS from the effect to the settings,
+        // such that the current status can be marked at the bottom buttons!
+        if (event.track.length == 1 && event.track[0][0] === 'effect') {
+          event.track[0][0] = SETTINGS
+        }
+
         setTimeout(
           function () {
             read(event)
           },
           firstSpeak ? 2000 : 500
         )
-        break
-      }
-
-      case 'repeat': {
-        event.message.param = backup
-        playback(event)
         break
       }
 
@@ -114,8 +110,6 @@ function read(event: Lia.Event) {
   text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
 
   if (text !== '' && element[0]) {
-    backup = { voice: voice, text: text }
-
     speak(
       text,
       voice,

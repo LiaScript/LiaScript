@@ -512,17 +512,16 @@ ttsReplay sound true section =
     if sound then
         if true then
             section
-                |> Maybe.andThen
+                |> Maybe.map
                     (\s ->
-                        s.effect_model
-                            |> Effect.ttsReplay
-                            |> Maybe.map (Event.pushWithId "effect" s.id)
+                        s.effect_model.visible
+                            |> Service.TTS.readFrom
+                            |> Event.pushWithId "settings" s.id
                     )
 
         else
             Service.TTS.cancel
-                |> Event.pushWithId "tts" 0
-                |> Event.pushWithId "effect"
+                |> Event.pushWithId "settings"
                     (section
                         |> Maybe.map .id
                         |> Maybe.withDefault -1
