@@ -142,13 +142,16 @@ update msg model =
                         model
 
                 ( Nothing, _, ( "index_get", param ) ) ->
-                    let
-                        ( id, course ) =
-                            Index.decodeGet param
-                    in
-                    ( { model | preload = course }
-                    , download Load_ReadMe_Result id
-                    )
+                    case Index.decodeGet param of
+                        Ok ( url, course ) ->
+                            ( { model | preload = course }
+                            , download Load_ReadMe_Result url
+                            )
+
+                        Err _ ->
+                            ( { model | preload = Nothing }
+                            , download Load_ReadMe_Result model.lia.readme
+                            )
 
                 ( Nothing, _, ( "index_restore", param ) ) ->
                     case Lia.Json.Decode.decode model.lia.sync param of
@@ -306,7 +309,7 @@ update msg model =
                     |> Tuple.mapSecond
                         (\cmd ->
                             Cmd.batch
-                                [ { cmd = "offline_todo"
+                                [ { cmd = "offline_TODO"
                                   , param = JE.string url
                                   }
                                     |> Event.init "offline"

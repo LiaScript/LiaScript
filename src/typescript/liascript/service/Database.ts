@@ -49,10 +49,12 @@ const Service = {
         break
 
       case 'index_get':
-        event.message.param = {
+        // the reply must contain the id as the url ... such that
+        // LiaScript knows, what to do ...
+        event.message.param = (await connector.getFromIndex(param)) || {
           id: param,
-          course: await connector.getFromIndex(param),
         }
+
         sendReply(event)
         break
 

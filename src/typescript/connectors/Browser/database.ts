@@ -224,8 +224,8 @@ class LiaDB {
       return await this.dbIndex['courses'].get(uidDB)
     } catch (e: any) {
       log.warn('DB: getIndex -> ', e.message)
-      return null
     }
+    return null
   }
 
   /** Return the entire list of courses within the index in order.

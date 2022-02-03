@@ -38,7 +38,7 @@ type Msg
     | UpdateSettings Settings.Msg
 
 
-decodeGet : JD.Value -> ( String, Maybe Course )
+decodeGet : JD.Value -> Result JD.Error ( String, Maybe Course )
 decodeGet event =
     case
         ( JD.decodeValue (JD.field "id" JD.string) event
@@ -46,13 +46,13 @@ decodeGet event =
         )
     of
         ( Ok uri, Ok course ) ->
-            ( uri, Just course )
+            Ok ( uri, Just course )
 
         ( Ok uri, Err _ ) ->
-            ( uri, Nothing )
+            Ok ( uri, Nothing )
 
-        ( Err _, _ ) ->
-            ( "", Nothing )
+        ( Err info, _ ) ->
+            Err info
 
 
 handle : Event -> Msg
