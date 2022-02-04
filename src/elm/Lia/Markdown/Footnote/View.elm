@@ -18,7 +18,7 @@ inline key attr =
         [ Html.button
             ([ Attr.style "padding" "2px"
              , Attr.class "lia-btn lia-btn--transparent text-highlight"
-             , Attr.attribute "onclick" ("showFootnote(\"" ++ key ++ "\");")
+             , Attr.attribute "onclick" ("window.LIA.showFootnote(\"" ++ key ++ "\");")
              , key
                 |> byKey
                 |> Attr.id

@@ -2,8 +2,6 @@ import Lia from './lia.d'
 
 declare global {
   interface Window {
-    showFootnote: (_: any) => void
-
     googleTranslateElementInit: () => void
 
     LIA: {
@@ -41,6 +39,10 @@ declare global {
       // define `onclick` handlers so enable speech from inline elements from
       // within LiaScript
       playback: (_: Lia.Event) => void
+
+      // callback used by Inline elements to circumvent the message handling
+      // and to add on-click events for __FOOTNOTES__
+      showFootnote: (key: string) => void
     }
   }
 }

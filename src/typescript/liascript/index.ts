@@ -67,6 +67,9 @@ if (!window.LIA) {
     playback: function (_event: Lia.Event) {
       console.warn('playback not defined')
     },
+    showFootnote: function (key: string) {
+      console.warn('showFootnote not defined')
+    },
   }
 }
 
@@ -128,26 +131,21 @@ class LiaScript {
     liaStorage = this.connector.storage()
 
     let self = this
-    window.showFootnote = (key) => {
-      self.footnote(key)
-    }
 
     window.LIA.img.load = (src: string, width: number, height: number) => {
       self.app.ports.media.send([src, width, height])
     }
-
     window.LIA.img.click = (url: string) => {
       // abuse media port to open modals
       if (document.getElementsByClassName('lia-modal').length === 0) {
         self.app.ports.media.send([url, null, null])
       }
     }
+    window.LIA.showFootnote = (key: string) => {
+      self.app.ports.footnote.send(key)
+    }
 
     initTooltip()
-  }
-
-  footnote(key: string) {
-    this.app.ports.footnote.send(key)
   }
 
   reset() {
