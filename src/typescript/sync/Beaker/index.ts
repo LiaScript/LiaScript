@@ -1,4 +1,3 @@
-import Lia from '../../liascript/types/lia.d'
 import Beaker from './beaker.d'
 
 import { Sync as Base } from '../Base/index'
@@ -22,33 +21,26 @@ export function isSupported(): boolean {
 }
 
 export class Sync extends Base {
-  private peerIds: Set<number>
+  private peerIds: Set<number> = new Set()
 
   private peerEvent?: Beaker.Event
   private peerChannelEvent?: Beaker.UserEvent
 
-  constructor(send: Lia.Send) {
-    super(send)
-
-    this.peerIds = new Set()
-  }
-
   connect(data: {
     course: string
     room: string
-    username: string
     password?: string
+    config?: any
   }) {
     if (!window.beaker) return
 
     super.connect(data)
 
-    let self = this
-
     this.peerIds = new Set()
 
     this.peerEvent = window.beaker.peersockets.watch()
 
+    let self = this
     this.peerEvent.addEventListener('join', (e: Beaker.Message) => {
       self.peerIds.add(e.peerId)
     })
@@ -63,23 +55,21 @@ export class Sync extends Base {
     this.peerChannelEvent.addEventListener(
       'message',
       function (event: Beaker.Message) {
-        let message = decode(event.message)
+        const message = decode(event.message)
 
         if (message) {
-          self.send(message)
+          self.sendToLia(message)
         }
       }
     )
 
-    this.sync('connect', this.token)
+    this.sendConnect()
   }
 
   disconnect() {
-    this.publish(this.syncMsg('leave', this.token))
-
-    if (this.peerChannelEvent) this.peerChannelEvent.close()
-
-    this.sync('disconnect')
+    if (this.peerChannelEvent) {
+      this.peerChannelEvent.close()
+    }
   }
 
   publish(message: Object) {

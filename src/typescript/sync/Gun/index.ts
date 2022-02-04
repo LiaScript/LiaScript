@@ -54,11 +54,11 @@ export class Sync extends Base {
           }
         })
 
-      this.sync('connect', this.token)
+      this.sendConnect()
     }
   }
 
-  disconnect(event: Lia.Event) {
+  disconnect(event: Object) {
     this.publish(null)
     this.publish(event)
 

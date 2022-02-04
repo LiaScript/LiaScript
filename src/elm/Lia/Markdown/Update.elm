@@ -125,8 +125,8 @@ update sync globals msg section =
                 |> Return.mapEvents "table" section.id
 
         Sync event ->
-            case Event.topic event of
-                Just "quiz" ->
+            case event.message.cmd of
+                "quiz" ->
                     case
                         ( Maybe.andThen .quiz section.sync
                         , event
@@ -163,7 +163,7 @@ update sync globals msg section =
                             section
                                 |> Return.val
 
-                Just "survey" ->
+                "survey" ->
                     case
                         ( Maybe.andThen .survey section.sync
                         , event

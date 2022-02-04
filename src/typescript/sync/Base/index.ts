@@ -136,6 +136,9 @@ export class Sync {
     this.cbConnection(topic, message)
   }
 
+  sendConnect() {
+    this.sync('connect', this.token)
+  }
   /** Send a connection message to the LiaScript Sync module, this after this
    * LiaScript will start joining, by sending a join message to be published.
    *

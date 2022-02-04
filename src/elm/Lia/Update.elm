@@ -161,7 +161,7 @@ update session msg model =
                 |> Return.mapEvents "sync" -1
 
         Handle event ->
-            case Event.pop event |> Debug.log "ssssssssssssssssssssss" of
+            case Event.pop event of
                 ( Just "settings", e ) ->
                     update
                         session
@@ -183,6 +183,20 @@ update session msg model =
                             Return.val model
                                 |> Return.batchEvent (Service.Console.warn "message goto with no id")
 
+                ( Just "local", e_ ) ->
+                    case
+                        event
+                            |> Event.id
+                            |> Maybe.andThen (\sectionID -> Array.get sectionID model.sections)
+                    of
+                        Just sec ->
+                            sec
+                                |> Markdown.update model.sync.state model.definition (Markdown.synchronize e_)
+                                |> Return.mapValCmd (\v -> { model | sections = Array.set sec.id v model.sections }) UpdateMarkdown
+
+                        _ ->
+                            Return.val model
+
                 ( Just "sync", e ) ->
                     case Event.popWithId e of
                         Nothing ->
@@ -200,16 +214,6 @@ update session msg model =
 
                         Just ( "load", id, _ ) ->
                             update session (Load True id) model
-
-                        Just ( "local", id, e_ ) ->
-                            case Array.get id model.sections of
-                                Just sec ->
-                                    sec
-                                        |> Markdown.update model.sync.state model.definition (Markdown.synchronize e_)
-                                        |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
-
-                                _ ->
-                                    Return.val model
 
                         Just ( topic, id, e_ ) ->
                             case Array.get id model.sections of

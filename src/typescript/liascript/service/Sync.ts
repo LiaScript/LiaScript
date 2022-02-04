@@ -50,7 +50,7 @@ const Service = {
 
           switch (event.message.param.backend) {
             case 'beaker':
-              sync = new Beaker.Sync(elmSend)
+              sync = new Beaker.Sync(cbConnection, elmSend)
               break
 
             case 'gun':
@@ -66,7 +66,7 @@ const Service = {
               break
 
             case 'pubnub':
-              sync = new PubNub.Sync(elmSend)
+              sync = new PubNub.Sync(cbConnection, elmSend)
               break
 
             default:
