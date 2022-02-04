@@ -9,7 +9,6 @@ connect :
     { backend : Via.Backend
     , course : String
     , room : String
-    , username : String
     , password : String
     }
     -> Event
@@ -24,7 +23,6 @@ connect param =
       , JE.object
             [ ( "course", JE.string param.course )
             , ( "room", JE.string param.room )
-            , ( "username", JE.string param.username )
             , ( "password"
               , if String.isEmpty param.password then
                     JE.null

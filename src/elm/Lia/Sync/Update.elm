@@ -26,7 +26,6 @@ import Set
 
 type Msg
     = Room String
-    | Username String
     | Password String
     | Backend SyncMsg
     | Connect
@@ -172,10 +171,6 @@ update session model msg =
             { model | sync = { sync | password = str } }
                 |> Return.val
 
-        Username str ->
-            { model | sync = { sync | username = str } }
-                |> Return.val
-
         Room str ->
             { model | sync = { sync | room = str } }
                 |> Return.val
@@ -203,7 +198,6 @@ update session model msg =
                                 { backend = backend
                                 , course = model.readme
                                 , room = sync.room
-                                , username = sync.username
                                 , password = sync.password
                                 }
                             )

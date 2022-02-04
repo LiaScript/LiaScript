@@ -58,9 +58,6 @@ view settings =
                         settings.room
                     , Html.br [] []
                     , Html.br [] []
-                    , input open Username (Html.text "user") "input" settings.username
-                    , Html.br [] []
-                    , Html.br [] []
                     , input open Password (Html.text "maybe password") "password" settings.password
                     , Html.br [] []
                     , Html.br [] []

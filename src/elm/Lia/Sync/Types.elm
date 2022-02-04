@@ -30,7 +30,6 @@ type alias Settings =
     { sync : Sync
     , state : State
     , room : String
-    , username : String
     , password : String
     , peers : Set String
     , error : Maybe String
@@ -53,7 +52,6 @@ init supportedBackends =
         }
     , state = Disconnected
     , room = ""
-    , username = ""
     , password = ""
     , peers = Set.empty
     , error = Nothing
