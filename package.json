@@ -29,19 +29,19 @@
     "test": "npx elm-test",
     "watch": "npm run watch:dev",
     "build": "npm run build:app",
-    "build:app": "npx run clean && npx parcel build --no-source-maps --public-url . src/entry/app/index.html && npm run sw",
+    "build:app": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/app/index.html && npm run sw",
     "watch:app": "npx parcel serve src/entry/app/index.html --open",
     "watch:base": "npx parcel serve src/entry/base/index.html",
-    "build:base": "npx run clean && npx parcel build --no-source-maps --public-url . src/entry/base/index.html",
-    "build:dev": "npx run clean && npx parcel build --no-source-maps --public-url . src/entry/dev/index.html && npm run sw",
+    "build:base": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/base/index.html",
+    "build:dev": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/dev/index.html && npm run sw",
     "watch:dev": "npx parcel serve src/entry/dev/index.html --open",
     "build:preview": "npx parcel build --no-source-maps --public-url . src/typescript/webcomponents/preview-lia.ts",
-    "build:scorm1.2": "npx run clean && ./node_modules/parcel/lib/bin.js build --no-source-maps --public-url . src/entry/scorm1.2/index.html",
+    "build:scorm1.2": "npm run clean && ./node_modules/parcel/lib/bin.js build --no-source-maps --public-url . src/entry/scorm1.2/index.html",
     "watch:scorm1.2": "npx parcel serve src/entry/scorm1.2/index.html",
-    "build:worker": "npx run clean && npx parcel build --no-source-maps --target node src/entry/worker/index.js",
+    "build:worker": "npm run clean && npx parcel build --no-source-maps --target node src/entry/worker/index.js",
     "watch:webcomponent": "npx parcel serve src/entry/webcomponent/index.html --open",
-    "build:webcomponent": "npx run clean && npx parcel build --no-source-maps src/entry/webcomponent/index.ts && rm dist/README.md",
-    "build:webcomponentPublic": "npx run clean && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md"
+    "build:webcomponent": "npm run clean && npx parcel build --no-source-maps src/entry/webcomponent/index.ts && rm dist/README.md",
+    "build:webcomponentPublic": "npm run clean && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md"
   },
   "devDependencies": {
     "@parcel/packager-raw-url": "^2.2.1",
@@ -55,6 +55,7 @@
     "caniuse-lite": "^1.0.30001303",
     "dexie": "^2.0.4",
     "echarts": "^5.3.0",
+    "echarts-wordcloud": "^2.0.0",
     "elm": "^0.19.1-5",
     "elm-hot": "^1.1.6",
     "elm-test": "^0.19.1-revision6",
@@ -87,6 +88,9 @@
       "destination": "dist/katex.min.css"
     }
   ],
+  "staticFiles": {
+    "staticPath": ["static"]
+  },
   "directories": {
     "test": "tests"
   }

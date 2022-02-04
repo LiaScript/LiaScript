@@ -1,14 +1,13 @@
 module Lia.Markdown.Code.Events exposing
     ( eval
-    , evalDecode
     , flip_view
     , fullscreen
     , input
-    , load
     , stop
     , store
-    , version_append
-    , version_update
+    , updateActive
+    , updateAppend
+    , updateVersion
     )
 
 import Array
@@ -17,110 +16,136 @@ import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (File, Project, Repo, Vector)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
-import Port.Eval as Eval exposing (Eval)
-import Port.Event as Event exposing (Event)
 import Return exposing (Return)
+import Service.Database
+import Service.Event as Event exposing (Event)
+import Service.Script
 
 
 stop : Int -> Event
-stop idx =
-    Event "stop" idx JE.null
+stop projectID =
+    Service.Script.stop
+        |> toProject projectID
 
 
 input : Int -> String -> Event
-input idx string =
-    Event "input" idx <| JE.string string
+input projectID value =
+    Service.Script.input value
+        |> toProject projectID
 
 
-eval : Scripts a -> Int -> Project -> Event
-eval scripts idx project =
+eval : Int -> Scripts a -> Project -> Event
+eval projectID scripts project =
     project.file
         |> Array.map .code
         |> Array.toList
-        |> Eval.event idx project.evaluation (outputs scripts)
+        |> Service.Script.eval project.evaluation (outputs scripts)
+        -- navigate the evaluation within the Code module
+        |> toProject projectID
 
 
-store : Vector -> Event
-store model =
-    model
-        |> Json.fromVector
-        |> Event.store
+toProject : Int -> Event -> Event
+toProject id =
+    Event.pushWithId "project" id
 
 
-evalDecode : Event -> Eval
-evalDecode event =
-    Eval.decode event.message
-
-
-version_update : Int -> Return Project msg sub -> Return Project msg sub
-version_update idx return =
-    return
-        |> Return.batchEvent
-            (Event "version_update" idx <|
-                JE.object
-                    [ ( "version_active", JE.int return.value.version_active )
-                    , ( "log", Log.encode return.value.log )
-                    , ( "version"
-                      , case Array.get return.value.version_active return.value.version of
-                            Just version ->
-                                Json.fromVersion version
-
-                            Nothing ->
-                                JE.null
-                      )
-                    ]
-            )
-
-
-version_append : Int -> Project -> Repo -> Event
-version_append idx project repo_update =
-    Event "version_append" idx <|
-        JE.object
-            [ ( "version_active", JE.int project.version_active )
-            , ( "log", Log.encode project.log )
-            , ( "file", JE.array Json.fromFile project.file )
-            , ( "version"
-              , case Array.get (Array.length project.version - 1) project.version of
-                    Just version ->
-                        Json.fromVersion version
-
-                    Nothing ->
-                        JE.null
-              )
-            , ( "repository", JE.dict identity JE.string repo_update )
+store : Maybe Int -> Vector -> List Event
+store sectionID model =
+    case sectionID of
+        Just id ->
+            [ model
+                |> Json.fromVector
+                |> Service.Database.store "code" id
             ]
 
+        Nothing ->
+            []
 
-load : Int -> Return Project msg sub -> Return Project msg sub
-load idx return =
+
+updateVersion : Int -> Int -> Return Project msg sub -> Return Project msg sub
+updateVersion projectID sectionID return =
     return
         |> Return.batchEvent
-            (Event "load" idx <|
-                JE.object
-                    [ ( "file", JE.array Json.fromFile return.value.file )
-                    , ( "version_active", JE.int return.value.version_active )
-                    , ( "log", Log.encode return.value.log )
-                    ]
+            ([ ( "version_active"
+               , JE.int return.value.version_active
+               )
+             , ( "log"
+               , Log.encode return.value.log
+               )
+             , ( "version"
+               , return.value.version
+                    |> Array.get return.value.version_active
+                    |> Maybe.map Json.fromVersion
+                    |> Maybe.withDefault JE.null
+               )
+             ]
+                |> update_ sectionID { cmd = "version", id = projectID }
             )
 
 
-flip_view : Int -> Int -> File -> List Event
-flip_view id1 id2 file =
-    file.visible
-        |> toggle "view" id1 id2
+updateAppend : Int -> Project -> Repo -> Int -> Event
+updateAppend projectID project repo_update sectionID =
+    [ ( "version_active", JE.int project.version_active )
+    , ( "log", Log.encode project.log )
+    , ( "file", JE.array Json.fromFile project.file )
+    , ( "version"
+      , case Array.get (Array.length project.version - 1) project.version of
+            Just version ->
+                Json.fromVersion version
 
-
-fullscreen : Int -> Int -> File -> List Event
-fullscreen id1 id2 file =
-    file.fullscreen
-        |> toggle "fullscreen" id1 id2
-
-
-toggle : String -> Int -> Int -> Bool -> List Event
-toggle message id1 id2 value =
-    [ value
-        |> JE.bool
-        |> Event message id2
-        |> Event.encode
-        |> Event "flip" id1
+            Nothing ->
+                JE.null
+      )
+    , ( "repository", JE.dict identity JE.string repo_update )
     ]
+        |> update_ sectionID { cmd = "append", id = projectID }
+
+
+updateActive : Int -> Int -> Return Project msg sub -> Return Project msg sub
+updateActive projectID sectionID return =
+    return
+        |> Return.batchEvent
+            ([ ( "file", JE.array Json.fromFile return.value.file )
+             , ( "version_active", JE.int return.value.version_active )
+             , ( "log", Log.encode return.value.log )
+             ]
+                |> update_ sectionID { cmd = "active", id = projectID }
+            )
+
+
+flip_view : Maybe Int -> Int -> Int -> File -> List Event
+flip_view sectionID projectID fileID file =
+    case sectionID of
+        Just secID ->
+            [ file.visible
+                |> toggle fileID
+                |> update_ secID { cmd = "flip_view", id = projectID }
+            ]
+
+        Nothing ->
+            []
+
+
+fullscreen : Maybe Int -> Int -> Int -> File -> List Event
+fullscreen sectionID projectID fileID file =
+    case sectionID of
+        Just secID ->
+            [ file.fullscreen
+                |> toggle fileID
+                |> update_ secID { cmd = "flip_fullscreen", id = projectID }
+            ]
+
+        Nothing ->
+            []
+
+
+toggle : Int -> Bool -> List ( String, JE.Value )
+toggle file value =
+    [ ( "value", JE.bool value )
+    , ( "file_id", JE.int file )
+    ]
+
+
+update_ : Int -> { cmd : String, id : Int } -> List ( String, JE.Value ) -> Event
+update_ id cmd =
+    JE.object >> Service.Database.update "code" id cmd

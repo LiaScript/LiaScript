@@ -17,7 +17,8 @@
   <script defer type="module" src="../../typescript/webcomponents/tooltip/index.ts"></script>
   <script defer type="module" src="../../typescript/webcomponents/format.ts"></script>
   <script defer type="module" src="../../typescript/webcomponents/terminal.ts"></script>
-  <script>
+
+  <!--script>
     if (process.env.NODE_ENV !== 'development') {
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
@@ -30,8 +31,8 @@
         })
       }
     }
-  </script>
-  <!--script src="https://code.responsivevoice.org/responsivevoice.js"></script-->
+  </script-->
+  <script defer="true" src="https://code.responsivevoice.org/responsivevoice.js?key=blVZszUw"></script>
 
   <link rel="shortcut icon" sizes="192x192" href="../../assets/logo_192.png">
 
@@ -82,52 +83,37 @@
         transform: rotate(360deg);
       }
     }
-
-    .tooltip-container {
-      width: 425px;
-      min-height: 200px;
-      height: auto;
-      padding: 15px;
-      background: white;
-      box-shadow: 0 30px 90px -20px rgba(0, 0, 0, 0.3);
-      position: absolute;
-      z-index: 2000;
-      display: none;
-    }
   </style>
 
   <link rel="stylesheet" href="../../scss/main.scss">
 </head>
 
 <body>
-  
-    <noscript>
-      This page requires JavaScript to be enabled!
-    </noscript>
 
-    <div id="IE-message" hidden="true">
-      <h1>LiaScript - Problem</h1>
-      <p>
-        Hello! Welcome to LiaScript. This site is not fully supported in
-        Internet Explorer 11 (and earlier) versions.
-      </p>
-      <p>
-        As an alternative, you can use either of the options below to browse the
-        site:
-      </p>
-      <ol>
-        <li>Use Firefox browser. Here is the <a href="http://www.mozilla.org/en-US/firefox/new/">download link.</a></li>
-        <li>Use Google Chrome browser. Here is the <a
-            href="https://support.google.com/chrome/answer/95346?hl=en">download link.</a></li>
-      </ol>
-      <p>
-        Thanks.
-      </p>
-    </div>
-  
-  
+  <noscript>
+    This page requires JavaScript to be enabled!
+  </noscript>
+
+  <div id="IE-message" hidden="true">
+    <h1>LiaScript - Problem</h1>
+    <p>
+      Hello! Welcome to LiaScript. This site is not fully supported in
+      Internet Explorer 11 (and earlier) versions.
+    </p>
+    <p>
+      As an alternative, you can use either of the options below to browse the
+      site:
+    </p>
+    <ol>
+      <li>Use Firefox browser. Here is the <a href="http://www.mozilla.org/en-US/firefox/new/">download link.</a></li>
+      <li>Use Google Chrome browser. Here is the <a href="https://support.google.com/chrome/answer/95346?hl=en">download
+          link.</a></li>
+    </ol>
+    <p>
+      Thanks.
+    </p>
+  </div>
 
 </body>
-
 
 </html>

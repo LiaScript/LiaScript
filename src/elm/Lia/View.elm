@@ -21,8 +21,10 @@ import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..), Settings)
-import Lia.Settings.Update exposing (toggle_sound)
+import Lia.Settings.Update as Settings_
 import Lia.Settings.View as Settings
+import Lia.Sync.Types as Sync_
+import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (modal)
 import Session exposing (Screen)
@@ -119,11 +121,12 @@ viewSlide screen model =
     case get_active_section model of
         Just section ->
             [ Html.div [ Attr.class "lia-slide" ]
-                [ slideTopBar model.translation screen model.url model.repositoryUrl model.settings model.definition
+                [ slideTopBar model.translation screen model.url model.repositoryUrl model.settings model.definition model.sync
                 , Config.init
                     model.translation
                     ( model.langCodeOriginal, model.langCode )
                     model.settings
+                    model.sync
                     screen
                     section
                     model.section_active
@@ -157,6 +160,7 @@ viewSlide screen model =
                     model.repositoryUrl
                     model.settings
                     model.definition
+                    model.sync
                 , Html.text "Ups, something went wrong"
                 ]
             ]
@@ -227,7 +231,7 @@ btnStop lang settings =
             else
                 Trans.soundOff lang
         , tabbable = True
-        , msg = Just (UpdateSettings toggle_sound)
+        , msg = Just (UpdateSettings Settings_.toggle_sound)
         , icon =
             if settings.sound then
                 "icon-sound-on"
@@ -338,12 +342,12 @@ navButton title id class msg =
 6.  `state`: fragments, if animations are active, not visible in textbook mode
 
 -}
-slideTopBar : Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> Html Msg
-slideTopBar lang screen url repositoryURL settings def =
+slideTopBar : Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> Sync_.Settings -> Html Msg
+slideTopBar lang screen url repositoryURL settings def sync =
     [ ( Settings.menuMode, "mode" )
     , ( Settings.menuSettings screen.width, "settings" )
     , ( Settings.menuTranslations def, "lang" )
-    , ( Settings.menuShare url, "share" )
+    , ( Settings.menuShare url sync, "share" )
     , ( Settings.menuInformation repositoryURL def, "info" )
     ]
         |> Settings.header lang screen settings (Definition.getIcon def)
@@ -428,11 +432,18 @@ responsiveVoice show =
 
 showModal : Model -> Html Msg
 showModal model =
-    case model.modal of
-        Nothing ->
+    case ( model.modal, model.settings.sync ) of
+        ( Nothing, False ) ->
             Html.text ""
 
-        Just url ->
+        ( _, True ) ->
+            model.sync
+                |> Sync.view
+                |> Html.map UpdateSync
+                |> List.singleton
+                |> modal (UpdateSettings (Settings_.Toggle Settings_.Sync)) Nothing
+
+        ( Just url, _ ) ->
             modal (Media ( "", Nothing, Nothing ))
                 Nothing
                 [ Html.figure
@@ -447,7 +458,7 @@ showModal model =
                             |> Maybe.withDefault (Attr.class "")
                         , Attr.style "background-image" ("url('" ++ url ++ "')")
                         , Attr.class "lia-figure__zoom"
-                        , Attr.attribute "onmousemove" "img_Zoom(event)"
+                        , Attr.attribute "onmousemove" "window.LIA.img.zoom(event)"
                         ]
                         [ Html.img
                             [ Attr.src url

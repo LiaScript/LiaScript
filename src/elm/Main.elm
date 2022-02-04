@@ -10,6 +10,8 @@ import Index.Model as Index
 import Json.Encode as JE
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Script
+import Lia.Settings.Types exposing (Settings)
+import Lia.Sync.Types as Sync
 import Model exposing (Model, State(..))
 import Session exposing (Screen, Session)
 import Update
@@ -62,6 +64,7 @@ type alias Flags =
     , screen : Screen
     , hasShareAPI : Bool
     , hasIndex : Bool
+    , syncSupport : List String
     }
 
 
@@ -104,6 +107,7 @@ init flags url key =
                 flags.hasShareAPI
                 openTableOfContents
                 flags.settings
+                flags.syncSupport
                 (get_base subURL)
                 "README.md"
                 ""
@@ -118,6 +122,7 @@ init flags url key =
                 flags.hasShareAPI
                 openTableOfContents
                 flags.settings
+                flags.syncSupport
                 (query
                     |> Url.fromString
                     |> Maybe.withDefault { courseUrl | query = Just query }
@@ -132,23 +137,55 @@ init flags url key =
 
         -- Use the url query-parameter as the course-url
         ( Just query, _, _ ) ->
-            Lia.Script.init
-                flags.hasShareAPI
-                openTableOfContents
-                flags.settings
-                (get_base courseUrl)
-                query
-                (get_origin courseUrl.query)
-                url.fragment
-                |> model courseUrl Loading
-                |> getIndex query
-                |> navToFirstSlide
+            case Session.getType courseUrl of
+                Session.Index ->
+                    Lia.Script.init
+                        flags.hasShareAPI
+                        openTableOfContents
+                        flags.settings
+                        flags.syncSupport
+                        ""
+                        ""
+                        ""
+                        url.fragment
+                        |> model courseUrl Idle
+                        |> Update.initIndex
+
+                Session.Course _ fragment ->
+                    Lia.Script.init
+                        flags.hasShareAPI
+                        openTableOfContents
+                        flags.settings
+                        flags.syncSupport
+                        (get_base courseUrl)
+                        query
+                        (get_origin courseUrl.query)
+                        fragment
+                        |> model courseUrl Loading
+                        |> getIndex query
+                        |> navToFirstSlide
+
+                Session.Class room fragment ->
+                    Lia.Script.init
+                        flags.hasShareAPI
+                        openTableOfContents
+                        flags.settings
+                        flags.syncSupport
+                        (get_base courseUrl)
+                        room.course
+                        (get_origin (Just room.course))
+                        fragment
+                        |> model courseUrl Loading
+                        |> openSync room
+                        |> getIndex room.course
+                        |> navToFirstSlide
 
         _ ->
             Lia.Script.init
                 flags.hasShareAPI
                 openTableOfContents
                 flags.settings
+                flags.syncSupport
                 ""
                 ""
                 ""
@@ -204,3 +241,21 @@ navToFirstSlide ( model, cmd ) =
 get_base : Url.Url -> String
 get_base url =
     Url.toString { url | fragment = Nothing }
+
+
+openSync : Session.Room -> Model -> Model
+openSync room model =
+    let
+        settings =
+            model.lia.settings
+
+        lia =
+            model.lia
+    in
+    { model
+        | lia =
+            { lia
+                | sync = Sync.initRoom room lia.sync
+                , settings = { settings | sync = True }
+            }
+    }

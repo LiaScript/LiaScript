@@ -5,12 +5,37 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="512"
    height="512"
    viewBox="0 0 512 512"
    fill="none"
    version="1.1"
-   id="svg4">
+   id="svg4"
+   sodipodi:docname="person.svg"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15)">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1043"
+     id="namedview6"
+     showgrid="false"
+     inkscape:zoom="1.3921165"
+     inkscape:cx="181.24644"
+     inkscape:cy="295.60854"
+     inkscape:window-x="373"
+     inkscape:window-y="1440"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4"
+     inkscape:document-rotation="0" />
   <metadata
      id="metadata10">
     <rdf:RDF>
@@ -19,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -27,6 +52,6 @@
      id="defs8" />
   <path
      id="path860"
-     style="opacity:0.82;fill:#00ff00;stroke-width:175.363;stroke-linejoin:round;paint-order:markers stroke fill"
-     d="m 345,150 a 90,90 0 0 1 -90,90 90,90 0 0 1 -90,-90 90,90 0 0 1 90,-90 90,90 0 0 1 90,90 z M 154.55273,198.39453 A 212.50014,299.99693 0 0 0 43.5,461.99805 212.50014,299.99693 0 0 0 43.5,462 h 425 a 212.50014,299.99693 0 0 0 0,-0.002 A 212.50014,299.99693 0 0 0 357.44727,198.39453 110,110 0 0 1 256,265.87305 110,110 0 0 1 154.55273,198.39453 Z" />
+     style="opacity:0.82;fill:#00ff00;stroke-width:209.399;stroke-linejoin:round;paint-order:markers stroke fill"
+     d="M 363.00006,137.46272 A 107.4627,107.4627 0 0 1 255.53733,244.92552 107.4627,107.4627 0 0 1 148.07454,137.46272 107.4627,107.4627 0 0 1 255.53733,30 107.4627,107.4627 0 0 1 363.00006,137.46272 Z M 135.60068,195.24741 A 253.73142,358.20535 0 0 0 3,509.998 253.73142,358.20535 0 0 0 3,510 h 507.46288 a 253.73142,358.20535 0 0 0 0,-0.002 253.73142,358.20535 0 0 0 -132.60029,-314.75054 131.34335,131.34335 0 0 1 -121.13131,80.57115 131.34335,131.34335 0 0 1 -121.1306,-80.57115 z" />
 </svg>

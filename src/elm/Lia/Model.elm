@@ -13,7 +13,9 @@ import Lia.Parser.PatReplace exposing (repo)
 import Lia.Section exposing (Sections)
 import Lia.Settings.Json
 import Lia.Settings.Types as Settings exposing (Settings)
-import Port.Event exposing (Event)
+import Lia.Sync.Types as Sync
+import Service.Event exposing (Event)
+import Service.Resource
 import Translations
 
 
@@ -84,6 +86,7 @@ type alias Model =
     , search_index : String -> String
     , media : Dict String ( Int, Int )
     , modal : Maybe String
+    , sync : Sync.Settings
     }
 
 
@@ -103,8 +106,8 @@ type alias Model =
     active section (defaults to 1)
 
 -}
-init : Bool -> Bool -> JE.Value -> String -> String -> String -> Maybe String -> Model
-init hasShareApi openTOC settings url readme origin anchor =
+init : Bool -> Bool -> JE.Value -> List String -> String -> String -> String -> Maybe String -> Model
+init hasShareApi openTOC settings allowedBackends url readme origin anchor =
     let
         default =
             Settings.init hasShareApi Settings.Presentation
@@ -133,6 +136,7 @@ init hasShareApi openTOC settings url readme origin anchor =
     , search_index = identity
     , media = Dict.empty
     , modal = Nothing
+    , sync = Sync.init allowedBackends
     }
 
 
@@ -152,14 +156,12 @@ loadResource old new =
     ( List.append old to_load
     , List.map
         (\res ->
-            Event "resource" 0 <|
-                JE.list JE.string <|
-                    case res of
-                        Script url ->
-                            [ "script", url ]
+            case res of
+                Script url ->
+                    Service.Resource.script url
 
-                        Link url ->
-                            [ "link", url ]
+                Link url ->
+                    Service.Resource.link url
         )
         to_load
     )

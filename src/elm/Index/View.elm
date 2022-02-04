@@ -16,7 +16,7 @@ import Lia.Markdown.Inline.View as Inline
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.View as Settings
-import Lia.Utils exposing (blockKeydown, btn, btnIcon)
+import Lia.Utils exposing (blockKeydown, btn, btnIcon, string2Color)
 import Session exposing (Session)
 import Translations exposing (Lang(..))
 
@@ -357,64 +357,4 @@ inlines =
 
 defaultBackground : String -> Attribute msg
 defaultBackground url =
-    Attr.style "background-image" <| "radial-gradient(circle farthest-side at right bottom," ++ url2Color url ++ " 30%,#ddd)"
-
-
-greedyGroupsOf : Int -> List a -> List (List a)
-greedyGroupsOf size xs =
-    greedyGroupsOfWithStep size size xs
-
-
-greedyGroupsOfWithStep : Int -> Int -> List a -> List (List a)
-greedyGroupsOfWithStep size step xs =
-    let
-        group =
-            List.take size xs
-
-        xs_ =
-            List.drop step xs
-
-        okayArgs =
-            size > 0 && step > 0
-
-        okayXs =
-            List.length xs > 0
-    in
-    if okayArgs && okayXs then
-        group :: greedyGroupsOfWithStep size step xs_
-
-    else
-        []
-
-
-url2Color : String -> String
-url2Color url =
-    url
-        |> String.toList
-        |> List.map Char.toCode
-        |> greedyGroupsOf 3
-        |> List.foldl
-            (\rgb ( r, g, b ) ->
-                case rgb of
-                    [ r_, g_, b_ ] ->
-                        ( r + r_, g + g_, b + b_ )
-
-                    [ r_, g_ ] ->
-                        ( r_ + r, g_ + g, b )
-
-                    [ r_ ] ->
-                        ( r_ + r, g, b )
-
-                    _ ->
-                        ( r, g, b )
-            )
-            ( 11111, 99, 12 )
-        |> (\( r, g, b ) ->
-                "rgb("
-                    ++ (String.fromInt <| modBy 255 r)
-                    ++ ","
-                    ++ (String.fromInt <| modBy 255 g)
-                    ++ ","
-                    ++ (String.fromInt <| modBy 255 b)
-                    ++ ")"
-           )
+    Attr.style "background-image" <| "radial-gradient(circle farthest-side at right bottom," ++ string2Color 255 url ++ " 30%,#ddd)"

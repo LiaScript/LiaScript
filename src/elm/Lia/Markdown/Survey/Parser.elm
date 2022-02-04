@@ -29,7 +29,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Parser as Block
 import Lia.Markdown.Quiz.Block.Types as BlockTypes
 import Lia.Markdown.Quiz.Parser exposing (maybeJS)
-import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..))
+import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..), analyseType)
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
@@ -45,13 +45,21 @@ survey =
     choice
         [ text_lines |> map Text
         , Block.parse |> andThen toSelect
-        , vector parens |> map (Vector False)
-        , vector brackets |> map (Vector True)
+        , vector parens |> map (toVector False)
+        , vector brackets |> map (toVector True)
         , header "(" ")" |> map (toMatrix False) |> andMap questions
         , header "[" "]" |> map (toMatrix True) |> andMap questions
         ]
         |> map Survey
         |> andMap (withState (.survey_vector >> Array.length >> succeed))
+
+
+toVector : Bool -> List ( String, Inlines ) -> Type
+toVector bool definition =
+    definition
+        |> List.map Tuple.first
+        |> analyseType
+        |> Vector bool definition
 
 
 toMatrix : Bool -> List Inlines -> (List Inlines -> Type)
@@ -155,7 +163,7 @@ modify_State survey_ =
                 Select _ ->
                     Select_State False -1
 
-                Vector bool vars ->
+                Vector bool vars _ ->
                     vars
                         |> extractor (\( v, _ ) -> ( v, False ))
                         |> Vector_State bool

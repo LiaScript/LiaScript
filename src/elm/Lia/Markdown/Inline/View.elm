@@ -253,7 +253,7 @@ viewMedia config inline =
                         |> Maybe.withDefault (Attr.class "")
                     , Attr.style "background-image" ("url('" ++ url_ ++ "')")
                     , Attr.class "lia-figure__zoom"
-                    , Attr.attribute "onmousemove" "img_Zoom(event)"
+                    , Attr.attribute "onmousemove" "window.LIA.img.zoom(event)"
                     ]
                     [ Html.img
                         (Attr.src url_
@@ -300,6 +300,7 @@ view_inf scripts lang light tooltips translations media =
     , media = media |> Maybe.withDefault Dict.empty
     , scripts = scripts
     , translations = translations
+    , sync = Nothing
     }
         |> Config.init
         |> view
@@ -331,7 +332,7 @@ img config attr alt_ url_ title_ width =
         (Attr.src url_
             :: Attr.attribute "loading" "lazy"
             :: (if List.isEmpty attr then
-                    [ Attr.attribute "onClick" ("window.img_Click(\"" ++ url_ ++ "\")") ]
+                    [ Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") ]
 
                 else
                     toAttribute attr
@@ -345,7 +346,7 @@ img config attr alt_ url_ title_ width =
 
 load : String -> Attribute msg
 load url =
-    Attr.attribute "onload" ("img_('" ++ url ++ "',this.width,this.height)")
+    Attr.attribute "onload" ("window.LIA.img.load('" ++ url ++ "',this.width,this.height)")
 
 
 figure : Config sub -> Maybe Inlines -> Maybe Int -> String -> Html (Msg sub) -> Html (Msg sub)

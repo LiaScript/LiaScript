@@ -6,14 +6,12 @@ module Lia.Markdown.Effect.Update exposing
     , init
     , next
     , previous
-    , ttsCancel
     , ttsReplay
     , update
     , updateSub
     )
 
 import Browser.Dom as Dom
-import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Effect.Model
@@ -24,9 +22,11 @@ import Lia.Markdown.Effect.Model
 import Lia.Markdown.Effect.Script.Types as Script_ exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Section exposing (SubSection)
-import Port.Event exposing (Event)
-import Port.TTS as TTS
 import Return exposing (Return)
+import Service.Console
+import Service.Event as Event exposing (Event)
+import Service.Slide
+import Service.TTS
 import Task
 
 
@@ -89,13 +89,13 @@ update main sound msg model =
             Mute id ->
                 { model | speaking = Nothing }
                     |> Return.val
-                    |> Return.batchEvent (TTS.mute id)
+                    |> Return.batchEvent (Service.TTS.cancel |> Event.pushWithId "playback" id)
 
             Send event ->
                 let
                     events =
-                        scrollTo True "focused"
-                            :: scrollTo False "lia-notes-active"
+                        Service.Slide.scrollIntoView "focused" 350
+                            :: Service.Slide.scrollIntoView "lia-notes-active" 350
                             :: event
                 in
                 model
@@ -104,13 +104,13 @@ update main sound msg model =
                         (case current_comment model of
                             Just ( id, _ ) ->
                                 if sound then
-                                    TTS.readFrom -1 id :: events
+                                    Service.TTS.readFrom id :: events
 
                                 else
                                     events
 
                             _ ->
-                                TTS.cancel :: events
+                                Service.TTS.cancel :: events
                         )
 
             Rendered run_all_javascript _ ->
@@ -122,35 +122,37 @@ update main sound msg model =
                     |> Return.mapValCmd (\v -> { model | javascript = v }) Script
 
             Handle event ->
-                case event.topic of
-                    "speak" ->
-                        Return.val <|
-                            case event.message |> JD.decodeValue JD.string of
-                                Ok "start" ->
-                                    { model | speaking = Just event.section }
+                case Event.destructure event of
+                    ( Nothing, _, ( cmd, param ) ) ->
+                        case Service.TTS.decode event of
+                            Service.TTS.Start ->
+                                { model | speaking = Just -1 }
+                                    |> Return.val
 
-                                Ok "stop" ->
-                                    { model | speaking = Nothing }
+                            Service.TTS.Stop ->
+                                { model | speaking = Nothing }
+                                    |> Return.val
 
-                                _ ->
-                                    model
+                            Service.TTS.Error info ->
+                                model
+                                    |> Return.val
+                                    |> Return.batchEvent (Service.Console.warn info)
+
+                    ( Just "playback", id, ( "start", _ ) ) ->
+                        Return.val { model | speaking = Just id }
+
+                    ( Just "playback", _, ( "stop", _ ) ) ->
+                        Return.val { model | speaking = Nothing }
+
+                    ( Just "playback", _, ( "error", _ ) ) ->
+                        { model | speaking = Nothing }
+                            |> Return.val
+                            |> Return.batchEvent (Service.Console.warn "effects: local playback error")
 
                     _ ->
                         model.javascript
                             |> Script.update main (Script_.Handle event)
                             |> Return.mapValCmd (\v -> { model | javascript = v }) Script
-
-
-scrollTo : Bool -> String -> Event
-scrollTo force =
-    JE.string
-        >> Event "scrollTo"
-            (if force then
-                -1
-
-             else
-                0
-            )
 
 
 markRunning : Return (Model a) (Msg sub) sub -> Return (Model a) (Msg sub) sub
@@ -162,11 +164,16 @@ markRunning return =
                     | javascript =
                         List.foldl
                             (\e js ->
-                                if e.section < 0 then
-                                    js
+                                case Event.id e of
+                                    Just id ->
+                                        if id < 0 then
+                                            js
 
-                                else
-                                    Script.setRunning e.section True js
+                                        else
+                                            Script.setRunning id True js
+
+                                    _ ->
+                                        js
                             )
                             model.javascript
                             return.events
@@ -233,19 +240,8 @@ handle =
     Handle
 
 
-ttsReplay :
-    Bool
-    -> Model SubSection
-    -> Maybe Event
-ttsReplay sound model =
-    case ( sound, current_comment model ) of
-        ( True, Just ( id, _ ) ) ->
-            Just <| TTS.readFrom -1 id
-
-        _ ->
-            Nothing
-
-
-ttsCancel : Event
-ttsCancel =
-    TTS.cancel
+ttsReplay : Model SubSection -> Maybe Event
+ttsReplay model =
+    model
+        |> current_comment
+        |> Maybe.map (Tuple.first >> Service.TTS.readFrom)

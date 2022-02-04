@@ -8,7 +8,12 @@ import('../../typescript/connectors/Base/index').then(function (Base) {
     debug = true
   }
 
-  var app = new LiaScript(document.body, new Base.Connector(), debug)
+  var app = new LiaScript(
+    document.body,
+    new Base.Connector(),
+    false, // allowSync
+    debug
+  )
 
   window.showFootnote = (key) => app.footnote(key)
   //window.gotoLia = (line) => app.goto(line);

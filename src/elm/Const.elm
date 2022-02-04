@@ -86,4 +86,4 @@ urlLiascript =
 
 urlLiascriptCourse : String
 urlLiascriptCourse =
-    urlLiascript ++ "/course/?"
+    urlLiascript ++ "/nightly/?"

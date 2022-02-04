@@ -4,8 +4,11 @@ import Array
 import Html exposing (Html, button)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import Json.Encode as JE
+import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Survey.Model
@@ -17,14 +20,36 @@ import Lia.Markdown.Survey.Model
         , get_text_state
         , get_vector_state
         )
-import Lia.Markdown.Survey.Types exposing (Survey, Type(..), Vector)
+import Lia.Markdown.Survey.Sync as Sync exposing (Sync, sync)
+import Lia.Markdown.Survey.Types
+    exposing
+        ( Analyse(..)
+        , State(..)
+        , Survey
+        , Type(..)
+        , Vector
+        )
 import Lia.Markdown.Survey.Update exposing (Msg(..))
-import Lia.Utils exposing (blockKeydown, btn, icon, onKeyDown)
-import Translations exposing (surveySubmit, surveySubmitted, surveyText)
+import Lia.Sync.Container.Local exposing (Container)
+import Lia.Sync.Types as Sync_
+import Lia.Utils
+    exposing
+        ( blockKeydown
+        , btn
+        , icon
+        , onKeyDown
+        , string2Color
+        )
+import Translations
+    exposing
+        ( surveySubmit
+        , surveySubmitted
+        , surveyText
+        )
 
 
-view : Config sub -> Parameters -> Survey -> Vector -> ( Maybe Int, Html (Msg sub) )
-view config attr survey model =
+view : Config sub -> Parameters -> Survey -> Vector -> Maybe (Container Sync) -> ( Maybe Int, Html (Msg sub) )
+view config attr survey model sync =
     Tuple.pair
         (model
             |> Array.get survey.id
@@ -35,12 +60,14 @@ view config attr survey model =
             Text lines ->
                 view_text config (get_text_state model survey.id) lines survey.id
                     |> view_survey config attr "text" model survey.id
+                    |> viewTextSync config lines (Sync_.get config.sync survey.id sync)
 
             Select inlines ->
                 view_select config inlines (get_select_state model survey.id) survey.id
                     |> view_survey config attr "select" model survey.id
+                    |> viewSelectSync config inlines (Sync_.get config.sync survey.id sync)
 
-            Vector button questions ->
+            Vector button questions analyse ->
                 vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
                     |> view_vector questions
                     |> view_survey config
@@ -53,12 +80,320 @@ view config attr survey model =
                         )
                         model
                         survey.id
+                    |> viewVectorSync config
+                        analyse
+                        questions
+                        (Sync_.get config.sync survey.id sync)
 
-            --|> Html.p (annotation "lia-quiz" attr)
             Matrix button header vars questions ->
                 matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
                     |> view_matrix config header questions
                     |> view_survey config attr "matrix" model survey.id
+                    |> viewMatrixSync config
+                        questions
+                        vars
+                        (Sync_.get config.sync survey.id sync)
+
+
+viewTextSync : Config sub -> Int -> Maybe (List Sync) -> Html msg -> Html msg
+viewTextSync config lines syncData survey =
+    case ( syncData, lines ) of
+        ( Just data, 1 ) ->
+            case
+                data
+                    |> Sync.wordCount
+                    |> Maybe.map (wordCloud config)
+            of
+                Nothing ->
+                    survey
+
+                Just diagram ->
+                    Html.div [] [ survey, diagram ]
+
+        ( Just data, _ ) ->
+            Html.div []
+                [ survey
+                , data
+                    |> Sync.text
+                    |> Maybe.map
+                        (List.map textBlock
+                            >> Html.div
+                                [ Attr.style "border" "1px solid rgb(var(--color-highlight))"
+                                , Attr.style "border-radius" "0.8rem"
+                                , Attr.style "max-height" "400px"
+                                , Attr.style "overflow" "auto"
+                                ]
+                        )
+                    |> Maybe.withDefault (Html.text "")
+                ]
+
+        _ ->
+            Html.div [] [ survey ]
+
+
+viewVectorSync : Config sub -> Analyse -> List ( String, Inlines ) -> Maybe (List Sync) -> Html msg -> Html msg
+viewVectorSync config analyse questions syncData survey =
+    case
+        syncData
+            |> Maybe.andThen (Sync.vector (List.map Tuple.first questions))
+            |> Maybe.map (vectorBlock config analyse)
+    of
+        Nothing ->
+            survey
+
+        Just diagram ->
+            Html.div [] [ survey, diagram ]
+
+
+viewMatrixSync : Config sub -> List Inlines -> List String -> Maybe (List Sync) -> Html msg -> Html msg
+viewMatrixSync config categories questions syncData survey =
+    case
+        syncData
+            |> Maybe.andThen (Sync.matrix questions)
+            |> Maybe.map (matrixBlock config categories)
+    of
+        Nothing ->
+            survey
+
+        Just diagram ->
+            Html.div [] [ survey, diagram ]
+
+
+viewSelectSync : Config sub -> List Inlines -> Maybe (List Sync) -> Html msg -> Html msg
+viewSelectSync config options syncData survey =
+    case
+        syncData
+            |> Maybe.andThen (Sync.select (List.length options))
+            |> Maybe.map (vectorBlock config Categorical)
+    of
+        Nothing ->
+            survey
+
+        Just diagram ->
+            Html.div [] [ survey, diagram ]
+
+
+wordCloud : Config sub -> List Sync.Data -> Html msg
+wordCloud config data =
+    JE.object
+        [ ( "tooltip"
+          , JE.object
+                [ ( "trigger", JE.string "item" )
+                , ( "formatter", JE.string "{b} ({c})" )
+                ]
+          )
+        , ( "series"
+          , [ ( "type", JE.string "wordCloud" )
+            , ( "layoutAnimation", JE.bool True )
+            , ( "gridSize", JE.int 5 )
+            , ( "shape", JE.string "pentagon" )
+            , ( "sizeRange", JE.list JE.int [ 15, 50 ] )
+            , ( "emphasis", JE.object [ ( "focus", JE.string "self" ) ] )
+            , ( "data"
+              , data
+                    |> List.map
+                        (\d ->
+                            [ ( "name", JE.string d.value )
+                            , ( "value", JE.int d.absolute )
+                            , ( "textStyle"
+                              , JE.object
+                                    [ ( "color"
+                                      , d.value
+                                            |> string2Color 160
+                                            |> JE.string
+                                      )
+                                    ]
+                              )
+                            ]
+                        )
+                    |> JE.list JE.object
+              )
+            ]
+                |> List.singleton
+                |> JE.list JE.object
+          )
+        ]
+        |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
+
+
+vectorBlock : Config sub -> Analyse -> List Sync.Data -> Html msg
+vectorBlock config analyse data =
+    JE.object
+        [ ( "grid"
+          , JE.object
+                [ ( "left", JE.int 10 )
+                , ( "top", JE.int 20 )
+                , ( "bottom", JE.int 20 )
+                , ( "right", JE.int 10 )
+                ]
+          )
+        , ( "xAxis"
+          , JE.object
+                [ ( "type", JE.string "category" )
+                , ( "data"
+                  , data
+                        |> List.map .value
+                        |> JE.list JE.string
+                  )
+                ]
+          )
+        , ( "yAxis"
+          , JE.object
+                [ ( "type", JE.string "value" )
+                , ( "show", JE.bool False )
+                ]
+          )
+        , ( "series"
+          , [ [ ( "type"
+                , JE.string <|
+                    case analyse of
+                        Categorical ->
+                            "bar"
+
+                        Quantitative ->
+                            "line"
+                )
+              , ( "smooth", JE.bool True )
+              , ( "areaStyle", JE.object [ ( "opacity", JE.float 0.8 ) ] )
+              , ( "data"
+                , data
+                    |> List.map
+                        (\d ->
+                            case d.absolute of
+                                0 ->
+                                    [ ( "value", JE.float d.relative ) ]
+
+                                _ ->
+                                    [ ( "value", JE.float d.relative )
+                                    , ( "label"
+                                      , JE.object
+                                            [ ( "show", JE.bool True )
+                                            , ( "formatter"
+                                              , String.fromInt d.absolute
+                                                    ++ " ("
+                                                    ++ String.fromFloat d.relative
+                                                    ++ "%)"
+                                                    |> JE.string
+                                              )
+                                            ]
+                                      )
+                                    ]
+                        )
+                    |> JE.list JE.object
+                )
+              ]
+            ]
+                |> JE.list JE.object
+          )
+        ]
+        |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
+
+
+matrixBlock : Config sub -> List Inlines -> List (List Sync.Data) -> Html msg
+matrixBlock config categories data =
+    JE.object
+        [ ( "grid"
+          , JE.object
+                [ ( "left", JE.int 10 )
+                , ( "top", JE.int 30 )
+                , ( "bottom", JE.int 28 )
+                , ( "right", JE.int 30 )
+                ]
+          )
+        , ( "legend"
+          , JE.object
+                [ ( "data"
+                  , data
+                        |> List.map (List.head >> Maybe.map .value >> Maybe.withDefault "")
+                        |> JE.list JE.string
+                  )
+                ]
+          )
+        , ( "xAxis"
+          , JE.object
+                [ ( "type", JE.string "category" )
+                , ( "data"
+                  , categories
+                        |> List.map stringify
+                        |> JE.list JE.string
+                  )
+                ]
+          )
+        , ( "yAxis"
+          , JE.object
+                [ ( "type", JE.string "value" )
+                , ( "show", JE.bool False )
+                ]
+          )
+        , ( "toolbox"
+          , JE.object
+                [ ( "orient", JE.string "vertical" )
+                , Chart.feature
+                    { saveAsImage = True
+                    , dataView = True
+                    , dataZoom = False
+                    , magicType = True
+                    , restore = False
+                    }
+                ]
+          )
+        , ( "tooltip", JE.object [] )
+        , ( "series"
+          , data
+                |> List.map
+                    (\data_ ->
+                        [ ( "type", JE.string "bar" )
+                        , ( "name"
+                          , data_
+                                |> List.head
+                                |> Maybe.map .value
+                                |> Maybe.withDefault ""
+                                |> JE.string
+                          )
+                        , ( "data"
+                          , data_
+                                |> List.map
+                                    (\d ->
+                                        case d.absolute of
+                                            0 ->
+                                                [ ( "value", JE.float d.relative ) ]
+
+                                            _ ->
+                                                [ ( "value", JE.float d.relative )
+                                                , ( "label"
+                                                  , JE.object
+                                                        [ ( "show", JE.bool True )
+                                                        , ( "formatter"
+                                                          , String.fromInt d.absolute
+                                                                ++ " ("
+                                                                ++ String.fromFloat d.relative
+                                                                ++ "%)"
+                                                                |> JE.string
+                                                          )
+                                                        , ( "rotate", JE.int 90 )
+                                                        ]
+                                                  )
+                                                ]
+                                    )
+                                |> JE.list JE.object
+                          )
+                        ]
+                    )
+                |> JE.list JE.object
+          )
+        ]
+        |> Chart.eCharts config.lang [ ( "style", "height: 200px; width: 100%" ) ] True Nothing
+
+
+textBlock : String -> Html msg
+textBlock str =
+    Html.div
+        [ Attr.style "white-space" "pre"
+        , Attr.style "background-color" "rgb(179 179 179)"
+        , Attr.style "border-bottom" "2px dashed #666"
+        , Attr.style "padding" "0.8rem"
+        ]
+        [ Html.text str ]
 
 
 viewError : Maybe String -> Html msg
@@ -253,10 +588,21 @@ view_matrix config header questions fn submitted =
         ]
 
 
-vector : Config sub -> Bool -> (String -> Msg sub) -> (String -> Bool) -> Bool -> ( String, Inlines ) -> Html (Msg sub)
+vector :
+    Config sub
+    -> Bool
+    -> (String -> Msg sub)
+    -> (String -> Bool)
+    -> Bool
+    -> ( String, Inlines )
+    -> Html (Msg sub)
 vector config button msg fn submitted ( var, elements ) =
+    let
+        state =
+            fn var
+    in
     Html.label [ Attr.class "lia-label" ]
-        [ input button (msg var) (fn var) submitted
+        [ input button (msg var) state submitted
         , Html.span [] [ inline config elements ]
         ]
 

@@ -1,5 +1,8 @@
 module Lia.Markdown.Chart.View exposing
-    ( getColor
+    ( eCharts
+    , feature
+    , getColor
+    , toolbox
     , view
     , viewBarChart
     , viewBoxPlot
@@ -1548,31 +1551,44 @@ toolbox position config =
                 |> Maybe.withDefault "center"
                 |> JE.string
           )
-        , ( "feature"
-          , []
-                |> CList.addIf config.saveAsImage
-                    ( "saveAsImage", JE.object [] )
-                |> CList.addIf config.restore
-                    ( "restore", JE.object [] )
-                |> CList.addIf config.dataView
-                    ( "dataView", JE.object [] )
-                |> CList.addIf config.dataZoom
-                    ( "dataZoom", JE.object [] )
-                |> CList.addIf config.magicType
-                    ( "magicType"
-                    , JE.object
-                        [ ( "type"
-                          , JE.list JE.string
-                                [ "tiled"
-                                , "line"
-                                , "bar"
-                                ]
-                          )
-                        ]
-                    )
-                |> JE.object
-          )
+        , feature config
         ]
+    )
+
+
+feature :
+    { saveAsImage : Bool
+    , dataView : Bool
+    , dataZoom : Bool
+    , magicType : Bool
+    , restore : Bool
+    }
+    -> ( String, JE.Value )
+feature config =
+    ( "feature"
+    , []
+        |> CList.addIf config.saveAsImage
+            ( "saveAsImage", JE.object [] )
+        |> CList.addIf config.restore
+            ( "restore", JE.object [] )
+        |> CList.addIf config.dataView
+            ( "dataView", JE.object [] )
+        |> CList.addIf config.dataZoom
+            ( "dataZoom", JE.object [] )
+        |> CList.addIf config.magicType
+            ( "magicType"
+            , JE.object
+                [ ( "type"
+                  , JE.list JE.string
+                        [ "tiled"
+                        , "line"
+                        , "bar"
+                        , "stack"
+                        ]
+                  )
+                ]
+            )
+        |> JE.object
     )
 
 

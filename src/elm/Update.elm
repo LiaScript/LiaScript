@@ -21,10 +21,13 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types as Definition
 import Lia.Json.Decode
+import Lia.Markdown.Code.Log exposing (Level(..))
 import Lia.Script
 import Model exposing (Model, State(..))
-import Port.Event exposing (Event)
 import Process
+import Return exposing (Return)
+import Service.Database
+import Service.Event as Event exposing (Event)
 import Session exposing (Screen)
 import Task
 import Translations
@@ -106,16 +109,12 @@ message msg =
 
 {-| **@private:** Combine commands and events to one command output.
 -}
-batch : (a -> msg) -> Cmd a -> List Event -> List Event -> Cmd msg
-batch map cmd events debug =
-    if List.isEmpty events && List.isEmpty debug then
-        Cmd.map map cmd
-
-    else
-        List.append events debug
-            |> List.map event2js
-            |> (::) (Cmd.map map cmd)
-            |> Cmd.batch
+batch : (a -> msg) -> Return model a sub -> Cmd msg
+batch map ret =
+    ret.events
+        |> List.map event2js
+        |> (::) (Cmd.map map ret.command)
+        |> Cmd.batch
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -127,30 +126,35 @@ update msg model =
                     Lia.Script.update model.session childMsg model.lia
             in
             ( { model | lia = return.value }
-            , batch LiaScript return.command return.events return.debug
+            , batch LiaScript return
             )
 
         Handle event ->
-            case event.topic of
-                "index" ->
+            case Event.destructure event of
+                ( Just "index", _, _ ) ->
                     update
-                        (event.message
+                        (event
+                            |> Event.pop
+                            |> Tuple.second
                             |> Index.handle
                             |> UpdateIndex
                         )
                         model
 
-                "getIndex" ->
-                    let
-                        ( id, course ) =
-                            Index.decodeGet event.message
-                    in
-                    ( { model | preload = course }
-                    , download Load_ReadMe_Result id
-                    )
+                ( Nothing, _, ( "index_get", param ) ) ->
+                    case Index.decodeGet param of
+                        Ok ( url, course ) ->
+                            ( { model | preload = course }
+                            , download Load_ReadMe_Result url
+                            )
 
-                "restore" ->
-                    case Lia.Json.Decode.decode event.message of
+                        Err _ ->
+                            ( { model | preload = Nothing }
+                            , download Load_ReadMe_Result model.lia.readme
+                            )
+
+                ( Nothing, _, ( "index_restore", param ) ) ->
+                    case Lia.Json.Decode.decode model.lia.sync param of
                         Ok lia ->
                             start
                                 { model
@@ -164,8 +168,8 @@ update msg model =
                             , download Load_ReadMe_Result model.lia.readme
                             )
 
-                "lang" ->
-                    case JD.decodeValue JD.string event.message of
+                ( Nothing, _, ( "lang", param ) ) ->
+                    case JD.decodeValue JD.string param of
                         Ok str ->
                             let
                                 lia =
@@ -204,7 +208,10 @@ update msg model =
                     model.lia
             in
             ( { model | index = index, lia = { lia | settings = settings } }
-            , batch UpdateIndex cmd events []
+            , Return.val 0
+                |> Return.cmd cmd
+                |> Return.batchEvents events
+                |> batch UpdateIndex
             )
 
         LinkClicked urlRequest ->
@@ -226,13 +233,6 @@ update msg model =
         UrlChanged url ->
             if url /= model.session.url then
                 case Session.getType url of
-                    Session.Index ->
-                        initIndex
-                            { model
-                                | state = Idle
-                                , session = Session.setUrl url model.session
-                            }
-
                     Session.Course _ fragment ->
                         let
                             slide =
@@ -252,8 +252,37 @@ update msg model =
                             | lia = return.value
                             , session = session
                           }
-                        , batch LiaScript return.command return.events return.debug
+                        , batch LiaScript return
                         )
+
+                    Session.Class room fragment ->
+                        let
+                            slide =
+                                fragment
+                                    |> Maybe.andThen (Lia.Script.getSectionNumberFrom model.lia.search_index)
+                                    |> Maybe.withDefault 0
+
+                            session =
+                                model.session
+                                    |> Session.setClass room
+                                    |> Session.setFragment (slide + 1)
+
+                            return =
+                                Lia.Script.load_slide session True slide model.lia
+                        in
+                        ( { model
+                            | lia = return.value
+                            , session = session
+                          }
+                        , batch LiaScript return
+                        )
+
+                    Session.Index ->
+                        initIndex
+                            { model
+                                | state = Idle
+                                , session = Session.setUrl url model.session
+                            }
 
             else
                 ( model, Cmd.none )
@@ -280,9 +309,10 @@ update msg model =
                     |> Tuple.mapSecond
                         (\cmd ->
                             Cmd.batch
-                                [ url
-                                    |> JE.string
-                                    |> Event "offline" -1
+                                [ { cmd = "offline_TODO"
+                                  , param = JE.string url
+                                  }
+                                    |> Event.init "offline"
                                     |> event2js
                                 , cmd
                                 ]
@@ -347,7 +377,7 @@ start model =
             Lia.Script.load_first_slide session { lia | section_active = slide }
     in
     ( { model | state = Running, lia = return.value, session = session }
-    , batch LiaScript return.command return.events return.debug
+    , batch LiaScript return
     )
 
 
@@ -370,7 +400,7 @@ startWithError model =
                 }
     in
     ( { model | lia = return.value, session = session }
-    , batch LiaScript return.command return.events return.debug
+    , batch LiaScript return
     )
 
 
@@ -433,8 +463,8 @@ load_readme readme model =
             |> Maybe.withDefault False
     then
         ( model
-        , lia.readme
-            |> Index.restore lia.definition.version
+        , { version = lia.definition.version, url = lia.readme }
+            |> Service.Database.index_restore
             |> event2js
         )
 
@@ -493,9 +523,13 @@ download msg url =
 
 getIndex : String -> Model -> ( Model, Cmd Msg )
 getIndex url model =
-    ( model, Index.get url |> event2js )
+    ( model, Service.Database.index_get url |> event2js )
 
 
 initIndex : Model -> ( Model, Cmd Msg )
 initIndex model =
-    ( model, event2js Index.init )
+    ( model
+    , Service.Database.index_list
+        |> Event.push "index"
+        |> event2js
+    )

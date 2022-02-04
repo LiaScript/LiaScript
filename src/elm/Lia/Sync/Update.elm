@@ -1,0 +1,286 @@
+module Lia.Sync.Update exposing
+    ( Msg(..)
+    , SyncMsg(..)
+    , handle
+    , isConnected
+    , update
+    )
+
+import Array
+import Json.Decode as JD
+import Json.Encode as JE
+import Lia.Markdown.Quiz.Sync as Quiz
+import Lia.Markdown.Survey.Sync as Survey
+import Lia.Section as Section exposing (Sections)
+import Lia.Sync.Container.Global as Global
+import Lia.Sync.Room as Room
+import Lia.Sync.Types exposing (Settings, State(..), id)
+import Lia.Sync.Via as Via exposing (Backend)
+import Random
+import Return exposing (Return)
+import Service.Event as Event exposing (Event)
+import Service.Sync
+import Session exposing (Session)
+import Set
+
+
+type Msg
+    = Room String
+    | Password String
+    | Backend SyncMsg
+    | Connect
+    | Disconnect
+    | Handle Event
+    | Random_Generate
+    | Random_Result String
+
+
+type SyncMsg
+    = Open Bool -- Backend selection
+    | Select (Maybe Backend)
+
+
+handle :
+    Session
+    -> { model | sync : Settings, sections : Sections, readme : String }
+    -> Event
+    -> Return { model | sync : Settings, sections : Sections, readme : String } Msg sub
+handle session model =
+    Handle >> update session model
+
+
+update :
+    Session
+    -> { model | sync : Settings, sections : Sections, readme : String }
+    -> Msg
+    -> Return { model | sync : Settings, sections : Sections, readme : String } Msg sub
+update session model msg =
+    let
+        sync =
+            model.sync
+    in
+    case msg of
+        Handle event ->
+            case Event.message event of
+                ( "connect", param ) ->
+                    case ( JD.decodeValue JD.string param, sync.sync.select ) of
+                        ( Ok hashID, Just backend ) ->
+                            { model
+                                | sync =
+                                    { sync
+                                        | state = Connected hashID
+                                        , peers = Set.empty
+                                    }
+                            }
+                                |> join
+                                |> Return.cmd
+                                    (session
+                                        |> Session.setClass
+                                            { backend = Via.toString backend
+                                            , course = model.readme
+                                            , room = sync.room
+                                            }
+                                        |> Session.update
+                                    )
+
+                        _ ->
+                            { model
+                                | sync =
+                                    { sync
+                                        | state = Disconnected
+                                        , peers = Set.empty
+                                    }
+                            }
+                                |> Return.val
+                                |> Return.cmd
+                                    (session
+                                        |> Session.setQuery model.readme
+                                        |> Session.update
+                                    )
+
+                ( "disconnect", _ ) ->
+                    { model
+                        | sync =
+                            { sync
+                                | state = Disconnected
+                                , peers = Set.empty
+                            }
+                    }
+                        |> Return.val
+                        |> Return.cmd
+                            (session
+                                |> Session.setQuery model.readme
+                                |> Session.update
+                            )
+
+                --|> leave (id model.sync.state)
+                ( "join", param ) ->
+                    case ( JD.decodeValue (JD.field "id" JD.string) param, id sync.state ) of
+                        ( Ok peerID, Just ownID ) ->
+                            if ownID == peerID then
+                                Return.val model
+
+                            else
+                                case
+                                    ( param
+                                        |> JD.decodeValue (JD.at [ "data", "quiz" ] (Global.decoder Quiz.decoder))
+                                        |> Result.map (Global.union (globalGet .quiz model.sections))
+                                    , param
+                                        |> JD.decodeValue (JD.at [ "data", "survey" ] (Global.decoder Survey.decoder))
+                                        |> Result.map (Global.union (globalGet .survey model.sections))
+                                    )
+                                of
+                                    ( Ok ( quizUpdate, quizState ), Ok ( surveyUpdate, surveyState ) ) ->
+                                        { model
+                                            | sync = { sync | peers = Set.insert peerID sync.peers }
+                                            , sections = Section.sync quizState surveyState model.sections
+                                        }
+                                            |> (if quizUpdate || surveyUpdate || not (Set.member peerID sync.peers) then
+                                                    globalSync
+
+                                                else
+                                                    Return.val
+                                               )
+
+                                    _ ->
+                                        Return.val model
+
+                        _ ->
+                            Return.val model
+
+                ( "leave", param ) ->
+                    { model
+                        | sync =
+                            { sync
+                                | peers =
+                                    case JD.decodeValue JD.string param of
+                                        Ok peerID ->
+                                            Set.remove peerID sync.peers
+
+                                        _ ->
+                                            sync.peers
+                            }
+                    }
+                        |> Return.val
+
+                _ ->
+                    model
+                        |> Return.val
+
+        Password str ->
+            { model | sync = { sync | password = str } }
+                |> Return.val
+
+        Room str ->
+            { model | sync = { sync | room = str } }
+                |> Return.val
+
+        Random_Generate ->
+            model
+                |> Return.val
+                |> Return.cmd (Random.generate Random_Result Room.generator)
+
+        Random_Result roomName ->
+            { model | sync = { sync | room = roomName } }
+                |> Return.val
+
+        Backend sub ->
+            { model | sync = { sync | sync = updateSync sub sync.sync } }
+                |> Return.val
+
+        Connect ->
+            case ( sync.sync.select, sync.state ) of
+                ( Just backend, Disconnected ) ->
+                    { model | sync = { sync | state = Pending, sync = closeSelect sync.sync } }
+                        |> Return.val
+                        |> Return.batchEvent
+                            (Service.Sync.connect
+                                { backend = backend
+                                , course = model.readme
+                                , room = sync.room
+                                , password = sync.password
+                                }
+                            )
+
+                _ ->
+                    model |> Return.val
+
+        Disconnect ->
+            --
+            { model | sync = { sync | state = Pending } }
+                |> Return.val
+                |> Return.batchEvent
+                    (model.sync.state
+                        |> id
+                        |> Maybe.map Service.Sync.disconnect
+                        |> Maybe.withDefault Event.none
+                    )
+
+
+updateSync msg sync =
+    case msg of
+        Open open ->
+            { sync | open = open }
+
+        Select backend ->
+            { sync
+                | select = backend
+                , open = False
+            }
+
+
+closeSelect sync =
+    { sync | open = False }
+
+
+isConnected : Settings -> Bool
+isConnected sync =
+    case sync.state of
+        Connected _ ->
+            True
+
+        _ ->
+            False
+
+
+join : { model | sync : Settings, sections : Sections } -> Return { model | sync : Settings, sections : Sections } msg sub
+join model =
+    case model.sync.state of
+        Connected id ->
+            { model | sections = Array.map (Section.syncInit id) model.sections }
+                |> globalSync
+
+        _ ->
+            Return.val model
+
+
+globalSync :
+    { model | sync : Settings, sections : Sections }
+    -> Return { model | sync : Settings, sections : Sections } msg sub
+globalSync model =
+    case model.sync.state of
+        Connected id ->
+            model
+                |> Return.val
+                |> Return.batchEvent
+                    ([ ( "quiz"
+                       , model.sections
+                            |> globalGet .quiz
+                            |> Global.encode Quiz.encoder
+                       )
+                     , ( "survey"
+                       , model.sections
+                            |> globalGet .survey
+                            |> Global.encode Survey.encoder
+                       )
+                     ]
+                        |> JE.object
+                        |> Service.Sync.join id
+                    )
+
+        _ ->
+            Return.val model
+
+
+globalGet fn =
+    Array.map (.sync >> Maybe.andThen fn)

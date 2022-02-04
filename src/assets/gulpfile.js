@@ -113,7 +113,7 @@ gulp.task("iconfont", (done) => {
             .src(paths.iconTemplatePath + "/icons.scss")
             .pipe(
               consolidate("lodash", {
-                fontPath: "../.." + (targetPath + "/fonts/").replace("./", "/"),
+                fontPath: "../.." + ("/src/assets" + targetPath + "/fonts/").replace("./", "/"),
                 fontName: fontName,
                 className: "icon",
                 glyphs: glyphs,
@@ -134,7 +134,7 @@ gulp.task("iconfont", (done) => {
             .src(paths.iconTemplatePath + "/icons.css")
             .pipe(
               consolidate("lodash", {
-                fontPath: "../.." + (targetPath + "/fonts/").replace("./", "/"),
+                fontPath: "../.." + ("/src/assets" + targetPath + "/fonts/").replace("./", "/"),
                 fontName: fontName,
                 className: "icon",
                 glyphs: glyphs,
@@ -148,7 +148,7 @@ gulp.task("iconfont", (done) => {
   ]);
 
   let scssContent =
-    '@import "' + outputPath + "/" + fontName + '/_icons.scss";';
+    '@import "' + '../../assets/fonts' + /* outputPath + */ "/" + fontName + '/_icons.scss";';
   fs.writeFile(paths.iconFontCssFile, scssContent, (error) => {
     if (error) {
       console.error(error);

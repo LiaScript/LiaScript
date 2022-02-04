@@ -19,8 +19,8 @@ import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Types exposing (Block)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Voice as Voice
-import Port.Event as Event exposing (Event)
-import Port.TTS
+import Service.Event as Event
+import Service.TTS
 
 
 circle_ : Int -> Html msg
@@ -199,14 +199,13 @@ block_playback config e =
 
 playBackAttr : Int -> String -> Int -> String -> Html.Attribute msg
 playBackAttr id voice section command =
-    "XXX"
-        |> Port.TTS.playback id voice
-        |> Event.encode
-        |> Event "effect" section
+    Service.TTS.playback { voice = voice, text = "XXX" }
+        |> Event.pushWithId "playback" id
+        |> Event.pushWithId "effect" section
         |> Event.encode
         |> JE.encode 0
         |> String.replace "\"XXX\"" (cleanUpNumber command)
-        |> (\event -> "playback(" ++ event ++ ")")
+        |> (\event -> "window.LIA.playback(" ++ event ++ ")")
         |> Attr.attribute "onclick"
 
 
@@ -215,12 +214,12 @@ inline_playback config e =
     if config.speaking == Just e.id then
         Html.button
             [ Attr.class "lia-btn lia-btn--transparent icon icon-stop-circle mx-1"
-            , Port.TTS.mute e.id
-                |> Event.encode
-                |> Event "effect" config.slide
+            , Service.TTS.cancel
+                |> Event.pushWithId "playback" e.id
+                |> Event.pushWithId "effect" config.slide
                 |> Event.encode
                 |> JE.encode 0
-                |> (\event -> "playback(" ++ event ++ ")")
+                |> (\event -> "window.LIA.playback(" ++ event ++ ")")
                 |> Attr.attribute "onclick"
             , A11y_Key.tabbable True
             ]

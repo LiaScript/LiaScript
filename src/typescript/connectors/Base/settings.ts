@@ -15,7 +15,6 @@ export const defaultSettings: Lia.Settings = {
 }
 
 export function initSettings(
-  send: Lia.Send | null,
   data: Lia.Settings = defaultSettings,
   local = false
 ) {
@@ -25,17 +24,7 @@ export function initSettings(
 
   updateClassName(data)
 
-  if (send) {
-    send({
-      topic: Port.SETTINGS,
-      section: -1,
-      message: {
-        topic: 'init',
-        section: -1,
-        message: data,
-      },
-    })
-  }
+  return data
 }
 
 export function updateClassName(data: Lia.Settings) {
@@ -58,7 +47,7 @@ export function updateClassName(data: Lia.Settings) {
     } lia-font-scale-${fontSize}`
 
     document.documentElement.className = className
-  } catch (err) {
+  } catch (err: any) {
     console.warn('settings (className): ', err.message)
   }
 }

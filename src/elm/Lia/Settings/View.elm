@@ -20,13 +20,20 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr exposing (width)
-import Html.Events exposing (onCheck, onClick, onInput)
+import Html.Events exposing (onClick, onInput)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
-import Lia.Utils exposing (blockKeydown, btn, btnIcon, noTranslate)
+import Lia.Sync.Types as Sync
+import Lia.Utils
+    exposing
+        ( blockKeydown
+        , btn
+        , btnIcon
+        , noTranslate
+        )
 import QRCode
 import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
@@ -194,14 +201,6 @@ modeToString show =
 
         Textbook ->
             Trans.modeTextbook
-
-
-
---reset : Html Msg
---reset =
---    Html.button
---        [ onClick Reset ]
---        [ Html.text "reset course" ]
 
 
 viewSizing : Lang -> Bool -> Int -> Html Msg
@@ -587,8 +586,8 @@ translateWithGoogle lang tabbable bool =
     ]
 
 
-menuShare : String -> Lang -> Bool -> Settings -> List (Html Msg)
-menuShare url lang tabbable settings =
+menuShare : String -> Sync.Settings -> Lang -> Bool -> Settings -> List (Html Msg)
+menuShare url sync lang tabbable settings =
     [ lang
         |> Trans.confShare
         |> actionBtn Share
@@ -612,6 +611,18 @@ menuShare url lang tabbable settings =
                 , Attr.style "justify-content" "center"
                 ]
                 [ Html.label [] [ Html.text <| Trans.confShareVia lang ] ]
+
+        else
+            Html.text ""
+      , divider
+      , if Sync.isSupported sync then
+            btn
+                { title = "Classroom"
+                , tabbable = tabbable
+                , msg = Just (Toggle Sync)
+                }
+                []
+                [ Sync.title sync ]
 
         else
             Html.text ""
