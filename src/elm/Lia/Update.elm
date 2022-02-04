@@ -161,7 +161,7 @@ update session msg model =
                 |> Return.mapEvents "sync" -1
 
         Handle event ->
-            case Event.pop event of
+            case Event.pop event |> Debug.log "ssssssssssssssssssssss" of
                 ( Just "settings", e ) ->
                     update
                         session
@@ -185,17 +185,18 @@ update session msg model =
 
                 ( Just "sync", e ) ->
                     case Event.popWithId e of
-                        Just ( "sync", _, e_ ) ->
-                            e_
+                        Nothing ->
+                            e
                                 |> Sync.handle session
-                                    (case Event.topic e_ of
-                                        Just "connect" ->
+                                    (case e.message.cmd of
+                                        "connect" ->
                                             { model | settings = Settings.closeSync model.settings }
 
                                         _ ->
                                             model
                                     )
                                 |> Return.mapCmd UpdateSync
+                                |> Return.mapEvents "sync" -1
 
                         Just ( "load", id, _ ) ->
                             update session (Load True id) model
@@ -219,9 +220,6 @@ update session msg model =
 
                                 _ ->
                                     Return.val model
-
-                        _ ->
-                            Return.val model
 
                 ( Just "swipe", e ) ->
                     case
@@ -257,7 +255,7 @@ update session msg model =
 
                 ( Nothing, _ ) ->
                     Return.val model
-                        |> Return.batchEvent (Service.Console.warn "unknown main topic")
+                        |> Return.batchEvent (Service.Console.warn ("unknown event: " ++ event.service ++ " / " ++ event.message.cmd))
 
         Script ( id, sub ) ->
             case Array.get id model.sections of

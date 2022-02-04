@@ -17,7 +17,7 @@ import Lia.Sync.Types exposing (Settings, State(..), id)
 import Lia.Sync.Via as Via exposing (Backend)
 import Random
 import Return exposing (Return)
-import Service.Event as Event exposing (Event, message)
+import Service.Event as Event exposing (Event)
 import Service.Sync
 import Session exposing (Session)
 import Set
@@ -61,8 +61,8 @@ update session model msg =
     in
     case msg of
         Handle event ->
-            case Event.destructure event of
-                ( Just "connect", _, ( cmd, param ) ) ->
+            case Event.message event of
+                ( "connect", param ) ->
                     case ( JD.decodeValue JD.string param, sync.sync.select ) of
                         ( Ok hashID, Just backend ) ->
                             { model
@@ -98,7 +98,7 @@ update session model msg =
                                         |> Session.update
                                     )
 
-                ( Just "disconnect", _, _ ) ->
+                ( "disconnect", _ ) ->
                     { model
                         | sync =
                             { sync
@@ -114,7 +114,7 @@ update session model msg =
                             )
 
                 --|> leave (id model.sync.state)
-                ( Just "join", _, ( cmd, param ) ) ->
+                ( "join", param ) ->
                     case ( JD.decodeValue (JD.field "id" JD.string) param, id sync.state ) of
                         ( Ok peerID, Just ownID ) ->
                             if ownID == peerID then
@@ -123,10 +123,10 @@ update session model msg =
                             else
                                 case
                                     ( param
-                                        |> JD.decodeValue (JD.field "quiz" (Global.decoder Quiz.decoder))
+                                        |> JD.decodeValue (JD.at [ "data", "quiz" ] (Global.decoder Quiz.decoder))
                                         |> Result.map (Global.union (globalGet .quiz model.sections))
                                     , param
-                                        |> JD.decodeValue (JD.field "survey" (Global.decoder Survey.decoder))
+                                        |> JD.decodeValue (JD.at [ "data", "survey" ] (Global.decoder Survey.decoder))
                                         |> Result.map (Global.union (globalGet .survey model.sections))
                                     )
                                 of
@@ -148,7 +148,7 @@ update session model msg =
                         _ ->
                             Return.val model
 
-                ( Just "leave", _, ( cmd, param ) ) ->
+                ( "leave", param ) ->
                     { model
                         | sync =
                             { sync
@@ -211,9 +211,15 @@ update session model msg =
                     model |> Return.val
 
         Disconnect ->
+            --
             { model | sync = { sync | state = Pending } }
                 |> Return.val
-                |> Return.batchEvent Service.Sync.disconnect
+                |> Return.batchEvent
+                    (model.sync.state
+                        |> id
+                        |> Maybe.map Service.Sync.disconnect
+                        |> Maybe.withDefault Event.none
+                    )
 
 
 updateSync msg sync =

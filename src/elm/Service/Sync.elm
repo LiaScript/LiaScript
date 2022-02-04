@@ -39,9 +39,11 @@ connect param =
         |> publish "connect"
 
 
-disconnect : Event
-disconnect =
-    publish "disconnect" JE.null
+disconnect : String -> Event
+disconnect id =
+    id
+        |> JE.string
+        |> publish "disconnect"
 
 
 join : String -> JE.Value -> Event

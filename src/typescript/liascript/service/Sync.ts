@@ -36,13 +36,25 @@ const Service = {
         if (sync) sync = undefined
 
         if (elmSend) {
+          // for what so ever reason perform a deep-copy
+          const event_ = { ...event }
+          const cbConnection = function (topic: string, msg: any) {
+            event_.message.cmd = topic
+            event_.message.param = msg
+            event_.reply = true
+
+            console.warn(event_)
+
+            elmSend(event_)
+          }
+
           switch (event.message.param.backend) {
             case 'beaker':
               sync = new Beaker.Sync(elmSend)
               break
 
             case 'gun':
-              sync = new GUN.Sync(elmSend)
+              sync = new GUN.Sync(cbConnection, elmSend)
               break
 
             case 'jitsi':
@@ -68,7 +80,18 @@ const Service = {
       }
 
       case 'disconnect': {
-        if (sync) sync.disconnect()
+        if (sync) {
+          event.message.cmd = 'leave'
+          sync.disconnect(event)
+
+          sync = null
+
+          if (elmSend) {
+            event.message.cmd = 'disconnect'
+            elmSend(event)
+          }
+        }
+
         break
       }
 

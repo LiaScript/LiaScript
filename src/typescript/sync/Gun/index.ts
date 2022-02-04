@@ -1,23 +1,16 @@
-import Lia from '../../liascript/types/lia.d'
-
 import { Gun } from './gun.d'
-
 import { Sync as Base } from '../Base/index'
 
 export class Sync extends Base {
   private gun?: Gun
-  private store: string
-
-  constructor(send: Lia.Send) {
-    super(send)
-    this.store = ''
-  }
+  private store: string = ''
+  private gunServer: string = 'https://lia-gun.herokuapp.com/gun'
 
   async connect(data: {
     course: string
     room: string
-    username: string
     password?: string
+    config?: any
   }) {
     super.connect(data)
 
@@ -37,7 +30,7 @@ export class Sync extends Base {
 
   init(ok: boolean, error?: string) {
     if (ok && window.Gun) {
-      this.gun = window.Gun({ peers: ['https://lia-gun.herokuapp.com/gun'] })
+      this.gun = window.Gun({ peers: [this.gunServer] })
       this.publish(null)
 
       this.store = btoa(this.uniqueID())
@@ -48,10 +41,13 @@ export class Sync extends Base {
         .get(this.store)
         .on(function (data: { msg: string }, key: string) {
           try {
-            let message = JSON.parse(data.msg)
+            let event = JSON.parse(data.msg)
 
-            if (message !== null) {
-              if (message.id !== self.token) self.send(message)
+            if (event !== null) {
+              // prevent looping
+              if (event.message.param.id !== self.token) {
+                self.sendToLia(event)
+              }
             }
           } catch (e) {
             console.warn('GunDB', e)
@@ -62,11 +58,9 @@ export class Sync extends Base {
     }
   }
 
-  disconnect() {
+  disconnect(event: Lia.Event) {
     this.publish(null)
-    this.publish(this.syncMsg('leave', this.token))
-
-    this.sync('disconnect')
+    this.publish(event)
 
     delete this.gun
   }
