@@ -174,12 +174,13 @@ update session msg model =
                 ( Just "load", _ ) ->
                     update session InitSection (generate model)
 
+                -- external triggers to move to a specific slide
                 ( Just "goto", _ ) ->
-                    case Event.id event of
-                        Just id ->
+                    case JD.decodeValue JD.int event.message.param of
+                        Ok id ->
                             update session (Load True id) model
 
-                        Nothing ->
+                        Err _ ->
                             Return.val model
                                 |> Return.batchEvent (Service.Console.warn "message goto with no id")
 

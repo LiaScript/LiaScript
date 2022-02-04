@@ -67,8 +67,11 @@ if (!window.LIA) {
     playback: function (_event: Lia.Event) {
       console.warn('playback not defined')
     },
-    showFootnote: function (key: string) {
+    showFootnote: function (_key: string) {
       console.warn('showFootnote not defined')
+    },
+    goto: function (_slide: number) {
+      console.warn('goto not defined')
     },
   }
 }
@@ -143,6 +146,17 @@ class LiaScript {
     }
     window.LIA.showFootnote = (key: string) => {
       self.app.ports.footnote.send(key)
+    }
+    window.LIA.goto = (slide: number) => {
+      sender({
+        reply: true,
+        track: [['goto', -1]],
+        service: '',
+        message: {
+          cmd: 'goto',
+          param: slide,
+        },
+      })
     }
 
     // Attach a tooltip-div to the end of the DOM

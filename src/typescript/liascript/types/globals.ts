@@ -56,6 +56,11 @@ declare global {
        * and to add on-click events for __FOOTNOTES__
        */
       showFootnote: (key: string) => void
+
+      /** release an event that triggers LiaScript to switch to a specific
+       * slide number
+       */
+      goto: (slide: number) => void
     }
   }
 }
