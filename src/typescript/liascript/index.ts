@@ -145,6 +145,7 @@ class LiaScript {
       self.app.ports.footnote.send(key)
     }
 
+    // Attach a tooltip-div to the end of the DOM
     initTooltip()
   }
 
