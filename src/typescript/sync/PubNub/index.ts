@@ -4,19 +4,13 @@ import { Sync as Base } from '../Base/index'
 
 export class Sync extends Base {
   private pubnub: any
-  private channel: string
-
-  constructor(send: Lia.Send) {
-    super(send)
-
-    this.channel = ''
-  }
+  private channel: string = ''
 
   async connect(data: {
     course: string
     room: string
-    username: string
     password?: string
+    config?: any
   }) {
     super.connect(data)
 
@@ -60,7 +54,7 @@ export class Sync extends Base {
           // prevent return of self send messages
           if (event.publisher !== self.token) {
             //console.log('SUB:', JSON.stringify(event.message.message))
-            self.send(event.message)
+            self.sendToLia(event.message)
           }
         },
         presence: function (event: any) {
@@ -77,14 +71,12 @@ export class Sync extends Base {
     }
   }
 
-  disconnect() {
-    this.publish(this.syncMsg('leave', this.token))
+  disconnect(event: Object) {
+    this.publish(event)
     if (this.pubnub) {
       this.pubnub.unsubscribeAll()
       this.pubnub.stop()
     }
-
-    this.sync('disconnect')
   }
 
   publish(message: Object) {
