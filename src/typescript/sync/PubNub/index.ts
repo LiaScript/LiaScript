@@ -1,5 +1,3 @@
-import Lia from '../../liascript/types/lia.d'
-
 import { Sync as Base } from '../Base/index'
 
 export class Sync extends Base {
