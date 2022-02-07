@@ -30,9 +30,7 @@ import Translate from './service/Translate'
 if (!window.LIA) {
   window.LIA = {
     eventSemaphore: 0,
-    send: (_event: Lia.Event) => {
-      console.warn('send not defined')
-    },
+
     img: {
       load: function (_url: string, _width: number, _height: number) {
         console.warn('img.load not defined')
@@ -63,18 +61,31 @@ if (!window.LIA) {
         }
       },
     },
+    send: function (_event: Lia.Event) {
+      notDefined('send')
+    },
     playback: function (_event: Lia.Event) {
-      console.warn('playback not defined')
+      notDefined('playback')
     },
     showFootnote: function (_key: string) {
-      console.warn('showFootnote not defined')
+      notDefined('showFootnote')
     },
     goto: function (_slide: number) {
-      console.warn('goto not defined')
+      notDefined('goto')
+    },
+    gotoLine: function (_lineNumber: number) {
+      notDefined('gotoLine')
+    },
+    jit: function (_code: string) {
+      notDefined('jit')
     },
 
     injectResposivevoice: inject,
   }
+}
+
+function notDefined(name: string) {
+  console.log('LIA.' + name + ' not defined')
 }
 
 if (window.LIA.debug === undefined) {

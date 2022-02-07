@@ -65,12 +65,12 @@ declare global {
       /** This is only used by the editor, to open the slide, which contains
        * linenumber.
        */
-      gotoLine?: (linenumber: number) => void
+      gotoLine: (linenumber: number) => void
 
       /** This is experimental feature, used by an editor to send code, which
        * is translated and updated just in time
        */
-      jit?: (code: string) => void
+      jit: (code: string) => void
 
       /** This function shall be overwritten, it will be automatically called
        * if the course has been parsed and is ready...
