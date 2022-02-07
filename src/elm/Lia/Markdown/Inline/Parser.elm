@@ -238,7 +238,7 @@ goto i pos =
 
 
 doubleClick pos =
-    (::) ( "ondblclick", "window.liaGoto(" ++ String.fromInt pos ++ ");" )
+    (::) ( "ondblclick", "window.LIA.onLine(" ++ String.fromInt pos ++ ");" )
 
 
 url : Parser Context String

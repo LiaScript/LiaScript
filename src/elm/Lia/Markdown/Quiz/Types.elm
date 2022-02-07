@@ -7,7 +7,6 @@ module Lia.Markdown.Quiz.Types exposing
     , Vector
     , comp
     , getClass
-    , getState
     , initState
     , isSolved
     , toState
@@ -80,12 +79,6 @@ initState quiz =
             q.solution
                 |> Matrix.initState
                 |> Matrix_State
-
-
-getState : Vector -> Int -> Maybe Element
-getState vector idx =
-    vector
-        |> Array.get idx
 
 
 toState : Type -> State

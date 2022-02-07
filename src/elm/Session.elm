@@ -1,12 +1,15 @@
 module Session exposing
-    ( Screen
+    ( Room
+    , Screen
     , Session
     , Type(..)
+    , encodeRoom
     , getType
     , load
     , navTo
     , navToHome
     , navToSlide
+    , setClass
     , setFragment
     , setQuery
     , setScreen
@@ -20,6 +23,8 @@ URL-navigation. Therefor all relevant information is stored and updated with the
 -}
 
 import Browser.Navigation as Navigation
+import Json.Decode as JD
+import Json.Encode as JE
 import Url exposing (Url)
 
 
@@ -63,6 +68,14 @@ If this information is present, then it is a course otherwise the index.
 type Type
     = Index
     | Course String (Maybe String)
+    | Class Room (Maybe String)
+
+
+type alias Room =
+    { backend : String
+    , course : String
+    , room : String
+    }
 
 
 {-| Update the entire session-URL.
@@ -85,6 +98,20 @@ setQuery query session =
             session.url
     in
     { session | url = { url | query = Just query } }
+
+
+{-| Update the query to represent a class room, which is for simplicity and
+percent encoded string representation of the JSON encoded string for:
+
+    { "backend": "Beaker"
+    , "course": "https://....README.md"
+    , "room": "some arbitrary room name"
+    }
+
+-}
+setClass : Room -> Session -> Session
+setClass room =
+    setQuery (encodeRoom room)
 
 
 {-| Update the fragment and thus, the current slide number
@@ -132,7 +159,7 @@ navToHome session =
         |> navTo session
 
 
-{-| A shortcut for changeing the fragment number, which replicates the current
+{-| A shortcut for changing the fragment number, which replicates the current
 slideNumber.
 -}
 navToSlide : Session -> Int -> Cmd msg
@@ -152,7 +179,12 @@ getType : Url -> Type
 getType url =
     case url.query of
         Just str ->
-            Course str url.fragment
+            case decodeRoom str of
+                Just room ->
+                    Class room url.fragment
+
+                Nothing ->
+                    Course str url.fragment
 
         Nothing ->
             Index
@@ -163,3 +195,28 @@ getType url =
 setScreen : Screen -> Session -> Session
 setScreen size session =
     { session | screen = size }
+
+
+encodeRoom : Room -> String
+encodeRoom { backend, course, room } =
+    [ ( "backend", JE.string backend )
+    , ( "course", JE.string course )
+    , ( "room", JE.string room )
+    ]
+        |> JE.object
+        |> JE.encode 0
+        |> Url.percentEncode
+
+
+decodeRoom : String -> Maybe Room
+decodeRoom =
+    Url.percentDecode
+        >> Maybe.andThen
+            (JD.decodeString
+                (JD.map3 Room
+                    (JD.field "backend" JD.string)
+                    (JD.field "course" JD.string)
+                    (JD.field "room" JD.string)
+                )
+                >> Result.toMaybe
+            )

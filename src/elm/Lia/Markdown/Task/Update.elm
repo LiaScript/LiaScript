@@ -6,15 +6,15 @@ module Lia.Markdown.Task.Update exposing
 
 import Array
 import Browser exposing (element)
-import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Task.Json as Json
 import Lia.Markdown.Task.Types exposing (Element, Vector, toString)
-import Port.Eval as Eval
-import Port.Event as Event exposing (Event)
-import Return exposing (Return)
+import Return exposing (Return, script)
+import Service.Database
+import Service.Event as Event exposing (Event)
+import Service.Script
 
 
 {-| Interaction associated to LiaScript task list:
@@ -33,11 +33,12 @@ type Msg sub
 
 
 update :
-    Scripts a
+    Maybe Int
+    -> Scripts a
     -> Msg sub
     -> Vector
     -> Return Vector msg sub
-update scripts msg vector =
+update sectionID scripts msg vector =
     case msg of
         -- simple toggle
         Toggle x y ->
@@ -52,27 +53,29 @@ update scripts msg vector =
                             vector
                                 |> Array.set x element
                                 |> Return.val
-                                |> store
+                                |> store sectionID
 
                         Just scriptID ->
                             vector
                                 |> Array.set x element
                                 |> Return.val
-                                |> Return.batchEvents
+                                |> Return.batchEvent
                                     (case
-                                        Array.get scriptID scripts
+                                        scripts
+                                            |> Array.get scriptID
                                             |> Maybe.map .script
                                      of
-                                        Just code ->
-                                            [ [ toString element ]
-                                                |> Eval.event x code (outputs scripts)
-                                            ]
-
                                         Nothing ->
-                                            []
-                                    )
-                                |> store
+                                            Event.none
 
+                                        Just code ->
+                                            [ toString element ]
+                                                |> Service.Script.eval code (outputs scripts)
+                                                |> Event.pushWithId "eval" x
+                                    )
+                                |> store sectionID
+
+                -- TODO:
                 --|> Return.script (execute id state)
                 Nothing ->
                     Return.val vector
@@ -83,25 +86,25 @@ update scripts msg vector =
                 |> Return.script sub
 
         Handle event ->
-            case event.topic of
-                "restore" ->
-                    event.message
+            case Event.destructure event of
+                ( Nothing, _, ( "load", param ) ) ->
+                    param
                         |> Json.toVector
                         |> Result.map (merge vector)
                         |> Result.withDefault vector
                         |> Return.val
                         |> init execute
 
-                "eval" ->
+                ( Just "eval", section, ( "eval", _ ) ) ->
                     case
                         vector
-                            |> Array.get event.section
+                            |> Array.get section
                             |> Maybe.andThen .scriptID
                     of
                         Just scriptID ->
                             vector
                                 |> Return.val
-                                |> Return.script (JS.handle { event | topic = "code", section = scriptID })
+                                |> Return.script (JS.submit scriptID event)
 
                         Nothing ->
                             Return.val vector
@@ -127,14 +130,19 @@ toggle y element =
 {-| Create a store event, that will store the state of the task persistently
 within the backend.
 -}
-store : Return Vector msg sub -> Return Vector msg sub
-store return =
-    return
-        |> Return.batchEvent
-            (return.value
-                |> Json.fromVector
-                |> Event.store
-            )
+store : Maybe Int -> Return Vector msg sub -> Return Vector msg sub
+store sectionID return =
+    case sectionID of
+        Just id ->
+            return
+                |> Return.batchEvent
+                    (return.value
+                        |> Json.fromVector
+                        |> Service.Database.store "task" id
+                    )
+
+        Nothing ->
+            return
 
 
 {-| Pass events from parent update function to the Task update function.

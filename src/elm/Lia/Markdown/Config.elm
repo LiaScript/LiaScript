@@ -15,6 +15,7 @@ import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (Section, SubSection(..))
 import Lia.Settings.Types exposing (Mode, Settings)
+import Lia.Sync.Types as Sync
 import Session exposing (Screen)
 import Translations exposing (Lang)
 
@@ -30,11 +31,11 @@ type alias Config sub =
     }
 
 
-init : Lang -> ( String, String ) -> Settings -> Screen -> Section -> Int -> Dict String ( Int, Int ) -> Config sub
-init lang translations settings screen section id media =
+init : Lang -> ( String, String ) -> Settings -> Sync.Settings -> Screen -> Section -> Int -> Dict String ( Int, Int ) -> Config sub
+init lang translations settings sync screen section id media =
     let
         config =
-            inline lang translations settings screen section.effect_model id media
+            inline lang translations settings screen section.effect_model id media sync
     in
     Config
         settings.mode
@@ -51,8 +52,8 @@ init lang translations settings screen section id media =
         config
 
 
-inline : Lang -> ( String, String ) -> Settings -> Screen -> Effect.Model SubSection -> Int -> Dict String ( Int, Int ) -> Inline.Config sub
-inline lang translations settings screen effect id media =
+inline : Lang -> ( String, String ) -> Settings -> Screen -> Effect.Model SubSection -> Int -> Dict String ( Int, Int ) -> Sync.Settings -> Inline.Config sub
+inline lang translations settings screen effect id media sync =
     Inline.init
         { mode = settings.mode
         , visible = Just effect.visible
@@ -65,6 +66,7 @@ inline lang translations settings screen effect id media =
         , media = media
         , scripts = effect.javascript
         , translations = Just translations
+        , sync = Just sync
         }
 
 

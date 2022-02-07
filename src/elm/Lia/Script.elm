@@ -37,8 +37,9 @@ import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
 import Lia.View
-import Port.Event exposing (Event)
 import Return exposing (Return)
+import Service.Database
+import Service.Event as Event exposing (Event)
 import Session exposing (Screen, Session)
 import Translations
 
@@ -121,9 +122,7 @@ load_first_slide session model =
             | title = get_title model.sections
             , search_index = search_index
             , to_do =
-                (Json.encode model
-                    |> Event "init" model.section_active
-                )
+                Service.Database.index_store model
                     :: Settings.customizeEvent model.settings
                     :: model.to_do
         }
@@ -354,7 +353,7 @@ searchIndex index str =
 
 {-| Alias for model initialization defined by `Lia.Model.int`
 -}
-init : Bool -> Bool -> JE.Value -> String -> String -> String -> Maybe String -> Model
+init : Bool -> Bool -> JE.Value -> List String -> String -> String -> String -> Maybe String -> Model
 init =
     Lia.Model.init
 

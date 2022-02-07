@@ -16,9 +16,12 @@ import Lia.Markdown.Quiz.Matrix.Update as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type(..), Vector, comp, toState)
 import Lia.Markdown.Quiz.Vector.Update as Vector
-import Port.Eval as Eval
-import Port.Event as Event exposing (Event)
 import Return exposing (Return, script)
+import Service.Console
+import Service.Database
+import Service.Event as Event exposing (Event)
+import Service.Script
+import Translations exposing (Lang(..))
 
 
 type Msg sub
@@ -32,8 +35,8 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Scripts a -> Msg sub -> Vector -> Return Vector msg sub
-update scripts msg vector =
+update : Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector msg sub
+update sectionID scripts msg vector =
     case msg of
         Block_Update id _ ->
             update_ id vector (state_ msg)
@@ -50,13 +53,14 @@ update scripts msg vector =
                     case e.scriptID of
                         Nothing ->
                             check solution
+                                -->> syncSolution id
                                 |> update_ id vector
-                                |> store
+                                |> store sectionID
+                                |> Return.doSync
 
                         Just scriptID ->
                             vector
                                 |> Return.val
-                                --|> Return.script (execute scriptID e)
                                 |> Return.batchEvents
                                     (case
                                         scripts
@@ -65,10 +69,11 @@ update scripts msg vector =
                                      of
                                         Just code ->
                                             [ [ toString e.state ]
-                                                |> Eval.event id code (outputs scripts)
+                                                |> Service.Script.eval code (outputs scripts)
+                                                |> Event.pushWithId "eval" id
                                             ]
 
-                                        Nothing ->
+                                        _ ->
                                             []
                                     )
 
@@ -79,12 +84,12 @@ update scripts msg vector =
         ShowHint idx ->
             (\e -> Return.val { e | hint = e.hint + 1 })
                 |> update_ idx vector
-                |> store
+                |> store sectionID
 
         ShowSolution id solution ->
             (\e -> Return.val { e | state = toState solution, solved = Solution.ReSolved, error_msg = "" })
                 |> update_ id vector
-                |> store
+                |> store sectionID
                 |> (\return ->
                         case Array.get id vector |> Maybe.andThen .scriptID of
                             Just scriptID ->
@@ -100,38 +105,77 @@ update scripts msg vector =
                             _ ->
                                 return
                    )
+                |> Return.doSync
 
         Handle event ->
-            case event.topic of
-                "eval" ->
-                    case
-                        vector
-                            |> Array.get event.section
-                            |> Maybe.andThen .scriptID
-                    of
-                        Just scriptID ->
-                            event.message
-                                |> evalEventDecoder
-                                |> update_ event.section vector
-                                |> store
-                                |> Return.script (JS.handle { event | topic = "code", section = scriptID })
-
-                        Nothing ->
-                            event.message
-                                |> evalEventDecoder
-                                |> update_ event.section vector
-                                |> store
-
-                "restore" ->
-                    event.message
+            case Event.destructure event of
+                ( Nothing, _, ( "load", param ) ) ->
+                    param
                         |> Json.toVector
                         |> Result.map (merge vector)
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
+                        |> Return.doSync
 
-                _ ->
-                    Return.val vector
+                ( Just "eval", id, ( "eval", param ) ) ->
+                    case
+                        vector
+                            |> Array.get id
+                            |> Maybe.andThen .scriptID
+                    of
+                        Just scriptID ->
+                            param
+                                |> evalEventDecoder
+                                |> update_ id vector
+                                |> store sectionID
+                                |> Return.script (JS.submit scriptID event)
+                                |> Return.doSync
+
+                        Nothing ->
+                            param
+                                |> evalEventDecoder
+                                |> update_ id vector
+                                |> store sectionID
+                                |> Return.doSync
+
+                ( Just "restore", _, ( cmd, param ) ) ->
+                    param
+                        |> Json.toVector
+                        |> Result.map (merge vector)
+                        |> Result.withDefault vector
+                        |> Return.val
+                        |> init (\i s -> execute i s.state)
+                        |> Return.doSync
+
+                {- |> (\ret ->
+                        case sync of
+                            Nothing ->
+                                ret
+
+                            Just sync_ ->
+                                let
+                                    ( vector_, events ) =
+                                        synchronize sync_ ret.value
+                                in
+                                vector_
+                                    |> Return.replace ret
+                                    |> Return.syncAppend events
+                   )
+                -}
+                {- Just ( "sync", Just section ) ->
+                   event
+                       |> Event.message
+                       |> syncUpdate vector section
+                -}
+                ( _, _, ( cmd, _ ) ) ->
+                    vector
+                        |> Return.val
+                        |> Return.batchEvent
+                            ("Quiz: unknown command => "
+                                ++ cmd
+                                |> Service.Console.warn
+                            )
 
         Script sub ->
             vector
@@ -155,23 +199,63 @@ toString state =
             ""
 
 
+
+{-
+   syncUpdate : Vector -> Int -> JE.Value -> Return Vector msg sub
+   syncUpdate vector id state =
+       case
+           ( Array.get id vector
+           , Container.decode Synchronization.decoder state
+           )
+       of
+           ( Just element, Ok sync ) ->
+               case Container.union element.sync sync of
+                   ( True, _ ) ->
+                       vector
+                           |> Return.val
+
+                   ( False, union ) ->
+                       vector
+                           |> Array.set id { element | sync = union }
+                           |> Return.val
+                           |> Return.sync (Event.initWithId "sync" id (Container.encode Synchronization.encoder union))
+
+           _ ->
+               Return.val vector
+-}
+{-
+   syncSolution : Int -> Sync.Settings -> Return Element msg sub -> Return Element msg sub
+   syncSolution id sync ret =
+       case Synchronization.toState ret.value of
+           Just syncState ->
+               case Sync.insert sync syncState ret.value.sync of
+                   ( False, newSync ) ->
+                       ret
+                           |> Return.mapVal (\v -> { v | sync = newSync })
+                           |> Return.syncMsg id (Container.encode Synchronization.encoder newSync)
+
+                   _ ->
+                       ret
+
+           _ ->
+               ret
+-}
+{-
+   synchronize : Sync.Settings -> Vector -> ( Vector, List Event )
+   synchronize sync vector =
+       vector
+           |> Array.indexedMap (\i -> Return.val >> syncSolution i sync)
+           |> Array.map (\ret -> ( ret.value, ret.synchronize ))
+           |> Array.toList
+           |> List.unzip
+           |> Tuple.mapSecond List.concat
+           |> Tuple.mapFirst Array.fromList
+-}
+
+
 execute : Int -> State -> Script.Msg sub
 execute id =
     toString >> JS.run id
-
-
-get : Int -> Vector -> Maybe Element
-get idx vector =
-    case Array.get idx vector of
-        Just elem ->
-            if (elem.solved == Solution.Solved) || (elem.solved == Solution.ReSolved) then
-                Nothing
-
-            else
-                Just elem
-
-        _ ->
-            Nothing
 
 
 update_ :
@@ -224,7 +308,9 @@ evalEventDecoder : JE.Value -> Element -> Return Element msg sub
 evalEventDecoder json =
     let
         eval =
-            Eval.decode json
+            -- TODO:
+            -- Eval.decode json
+            Service.Script.decode json
     in
     if eval.ok then
         if eval.result == "true" then
@@ -260,14 +346,19 @@ evalEventDecoder json =
         \e -> Return.val { e | error_msg = eval.result }
 
 
-store : Return Vector msg sub -> Return Vector msg sub
-store return =
-    return
-        |> Return.batchEvent
-            (return.value
-                |> Json.fromVector
-                |> Event.store
-            )
+store : Maybe Int -> Return Vector msg sub -> Return Vector msg sub
+store sectionID return =
+    case sectionID of
+        Just id ->
+            return
+                |> Return.batchEvent
+                    (return.value
+                        |> Json.fromVector
+                        |> Service.Database.store "quiz" id
+                    )
+
+        Nothing ->
+            return
 
 
 check : Type -> Element -> Return Element msg sub

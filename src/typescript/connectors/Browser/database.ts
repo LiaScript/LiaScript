@@ -1,24 +1,32 @@
 // @ts-ignore
 import Dexie from 'dexie'
 
-import Lia from '../../liascript/types/lia.d'
-import Port from '../../liascript/types/ports'
 import log from '../../liascript/log'
 
+import { Record } from '../Base/index'
+
 if (process.env.NODE_ENV === 'development') {
+  // @ts-ignore
   Dexie.debug = true
 }
 
 class LiaDB {
-  private send: Lia.Send
   private dbIndex: Dexie
 
   private db: any
   private version: number
 
-  constructor(send: Lia.Send) {
-    this.send = send
-
+  /** Create a DexieDB instance that stores all states for:
+   *
+   * - quizzes
+   * - code
+   * - tasks
+   * - surveys
+   * - offline version of the course
+   * - **and also offers an index for all courses**
+   *
+   */
+  constructor() {
     this.dbIndex = new Dexie('Index')
     this.dbIndex.version(1).stores({
       courses: '&id,updated,author,created,title',
@@ -27,7 +35,17 @@ class LiaDB {
     this.version = 0
   }
 
-  open_(uidDB: string) {
+  /** Open the base collection of Dexie-stores that are used to by LiaScript.
+   * If there is no such store, these are created. This is used as an internal
+   * helper also to quickly setup all stores.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @returns Return a Dexie database instance with the "tables" =>
+   *          `{code, quiz, survey, task, offline}`
+   * @example
+   *    open_('https://.../README.md')
+   */
+  private open_(uidDB: string): Dexie {
     let db = new Dexie(uidDB)
 
     db.version(1).stores({
@@ -41,251 +59,226 @@ class LiaDB {
     return db
   }
 
-  async open(uidDB: string, versionDB: number, init?: Lia.Event) {
+  /** Open the initial database connection, that is used during the entire
+   * session. All passed states are stored in the future, if the version number
+   * is larger than 0. Otherwise this will be used as an filter, not to store
+   * all the stuff, since we are dealing with some kind of development version.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param versionDB - A version number
+   * @param init - This can be a record, which is used for an initial query
+   * @returns The result of the query, otherwise it will be `unknown`
+   * @example
+   *    open('https://...raw../README.md', 1, {table: 'code', id: 12})
+   */
+  async open(uidDB: string, versionDB: number, init?: Record) {
     this.version = versionDB
     this.db = this.open_(uidDB)
 
     try {
       await this.db.open()
-    } catch (e) {
+    } catch (e: any) {
       log.warn('DB: open -> ', e.message)
       this.db = null
     }
 
     if (init && this.db) {
-      const item = await this.db[init.topic].get({
-        id: init.section,
+      const item = await this.db[init.table].get({
+        id: init.id,
         version: versionDB,
       })
 
-      if (!!item) {
-        if (item.data) {
-          init.message.message = item.data
-        }
-        this.send(init)
-      }
+      return item
     }
   }
 
-  async store(event: Lia.Event, versionDB?: number) {
+  /** Store any kind of data within one of the existing tables, `open()` has to
+   * be called previously. The trailing version number is only used to overwrite
+   * the default version number that has been defined previously.
+   *
+   * @param record - to be stored within the database
+   * @param versionDB - optional version number for the database entry
+   * @example
+   *    store({table: 'quiz', id: 12, data: {...any}})
+   */
+  async store(record: Record, versionDB?: number) {
     if (!this.db || this.version === 0) return
 
     log.warn(
-      `liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`
+      `liaDB: event(store), table(${record.table}), id(${record.id}), data(${record.data})`
     )
 
-    await this.db[event.topic].put({
-      id: event.section,
+    await this.db[record.table].put({
+      id: record.id,
       version: versionDB != null ? versionDB : this.version,
-      data: event.message,
+      data: record.data,
       created: new Date().getTime(),
     })
   }
 
-  async load(event: Lia.Event, versionDB?: number) {
+  /** Load an entry for a specific table and id from IndexedDB.
+   *
+   * @param record - information about the table and the id
+   * @param versionDB - optional version number for the database entry
+   * @returns The stored value, if it exists, otherwise it returns `unknown`
+   * @example
+   *    load({table: 'task', id: 12})
+   */
+  async load(record: Record, versionDB?: number) {
     if (!this.db) return
 
-    log.info('loading => ', event.topic, event.section)
+    log.info('loading => ', record.table, record.id)
 
-    const item = await this.db[event.topic].get({
-      id: event.section,
+    const item = await this.db[record.table].get({
+      id: record.id,
       version: versionDB != undefined ? versionDB : this.version,
     })
 
     if (item) {
-      log.info('restore table', event.topic) //, e._value.data)
-      event.message = {
-        topic: Port.RESTORE,
-        section: -1,
-        message: item.data,
-      }
-      this.send(event)
-    } else if (event.topic === Port.CODE) {
-      event.message = {
-        topic: Port.RESTORE,
-        section: -1,
-        message: null,
-      }
-      this.send(event)
+      log.info('restore table', record.table)
+
+      return item.data
     }
+    return null
   }
 
-  del() {
-    if (!this.db) return
-
-    const name = this.db.name
-
-    this.db
-      .delete()
-      .then(() => {
-        log.info('database deleted: ', name)
-      })
-      .catch((err: Error) => {
-        log.error('error deleting database: ', name, err)
-      })
-  }
-
+  /** This is a shorthand for updating the stored slide number within the
+   * offline table of the currents database
+   *
+   * @param id - slide number
+   */
   async slide(id: number) {
     try {
-      let data = await this.db.offline.get({
+      let item = await this.db.offline.get({
         id: 0,
         version: this.version,
       })
 
-      data.data.section_active = id
+      item.data.section_active = id
 
-      await this.db.offline.put(data)
-    } catch (e) {}
+      await this.db.offline.put(item)
+    } catch (e) {
+      log.warn('DB: could not update slide => ', id)
+    }
   }
 
-  async update(event: Lia.Event, slide: number) {
+  /** Use this to apply modifiers to certain records. This is mostly used to
+   * handle the peculiar changes for the 'code' entries. Thus you have to be
+   * aware of the internal structure of your entries!
+   *
+   * @param record - information about the table and the id
+   * @param modify - transformation function
+   */
+  async transaction(record: Record, modify: (data: any) => any) {
     if (!this.db || this.version === 0) return
 
     let db = this.db
-    await db.transaction('rw', db.code, async () => {
-      const vector = await db.code.get({
-        id: slide,
+
+    await db.transaction('rw', db[record.table], async () => {
+      const vector = await db[record.table].get({
+        id: record.id,
         version: this.version,
       })
 
       if (vector.data) {
-        let project = vector.data[event.section]
-
-        switch (event.topic) {
-          case 'flip': {
-            if (event.message.topic === 'view') {
-              project.file[event.message.section].visible =
-                event.message.message
-            } else if (event.message.topic === 'fullscreen') {
-              project.file[event.message.section].fullscreen =
-                event.message.message
-            }
-            break
-          }
-          case 'load': {
-            let e_ = event.message
-            project.version_active = e_.version_active
-            project.log = e_.log
-            project.file = e_.file
-            break
-          }
-          case 'version_update': {
-            let e_ = event.message
-            project.version_active = e_.version_active
-            project.log = e_.log
-            project.version[e_.version_active] = e_.version
-            break
-          }
-          case 'version_append': {
-            let e_ = event.message
-            project.version_active = e_.version_active
-            project.log = e_.log
-            project.file = e_.file
-            project.version.push(e_.version)
-            project.repository = {
-              ...project.repository,
-              ...e_.repository,
-            }
-            break
-          }
-          default: {
-            log.warn('unknown update cmd: ', event)
-          }
-        }
-
-        vector.data[event.section] = project
-
-        await db.code.put(vector)
+        vector.data = modify(vector.data)
+        await db[record.table].put(vector)
       }
     })
   }
 
+  /** If the course cannot be loaded and requires to be restored from the
+   * browser, then this method needs to be called. It checks if the course has
+   * been loaded before and then retrieves the course content from the
+   * `offline` table.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param versionDB - An optional version number, if not defined the default is used.
+   * @returns The pre-parsed JSON of the course, that can be directly loaded by LiaScript.
+   * @example
+   *    restore("httsp://.../README.md")
+   */
   async restore(uidDB: string, versionDB?: number) {
-    const course = await this.dbIndex.courses.get(uidDB)
+    const course = await this.dbIndex['courses'].get(uidDB)
 
     if (course) {
-      // let latest = parseInt(Object.keys(course.data).sort().reverse())
-
       let db = this.open_(uidDB)
 
-      const offline = await db.offline.get({
+      const offline = await db['offline'].get({
         id: 0,
         version: versionDB != null ? versionDB : this.version,
       })
 
-      this.send({
-        topic: Port.RESTORE,
-        message: offline === undefined ? null : offline.data,
-        section: -1,
-      })
+      return offline === undefined ? null : offline.data
     }
   }
 
+  /** Get the main course information stored within the index-db for a
+   * particular course
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @returns
+   */
   async getIndex(uidDB: string) {
     try {
-      const course = await this.dbIndex.courses.get(uidDB)
-
-      this.send({
-        topic: 'getIndex',
-        message: {
-          id: uidDB,
-          course: course,
-        },
-        section: -1,
-      })
-    } catch (e) {
+      return await this.dbIndex['courses'].get(uidDB)
+    } catch (e: any) {
       log.warn('DB: getIndex -> ', e.message)
-
-      this.send({
-        topic: 'getIndex',
-        message: {
-          id: uidDB,
-          course: null,
-        },
-        section: -1,
-      })
     }
+    return null
   }
 
+  /** Return the entire list of courses within the index in order.
+   *
+   * @param order - Refers to the index entries (i.e., 'author', 'id', 'title', **the default is 'updated'**, etc.)
+   * @param desc - Defines the order, by default `desc = false`
+   * @returns
+   */
   async listIndex(order = 'updated', desc = false) {
-    const courses = await this.dbIndex.courses.orderBy(order).toArray()
+    const courses = await this.dbIndex['courses'].orderBy(order).toArray()
 
     if (!desc) {
       courses.reverse()
     }
 
-    this.send({
-      topic: Port.INDEX,
-      section: -1,
-      message: {
-        list: courses,
-      },
-    })
+    return courses
   }
 
+  /** This method handles all functionality for storing and thus preserving an
+   * entire course within the local index as well as making it offline
+   * accessible.
+   *
+   * @param data - This is the entire preprocessed course with sections and meta-information
+   * @returns
+   */
   async storeIndex(data: any) {
     if (!this.dbIndex.isOpen()) {
       log.warn('DB: storeIndex ... db is closed')
       return
     }
-    let date = new Date()
-    let item = await this.dbIndex.courses.get(data.readme)
 
+    const date = new Date()
+    let item = await this.dbIndex['courses'].get(data.readme)
+
+    // If there is no item, then create an initial one
     if (!item) {
       item = {
         id: data.readme,
         title: data.definition.str_title,
         author: data.definition.author,
-        data: {},
         created: date.getTime(),
         updated: null,
         updated_str: null,
+        // this is a dictionary that will store all courses with their version
+        // as a unique id
+        data: {},
       }
     }
 
     item.updated = date.getTime()
     item.updated_str = date.toLocaleDateString()
 
+    // check if the current version is already stored
     if (!item.data[data.version]) {
       item.data[data.version] = data.definition
       item.data[data.version]['title'] = data.title
@@ -307,7 +300,7 @@ class LiaDB {
       let db = this.open_(data.readme)
       await db.open()
 
-      await db.offline.put({
+      await db['offline'].put({
         id: 0,
         version: data.version,
         data: data,
@@ -315,23 +308,38 @@ class LiaDB {
       })
     }
 
-    this.dbIndex.courses.put(item).then(function (result: any) {
+    this.dbIndex['courses'].put(item).then(function (result: any) {
       log.info('DB: storeIndex', result)
     })
   }
 
+  /** Delete all entries for all versions of a certain course defined by its
+   * URL. This removes all state information as well as the course from the
+   * main index.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   */
   async deleteIndex(uidDB: string) {
-    await Promise.all([this.dbIndex.courses.delete(uidDB), Dexie.delete(uidDB)])
+    await Promise.all([
+      this.dbIndex['courses'].delete(uidDB),
+      Dexie.delete(uidDB),
+    ])
   }
 
+  /** Delete all state information for a particular course and a particular version.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param versionDB - The version number of the course
+   */
   async reset(uidDB: string, versionDB: number) {
-    let db = this.open_(uidDB)
+    const db = this.open_(uidDB)
     await db.open()
 
     await Promise.all([
-      db.code.where('version').equals(versionDB).delete(),
-      db.quiz.where('version').equals(versionDB).delete(),
-      db.survey.where('version').equals(versionDB).delete(),
+      db['code'].where('version').equals(versionDB).delete(),
+      db['quiz'].where('version').equals(versionDB).delete(),
+      db['survey'].where('version').equals(versionDB).delete(),
+      db['task'].where('version').equals(versionDB).delete(),
     ])
   }
 }

@@ -5,6 +5,7 @@ module Lia.Markdown.Effect.Script.Update exposing
     , handle
     , run
     , setRunning
+    , submit
     , update
     )
 
@@ -16,10 +17,10 @@ import Lia.Markdown.Effect.Script.Types as Script exposing (Msg(..), Script, Scr
 import Lia.Parser.Parser exposing (parse_subsection)
 import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (focus)
-import Port.Eval as Eval exposing (Eval)
-import Port.Event exposing (Event)
 import Process
-import Return exposing (Return, script, val)
+import Return exposing (Return)
+import Service.Event as Event exposing (Event)
+import Service.Script exposing (Eval)
 import Task
 
 
@@ -31,6 +32,23 @@ run =
 handle : Event -> Msg sub
 handle =
     Handle
+
+
+{-| Used by external models with associated scripts, such as Quizzes, Tasks,
+etc. to indicate that an evaluated script that contains an output, should
+trigger the execution of all scripts, that are subscribed to this topic.
+-}
+submit : Int -> Event -> Msg sub
+submit scriptID event =
+    Handle
+        { event
+            | service = "script"
+            , track = [ ( "script", scriptID ) ]
+            , message =
+                { cmd = "exec"
+                , param = event.message.param
+                }
+        }
 
 
 update :
@@ -63,7 +81,12 @@ update main msg scripts =
                                 | input = Input.value value node.input
                                 , updated = True
                             }
-                        |> update main (Handle (Event "code" id (Eval.encode <| Eval True value [])))
+                        |> update main
+                            (value
+                                |> Service.Script.evalDummy
+                                |> Event.pushWithId "script" id
+                                |> Handle
+                            )
 
                 Nothing ->
                     Return.val scripts
@@ -190,16 +213,16 @@ update main msg scripts =
                 |> Return.val
 
         Handle event ->
-            case event.topic of
-                "code" ->
+            case Event.destructure event of
+                ( Just "script", section, ( "exec", param ) ) ->
                     let
                         ( publish, javascript ) =
                             scripts
-                                |> update_ main.globals event.section event.message
+                                |> update_ main.globals section param
 
                         node =
                             javascript
-                                |> Script.get identity event.section
+                                |> Script.get identity section
 
                         nodeUpdate =
                             if
@@ -208,7 +231,7 @@ update main msg scripts =
                                     |> Maybe.withDefault False
                             then
                                 node
-                                    |> Maybe.map (\n -> [ ( event.section, n.script, Input.getValue n.input ) ])
+                                    |> Maybe.map (\n -> [ ( section, n.script, Input.getValue n.input ) ])
                                     |> Maybe.withDefault []
                                     |> Script.replaceInputs javascript
 
@@ -218,7 +241,7 @@ update main msg scripts =
                     case Maybe.andThen .output node of
                         Nothing ->
                             Script.set
-                                event.section
+                                section
                                 (\js -> { js | update = False })
                                 javascript
                                 |> Return.val
@@ -227,7 +250,7 @@ update main msg scripts =
                         Just output ->
                             javascript
                                 |> Script.updateChildren output
-                                |> Script.set event.section (\js -> { js | update = False })
+                                |> Script.set section (\js -> { js | update = False })
                                 |> Return.val
                                 |> Return.batchEvents
                                     (if publish then
@@ -240,15 +263,15 @@ update main msg scripts =
                                         []
                                     )
 
-                "codeX" ->
+                ( Just "script", section, ( "async", param ) ) ->
                     let
                         ( publish, javascript ) =
                             scripts
-                                |> update_ main.globals event.section event.message
+                                |> update_ main.globals section param
 
                         node =
                             javascript
-                                |> Script.get identity event.section
+                                |> Script.get identity section
                     in
                     case Maybe.andThen .output node of
                         Nothing ->
@@ -267,13 +290,13 @@ update main msg scripts =
                                         []
                                     )
 
-                "sub" ->
-                    case scripts |> Array.get event.section |> Maybe.andThen .result of
+                ( Just "sub", section, ( _, param ) ) ->
+                    case scripts |> Array.get section |> Maybe.andThen .result of
                         Just (IFrame lia) ->
                             lia
-                                |> main.handle scripts event.message
-                                |> Return.mapValCmd (\v -> Script.set event.section (\s -> { s | result = Just (IFrame v) }) scripts) (Sub event.section)
-                                |> Return.mapEvents "sub" event.section
+                                |> main.handle scripts param
+                                |> Return.mapValCmd (\v -> Script.set section (\s -> { s | result = Just (IFrame v) }) scripts) (Sub section)
+                                |> Return.mapEvents "sub" section
 
                         _ ->
                             Return.val scripts
@@ -318,12 +341,8 @@ reRun fn cmd id scripts =
 
 execute : Int -> ( Int, String ) -> Event
 execute delay ( id, code ) =
-    Event "execute" id <|
-        JE.object
-            [ ( "delay", JE.int delay )
-            , ( "code", JE.string code )
-            , ( "id", JE.int id )
-            ]
+    Service.Script.exec delay code
+        |> Event.pushWithId "script" id
 
 
 update_ : Maybe Definition -> Int -> JE.Value -> Scripts SubSection -> ( Bool, Scripts SubSection )
@@ -332,7 +351,7 @@ update_ defintion id e scripts =
         Just js ->
             let
                 new =
-                    eval_ defintion id (Eval.decode e) js
+                    eval_ defintion id (Service.Script.decode e) js
             in
             ( new.result /= js.result
             , Array.set id new scripts

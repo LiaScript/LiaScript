@@ -7,7 +7,6 @@ module Lia.Markdown.Quiz.View exposing
 {-| This module defines the basic frame for all subsequent and specialized
 quizzes. It adds a common checkButton, hintButton, and resolveButton and shows
 hints.
-
 TODO:
 
   - Add translations for web accessability also:
@@ -24,14 +23,18 @@ TODO:
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
+import Array
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
+import Json.Encode as JE
+import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Block.View as Block
 import Lia.Markdown.Quiz.Matrix.View as Matrix
 import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
+import Lia.Markdown.Quiz.Sync exposing (Sync)
 import Lia.Markdown.Quiz.Types
     exposing
         ( Element
@@ -40,12 +43,14 @@ import Lia.Markdown.Quiz.Types
         , Type(..)
         , Vector
         , getClass
-        , getState
         , isSolved
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
-import Lia.Utils exposing (btn, btnIcon)
+import Lia.Sync.Container.Local exposing (Container)
+import Lia.Sync.Types as Sync
+import Lia.Utils exposing (btn, btnIcon, percentage)
+import List.Extra
 import Translations
     exposing
         ( Lang
@@ -61,27 +66,141 @@ import Translations
 
 {-| Main Quiz view function.
 -}
-view : Config sub -> Maybe String -> Quiz -> Vector -> ( Maybe Int, List (Html (Msg sub)) )
-view config labeledBy quiz vector =
-    case getState vector quiz.id of
+view : Config sub -> Maybe String -> Quiz -> Vector -> Maybe (Container Sync) -> ( Maybe Int, List (Html (Msg sub)) )
+view config labeledBy quiz vector sync =
+    case Array.get quiz.id vector of
         Just elem ->
             ( elem.scriptID
             , viewState config elem quiz
                 |> viewQuiz config labeledBy elem quiz
+                |> viewSync config (Sync.get config.sync quiz.id sync)
             )
 
         _ ->
             ( Nothing, [] )
 
 
+viewSync : Config sub -> Maybe (List Sync) -> List (Html msg) -> List (Html msg)
+viewSync config syncData quiz =
+    case ( syncData, syncData |> Maybe.map List.length ) of
+        ( Just _, Just 0 ) ->
+            quiz
+
+        ( Just data, Just length ) ->
+            let
+                total =
+                    toFloat length
+
+                chartData =
+                    data
+                        |> List.Extra.gatherEquals
+                        |> List.map
+                            (\( i, list ) ->
+                                let
+                                    absolute =
+                                        1 + List.length list
+
+                                    relative =
+                                        percentage total absolute
+                                in
+                                case i of
+                                    Just i_ ->
+                                        ( JE.string ("Trial " ++ String.fromInt i_)
+                                        , JE.object
+                                            [ ( "value", JE.float relative )
+                                            , ( "label"
+                                              , JE.object
+                                                    [ ( "show", JE.bool True )
+                                                    , ( "formatter"
+                                                      , String.fromInt absolute
+                                                            ++ " ("
+                                                            ++ String.fromFloat relative
+                                                            ++ "%)"
+                                                            |> JE.string
+                                                      )
+                                                    ]
+                                              )
+                                            ]
+                                        )
+
+                                    Nothing ->
+                                        ( JE.string "Resolved"
+                                        , JE.object
+                                            [ ( "value"
+                                              , JE.float relative
+                                              )
+                                            , ( "itemStyle"
+                                              , JE.object [ ( "color", JE.string "#888" ) ]
+                                              )
+                                            , ( "label"
+                                              , JE.object
+                                                    [ ( "show", JE.bool True )
+                                                    , ( "formatter"
+                                                      , String.fromInt absolute
+                                                            ++ " ("
+                                                            ++ String.fromFloat relative
+                                                            ++ "%)"
+                                                            |> JE.string
+                                                      )
+                                                    ]
+                                              )
+                                            ]
+                                        )
+                            )
+            in
+            JE.object
+                [ ( "grid"
+                  , JE.object
+                        [ ( "left", JE.int 10 )
+                        , ( "top", JE.int 20 )
+                        , ( "bottom", JE.int 20 )
+                        , ( "right", JE.int 10 )
+                        ]
+                  )
+                , ( "xAxis"
+                  , JE.object
+                        [ ( "type", JE.string "category" )
+                        , ( "data"
+                          , chartData
+                                |> List.map Tuple.first
+                                |> JE.list identity
+                          )
+                        ]
+                  )
+                , ( "yAxis"
+                  , JE.object
+                        [ ( "type", JE.string "value" )
+                        , ( "show", JE.bool False )
+                        ]
+                  )
+                , ( "series"
+                  , [ [ ( "type", JE.string "bar" )
+                      , ( "data"
+                        , chartData
+                            |> List.map Tuple.second
+                            |> JE.list identity
+                        )
+                      ]
+                    ]
+                        |> JE.list JE.object
+                  )
+                ]
+                |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
+                |> List.singleton
+                |> List.append quiz
+
+        _ ->
+            quiz
+
+
 {-| Determine the quiz class based on the current state
 -}
 class : Int -> Vector -> String
-class id vector =
-    getState vector id
-        |> Maybe.map (\s -> "lia-quiz-" ++ getClass s.state ++ " " ++ Solution.toString s.solved)
-        |> Maybe.withDefault ""
-        |> (++) "lia-quiz "
+class id =
+    Array.get id
+        >> Maybe.map (\s -> "lia-quiz-" ++ getClass s.state ++ " " ++ Solution.toString s.solved)
+        >> Maybe.withDefault ""
+        >> (++) "lia-quiz "
 
 
 {-| **private:** Simple router function that is used to match the current state
@@ -151,6 +270,34 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
     , viewFeedback config.lang state
     , viewHints config state.hint quiz.hints
     ]
+
+
+
+{- case e.sync of
+   Nothing ->
+       Html.text ""
+   Just { solved, resolved } ->
+       Html.text
+           ("solved: "
+               ++ String.fromInt
+                   (solved
+                       + (if e.solved == Solution.Solved then
+                           1
+                          else
+                           0
+                         )
+                   )
+               ++ ", resolved: "
+               ++ String.fromInt
+                   (resolved
+                       + (if e.solved == Solution.ReSolved then
+                           1
+                          else
+                           0
+                         )
+                   )
+           )
+-}
 
 
 viewFeedback : Lang -> Element -> Html msg
@@ -276,17 +423,12 @@ viewHintButton id show active title =
 
 
 {-| Check the state of quiz:
-
-    Open -> False
-
-    Solved -> True
-
-    Resolved -> True
-
+Open -> False
+Solved -> True
+Resolved -> True
 -}
-showSolution : Vector -> Quiz -> Bool
-showSolution vector quiz =
-    quiz.id
-        |> getState vector
-        |> Maybe.map isSolved
-        |> Maybe.withDefault False
+showSolution : Quiz -> Vector -> Bool
+showSolution quiz =
+    Array.get quiz.id
+        >> Maybe.map isSolved
+        >> Maybe.withDefault False

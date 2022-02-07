@@ -1,34 +1,40 @@
-import {
-  Connector as Base
-} from '../Base/index.ts'
+import Lia from '../../liascript/types/lia.d'
+import Port from '../../liascript/types/ports'
+import { SCORM } from './scorm'
 
-const SCORM = require('simplify-scorm/src/scormAPI')
+import { Connector as Base } from '../Base/index'
 
-SCORM.scormAPIFunc()
+const scorm = require('simplify-scorm/src/scormAPI')
 
+scorm.scormAPIFunc()
 
 class Connector extends Base {
+  private scorm?: SCORM
+  private active: boolean
+
+  private quiz?: boolean[][]
+  private survey?: boolean[][]
+
   constructor() {
     super()
-    this.scorm = window.top.API
-    // window.top.API = null
 
-    if (!this.scorm) return
+    this.active = false
 
-    console.log('LMSInitialize', this.scorm.LMSInitialize(''))
+    if (window.top && window.top.API) {
+      this.scorm = window.top.API
 
-    // store state information only in normal mode
-    let mode = this.scorm.LMSGetValue('cmi.core.lesson_mode')
-    this.active = mode === 'normal'
+      if (!this.scorm) return
 
-    //  this.scorm.LMSSetValue(
-    //    "cmi.core.lesson_status",
-    //    mode == "browse" ? "browsed" : "incomplete"
-    //  )
+      console.log('LMSInitialize', this.scorm.LMSInitialize(''))
 
-    this.scorm.LMSCommit('')
+      // store state information only in normal mode
+      let mode = this.scorm.LMSGetValue('cmi.core.lesson_mode')
+      this.active = mode === 'normal'
 
-    this.restore()
+      this.scorm.LMSCommit()
+
+      this.restore()
+    }
   }
 
   restore() {
@@ -56,37 +62,35 @@ class Connector extends Base {
     this.score()
   }
 
-  connect(send = null) {
-    this.send = send
-  }
-
   score() {
+    if (!this.scorm) return
+
     let total =
       this.quiz.reduce((a, b) => a + b.length, 0) +
       this.survey.reduce((a, b) => a + b.length, 0)
 
     let solved =
       this.quiz
-      .map((e) => e.filter((f) => f === true))
-      .reduce((a, b) => a + b.length, 0) +
+        .map((e) => e.filter((f) => f === true))
+        .reduce((a, b) => a + b.length, 0) +
       this.survey
-      .map((e) => e.filter((f) => f === true))
-      .reduce((a, b) => a + b.length, 0)
+        .map((e) => e.filter((f) => f === true))
+        .reduce((a, b) => a + b.length, 0)
 
     let finished =
       this.quiz
-      .map((e) => e.filter((f) => f != null))
-      .reduce((a, b) => a + b.length, 0) +
+        .map((e) => e.filter((f) => f != null))
+        .reduce((a, b) => a + b.length, 0) +
       this.survey
-      .map((e) => e.filter((f) => f != null))
-      .reduce((a, b) => a + b.length, 0)
+        .map((e) => e.filter((f) => f != null))
+        .reduce((a, b) => a + b.length, 0)
 
     let score = solved === 0 ? 0 : (solved * 100) / total
 
     this.scorm.LMSSetValue('cmi.core.score.raw', score.toString())
 
     let masteryScore = JSON.parse(
-      this.scorm.LMSGetValue('cmi.student_data.mastery_score'),
+      this.scorm.LMSGetValue('cmi.student_data.mastery_score')
     )
 
     if (score >= masteryScore && score < 100) {
@@ -97,31 +101,31 @@ class Connector extends Base {
       this.scorm.LMSSetValue('cmi.core.lesson_status', 'failed')
     }
 
-    this.scorm.LMSCommit('')
+    this.scorm.LMSCommit()
   }
 
-  slide(id) {
+  slide(id: number) {
     if (!this.scorm) return
 
     let location = this.scorm.LMSGetValue('cmi.core.lesson_location')
 
     try {
-      location = JSON.parse(location)
-      location.slide = id
-      location.visited[id] = true
+      let loc = JSON.parse(location)
 
-      this.scorm.LMSSetValue(
-        'cmi.core.lesson_location',
-        JSON.stringify(location),
-      )
+      if (loc.slide && loc.visited) {
+        loc.slide = id
+        loc.visited[id] = true
 
-      this.scorm.LMSCommit('')
+        this.scorm.LMSSetValue('cmi.core.lesson_location', JSON.stringify(loc))
+
+        this.scorm.LMSCommit()
+      }
     } catch (e) {
       console.warn('slide:', e)
     }
   }
 
-  open(uidDB, versionDB, slide, data) {
+  open(uidDB: string, versionDB: number, slide: number, data: any) {
     if (!this.scorm) return
 
     let location = null
@@ -129,8 +133,9 @@ class Connector extends Base {
     try {
       location = JSON.parse(this.scorm.LMSGetValue('cmi.core.lesson_location'))
       this.send({
-        topic: 'goto',
-        section: location.slide,
+        reply: true,
+        track: [['goto', location.slide]],
+        service: null,
         message: null,
       })
     } catch (e) {
@@ -143,27 +148,57 @@ class Connector extends Base {
 
       this.scorm.LMSSetValue(
         'cmi.core.lesson_location',
-        JSON.stringify(location),
+        JSON.stringify(location)
       )
 
-      this.scorm.LMSCommit('')
+      this.scorm.LMSCommit()
     }
   }
 
-  countObjectives() {
-    return this.scorm.LMSGetValue('cmi.objectives._count')
+  countObjectives(): number {
+    let count = -1
+    if (this.scorm) {
+      try {
+        count = parseInt(this.scorm.LMSGetValue('cmi.objectives._count'))
+      } catch (e) {
+        console.warn('Could not get objectives count')
+        count = -1
+      }
+    }
+
+    return count
   }
 
-  countInteractions() {
-    return parseInt(this.scorm.LMSGetValue('cmi.interactions._count'))
+  countInteractions(): number {
+    let count = -1
+
+    if (this.scorm) {
+      try {
+        count = parseInt(this.scorm.LMSGetValue('cmi.interactions._count'))
+      } catch (e) {
+        console.warn('Could not get objectives count')
+        count = -1
+      }
+    }
+
+    return count
   }
 
   // generates a unique id to be used in interactions and objectives
-  label(obj) {
+  label(obj: { type: string; sec: number; i: number; data: string }) {
     return [obj.type, obj.sec + 1, obj.i].join('/')
   }
 
-  getObjective(id) {
+  getObjective(id: number):
+    | undefined
+    | {
+        type: string
+        sec: number
+        i: number
+        data: any
+      } {
+    if (!this.scorm) return
+
     let val = null
 
     try {
@@ -187,12 +222,16 @@ class Connector extends Base {
         data: data,
       }
     } catch (e) {
-      console.warn('getObjective', val, id, e)
-      return null
+      console.warn('could not getObjective', val, id, e)
     }
   }
 
-  setObjective(id, obj) {
+  setObjective(
+    id: number,
+    obj: { type: string; sec: number; i: number; data: any }
+  ) {
+    if (!this.scorm) return
+
     let blob = this.label(obj)
 
     if (obj.type === 'survey') {
@@ -204,9 +243,9 @@ class Connector extends Base {
 
     console.log(
       'setObjective',
-      this.scorm.LMSSetValue('cmi.objectives.' + id + '.id', blob),
+      this.scorm.LMSSetValue('cmi.objectives.' + id + '.id', blob)
     )
-    this.scorm.LMSCommit('')
+    this.scorm.LMSCommit()
 
     switch (obj.type) {
       case 'quiz':
@@ -222,7 +261,9 @@ class Connector extends Base {
     this.score()
   }
 
-  logInteraction(obj) {
+  logInteraction(obj: { type: string; sec: number; i: number; data: any }) {
+    if (!this.scorm) return
+
     let id = this.countInteractions()
 
     let label = this.label(obj)
@@ -233,23 +274,23 @@ class Connector extends Base {
       case 'code': {
         this.scorm.LMSSetValue(
           'cmi.interactions.' + id + '.student_response',
-          JSON.stringify(obj.data).slice(0, 254),
+          JSON.stringify(obj.data).slice(0, 254)
         )
         break
       }
       case 'quiz': {
         this.scorm.LMSSetValue(
           'cmi.interactions.' + id + '.result',
-          obj.data.solved === 0 ?
-          'neutral' :
-          obj.data.solved === 1 ?
-          'correct' :
-          'wrong',
+          obj.data.solved === 0
+            ? 'neutral'
+            : obj.data.solved === 1
+            ? 'correct'
+            : 'wrong'
         )
 
         this.scorm.LMSSetValue(
           'cmi.interactions.' + id + '.student_response',
-          JSON.stringify(obj.data).slice(0, 254),
+          JSON.stringify(obj.data).slice(0, 254)
         )
         break
       }
@@ -258,7 +299,7 @@ class Connector extends Base {
         this.scorm.LMSSetValue('cmi.interactions.' + id + '.result', 'neutral')
         this.scorm.LMSSetValue(
           'cmi.interactions.' + id + '.student_response',
-          JSON.stringify(obj.data.state).slice(0, 254),
+          JSON.stringify(obj.data.state).slice(0, 254)
         )
         break
       }
@@ -266,20 +307,20 @@ class Connector extends Base {
 
     this.scorm.LMSSetValue(
       'cmi.interactions.' + id + '.time',
-      new Date().toISOString().split('T')[1].split('.')[0], // only hh:mm:ss are allowed in this version of scorm
+      new Date().toISOString().split('T')[1].split('.')[0] // only hh:mm:ss are allowed in this version of scorm
     )
 
-    this.scorm.LMSCommit('')
+    this.scorm.LMSCommit()
   }
 
-  store(event) {
+  store(event: Lia.Event) {
     if (!this.scorm || !this.active) return
 
-    if (event.topic === 'code') {
+    if (event.track[0][0] === 'code') {
       for (let i = 0; i < event.message.length; i++) {
         this.logInteraction({
-          type: event.topic,
-          sec: event.section,
+          type: event.track[0][0],
+          sec: event.track[0][1],
           i: i,
           data: event.message[i],
         })
@@ -295,7 +336,7 @@ class Connector extends Base {
     for (let i = 0; i < count; i++) {
       let item = this.getObjective(i)
       if (!!item) {
-        if (item.sec === event.section && item.type === event.topic) {
+        if (item.sec === event.track[0][1] && item.type === event.track[0][0]) {
           // store only the position to be overwritten
           items.push(i)
         }
@@ -303,8 +344,8 @@ class Connector extends Base {
     }
 
     let obj = {
-      type: event.topic,
-      sec: event.section,
+      type: event.track[0][0],
+      sec: event.track[0][1],
       i: 0,
       data: null,
     }
@@ -316,7 +357,7 @@ class Connector extends Base {
       // insert as new or overwrite existing ones
       this.setObjective(
         items.length === 0 ? this.countObjectives() : items[i],
-        obj,
+        obj
       )
       this.logInteraction(obj)
     }
@@ -324,16 +365,16 @@ class Connector extends Base {
     this.score()
   }
 
-  load(event) {
+  load(event: Lia.Event) {
     if (!this.scorm) return
 
-    if (event.topic === 'code') {
-      event.message = {
-        topic: 'restore',
-        section: -1,
+    if (event.track[0][0] === 'code') {
+      this.send({
+        reply: true,
+        track: [event.track[0], ['restore', -1]],
+        service: null,
         message: null,
-      }
-      this.send(event)
+      })
       return
     }
 
@@ -344,23 +385,21 @@ class Connector extends Base {
     for (let i = 0; i < count; i++) {
       let item = this.getObjective(i)
       if (!!item) {
-        if (item.sec === event.section && item.type === event.topic) {
+        if (item.sec === event.track[0][1] && item.type === event.track[0][0]) {
           items.push(item)
         }
       }
     }
 
     if (items.length !== 0) {
-      event.message = {
-        topic: 'restore',
-        section: -1,
+      this.send({
+        reply: true,
+        track: [event.track[0], ['restore', -1]],
+        service: null,
         message: items.sort((a, b) => a.i - b.i).map((e) => e.data),
-      }
-      this.send(event)
+      })
     }
   }
 }
 
-export {
-  Connector
-}
+export { Connector }

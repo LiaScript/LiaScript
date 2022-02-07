@@ -9,6 +9,7 @@ import Html exposing (Html)
 import Lia.Markdown.Effect.Script.Types exposing (Msg, Scripts)
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
+import Lia.Sync.Types as Sync
 import Translations exposing (Lang)
 
 
@@ -25,6 +26,7 @@ type alias Config sub =
     , media : Dict String ( Int, Int )
     , scripts : Scripts SubSection
     , translations : Maybe ( String, String )
+    , sync : Maybe Sync.Settings
     }
 
 
@@ -40,6 +42,7 @@ init :
     , media : Dict String ( Int, Int )
     , scripts : Scripts SubSection
     , translations : Maybe ( String, String )
+    , sync : Maybe Sync.Settings
     }
     -> Config sub
 init config =
@@ -60,6 +63,7 @@ init config =
     , media = config.media
     , scripts = config.scripts
     , translations = config.translations
+    , sync = config.sync
     }
 
 

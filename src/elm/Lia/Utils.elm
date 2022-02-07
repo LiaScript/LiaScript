@@ -11,6 +11,8 @@ module Lia.Utils exposing
     , noTranslate
     , onEnter
     , onKeyDown
+    , percentage
+    , string2Color
     , toEscapeString
     , toJSstring
     )
@@ -24,6 +26,7 @@ import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
+import List.Extra
 import Task
 
 
@@ -226,3 +229,58 @@ array_setLast a array =
 noTranslate : List (Attribute msg) -> List (Attribute msg)
 noTranslate =
     List.append [ Attr.attribute "class" "notranslate", Attr.attribute "translate" "no" ]
+
+
+{-| This is a generic helper function for generating pseudorandom colors from
+strings. The first value defines some kind of upper-bound. The lower it is, the
+darker the resulting color will be. Use 255 as max to get all colors from black
+to white.
+
+    string2Color 255 "red" == "rgb(5,200,112)"
+
+    string2Color 255 "RED" == "rgb(228,168,80)"
+
+    string2Color 111 "RED" == "rgb(93,57,80)"
+
+-}
+string2Color : Int -> String -> String
+string2Color maxValue url =
+    url
+        |> String.toList
+        |> List.map Char.toCode
+        |> List.Extra.greedyGroupsOf 3
+        |> List.foldl
+            (\rgb ( r, g, b ) ->
+                case rgb of
+                    [ r_, g_, b_ ] ->
+                        ( r + r_, g + g_, b + b_ )
+
+                    [ r_, g_ ] ->
+                        ( r_ + r, g_ + g, b )
+
+                    [ r_ ] ->
+                        ( r_ + r, g, b )
+
+                    _ ->
+                        ( r, g, b )
+            )
+            ( 11111, 99, 12 )
+        |> (\( r, g, b ) ->
+                "rgb("
+                    ++ (String.fromInt <| modBy maxValue r)
+                    ++ ","
+                    ++ (String.fromInt <| modBy maxValue g)
+                    ++ ","
+                    ++ (String.fromInt <| modBy maxValue b)
+                    ++ ")"
+           )
+
+
+{-| Return rounded percentage up to two digits.
+
+    percentage 3.14159 1 == 31.83
+
+-}
+percentage : Float -> Int -> Float
+percentage total i =
+    toFloat (round ((10000.0 * toFloat i) / total)) / 100.0

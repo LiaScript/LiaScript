@@ -11,7 +11,6 @@ import Const
 import Dict
 import Html.Attributes exposing (width)
 import Json.Decode as JD
-import Json.Encode as JE
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Effect.Update as Effect
@@ -21,9 +20,15 @@ import Lia.Parser.Parser exposing (parse_section)
 import Lia.Section exposing (Section)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
-import Port.Event as Event exposing (Event)
+import Lia.Sync.Update as Sync
 import Return exposing (Return)
+import Service.Console
+import Service.Database
+import Service.Event as Event exposing (Event)
+import Service.Script
+import Service.Slide
 import Session exposing (Session)
+import Translations exposing (Lang(..))
 
 
 port media : (( String, Maybe Int, Maybe Int ) -> msg) -> Sub msg
@@ -40,6 +45,8 @@ subscriptions model =
                 [ section
                     |> Markdown.subscriptions
                     |> Sub.map UpdateMarkdown
+
+                --, Sub.map UpdateSync Sync.subscriptions
                 , media Media
                 ]
 
@@ -76,6 +83,7 @@ type Msg
     | UpdateIndex Index.Msg
     | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
+    | UpdateSync Sync.Msg
     | Handle Event
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
@@ -128,6 +136,7 @@ update session msg model =
                     }
                         |> Return.val
                         |> Return.cmd (Session.navToSlide session idx)
+                --|> Return.sync (Event.initWithId "load" idx JE.null)
 
             else
                 Return.val model
@@ -136,11 +145,6 @@ update session msg model =
             model
                 |> Return.val
                 |> Return.cmd (Session.navToHome session)
-
-        UpdateSettings childMsg ->
-            model.settings
-                |> Settings.update (Just { title = model.title, comment = model.definition.comment }) childMsg
-                |> Return.mapValCmd (\v -> { model | settings = v }) UpdateSettings
 
         UpdateIndex childMsg ->
             let
@@ -151,50 +155,108 @@ update session msg model =
                 |> Return.val
                 |> Return.cmd (Cmd.map UpdateIndex cmd)
 
+        UpdateSync childMsg ->
+            Sync.update session model childMsg
+                |> Return.mapCmd UpdateSync
+                |> Return.mapEvents "sync" -1
+
         Handle event ->
-            case event.topic of
-                "settings" ->
-                    case event.message |> Event.decode of
-                        Ok e ->
-                            update
-                                session
-                                (e
-                                    |> Settings.handle
-                                    |> UpdateSettings
+            case Event.pop event of
+                ( Just "settings", e ) ->
+                    update
+                        session
+                        (e
+                            |> Settings.handle
+                            |> UpdateSettings
+                        )
+                        model
+
+                ( Just "load", _ ) ->
+                    update session InitSection (generate model)
+
+                -- external triggers to move to a specific slide
+                ( Just "goto", _ ) ->
+                    case JD.decodeValue JD.int event.message.param of
+                        Ok id ->
+                            update session (Load True id) model
+
+                        Err _ ->
+                            Return.val model
+                                |> Return.batchEvent (Service.Console.warn "message goto with no id")
+
+                ( Just "local", e_ ) ->
+                    case
+                        event
+                            |> Event.id
+                            |> Maybe.andThen (\sectionID -> Array.get sectionID model.sections)
+                    of
+                        Just sec ->
+                            sec
+                                |> Markdown.update model.sync.state model.definition (Markdown.synchronize e_)
+                                |> Return.mapValCmd (\v -> { model | sections = Array.set sec.id v model.sections }) UpdateMarkdown
+
+                        _ ->
+                            Return.val model
+
+                ( Just "gotoLine", _ ) ->
+                    case JD.decodeValue JD.int event.message.param of
+                        Ok line ->
+                            update session
+                                (model.sections
+                                    |> Array.toIndexedList
+                                    |> List.filterMap
+                                        (\( i, s ) ->
+                                            if s.editor_line > line then
+                                                Just (i - 1)
+
+                                            else
+                                                Nothing
+                                        )
+                                    |> List.head
+                                    |> Maybe.withDefault (Array.length model.sections - 1)
+                                    |> Load False
                                 )
                                 model
 
                         _ ->
                             Return.val model
 
-                "load" ->
-                    update session InitSection (generate model)
+                ( Just "sync", e ) ->
+                    case Event.popWithId e of
+                        Nothing ->
+                            e
+                                |> Sync.handle session
+                                    (case e.message.cmd of
+                                        "connect" ->
+                                            { model | settings = Settings.closeSync model.settings }
 
-                "reset" ->
-                    model
-                        |> Return.val
-                        |> Return.batchEvent (Event "reset" -1 JE.null)
+                                        _ ->
+                                            model
+                                    )
+                                |> Return.mapCmd UpdateSync
+                                |> Return.mapEvents "sync" -1
 
-                "goto" ->
-                    update session
-                        (model.sections
-                            |> Array.toIndexedList
-                            |> List.filterMap
-                                (\( i, s ) ->
-                                    if s.editor_line > event.section then
-                                        Just (i - 1)
+                        Just ( "load", id, _ ) ->
+                            update session (Load True id) model
 
-                                    else
-                                        Nothing
-                                )
-                            |> List.head
-                            |> Maybe.withDefault (Array.length model.sections - 1)
-                            |> Load False
-                        )
-                        model
+                        Just ( topic, id, e_ ) ->
+                            case Array.get id model.sections of
+                                Just sec ->
+                                    sec
+                                        |> Markdown.handle model.sync.state model.definition topic e_
+                                        |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
 
-                "swipe" ->
-                    case JD.decodeValue JD.string event.message of
+                                _ ->
+                                    Return.val model
+
+                ( Just "swipe", e ) ->
+                    case
+                        e
+                            |> Event.message
+                            -- TODO
+                            |> Tuple.second
+                            |> JD.decodeValue JD.string
+                    of
                         Ok "left" ->
                             update session NextSection model
 
@@ -204,19 +266,24 @@ update session msg model =
                         _ ->
                             Return.val model
 
-                _ ->
+                ( Just topic, e ) ->
                     case
-                        ( Array.get event.section model.sections
-                        , Event.decode event.message
-                        )
+                        -- TODO
+                        event
+                            |> Event.id
+                            |> Maybe.map (\id -> ( id, Array.get id model.sections ))
                     of
-                        ( Just sec, Ok e ) ->
+                        Just ( id, Just sec ) ->
                             sec
-                                |> Markdown.handle model.definition event.topic e
-                                |> Return.mapValCmd (\v -> { model | sections = Array.set event.section v model.sections }) UpdateMarkdown
+                                |> Markdown.handle model.sync.state model.definition topic e
+                                |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
 
                         _ ->
                             Return.val model
+
+                ( Nothing, _ ) ->
+                    Return.val model
+                        |> Return.batchEvent (Service.Console.warn ("unknown event: " ++ event.service ++ " / " ++ event.message.cmd))
 
         Script ( id, sub ) ->
             case Array.get id model.sections of
@@ -253,7 +320,7 @@ update session msg model =
             case ( msg, get_active_section model ) of
                 ( UpdateMarkdown childMsg, Just sec ) ->
                     sec
-                        |> Markdown.update model.definition childMsg
+                        |> Markdown.update model.sync.state model.definition childMsg
                         |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( NextSection, Just sec ) ->
@@ -262,7 +329,7 @@ update session msg model =
 
                     else
                         sec
-                            |> Markdown.nextEffect model.definition model.settings.sound
+                            |> Markdown.nextEffect model.sync.state model.definition model.settings.sound
                             |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( PrevSection, Just sec ) ->
@@ -271,7 +338,7 @@ update session msg model =
 
                     else
                         sec
-                            |> Markdown.previousEffect model.definition model.settings.sound
+                            |> Markdown.previousEffect model.sync.state model.definition model.settings.sound
                             |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( InitSection, Just sec ) ->
@@ -279,16 +346,16 @@ update session msg model =
                         return =
                             case model.settings.mode of
                                 Textbook ->
-                                    Markdown.initEffect model.definition True False sec
+                                    Markdown.initEffect model.sync.state model.definition True False sec
 
                                 _ ->
-                                    Markdown.initEffect model.definition False model.settings.sound sec
+                                    Markdown.initEffect model.sync.state model.definition False model.settings.sound sec
                     in
                     return
                         |> Return.mapValCmd
                             (set_active_section { model | to_do = [] })
                             UpdateMarkdown
-                        |> Return.batchEvents (Event "slide" model.section_active JE.null :: model.to_do)
+                        |> Return.batchEvents (Service.Slide.initialize model.section_active :: model.to_do)
 
                 ( JumpToFragment id, Just sec ) ->
                     if (model.settings.mode == Textbook) || sec.effect_model.visible == id then
@@ -300,15 +367,21 @@ update session msg model =
                                 sec.effect_model
 
                             return =
-                                Markdown.nextEffect model.definition model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
+                                Markdown.nextEffect model.sync.state model.definition model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
                         in
                         return
                             |> Return.mapValCmd (set_active_section model) UpdateMarkdown
+
+                ( UpdateSettings childMsg, Just sec ) ->
+                    model.settings
+                        |> Settings.update (Just { title = model.title, comment = model.definition.comment }) (Just sec.effect_model.visible) childMsg
+                        |> Return.mapValCmd (\v -> { model | settings = v }) UpdateSettings
 
                 ( TTSReplay bool, sec ) ->
                     case Markdown.ttsReplay model.settings.sound bool sec of
                         Just event ->
                             Return.val model
+                                -- todo: important, this might be the reason for failures in tts
                                 |> Return.batchEvent event
 
                         Nothing ->
@@ -328,7 +401,10 @@ add_load vector sectionID name logs =
         logs
 
     else
-        (Event "load" sectionID <| JE.string name) :: logs
+        (Service.Database.load name sectionID
+            |> Event.pushWithId name sectionID
+        )
+            :: logs
 
 
 {-| **@private:** shortcut for returning the active section in from the model.
@@ -382,7 +458,7 @@ generate model =
                     else
                         case parse_section model.search_index model.definition sec of
                             Ok new_sec ->
-                                new_sec
+                                { new_sec | sync = sec.sync }
 
                             Err msg ->
                                 { sec

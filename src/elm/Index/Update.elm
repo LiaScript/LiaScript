@@ -1,11 +1,8 @@
 module Index.Update exposing
     ( Msg(..)
     , decodeGet
-    , get
     , handle
     , inCache
-    , init
-    , restore
     , update
     )
 
@@ -14,14 +11,16 @@ import Dict
 import Index.Model exposing (Course, Model, Release)
 import Index.Version as Version
 import Json.Decode as JD
-import Json.Encode as JE
 import Lia.Definition.Json.Decode as Definition
+import Lia.Markdown.Code.Editor exposing (mode)
 import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
-import Port.Event as Event exposing (Event)
-import Port.Share exposing (share)
+import Service.Console
+import Service.Database
+import Service.Event exposing (Event)
+import Service.Share
 
 
 type Msg
@@ -32,72 +31,31 @@ type Msg
     | Reset String (Maybe String)
     | Restore String (Maybe String)
     | Share { title : String, text : String, url : String }
-    | Handle JD.Value
+    | Handle Event
     | Activate String (Maybe String)
     | NoOp
     | LoadCourse String
     | UpdateSettings Settings.Msg
 
 
-index : Event -> Event
-index =
-    Event.encode
-        >> Event "index" -1
-
-
-init : Event
-init =
-    Event "list" -1 JE.null
-        |> index
-
-
-delete : String -> Event
-delete =
-    JE.string
-        >> Event "delete" -1
-        >> index
-
-
-get : String -> Event
-get =
-    JE.string
-        >> Event "get" -1
-        >> index
-
-
-restore : String -> String -> Event
-restore version =
-    JE.string
-        >> Event "restore" (Version.getMajor version)
-        >> index
-
-
-reset : String -> Int -> Event
-reset course version =
-    course
-        |> JE.string
-        |> Event "reset" version
-        |> index
-
-
-decodeGet : JD.Value -> ( String, Maybe Course )
+decodeGet : JD.Value -> Result JD.Error ( String, Maybe Course )
 decodeGet event =
     case
         ( JD.decodeValue (JD.field "id" JD.string) event
-        , JD.decodeValue (JD.field "course" decCourse) event
+        , JD.decodeValue decCourse event
         )
     of
         ( Ok uri, Ok course ) ->
-            ( uri, Just course )
+            Ok ( uri, Just course )
 
         ( Ok uri, Err _ ) ->
-            ( uri, Nothing )
+            Ok ( uri, Nothing )
 
-        ( Err _, _ ) ->
-            ( "", Nothing )
+        ( Err info, _ ) ->
+            Err info
 
 
-handle : JD.Value -> Msg
+handle : Event -> Msg
 handle =
     Handle
 
@@ -125,17 +83,18 @@ update msg settings model =
                             |> List.filter (.id >> (/=) courseID)
                   }
                 , Cmd.none
-                , [ delete courseID ]
+                , [ Service.Database.index_delete courseID ]
                 )
 
             Reset courseID version ->
                 ( model
                 , Cmd.none
-                , [ reset courseID <|
-                        Maybe.withDefault -1 <|
+                , [ Service.Database.index_reset
+                        { url = courseID
+                        , version =
                             case version of
                                 Just ver ->
-                                    String.toInt ver
+                                    ver
 
                                 Nothing ->
                                     model.courses
@@ -148,13 +107,25 @@ update msg settings model =
                                                     |> List.filterMap String.toInt
                                                     |> List.maximum
                                                     |> Maybe.withDefault -1
+                                                    |> String.fromInt
                                             )
+                                        |> Maybe.withDefault "-1"
+                        }
                   ]
                 )
 
-            Handle json ->
-                update (decode json) settings model
-                    |> Tuple.second
+            Handle event ->
+                case Service.Event.message event of
+                    ( "index_list", param ) ->
+                        model
+                            |> update (decode param) settings
+                            |> Tuple.second
+
+                    ( unknown, _ ) ->
+                        ( model
+                        , Cmd.none
+                        , [ Service.Console.warn <| "Index: unknown cmd => " ++ unknown ]
+                        )
 
             Input url ->
                 ( { model | input = url }, Cmd.none, [] )
@@ -162,7 +133,11 @@ update msg settings model =
             Restore course version ->
                 ( model
                 , Cmd.none
-                , [ restore (Maybe.withDefault "0.0.0" version) course ]
+                , [ Service.Database.index_restore
+                        { version = Maybe.withDefault "0.0.0" version
+                        , url = course
+                        }
+                  ]
                 )
 
             Activate course version ->
@@ -178,7 +153,7 @@ update msg settings model =
             Share site ->
                 ( model
                 , Cmd.none
-                , [ share site ]
+                , [ Service.Share.link site ]
                 )
 
             LoadCourse url ->
@@ -194,7 +169,7 @@ updateSettings msg settings ( model, cmd, events ) =
         UpdateSettings subMsg ->
             let
                 return =
-                    Settings.update Nothing subMsg settings
+                    Settings.update Nothing Nothing subMsg settings
             in
             ( return.value
             , ( model
@@ -246,7 +221,6 @@ decode json =
 decList : JD.Decoder Msg
 decList =
     JD.list decCourse
-        |> JD.field "list"
         |> JD.map IndexList
 
 

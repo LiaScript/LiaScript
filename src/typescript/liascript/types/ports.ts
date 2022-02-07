@@ -15,6 +15,7 @@ enum Port {
   SLIDE = 'slide',
   SURVEY = 'survey',
   SWIPE = 'swipe',
+  SYNC = 'sync',
   TASK = 'task',
   TRANSLATE = 'googleTranslate',
 }

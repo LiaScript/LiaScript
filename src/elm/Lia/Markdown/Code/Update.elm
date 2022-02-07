@@ -14,9 +14,9 @@ import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Model, Project, loadVersion, updateVersion)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
-import Port.Eval exposing (Eval)
-import Port.Event exposing (Event)
 import Return exposing (Return)
+import Service.Event as PEvent exposing (Event)
+import Service.Script as Script exposing (Eval)
 
 
 type Msg
@@ -38,8 +38,8 @@ handle =
     Handle
 
 
-restore : JE.Value -> Model -> Return Model msg sub
-restore json model =
+restore : Maybe Int -> JE.Value -> Model -> Return Model msg sub
+restore sectionID json model =
     case
         model.evaluate
             |> Array.map .attr
@@ -58,7 +58,7 @@ restore json model =
                         []
 
                      else
-                        [ Event.store model.evaluate ]
+                        Event.store sectionID model.evaluate
                     )
 
         Err _ ->
@@ -66,15 +66,13 @@ restore json model =
                 |> Return.val
 
 
-update : Scripts a -> Msg -> Model -> Return Model msg sub
-update scripts msg model =
+update : Maybe Int -> Scripts a -> Msg -> Model -> Return Model msg sub
+update sectionID scripts msg model =
     case msg of
         Eval idx ->
-            model
-                |> maybe_project idx (eval scripts idx)
-                |> Maybe.map (.value >> is_version_new idx)
-                |> maybe_update idx model
+            execute sectionID scripts model idx
 
+        --|> Return.sync (PEvent.initWithId "eval" idx JE.null)
         Update id_1 id_2 code_str ->
             update_file
                 id_1
@@ -83,32 +81,21 @@ update scripts msg model =
                 (\f -> { f | code = code_str })
                 (\_ -> [])
 
-        FlipView (Evaluate id_1) id_2 ->
-            update_file
-                id_1
-                id_2
-                model
-                (\f -> { f | visible = not f.visible })
-                (Event.flip_view id_1 id_2)
+        --|> Return.sync
+        --    ([ ( "id", JE.int id_2 )
+        --     , ( "code", JE.string code_str )
+        --     ]
+        --        |> JE.object
+        --        |> PEvent.initWithId "update" id_1
+        --    )
+        FlipView (Evaluate projectID) fileID ->
+            flipEval sectionID model projectID fileID
 
-        FlipView (Highlight id_1) id_2 ->
-            { model
-                | highlight =
-                    CArray.setWhen id_1
-                        (model.highlight
-                            |> Array.get id_1
-                            |> Maybe.map
-                                (\pro ->
-                                    { pro
-                                        | file =
-                                            updateArray (\f -> { f | visible = not f.visible }) id_2 pro.file
-                                    }
-                                )
-                        )
-                        model.highlight
-            }
-                |> Return.val
+        --|> Return.sync (PEvent.initWithId "flip_eval" id_1 (JE.int id_2))
+        FlipView (Highlight projectID) fileID ->
+            flipHigh model projectID fileID
 
+        --|> Return.sync (PEvent.initWithId "flip_high" id_1 (JE.int id_2))
         FlipFullscreen (Highlight id_1) id_2 ->
             { model
                 | highlight =
@@ -127,111 +114,127 @@ update scripts msg model =
             }
                 |> Return.val
 
-        FlipFullscreen (Evaluate id_1) id_2 ->
+        FlipFullscreen (Evaluate projectID) fileID ->
             update_file
-                id_1
-                id_2
+                projectID
+                fileID
                 model
                 (\f -> { f | fullscreen = not f.fullscreen })
-                (Event.fullscreen id_1 id_2)
+                (Event.fullscreen sectionID projectID fileID)
 
         Load idx version ->
-            model
-                |> maybe_project idx (loadVersion version)
-                |> Maybe.map (Event.load idx)
-                |> maybe_update idx model
+            load sectionID model idx version
 
+        --|> Return.sync (PEvent.initWithId "load" idx (JE.int version))
         First idx ->
-            model
-                |> maybe_project idx (loadVersion 0)
-                |> Maybe.map (Event.load idx)
-                |> maybe_update idx model
+            load sectionID model idx 0
 
-        Last idx ->
+        --|> Return.sync (PEvent.initWithId "load" idx (JE.int 0))
+        Last projectID ->
             let
                 version =
                     model
-                        |> maybe_project idx (.version >> Array.length >> (+) -1)
+                        |> maybe_project projectID (.version >> Array.length >> (+) -1)
                         |> Maybe.map .value
                         |> Maybe.withDefault 0
             in
-            model
-                |> maybe_project idx (loadVersion version)
-                |> Maybe.map (Event.load idx)
-                |> maybe_update idx model
+            load sectionID model projectID version
 
         Handle event ->
-            case event.topic of
-                "eval" ->
+            case PEvent.destructure event of
+                ( Nothing, _, ( "load", param ) ) ->
+                    restore sectionID param model
+
+                ( Just "project", id, ( "eval", param ) ) ->
                     let
                         e =
-                            Event.evalDecode event
+                            Script.decode param
                     in
                     case e.result of
                         "LIA: wait" ->
                             model
-                                |> maybe_project event.section (\p -> { p | log = Log.empty })
-                                |> maybe_update event.section model
+                                |> maybe_project id (\p -> { p | log = Log.empty })
+                                |> maybe_update id model
 
                         "LIA: stop" ->
                             model
-                                |> maybe_project event.section stop
-                                |> Maybe.map (Event.version_update event.section)
-                                |> maybe_update event.section model
+                                |> maybe_project id stop
+                                |> Maybe.map2 (Event.updateVersion id) sectionID
+                                |> maybe_update id model
 
                         "LIA: clear" ->
                             model
-                                |> maybe_project event.section clr
-                                |> maybe_update event.section model
+                                |> maybe_project id clr
+                                |> maybe_update id model
 
                         -- preserve previous logging by setting ok to false
                         "LIA: terminal" ->
                             model
-                                |> maybe_project event.section (\p -> { p | terminal = Just <| Terminal.init })
-                                |> maybe_update event.section model
+                                |> maybe_project id (\p -> { p | terminal = Just <| Terminal.init })
+                                |> maybe_update id model
 
                         _ ->
                             model
-                                |> maybe_project event.section (set_result False e)
-                                |> Maybe.map (Event.version_update event.section)
-                                |> maybe_update event.section model
+                                |> maybe_project id (set_result False e)
+                                |> Maybe.map2 (Event.updateVersion id) sectionID
+                                |> maybe_update id model
 
-                "restore" ->
-                    restore event.message model
+                ( Just "project", id, ( "log", param ) ) ->
+                    case JD.decodeValue (JD.list JD.string) param of
+                        Ok [ log, message ] ->
+                            model
+                                |> maybe_project id (logger log message)
+                                |> maybe_update id model
 
-                "debug" ->
-                    model
-                        |> maybe_project event.section (logger Log.add Log.Debug event.message)
-                        |> maybe_update event.section model
-
-                "info" ->
-                    model
-                        |> maybe_project event.section (logger Log.add Log.Info event.message)
-                        |> maybe_update event.section model
-
-                "warn" ->
-                    model
-                        |> maybe_project event.section (logger Log.add Log.Warn event.message)
-                        |> maybe_update event.section model
-
-                "error" ->
-                    model
-                        |> maybe_project event.section (logger Log.add Log.Error event.message)
-                        |> maybe_update event.section model
-
-                "html" ->
-                    model
-                        |> maybe_project event.section (logger Log.add Log.HTML event.message)
-                        |> maybe_update event.section model
-
-                "stream" ->
-                    model
-                        |> maybe_project event.section (logger Log.add Log.Stream event.message)
-                        |> maybe_update event.section model
+                        _ ->
+                            Return.val model
 
                 _ ->
                     Return.val model
 
+        -- TODO:
+        -- case PEvent.destructure eval of
+        --     {- Just ( "sync", _, message ) ->
+        --        case PEvent.topicWithId event of
+        --            Just ( "flip_eval", Just id ) ->
+        --                message
+        --                    |> JD.decodeValue JD.int
+        --                    |> Result.map (flipEval model id)
+        --                    |> Result.withDefault (Return.val model)
+        --            Just ( "flip_high", Just id ) ->
+        --                message
+        --                    |> JD.decodeValue JD.int
+        --                    |> Result.map (flipHigh model id)
+        --                    |> Result.withDefault (Return.val model)
+        --            Just ( "eval", Just id ) ->
+        --                execute scripts model id
+        --            Just ( "update", Just id_1 ) ->
+        --                case
+        --                    JD.decodeValue
+        --                        (JD.map2 Tuple.pair
+        --                            (JD.field "id" JD.int)
+        --                            (JD.field "code" JD.string)
+        --                        )
+        --                        message
+        --                of
+        --                    Ok ( id_2, code ) ->
+        --                        update_file
+        --                            id_1
+        --                            id_2
+        --                            model
+        --                            (\f -> { f | code = code })
+        --                            (\_ -> [])
+        --                    _ ->
+        --                        Return.val model
+        --            Just ( "load", Just id ) ->
+        --                message
+        --                    |> JD.decodeValue JD.int
+        --                    |> Result.map (load model id)
+        --                    |> Result.withDefault (Return.val model)
+        --            _ ->
+        --                Return.val model
+        --     -}
+        --     _ ->
         Stop idx ->
             model
                 |> maybe_project idx (\p -> { p | running = False, terminal = Nothing })
@@ -280,11 +283,11 @@ update_terminal f msg project =
             Return.val project
 
 
-eval : Scripts a -> Int -> Project -> Return Project msg sub
-eval scripts idx project =
+eval : Int -> Scripts a -> Project -> Return Project msg sub
+eval id scripts project =
     { project | running = True }
         |> Return.val
-        |> Return.batchEvent (Event.eval scripts idx project)
+        |> Return.batchEvent (Event.eval id scripts project)
 
 
 maybe_project : Int -> (Project -> x) -> Model -> Maybe (Return x cmd sub)
@@ -304,7 +307,11 @@ update_file : Int -> Int -> Model -> (File -> File) -> (File -> List Event) -> R
 update_file id_1 id_2 model f f_log =
     case Array.get id_1 model.evaluate of
         Just project ->
-            case project.file |> Array.get id_2 |> Maybe.map f of
+            case
+                project.file
+                    |> Array.get id_2
+                    |> Maybe.map f
+            of
                 Just file ->
                     { model
                         | evaluate =
@@ -324,15 +331,15 @@ update_file id_1 id_2 model f f_log =
             Return.val model
 
 
-is_version_new : Int -> Return Project msg sub -> Return Project msg sub
-is_version_new idx return =
-    case updateVersion return.value of
-        Just ( new_project, repo_update ) ->
+is_version_new : Maybe Int -> Int -> Return Project msg sub -> Return Project msg sub
+is_version_new sectionID idx return =
+    case ( sectionID, updateVersion return.value ) of
+        ( Just sectionID_, Just ( new_project, repo_update ) ) ->
             new_project
                 |> Return.replace return
-                |> Return.batchEvent (Event.version_append idx new_project repo_update)
+                |> Return.batchEvent (Event.updateAppend idx new_project repo_update sectionID_)
 
-        Nothing ->
+        _ ->
             return
 
 
@@ -395,17 +402,23 @@ clr project =
             project
 
 
-logger : (Log.Level -> String -> Log.Log -> Log.Log) -> Log.Level -> JD.Value -> Project -> Project
-logger fn level event_str project =
-    case ( project.version |> Array.get project.version_active, JD.decodeValue JD.string event_str ) of
-        ( Just ( code, _ ), Ok str ) ->
+logger : String -> String -> Project -> Project
+logger level message project =
+    case
+        ( project.version
+            |> Array.get project.version_active
+            |> Maybe.map Tuple.first
+        , Log.fromString level
+        )
+    of
+        ( Just code, Just level_ ) ->
             { project
                 | version =
                     Array.set
                         project.version_active
-                        ( code, fn level str project.log )
+                        ( code, Log.add level_ message project.log )
                         project.version
-                , log = fn level str project.log
+                , log = Log.add level_ message project.log
             }
 
         _ ->
@@ -420,3 +433,49 @@ updateArray fn i array =
             |> Maybe.map fn
         )
         array
+
+
+flipEval : Maybe Int -> Model -> Int -> Int -> Return Model msg sub
+flipEval sectionID model projectID fileID =
+    update_file
+        projectID
+        fileID
+        model
+        (\f -> { f | visible = not f.visible })
+        (Event.flip_view sectionID projectID fileID)
+
+
+flipHigh : Model -> Int -> Int -> Return Model msg sub
+flipHigh model id_1 id_2 =
+    { model
+        | highlight =
+            CArray.setWhen id_1
+                (model.highlight
+                    |> Array.get id_1
+                    |> Maybe.map
+                        (\pro ->
+                            { pro
+                                | file =
+                                    updateArray (\f -> { f | visible = not f.visible }) id_2 pro.file
+                            }
+                        )
+                )
+                model.highlight
+    }
+        |> Return.val
+
+
+execute : Maybe Int -> Scripts a -> Model -> Int -> Return Model msg sub
+execute sectionID scripts model id =
+    model
+        |> maybe_project id (eval id scripts)
+        |> Maybe.map (.value >> is_version_new sectionID id)
+        |> maybe_update id model
+
+
+load : Maybe Int -> Model -> Int -> Int -> Return Model msg sub
+load sectionID model id version =
+    model
+        |> maybe_project id (loadVersion version)
+        |> Maybe.map2 (Event.updateActive id) sectionID
+        |> maybe_update id model

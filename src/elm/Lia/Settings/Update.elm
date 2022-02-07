@@ -1,6 +1,7 @@
 module Lia.Settings.Update exposing
     ( Msg(..)
     , Toggle(..)
+    , closeSync
     , customizeEvent
     , handle
     , toggle_sound
@@ -13,10 +14,12 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Settings.Json as Json
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Utils exposing (focus)
-import Port.Event exposing (Event)
-import Port.Share
-import Port.TTS as TTS
 import Return exposing (Return)
+import Service.Database
+import Service.Event as Event exposing (Event)
+import Service.Share
+import Service.TTS
+import Service.Translate
 
 
 type Msg
@@ -26,7 +29,6 @@ type Msg
     | ChangeLang String
     | ChangeFontSize Int
     | SwitchMode Mode
-    | Reset
     | Handle Event
     | ShareCourse String
     | Ignore
@@ -36,6 +38,7 @@ type Toggle
     = TableOfContents
     | Sound
     | Light
+    | Sync
     | Action Action
     | SupportMenu
     | TranslateWithGoogle
@@ -44,24 +47,32 @@ type Toggle
 
 update :
     Maybe { title : String, comment : Inlines }
+    -> Maybe Int
     -> Msg
     -> Settings
     -> Return Settings Msg sub
-update main msg model =
+update main effectID msg model =
     case msg of
         Handle event ->
-            case event.topic of
-                "init" ->
-                    event.message
+            case Event.destructure event of
+                ( Nothing, _, ( "init", settings ) ) ->
+                    settings
                         |> load { model | initialized = True }
                         |> no_log Nothing
 
-                "speak" ->
-                    no_log Nothing
-                        { model | speaking = TTS.decode event.message == TTS.Start }
-
                 _ ->
-                    log Nothing model
+                    case event.service of
+                        "tts" ->
+                            no_log Nothing
+                                { model
+                                    | speaking =
+                                        event
+                                            |> Service.TTS.decode
+                                            |> (==) Service.TTS.Start
+                                }
+
+                        _ ->
+                            log Nothing model
 
         Toggle TableOfContents ->
             log Nothing
@@ -78,18 +89,27 @@ update main msg model =
                 }
 
         Toggle Sound ->
-            let
-                return =
-                    log Nothing { model | sound = not model.sound }
-            in
-            return
-                |> Return.batchEvent (TTS.event return.value.sound)
+            { model | sound = not model.sound }
+                |> log Nothing
+                |> Return.batchEvent
+                    (Event.push "settings" <|
+                        if model.sound then
+                            Service.TTS.cancel
+
+                        else
+                            effectID
+                                |> Maybe.map Service.TTS.readFrom
+                                |> Maybe.withDefault Event.none
+                    )
 
         Toggle Light ->
             log Nothing { model | light = not model.light }
 
         Toggle Tooltips ->
             log Nothing { model | tooltips = not model.tooltips }
+
+        Toggle Sync ->
+            no_log Nothing { model | sync = not model.sync }
 
         Toggle (Action action) ->
             no_log
@@ -118,25 +138,16 @@ update main msg model =
         SwitchMode mode ->
             case mode of
                 Textbook ->
-                    let
-                        return =
-                            log Nothing { model | sound = False, mode = Textbook }
-                    in
-                    return
-                        |> Return.batchEvent (TTS.event return.value.sound)
+                    { model | sound = False, mode = Textbook }
+                        |> log Nothing
+                        |> Return.batchEvent Service.TTS.cancel
 
                 _ ->
                     log Nothing { model | mode = mode }
 
         ChangeTheme theme ->
             log Nothing
-                { model
-                    | theme =
-                        -- if theme == "custom" && model.customTheme /= Nothing then
-                        --    theme
-                        --else
-                        theme
-                }
+                { model | theme = theme }
 
         ChangeEditor theme ->
             log Nothing { model | editor = theme }
@@ -146,11 +157,6 @@ update main msg model =
 
         ChangeLang lang ->
             log Nothing { model | lang = lang }
-
-        Reset ->
-            model
-                |> Return.val
-                |> Return.batchEvent (Event "reset" -1 JE.null)
 
         ShareCourse url ->
             model
@@ -166,16 +172,21 @@ update main msg model =
                             |> Maybe.withDefault ""
                      , url = url
                      }
-                        |> Port.Share.share
+                        |> Service.Share.link
                     )
 
         Toggle TranslateWithGoogle ->
             { model | translateWithGoogle = True }
                 |> Return.val
-                |> Return.batchEvent (Event "googleTranslate" -1 JE.null)
+                |> Return.batchEvent Service.Translate.google
 
         Ignore ->
             Return.val model
+
+
+closeSync : Settings -> Settings
+closeSync model =
+    { model | sync = False }
 
 
 handle : Event -> Msg
@@ -204,18 +215,15 @@ log elementID settings =
 
 customizeEvent : Settings -> Event
 customizeEvent settings =
-    [ settings
+    settings
         |> Json.fromModel
-    , if settings.theme == "custom" then
-        settings.customTheme
-            |> Maybe.map JE.string
-            |> Maybe.withDefault JE.null
+        |> Service.Database.settings
+            (if settings.theme == "custom" then
+                settings.customTheme
 
-      else
-        JE.null
-    ]
-        |> JE.list identity
-        |> Event "settings" -1
+             else
+                Nothing
+            )
 
 
 no_log : Maybe String -> Settings -> Return Settings Msg sub

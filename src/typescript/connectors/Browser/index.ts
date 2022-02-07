@@ -1,77 +1,71 @@
 import Lia from '../../liascript/types/lia.d'
 import Port from '../../liascript/types/ports'
+import log from '../../liascript/log'
 
 import { LiaDB } from './database'
-import { Connector as Base } from '../Base/index'
+import { Connector as Base, Record } from '../Base/index'
 
 class Connector extends Base {
-  private database?: LiaDB
+  private database: LiaDB
+
+  constructor() {
+    super()
+    this.database = new LiaDB()
+  }
 
   hasIndex() {
     return true
   }
 
-  connect(send: Lia.Send | null) {
-    if (send) {
-      this.send = send
-    }
-
-    this.database = new LiaDB(this.send)
-    this.initSettings(this.getSettings(), true)
+  async open(uidDB: string, versionDB: number, slide: number) {
+    return await this.database.open(uidDB, versionDB, {
+      table: 'code',
+      id: slide,
+    })
   }
 
-  open(uidDB: string, versionDB: number, slide: number, _data?: Lia.Event) {
-    if (this.database)
-      this.database.open(uidDB, versionDB, {
-        topic: Port.CODE,
-        section: slide,
-        message: {
-          topic: Port.RESTORE,
-          section: -1,
-          message: null,
-        },
-      })
+  load(record: Record) {
+    return this.database.load(record)
   }
 
-  load(event: Lia.Event) {
-    if (this.database) this.database.load(event)
+  store(record: Record) {
+    return this.database.store(record)
   }
 
-  store(event: Lia.Event) {
-    if (this.database) this.database.store(event)
-  }
-
-  update(event: Lia.Event, id: number) {
-    if (this.database) this.database.update(event, id)
+  update(record: Record, mapping: (project: any) => any) {
+    this.database.transaction(record, mapping)
   }
 
   slide(id: number) {
-    if (this.database) this.database.slide(id)
+    this.database.slide(id)
   }
 
-  getIndex() {
-    if (this.database) this.database.listIndex()
+  async getIndex() {
+    return await this.database.listIndex()
   }
 
   deleteFromIndex(uidDB: string) {
-    if (this.database) this.database.deleteIndex(uidDB)
+    this.database.deleteIndex(uidDB)
   }
 
   storeToIndex(json: any) {
-    if (this.database) this.database.storeIndex(json)
+    this.database.storeIndex(json)
   }
 
   restoreFromIndex(uidDB: string, versionDB?: number) {
-    if (this.database) this.database.restore(uidDB, versionDB)
+    return this.database.restore(uidDB, versionDB)
   }
 
-  reset(uidDB?: string, versionDB?: number) {
-    if (this.database && uidDB && versionDB)
-      this.database.reset(uidDB, versionDB)
+  async reset(uidDB?: string, versionDB?: number) {
+    if (uidDB && versionDB) {
+      await this.database.reset(uidDB, versionDB)
+
+      log.info('DB: reset => ', uidDB, versionDB)
+    }
   }
 
   getFromIndex(uidDB: string) {
-    if (this.database) this.database.getIndex(uidDB)
+    return this.database.getIndex(uidDB)
   }
 }
 
