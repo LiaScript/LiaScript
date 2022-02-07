@@ -61,6 +61,11 @@ declare global {
        * slide number
        */
       goto: (slide: number) => void
+
+      /** This function shall be overwritten, it will be automatically called
+       * if the course has been parsed and is ready...
+       */
+      onReady?: () => void
     }
   }
 }

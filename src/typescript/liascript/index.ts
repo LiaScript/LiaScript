@@ -209,6 +209,11 @@ class LiaScript {
               } catch (e) {
                 console.warn('could not execute onload script', e)
               }
+
+              // send an indication, that the course has been loaded
+              if (window.LIA.onReady) {
+                window.LIA.onReady()
+              }
             }
           }
           break
