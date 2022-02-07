@@ -121,7 +121,14 @@ export class LiaEvents {
 
 var eventHandler = new LiaEvents()
 
-var lia_queue = []
+// This var is used to store the ID of a setTimeout, to prevent it from being
+// called multiple times.
+var delayID = null
+
+// This is a backup for all JavaScript code, to be evaluated. All scripts are
+// delayed until all JavaScript resources have been loaded.
+var lia_queue: (Eval | Exec)[] = []
+
 var elmSend: Lia.Send | null
 
 const Service = {
@@ -131,6 +138,12 @@ const Service = {
     elmSend = elmSend_
   },
 
+  /** This is a little helper, which allows to execute some code snippets,
+   * actually from the `@onload` macro.
+   *
+   * @param code - a string with valid JavaScript
+   * @param delay - delay in milliseconds
+   */
   exec: function (code: string, delay: number = 0) {
     if (code) {
       liaExec({
@@ -293,6 +306,10 @@ export function liaExec(event: Lia.Event) {
     return
   }
 
+  liaExecCode(event)
+}
+
+function liaExecCode(event: Lia.Event) {
   setTimeout(() => {
     const send = {
       lia: execute_response(event),
@@ -345,10 +362,19 @@ function execute_response(event: Lia.Event, cmd?: string) {
 }
 
 function delayExecution() {
-  if (window.LIA.eventSemaphore > 0) {
-    setTimeout(delayExecution, 100)
-  } else {
-    let event
+  if (window.LIA.eventSemaphore > 0 && !delayID) {
+    // the timer should be started only once, that is why, the id of it is
+    // stored in a global variable
+    delayID = setTimeout(function () {
+      delayID = null
+
+      delayExecution()
+    }, 250)
+
+    console.warn(window.LIA.eventSemaphore, delayID)
+  } else if (!delayID) {
+    let event: Eval | Exec | undefined
+
     while ((event = lia_queue.pop())) {
       switch (event.type) {
         case JS.eval: {
@@ -356,7 +382,7 @@ function delayExecution() {
           break
         }
         case JS.exec: {
-          liaExec(event.event)
+          liaExecCode(event.event)
           break
         }
         default:
