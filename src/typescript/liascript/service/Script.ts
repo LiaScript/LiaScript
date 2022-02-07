@@ -1,6 +1,6 @@
 import log from '../log'
 
-import Script from './Script'
+import Script from './Script.d'
 
 export enum JS {
   exec = 'exec',
@@ -129,6 +129,20 @@ const Service = {
 
   init: function (elmSend_: Lia.Send) {
     elmSend = elmSend_
+  },
+
+  exec: function (code: string, delay: number = 0) {
+    if (code) {
+      liaExec({
+        reply: false,
+        track: [],
+        service: this.PORT,
+        message: {
+          cmd: 'exec',
+          param: { code: code, delay: delay },
+        },
+      })
+    }
   },
 
   handle: function (event: Lia.Event) {

@@ -200,6 +200,17 @@ class LiaScript {
       switch (event.service) {
         case Database.PORT:
           Database.handle(event)
+
+          // this little check is required to execute the
+          switch (event.message.cmd) {
+            case 'index_store': {
+              try {
+                Script.exec(event.message.param.definition.onload, 350)
+              } catch (e) {
+                console.warn('could not execute onload script', e)
+              }
+            }
+          }
           break
 
         case Slide.PORT:
