@@ -21,7 +21,6 @@ import Swipe from './service/Swipe'
 import Sync from './service/Sync'
 import TTS from './service/TTS'
 import Translate from './service/Translate'
-import { LiaStorage } from '../connectors/Base/storage'
 
 // ----------------------------------------------------------------------------
 // GLOBAL INITIALIZATION
@@ -246,30 +245,11 @@ class LiaScript {
   }
 }
 
-/*else
-    switch (event.track[0][0]) {
-
-      case Port.PERSISTENT: {
-        if (event.message === 'store') {
-          // todo, needs to be moved back
-          // persistent.store(event.section)
-          elmSend({
-            reply: true,
-            track: [[Port.LOAD, -1]],
-            service: null,
-            message: null,
-          })
-        }
-
-        break
-      }
-
-      case Port.RESET: {
-        self.connector.reset()
-        window.location.reload()
-        break
-      }
-    }
-    */
+/* case Port.RESET: {
+     self.connector.reset()
+     window.location.reload()
+     break
+   }
+*/
 
 export default LiaScript
