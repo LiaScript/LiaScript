@@ -19,7 +19,7 @@ import Share from './service/Share'
 import Slide from './service/Slide'
 import Swipe from './service/Swipe'
 import Sync from './service/Sync'
-import TTS from './service/TTS'
+import { inject, Service as TTS } from './service/TTS'
 import Translate from './service/Translate'
 
 // ----------------------------------------------------------------------------
@@ -72,14 +72,14 @@ if (!window.LIA) {
     goto: function (_slide: number) {
       console.warn('goto not defined')
     },
+
+    injectResposivevoice: inject,
   }
 }
 
 if (window.LIA.debug === undefined) {
   window.LIA.debug = false
 }
-
-var liaStorage = null
 
 // ----------------------------------------------------------------------------
 class LiaScript {
@@ -129,8 +129,6 @@ class LiaScript {
     this.connector = connector
 
     this.initEventSystem(elem, this.app.ports.event2js.subscribe, sender)
-
-    liaStorage = this.connector.storage()
 
     let self = this
 

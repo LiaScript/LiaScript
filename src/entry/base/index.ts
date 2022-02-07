@@ -1,5 +1,4 @@
 import LiaScript from '../../typescript/liascript/index'
-import TTS from '../../typescript/liascript/tts'
 
 import('../../typescript/connectors/Base/index').then(function (Base) {
   let debug = false
@@ -15,11 +14,6 @@ import('../../typescript/connectors/Base/index').then(function (Base) {
     debug
   )
 
-  window.showFootnote = (key) => app.footnote(key)
-  //window.gotoLia = (line) => app.goto(line);
-  //window.jitLia = (code) => app.jit(code);
-
-  window.setResponsiveVoiceKey = TTS.inject
   /*
   window.addEventListener('message', event => {
       // IMPORTANT: check the origin of the data!

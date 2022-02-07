@@ -76,6 +76,8 @@ declare global {
        * if the course has been parsed and is ready...
        */
       onReady?: () => void
+
+      injectResposivevoice: (key: string) => void
     }
   }
 }
