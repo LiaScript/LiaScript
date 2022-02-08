@@ -61,6 +61,43 @@ declare global {
        * slide number
        */
       goto: (slide: number) => void
+
+      /** This is only used by the editor, to open the slide, which contains
+       * linenumber.
+       */
+      gotoLine: (linenumber: number) => void
+
+      /** This is the opposite to gotoLine. It is function that is called to
+       * force a jump onto a line, within a possible editor.
+       *
+       * __It needs to be changed!__
+       */
+      lineGoto: (linenumber: number) => void
+
+      /** This is experimental feature, used by an editor to send code, which
+       * is translated and updated just in time
+       */
+      jit: (code: string) => void
+
+      /** This function shall be overwritten, it will be automatically called
+       * if the course has been parsed and is ready. The value that is passed
+       * back is the entire definition sector, which means all meta data,
+       * including title, comment, logo, macro, etc...
+       */
+      onReady?: (params: any) => void
+
+      /** This function can be used by external editors to make use of the
+       * dynamic code-injection for responsivevoice. A key from the website
+       * is require. If such a key is not present, responsivevoice will not
+       * be used, which speeds up the loading process.
+       */
+      injectResposivevoice: (key: string) => void
+
+      /** To send log information to other functions, this function can be
+       * overwritten. All debug-messages will then be passed to this function
+       * as well. (window.LIA.debug has to be set to true)
+       */
+      log?: (type: 'log' | 'warn' | 'error', ...args: any) => void
     }
   }
 }

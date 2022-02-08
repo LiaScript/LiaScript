@@ -123,7 +123,7 @@ var eventHandler = new LiaEvents()
 
 // This var is used to store the ID of a setTimeout, to prevent it from being
 // called multiple times.
-var delayID = null
+var delayID: any = null
 
 // This is a backup for all JavaScript code, to be evaluated. All scripts are
 // delayed until all JavaScript resources have been loaded.

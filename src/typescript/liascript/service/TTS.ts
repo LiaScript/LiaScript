@@ -8,7 +8,7 @@ var elmSend: Lia.Send | null
 
 const SETTINGS = 'settings'
 
-const Service = {
+export const Service = {
   PORT: 'tts',
 
   init: function (elmSend_: Lia.Send) {

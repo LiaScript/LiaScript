@@ -1,8 +1,7 @@
 import Lia from '../../liascript/types/lia.d'
-import Port from '../../liascript/types/ports'
 
 import { LiaStorage } from './storage'
-import { initSettings, defaultSettings } from './settings'
+import { Settings } from './settings'
 
 /** Internal abstraction to query the database. All entries are organized with
  * tables, which represent either `code`, `quiz`, `survey`, `task`, `offline`.
@@ -42,15 +41,15 @@ export class Connector {
   }
 
   initSettings(data: Lia.Settings | null, local = false) {
-    return initSettings(data ? data : undefined, local)
+    return Settings.init(data, local)
   }
 
   setSettings(data: Lia.Settings) {
-    localStorage.setItem(Port.SETTINGS, JSON.stringify(data))
+    localStorage.setItem(Settings.PORT, JSON.stringify(data))
   }
 
   getSettings() {
-    const data = localStorage.getItem(Port.SETTINGS)
+    const data = localStorage.getItem(Settings.PORT)
     let json: Lia.Settings | null = null
 
     if (typeof data === 'string') {
@@ -61,7 +60,7 @@ export class Connector {
       }
 
       if (!json) {
-        json = defaultSettings
+        json = Settings.default
       }
 
       if (window.innerWidth <= 768) {
