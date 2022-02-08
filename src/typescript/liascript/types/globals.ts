@@ -80,9 +80,11 @@ declare global {
       jit: (code: string) => void
 
       /** This function shall be overwritten, it will be automatically called
-       * if the course has been parsed and is ready...
+       * if the course has been parsed and is ready. The value that is passed
+       * back is the entire definition sector, which means all meta data,
+       * including title, comment, logo, macro, etc...
        */
-      onReady?: () => void
+      onReady?: (params: any) => void
 
       injectResposivevoice: (key: string) => void
     }

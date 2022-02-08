@@ -123,7 +123,7 @@ const Service = {
         }
 
         if (window.LIA.onReady) {
-          window.LIA.onReady()
+          window.LIA.onReady(param.definition)
         }
 
         break
