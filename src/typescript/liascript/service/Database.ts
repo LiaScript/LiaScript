@@ -2,8 +2,9 @@ import log from '../log'
 
 import Lia from '../../liascript/types/lia.d'
 import { Connector } from '../../connectors/Base/index'
-import { updateClassName } from '../../connectors/Base/settings'
+import { Settings } from '../../connectors/Base/settings'
 import TTS from './TTS'
+import Script from './Script'
 
 var connector: Connector | null = null
 var elmSend: Lia.Send | null
@@ -17,7 +18,7 @@ const Service = {
 
     elmSend({
       reply: true,
-      track: [['settings', -1]],
+      track: [[Settings.PORT, -1]],
       service: this.PORT,
       message: {
         cmd: 'init',
@@ -100,11 +101,11 @@ const Service = {
         }
 
         if (param.definition.onload !== '') {
-          // TODO
-          //lia_execute_event({
-          //  code: data.definition.onload,
-          //  delay: 350,
-          //})
+          try {
+            Script.exec(param.definition.onload, 350)
+          } catch (e) {
+            console.warn('could not execute onload script', e)
+          }
         }
 
         document.documentElement.lang = param.definition.language
@@ -121,14 +122,16 @@ const Service = {
           connector.storeToIndex(param)
         }
 
+        if (window.LIA.onReady) {
+          window.LIA.onReady()
+        }
+
         break
       }
 
       case 'settings': {
         try {
-          updateClassName(event.message.param.config)
-
-          const conf = connector.getSettings()
+          Settings.updateClassName(event.message.param.config)
 
           setTimeout(function () {
             window.dispatchEvent(new Event('resize'))
