@@ -8,7 +8,7 @@ export function initGlobals() {
     window.LIA.eventSemaphore = 0
   }
 
-  if (window.LIA.img) {
+  if (!window.LIA.img) {
     window.LIA.img = img
   }
 
