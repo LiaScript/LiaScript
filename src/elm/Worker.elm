@@ -8,6 +8,7 @@ import Lia.Definition.Json.Encode as Def
 import Lia.Json.Encode as Lia
 import Lia.Markdown.Quiz.Json as Quiz
 import Lia.Markdown.Survey.Json as Survey
+import Lia.Markdown.Task.Json as Task
 import Lia.Parser.Parser exposing (parse_definition)
 import Lia.Script
 import Lia.Update exposing (generate)
@@ -202,6 +203,11 @@ respond model =
               , lia.sections
                     |> Array.map .survey_vector
                     |> JE.array Survey.fromVector
+              )
+            , ( "task"
+              , lia.sections
+                    |> Array.map .task_vector
+                    |> JE.array Task.fromVector
               )
             ]
                 |> JE.object
