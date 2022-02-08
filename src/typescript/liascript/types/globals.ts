@@ -86,7 +86,18 @@ declare global {
        */
       onReady?: (params: any) => void
 
+      /** This function can be used by external editors to make use of the
+       * dynamic code-injection for responsivevoice. A key from the website
+       * is require. If such a key is not present, responsivevoice will not
+       * be used, which speeds up the loading process.
+       */
       injectResposivevoice: (key: string) => void
+
+      /** To send log information to other functions, this function can be
+       * overwritten. All debug-messages will then be passed to this function
+       * as well. (window.LIA.debug has to be set to true)
+       */
+      log?: (type: 'log' | 'warn' | 'error', ...args: any) => void
     }
   }
 }
