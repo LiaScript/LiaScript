@@ -1,5 +1,4 @@
 import Lia from '../../liascript/types/lia.d'
-import Port from '../../liascript/types/ports'
 import log from '../../liascript/log'
 
 import { LiaDB } from './database'

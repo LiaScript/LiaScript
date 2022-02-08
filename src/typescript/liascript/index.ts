@@ -5,7 +5,7 @@ import log from './log'
 
 import './types/globals'
 import Lia from './types/lia.d'
-import Port from './types/ports'
+
 import { Connector } from '../connectors/Base/index'
 
 import { initTooltip } from '../webcomponents/tooltip/index'
@@ -24,74 +24,10 @@ import Translate from './service/Translate'
 
 // ----------------------------------------------------------------------------
 // GLOBAL INITIALIZATION
-
+import { initGlobals } from './init'
 // TODO: CHECK window.LIA.defaultCourse functionality
-
-if (!window.LIA) {
-  window.LIA = {
-    eventSemaphore: 0,
-
-    img: {
-      load: function (_url: string, _width: number, _height: number) {
-        console.warn('img.load not defined')
-      },
-      click: function (_url: string) {
-        console.warn('img.click not defined')
-      },
-      zoom: function (e: MouseEvent | TouchEvent) {
-        const target = e.target as HTMLImageElement
-
-        if (target) {
-          const zooming = e.currentTarget as HTMLImageElement
-
-          if (zooming) {
-            if (target.width < target.naturalWidth) {
-              var offsetX =
-                e instanceof MouseEvent ? e.offsetX : e.touches[0].pageX
-              var offsetY =
-                e instanceof MouseEvent ? e.offsetY : e.touches[0].pageY
-              var x = (offsetX / zooming.offsetWidth) * 100
-              var y = (offsetY / zooming.offsetHeight) * 100
-              zooming.style.backgroundPosition = x + '% ' + y + '%'
-              zooming.style.cursor = 'zoom-in'
-            } else {
-              zooming.style.cursor = ''
-            }
-          }
-        }
-      },
-    },
-    send: function (_event: Lia.Event) {
-      notDefined('send')
-    },
-    playback: function (_event: Lia.Event) {
-      notDefined('playback')
-    },
-    showFootnote: function (_key: string) {
-      notDefined('showFootnote')
-    },
-    goto: function (_slide: number) {
-      notDefined('goto')
-    },
-    gotoLine: function (_lineNumber: number) {
-      notDefined('gotoLine')
-    },
-    jit: function (_code: string) {
-      notDefined('jit')
-    },
-
-    injectResposivevoice: inject,
-  }
-}
-
-function notDefined(name: string) {
-  console.log('LIA.' + name + ' not defined')
-}
-
-var firstLoad = true
-if (window.LIA.debug === undefined) {
-  window.LIA.debug = false
-}
+initGlobals()
+window.LIA.injectResposivevoice = inject
 
 // ----------------------------------------------------------------------------
 class LiaScript {
@@ -191,7 +127,7 @@ class LiaScript {
     this.app.ports.event2elm.send({
       track: [
         {
-          topic: Port.RESET,
+          topic: 'reset',
           id: null,
         },
       ],
@@ -225,27 +161,6 @@ class LiaScript {
       switch (event.service) {
         case Database.PORT:
           Database.handle(event)
-
-          // this little check is required to execute the
-          switch (event.message.cmd) {
-            case 'index_store': {
-              try {
-                Script.exec(event.message.param.definition.onload, 350)
-              } catch (e) {
-                console.warn('could not execute onload script', e)
-              }
-
-              // send an indication, that the course has been loaded
-              if (window.LIA.onReady) {
-                window.LIA.onReady()
-              }
-
-              // TODO: add this to LIA.onReady
-              // try {
-              //  window.top.liaDefinitions(data.definition)
-              //} catch (e) {}
-            }
-          }
           break
 
         case Slide.PORT:

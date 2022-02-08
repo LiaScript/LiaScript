@@ -67,15 +67,24 @@ declare global {
        */
       gotoLine: (linenumber: number) => void
 
+      /** This is the opposite to gotoLine. It is function that is called to
+       * force a jump onto a line, within a possible editor.
+       *
+       * __It needs to be changed!__
+       */
+      lineGoto: (linenumber: number) => void
+
       /** This is experimental feature, used by an editor to send code, which
        * is translated and updated just in time
        */
       jit: (code: string) => void
 
       /** This function shall be overwritten, it will be automatically called
-       * if the course has been parsed and is ready...
+       * if the course has been parsed and is ready. The value that is passed
+       * back is the entire definition sector, which means all meta data,
+       * including title, comment, logo, macro, etc...
        */
-      onReady?: () => void
+      onReady?: (params: any) => void
 
       injectResposivevoice: (key: string) => void
     }
