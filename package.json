@@ -38,6 +38,8 @@
     "build:preview": "npx parcel build --no-source-maps --public-url . src/typescript/webcomponents/preview-lia.ts",
     "build:scorm1.2": "npm run clean && ./node_modules/parcel/lib/bin.js build --no-source-maps --public-url . src/entry/scorm1.2/index.html",
     "watch:scorm1.2": "npx parcel serve src/entry/scorm1.2/index.html",
+    "build:scorm2004": "npm run clean && ./node_modules/parcel/lib/bin.js build --no-source-maps --public-url . src/entry/scorm2004/index.html",
+    "watch:scorm2004": "npx parcel serve src/entry/scorm2004/index.html",
     "build:worker": "npm run clean && npx parcel build --no-source-maps --target node src/entry/worker/index.js",
     "watch:webcomponent": "npx parcel serve src/entry/webcomponent/index.html --open",
     "build:webcomponent": "npm run clean && npx parcel build --no-source-maps src/entry/webcomponent/index.ts && rm dist/README.md",
@@ -66,7 +68,6 @@
     "parcel": "^2.2.1",
     "parcel-reporter-multiple-static-file-copier": "^1.0.5",
     "sass": "^1.49.7",
-    "simplify-scorm": "0.0.1",
     "tsc": "^2.0.4",
     "typescript": "^4.5.5",
     "workbox-cli": "^6.3.0"
