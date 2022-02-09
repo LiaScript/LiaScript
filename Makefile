@@ -18,7 +18,7 @@ clean:
 	rm -rf dist
 
 all: clean app index manifest responsivevoice preview
-	rm dist/README.md
+	rm dist/*.md
 
 all2: optimize all deoptimize
 
@@ -50,7 +50,11 @@ index:
 	sed -i "s/url(\//url(/g" dist/index.*.css
 
 responsivevoice:
-	sed -i "s/responsivevoice\.js\"/responsivevoice.js?key=$(KEY)\"/g" dist/index.html
+	if [ -z "$(KEY)" ]; then \
+        echo "NO responsivevoice key ... "; \
+	else \
+		sed -i "s/<\/head>/<script defer src=\"https:\/\/code.responsivevoice.org\/responsivevoice.js?key=$(KEY)\"><\/script><\/head>/g" dist/index.html ; \
+	fi
 
 manifest:
 	sed -i "s/\"logo_/\".\/logo_/g" dist/manifest.webmanifest
