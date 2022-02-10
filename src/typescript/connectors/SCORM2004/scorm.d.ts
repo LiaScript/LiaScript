@@ -119,4 +119,5 @@ export type CMIElement =
   | `adl.nav.request_valid.previous` // (state (true, false, unknown), RO) Used by a SCO to determine if a Previous navigation request will succeed.
   | `adl.nav.request_valid.choice.${string}` // (state (true, false, unknown), RO) Used by a SCO to determine if a Choice navigation request for the target activity will succeed.
   | `adl.nav.request_valid.jump.${string}` // (state (true, false, unknown), RO) Used by a SCO to determine if a Jump navigation request for the target activity will succeed.
+
 export type CMIErrorCode = string | null

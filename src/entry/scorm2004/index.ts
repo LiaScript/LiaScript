@@ -1,6 +1,8 @@
 import LiaScript from '../../typescript/liascript/index'
 
-import('../../typescript/connectors/SCORM2004/index').then(function (Browser) {
+import('../../typescript/connectors/SCORM2004/index').then(function (
+  SCORM2004
+) {
   const ua = window.navigator.userAgent
 
   if (ua.indexOf('Trident/') > 0 || ua.indexOf('MSIE ') > 0) {
@@ -18,7 +20,7 @@ import('../../typescript/connectors/SCORM2004/index').then(function (Browser) {
 
     const app = new LiaScript(
       document.body,
-      new Browser.Connector(),
+      new SCORM2004.Connector(),
       false, // allowSync
       debug
     )
