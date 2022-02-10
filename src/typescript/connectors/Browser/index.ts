@@ -1,4 +1,3 @@
-import Lia from '../../liascript/types/lia.d'
 import log from '../../liascript/log'
 
 import { LiaDB } from './database'
