@@ -8,12 +8,12 @@ export type SCORM = {
   /**
    * Begins a communication session with the LMS.
    */
-  LMSInitialize: (_: string) => boolean
+  LMSInitialize: (_: Empty) => boolean
 
   /**
    * Ends a communication session with the LMS.
    */
-  LMSFinish: (_: string) => boolean
+  LMSFinish: (_: Empty) => boolean
 
   /**
    *  Retrieves a value from the LMS.
@@ -28,7 +28,7 @@ export type SCORM = {
   /**
    * Indicates to the LMS that all data should be persisted (not required).
    */
-  LMSCommit: () => void
+  LMSCommit: (_: Empty) => void
 
   /**
    * Returns the error code that resulted from the last API call.
@@ -45,6 +45,8 @@ export type SCORM = {
    */
   LMSGetDiagnostic: (errorCode: CMIErrorCode) => string
 }
+
+type Empty = ''
 
 export type CMIElement =
   | 'cmi.core._children' // (student_id, student_name, lesson_location, credit, lesson_status, entry, score, total_time, lesson_mode, exit, session_time, RO) Listing of supported data model elements
