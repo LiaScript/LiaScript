@@ -50,7 +50,8 @@ import Session exposing (Session)
 
 -}
 type alias Model =
-    { size : Float
+    { fullPage : Bool
+    , size : Float
     , hasIndex : Bool
     , code : Maybe String
     , index : Index.Model

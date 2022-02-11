@@ -14,7 +14,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (Section, SubSection(..))
-import Lia.Settings.Types exposing (Mode, Settings)
+import Lia.Settings.Types exposing (Mode(..), Settings)
 import Lia.Sync.Types as Sync
 import Session exposing (Screen)
 import Translations exposing (Lang)
@@ -38,7 +38,7 @@ init lang translations settings sync screen section id media =
             inline lang translations settings screen section.effect_model id media sync
     in
     Config
-        settings.mode
+        Textbook
         (viewer config >> List.map (Html.map Script))
         section
         settings.editor

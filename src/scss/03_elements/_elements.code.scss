@@ -43,6 +43,7 @@
     flex-direction: column;
 
     &__input {
+      break-inside: avoid;
       align-items: center;
       background-color: rgba(var(--lia-white), 0.1);
       border-radius: $global-radius;

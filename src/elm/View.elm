@@ -22,12 +22,21 @@ view model =
     , body =
         case model.state of
             Running ->
-                [ model.lia
-                    |> Lia.Script.view
-                        model.session.screen
-                        model.hasIndex
-                    |> Html.map LiaScript
-                ]
+                if model.fullPage then
+                    [ model.lia
+                        |> Lia.Script.viewFullPage
+                            model.session.screen
+                        |> Html.div []
+                        |> Html.map LiaScript
+                    ]
+
+                else
+                    [ model.lia
+                        |> Lia.Script.view
+                            model.session.screen
+                            model.hasIndex
+                        |> Html.map LiaScript
+                    ]
 
             Idle ->
                 [ Html.map UpdateIndex <| Index.view model.session model.lia.settings model.index

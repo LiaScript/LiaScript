@@ -33,6 +33,8 @@
     "watch:app": "npx parcel serve src/entry/app/index.html --open",
     "build:indexeddb": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/indexeddb/index.html",
     "watch:indexeddb": "npx parcel serve src/entry/indexeddb/index.html --open",
+    "build:pdf": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/pdf/index.html",
+    "watch:pdf": "npx parcel serve src/entry/pdf/index.html --open",
     "watch:base": "npx parcel serve src/entry/base/index.html",
     "build:base": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/base/index.html",
     "build:dev": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/dev/index.html && npm run sw",

@@ -14,6 +14,7 @@ module Lia.Script exposing
     , subscriptions
     , update
     , view
+    , viewFullPage
     )
 
 {-| This module defines the basic interface to LiaScript. In order to implement
@@ -389,6 +390,13 @@ searchIndex index str =
 init : Bool -> Bool -> JE.Value -> List String -> String -> String -> String -> Maybe String -> Model
 init =
     Lia.Model.init
+
+
+{-| Alias for global LiaScript view defined in `Lia.View.viewFullPage`
+-}
+viewFullPage : Screen -> Model -> List (Html Msg)
+viewFullPage =
+    Lia.View.viewFullPage
 
 
 {-| Alias for global LiaScript view defined in `Lia.View.view`

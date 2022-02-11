@@ -442,8 +442,21 @@ previousEffect sync globals sound =
 
 
 initEffect : Sync.State -> Definition -> Bool -> Bool -> Section -> Return Section Msg Msg
-initEffect sync globals run_all_javascript sound =
-    update sync globals (UpdateEffect sound (Effect.init run_all_javascript))
+initEffect sync globals run_all_javascript sound section =
+    let
+        return =
+            update sync globals (UpdateEffect sound (Effect.init run_all_javascript)) section
+
+        return2 =
+            return.value.code_model
+                |> Code.runAll (Just section.id) section.effect_model.javascript
+                |> Return.mapVal (\v -> { section | code_model = v })
+                |> Return.mapEvents "code" section.id
+                |> updateScript
+    in
+    return2
+        |> Return.batchEvents return.events
+        |> Return.batchCmd [ return.command ]
 
 
 subHandle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection Msg Msg

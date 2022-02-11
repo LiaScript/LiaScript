@@ -345,6 +345,13 @@ update session msg model =
                             (set_active_section { model | to_do = [] })
                             UpdateMarkdown
                         |> Return.batchEvents (Service.Slide.initialize model.section_active :: model.to_do)
+                        |> Return.batchEvent
+                            (if model.section_active < Array.length model.sections then
+                                Service.Script.exec 100 <| "window.LIA.goto(" ++ String.fromInt (model.section_active + 1) ++ ")"
+
+                             else
+                                Event.none
+                            )
 
                 ( JumpToFragment id, Just sec ) ->
                     if (model.settings.mode == Textbook) || sec.effect_model.visible == id then

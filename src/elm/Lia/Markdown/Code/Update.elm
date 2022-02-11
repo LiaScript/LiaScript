@@ -1,6 +1,7 @@
 module Lia.Markdown.Code.Update exposing
     ( Msg(..)
     , handle
+    , runAll
     , update
     )
 
@@ -36,6 +37,25 @@ type Msg
 handle : Event -> Msg
 handle =
     Handle
+
+
+runAll : Maybe Int -> Scripts a -> Model -> Return Model msg sub
+runAll sectionID scripts model =
+    model.evaluate
+        |> Array.foldl
+            (\_ ( id, return ) ->
+                let
+                    ret =
+                        execute sectionID scripts return.value id
+                in
+                ( id + 1
+                , ret
+                    |> Return.batchEvents return.events
+                    |> Return.batchCmd [ return.command ]
+                )
+            )
+            ( 0, Return.val model )
+        |> Tuple.second
 
 
 restore : Maybe Int -> JE.Value -> Model -> Return Model msg sub

@@ -65,6 +65,7 @@ type alias Flags =
     , hasShareAPI : Bool
     , hasIndex : Bool
     , syncSupport : List String
+    , fullPage : Maybe Bool
     }
 
 
@@ -88,7 +89,7 @@ init flags url key =
     let
         model =
             Session flags.hasShareAPI key flags.screen
-                >> Model 0 flags.hasIndex Nothing Index.init Nothing
+                >> Model (Maybe.withDefault False flags.fullPage) 0 flags.hasIndex Nothing Index.init Nothing
 
         courseUrl =
             { url | query = Maybe.map link url.query }

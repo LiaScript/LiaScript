@@ -1,8 +1,9 @@
-module Lia.View exposing (view)
+module Lia.View exposing (view, viewFullPage)
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Widget as A11y_Widget
+import Array exposing (Array)
 import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -45,6 +46,27 @@ view screen hasIndex model =
     Html.div
         (Settings.design model.settings)
         (viewIndex hasIndex model :: viewSlide screen model)
+
+
+viewFullPage : Screen -> Model -> List (Html Msg)
+viewFullPage screen model =
+    model.sections
+        |> Array.toList
+        |> List.indexedMap (viewSection screen model)
+
+
+viewSection screen model section_active sec =
+    Config.init
+        model.translation
+        ( model.langCodeOriginal, model.langCode )
+        model.settings
+        model.sync
+        screen
+        sec
+        section_active
+        model.media
+        |> Markdown.view
+        |> Html.map UpdateMarkdown
 
 
 {-| **@private:** Display the side section that contains the document search,

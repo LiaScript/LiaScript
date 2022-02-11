@@ -9,6 +9,7 @@ port module Update exposing
 
 -- UPDATE
 
+import Array exposing (Array)
 import Browser
 import Browser.Events
 import Browser.Navigation as Navigation

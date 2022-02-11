@@ -26,7 +26,7 @@
 
   &__content {
     height: 100%;
-    margin-top: calc(#{$header-height-mobile});
+    //margin-top: calc(#{$header-height-mobile});
     max-width: 144rem;
     overflow: auto;
     padding: 0 3rem;
@@ -34,7 +34,7 @@
     width: 100%;
 
     @include breakpoint("md") {
-      margin: calc(#{$header-height-desktop}) 0 2rem;
+      // margin: calc(#{$header-height-desktop}) 0 2rem;
     }
   }
 }

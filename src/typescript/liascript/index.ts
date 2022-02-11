@@ -40,6 +40,7 @@ export class LiaScript {
     connector: Connector,
     allowSync: boolean = false,
     debug: boolean = false,
+    fullPage: boolean = false,
     courseUrl: string | null = null,
     script: string | null = null
   ) {
@@ -58,6 +59,7 @@ export class LiaScript {
         hasShareAPI: Share.isSupported(),
         hasIndex: connector.hasIndex(),
         syncSupport: Sync.supported(allowSync),
+        fullPage: fullPage,
       },
     })
 

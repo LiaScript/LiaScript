@@ -137,7 +137,7 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
                     , A11y_Widget.label <|
                         file.name
                             ++ " "
-                            ++ (if file.visible then
+                            ++ (if True then
                                     codeMinimize lang
 
                                 else
@@ -146,7 +146,7 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
                     ]
                     [ btnIcon
                         { title =
-                            if file.visible then
+                            if True then
                                 codeMinimize lang
 
                             else
@@ -162,7 +162,7 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
                                     )
                                     id_2
                         , icon =
-                            if file.visible then
+                            if True then
                                 "icon-plus"
 
                             else
@@ -175,11 +175,11 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
                 , Html.div
                     [ Attr.classList
                         [ ( "lia-accordion__content", True )
-                        , ( "active", file.visible )
+                        , ( "active", True )
                         ]
                     ]
                     [ Html.div [ Attr.class "lia-code__input" ]
-                        [ if file.visible && executable then
+                        [ if True && executable then
                             btnIcon
                                 { title =
                                     if file.fullscreen then
@@ -225,6 +225,7 @@ toStyle visible pix =
         else
             "0px"
     , Attr.style "transition" "min-height 0.25s ease-out"
+    , Attr.style "break-inside" "avoid"
     ]
 
 
@@ -292,16 +293,15 @@ evaluate executable theme attr running ( id_1, id_2 ) file errors =
         total_lines =
             lines file.code
 
+        -- XXX: Changed to comply with pdf
         max_lines =
-            if file.fullscreen then
-                total_lines
+            --if file.fullscreen then
+            total_lines
 
-            else if total_lines > 16 then
-                16
-
-            else
-                total_lines
-
+        --else if total_lines > 16 then
+        --    16
+        --else
+        --    total_lines
         readOnly =
             if executable then
                 if running then
