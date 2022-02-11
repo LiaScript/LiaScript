@@ -385,10 +385,9 @@ reference config ref attr =
                 |> figure config title_ width "image"
 
         Audio alt_ ( tube, url_ ) title_ ->
-            figure config title_ Nothing "audio" <|
-                Html.div []
-                    [ printLink config alt_ title_ url_
-                    , if tube then
+            Html.a [ Attr.href url_ ]
+                [ figure config title_ Nothing "audio" <|
+                    if tube then
                         Html.iframe
                             (Attr.src url_
                                 :: Attr.attribute "loading" "lazy"
@@ -401,7 +400,7 @@ reference config ref attr =
                             )
                             []
 
-                      else
+                    else
                         Html.audio
                             (Attr.controls True
                                 :: Attr.attribute "preload" "none"
@@ -410,34 +409,32 @@ reference config ref attr =
                                 |> CList.addWhen (alt config alt_)
                             )
                             [ Html.source [ Attr.src url_ ] [] ]
-                    ]
+                ]
 
         Movie alt_ ( tube, url_ ) title_ ->
-            if tube then
-                figure config title_ Nothing "iframe" <|
-                    Html.div [ Attr.class "lia-iframe-wrapper" ]
-                        [ printLink config alt_ title_ url_
-                        , Html.iframe
-                            (Attr.src url_
-                                :: Attr.attribute "allowfullscreen" ""
-                                :: Attr.attribute "loading" "lazy"
-                                :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                                :: toAttribute attr
-                                |> CList.addWhen (title config title_)
-                                |> CList.addWhen (alt config alt_)
-                            )
-                            (viewer config alt_)
-                        ]
+            Html.a [ Attr.href url_ ]
+                [ if tube then
+                    figure config title_ Nothing "iframe" <|
+                        Html.div [ Attr.class "lia-iframe-wrapper" ]
+                            [ Html.iframe
+                                (Attr.src url_
+                                    :: Attr.attribute "allowfullscreen" ""
+                                    :: Attr.attribute "loading" "lazy"
+                                    :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                                    :: toAttribute attr
+                                    |> CList.addWhen (title config title_)
+                                    |> CList.addWhen (alt config alt_)
+                                )
+                                (viewer config alt_)
+                            ]
 
-            else
-                figure config title_ Nothing "movie" <|
-                    -- This fixes if multiple videos appear on different sites, but on the same
-                    -- position, then only the attributes are changed, which does not affect the
-                    -- video at all. By using Html.Keyed the system is forced to update the
-                    -- entire video tag.
-                    Html.div []
-                        [ printLink config alt_ title_ url_
-                        , Html.Keyed.node "div"
+                  else
+                    figure config title_ Nothing "movie" <|
+                        -- This fixes if multiple videos appear on different sites, but on the same
+                        -- position, then only the attributes are changed, which does not affect the
+                        -- video at all. By using Html.Keyed the system is forced to update the
+                        -- entire video tag.
+                        Html.Keyed.node "div"
                             [ Attr.class "lia-video-wrapper" ]
                             [ ( url_
                               , Html.video
@@ -450,24 +447,24 @@ reference config ref attr =
                                     [ Html.source [ Attr.src url_ ] [] ]
                               )
                             ]
-                        ]
+                ]
 
-        Embed alt_ url title_ ->
-            Html.figure [ Attr.class "lia-figure", Attr.style "height" "auto", Attr.style "width" "100%" ] <|
-                [ Html.div [ Attr.class "lia-figure__media" ] <|
-                    case title_ of
-                        Just sub ->
-                            [ printLink config alt_ title_ url
-                            , oembed config.oEmbed url
-                            , sub
-                                |> viewer config
-                                |> Html.figcaption [ Attr.class "lia-figure__caption" ]
-                            ]
+        Embed _ url title_ ->
+            Html.a [ Attr.href url ]
+                [ Html.figure [ Attr.class "lia-figure", Attr.style "height" "auto", Attr.style "width" "100%" ] <|
+                    [ Html.div [ Attr.class "lia-figure__media" ] <|
+                        case title_ of
+                            Just sub ->
+                                [ oembed config.oEmbed url
+                                , sub
+                                    |> viewer config
+                                    |> Html.figcaption [ Attr.class "lia-figure__caption" ]
+                                ]
 
-                        Nothing ->
-                            [ printLink config alt_ title_ url
-                            , oembed config.oEmbed url
-                            ]
+                            Nothing ->
+                                [ oembed config.oEmbed url
+                                ]
+                    ]
                 ]
 
         Preview_Lia url ->
@@ -481,11 +478,11 @@ reference config ref attr =
                 []
 
         QR_Link url title_ ->
-            [ url
-                |> QRCode.fromString
-                |> Result.map (QRCode.toSvg [ A11y_Widget.label <| Translations.qrCode config.lang ++ ": " ++ url ])
-                |> Result.withDefault (Html.text (Translations.qrErr config.lang))
-            ]
+            [ [ url
+                    |> QRCode.fromString
+                    |> Result.map (QRCode.toSvg [ A11y_Widget.label <| Translations.qrCode config.lang ++ ": " ++ url ])
+                    |> Result.withDefault (Html.text (Translations.qrErr config.lang))
+              ]
                 |> Html.a
                     (Attr.href url
                         :: Attr.style "width" "300px"
@@ -495,6 +492,8 @@ reference config ref attr =
                         |> CList.addWhen (title config title_)
                     )
                 |> figure config title_ (Just 300) "image"
+            ]
+                |> Html.a [ Attr.href url ]
 
 
 printLink : Config sub -> Inlines -> Maybe Inlines -> String -> Html (Msg sub)
