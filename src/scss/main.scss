@@ -177,3 +177,30 @@
 }
 
 
+
+
+
+
+.lia-accordion__toggle {
+  visibility: hidden;
+  width: 5px !important;
+}
+
+.lia-effect__circle {
+  display: none;
+}
+
+.lia-code-terminal__input {
+  display: none;
+}
+
+.ace_editor {
+  max-height: none !important;
+  height: none !important;
+}
+
+.lia-code-terminal__output {
+  white-space: pre-wrap;
+}
+
+

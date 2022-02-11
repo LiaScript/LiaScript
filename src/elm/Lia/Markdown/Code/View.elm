@@ -331,15 +331,15 @@ evaluate executable theme attr running ( id_1, id_2 ) file errors =
                     |> Params.get "data-theme"
                     |> Maybe.withDefault theme
                     |> Editor.theme
-                , Editor.maxLines
-                    (if max_lines > 16 then
-                        -1
 
-                     else
-                        max_lines
-                    )
-                , Editor.readOnly readOnly
-                , Editor.highlightActiveLine (not readOnly)
+                --, Editor.maxLines
+                --    (if max_lines > 16 then
+                --        -1
+                --     else
+                --        max_lines
+                --    )
+                , Editor.readOnly True
+                , Editor.highlightActiveLine False
                 , attr
                     |> Params.get "data-tabsize"
                     |> Maybe.andThen String.toInt
@@ -367,10 +367,12 @@ evaluate executable theme attr running ( id_1, id_2 ) file errors =
                         executable
                 , Editor.useSoftTabs False
                 , Editor.annotations errors
-                , Editor.enableBasicAutocompletion executable
-                , Editor.enableLiveAutocompletion executable
-                , Editor.enableSnippets executable
+
+                --, Editor.enableBasicAutocompletion executable
+                --, Editor.enableLiveAutocompletion executable
+                --, Editor.enableSnippets executable
                 , Editor.extensions [ "language_tools" ]
+                , Editor.useWrapMode True
                 ]
         )
         []

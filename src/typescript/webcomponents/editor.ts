@@ -136,6 +136,7 @@ customElements.define(
         maxLines: this.model.maxLines,
         fontSize: this.model.fontSize,
         fontFamily: this.model.fontFamily,
+        highlightGutterLine: false,
       })
 
       if (!this.model.showCursor) {
