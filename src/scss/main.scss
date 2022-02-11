@@ -202,3 +202,7 @@
 .lia-code-terminal__output {
   white-space: pre-wrap;
 }
+
+.lia-accordion__item {
+  break-inside: avoid;
+}
