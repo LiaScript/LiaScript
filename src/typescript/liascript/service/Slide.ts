@@ -69,7 +69,7 @@ function scrollUp() {
     // The first element within a slide is in LiaScript the header, in order to
     // improve accessibility this element is put in focus to offer a general
     // starting point for keyboard navigation.
-    if (main.children.length > 0) (main.children[0] as HTMLElement).focus()
+    // if (main.children.length > 0) (main.children[0] as HTMLElement).focus()
   }
 }
 
