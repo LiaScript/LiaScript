@@ -86,8 +86,17 @@
  * Used to hide elements on printing
  */
 
+<<<<<<< HEAD
 .lia-print-only {
     display: none;
+=======
+table, ul, ol, figure, blockquote {
+  break-inside: avoid;
+}
+
+.lia-quiz {
+  break-inside: avoid;
+>>>>>>> 06519957 (improve: Code printing with title attached)
 }
 
 @media print {
@@ -194,11 +203,6 @@
   display: none;
 }
 
-.ace_editor {
-  max-height: none !important;
-  height: none !important;
-}
-
 .lia-code-terminal__output {
   white-space: pre-wrap;
 }
@@ -208,3 +212,37 @@
   orphans: 5;
 }
 
+.lia-accordion__item {
+  break-inside: avoid;
+  orphans: 3;
+  widows: 3;
+}
+
+.ace_editor {
+  max-height: none !important;
+  height: none !important;
+  min-height: unset !important;
+  break-inside: auto !important;
+  orphans: 3;
+  widows: 3;
+}
+
+.ace_text-input {
+  break-inside: auto !important;
+  orphans: 3;
+  widows: 3;
+}
+
+label {
+  page-break-after: avoid;
+}
+
+.lia-code-terminal__output {
+  break-inside: avoid;
+}
+
+
+main {
+  orphans: 3;
+  widows: 3;
+}
