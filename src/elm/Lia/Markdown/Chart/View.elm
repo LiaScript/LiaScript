@@ -1544,15 +1544,7 @@ toolbox :
     -> ( String, JE.Value )
 toolbox position config =
     ( "toolbox"
-    , JE.object
-        [ ( "bottom", JE.int 8 )
-        , ( "left"
-          , position
-                |> Maybe.withDefault "center"
-                |> JE.string
-          )
-        , feature config
-        ]
+    , JE.null
     )
 
 
