@@ -85,7 +85,24 @@
 /**
  * Used to hide elements on printing
  */
+
+.lia-print-only {
+    display: none;
+}
+
 @media print {
+
+    .lia-print-only {
+        display: inline-block !important;
+        position: absolute;
+        z-index: 1000;
+        padding: 1rem;
+        background-color: white;
+    }
+
+    .lia-print-only::before {
+        content: "↪︎ ";
+    }
 
     .lia-slide {
         height: unset !important;
@@ -125,11 +142,6 @@
         display: none;
     }
 
-    .lia-code-terminal__output {
-        //height: fit-content !important;
-        //max-height: 800px !important;
-    }
-
     .lia-table-responsive {
         max-height: fit-content !important;
     }
@@ -152,6 +164,8 @@
         page-break-after: avoid;
     }
 }
+
+
 
 /*
 table, ul, ol, figure, blockquote {

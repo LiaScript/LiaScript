@@ -388,34 +388,38 @@ reference config ref attr =
 
         Audio alt_ ( tube, url_ ) title_ ->
             figure config title_ Nothing "audio" <|
-                if tube then
-                    Html.iframe
-                        (Attr.src url_
-                            :: Attr.attribute "loading" "lazy"
-                            :: Attr.attribute "allowfullscreen" ""
-                            :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                            :: Attr.style "width" "100%"
-                            :: annotation "lia-audio" attr
-                            |> CList.addWhen (title config title_)
-                            |> CList.addWhen (alt config alt_)
-                        )
-                        []
+                Html.div []
+                    [ printLink config alt_ title_ url_
+                    , if tube then
+                        Html.iframe
+                            (Attr.src url_
+                                :: Attr.attribute "loading" "lazy"
+                                :: Attr.attribute "allowfullscreen" ""
+                                :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                                :: Attr.style "width" "100%"
+                                :: annotation "lia-audio" attr
+                                |> CList.addWhen (title config title_)
+                                |> CList.addWhen (alt config alt_)
+                            )
+                            []
 
-                else
-                    Html.audio
-                        (Attr.controls True
-                            :: Attr.attribute "preload" "none"
-                            :: annotation "lia-audio" attr
-                            |> CList.addWhen (title config title_)
-                            |> CList.addWhen (alt config alt_)
-                        )
-                        [ Html.source [ Attr.src url_ ] [] ]
+                      else
+                        Html.audio
+                            (Attr.controls True
+                                :: Attr.attribute "preload" "none"
+                                :: annotation "lia-audio" attr
+                                |> CList.addWhen (title config title_)
+                                |> CList.addWhen (alt config alt_)
+                            )
+                            [ Html.source [ Attr.src url_ ] [] ]
+                    ]
 
         Movie alt_ ( tube, url_ ) title_ ->
             if tube then
                 figure config title_ Nothing "iframe" <|
                     Html.div [ Attr.class "lia-iframe-wrapper" ]
-                        [ Html.iframe
+                        [ printLink config alt_ title_ url_
+                        , Html.iframe
                             (Attr.src url_
                                 :: Attr.attribute "allowfullscreen" ""
                                 :: Attr.attribute "loading" "lazy"
@@ -433,33 +437,38 @@ reference config ref attr =
                     -- position, then only the attributes are changed, which does not affect the
                     -- video at all. By using Html.Keyed the system is forced to update the
                     -- entire video tag.
-                    Html.Keyed.node "div"
-                        [ Attr.class "lia-video-wrapper" ]
-                        [ ( url_
-                          , Html.video
-                                (Attr.controls True
-                                    :: Attr.attribute "preload" "none"
-                                    :: toAttribute attr
-                                    |> CList.addWhen (title config title_)
-                                    |> CList.addWhen (alt config alt_)
-                                )
-                                [ Html.source [ Attr.src url_ ] [] ]
-                          )
+                    Html.div []
+                        [ printLink config alt_ title_ url_
+                        , Html.Keyed.node "div"
+                            [ Attr.class "lia-video-wrapper" ]
+                            [ ( url_
+                              , Html.video
+                                    (Attr.controls True
+                                        :: Attr.attribute "preload" "none"
+                                        :: toAttribute attr
+                                        |> CList.addWhen (title config title_)
+                                        |> CList.addWhen (alt config alt_)
+                                    )
+                                    [ Html.source [ Attr.src url_ ] [] ]
+                              )
+                            ]
                         ]
 
-        Embed _ url title_ ->
+        Embed alt_ url title_ ->
             Html.figure [ Attr.class "lia-figure", Attr.style "height" "auto", Attr.style "width" "100%" ] <|
                 [ Html.div [ Attr.class "lia-figure__media" ] <|
                     case title_ of
                         Just sub ->
-                            [ oembed config.oEmbed url
+                            [ printLink config alt_ title_ url
+                            , oembed config.oEmbed url
                             , sub
                                 |> viewer config
                                 |> Html.figcaption [ Attr.class "lia-figure__caption" ]
                             ]
 
                         Nothing ->
-                            [ oembed config.oEmbed url
+                            [ printLink config alt_ title_ url
+                            , oembed config.oEmbed url
                             ]
                 ]
 
@@ -488,6 +497,17 @@ reference config ref attr =
                         |> CList.addWhen (title config title_)
                     )
                 |> figure config title_ (Just 300) "image"
+
+
+printLink : Config sub -> Inlines -> Maybe Inlines -> String -> Html (Msg sub)
+printLink config alt_ title_ url_ =
+    Html.a
+        ([ Attr.class "lia-link lia-print-only"
+         , Attr.href url_
+         ]
+            |> CList.addWhen (title config title_)
+        )
+        (viewer config alt_)
 
 
 oembed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool } -> String -> Html msg
