@@ -92,6 +92,7 @@
     }
 
     .lia-toc,
+    .lia-support-menu--open,
     .lia-slide__footer,
     .lia-quiz__control,
     #lia-toolbar-nav {
@@ -125,8 +126,8 @@
     }
 
     .lia-code-terminal__output {
-        height: fit-content !important;
-        max-height: 800px !important;
+        //height: fit-content !important;
+        //max-height: 800px !important;
     }
 
     .lia-table-responsive {
@@ -151,3 +152,110 @@
         page-break-after: avoid;
     }
 }
+
+/*
+table, ul, ol, figure, blockquote {
+  break-inside: avoid;
+}
+
+.lia-quiz {
+  break-inside: avoid;
+}
+
+.lia-code-control {
+  display: none;
+}
+
+.lia-quiz__control {
+  display: none;
+}
+
+.lia-table__sort {
+  display: none !important;
+}
+
+.lia-accordion__toggle {
+  visibility: hidden;
+  width: 5px !important;
+}
+
+.lia-code-terminal__output {
+  height: fit-content !important;
+  max-height: 800px !important;
+}
+
+.lia-table-responsive {
+  max-height: fit-content !important;
+}
+
+.lia-effect__circle {
+  display: none;
+}
+
+.lia-code__min-max {
+  display: none;
+}
+
+.lia-code-terminal__input {
+  display: none;
+}
+
+.lia-code-terminal__output {
+  white-space: pre-wrap;
+}
+
+.ace_gutter-active-line {
+  background-color: unset !important;
+}
+
+.ace_hidden-cursors {
+  opacity: 0;
+}
+
+.lia-gallery {
+  flex-flow: wrap;
+}
+
+.lia-lightbox__icon {
+  display: none;
+}
+
+.lia-plot__switch {
+  display: none;
+}
+
+.lia-accordion__item {
+  break-inside: avoid;
+  orphans: 3;
+  widows: 3;
+}
+
+.ace_editor {
+  max-height: none !important;
+  height: none !important;
+  min-height: unset !important;
+  break-inside: auto !important;
+  orphans: 3;
+  widows: 3;
+}
+
+.ace_text-input {
+  break-inside: auto !important;
+  orphans: 3;
+  widows: 3;
+}
+
+label {
+  page-break-after: avoid;
+}
+
+.lia-code-terminal__output {
+  break-inside: avoid;
+}
+
+
+main {
+  orphans: 3;
+  widows: 3;
+}
+*/
