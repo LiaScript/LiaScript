@@ -2,6 +2,7 @@ module Lia.Sync.Via exposing
     ( Backend(..)
     , fromString
     , icon
+    , info
     , toString
     )
 
@@ -81,3 +82,32 @@ fromString via =
 
         _ ->
             Nothing
+
+
+info : Backend -> Html msg
+info about =
+    Html.p [ Attr.style "padding" "5px 15px 5px 15px", Attr.style "border" "1px solid white" ] <|
+        case about of
+            Beaker ->
+                [ Html.text "beaker" ]
+
+            GUN ->
+                [ Html.a [ Attr.href "https://gun.eco" ] [ Html.text "GunDB" ]
+                , Html.text " is a small, easy, and fast protocol for syncing data across various users."
+                , Html.text " It currently uses our free relay server hosted at "
+                , Html.a [ Attr.href "https://lia-gun.herokuapp.com" ] [ Html.text "https://lia-gun.herokuapp.com" ]
+                , Html.text ". In the future, we will extend this to allow also other peers to be included."
+                , Html.text " The implementation of this classroom can be found "
+                , Html.a [ Attr.href "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/Gun" ] [ Html.text "here" ]
+                , Html.text " we do not store or log any data."
+                , Html.text " It is just a method for transmitting information to all connected users."
+                ]
+
+            Jitsi ->
+                [ Html.text "Jitsi" ]
+
+            Matrix ->
+                [ Html.text "Matrix" ]
+
+            PubNub ->
+                [ Html.text "PubNub" ]

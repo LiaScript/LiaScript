@@ -23,7 +23,11 @@ view settings =
                 _ ->
                     False
     in
-    Html.div []
+    Html.div
+        [ Attr.style "min-width" "320px"
+        , Attr.style "width" "80%"
+        , Attr.style "max-width" "600px"
+        ]
         [ Html.h1 [] [ Html.text "Classroom" ]
         , select open settings.sync
         , Html.br [] []
@@ -32,7 +36,7 @@ view settings =
             Nothing ->
                 Html.text ""
 
-            _ ->
+            Just via ->
                 Html.div []
                     [ input open
                         Room
@@ -61,7 +65,10 @@ view settings =
                     , input open Password (Html.text "maybe password") "password" settings.password
                     , Html.br [] []
                     , Html.br [] []
-                    , button settings.state
+                    , button settings
+                    , Html.br [] []
+                    , Html.br [] []
+                    , Backend.info via
                     ]
         ]
 
@@ -79,6 +86,7 @@ input editable msg label type_ value =
             , Attr.value value
             , Attr.style "color" "black"
             , Attr.type_ type_
+            , Attr.style "width" "100%"
             ]
             []
         ]
@@ -156,13 +164,18 @@ selectString via =
         ]
 
 
-button : State -> Html Msg
-button state =
-    case state of
+button : Sync.Settings -> Html Msg
+button settings =
+    case settings.state of
         Disconnected ->
             btn
                 { title = "connect"
-                , msg = Just Connect
+                , msg =
+                    if String.isEmpty settings.room then
+                        Nothing
+
+                    else
+                        Just Connect
                 , tabbable = True
                 }
                 []
