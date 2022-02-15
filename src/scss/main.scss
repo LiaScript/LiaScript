@@ -81,3 +81,73 @@
 
 // Dump
 @import "./dump.scss";
+
+/**
+ * Used to hide elements on printing
+ */
+@media print {
+
+    .lia-slide {
+        height: unset !important;
+    }
+
+    .lia-toc,
+    .lia-slide__footer,
+    .lia-quiz__control,
+    #lia-toolbar-nav {
+        display: none !important;
+        width: 0 !important;
+    }
+
+    main,
+    .lia-canvas,
+    .lia-slide {
+        width: unset !important;
+        height: unset !important;
+        overflow: hidden !important;
+        margin-top: unset !important;
+    }
+
+    table,
+    ul,
+    ol,
+    figure,
+    blockquote {
+        break-inside: avoid;
+    }
+
+    .lia-gallery {
+        flex-flow: wrap;
+    }
+
+    .lia-lightbox__icon {
+        display: none;
+    }
+
+    .lia-code-terminal__output {
+        height: fit-content !important;
+        max-height: 800px !important;
+    }
+
+    .lia-table-responsive {
+        max-height: fit-content !important;
+    }
+
+    .ace_gutter-active-line {
+        background-color: unset !important;
+    }
+
+    .ace_hidden-cursors {
+        opacity: 0;
+    }
+
+    .ace_text-input {
+        break-inside: auto !important;
+        orphans: 3;
+        widows: 3;
+    }
+
+    label {
+        page-break-after: avoid;
+    }
+}
