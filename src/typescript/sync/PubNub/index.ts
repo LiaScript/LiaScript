@@ -42,6 +42,7 @@ export class Sync extends Base {
         // logVerbosity: true,
         // heartbeatInterval: 10,
         // presenceTimeout: 30,
+        cipherKey: this.password,
       })
 
       console.warn(this.pubnub)
