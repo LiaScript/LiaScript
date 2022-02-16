@@ -138,6 +138,10 @@ export class Sync {
     this.cbConnection(topic, message)
   }
 
+  sendDisconnectError(msg: string) {
+    this.sync('error', msg)
+  }
+
   sendConnect() {
     this.sync('connect', this.token)
   }

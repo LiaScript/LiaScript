@@ -19,8 +19,8 @@ const Service = {
           Beaker.isSupported() ? 'beaker' : '',
           // remove these strings if you want to enable or disable certain sync support
           'gun',
-          'jitsi',
-          'matrix',
+          //'jitsi',
+          //'matrix',
           'pubnub',
         ]
       : []

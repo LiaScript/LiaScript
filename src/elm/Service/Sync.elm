@@ -15,7 +15,7 @@ connect :
 connect param =
     [ ( "backend"
       , param.backend
-            |> Via.toString
+            |> Via.toString False
             |> String.toLower
             |> JE.string
       )
@@ -29,6 +29,24 @@ connect param =
 
                 else
                     JE.string param.password
+              )
+            , ( "config"
+              , case param.backend of
+                    Via.GUN urls ->
+                        urls
+                            |> String.split ","
+                            |> List.map String.trim
+                            |> List.filter (String.isEmpty >> not)
+                            |> JE.list JE.string
+
+                    Via.PubNub pub sub ->
+                        JE.object
+                            [ ( "publishKey", JE.string pub )
+                            , ( "subscribeKey", JE.string sub )
+                            ]
+
+                    _ ->
+                        JE.null
               )
             ]
       )

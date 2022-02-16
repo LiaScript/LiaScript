@@ -15,7 +15,7 @@ import Lia.Section as Section exposing (Sections)
 import Lia.Sync.Container.Global as Global
 import Lia.Sync.Room as Room
 import Lia.Sync.Types exposing (Settings, State(..), id)
-import Lia.Sync.Via as Via exposing (Backend)
+import Lia.Sync.Via as Backend exposing (Backend)
 import Random
 import Return exposing (Return)
 import Service.Event as Event exposing (Event)
@@ -37,7 +37,8 @@ type Msg
 
 type SyncMsg
     = Open Bool -- Backend selection
-    | Select (Maybe Backend)
+    | Select (Maybe ( Bool, Backend ))
+    | Config Backend.Msg
 
 
 handle :
@@ -62,21 +63,46 @@ update session model msg =
     case msg of
         Handle event ->
             case Event.message event of
+                ( "error", param ) ->
+                    case ( JD.decodeValue JD.string param, sync.sync.select ) of
+                        ( Ok message, Just ( True, _ ) ) ->
+                            { model
+                                | sync =
+                                    { sync
+                                        | state = Disconnected
+                                        , peers = Set.empty
+                                        , error = Just message
+                                    }
+                            }
+                                |> Return.val
+
+                        _ ->
+                            { model
+                                | sync =
+                                    { sync
+                                        | state = Disconnected
+                                        , peers = Set.empty
+                                        , error = Just "unknown"
+                                    }
+                            }
+                                |> Return.val
+
                 ( "connect", param ) ->
                     case ( JD.decodeValue JD.string param, sync.sync.select ) of
-                        ( Ok hashID, Just backend ) ->
+                        ( Ok hashID, Just ( True, backend ) ) ->
                             { model
                                 | sync =
                                     { sync
                                         | state = Connected hashID
                                         , peers = Set.empty
+                                        , error = Nothing
                                     }
                             }
                                 |> join
                                 |> Return.cmd
                                     (session
                                         |> Session.setClass
-                                            { backend = Via.toString backend
+                                            { backend = Backend.toString True backend
                                             , course = model.readme
                                             , room = sync.room
                                             }
@@ -104,6 +130,7 @@ update session model msg =
                             { sync
                                 | state = Disconnected
                                 , peers = Set.empty
+                                , error = Nothing
                             }
                     }
                         |> Return.val
@@ -159,6 +186,7 @@ update session model msg =
 
                                         _ ->
                                             sync.peers
+                                , error = Nothing
                             }
                     }
                         |> Return.val
@@ -190,7 +218,7 @@ update session model msg =
 
         Connect ->
             case ( sync.sync.select, sync.state ) of
-                ( Just backend, Disconnected ) ->
+                ( Just ( True, backend ), Disconnected ) ->
                     { model | sync = { sync | state = Pending, sync = closeSelect sync.sync } }
                         |> Return.val
                         |> Return.batchEvent
@@ -227,6 +255,20 @@ updateSync msg sync =
                 | select = backend
                 , open = False
             }
+
+        Config childMsg ->
+            case sync.select of
+                Just ( True, select ) ->
+                    { sync
+                        | select =
+                            Just
+                                ( True
+                                , Backend.update childMsg select
+                                )
+                    }
+
+                _ ->
+                    sync
 
 
 closeSelect sync =

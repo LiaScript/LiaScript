@@ -10,6 +10,7 @@ import Lia.Sync.Types as Sync exposing (State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
 import Lia.Sync.Via as Backend exposing (Backend)
 import Lia.Utils exposing (btn, btnIcon)
+import Service.Event exposing (message)
 
 
 view : Sync.Settings -> Html Msg
@@ -27,69 +28,69 @@ view settings =
         [ Attr.style "min-width" "320px"
         , Attr.style "width" "80%"
         , Attr.style "max-width" "600px"
+        , Attr.style "overflow" "auto"
         ]
         [ Html.h1 [] [ Html.text "Classroom" ]
         , select open settings.sync
-        , Html.br [] []
-        , Html.br [] []
         , case settings.sync.select of
             Nothing ->
                 Html.text ""
 
-            Just via ->
+            Just ( support, via ) ->
                 Html.div []
-                    [ input open
-                        Room
-                        (Html.span []
-                            [ Html.text "room "
-                            , btnIcon
-                                { title = "generate random"
-                                , tabbable = open
-                                , msg =
-                                    if open then
-                                        Just Random_Generate
+                    [ Backend.input
+                        { active = open && support
+                        , msg = Room
+                        , type_ = "input"
+                        , value = settings.room
+                        , placeholder = "Just any kind of typeable name"
+                        , label =
+                            Html.span []
+                                [ Html.text "room "
+                                , btnIcon
+                                    { title = "generate random"
+                                    , tabbable = open && support
+                                    , msg =
+                                        if open && support then
+                                            Just Random_Generate
 
-                                    else
-                                        Nothing
-                                , icon = "icon-refresh"
-                                }
-                                [ Attr.class "lia-btn--transparent icon-sm"
-                                , Attr.style "padding" "0"
+                                        else
+                                            Nothing
+                                    , icon = "icon-refresh"
+                                    }
+                                    [ Attr.class "lia-btn--transparent icon-sm"
+                                    , Attr.style "padding" "0"
+                                    ]
                                 ]
-                            ]
-                        )
-                        "input"
-                        settings.room
-                    , Html.br [] []
-                    , Html.br [] []
-                    , input open Password (Html.text "maybe password") "password" settings.password
-                    , Html.br [] []
-                    , Html.br [] []
+                        }
+                    , Backend.input
+                        { active = open && support
+                        , msg = Password
+                        , label = Html.text "maybe password"
+                        , type_ = "password"
+                        , value = settings.password
+                        , placeholder = ""
+                        }
+                    , Backend.view (open && support) via
+                        |> Html.map Config
+                        |> Html.map Backend
                     , button settings
-                    , Html.br [] []
-                    , Html.br [] []
-                    , Backend.info via
+                    , viewError settings.error
+                    , Backend.info support via
                     ]
         ]
 
 
-input editable msg label type_ value =
-    Html.label []
-        [ Html.span [ Attr.class "lia-label" ] [ label ]
-        , Html.br [] []
-        , Html.input
-            [ if editable then
-                Event.onInput msg
+viewError : Maybe String -> Html msg
+viewError message =
+    case message of
+        Nothing ->
+            Html.text ""
 
-              else
-                Attr.disabled True
-            , Attr.value value
-            , Attr.style "color" "black"
-            , Attr.type_ type_
-            , Attr.style "width" "100%"
-            ]
-            []
-        ]
+        Just msg ->
+            Html.div
+                [ Attr.style "margin-top" "2rem", Attr.style "font-weight" "bold" ]
+                [ Html.text <| "Error: " ++ msg ]
 
 
 select : Bool -> Sync -> Html Msg
@@ -144,23 +145,24 @@ select editable sync =
             ]
 
 
-option : Maybe Backend -> Html SyncMsg
+option : Maybe ( Bool, Backend ) -> Html SyncMsg
 option via =
     Html.div
         [ Event.onClick (Select via) ]
         [ maybeSelect via ]
 
 
-maybeSelect : Maybe Backend -> Html msg
+maybeSelect : Maybe ( Bool, Backend ) -> Html msg
 maybeSelect =
-    Maybe.map selectString >> Maybe.withDefault (Html.text "None")
+    Maybe.map (Tuple.second >> selectString)
+        >> Maybe.withDefault (Html.text "None")
 
 
 selectString : Backend -> Html msg
 selectString via =
     Html.span []
         [ Backend.icon via
-        , Backend.toString via |> Html.text
+        , Backend.toString False via |> Html.text
         ]
 
 
@@ -178,7 +180,7 @@ button settings =
                         Just Connect
                 , tabbable = True
                 }
-                []
+                [ Attr.style "margin-top" "2rem" ]
                 [ Html.text "connect" ]
 
         Connected _ ->
@@ -187,7 +189,7 @@ button settings =
                 , msg = Just Disconnect
                 , tabbable = True
                 }
-                []
+                [ Attr.style "margin-top" "2rem" ]
                 [ Html.text "disconnect" ]
 
         Pending ->
@@ -196,5 +198,5 @@ button settings =
                 , msg = Nothing
                 , tabbable = False
                 }
-                []
+                [ Attr.style "margin-top" "2rem" ]
                 [ Html.text "pending" ]

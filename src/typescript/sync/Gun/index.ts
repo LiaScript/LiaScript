@@ -17,7 +17,7 @@ var cypher = null
 export class Sync extends Base {
   private gun?: Gun
   private store: string = ''
-  private gunServer: string = 'https://lia-gun.herokuapp.com/gun'
+  private gunServer: string[] = []
 
   async connect(data: {
     course: string
@@ -26,6 +26,7 @@ export class Sync extends Base {
     config?: any
   }) {
     super.connect(data)
+    this.gunServer = data.config
 
     if (window.Gun) {
       this.init(true)
@@ -43,8 +44,14 @@ export class Sync extends Base {
   }
 
   init(ok: boolean, error?: string) {
+    if (this.gunServer.length == 0) {
+      return this.sendDisconnectError(
+        'You have to provide at least one relay server.'
+      )
+    }
+
     if (ok && window.Gun) {
-      this.gun = window.Gun({ peers: [this.gunServer] })
+      this.gun = window.Gun({ peers: this.gunServer })
 
       this.store = btoa(this.uniqueID())
 
