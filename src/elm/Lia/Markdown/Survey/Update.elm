@@ -27,7 +27,7 @@ type Msg sub
     | VectorUpdate Int String
     | MatrixUpdate Int Int String
     | Submit Int
-    | KeyDown Int Int
+      --| KeyDown Int Int
     | Handle Event
     | Script (Script.Msg sub)
 
@@ -55,13 +55,11 @@ update sectionID scripts msg vector =
             update_matrix vector idx row var
                 |> Return.val
 
-        KeyDown id char ->
-            if char == 13 then
-                update sectionID scripts (Submit id) vector
-
-            else
-                Return.val vector
-
+        --KeyDown id char ->
+        --    if char == 13 then
+        --        update sectionID scripts (Submit id) vector
+        --    else
+        --        Return.val vector
         Submit id ->
             case vector |> Array.get id of
                 Just element ->
