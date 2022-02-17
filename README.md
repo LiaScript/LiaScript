@@ -284,6 +284,32 @@ This will apply the following three patches:
 
 **0.10.0** (17/02/2022)
 
+- Add Classroom functionality within the share section, currently supported are
+
+  - [BeakerBrowser](https://beakerbrowser.com)
+  - [PubNub](https://www.pubnub.com)
+  - [GunDB](https://gun.eco)
+
+  This will at the moment synchronize quizzes and survey, and provide an overview
+  on the results/inputs to all connected users. All data is only stored/synchronized
+  between the users not at the backend. And when a user leaves the room, her or she
+  takes the data with them, which will result in an update overview.
+
+- Complete rebuild of the internal messaging pipeline to a service architecture.
+- Better API, all functionality is now accessible from within a global `window.LIA`
+  object.
+- A set of new macros, which can be used to disable setting components:
+
+  - `@classroom: disable`
+  - `@sharing: false`
+  - `@translateWithGoogle: off`
+
+  You can use words like `false`, `disabled`, `0`, `OFF` ... LiaScript will recognize
+  them as negative. All other words like `wouldLoveToSeeThisFeature` are treated
+  as positive. __But better stick with `false/true`, `on/of`, `disable/enable`__
+
+- Improved CSS for printing. This allows to generate beautiful content of a slide,
+  with preserved links, if media or iframes are added.
 
 
 **0.9.51** (26/01/2022)
