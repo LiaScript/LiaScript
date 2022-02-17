@@ -293,6 +293,17 @@ init_script model script =
 
                                 _ ->
                                     settings.hasShareApi
+                        , sync =
+                            case
+                                definition.macro
+                                    |> Dict.get "classroom"
+                                    |> Maybe.map checkFalse
+                            of
+                                Just False ->
+                                    Nothing
+
+                                _ ->
+                                    settings.sync
                     }
               }
                 |> add_todos definition

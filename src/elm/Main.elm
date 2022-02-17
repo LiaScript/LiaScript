@@ -256,6 +256,15 @@ openSync room model =
         | lia =
             { lia
                 | sync = Sync.initRoom room lia.sync
-                , settings = { settings | sync = True }
+                , settings =
+                    { settings
+                        | sync =
+                            case settings.sync of
+                                Just _ ->
+                                    Just True
+
+                                _ ->
+                                    Nothing
+                    }
             }
     }

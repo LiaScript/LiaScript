@@ -109,7 +109,7 @@ update main effectID msg model =
             log Nothing { model | tooltips = not model.tooltips }
 
         Toggle Sync ->
-            no_log Nothing { model | sync = not model.sync }
+            no_log Nothing { model | sync = Maybe.map not model.sync }
 
         Toggle (Action action) ->
             no_log
@@ -194,7 +194,15 @@ update main effectID msg model =
 
 closeSync : Settings -> Settings
 closeSync model =
-    { model | sync = False }
+    { model
+        | sync =
+            case model.sync of
+                Just _ ->
+                    Just False
+
+                _ ->
+                    Nothing
+    }
 
 
 handle : Event -> Msg

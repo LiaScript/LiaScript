@@ -23,7 +23,7 @@ type alias Settings =
     , translateWithGoogle : Maybe Bool
     , customTheme : Maybe String
     , tooltips : Bool
-    , sync : Bool
+    , sync : Maybe Bool
     }
 
 
@@ -60,5 +60,5 @@ init hasShareApi mode =
     , translateWithGoogle = Just False
     , customTheme = Nothing
     , tooltips = False
-    , sync = False
+    , sync = Just False
     }
