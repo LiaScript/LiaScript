@@ -1,3 +1,5 @@
+import Lia from '../../liascript/types/lia.d'
+
 /* This function is only required to generate a random string, that is used
 as a personal ID for every peer, since it is not possible at the moment to
 get the own peer ID from the beaker browser.
@@ -134,6 +136,10 @@ export class Sync {
 
   sync(topic: string, message: any = null) {
     this.cbConnection(topic, message)
+  }
+
+  sendDisconnectError(msg: string) {
+    this.sync('error', msg)
   }
 
   sendConnect() {

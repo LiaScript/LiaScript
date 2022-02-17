@@ -1,8 +1,10 @@
 import { Sync as Base } from '../Base/index'
-
+import log from '../../liascript/log'
 export class Sync extends Base {
   private pubnub: any
   private channel: string = ''
+  private publishKey?: string
+  private subscribeKey?: string
 
   async connect(data: {
     course: string
@@ -12,6 +14,9 @@ export class Sync extends Base {
   }) {
     super.connect(data)
 
+    this.publishKey = data.config.publishKey
+    this.subscribeKey = data.config.subscribeKey
+
     if (window.PubNub) {
       this.init(true)
     } else {
@@ -20,18 +25,27 @@ export class Sync extends Base {
   }
 
   init(ok: boolean, error?: string) {
+    if (!this.publishKey || !this.subscribeKey) {
+      return this.sendDisconnectError(
+        'You have to provide a valid pair of keys'
+      )
+    }
+
     if (ok && window.PubNub) {
       this.channel = btoa(this.uniqueID())
 
       this.pubnub = new PubNub({
-        publishKey: process.env.PUBNUB_PUBLISH,
-        subscribeKey: process.env.PUBNUB_SUBSCRIBE,
+        publishKey: this.publishKey,
+        subscribeKey: this.subscribeKey,
         uuid: this.token,
         heartbeatInterval: 30,
         // logVerbosity: true,
         // heartbeatInterval: 10,
         // presenceTimeout: 30,
+        cipherKey: this.password,
       })
+
+      console.warn(this.pubnub)
 
       this.pubnub.subscribe({
         channels: [this.channel],
@@ -43,10 +57,12 @@ export class Sync extends Base {
 
       this.pubnub.addListener({
         status: function (statusEvent: any) {
-          //console.log('PUBNUB status:', statusEvent)
-          //if (statusEvent.category === "PNConnectedCategory") {
-          //    publishSampleMessage();
-          //}
+          log.info('PUBNUB status:', statusEvent)
+          if (statusEvent.category === 'PNConnectedCategory') {
+            self.sendConnect()
+          } else if (statusEvent.category === 'PNBadRequestCategory') {
+            self.sendDisconnectError(statusEvent.errorData.message)
+          }
         },
         message: function (event: any) {
           // prevent return of self send messages
@@ -64,8 +80,6 @@ export class Sync extends Base {
           }
         },
       })
-
-      this.sync('connect', this.token)
     }
   }
 

@@ -4,6 +4,7 @@ import Array
 import Html exposing (Html, button)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import Html.Lazy
 import Json.Encode as JE
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
@@ -102,7 +103,7 @@ viewTextSync config lines syncData survey =
             case
                 data
                     |> Sync.wordCount
-                    |> Maybe.map (wordCloud config)
+                    |> Maybe.map (Html.Lazy.lazy2 wordCloud config)
             of
                 Nothing ->
                     survey
@@ -187,7 +188,8 @@ wordCloud config data =
             , ( "layoutAnimation", JE.bool True )
             , ( "gridSize", JE.int 5 )
             , ( "shape", JE.string "pentagon" )
-            , ( "sizeRange", JE.list JE.int [ 15, 50 ] )
+            , ( "drawOutOfBound", JE.bool True )
+            , ( "sizeRange", JE.list JE.int [ 12, 50 ] )
             , ( "emphasis", JE.object [ ( "focus", JE.string "self" ) ] )
             , ( "data"
               , data
@@ -538,7 +540,7 @@ view_text config str lines idx submitted =
         1 ->
             Html.input
                 (Attr.class "lia-input lia-quiz__input"
-                    :: onKeyDown (KeyDown idx)
+                    --:: onKeyDown (KeyDown idx)
                     :: attr
                 )
                 []

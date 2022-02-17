@@ -8,6 +8,7 @@ import Lia.Definition.Json.Encode as Def
 import Lia.Json.Encode as Lia
 import Lia.Markdown.Quiz.Json as Quiz
 import Lia.Markdown.Survey.Json as Survey
+import Lia.Markdown.Task.Json as Task
 import Lia.Parser.Parser exposing (parse_definition)
 import Lia.Script
 import Lia.Update exposing (generate)
@@ -161,7 +162,7 @@ respond model =
                 |> Tuple.pair True
                 |> output
 
-        "fullJson" ->
+        "fulljson" ->
             let
                 lia =
                     parseSection 0 model.lia
@@ -179,29 +180,10 @@ respond model =
                     |> Array.map .survey_vector
                     |> JE.array Survey.fromVector
               )
-            ]
-                |> JE.object
-                |> JE.encode 2
-                |> Tuple.pair True
-                |> output
-
-        "fullJson2" ->
-            let
-                lia =
-                    parseSection 0 model.lia
-            in
-            [ ( "lia"
-              , Lia.encodeFull lia
-              )
-            , ( "quiz"
+            , ( "task"
               , lia.sections
-                    |> Array.map .quiz_vector
-                    |> JE.array Quiz.fromVector
-              )
-            , ( "survey"
-              , lia.sections
-                    |> Array.map .survey_vector
-                    |> JE.array Survey.fromVector
+                    |> Array.map .task_vector
+                    |> JE.array Task.fromVector
               )
             ]
                 |> JE.object

@@ -1,3 +1,5 @@
+import './types/globals'
+
 export function initGlobals() {
   if (!window.LIA) {
     // @ts-ignore

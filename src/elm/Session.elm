@@ -22,6 +22,7 @@ URL-navigation. Therefor all relevant information is stored and updated with the
 `Session` record, a unique repository, that is passed on between modules.
 -}
 
+import Base64
 import Browser.Navigation as Navigation
 import Json.Decode as JD
 import Json.Encode as JE
@@ -205,12 +206,13 @@ encodeRoom { backend, course, room } =
     ]
         |> JE.object
         |> JE.encode 0
-        |> Url.percentEncode
+        |> Base64.encode
 
 
 decodeRoom : String -> Maybe Room
 decodeRoom =
-    Url.percentDecode
+    Base64.decode
+        >> Result.toMaybe
         >> Maybe.andThen
             (JD.decodeString
                 (JD.map3 Room

@@ -35,6 +35,7 @@ import Lia.Utils
         , noTranslate
         )
 import QRCode
+import Service.Database exposing (settings)
 import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
 
@@ -563,36 +564,54 @@ menuTranslations defintion lang tabbable settings =
     ]
 
 
-translateWithGoogle : Lang -> Bool -> Bool -> List (Html Msg)
+translateWithGoogle : Lang -> Bool -> Maybe Bool -> List (Html Msg)
 translateWithGoogle lang tabbable bool =
-    [ divider
-    , if not bool then
-        Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
-            [ Html.input
-                [ Attr.type_ "checkbox"
-                , Attr.class "lia-checkbox"
-                , Attr.checked bool
-                , onClick (Toggle TranslateWithGoogle)
-                , A11y_Key.tabbable tabbable
-                ]
-                []
-            , lang
-                |> Trans.translateWithGoogle
-                |> Html.text
+    case bool of
+        Just True ->
+            [ divider
+            , Html.div [ Attr.id "google_translate_element" ] []
             ]
 
-      else
-        Html.div [ Attr.id "google_translate_element" ] []
-    ]
+        Just False ->
+            [ divider
+            , Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
+                [ Html.input
+                    [ Attr.type_ "checkbox"
+                    , Attr.class "lia-checkbox"
+                    , Attr.checked False
+                    , onClick (Toggle TranslateWithGoogle)
+                    , A11y_Key.tabbable tabbable
+                    ]
+                    []
+                , lang
+                    |> Trans.translateWithGoogle
+                    |> Html.text
+                ]
+            ]
+
+        Nothing ->
+            []
 
 
 menuShare : String -> Sync.Settings -> Lang -> Bool -> Settings -> List (Html Msg)
 menuShare url sync lang tabbable settings =
-    [ lang
-        |> Trans.confShare
-        |> actionBtn Share
-            (settings.action == Just Share)
-            "icon-social"
+    [ case ( settings.sync, settings.hasShareApi ) of
+        ( Nothing, Nothing ) ->
+            btnIcon
+                { title = Trans.confShare lang
+                , icon = "icon-social"
+                , tabbable = False
+                , msg = Nothing
+                }
+                [ Attr.class "lia-btn--transparent hide-md-down"
+                ]
+
+        _ ->
+            lang
+                |> Trans.confShare
+                |> actionBtn Share
+                    (settings.action == Just Share)
+                    "icon-social"
     , Html.i
         [ Attr.class "icon icon-social hide-md-up"
         , lang
@@ -600,8 +619,12 @@ menuShare url sync lang tabbable settings =
             |> Attr.title
         ]
         []
-    , [ qrCodeView lang url
-      , if settings.hasShareApi then
+    , [ if settings.hasShareApi /= Nothing then
+            qrCodeView lang url
+
+        else
+            Html.text ""
+      , if settings.hasShareApi == Just True then
             btn
                 { title = ""
                 , tabbable = tabbable
@@ -615,7 +638,7 @@ menuShare url sync lang tabbable settings =
         else
             Html.text ""
       , divider
-      , if Sync.isSupported sync then
+      , if Sync.isSupported sync && settings.sync /= Nothing then
             btn
                 { title = "Classroom"
                 , tabbable = tabbable

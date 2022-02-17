@@ -23,7 +23,7 @@ install via npm:
 `npm i @liascript/editor`
 
 > **Note:** The version information might look a bit different e.g.
-> `1.0.4--0.9.51`. The second version mirrors current version of LiaScript,
+> `1.1.0--0.10.0`. The second version mirrors current version of LiaScript,
 > while the first number is referring to the changes of the editor-branch.
 
 ## HowTo
@@ -68,14 +68,14 @@ let line = editor_.getCursorBufferPosition().row + 1
 webview.contentWindow.postMessage({ cmd: 'goto', param: line })
 
 // 3.2
-webview.contentWindow.gotoLia(line)
+webview.contentWindow.LIA.goto(line)
 ```
 
 The other way around works similar, you will have to overwrite internally
 exposed global function `liaGoto` and move your cursor to the provided line:
 
 ```javascript
-webview.contentWindow.liaGoto = function (line) {
+webview.contentWindow.LIA.goto = function (line) {
   editor.setCursor({ line: line, ch: 0 })
   editor.focus()
 }

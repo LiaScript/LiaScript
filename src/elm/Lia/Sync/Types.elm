@@ -10,9 +10,12 @@ module Lia.Sync.Types exposing
     , title
     )
 
+import Browser exposing (element)
+import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
+import Lia.Markdown.Effect.Model exposing (Element)
 import Lia.Sync.Container.Local as Local
 import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
@@ -37,16 +40,27 @@ type alias Settings =
 
 
 type alias Sync =
-    { support : List Backend
-    , select : Maybe Backend
+    { support : List ( Bool, Backend )
+    , select : Maybe ( Bool, Backend )
     , open : Bool
     }
 
 
 init : List String -> Settings
 init supportedBackends =
+    let
+        supported =
+            List.filterMap Via.fromString supportedBackends
+    in
     { sync =
-        { support = List.filterMap Via.fromString supportedBackends
+        { support =
+            [ Via.Beaker
+            , Via.GUN Const.gunDB_ServerURL
+            , Via.Jitsi
+            , Via.Matrix
+            , Via.PubNub "" ""
+            ]
+                |> List.map (isMember supported)
         , select = Nothing
         , open = False
         }
@@ -58,22 +72,56 @@ init supportedBackends =
     }
 
 
-initRoom : { backend : String, course : String, room : String } -> Settings -> Settings
-initRoom config settings =
-    case Via.fromString config.backend of
-        Just backend ->
-            if List.member backend settings.sync.support then
-                let
-                    sync =
-                        settings.sync
-                in
-                { settings
-                    | sync = { sync | select = Just backend }
-                    , room = config.room
-                }
+isMember : List Via.Backend -> Via.Backend -> ( Bool, Via.Backend )
+isMember list element =
+    case ( list, element ) of
+        ( [], _ ) ->
+            ( False, element )
+
+        ( (Via.GUN _) :: _, Via.GUN _ ) ->
+            ( True, element )
+
+        ( (Via.PubNub _ _) :: _, Via.PubNub _ _ ) ->
+            ( True, element )
+
+        ( e :: es, _ ) ->
+            if e == element then
+                ( True, element )
 
             else
-                { settings | error = Just ("Unsupported Backend type: " ++ config.backend) }
+                isMember es element
+
+
+initRoom : { backend : String, course : String, room : String } -> Settings -> Settings
+initRoom config settings =
+    let
+        sync =
+            settings.sync
+    in
+    case Via.fromString config.backend of
+        Just backend ->
+            { settings
+                | sync =
+                    { sync
+                        | select =
+                            Just
+                                ( settings.sync.support
+                                    |> List.filter
+                                        (\( support, for ) ->
+                                            if Via.eq for backend then
+                                                support
+
+                                            else
+                                                False
+                                        )
+                                    |> List.head
+                                    |> Maybe.map Tuple.first
+                                    |> Maybe.withDefault False
+                                , backend
+                                )
+                    }
+                , room = config.room
+            }
 
         Nothing ->
             { settings | error = Just ("Unknown Backend type: " ++ config.backend) }

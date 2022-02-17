@@ -1,6 +1,7 @@
 module Const exposing
     ( align
     , globalBreakpoints
+    , gunDB_ServerURL
     , icon
     , tooltipBreakpoint
     , urlLiascript
@@ -87,3 +88,10 @@ urlLiascript =
 urlLiascriptCourse : String
 urlLiascriptCourse =
     urlLiascript ++ "/nightly/?"
+
+
+{-| This is default server used within the Sync module
+-}
+gunDB_ServerURL : String
+gunDB_ServerURL =
+    "https://lia-gun.herokuapp.com/gun"

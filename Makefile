@@ -18,7 +18,7 @@ clean:
 	rm -rf dist
 
 all: clean app index manifest responsivevoice preview
-	rm dist/README.md
+	rm dist/*.md
 
 all2: optimize all deoptimize
 
@@ -34,26 +34,24 @@ app:
 	npm run build
 
 index:
-	sed -i "s/\"\/logo/\".\/logo/g" dist/index.html
-	sed -i "s/href=\"\/main\./href=\".\/main./g" dist/index.html
-	sed -i "s/href=\"\/manifest\./href=\".\/manifest./g" dist/index.html
-	sed -i "s/=\"\/formula\./=\".\/formula./g" dist/index.html
-	sed -i "s/src=\"\/editor\./src=\".\/editor./g" dist/index.html
-	sed -i "s/src=\"\/app\./src=\".\/app./g" dist/index.html
-	sed -i "s/src=\"\/base\./src=\".\/base./g" dist/index.html
-	sed -i "s/src=\"\/chart\./src=\".\/chart./g" dist/index.html
-	sed -i "s/src=\"\/oembed\./src=\".\/oembed./g" dist/index.html
-	sed -i "s/src=\"\/format\./src=\".\/format./g" dist/index.html
-	sed -i "s/src=\"\/preview\-lia\./src=\".\/preview-lia./g" dist/index.html
-	sed -i "s/src=\"\/tooltip\./src=\".\/tooltip./g" dist/index.html
+	sed -i "s/href=\"logo\./href=\".\/logo./g" dist/index.html
+	sed -i "s/href=\"index\./href=\".\/index./g" dist/index.html
+	sed -i "s/href=\"manifest\./href=\".\/manifest./g" dist/index.html
+	sed -i "s/href=\"up\_/href=\".\/up_/g" dist/index.html
+	sed -i "s/src=\"index\./src=\".\/index./g" dist/index.html
 	sed -i "s/src:local(\"\")/src:local(\"\.\")/g" dist/index.*.css
 	sed -i "s/url(\//url(/g" dist/index.*.css
 
 responsivevoice:
-	sed -i "s/responsivevoice\.js\"/responsivevoice.js?key=$(KEY)\"/g" dist/index.html
+	if [ -z "$(KEY)" ]; then \
+        echo "NO responsivevoice key ... "; \
+	else \
+		sed -i "s/<\/head>/<script defer src=\"https:\/\/code.responsivevoice.org\/responsivevoice.js?key=$(KEY)\"><\/script><\/head>/g" dist/index.html ; \
+	fi
 
 manifest:
 	sed -i "s/\"logo_/\".\/logo_/g" dist/manifest.webmanifest
+	sed -i "s/\"up_/\".\/up_/g" dist/manifest.webmanifest
 	sed -i "s/\"index\.html/\".\/index.html/g" dist/manifest.webmanifest
 	sed -i -r "s/preview-lia\.([^.])*/preview-lia/g" dist/sw.js
 

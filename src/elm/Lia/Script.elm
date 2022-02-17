@@ -233,6 +233,25 @@ generateIndex id title =
     )
 
 
+checkFalse : String -> Bool
+checkFalse string =
+    case string |> String.trim |> String.toLower |> String.toList of
+        [ '0' ] ->
+            False
+
+        'f' :: 'a' :: 'l' :: 's' :: 'e' :: _ ->
+            False
+
+        'o' :: 'f' :: 'f' :: _ ->
+            False
+
+        'd' :: 'i' :: 's' :: 'a' :: 'b' :: 'l' :: 'e' :: _ ->
+            False
+
+        _ ->
+            True
+
+
 {-| Initialize a LiaScript Model with the code of a course. The header of this
 course is parsed as a definition, that contains `@authors`, `@import`, etc. The
 result is a:
@@ -271,6 +290,39 @@ init_script model script =
                             definition.mode
                                 |> Maybe.withDefault settings.mode
                         , customTheme = Dict.get "custom" definition.macro
+                        , translateWithGoogle =
+                            case
+                                definition.macro
+                                    |> Dict.get "translateWithGoogle"
+                                    |> Maybe.map checkFalse
+                            of
+                                Just False ->
+                                    Nothing
+
+                                _ ->
+                                    settings.translateWithGoogle
+                        , hasShareApi =
+                            case
+                                definition.macro
+                                    |> Dict.get "sharing"
+                                    |> Maybe.map checkFalse
+                            of
+                                Just False ->
+                                    Nothing
+
+                                _ ->
+                                    settings.hasShareApi
+                        , sync =
+                            case
+                                definition.macro
+                                    |> Dict.get "classroom"
+                                    |> Maybe.map checkFalse
+                            of
+                                Just False ->
+                                    Nothing
+
+                                _ ->
+                                    settings.sync
                     }
               }
                 |> add_todos definition

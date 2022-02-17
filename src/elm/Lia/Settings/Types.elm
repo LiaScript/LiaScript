@@ -19,11 +19,11 @@ type alias Settings =
     , action : Maybe Action
     , speaking : Bool
     , initialized : Bool
-    , hasShareApi : Bool
-    , translateWithGoogle : Bool
+    , hasShareApi : Maybe Bool
+    , translateWithGoogle : Maybe Bool
     , customTheme : Maybe String
     , tooltips : Bool
-    , sync : Bool
+    , sync : Maybe Bool
     }
 
 
@@ -56,9 +56,9 @@ init hasShareApi mode =
     , action = Nothing
     , speaking = False
     , initialized = False
-    , hasShareApi = hasShareApi
-    , translateWithGoogle = False
+    , hasShareApi = Just hasShareApi
+    , translateWithGoogle = Just False
     , customTheme = Nothing
     , tooltips = False
-    , sync = False
+    , sync = Just False
     }

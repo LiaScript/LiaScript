@@ -433,17 +433,17 @@ responsiveVoice show =
 showModal : Model -> Html Msg
 showModal model =
     case ( model.modal, model.settings.sync ) of
-        ( Nothing, False ) ->
+        ( Nothing, Just False ) ->
             Html.text ""
 
-        ( _, True ) ->
+        ( _, Just True ) ->
             model.sync
                 |> Sync.view
                 |> Html.map UpdateSync
                 |> List.singleton
                 |> modal (UpdateSettings (Settings_.Toggle Settings_.Sync)) Nothing
 
-        ( Just url, _ ) ->
+        ( Just url, Just _ ) ->
             modal (Media ( "", Nothing, Nothing ))
                 Nothing
                 [ Html.figure
@@ -467,3 +467,6 @@ showModal model =
                         ]
                     ]
                 ]
+
+        ( _, Nothing ) ->
+            Html.text ""

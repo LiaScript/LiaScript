@@ -95,10 +95,17 @@ type Analyse
     | Quantitative
 
 
+
+{- TODO: fix the analysis
+
+-}
+
+
 analyseType : List String -> Analyse
 analyseType ids =
     if allNumbers ids then
-        Quantitative
+        Categorical
+        --Quantitative
 
     else
         Categorical
