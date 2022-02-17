@@ -121,7 +121,17 @@ init hasShareApi openTOC settings allowedBackends url readme origin anchor =
         settings
             |> Lia.Settings.Json.toModel default
             |> Result.withDefault default
-            |> (\set -> { set | table_of_contents = openTOC })
+            |> (\set ->
+                    { set
+                        | table_of_contents = openTOC
+                        , sync =
+                            if List.isEmpty allowedBackends then
+                                Nothing
+
+                            else
+                                set.sync
+                    }
+               )
     , error = Nothing
     , sections = Array.empty
     , section_active = 0
