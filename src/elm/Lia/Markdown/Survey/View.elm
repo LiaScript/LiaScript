@@ -188,7 +188,8 @@ wordCloud config data =
             , ( "layoutAnimation", JE.bool True )
             , ( "gridSize", JE.int 5 )
             , ( "shape", JE.string "pentagon" )
-            , ( "sizeRange", JE.list JE.int [ 15, 50 ] )
+            , ( "drawOutOfBound", JE.bool True )
+            , ( "sizeRange", JE.list JE.int [ 12, 50 ] )
             , ( "emphasis", JE.object [ ( "focus", JE.string "self" ) ] )
             , ( "data"
               , data

@@ -47,18 +47,27 @@ wordCount =
         (\s ( dict, counter ) ->
             s
                 |> toText
-                |> Maybe.map (String.trim >> String.toUpper)
                 |> Maybe.map
-                    (\key ->
-                        ( Dict.insert key
-                            (dict
-                                |> Dict.get key
-                                |> Maybe.map ((+) 1)
-                                |> Maybe.withDefault 1
+                    (String.toUpper
+                        >> String.split ","
+                        >> List.map String.trim
+                    )
+                |> Maybe.map
+                    (\list ->
+                        List.foldl
+                            (\key ( d, c ) ->
+                                ( Dict.insert key
+                                    (d
+                                        |> Dict.get key
+                                        |> Maybe.map ((+) 1)
+                                        |> Maybe.withDefault 1
+                                    )
+                                    d
+                                , c + 1
+                                )
                             )
-                            dict
-                        , counter + 1
-                        )
+                            ( dict, counter )
+                            list
                     )
                 |> Maybe.withDefault ( dict, counter )
         )

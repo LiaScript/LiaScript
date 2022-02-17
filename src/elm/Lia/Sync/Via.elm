@@ -1,6 +1,7 @@
 module Lia.Sync.Via exposing
     ( Backend(..)
     , Msg
+    , eq
     , fromString
     , icon
     , info
@@ -267,3 +268,16 @@ update msg backend =
 
         _ ->
             backend
+
+
+eq : Backend -> Backend -> Bool
+eq a b =
+    case ( a, b ) of
+        ( GUN _, GUN _ ) ->
+            True
+
+        ( PubNub _ _, PubNub _ _ ) ->
+            True
+
+        _ ->
+            a == b

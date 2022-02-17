@@ -108,13 +108,15 @@ initRoom config settings =
                                 ( settings.sync.support
                                     |> List.filter
                                         (\( support, for ) ->
-                                            if for == backend then
+                                            if Via.eq for backend then
                                                 support
 
                                             else
                                                 False
                                         )
-                                    |> List.isEmpty
+                                    |> List.head
+                                    |> Maybe.map Tuple.first
+                                    |> Maybe.withDefault False
                                 , backend
                                 )
                     }
