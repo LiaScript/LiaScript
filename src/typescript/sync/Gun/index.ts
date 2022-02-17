@@ -1,19 +1,7 @@
 import { Gun } from './gun.d'
 import { Sync as Base } from '../Base/index'
+import { Crypto } from '../Crypto'
 
-function encode(msg: any): string {
-  return cypher
-    ? cypher.encrypt(btoa(encodeURIComponent(JSON.stringify(msg))))
-    : JSON.stringify(msg)
-}
-
-function decode(msg: string): any {
-  return cypher
-    ? JSON.parse(decodeURIComponent(atob(cypher.decrypt(msg))))
-    : JSON.parse(msg)
-}
-
-var cypher = null
 export class Sync extends Base {
   private gun?: Gun
   private store: string = ''
@@ -36,7 +24,7 @@ export class Sync extends Base {
           '//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/gun.min.js',
           //'//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/axe.min.js',
           //'//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/sea.min.js',
-          '//cdn.jsdelivr.net/npm/simple-crypto-js@2.5.0/dist/SimpleCrypto.min.js',
+          Crypto.url,
         ],
         this
       )
@@ -55,14 +43,14 @@ export class Sync extends Base {
 
       this.store = btoa(this.uniqueID())
 
-      cypher = this.password ? new SimpleCrypto(this.password) : null
+      Crypto.init(this.password)
 
       let self = this
       this.gun
         .get(this.store)
         .on(function (data: { msg: string }, key: string) {
           try {
-            let event = decode(data.msg)
+            let event = Crypto.decode(data.msg)
 
             if (event) {
               // prevent looping
@@ -90,7 +78,7 @@ export class Sync extends Base {
   publish(message: Object | null) {
     if (this.gun) {
       this.gun.get(this.store).put({
-        msg: encode(message),
+        msg: Crypto.encode(message),
       })
     }
   }
