@@ -282,6 +282,17 @@ init_script model script =
 
                                 _ ->
                                     settings.translateWithGoogle
+                        , hasShareApi =
+                            case
+                                definition.macro
+                                    |> Dict.get "sharing"
+                                    |> Maybe.map checkFalse
+                            of
+                                Just False ->
+                                    Nothing
+
+                                _ ->
+                                    settings.hasShareApi
                     }
               }
                 |> add_todos definition

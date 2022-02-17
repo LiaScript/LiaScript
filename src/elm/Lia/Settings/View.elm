@@ -606,8 +606,12 @@ menuShare url sync lang tabbable settings =
             |> Attr.title
         ]
         []
-    , [ qrCodeView lang url
-      , if settings.hasShareApi then
+    , [ if settings.hasShareApi /= Nothing then
+            qrCodeView lang url
+
+        else
+            Html.text ""
+      , if settings.hasShareApi == Just True then
             btn
                 { title = ""
                 , tabbable = tabbable
