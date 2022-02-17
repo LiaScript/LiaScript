@@ -20,7 +20,7 @@ type alias Settings =
     , speaking : Bool
     , initialized : Bool
     , hasShareApi : Bool
-    , translateWithGoogle : Bool
+    , translateWithGoogle : Maybe Bool
     , customTheme : Maybe String
     , tooltips : Bool
     , sync : Bool
@@ -57,7 +57,7 @@ init hasShareApi mode =
     , speaking = False
     , initialized = False
     , hasShareApi = hasShareApi
-    , translateWithGoogle = False
+    , translateWithGoogle = Just False
     , customTheme = Nothing
     , tooltips = False
     , sync = False

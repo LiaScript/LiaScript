@@ -176,7 +176,15 @@ update main effectID msg model =
                     )
 
         Toggle TranslateWithGoogle ->
-            { model | translateWithGoogle = True }
+            { model
+                | translateWithGoogle =
+                    case model.translateWithGoogle of
+                        Just _ ->
+                            Just True
+
+                        _ ->
+                            Nothing
+            }
                 |> Return.val
                 |> Return.batchEvent Service.Translate.google
 

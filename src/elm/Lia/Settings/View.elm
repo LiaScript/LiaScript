@@ -563,27 +563,33 @@ menuTranslations defintion lang tabbable settings =
     ]
 
 
-translateWithGoogle : Lang -> Bool -> Bool -> List (Html Msg)
+translateWithGoogle : Lang -> Bool -> Maybe Bool -> List (Html Msg)
 translateWithGoogle lang tabbable bool =
-    [ divider
-    , if not bool then
-        Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
-            [ Html.input
-                [ Attr.type_ "checkbox"
-                , Attr.class "lia-checkbox"
-                , Attr.checked bool
-                , onClick (Toggle TranslateWithGoogle)
-                , A11y_Key.tabbable tabbable
-                ]
-                []
-            , lang
-                |> Trans.translateWithGoogle
-                |> Html.text
+    case bool of
+        Just True ->
+            [ divider
+            , Html.div [ Attr.id "google_translate_element" ] []
             ]
 
-      else
-        Html.div [ Attr.id "google_translate_element" ] []
-    ]
+        Just False ->
+            [ divider
+            , Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
+                [ Html.input
+                    [ Attr.type_ "checkbox"
+                    , Attr.class "lia-checkbox"
+                    , Attr.checked False
+                    , onClick (Toggle TranslateWithGoogle)
+                    , A11y_Key.tabbable tabbable
+                    ]
+                    []
+                , lang
+                    |> Trans.translateWithGoogle
+                    |> Html.text
+                ]
+            ]
+
+        Nothing ->
+            []
 
 
 menuShare : String -> Sync.Settings -> Lang -> Bool -> Settings -> List (Html Msg)
