@@ -170,8 +170,13 @@ info supported about =
             ( PubNub _ _, _ ) ->
                 [ link "PubNub" "https://www.pubnub.com"
                 , Html.text " is a realtime communication platform. "
-                , Html.text "To create a classroom that uses this service, you will need an account and you have to create an App and a Keyset. "
-                , Html.text ""
+                , Html.text "To create a classroom that uses this service, you will only require an account, which is free for testing. "
+                , Html.text "After that you simply have to create a new App with a new Keyset within their dashboard. "
+                , Html.text "These are the keys you will have to provide for this room. "
+                , Html.text "After this, you can simply generate a new set of keys. "
+                , Html.text "The basic steps that are required, are described in more detail "
+                , link "here" "https://www.appypie.com/faqs/how-to-get-pubnub-publish-key-and-subscribe-key"
+                , Html.text "."
                 ]
 
 

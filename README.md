@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.51
+version:  0.10.0
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,10 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.10.0** (17/02/2022)
+
+
 
 **0.9.51** (26/01/2022)
 
