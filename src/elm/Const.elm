@@ -87,7 +87,7 @@ urlLiascript =
 
 urlLiascriptCourse : String
 urlLiascriptCourse =
-    urlLiascript ++ "/nightly/?"
+    urlLiascript ++ "/course/?"
 
 
 {-| This is default server used within the Sync module
