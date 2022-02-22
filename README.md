@@ -139,13 +139,13 @@ courses. A set of importable documents is hosted at
 [GitHub](https://github.com). Every document is a self-contained course
 describing the usage of Macro and their implementation.
 
-GitHub: https://github.com/LiaTemplates
+GitHub: https://github.com/topics/liascript-template
 
 **Library:** At the moment there is a collection of some open tutorials and
 complete ports of some Wikibooks (about C Programming, Lua, etc.) that are now
 interactive.
 
-GitHub: https://github.com/LiaBooks
+GitHub: https://github.com/topics/liascript-course
 
 **Further Examples:**
 
