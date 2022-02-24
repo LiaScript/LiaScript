@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Elm } from '../../elm/Worker.elm'
-import { allowedProtocol } from '../helper'
+import * as helper from '../helper'
 
 export function fetch(
   url: string,
@@ -85,7 +85,7 @@ export function fetch(
 }
 
 export function addBase(base: string, url: string) {
-  if (allowedProtocol(url)) {
+  if (helper.allowedProtocol(url)) {
     return url
   }
 

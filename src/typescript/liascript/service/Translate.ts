@@ -1,6 +1,6 @@
 import log from '../log'
 
-import { loadScript } from './Resource'
+import * as RESOURCE from './Resource'
 
 // Checks if there has been a code injection jet
 var googleTranslate = false
@@ -51,7 +51,7 @@ function injectGoogleTranslate() {
     // TODO:
     // the general URL without protocol needs to be checked with other
     // protocols IPFS, Hyper, etc.
-    loadScript(
+    RESOURCE.loadScript(
       '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
     )
 

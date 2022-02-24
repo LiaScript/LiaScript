@@ -1,6 +1,6 @@
 import { endpoints } from './endpoints'
 import { Params, Endpoint } from './types.d'
-import { PROXY } from '../../helper'
+import * as helper from '../../helper'
 
 /**
  * All retrieved embeds are stored within this global variable. The key is
@@ -82,7 +82,7 @@ export async function extract(link: string, params: Params) {
   try {
     data = await fetchEmbed(link, p, params)
   } catch (error) {
-    data = await fetchEmbed(link, p, params, PROXY)
+    data = await fetchEmbed(link, p, params, helper.PROXY)
   }
 
   const key = JSON.stringify(params)
