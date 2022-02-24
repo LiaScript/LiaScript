@@ -16,7 +16,7 @@
 
     > li {
       &:before {
-        content: "\EA0D";
+        content: "\EA22";
         color: rgb(var(--color-highlight-dark));
         font-family: "icon";
         left: 0;
@@ -28,10 +28,17 @@
       }
     }
 
-    ul li ul li {
-      padding-left: 1rem;
+    ul li {
+      //padding-left: 1rem;
       &:before {
-        content: "\EA22";
+        content: "\EA23";
+      }
+    }
+
+    ul li ul li {
+      //padding-left: 1rem;
+      &:before {
+        content: "\EA24";
       }
     }
   }
