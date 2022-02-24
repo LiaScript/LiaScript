@@ -104,6 +104,30 @@ class LiaScript {
       })
     }
 
+    window.LIA.gotoNext = () => {
+      sender({
+        reply: true,
+        track: [['goto', -1]],
+        service: '',
+        message: {
+          cmd: 'next',
+          param: null,
+        },
+      })
+    }
+
+    window.LIA.gotoPrevious = () => {
+      sender({
+        reply: true,
+        track: [['goto', -1]],
+        service: '',
+        message: {
+          cmd: 'prev',
+          param: null,
+        },
+      })
+    }
+
     // Attach a tooltip-div to the end of the DOM
     initTooltip()
   }
