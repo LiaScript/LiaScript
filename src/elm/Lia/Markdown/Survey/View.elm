@@ -1,5 +1,6 @@
 module Lia.Markdown.Survey.View exposing (view)
 
+import Accessibility.Role as A11y_Role
 import Array
 import Html exposing (Html, button)
 import Html.Attributes as Attr
@@ -38,7 +39,6 @@ import Lia.Utils
         ( blockKeydown
         , btn
         , icon
-        , onKeyDown
         , string2Color
         )
 import Translations
@@ -451,7 +451,9 @@ submit_button config submitted idx =
                 , tabbable = False
                 , title = surveySubmitted config.lang
                 }
-                [ Attr.class "lia-btn--outline lia-quiz__check" ]
+                [ Attr.class "lia-btn--outline lia-quiz__check"
+                , A11y_Role.button
+                ]
                 [ Html.text (surveySubmitted config.lang) ]
 
           else
@@ -460,7 +462,9 @@ submit_button config submitted idx =
                 , tabbable = False
                 , title = surveySubmit config.lang
                 }
-                [ Attr.class "lia-btn--outline lia-quiz__check" ]
+                [ Attr.class "lia-btn--outline lia-quiz__check"
+                , A11y_Role.button
+                ]
                 [ Html.text (surveySubmit config.lang) ]
         ]
 
@@ -581,11 +585,11 @@ view_matrix config header questions fn submitted =
         [ Html.table [ Attr.class "lia-table lia-survey-matrix is-alternating" ]
             [ header
                 |> List.map ((viewer config >> List.map (Html.map Script)) >> Html.th [ Attr.class "lia-table__head lia-survey-matrix__head" ])
-                |> Html.thead [ Attr.class "lia-table__head lia-survey-matrix__head" ]
+                |> Html.thead [ Attr.class "lia-table__head lia-survey-matrix__head", A11y_Role.columnHeader ]
             , questions
                 |> List.indexedMap Tuple.pair
                 |> List.map fnX
-                |> Html.tbody [ Attr.class "lia-table__body lia-survey-matrix__body" ]
+                |> Html.tbody [ Attr.class "lia-table__body lia-survey-matrix__body", A11y_Role.rowHeader ]
             ]
         ]
 
