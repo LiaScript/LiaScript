@@ -86,163 +86,128 @@
  * Used to hide elements on printing
  */
 
-<<<<<<< HEAD
 .lia-print-only {
     display: none;
-=======
-table, ul, ol, figure, blockquote {
-  break-inside: avoid;
-}
-
-.lia-quiz {
-  break-inside: avoid;
->>>>>>> 06519957 (improve: Code printing with title attached)
-}
-
-@media print {
-
-    .lia-print-only {
-        display: inline-block !important;
-        position: absolute;
-        z-index: 1000;
-        padding: 1rem;
-        background-color: white;
-    }
-
-    .lia-print-only::before {
-        content: "↪︎ ";
-    }
-
-    .lia-slide {
-        height: unset !important;
-    }
-
-    .lia-toc,
-    .lia-support-menu--open,
-    .lia-slide__footer,
-    .lia-quiz__control,
-    .lia-code-control,
-    .lia-plot__switch,
-    .lia-table__sort,
-    .lia-code__min-max,
-    #lia-toolbar-nav {
-        display: none !important;
-        width: 0 !important;
-    }
-
-    main,
-    .lia-canvas,
-    .lia-slide {
-        width: unset !important;
-        height: unset !important;
-        overflow: hidden !important;
-        margin-top: unset !important;
-    }
-
-    .lia-code-terminal__output {
-        height: fit-content !important;
-        max-height: 800px !important;
-    }
-
-    table,
-    ul,
-    ol,
-    figure,
-    blockquote,
-    .lia-quiz,
-    .lia-code-terminal__output {
-        break-inside: avoid;
-    }
-
-    .lia-gallery {
-        flex-flow: wrap;
-    }
-
-    .lia-lightbox__icon {
-        display: none;
-    }
-
-    .lia-table-responsive {
-        max-height: fit-content !important;
-    }
-
-    .ace_gutter-active-line {
-        background-color: unset !important;
-    }
-
-    .ace_hidden-cursors {
-        opacity: 0;
-    }
-
-    .ace_text-input {
-        break-inside: auto !important;
-        orphans: 3;
-        widows: 3;
-    }
-
-    label {
-        page-break-after: avoid;
-    }
 }
 
 
 
-
-
-
-.lia-accordion__toggle {
-  visibility: hidden;
-  width: 5px !important;
+.lia-print-only {
+    display: inline-block !important;
+    position: absolute;
+    z-index: 1000;
+    padding: 1rem;
+    background-color: white;
 }
 
-.lia-effect__circle {
-  display: none;
+.lia-print-only::before {
+    content: "↪︎ ";
 }
 
-.lia-code-terminal__input {
-  display: none;
+.lia-slide {
+    height: unset !important;
+}
+
+.lia-toc,
+.lia-support-menu--open,
+.lia-slide__footer,
+.lia-quiz__control,
+.lia-code-control,
+.lia-plot__switch,
+.lia-table__sort,
+.lia-code__min-max,
+#lia-toolbar-nav {
+    display: none !important;
+    width: 0 !important;
+}
+
+main,
+.lia-canvas,
+.lia-slide {
+    width: unset !important;
+    height: unset !important;
+    overflow: hidden !important;
+    margin-top: unset !important;
 }
 
 .lia-code-terminal__output {
-  white-space: pre-wrap;
+    height: fit-content !important;
+    max-height: 800px !important;
 }
 
-.lia-accordion__item {
-  break-inside: avoid;
-  orphans: 5;
+table,
+ul,
+ol,
+figure,
+blockquote,
+.lia-quiz,
+.lia-code-terminal__output {
+    break-inside: avoid;
 }
 
-.lia-accordion__item {
-  break-inside: avoid;
-  orphans: 3;
-  widows: 3;
+.lia-gallery {
+    flex-flow: wrap;
 }
 
-.ace_editor {
-  max-height: none !important;
-  height: none !important;
-  min-height: unset !important;
-  break-inside: auto !important;
-  orphans: 3;
-  widows: 3;
+.lia-lightbox__icon {
+    display: none;
+}
+
+.lia-table-responsive {
+    max-height: fit-content !important;
+}
+
+.ace_gutter-active-line {
+    background-color: unset !important;
+}
+
+.ace_hidden-cursors {
+    opacity: 0;
 }
 
 .ace_text-input {
-  break-inside: auto !important;
-  orphans: 3;
-  widows: 3;
+    break-inside: auto !important;
+    orphans: 3;
+    widows: 3;
 }
 
 label {
-  page-break-after: avoid;
+    page-break-after: avoid;
+}
+
+.lia-accordion__toggle {
+    visibility: hidden;
+    width: 5px !important;
+}
+
+.lia-effect__circle {
+    display: none;
+}
+
+.lia-code-terminal__input {
+    display: none;
 }
 
 .lia-code-terminal__output {
-  break-inside: avoid;
+    white-space: pre-wrap;
 }
 
+.lia-accordion__item {
+    break-inside: avoid;
+    orphans: 3;
+    widows: 3;
+}
+
+.ace_editor {
+    max-height: none !important;
+    height: none !important;
+    min-height: unset !important;
+    break-inside: auto !important;
+    orphans: 3;
+    widows: 3;
+}
 
 main {
-  orphans: 3;
-  widows: 3;
+    orphans: 3;
+    widows: 3;
 }

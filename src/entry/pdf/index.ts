@@ -1,9 +1,9 @@
-import LiaScript from '../../typescript/liascript/index'
+import * as Lia from '../../typescript/liascript/index'
 
 import('../../typescript/connectors/Base/index').then(function (Base) {
   let debug = false
 
-  var app = new LiaScript(
+  var app = new Lia.LiaScript(
     document.body,
     new Base.Connector(),
     false, // allowSync
