@@ -270,7 +270,7 @@ rm -rf elm-stuff .parcel-cache # remove all cached stuff
 npm run build # force an entire rebuild of the project 
 ```
 
-This will apply the following three patches:
+This will apply the following four patches:
 
 - elm-break-dom: allows browser extensions such as screen-readers to change the
   nodes of the app, without crashing the app
@@ -279,6 +279,10 @@ This will apply the following three patches:
   Desktop-apps
 
 - elm-patch/dom: enable onclick events as well as innerHTML
+
+- Dexie: this will allow only LiaScript to access indexedDB, which increases the
+  security, by restricting the access. This way information about user states,
+  visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
 
