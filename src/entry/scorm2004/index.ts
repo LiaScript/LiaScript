@@ -1,4 +1,4 @@
-import LiaScript from '../../typescript/liascript/index'
+import * as Lia from '../../typescript/liascript/index'
 
 import('../../typescript/connectors/SCORM2004/index').then(function (
   SCORM2004
@@ -18,7 +18,7 @@ import('../../typescript/connectors/SCORM2004/index').then(function (
       debug = true
     }
 
-    const app = new LiaScript(
+    const app = new Lia.LiaScript(
       document.body,
       new SCORM2004.Connector(),
       false, // allowSync

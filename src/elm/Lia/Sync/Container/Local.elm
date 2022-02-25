@@ -169,30 +169,29 @@ unionHelper local internal external combined =
             List.reverse combined
 
         ( [], e :: es ) ->
-            ( True, e )
-                :: combined
-                |> unionHelper local [] es
+            unionHelper local [] es (( True, e ) :: combined)
 
         ( i :: is, [] ) ->
-            ( True, i )
-                :: combined
-                |> unionHelper local is []
+            unionHelper local is [] (( True, i ) :: combined)
 
         ( i :: is, e :: es ) ->
-            ( case ( Dict.size i, Dict.size e ) of
-                ( 0, 0 ) ->
-                    False
+            unionHelper local
+                is
+                es
+                (( case ( Dict.size i, Dict.size e ) of
+                    ( 0, 0 ) ->
+                        False
 
-                _ ->
-                    if local then
-                        Dict.size (Dict.diff e i) /= 0
+                    _ ->
+                        if local then
+                            Dict.size (Dict.diff e i) /= 0
 
-                    else
-                        Dict.size (Dict.diff e i) /= Dict.size (Dict.diff i e)
-            , Dict.union i e
-            )
-                :: combined
-                |> unionHelper local is es
+                        else
+                            Dict.size (Dict.diff e i) /= Dict.size (Dict.diff i e)
+                 , Dict.union i e
+                 )
+                    :: combined
+                )
 
 
 {-| Turn a Container into a JSON. This encoder is a generic encoder and

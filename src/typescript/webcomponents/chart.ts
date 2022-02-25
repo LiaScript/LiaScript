@@ -10,7 +10,7 @@ import 'echarts/i18n/langFR.js'
 import 'echarts/i18n/langJA.js'
 import 'echarts/i18n/langTH.js'
 import 'echarts/i18n/langZH.js'
-import { allowedProtocol, debounce } from '../helper'
+import * as helper from '../helper'
 
 const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 
@@ -71,7 +71,7 @@ customElements.define(
 
       let self = this
       this.resizeObserver = new ResizeObserver(
-        debounce(() => {
+        helper.debounce(() => {
           self.resizeChart()
         })
       )
@@ -164,7 +164,7 @@ customElements.define(
           this.geoJson.url = newValue
           this.geoJson.data = null
 
-          if (allowedProtocol(this.geoJson.url)) {
+          if (helper.allowedProtocol(this.geoJson.url)) {
             let xmlHttp = new XMLHttpRequest()
             let self = this
             xmlHttp.onreadystatechange = function () {

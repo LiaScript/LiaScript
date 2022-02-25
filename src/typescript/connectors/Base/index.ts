@@ -1,6 +1,6 @@
 import Lia from '../../liascript/types/lia.d'
 
-import { LiaStorage } from './storage'
+import * as STORAGE from './storage'
 import { Settings } from './settings'
 
 /** Internal abstraction to query the database. All entries are organized with
@@ -37,7 +37,7 @@ export class Connector {
   }
 
   storage() {
-    return new LiaStorage()
+    return new STORAGE.LiaStorage()
   }
 
   initSettings(data: Lia.Settings | null, local = false) {

@@ -1,8 +1,8 @@
 // @ts-ignore
-import ace from 'ace-builds/src-noconflict/ace'
-import getMode from './editor-modes'
+import ace from 'ace-builds/src-min-noconflict/ace'
+import * as EDITOR from './editor-modes'
 
-import { debounce } from '../helper'
+import * as helper from '../helper'
 
 function markerStyle(name: string): string {
   if (typeof name === 'string') {
@@ -124,7 +124,7 @@ customElements.define(
       this._editor = ace.edit(this, {
         value: this.model.value,
         theme: 'ace/theme/' + this.model.theme,
-        mode: getMode(this.model.mode),
+        mode: EDITOR.getMode(this.model.mode),
         showPrintMargin: this.model.showPrintMargin,
         highlightActiveLine: this.model.highlightActiveLine,
         firstLineNumber: this.model.firstLineNumber,
@@ -152,7 +152,7 @@ customElements.define(
 
       input.setAttribute('role', 'application')
       if (!this.model.readOnly) {
-        const runDispatch = debounce(() => {
+        const runDispatch = helper.debounce(() => {
           this.model.value = this._editor.getValue()
           this.dispatchEvent(new CustomEvent('editorChanged'))
         })
@@ -365,7 +365,7 @@ customElements.define(
       if (!this._editor) return
 
       try {
-        this._editor.getSession().setMode(getMode(mode))
+        this._editor.getSession().setMode(EDITOR.getMode(mode))
       } catch (e) {
         console.log('Problem Ace: setMode(', mode, ') => ', e.toString())
       }

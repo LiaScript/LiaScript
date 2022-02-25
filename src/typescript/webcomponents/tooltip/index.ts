@@ -1,8 +1,8 @@
 // @ts-ignore
-import { extract } from '../embed/index'
-import { fetch as fetch_LiaScript } from '../preview-lia'
-import { PROXY } from '../../helper'
-import { parse as parseHTML } from './html'
+import * as EMBED from '../embed/index'
+import * as PREVIEW from '../preview-lia'
+import * as helper from '../../helper'
+import * as HTML from './html'
 
 /**
  * Tooltips are presented in one single div that is attached to the very end of
@@ -282,7 +282,7 @@ class PreviewLink extends HTMLElement {
         let liascript_url = this.sourceUrl.match(LIASCRIPT_PATTERN)
         if (liascript_url) {
           // apply the fetching function from module `preview-lia.ts`
-          fetch_LiaScript(
+          PREVIEW.fetch(
             liascript_url[1], // extracted markdown url
             function (
               url?: string,
@@ -305,7 +305,7 @@ class PreviewLink extends HTMLElement {
           try {
             // try to get the oEmbed resource, this is much cheaper than to
             // parse the entire HTML document
-            extract(this.sourceUrl, {})
+            EMBED.extract(this.sourceUrl, {})
               .then((data) => {
                 self.cache = toCard(
                   self.sourceUrl,
@@ -360,7 +360,7 @@ class PreviewLink extends HTMLElement {
     }
 
     // run a local extractor to get all required values
-    let data = parseHTML(this.sourceUrl, html)
+    let data = HTML.parse(this.sourceUrl, html)
 
     // for some reason this might be required to get images from the proxy
     // version, which might change the url
@@ -464,7 +464,7 @@ function toCard(
   if (!url) return ''
 
   // if the starts with the internal proxy that is used, when CORS errors occur
-  url = url.replace(PROXY, '')
+  url = url.replace(helper.PROXY, '')
 
   let card = ''
 
@@ -554,7 +554,7 @@ export function initTooltip() {
 function fetch(url: string, callback: (doc: string) => void, trial = 0) {
   // shortcut for directly use the proxy
   if (trial == 0 && proxy(url)) {
-    fetch(PROXY + url, callback, 1)
+    fetch(helper.PROXY + url, callback, 1)
     return
   }
 
@@ -580,7 +580,7 @@ function fetch(url: string, callback: (doc: string) => void, trial = 0) {
   http.onerror = function (_e) {
     if (trial === 0) {
       // try to fetch the website with a proxy url
-      fetch(PROXY + url, callback, 1)
+      fetch(helper.PROXY + url, callback, 1)
     }
   }
 

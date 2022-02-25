@@ -1,14 +1,14 @@
 import log from '../../liascript/log'
 
-import { LiaDB } from './database'
-import { Connector as Base, Record } from '../Base/index'
+import * as DB from './database'
+import * as Base from '../Base/index'
 
-class Connector extends Base {
-  private database: LiaDB
+class Connector extends Base.Connector {
+  private database: DB.LiaDB
 
   constructor() {
     super()
-    this.database = new LiaDB()
+    this.database = new DB.LiaDB()
   }
 
   hasIndex() {
@@ -22,15 +22,15 @@ class Connector extends Base {
     })
   }
 
-  load(record: Record) {
+  load(record: Base.Record) {
     return this.database.load(record)
   }
 
-  store(record: Record) {
+  store(record: Base.Record) {
     return this.database.store(record)
   }
 
-  update(record: Record, mapping: (project: any) => any) {
+  update(record: Base.Record, mapping: (project: any) => any) {
     this.database.transaction(record, mapping)
   }
 

@@ -1,8 +1,8 @@
 import { Gun } from './gun.d'
-import { Sync as Base } from '../Base/index'
+import * as Base from '../Base/index'
 import { Crypto } from '../Crypto'
 
-export class Sync extends Base {
+export class Sync extends Base.Sync {
   private gun?: Gun
   private store: string = ''
   private gunServer: string[] = []

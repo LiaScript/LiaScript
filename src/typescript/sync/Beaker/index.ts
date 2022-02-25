@@ -1,6 +1,6 @@
 import Beaker from './beaker.d'
 
-import { Sync as Base } from '../Base/index'
+import * as Base from '../Base/index'
 
 function encode(json: object) {
   return new TextEncoder().encode(JSON.stringify(json))
@@ -20,7 +20,7 @@ export function isSupported(): boolean {
   return window.beaker && window.location.protocol === 'hyper:' ? true : false
 }
 
-export class Sync extends Base {
+export class Sync extends Base.Sync {
   private peerIds: Set<number> = new Set()
 
   private peerEvent?: Beaker.Event

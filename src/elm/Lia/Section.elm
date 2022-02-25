@@ -232,11 +232,13 @@ syncHelper fn tuples sections =
             sections
 
         ( i, state ) :: ts ->
-            sections
-                |> Array.get i
-                |> Maybe.map (\sec -> Array.set i (fn state sec) sections)
-                |> Maybe.withDefault sections
-                |> syncHelper fn ts
+            syncHelper fn
+                ts
+                (sections
+                    |> Array.get i
+                    |> Maybe.map (\sec -> Array.set i (fn state sec) sections)
+                    |> Maybe.withDefault sections
+                )
 
 
 syncQuiz : Local.Container Quiz_.Sync -> Section -> Section

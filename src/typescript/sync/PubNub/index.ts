@@ -1,6 +1,6 @@
-import { Sync as Base } from '../Base/index'
+import * as Base from '../Base/index'
 import log from '../../liascript/log'
-export class Sync extends Base {
+export class Sync extends Base.Sync {
   private pubnub: any
   private channel: string = ''
   private publishKey?: string
