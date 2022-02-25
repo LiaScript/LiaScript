@@ -1,4 +1,4 @@
-import LiaScript from '../../typescript/liascript/index'
+import * as Lia from '../../typescript/liascript/index'
 
 import('../../typescript/connectors/Browser/index').then(function (Browser) {
   class Connector extends Browser.Connector {
@@ -22,7 +22,7 @@ import('../../typescript/connectors/Browser/index').then(function (Browser) {
       debug = true
     }
 
-    const app = new LiaScript(
+    const app = new Lia.LiaScript(
       document.body,
       new Connector(),
       false, // allowSync

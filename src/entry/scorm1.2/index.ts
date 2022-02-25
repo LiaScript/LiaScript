@@ -1,4 +1,4 @@
-import LiaScript from '../../typescript/liascript/index'
+import * as Lia from '../../typescript/liascript/index'
 
 import('../../typescript/connectors/SCORM1.2/index').then(function (Browser) {
   const ua = window.navigator.userAgent
@@ -16,7 +16,7 @@ import('../../typescript/connectors/SCORM1.2/index').then(function (Browser) {
       debug = true
     }
 
-    const app = new LiaScript(
+    const app = new Lia.LiaScript(
       document.body,
       new Browser.Connector(),
       false, // allowSync

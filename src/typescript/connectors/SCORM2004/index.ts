@@ -1,4 +1,4 @@
-import { Connector as Base, Record } from '../Base/index'
+import * as Base from '../Base/index'
 import { CMIElement, SCORM } from './scorm.d'
 import log from '../../liascript/log'
 /**
@@ -7,7 +7,7 @@ import log from '../../liascript/log'
  *
  * <https://scorm.com/scorm-explained/technical-scorm/run-time/run-time-reference/#section-4>
  */
-class Connector extends Base {
+class Connector extends Base.Connector {
   private scorm?: SCORM
 
   /**
@@ -199,7 +199,7 @@ class Connector extends Base {
    * @param record
    * @returns the loaded dataset or nothing (for code)
    */
-  load(record: Record) {
+  load(record: Base.Record) {
     if (!this.active) return
 
     switch (record.table) {
@@ -215,7 +215,7 @@ class Connector extends Base {
    * Store the data, send from LiaScript to the Backend.
    * @param record
    */
-  store(record: Record) {
+  store(record: Base.Record) {
     if (!this.active) return
 
     switch (record.table) {
@@ -236,7 +236,7 @@ class Connector extends Base {
    * so, this will be stored within the backend
    * @param record
    */
-  storeHelper(record: Record) {
+  storeHelper(record: Base.Record) {
     for (let i = 0; i < this.db[record.table][record.id].length; i++) {
       if (neq(record.data[i], this.db[record.table][record.id][i])) {
         this.updateInteraction(
