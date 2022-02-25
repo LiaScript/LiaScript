@@ -231,9 +231,7 @@ reduce_ element =
             reduce_ e
 
         Container list _ ->
-            list
-                |> List.map reduce_
-                |> (\c -> Container c [])
+            Container (List.map reduce_ list) []
 
         _ ->
             element
