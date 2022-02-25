@@ -8,7 +8,7 @@ import Lia from './types/lia.d'
 
 import { Connector } from '../connectors/Base/index'
 
-import { initTooltip } from '../webcomponents/tooltip/index'
+import * as TOOLTIP from '../webcomponents/tooltip/index'
 
 // Services
 import Console from './service/Console'
@@ -19,18 +19,18 @@ import Share from './service/Share'
 import Slide from './service/Slide'
 import Swipe from './service/Swipe'
 import Sync from './service/Sync'
-import { inject, Service as TTS } from './service/TTS'
+import * as TTS from './service/TTS'
 import Translate from './service/Translate'
 
 // ----------------------------------------------------------------------------
 // GLOBAL INITIALIZATION
-import { initGlobals } from './init'
+import * as GLOBALS from './init'
 // TODO: CHECK window.LIA.defaultCourse functionality
-initGlobals()
-window.LIA.injectResposivevoice = inject
+GLOBALS.initGlobals()
+window.LIA.injectResposivevoice = TTS.inject
 
 // ----------------------------------------------------------------------------
-class LiaScript {
+export class LiaScript {
   private app: any
   public connector: Connector
   public sync?: any
@@ -119,8 +119,32 @@ class LiaScript {
       })
     }
 
+    window.LIA.gotoNext = () => {
+      sender({
+        reply: true,
+        track: [['goto', -1]],
+        service: '',
+        message: {
+          cmd: 'next',
+          param: null,
+        },
+      })
+    }
+
+    window.LIA.gotoPrevious = () => {
+      sender({
+        reply: true,
+        track: [['goto', -1]],
+        service: '',
+        message: {
+          cmd: 'prev',
+          param: null,
+        },
+      })
+    }
+
     // Attach a tooltip-div to the end of the DOM
-    initTooltip()
+    TOOLTIP.initTooltip()
   }
 
   reset() {
@@ -143,7 +167,7 @@ class LiaScript {
     log.info('initEventSystem')
 
     Database.init(elmSend, this.connector)
-    TTS.init(elmSend)
+    TTS.Service.init(elmSend)
     Script.init(elmSend)
     Swipe.init(elem, elmSend)
     Translate.init(elmSend)
@@ -171,8 +195,8 @@ class LiaScript {
           Slide.handle(event)
           break
 
-        case TTS.PORT:
-          TTS.handle(event)
+        case TTS.Service.PORT:
+          TTS.Service.handle(event)
           break
 
         case Script.PORT:
@@ -212,5 +236,3 @@ class LiaScript {
      break
    }
 */
-
-export default LiaScript

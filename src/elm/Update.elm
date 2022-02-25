@@ -262,9 +262,12 @@ update msg model =
 
                             return =
                                 Lia.Script.load_slide session True slide model.lia
+
+                            lia =
+                                return.value
                         in
                         ( { model
-                            | lia = return.value
+                            | lia = { lia | url = Url.toString { url | fragment = Nothing } }
                             , session = session
                           }
                         , batch LiaScript return
@@ -284,9 +287,12 @@ update msg model =
 
                             return =
                                 Lia.Script.load_slide session True slide model.lia
+
+                            lia =
+                                return.value
                         in
                         ( { model
-                            | lia = return.value
+                            | lia = { lia | url = Url.toString { url | fragment = Nothing } }
                             , session = session
                           }
                         , batch LiaScript return

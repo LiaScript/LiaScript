@@ -62,6 +62,20 @@ declare global {
        */
       goto: (slide: number) => void
 
+      /**
+       * Go to the next animation step, if there is no one left, this will
+       * switch to the next slide. In Textbook mode this will result in a
+       * slide change.
+       */
+      gotoNext: () => void
+
+      /**
+       * Go to the previous animation step, if there is no one, this will
+       * switch to the previous slide. In Textbook mode this will result in a
+       * slide change.
+       */
+      gotoPrevious: () => void
+
       /** This is only used by the editor, to open the slide, which contains
        * linenumber.
        */

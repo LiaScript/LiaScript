@@ -1,4 +1,4 @@
-function getMode(name: string): string {
+export function getMode(name: string): string {
   return 'ace/mode/' + (modes[name] || 'text')
 }
 
@@ -591,5 +591,3 @@ const modes: {
 
   zeek: 'zeek',
 }
-
-export default getMode

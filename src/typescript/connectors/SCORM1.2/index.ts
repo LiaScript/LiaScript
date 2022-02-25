@@ -1,6 +1,6 @@
 import { SCORM } from './scorm'
 
-import { Connector as Base } from '../Base/index'
+import * as Base from '../Base/index'
 
 /**
  * A simple json-parser that does not trow an error, but returns null if it fails
@@ -20,7 +20,7 @@ function jsonParse(json: string) {
  *
  * @see <https://scorm.com/scorm-explained/technical-scorm/run-time/run-time-reference/#section-2>
  */
-class Connector extends Base {
+class Connector extends Base.Connector {
   private scorm?: SCORM
   private location: number | null
 

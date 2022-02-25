@@ -22,6 +22,8 @@ export function initGlobals() {
   init('playback')
   init('showFootnote')
   init('goto')
+  init('gotoNext')
+  init('gotoPrevious')
   init('gotoLine')
   init('lineGoto')
   init('jit')

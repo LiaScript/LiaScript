@@ -1,4 +1,4 @@
-import { allowedProtocol } from '../../helper'
+import * as helper from '../../helper'
 
 const HREF = /href=[\"'](.*?)[\"']/gi
 const SRC = /src=[\"'](.*?)[\"']/gi
@@ -157,7 +157,7 @@ function baseHREF(url: URL, match: string) {
   const begin = match.slice(0, pos + 1)
   const end = match.slice(pos + 1)
 
-  if (allowedProtocol(begin)) {
+  if (helper.allowedProtocol(begin)) {
     return match
   } else if (end.startsWith('//')) {
     return match

@@ -103,12 +103,11 @@ type Analyse
 
 analyseType : List String -> Analyse
 analyseType ids =
-    if allNumbers ids then
-        Categorical
-        --Quantitative
-
-    else
-        Categorical
+    --if allNumbers ids then
+    --    Quantitative
+    --else
+    --    Categorical
+    Categorical
 
 
 allNumbers : List String -> Bool

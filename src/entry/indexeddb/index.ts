@@ -1,8 +1,12 @@
 import * as Lia from '../../typescript/liascript/index'
 
-import('../../typescript/connectors/SCORM2004/index').then(function (
-  SCORM2004
-) {
+import('../../typescript/connectors/Browser/index').then(function (Browser) {
+  class Connector extends Browser.Connector {
+    hasIndex(): boolean {
+      return false
+    }
+  }
+
   const ua = window.navigator.userAgent
 
   if (ua.indexOf('Trident/') > 0 || ua.indexOf('MSIE ') > 0) {
@@ -20,7 +24,7 @@ import('../../typescript/connectors/SCORM2004/index').then(function (
 
     const app = new Lia.LiaScript(
       document.body,
-      new SCORM2004.Connector(),
+      new Connector(),
       false, // allowSync
       debug
     )

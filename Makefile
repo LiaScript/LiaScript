@@ -39,6 +39,7 @@ index:
 	sed -i "s/href=\"manifest\./href=\".\/manifest./g" dist/index.html
 	sed -i "s/href=\"up\_/href=\".\/up_/g" dist/index.html
 	sed -i "s/src=\"index\./src=\".\/index./g" dist/index.html
+	sed -i "s/content=\"up\_\/up\_/content=\".\/up_\/up_/g" dist/index.html
 	sed -i "s/src:local(\"\")/src:local(\"\.\")/g" dist/index.*.css
 	sed -i "s/url(\//url(/g" dist/index.*.css
 
@@ -46,7 +47,7 @@ responsivevoice:
 	if [ -z "$(KEY)" ]; then \
         echo "NO responsivevoice key ... "; \
 	else \
-		sed -i "s/<\/head>/<script defer src=\"https:\/\/code.responsivevoice.org\/responsivevoice.js?key=$(KEY)\"><\/script><\/head>/g" dist/index.html ; \
+		sed -i "s/<\/head>/<script defer async src=\"https:\/\/code.responsivevoice.org\/responsivevoice.js?key=$(KEY)\"><\/script><\/head>/g" dist/index.html ; \
 	fi
 
 manifest:
