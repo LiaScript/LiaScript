@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.0
+version:  0.10.1
 language: en
 narrator: UK English Male
 
@@ -285,6 +285,14 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.1** (25/02/2022)
+
+- Build optimizations
+- improve: Security by allowing only LiaScript to access indexedDB
+- feat: Add functions `LIA.gotoNext` and `LIA.gotoPrevious` for improving
+  navigation with external libraries
+- improve: Unordered list now match the GitHub flavoured style
 
 **0.10.0** (17/02/2022)
 
