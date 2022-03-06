@@ -19,7 +19,7 @@ import Share from './service/Share'
 import Slide from './service/Slide'
 import Swipe from './service/Swipe'
 import Sync from './service/Sync'
-import * as TTS from './service/TTS'
+import * as TTS from './service/TTS_capacitor'
 import Translate from './service/Translate'
 
 // ----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ import Translate from './service/Translate'
 import * as GLOBALS from './init'
 // TODO: CHECK window.LIA.defaultCourse functionality
 GLOBALS.initGlobals()
-window.LIA.injectResposivevoice = TTS.inject
+//window.LIA.injectResposivevoice = TTS.inject
 
 // ----------------------------------------------------------------------------
 export class LiaScript {
