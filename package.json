@@ -102,10 +102,7 @@
     "test": "tests"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@capacitor-community/text-to-speech": "^1.1.2",
-=======
->>>>>>> 710a64cd (add capacitor)
     "@capacitor/android": "^3.4.1",
     "@capacitor/core": "^3.4.1"
   }
