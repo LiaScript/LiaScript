@@ -186,7 +186,7 @@ slideBottom lang settings slide effects =
                 Html.div [ Attr.class "lia-responsive-voice" ]
                     [ Html.div [ Attr.class "lia-responsive-voice__control" ]
                         [ btnReplay lang sound settings
-                        , responsiveVoice sound
+                        , responsiveVoice False
                         , btnStop lang settings
                         ]
                     ]
