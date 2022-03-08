@@ -184,22 +184,29 @@ block_playback config e =
                 Html.button
                     [ Attr.class "lia-btn lia-btn--transparent text-highlight icon icon-play-circle"
                     , A11y_Key.tabbable True
-                    , playBackAttr e.id e.voice config.slide "this.parentNode.childNodes[1]"
+                    , playBackAttr e.id
+                        e.voice
+                        (e.voice
+                            |> Voice.getLang
+                            |> Maybe.withDefault "en"
+                        )
+                        config.slide
+                        "this.parentNode.childNodes[1]"
                     ]
                     []
 
-            Just ( translate, voice ) ->
+            Just { translated, lang, name } ->
                 Html.button
                     [ Attr.class "lia-btn lia-btn--transparent text-highlight icon icon-play-circle"
                     , A11y_Key.tabbable True
-                    , playBackAttr e.id voice config.slide "this.parentNode.childNodes[1]"
+                    , playBackAttr e.id name lang config.slide "this.parentNode.childNodes[1]"
                     ]
                     []
 
 
-playBackAttr : Int -> String -> Int -> String -> Html.Attribute msg
-playBackAttr id voice section command =
-    Service.TTS.playback { voice = voice, text = "XXX" }
+playBackAttr : Int -> String -> String -> Int -> String -> Html.Attribute msg
+playBackAttr id voice lang section command =
+    Service.TTS.playback { voice = voice, lang = lang, text = "XXX" }
         |> Event.pushWithId "playback" id
         |> Event.pushWithId "effect" section
         |> Event.encode
@@ -233,18 +240,23 @@ inline_playback config e =
                     , playBackAttr
                         e.id
                         e.voice
+                        (e.voice
+                            |> Voice.getLang
+                            |> Maybe.withDefault "en"
+                        )
                         config.slide
                         "this.labels[0]"
                     , A11y_Key.tabbable True
                     ]
                     []
 
-            Just ( translate, voice ) ->
+            Just { translated, lang, name } ->
                 Html.button
                     [ Attr.class "lia-btn lia-btn--transparent icon icon-play-circle mx-1"
                     , playBackAttr
                         e.id
-                        voice
+                        name
+                        lang
                         config.slide
                         "this.labels[0]"
                     , A11y_Key.tabbable True
