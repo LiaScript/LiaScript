@@ -165,7 +165,11 @@ function speak(
   })
     .then(() => onend())
     .catch((e) => {
-      alert(JSON.stringify(e))
+      alert(
+        `TTS language might not be supported => error-code: (${JSON.stringify(
+          e
+        )})`
+      )
       onerror(e)
     })
 }
