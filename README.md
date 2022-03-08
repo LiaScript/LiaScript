@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.1
+version:  0.10.2
 language: en
 narrator: UK English Male
 
@@ -285,6 +285,14 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.2** (08/03/2022)
+
+- improve: Summary with automated quantity or category detection
+- improve: TTS now adds lang ("en") to text output. This is especially useful
+  when other services than responsiveVoice are used.
+- fix: Google-translate and others use `https://` instead of `//` only.
+- Add icon resources
 
 **0.10.1** (25/02/2022)
 
