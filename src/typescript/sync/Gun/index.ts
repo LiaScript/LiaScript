@@ -21,7 +21,7 @@ export class Sync extends Base.Sync {
     } else {
       this.load(
         [
-          '//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/gun.min.js',
+          'https://cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/gun.min.js',
           //'//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/axe.min.js',
           //'//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/sea.min.js',
           Crypto.url,

@@ -2,6 +2,7 @@ module Lia.Markdown.Survey.Sync exposing
     ( Data
     , Sync
     , decoder
+    , density
     , encoder
     , matrix
     , select
@@ -250,3 +251,51 @@ encoder (Sync state) =
 decoder : JD.Decoder Sync
 decoder =
     JD.map Sync Json.toState
+
+
+e : Float
+e =
+    2.718281828459045
+
+
+gaussKDE : Float -> Float -> Float
+gaussKDE xi x =
+    (1 / sqrt (2 * Basics.pi)) * e ^ (((xi - x) ^ 2) / -2)
+
+
+density : { steps : Maybe Int, width : Float } -> List Float -> { x : List Float, y : List Float }
+density { steps, width } sample =
+    let
+        minimum =
+            List.minimum sample
+                |> Maybe.withDefault 0
+
+        maximum =
+            List.maximum sample
+                |> Maybe.withDefault 0
+
+        realSteps =
+            Maybe.withDefault (2 * round (maximum - minimum)) steps
+
+        stepWidth =
+            ((maximum + width) - (minimum - width)) / toFloat realSteps
+
+        xiData =
+            (minimum - width)
+                |> List.repeat realSteps
+                |> List.indexedMap (\i v -> v + (toFloat i * stepWidth))
+
+        factor =
+            1 / (2 * width + toFloat (List.length sample))
+    in
+    { x = xiData
+    , y =
+        xiData
+            |> List.map
+                (\xi ->
+                    sample
+                        |> List.map (gaussKDE xi)
+                        |> List.sum
+                        |> (*) factor
+                )
+    }
