@@ -71,10 +71,12 @@ function playback(event: Lia.Event) {
 
   const text = event.message.param.text
   const voice = event.message.param.voice
+  const lang = event.message.param.lang
 
   speak(
     text,
     voice,
+    lang,
     function () {
       event.message.cmd = 'start'
       event.message.param = undefined
@@ -98,6 +100,7 @@ function playback(event: Lia.Event) {
 function read(event: Lia.Event) {
   let element = document.getElementsByClassName(event.message.param)
   let voice = element[0].getAttribute('data-voice') || 'default'
+  let lang = element[0].getAttribute('data-lang') || 'en'
 
   let text = ''
 
@@ -113,6 +116,7 @@ function read(event: Lia.Event) {
     speak(
       text,
       voice,
+      lang,
       function () {
         //event.track[0][0] = SETTINGS
         event.message.cmd = 'start'
@@ -165,6 +169,7 @@ function cancel() {
 function speak(
   text: string,
   voice: string,
+  lang: string,
   onstart?: () => void,
   onend?: () => void,
   onerror?: (_: any) => void
