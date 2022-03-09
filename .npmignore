@@ -32,3 +32,4 @@ patches
 .parcel-cache
 .parcelrc
 .env
+resources
