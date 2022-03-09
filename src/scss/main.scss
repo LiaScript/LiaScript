@@ -91,7 +91,7 @@
 }
 
 
-
+/*
 .lia-print-only {
     display: inline-block !important;
     position: absolute;
@@ -99,6 +99,7 @@
     padding: 1rem;
     background-color: white;
 }
+*/
 
 .lia-print-only::before {
     content: "↪︎ ";
@@ -132,7 +133,7 @@ main,
 
 .lia-code-terminal__output {
     height: fit-content !important;
-    max-height: 800px !important;
+    max-height: 600px !important;
 }
 
 table,
@@ -205,6 +206,14 @@ label {
     break-inside: auto !important;
     orphans: 3;
     widows: 3;
+}
+
+span {
+
+    &.lia-effect--inline,
+    &.hide {
+        display: inline-block !important;
+    }
 }
 
 main {
