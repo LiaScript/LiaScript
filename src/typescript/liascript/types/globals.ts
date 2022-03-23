@@ -107,6 +107,12 @@ declare global {
        */
       injectResposivevoice: (key: string) => void
 
+      /**
+       * Steal the focus and highlight the header on the main section.
+       * This can be switched of within editors. By default it is `true`.
+       */
+      focusOnMain: boolean
+
       /** To send log information to other functions, this function can be
        * overwritten. All debug-messages will then be passed to this function
        * as well. (window.LIA.debug has to be set to true)
