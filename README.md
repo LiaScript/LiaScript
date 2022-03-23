@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.4
+version:  0.10.5
 language: en
 narrator: UK English Male
 
@@ -285,6 +285,14 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.5** (23/03/2022)
+
+- Add two helpers:
+  
+  - `LIA.focusOnMain`: Prevent LiaScript from stealing the focus, when a slide
+    gets loaded.
+  - `LIA.scrollUpOnMain`: Prevent scrolling to top when a slide is loaded.
 
 **0.10.4** (23/03/2022)
 
