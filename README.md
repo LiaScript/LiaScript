@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.2
+version:  0.10.3
 language: en
 narrator: UK English Male
 
@@ -286,9 +286,14 @@ This will apply the following four patches:
 
 ## Version-Changes
 
+**0.10.3** (23/03/2022)
+
+- chore: Update npm packages
+- fix: Modal images work in editor again
+
 **0.10.2** (08/03/2022)
 
-- improve: Summary with automated quantity or category detection
+- improve: Survey with automated quantity or category detection
 - improve: TTS now adds lang ("en") to text output. This is especially useful
   when other services than responsiveVoice are used.
 - fix: Google-translate and others use `https://` instead of `//` only.
