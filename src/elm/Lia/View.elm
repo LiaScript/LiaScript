@@ -443,7 +443,7 @@ showModal model =
                 |> List.singleton
                 |> modal (UpdateSettings (Settings_.Toggle Settings_.Sync)) Nothing
 
-        ( Just url, Just _ ) ->
+        ( Just url, _ ) ->
             modal (Media ( "", Nothing, Nothing ))
                 Nothing
                 [ Html.figure
