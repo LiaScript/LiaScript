@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.3
+version:  0.10.4
 language: en
 narrator: UK English Male
 
@@ -285,6 +285,10 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.4** (23/03/2022)
+
+- undo: Update of npm packages, which caused build problems in css
 
 **0.10.3** (23/03/2022)
 
