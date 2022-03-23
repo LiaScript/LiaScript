@@ -18,6 +18,10 @@ export function initGlobals() {
     window.LIA.focusOnMain = true
   }
 
+  if (window.LIA.scrollUpOnMain == undefined) {
+    window.LIA.scrollUpOnMain = true
+  }
+
   if (window.LIA.debug === undefined) {
     window.LIA.debug = false
   }

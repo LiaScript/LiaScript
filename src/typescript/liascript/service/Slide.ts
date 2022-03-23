@@ -64,7 +64,7 @@ function scrollUp() {
   const main = document.getElementsByTagName('main')[0]
 
   if (main) {
-    main.scrollTo(0, 0)
+    if (window.LIA.scrollUpOnMain) main.scrollTo(0, 0)
 
     // The first element within a slide is in LiaScript the header, in order to
     // improve accessibility this element is put in focus to offer a general
