@@ -15,7 +15,6 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Lia.Markdown.Effect.Model exposing (Element)
 import Lia.Sync.Container.Local as Local
 import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
@@ -55,6 +54,7 @@ init supportedBackends =
     { sync =
         { support =
             [ Via.Beaker
+            , Via.Edrys
             , Via.GUN Const.gunDB_ServerURL
             , Via.Jitsi
             , Via.Matrix
