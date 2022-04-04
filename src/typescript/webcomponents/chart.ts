@@ -1,3 +1,5 @@
+import ResizeObserver from 'resize-observer-polyfill'
+
 // @ts-ignore
 import * as echarts from 'echarts'
 import 'echarts-wordcloud'
