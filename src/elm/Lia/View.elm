@@ -135,6 +135,7 @@ viewSlide screen model =
                     |> Html.map UpdateMarkdown
                 , slideBottom
                     model.translation
+                    (screen.width < 400)
                     model.settings
                     model.section_active
                     section.effect_model
@@ -169,8 +170,8 @@ viewSlide screen model =
 {-| **@private:** used to display the text2speech output settings and spoken
 comments in text, depending on the currently applied rendering mode.
 -}
-slideBottom : Lang -> Settings -> Int -> Effect.Model SubSection -> Html Msg
-slideBottom lang settings slide effects =
+slideBottom : Lang -> Bool -> Settings -> Int -> Effect.Model SubSection -> Html Msg
+slideBottom lang tiny settings slide effects =
     let
         sound =
             settings.sound && Effect.hasComments effects
@@ -183,10 +184,17 @@ slideBottom lang settings slide effects =
                 Html.text ""
 
             _ ->
-                Html.div [ Attr.class "lia-responsive-voice" ]
+                Html.div
+                    [ Attr.class "lia-responsive-voice"
+                    , if tiny then
+                        Attr.style "padding" "0px"
+
+                      else
+                        Attr.class ""
+                    ]
                     [ Html.div [ Attr.class "lia-responsive-voice__control" ]
                         [ btnReplay lang sound settings
-                        , responsiveVoice sound
+                        , responsiveVoice tiny sound
                         , btnStop lang settings
                         ]
                     ]
@@ -403,8 +411,8 @@ slideNavigation lang mode slide effect =
 -- ]
 
 
-responsiveVoice : Bool -> Html msg
-responsiveVoice show =
+responsiveVoice : Bool -> Bool -> Html msg
+responsiveVoice tiny show =
     Html.small
         [ Attr.class "lia-responsive-voice__info"
         , Attr.style "visibility" <|
@@ -413,6 +421,12 @@ responsiveVoice show =
 
             else
                 "hidden"
+        , Attr.style "font-size" <|
+            if tiny then
+                "65%"
+
+            else
+                "80%"
         ]
         [ Html.a [ Attr.class "lia-link", Attr.href "https://responsivevoice.org", Attr.target "_blank" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
         , Html.text " licensed under "
