@@ -22,6 +22,8 @@ $controlHeight: 4rem;
     height: 100vh;
     position: absolute;
     width: 100vw;
+    left: 0px;
+    top: 0px;
   }
 
   &__inner {
@@ -31,6 +33,8 @@ $controlHeight: 4rem;
     justify-content: center;
     overflow-y: auto;
     position: absolute;
+    left: 0px;
+    top: 0px;
   }
 
   &__close,

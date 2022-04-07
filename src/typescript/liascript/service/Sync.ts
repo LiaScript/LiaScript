@@ -1,4 +1,5 @@
 import * as Beaker from '../../sync/Beaker/index'
+import * as Edrys from '../../sync/Edrys/index'
 //import * as Jitsi from '../../sync/Jitsi/index'
 //import * as Matrix from '../../sync/Matrix/index'
 import * as PubNub from '../../sync/PubNub/index'
@@ -18,7 +19,9 @@ const Service = {
           // beaker is only supported within the beaker-browser
           Beaker.isSupported() ? 'beaker' : '',
           // remove these strings if you want to enable or disable certain sync support
+          'edrys',
           'gun',
+
           //'jitsi',
           //'matrix',
           'pubnub',
@@ -51,6 +54,10 @@ const Service = {
           switch (event.message.param.backend) {
             case 'beaker':
               sync = new Beaker.Sync(cbConnection, elmSend)
+              break
+
+            case 'edrys':
+              sync = new Edrys.Sync(cbConnection, elmSend)
               break
 
             case 'gun':

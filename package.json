@@ -1,6 +1,6 @@
 {
   "name": "@liascript/editor",
-  "version": "1.1.0--0.10.5",
+  "version": "1.1.0--0.10.7",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -55,10 +55,11 @@
     "@parcel/transformer-webmanifest": "^2.3.2",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
+    "@webcomponents/webcomponentsjs": "^2.6.0",
     "ace-builds": "^1.4.14",
-    "caniuse-lite": "^1.0.30001312",
+    "caniuse-lite": "^1.0.30001325",
     "dexie": "^2.0.4",
-    "echarts": "^5.3.0",
+    "echarts": "^5.3.2",
     "echarts-wordcloud": "^2.0.0",
     "elm": "^0.19.1-5",
     "elm-hot": "^1.1.6",
@@ -69,13 +70,14 @@
     "node-elm-compiler": "^5.0.6",
     "parcel": "^2.3.2",
     "parcel-reporter-multiple-static-file-copier": "^1.0.5",
-    "sass": "^1.49.8",
+    "resize-observer-polyfill": "^1.5.1",
+    "sass": "^1.49.11",
     "tsc": "^2.0.4",
-    "typescript": "^4.5.5",
+    "typescript": "^4.6.3",
     "workbox-cli": "^6.3.0"
   },
   "browserslist": [
-    "cover 80.0%"
+    "cover 94.0%"
   ],
   "multipleStaticFileCopier": [
     {
