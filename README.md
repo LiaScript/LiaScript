@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.6
+version:  0.10.7
 language: en
 narrator: UK English Male
 
@@ -285,6 +285,12 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.7** (07/04/2022)
+
+- improve: LiaScript now runs also on Feature-Phones such as Nokia with
+  [KaiOS](https://www.kaiostech.com) 2.5 ... CSS has been updated, web components,
+  the editor, eCharts, and classroom functionality can be used.
 
 **0.10.6** (28/03/2022)
 
