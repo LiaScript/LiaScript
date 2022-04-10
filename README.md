@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.7
+version:  0.10.8
 language: en
 narrator: UK English Male
 
@@ -285,6 +285,13 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.8** (10/04/2022)
+
+- improve: internal Links
+
+  - integrated URL-percent-encoding to support for example parenthesis
+  - fix: target _blank removed for internal links 
 
 **0.10.7** (07/04/2022)
 
