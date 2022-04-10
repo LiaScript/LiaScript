@@ -33,3 +33,5 @@ patches
 .parcelrc
 .env
 resources
+
+!dist/up_/up_/assets/logo_192.png
