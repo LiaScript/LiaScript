@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.1
+version:  0.10.8
 language: en
 narrator: UK English Male
 
@@ -285,6 +285,55 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.8** (10/04/2022)
+
+- improve: internal Links
+
+  - integrated URL-percent-encoding to support for example parenthesis
+  - fix: target _blank removed for internal links 
+
+**0.10.7** (07/04/2022)
+
+- improve: LiaScript now runs also on Feature-Phones such as Nokia with
+  [KaiOS](https://www.kaiostech.com) 2.5 ... CSS has been updated, web components,
+  the editor, eCharts, and classroom functionality can be used.
+
+**0.10.6** (28/03/2022)
+
+- feat: __Synchronization via [Edrys](https://github.com/edrys-org/edrys)__
+
+  If a course is loaded from within Edrys via the module:
+
+  https://github.com/edrys-org/module-liascript
+
+  States will be automatically synced within a room between all members.
+
+
+**0.10.5** (23/03/2022)
+
+- Add two helpers:
+  
+  - `LIA.focusOnMain`: Prevent LiaScript from stealing the focus, when a slide
+    gets loaded.
+  - `LIA.scrollUpOnMain`: Prevent scrolling to top when a slide is loaded.
+
+**0.10.4** (23/03/2022)
+
+- undo: Update of npm packages, which caused build problems in css
+
+**0.10.3** (23/03/2022)
+
+- chore: Update npm packages
+- fix: Modal images work in editor again
+
+**0.10.2** (08/03/2022)
+
+- improve: Survey with automated quantity or category detection
+- improve: TTS now adds lang ("en") to text output. This is especially useful
+  when other services than responsiveVoice are used.
+- fix: Google-translate and others use `https://` instead of `//` only.
+- Add icon resources
 
 **0.10.1** (25/02/2022)
 

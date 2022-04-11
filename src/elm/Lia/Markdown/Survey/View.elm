@@ -137,13 +137,20 @@ viewVectorSync config analyse questions syncData survey =
     case
         syncData
             |> Maybe.andThen (Sync.vector (List.map Tuple.first questions))
-            |> Maybe.map (vectorBlock config analyse)
     of
         Nothing ->
             survey
 
-        Just diagram ->
-            Html.div [] [ survey, diagram ]
+        Just data ->
+            Html.div []
+                [ survey
+                , case analyse of
+                    Categorical ->
+                        vectorBlockCategory config data
+
+                    Quantitative ->
+                        vectorBlockQuantity config data
+                ]
 
 
 viewMatrixSync : Config sub -> List Inlines -> List String -> Maybe (List Sync) -> Html msg -> Html msg
@@ -165,7 +172,7 @@ viewSelectSync config options syncData survey =
     case
         syncData
             |> Maybe.andThen (Sync.select (List.length options))
-            |> Maybe.map (vectorBlock config Categorical)
+            |> Maybe.map (vectorBlockCategory config)
     of
         Nothing ->
             survey
@@ -218,8 +225,8 @@ wordCloud config data =
         |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
 
 
-vectorBlock : Config sub -> Analyse -> List Sync.Data -> Html msg
-vectorBlock config analyse data =
+vectorBlockCategory : Config sub -> List Sync.Data -> Html msg
+vectorBlockCategory config data =
     JE.object
         [ ( "grid"
           , JE.object
@@ -246,15 +253,7 @@ vectorBlock config analyse data =
                 ]
           )
         , ( "series"
-          , [ [ ( "type"
-                , JE.string <|
-                    case analyse of
-                        Categorical ->
-                            "bar"
-
-                        Quantitative ->
-                            "line"
-                )
+          , [ [ ( "type", JE.string "bar" )
               , ( "smooth", JE.bool True )
               , ( "areaStyle", JE.object [ ( "opacity", JE.float 0.8 ) ] )
               , ( "data"
@@ -283,6 +282,59 @@ vectorBlock config analyse data =
                         )
                     |> JE.list JE.object
                 )
+              ]
+            ]
+                |> JE.list JE.object
+          )
+        ]
+        |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
+
+
+vectorBlockQuantity : Config sub -> List Sync.Data -> Html msg
+vectorBlockQuantity config data =
+    let
+        sample =
+            data
+                |> List.filterMap
+                    (\v ->
+                        case String.toFloat v.value of
+                            Just i ->
+                                Just (List.repeat v.absolute i)
+
+                            _ ->
+                                Nothing
+                    )
+                |> List.concat
+                |> Sync.density { steps = Nothing, width = 4 }
+    in
+    JE.object
+        [ ( "grid"
+          , JE.object
+                [ ( "left", JE.int 50 )
+                , ( "top", JE.int 20 )
+                , ( "bottom", JE.int 20 )
+                , ( "right", JE.int 20 )
+                ]
+          )
+        , ( "xAxis"
+          , JE.object
+                [ ( "type", JE.string "category" )
+                , ( "data"
+                  , JE.list JE.float sample.x
+                  )
+                ]
+          )
+        , ( "yAxis"
+          , JE.object
+                [ ( "type", JE.string "value" )
+                , ( "show", JE.bool True )
+                ]
+          )
+        , ( "series"
+          , [ [ ( "type", JE.string "line" )
+              , ( "smooth", JE.bool True )
+              , ( "areaStyle", JE.object [ ( "opacity", JE.float 0.8 ) ] )
+              , ( "data", JE.list JE.float sample.y )
               ]
             ]
                 |> JE.list JE.object

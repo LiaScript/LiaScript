@@ -26,7 +26,6 @@ import Dict
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition, add_macros)
-import Lia.Json.Encode as Json
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (loadResource)
@@ -37,9 +36,10 @@ import Lia.Update exposing (Msg(..))
 import Lia.View
 import Return exposing (Return)
 import Service.Database
-import Service.Event as Event exposing (Event)
+import Service.Event exposing (Event)
 import Session exposing (Screen, Session)
 import Translations
+import Url
 
 
 {-| Alias for the model defined by `Lia.Model.Model`
@@ -373,6 +373,8 @@ searchIndex index str =
     let
         fn =
             str
+                |> Url.percentDecode
+                |> Maybe.withDefault str
                 |> String.toLower
                 |> filterIndex
     in

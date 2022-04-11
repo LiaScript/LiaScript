@@ -95,25 +95,13 @@ type Analyse
     | Quantitative
 
 
-
-{- TODO: fix the analysis
-
--}
-
-
 analyseType : List String -> Analyse
 analyseType ids =
-    --if allNumbers ids then
-    --    Quantitative
-    --else
-    --    Categorical
-    Categorical
+    if List.all isNumber ids then
+        Quantitative
 
-
-allNumbers : List String -> Bool
-allNumbers =
-    List.map isNumber
-        >> List.all identity
+    else
+        Categorical
 
 
 isNumber : String -> Bool

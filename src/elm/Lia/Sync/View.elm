@@ -25,8 +25,8 @@ view settings =
                     False
     in
     Html.div
-        [ Attr.style "min-width" "320px"
-        , Attr.style "width" "80%"
+        [ --Attr.style "min-width" "320px"
+          Attr.style "width" "80%"
         , Attr.style "max-width" "600px"
         , Attr.style "overflow" "auto"
         ]
