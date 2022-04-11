@@ -1,3 +1,5 @@
+import ResizeObserver from 'resize-observer-polyfill'
+
 customElements.define(
   'lia-terminal',
   class extends HTMLElement {

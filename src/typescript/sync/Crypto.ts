@@ -1,5 +1,5 @@
 export const Crypto = {
-  url: '//cdn.jsdelivr.net/npm/simple-crypto-js@2.5.0/dist/SimpleCrypto.min.js',
+  url: 'https://cdn.jsdelivr.net/npm/simple-crypto-js@2.5.0/dist/SimpleCrypto.min.js',
 
   crypt: null,
 

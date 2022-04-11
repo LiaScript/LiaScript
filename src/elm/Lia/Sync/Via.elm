@@ -20,6 +20,7 @@ import Lia.Utils as Util
 
 type Backend
     = Beaker
+    | Edrys
     | GUN String
     | Jitsi
     | Matrix
@@ -31,6 +32,9 @@ toString full via =
     case via of
         Beaker ->
             "Beaker"
+
+        Edrys ->
+            "Edrys"
 
         GUN urls ->
             "GUN"
@@ -64,6 +68,9 @@ icon via =
             Beaker ->
                 "icon-beaker icon-xs"
 
+            Edrys ->
+                "icon-edrys icon-xs"
+
             GUN _ ->
                 "icon-gundb icon-xs"
 
@@ -86,6 +93,9 @@ fromString via =
     case via |> String.split "|" |> mapHead String.toLower of
         [ "beaker" ] ->
             Just Beaker
+
+        [ "edrys" ] ->
+            Just Edrys
 
         [ "gun" ] ->
             Just (GUN "")
@@ -146,6 +156,17 @@ info supported about =
                 , link "Beaker Browser" "https://beakerbrowser.com"
                 , Html.text ". It uses a peer-to-peer network with which you can make and host websites from inside the browser."
                 , Html.text " In the same way you can also directly create and edit LiaScript courses within this browser and share them."
+                ]
+
+            ( Edrys, _ ) ->
+                [ link "Edrys" "https://edrys.org"
+                , Html.text " is an open and modular remote teaching platform (and the first live LMS). "
+                , Html.text "It is a great platform for building remote labs and share them by using only a browser locally. "
+                , Html.text "Thus, this synchronization will only work, if you are within an Edrys classroom, for more information try the following link: "
+                , link "https://edrys.org" "https://edrys.org"
+                , Html.text ". Additionally your course has to be loaded via the "
+                , link "module-liascript" "https://github.com/edrys-org/module-liascript"
+                , Html.text "."
                 ]
 
             ( GUN _, _ ) ->

@@ -6,7 +6,7 @@ $btn-height: 3.6rem;
   background-color: rgb(var(--color-highlight));
   border: none;
   color: rgb(var(--lia-white));
-  display: inline-flex;
+  display: inline-block;
   line-height: $global-line-height;
   padding: 0.5rem 0.6rem;
 
@@ -83,6 +83,10 @@ $btn-height: 3.6rem;
 
   > .lia-btn__text {
     margin-left: 1rem;
+    vertical-align: middle;
+  }
+
+  > .icon {
     vertical-align: middle;
   }
 }

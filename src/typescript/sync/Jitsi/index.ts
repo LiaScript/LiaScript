@@ -14,8 +14,8 @@ export class Sync extends Base {
     } else {
       this.load(
         [
-          '//code.jquery.com/jquery-3.5.1.min.js',
-          '//meet.jit.si/libs/lib-jitsi-meet.min.js',
+          'https://code.jquery.com/jquery-3.5.1.min.js',
+          'https://meet.jit.si/libs/lib-jitsi-meet.min.js',
         ],
         this
       )

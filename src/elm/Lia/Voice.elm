@@ -1,7 +1,18 @@
-module Lia.Voice exposing (getVoiceFor)
+module Lia.Voice exposing
+    ( Voice
+    , getLang
+    , getVoiceFor
+    )
 
 
 type alias Voice =
+    { translated : Bool
+    , lang : String
+    , name : String
+    }
+
+
+type alias ResponsiveVoice =
     { lang : String
     , female : Maybe String
     , male : Maybe String
@@ -9,7 +20,7 @@ type alias Voice =
     }
 
 
-voices : List Voice
+voices : List ResponsiveVoice
 voices =
     [ toVoice "US English" "en" True True
     , toVoice "UK English" "en" True True
@@ -74,9 +85,9 @@ voices =
     ]
 
 
-toVoice : String -> String -> Bool -> Bool -> Voice
+toVoice : String -> String -> Bool -> Bool -> ResponsiveVoice
 toVoice name lang female male =
-    Voice lang
+    ResponsiveVoice lang
         (if female then
             Just <| name ++ " Female"
 
@@ -97,8 +108,8 @@ toVoice name lang female male =
         )
 
 
-getLangFromVoice : String -> Maybe String
-getLangFromVoice voice =
+getLang : String -> Maybe String
+getLang voice =
     voices
         |> List.filterMap
             (\v ->
@@ -126,7 +137,7 @@ getVoiceFromLang lang male =
         |> Maybe.andThen (getVoice male)
 
 
-getVoice : Bool -> Voice -> Maybe String
+getVoice : Bool -> ResponsiveVoice -> Maybe String
 getVoice male voice =
     case ( male, voice.male, voice.female ) of
         ( True, Just maleVoice, _ ) ->
@@ -154,17 +165,27 @@ isMale =
         >> Maybe.withDefault False
 
 
-getVoiceFor : String -> ( String, String ) -> Maybe ( Bool, String )
+getVoiceFor : String -> ( String, String ) -> Maybe Voice
 getVoiceFor voice ( langOld, langNew ) =
     if langOld == langNew then
         -- Nothing has changed
-        Just ( True, voice )
+        Just
+            { translated = True
+            , lang = langOld
+            , name = voice
+            }
 
-    else if getLangFromVoice voice == Just langOld then
+    else if getLang voice == Just langOld then
         -- the old voice needs to be translated too
-        getVoiceFromLang langNew (isMale voice)
-            |> Maybe.map (Tuple.pair True)
+        voice
+            |> isMale
+            |> getVoiceFromLang langNew
+            |> Maybe.map (Voice True langNew)
 
     else
         -- the voice
-        Just ( False, voice )
+        Just
+            { translated = False
+            , lang = langOld
+            , name = voice
+            }
