@@ -4,7 +4,7 @@ help:
 	@echo "make install              - same as 'npm i' will install"
 	@echo "make all                  - will build the entire app as a PWA"
 	@echo "make all2                 - same as above, but with elm-optimize2"
-	@echo "make editor               - will bild the editor in branch 'editor'"
+	@echo "make editor               - will build the editor in branch 'editor'"
 	@echo "                            note that the target is different"
 	@echo "                            no indexeddb support"
 	@echo "make editor2              - same as above, but with elm-optimize2"
