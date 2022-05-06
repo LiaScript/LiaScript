@@ -521,9 +521,9 @@ oembed option url =
                         String.fromInt o.maxwidth ++ "px"
 
                     else
-                        "auto"
+                        "100%"
                 )
-            |> Maybe.withDefault "auto"
+            |> Maybe.withDefault "100%"
             |> Attr.style "width"
         , option
             |> Maybe.map
