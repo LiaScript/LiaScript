@@ -11,6 +11,7 @@ import Const
 import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
+import Html.Keyed as Keyed
 import Html.Lazy as Lazy
 import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Point)
 import Lia.Markdown.Chart.View as Chart
@@ -607,29 +608,31 @@ formatted lang viewer head format rows id state =
             (List.indexedMap Tuple.pair
                 >> List.map2
                     (\f ( i, e ) ->
-                        Html.td
-                            (Param.toAttribute e.attr
-                                |> List.append
-                                    [ Attr.class "lia-table__data"
-                                    , Attr.class f
-                                    ]
-                                |> List.append
-                                    (if i == 0 then
-                                        [ A11y_Role.rowHeader
-                                        , Attr.scope "row"
-                                        ]
+                        ( e.string
+                        , Html.td
+                            (e.attr
+                                |> Param.toAttribute
+                                |> (::) (Attr.class "lia-table__data")
+                                |> (::) (Attr.class f)
+                                |> (if i == 0 then
+                                        List.append
+                                            [ A11y_Role.rowHeader
+                                            , Attr.scope "row"
+                                            ]
 
-                                     else
-                                        [ A11y_Role.gridCell
-                                        ]
-                                    )
+                                    else
+                                        (::) A11y_Role.gridCell
+                                   )
                             )
                             (viewer e.inlines)
+                        )
                     )
                     format
-                >> Html.tr [ Attr.class "lia-table__row", A11y_Role.row ]
+                >> List.unzip
+                >> Tuple.mapFirst String.concat
+                >> Tuple.mapSecond (Html.tr [ Attr.class "lia-table__row", A11y_Role.row ])
             )
-        |> Html.tbody [ Attr.class "lia-table__body" ]
+        |> Keyed.node "tbody" [ Attr.class "lia-table__body" ]
     ]
 
 

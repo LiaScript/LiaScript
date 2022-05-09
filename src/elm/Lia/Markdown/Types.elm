@@ -37,6 +37,7 @@ type Block
     | Gallery Parameters Gallery
     | Citation Parameters Inlines
     | Problem Inlines
+    | HtmlComment
 
 
 type alias Blocks =

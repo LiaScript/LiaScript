@@ -430,6 +430,9 @@ view_block config block =
         Problem element ->
             Html.p [ Attr.class "lia-problem" ] (config.view element)
 
+        HtmlComment ->
+            Html.text ""
+
 
 scriptView : (Inlines -> List (Html Msg)) -> ( Maybe Int, Html Msg ) -> Html Msg
 scriptView viewer content =
