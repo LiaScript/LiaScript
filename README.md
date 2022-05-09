@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.8
+version:  0.10.9
 language: en
 narrator: UK English Male
 
@@ -285,6 +285,14 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.9** (09/05/2022)
+
+- keyed tables with improved performance for sorting large datasets (larger than 1000 samples)
+- fix: table icons for sorting now also visible in scripts
+- feat: HTML-comments can now also be used to hide content
+- updated oEmbed and improved responsiveness of external embeds and iframes
+- fix: offline content loading from indexedDB
 
 **0.10.8** (10/04/2022)
 
