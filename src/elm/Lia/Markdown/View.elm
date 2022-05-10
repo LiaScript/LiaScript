@@ -179,9 +179,9 @@ addTranslation hidden translations id narrator =
         Nothing ->
             []
 
-        Just ( translate, voice ) ->
+        Just { translated, lang, name } ->
             [ ( "class"
-              , case ( translate, hidden ) of
+              , case ( translated, hidden ) of
                     ( True, True ) ->
                         "translate hidden-visually"
 
@@ -195,9 +195,10 @@ addTranslation hidden translations id narrator =
                         "notranslate"
               )
             , ( "class", "lia-tts-" ++ String.fromInt id )
-            , ( "data-voice", voice )
+            , ( "data-voice", name )
+            , ( "data-lang", lang )
             , ( "translate"
-              , if translate then
+              , if translated then
                     "yes"
 
                 else
@@ -428,6 +429,9 @@ view_block config block =
 
         Problem element ->
             Html.p [ Attr.class "lia-problem" ] (config.view element)
+
+        HtmlComment ->
+            Html.text ""
 
 
 scriptView : (Inlines -> List (Html Msg)) -> ( Maybe Int, Html Msg ) -> Html Msg

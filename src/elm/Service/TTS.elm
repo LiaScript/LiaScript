@@ -54,9 +54,10 @@ readFrom id =
 {-| Used for inline playback, the text and the voice can be passed as
 parameters...
 -}
-playback : { voice : String, text : String } -> Event
-playback { voice, text } =
+playback : { voice : String, lang : String, text : String } -> Event
+playback { voice, lang, text } =
     [ ( "voice", JE.string voice )
+    , ( "lang", JE.string lang )
     , ( "text", JE.string text )
     ]
         |> JE.object

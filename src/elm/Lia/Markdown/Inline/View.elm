@@ -521,9 +521,9 @@ oembed option url =
                         String.fromInt o.maxwidth ++ "px"
 
                     else
-                        "auto"
+                        "100%"
                 )
-            |> Maybe.withDefault "auto"
+            |> Maybe.withDefault "100%"
             |> Attr.style "width"
         , option
             |> Maybe.map
@@ -583,7 +583,13 @@ view_url config alt_ url_ title_ attr =
 link : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
 link config alt_ url_ title_ attr =
     Attr.href url_
-        :: Attr.target "_blank"
+        :: Attr.target
+            (if String.startsWith "#" url_ then
+                ""
+
+             else
+                "_blank"
+            )
         :: annotation "lia-link" attr
         |> CList.addWhen (title config title_)
         |> Html.a
