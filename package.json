@@ -71,7 +71,7 @@
     "parcel": "^2.3.2",
     "parcel-reporter-multiple-static-file-copier": "^1.0.5",
     "resize-observer-polyfill": "^1.5.1",
-    "sass": "^1.49.11",
+    "sass": "^1.52.1",
     "tsc": "^2.0.4",
     "typescript": "^4.6.4",
     "workbox-cli": "^6.3.0"
