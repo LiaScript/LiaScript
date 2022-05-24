@@ -71,17 +71,24 @@ or checkout the videos at:
 [Atom](https://atom.io), that should help to ease the writing process of
 LiaScript courses.
 
-- [liascript-preview](https://atom.io/packages/liascript-preview): Is a tiny
+- [liascript-preview](https://github.com/andre-dietrich/liascript-preview): Is a tiny
   previewer that, if it was toggled, updates the view on your course each time
   you save your document.
 
-  GitHub: https://github.com/andre-dietrich/liascript-preview
-
-- [liascript-snippets](https://atom.io/packages/liascript-snippets): If you
+- [liascript-snippets](https://github.com/andre-dietrich/liascript-snippets): If you
   start typing "lia" in your document you switch on a fuzzy search, that
   contains a lot of LiaScript help, examples, and snippets.
 
-  GitHub: https://github.com/andre-dietrich/liascript-snippets
+
+Additionally it is also possible to use [VS-Code](https://code.visualstudio.com/Download)
+as an editor for creating LiaScript online courses. The packages work similar to the
+upper ones, but to enable the preview the Dev-Server is used for the previews in
+[VS-Code](https://code.visualstudio.com/Download):
+
+
+- [liascript-preview](https://marketplace.visualstudio.com/items?itemName=LiaScript.liascript-preview)
+- [liascript-snippets](https://marketplace.visualstudio.com/items?itemName=LiaScript.liascript-snippets)
+
 
 ---
 
@@ -115,11 +122,13 @@ editor, and it runs also in docker.
 ---
 
 **LiaScript-Exporter:** Currently a command-line tool to export
-LiaScript-courses to other formats. At the moment SCORM1.2 is supported that
-allows to upload a course packed as zip, into nearly every commonly used
-Learning Management System (LMS). A list of supported LMS is contained within
-the project description. It has been tested with [Moodle](https://moodle.org)
-and [OPAL](https://bildungsportal.sachsen.de/opal).
+LiaScript-courses to other formats. At the moment SCORM1.2 and SCORM2004 are
+supported, which allow to upload a course packed as zip, into nearly every
+commonly used Learning Management System (LMS). A list of supported LMS is
+contained within the project description. It has been tested with
+[Moodle](https://moodle.org) and [OPAL](https://bildungsportal.sachsen.de/opal).
+Additionally it is possible to export courses to the IMS-Cartridge format, PDF,
+standalone web-projects and Android APKs.
 
 GitHub: https://github.com/LiaScript/LiaScript-Exporter/
 
@@ -176,7 +185,7 @@ LiaScript has a set of connectors to store and retrieve data from different
 "Backends". At the moment there are three versions, a basic connector, a pwa
 connector that makes use of IndexedDB to store data, and a SCORM1.2 connector.
 It would be great to support a wider range of systems and LMS formats (e.g.
-SCORM2004, AICC, xAPI, cMi5, IMS Cartridge).
+AICC, xAPI, cMi5).
 
 It exists an an [editor](https://github.com/liaScript/LiaScript/tree/editor)
 branch, that is currently used to connect to Atom via the
