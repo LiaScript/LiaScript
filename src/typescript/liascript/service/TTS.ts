@@ -46,12 +46,12 @@ export const Service = {
           event.track[0][0] = SETTINGS
         }
 
-        setTimeout(
-          function () {
-            read(event)
-          },
-          firstSpeak ? 2000 : 500
-        )
+        const timeout =
+          firstSpeak || event.message.param.endsWith('0') ? 2000 : 500
+
+        setTimeout(function () {
+          read(event)
+        }, timeout)
         break
       }
 
