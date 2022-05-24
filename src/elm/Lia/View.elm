@@ -121,7 +121,15 @@ viewSlide screen model =
     case get_active_section model of
         Just section ->
             [ Html.div [ Attr.class "lia-slide" ]
-                [ slideTopBar model.translation screen model.url model.repositoryUrl model.settings model.definition model.sync
+                [ slideTopBar
+                    model.langCode
+                    model.translation
+                    screen
+                    model.url
+                    model.repositoryUrl
+                    model.settings
+                    model.definition
+                    model.sync
                 , Config.init
                     model.translation
                     ( model.langCodeOriginal, model.langCode )
@@ -155,6 +163,7 @@ viewSlide screen model =
         Nothing ->
             [ Html.div [ Attr.class "lia-slide" ]
                 [ slideTopBar
+                    model.langCode
                     model.translation
                     screen
                     model.url
@@ -350,11 +359,11 @@ navButton title id class msg =
 6.  `state`: fragments, if animations are active, not visible in textbook mode
 
 -}
-slideTopBar : Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> Sync_.Settings -> Html Msg
-slideTopBar lang screen url repositoryURL settings def sync =
+slideTopBar : String -> Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> Sync_.Settings -> Html Msg
+slideTopBar languageCode lang screen url repositoryURL settings def sync =
     [ ( Settings.menuMode, "mode" )
     , ( Settings.menuSettings screen.width, "settings" )
-    , ( Settings.menuTranslations def, "lang" )
+    , ( Settings.menuTranslations languageCode def, "lang" )
     , ( Settings.menuShare url sync, "share" )
     , ( Settings.menuInformation repositoryURL def, "info" )
     ]
@@ -414,7 +423,8 @@ slideNavigation lang mode slide effect =
 responsiveVoice : Bool -> Bool -> Html msg
 responsiveVoice tiny show =
     Html.small
-        [ Attr.class "lia-responsive-voice__info"
+        [ Attr.class "lia-responsive-voice__info notranslate"
+        , Attr.attribute "translate" "no"
         , Attr.style "visibility" <|
             if show then
                 "visible"
@@ -431,7 +441,9 @@ responsiveVoice tiny show =
         [ Html.a [ Attr.class "lia-link", Attr.href "https://responsivevoice.org", Attr.target "_blank" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
         , Html.text " licensed under "
         , Html.a
-            [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/", Attr.target "_blank" ]
+            [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/"
+            , Attr.target "_blank"
+            ]
             [ Html.img
                 [ Attr.title "ResponsiveVoice Text To Speech"
                 , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"

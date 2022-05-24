@@ -29,6 +29,8 @@
       line-height: initial;
       transform: none;
 
+      font-family: var(--global-font-family) !important; // this is necessary in ascii-art environment
+
       &.animated {
         left: 1.8rem * -1.5;
       }
