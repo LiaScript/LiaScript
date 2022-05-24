@@ -19,7 +19,7 @@ type Lang
     | Nl
     | Ru
     | Tw
-    | Ua
+    | Uk
     | Zh
     | En
 
@@ -60,8 +60,8 @@ getLnFromCode code =
         "tw" ->
             Just Tw
 
-        "ua" ->
-            Just Ua
+        "uk" ->
+            Just Uk
 
         "zh" ->
             Just Zh
@@ -108,8 +108,8 @@ getCodeFromLn lang =
         Tw ->
             "tw"
 
-        Ua ->
-            "ua"
+        Uk ->
+            "uk"
 
         Zh ->
             "zh"
@@ -151,7 +151,7 @@ baseNext lang =
         Tw ->
             "繼續"
 
-        Ua ->
+        Uk ->
             "далі"
 
         Zh ->
@@ -194,7 +194,7 @@ basePrev lang =
         Tw ->
             "返回"
 
-        Ua ->
+        Uk ->
             "назад"
 
         Zh ->
@@ -237,7 +237,7 @@ basePlay lang =
         Tw ->
             "播放"
 
-        Ua ->
+        Uk ->
             "грати"
 
         Zh ->
@@ -280,7 +280,7 @@ baseStop lang =
         Tw ->
             "停止"
 
-        Ua ->
+        Uk ->
             "зупинятися"
 
         Zh ->
@@ -323,7 +323,7 @@ baseFont lang str0 =
         Tw ->
             "字体大小： " ++ str0 ++ ""
 
-        Ua ->
+        Uk ->
             "Розмір шрифту: " ++ str0 ++ ""
 
         Zh ->
@@ -366,7 +366,7 @@ baseSize1 lang =
         Tw ->
             "小"
 
-        Ua ->
+        Uk ->
             "маленький"
 
         Zh ->
@@ -409,7 +409,7 @@ baseSize2 lang =
         Tw ->
             "中"
 
-        Ua ->
+        Uk ->
             "середній"
 
         Zh ->
@@ -452,7 +452,7 @@ baseSize3 lang =
         Tw ->
             "大"
 
-        Ua ->
+        Uk ->
             "великий"
 
         Zh ->
@@ -495,7 +495,7 @@ baseSearch lang =
         Tw ->
             "搜尋"
 
-        Ua ->
+        Uk ->
             "пошук"
 
         Zh ->
@@ -538,7 +538,7 @@ baseDelete lang =
         Tw ->
             "删除搜寻"
 
-        Ua ->
+        Uk ->
             "видалити пошук"
 
         Zh ->
@@ -581,7 +581,7 @@ baseResults lang =
         Tw ->
             "结果"
 
-        Ua ->
+        Uk ->
             "результати"
 
         Zh ->
@@ -624,7 +624,7 @@ baseOneResult lang =
         Tw ->
             "一个结果"
 
-        Ua ->
+        Uk ->
             "один результат"
 
         Zh ->
@@ -667,7 +667,7 @@ baseNoResult lang =
         Tw ->
             "没有结果"
 
-        Ua ->
+        Uk ->
             "немає результатів"
 
         Zh ->
@@ -710,7 +710,7 @@ baseToc lang =
         Tw ->
             "目錄"
 
-        Ua ->
+        Uk ->
             "зміст"
 
         Zh ->
@@ -753,7 +753,7 @@ baseShow lang =
         Tw ->
             "顯示"
 
-        Ua ->
+        Uk ->
             "показати"
 
         Zh ->
@@ -796,7 +796,7 @@ baseHide lang =
         Tw ->
             "隱藏"
 
-        Ua ->
+        Uk ->
             "приховати"
 
         Zh ->
@@ -839,7 +839,7 @@ baseEditor lang =
         Tw ->
             "编辑风格"
 
-        Ua ->
+        Uk ->
             "стиль редактора"
 
         Zh ->
@@ -882,7 +882,7 @@ baseLang lang =
         Tw ->
             "中国人"
 
-        Ua ->
+        Uk ->
             "Український"
 
         Zh ->
@@ -925,7 +925,7 @@ no_translation lang =
         Tw ->
             "尚未翻譯"
 
-        Ua ->
+        Uk ->
             "переклад відсутній"
 
         Zh ->
@@ -968,7 +968,7 @@ translateWithGoogle lang =
         Tw ->
             "与Google进行翻译（实验性）"
 
-        Ua ->
+        Uk ->
             "Перекласти за допомогою Google (експериментально)"
 
         Zh ->
@@ -1011,7 +1011,7 @@ cColor lang =
         Tw ->
             "顏色"
 
-        Ua ->
+        Uk ->
             "колір"
 
         Zh ->
@@ -1054,7 +1054,7 @@ cSchema lang =
         Tw ->
             "配色方案"
 
-        Ua ->
+        Uk ->
             "Кольорова схема"
 
         Zh ->
@@ -1097,7 +1097,7 @@ cDark lang =
         Tw ->
             "暗模式"
 
-        Ua ->
+        Uk ->
             "темний режим"
 
         Zh ->
@@ -1140,7 +1140,7 @@ cBright lang =
         Tw ->
             "亮模式"
 
-        Ua ->
+        Uk ->
             "світлий режим"
 
         Zh ->
@@ -1183,7 +1183,7 @@ cDefault lang =
         Tw ->
             "預設"
 
-        Ua ->
+        Uk ->
             "стандартний"
 
         Zh ->
@@ -1226,7 +1226,7 @@ cBlue lang =
         Tw ->
             "藍色"
 
-        Ua ->
+        Uk ->
             "синій"
 
         Zh ->
@@ -1269,7 +1269,7 @@ cRed lang =
         Tw ->
             "红色的"
 
-        Ua ->
+        Uk ->
             "червоний"
 
         Zh ->
@@ -1312,7 +1312,7 @@ cYellow lang =
         Tw ->
             "黄色的"
 
-        Ua ->
+        Uk ->
             "жовтий"
 
         Zh ->
@@ -1355,7 +1355,7 @@ cTurquoise lang =
         Tw ->
             "绿松石"
 
-        Ua ->
+        Uk ->
             "бірюзовий"
 
         Zh ->
@@ -1398,7 +1398,7 @@ modeMode lang =
         Tw ->
             "简报模式"
 
-        Ua ->
+        Uk ->
             "режим презентації"
 
         Zh ->
@@ -1441,7 +1441,7 @@ modeTextbook lang =
         Tw ->
             "教科書"
 
-        Ua ->
+        Uk ->
             "навчальна книга"
 
         Zh ->
@@ -1484,7 +1484,7 @@ modePresentation lang =
         Tw ->
             "報告"
 
-        Ua ->
+        Uk ->
             "презентація"
 
         Zh ->
@@ -1527,7 +1527,7 @@ modeSlides lang =
         Tw ->
             "幻燈片"
 
-        Ua ->
+        Uk ->
             "слайди"
 
         Zh ->
@@ -1570,7 +1570,7 @@ soundOn lang =
         Tw ->
             "聲音開啟"
 
-        Ua ->
+        Uk ->
             "увімкнений"
 
         Zh ->
@@ -1613,7 +1613,7 @@ soundOff lang =
         Tw ->
             "聲音關閉"
 
-        Ua ->
+        Uk ->
             "вимкнений"
 
         Zh ->
@@ -1656,7 +1656,7 @@ infoAuthor lang =
         Tw ->
             "作者: "
 
-        Ua ->
+        Uk ->
             "автор: "
 
         Zh ->
@@ -1699,7 +1699,7 @@ infoDate lang =
         Tw ->
             "日期: "
 
-        Ua ->
+        Uk ->
             "дата: "
 
         Zh ->
@@ -1742,7 +1742,7 @@ infoEmail lang =
         Tw ->
             "電郵: "
 
-        Ua ->
+        Uk ->
             "електронна пошта: "
 
         Zh ->
@@ -1785,7 +1785,7 @@ infoVersion lang =
         Tw ->
             "版本: "
 
-        Ua ->
+        Uk ->
             "версія: "
 
         Zh ->
@@ -1828,7 +1828,7 @@ confInformation lang =
         Tw ->
             "關於"
 
-        Ua ->
+        Uk ->
             "інформація"
 
         Zh ->
@@ -1871,7 +1871,7 @@ confSettings lang =
         Tw ->
             "設定"
 
-        Ua ->
+        Uk ->
             "налаштування"
 
         Zh ->
@@ -1914,7 +1914,7 @@ confShare lang =
         Tw ->
             "分享"
 
-        Ua ->
+        Uk ->
             "поділитися"
 
         Zh ->
@@ -1957,7 +1957,7 @@ confShareVia lang =
         Tw ->
             "通过...分享"
 
-        Ua ->
+        Uk ->
             "поділитися через ..."
 
         Zh ->
@@ -2000,7 +2000,7 @@ confTranslations lang =
         Tw ->
             "翻譯"
 
-        Ua ->
+        Uk ->
             "переклади"
 
         Zh ->
@@ -2043,7 +2043,7 @@ codeExecute lang =
         Tw ->
             "開始執行"
 
-        Ua ->
+        Uk ->
             "запустити"
 
         Zh ->
@@ -2086,7 +2086,7 @@ codeRunning lang =
         Tw ->
             "執行中"
 
-        Ua ->
+        Uk ->
             "виконується"
 
         Zh ->
@@ -2129,7 +2129,7 @@ codePrev lang =
         Tw ->
             "上一版"
 
-        Ua ->
+        Uk ->
             "попередня версія"
 
         Zh ->
@@ -2172,7 +2172,7 @@ codeNext lang =
         Tw ->
             "下一版"
 
-        Ua ->
+        Uk ->
             "наступна версія"
 
         Zh ->
@@ -2215,7 +2215,7 @@ codeFirst lang =
         Tw ->
             "最初版"
 
-        Ua ->
+        Uk ->
             "перша версія"
 
         Zh ->
@@ -2258,7 +2258,7 @@ codeLast lang =
         Tw ->
             "最終版"
 
-        Ua ->
+        Uk ->
             "остання версія"
 
         Zh ->
@@ -2301,7 +2301,7 @@ codeMinimize lang =
         Tw ->
             "極小視窗"
 
-        Ua ->
+        Uk ->
             "зображення зменшити"
 
         Zh ->
@@ -2344,7 +2344,7 @@ codeMaximize lang =
         Tw ->
             "極大視窗"
 
-        Ua ->
+        Uk ->
             "зображення збільшити"
 
         Zh ->
@@ -2381,7 +2381,7 @@ codeTerminal lang =
         Tw ->
             "终端"
 
-        Ua ->
+        Uk ->
             "термінал"
 
         Zh ->
@@ -2424,7 +2424,7 @@ quizCheck lang =
         Tw ->
             "選取"
 
-        Ua ->
+        Uk ->
             "перевірити"
 
         Zh ->
@@ -2467,7 +2467,7 @@ quizSolution lang =
         Tw ->
             "顯示解答"
 
-        Ua ->
+        Uk ->
             "показати розв'язок"
 
         Zh ->
@@ -2510,7 +2510,7 @@ quizHint lang =
         Tw ->
             "暗示"
 
-        Ua ->
+        Uk ->
             "показати підказку"
 
         Zh ->
@@ -2553,7 +2553,7 @@ quizSelection lang =
         Tw ->
             "选择"
 
-        Ua ->
+        Uk ->
             "вибір"
 
         Zh ->
@@ -2596,7 +2596,7 @@ quizLabelCheck lang =
         Tw ->
             "检查答案。答案被标记为正确或不正确。"
 
-        Ua ->
+        Uk ->
             "Перевірте відповідь. Відповідь позначена як правильна чи неправильна."
 
         Zh ->
@@ -2639,7 +2639,7 @@ quizLabelSolution lang =
         Tw ->
             "显示解决方案。测验被标记为已解决。"
 
-        Ua ->
+        Uk ->
             "Покажіть рішення. Вікторина позначена як розв’язана."
 
         Zh ->
@@ -2682,7 +2682,7 @@ quizAnswerSuccess lang =
         Tw ->
             "恭喜，那是正确的答案"
 
-        Ua ->
+        Uk ->
             "Вітаю, це була правильна відповідь"
 
         Zh ->
@@ -2725,7 +2725,7 @@ quizAnswerError lang =
         Tw ->
             "那不是正确的答案"
 
-        Ua ->
+        Uk ->
             "Це не правильна відповідь"
 
         Zh ->
@@ -2768,7 +2768,7 @@ quizAnswerResolved lang =
         Tw ->
             "解决的答案"
 
-        Ua ->
+        Uk ->
             "Вирішена відповідь"
 
         Zh ->
@@ -2811,7 +2811,7 @@ surveySubmit lang =
         Tw ->
             "遞交"
 
-        Ua ->
+        Uk ->
             "відіслати"
 
         Zh ->
@@ -2854,7 +2854,7 @@ surveySubmitted lang =
         Tw ->
             "感謝"
 
-        Ua ->
+        Uk ->
             "дякую"
 
         Zh ->
@@ -2897,7 +2897,7 @@ surveyText lang =
         Tw ->
             "輸入文字..."
 
-        Ua ->
+        Uk ->
             "Ввід тексту ..."
 
         Zh ->
@@ -2928,7 +2928,7 @@ sortAsc lang =
         Ru ->
             "сортировать по возрастанию"
 
-        Ua ->
+        Uk ->
             "сортування за зростанням"
 
         _ ->
@@ -2956,7 +2956,7 @@ sortDesc lang =
         Ru ->
             "сортировка по убыванию"
 
-        Ua ->
+        Uk ->
             "сортувати за спаданням"
 
         _ ->
@@ -2984,7 +2984,7 @@ sortNot lang =
         Ru ->
             "не отсортировано"
 
-        Ua ->
+        Uk ->
             "не сортується"
 
         _ ->
@@ -3398,7 +3398,7 @@ qrCode lang =
         Tw ->
             "网站二维码"
 
-        Ua ->
+        Uk ->
             "QR -код для веб -сайту"
 
         Zh ->
@@ -3441,7 +3441,7 @@ qrErr lang =
         Tw ->
             "编码为二维码时出错"
 
-        Ua ->
+        Uk ->
             "Помилка під час кодування в QR -код"
 
         Zh ->
