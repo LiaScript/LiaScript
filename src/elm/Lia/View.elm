@@ -414,7 +414,8 @@ slideNavigation lang mode slide effect =
 responsiveVoice : Bool -> Bool -> Html msg
 responsiveVoice tiny show =
     Html.small
-        [ Attr.class "lia-responsive-voice__info"
+        [ Attr.class "lia-responsive-voice__info notranslate"
+        , Attr.attribute "translate" "no"
         , Attr.style "visibility" <|
             if show then
                 "visible"
@@ -431,7 +432,9 @@ responsiveVoice tiny show =
         [ Html.a [ Attr.class "lia-link", Attr.href "https://responsivevoice.org", Attr.target "_blank" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
         , Html.text " licensed under "
         , Html.a
-            [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/", Attr.target "_blank" ]
+            [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/"
+            , Attr.target "_blank"
+            ]
             [ Html.img
                 [ Attr.title "ResponsiveVoice Text To Speech"
                 , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"
