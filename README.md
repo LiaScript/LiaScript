@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.9
+version:  0.10.10
 language: en
 narrator: UK English Male
 
@@ -294,6 +294,15 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.10** (24/05/2022)
+
+- fix: ASCII-Art now works with embedded LiaScript-animations
+- improve: Text-to-Speech output for translations with initial delay
+- fix: some simple elements will not be translated anymore by google
+- fix: Ukrainian translation shortcode
+- update oEmbed services
+- package updates including (ace-editor, caniuse, typescript)
 
 **0.10.9** (09/05/2022)
 
