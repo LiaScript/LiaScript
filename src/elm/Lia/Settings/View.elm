@@ -538,8 +538,8 @@ menuSettings width lang tabbable settings =
     ]
 
 
-menuTranslations : Definition -> Lang -> Bool -> Settings -> List (Html Msg)
-menuTranslations defintion lang tabbable settings =
+menuTranslations : String -> Definition -> Lang -> Bool -> Settings -> List (Html Msg)
+menuTranslations languageCode defintion lang tabbable settings =
     [ Html.button
         (action ShowTranslations
             (settings.action == Just ShowTranslations)
@@ -551,7 +551,14 @@ menuTranslations defintion lang tabbable settings =
                 |> A11y_Widget.label
             ]
         )
-        [ Html.text <| String.toUpper defintion.language
+        [ Html.span
+            [ Attr.class "notranslate"
+            , Attr.attribute "translate" "no"
+            ]
+            [ languageCode
+                |> String.toUpper
+                |> Html.text
+            ]
         ]
     , defintion.translation
         |> viewTranslations lang tabbable

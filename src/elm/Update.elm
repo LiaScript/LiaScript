@@ -13,18 +13,16 @@ import Browser
 import Browser.Events
 import Browser.Navigation as Navigation
 import Const
-import Dict exposing (Dict)
+import Dict
 import Error.Message
 import Error.Report
 import Http
 import Index.Update as Index
 import Index.Version
 import Json.Decode as JD
-import Json.Encode as JE
 import Lia.Definition.Types as Definition
 import Lia.Json.Decode
 import Lia.Markdown.Code.Log exposing (Level(..))
-import Lia.Markdown.Code.Types exposing (Version)
 import Lia.Script
 import Model exposing (Model, State(..))
 import Process
