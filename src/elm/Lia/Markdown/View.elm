@@ -41,16 +41,20 @@ import MD5
 import SvgBob
 
 
-view : Bool -> Config Msg -> Html Msg
-view hidden config =
+view : Bool -> Bool -> Config Msg -> Html Msg
+view hidden persistent config =
     case config.section.error of
         Nothing ->
-            view_body hidden
-                ( Config.setSubViewer (subView config) config
-                , config.section.footnote2show
-                , config.section.footnotes
-                )
-                config.section.body
+            if persistent || not hidden then
+                view_body hidden
+                    ( Config.setSubViewer (subView config) config
+                    , config.section.footnote2show
+                    , config.section.footnotes
+                    )
+                    config.section.body
+
+            else
+                viewMain hidden [ view_header config ]
 
         Just msg ->
             viewMain hidden

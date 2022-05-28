@@ -5,6 +5,7 @@ module Lia.Utils exposing
     , btn
     , btnIcon
     , checkFalse
+    , checkPersistency
     , focus
     , get
     , icon
@@ -23,6 +24,7 @@ import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
 import Array exposing (Array)
 import Browser.Dom as Dom
+import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events as Event
@@ -304,3 +306,12 @@ checkFalse string =
 
         _ ->
             True
+
+
+{-| Will check any dict for the persistent macro.
+-}
+checkPersistency : Dict String String -> Bool
+checkPersistency =
+    Dict.get "persistent"
+        >> Maybe.map checkFalse
+        >> Maybe.withDefault False

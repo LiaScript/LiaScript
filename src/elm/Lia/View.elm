@@ -131,17 +131,10 @@ viewSlide screen model =
                     model.settings
                     model.definition
                     model.sync
-                , if model.persistent then
-                    model.sections
-                        |> Array.toIndexedList
-                        |> List.map (showSection model screen)
-                        |> Html.div [ Attr.class "lia-slide__container" ]
-
-                  else
-                    [ ( model.section_active, section )
-                        |> showSection model screen
-                    ]
-                        |> Html.div [ Attr.class "lia-slide__container" ]
+                , model.sections
+                    |> Array.toIndexedList
+                    |> List.map (showSection model screen)
+                    |> Html.div [ Attr.class "lia-slide__container" ]
                 , slideBottom
                     model.translation
                     (screen.width < 400)
@@ -187,7 +180,7 @@ showSection model screen ( id, section ) =
         section
         model.section_active
         model.media
-        |> Markdown.view (model.section_active /= id)
+        |> Markdown.view (model.section_active /= id) (Maybe.withDefault model.persistent section.persistent)
         |> Html.map UpdateMarkdown
 
 
