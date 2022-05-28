@@ -33,6 +33,7 @@ import Lia.Parser.Parser as Parser
 import Lia.Section as Section exposing (Sections)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
+import Lia.Utils exposing (checkFalse)
 import Lia.View
 import Return exposing (Return)
 import Service.Database
@@ -106,6 +107,11 @@ load_first_slide session model =
                 Service.Database.index_store model
                     :: Settings.customizeEvent model.settings
                     :: model.to_do
+            , persistent =
+                model.definition.macro
+                    |> Dict.get "persistent"
+                    |> Maybe.map checkFalse
+                    |> Maybe.withDefault False
         }
 
 
@@ -214,25 +220,6 @@ generateIndex id title =
     )
 
 
-checkFalse : String -> Bool
-checkFalse string =
-    case string |> String.trim |> String.toLower |> String.toList of
-        [ '0' ] ->
-            False
-
-        'f' :: 'a' :: 'l' :: 's' :: 'e' :: _ ->
-            False
-
-        'o' :: 'f' :: 'f' :: _ ->
-            False
-
-        'd' :: 'i' :: 's' :: 'a' :: 'b' :: 'l' :: 'e' :: _ ->
-            False
-
-        _ ->
-            True
-
-
 {-| Initialize a LiaScript Model with the code of a course. The header of this
 course is parsed as a definition, that contains `@authors`, `@import`, etc. The
 result is a:
@@ -262,6 +249,11 @@ init_script model script =
                         |> Maybe.withDefault Translations.En
                 , langCode = definition.language
                 , langCodeOriginal = definition.language
+                , persistent =
+                    definition.macro
+                        |> Dict.get "persistent"
+                        |> Maybe.map checkFalse
+                        |> Maybe.withDefault False
                 , settings =
                     { settings
                         | light =

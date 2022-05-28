@@ -41,11 +41,11 @@ import MD5
 import SvgBob
 
 
-view : Config Msg -> Html Msg
-view config =
+view : Bool -> Config Msg -> Html Msg
+view hidden config =
     case config.section.error of
         Nothing ->
-            view_body
+            view_body hidden
                 ( Config.setSubViewer (subView config) config
                 , config.section.footnote2show
                 , config.section.footnotes
@@ -53,7 +53,7 @@ view config =
                 config.section.body
 
         Just msg ->
-            viewMain
+            viewMain hidden
                 [ view_header config
                 , Html.text msg
                 ]
@@ -104,8 +104,8 @@ subView config id sub =
                     |> List.map (Html.map Script)
 
 
-view_body : ( Config Msg, Maybe String, Footnotes.Model ) -> Blocks -> Html Msg
-view_body ( config, footnote2show, footnotes ) =
+view_body : Bool -> ( Config Msg, Maybe String, Footnotes.Model ) -> Blocks -> Html Msg
+view_body hidden ( config, footnote2show, footnotes ) =
     fold config []
         >> (::) (view_footnote (view_block config) footnote2show footnotes)
         >> (::) (view_header config)
@@ -127,7 +127,7 @@ view_body ( config, footnote2show, footnotes ) =
                                         [ Html.text text ]
                                 )
            )
-        >> viewMain
+        >> viewMain hidden
 
 
 toHash : Block -> String
@@ -208,11 +208,12 @@ addTranslation hidden translations id narrator =
                 |> CList.addIf hidden ( "aria-hidden", "true" )
 
 
-viewMain : List (Html msg) -> Html msg
-viewMain =
+viewMain : Bool -> List (Html msg) -> Html msg
+viewMain hidden =
     Html.main_
         [ Attr.class "lia-slide__content"
         , A11y_Landmark.main_
+        , Attr.hidden hidden
         ]
 
 

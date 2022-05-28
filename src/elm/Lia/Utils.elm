@@ -4,6 +4,7 @@ module Lia.Utils exposing
     , blockKeydown
     , btn
     , btnIcon
+    , checkFalse
     , focus
     , get
     , icon
@@ -284,3 +285,22 @@ string2Color maxValue url =
 percentage : Float -> Int -> Float
 percentage total i =
     toFloat (round ((10000.0 * toFloat i) / total)) / 100.0
+
+
+checkFalse : String -> Bool
+checkFalse string =
+    case string |> String.trim |> String.toLower |> String.toList of
+        [ '0' ] ->
+            False
+
+        'f' :: 'a' :: 'l' :: 's' :: 'e' :: _ ->
+            False
+
+        'o' :: 'f' :: 'f' :: _ ->
+            False
+
+        'd' :: 'i' :: 's' :: 'a' :: 'b' :: 'l' :: 'e' :: _ ->
+            False
+
+        _ ->
+            True
