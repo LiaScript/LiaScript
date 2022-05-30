@@ -65,7 +65,7 @@ viewSection screen model section_active sec =
         sec
         section_active
         model.media
-        |> Markdown.view
+        |> Markdown.view False True
         |> Html.map UpdateMarkdown
 
 

@@ -26,6 +26,7 @@ import Return exposing (Return)
 import Service.Console
 import Service.Database
 import Service.Event as Event exposing (Event)
+import Service.Script
 import Service.Slide
 import Session exposing (Session)
 import Translations exposing (Lang(..))
