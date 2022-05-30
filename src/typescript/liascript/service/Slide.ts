@@ -61,7 +61,7 @@ const Service = {
  */
 function scrollUp() {
   // every LiaScript slide consists of a main tag
-  const main = document.getElementsByTagName('main')[0]
+  const main = document.querySelector('main:not([hidden=""])')
 
   if (main) {
     if (window.LIA.scrollUpOnMain) main.scrollTo(0, 0)

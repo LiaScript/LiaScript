@@ -274,8 +274,7 @@ checkDiagram headLine rows =
                             |> Matrix.split
                             |> Tuple.second
                             |> Matrix.map .float
-                            |> List.map (List.filterMap identity >> List.maximum)
-                            |> List.filterMap identity
+                            |> List.filterMap (List.filterMap identity >> List.maximum)
                 in
                 if (maxima |> List.maximum |> Maybe.withDefault 0 |> abs) > 10 * (maxima |> List.minimum |> Maybe.withDefault 0 |> abs) then
                     Radar
