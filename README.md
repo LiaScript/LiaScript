@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.10
+version:  0.10.11
 language: en
 narrator: UK English Male
 
@@ -294,6 +294,45 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.11** (30/05/2022)
+
+- improve: DOM - handling
+
+  DOM can now be set to `persistent: on` within the main-header-comment. This way
+  no DOM-elements of other slides will be deleted anymore, they will only set to
+  `hidden`. This way other systems, that need to manipulate the DOM, can now safely
+  interact with LiaScript.
+
+  But, when dealing with a lot of iframes, movies, simulations, etc. It is still
+  wise to use the `persistent: off` mode. This way, videos and sound are closed,
+  when switching the slide, otherwise they will still remain active, but hidden.
+
+  However, by default the persistency of slides is disabled, it has to be enabled
+  globally, but is can also be redefined per slide:
+
+  ``` markdown
+  <!--
+  persistent: on
+  -->
+
+  # Title
+
+  ...
+
+  ## Sub-Section
+  <!--
+  persistent: off
+  -->
+
+
+  ## Sub-Section 2
+  <!--
+  persistent: true
+  -->
+
+  Switching on is not required, if it is globally activated.
+  ```
 
 **0.10.10** (24/05/2022)
 
