@@ -56,6 +56,7 @@ toModel sync =
         |> JD.map2 (|>) (JD.succeed Dict.empty)
         |> JD.map2 (|>) (JD.succeed Nothing)
         |> JD.map2 (|>) (JD.succeed sync)
+        |> JD.map2 (|>) (JD.succeed False)
 
 
 toSectionBase : JD.Decoder Section.Base

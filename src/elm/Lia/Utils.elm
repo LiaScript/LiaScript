@@ -4,6 +4,8 @@ module Lia.Utils exposing
     , blockKeydown
     , btn
     , btnIcon
+    , checkFalse
+    , checkPersistency
     , focus
     , get
     , icon
@@ -22,6 +24,7 @@ import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
 import Array exposing (Array)
 import Browser.Dom as Dom
+import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events as Event
@@ -284,3 +287,31 @@ string2Color maxValue url =
 percentage : Float -> Int -> Float
 percentage total i =
     toFloat (round ((10000.0 * toFloat i) / total)) / 100.0
+
+
+checkFalse : String -> Bool
+checkFalse string =
+    case string |> String.trim |> String.toLower |> String.toList of
+        [ '0' ] ->
+            False
+
+        'f' :: 'a' :: 'l' :: 's' :: 'e' :: _ ->
+            False
+
+        'o' :: 'f' :: 'f' :: _ ->
+            False
+
+        'd' :: 'i' :: 's' :: 'a' :: 'b' :: 'l' :: 'e' :: _ ->
+            False
+
+        _ ->
+            True
+
+
+{-| Will check any dict for the persistent macro.
+-}
+checkPersistency : Dict String String -> Bool
+checkPersistency =
+    Dict.get "persistent"
+        >> Maybe.map checkFalse
+        >> Maybe.withDefault False

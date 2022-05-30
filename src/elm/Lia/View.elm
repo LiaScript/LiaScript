@@ -3,6 +3,7 @@ module Lia.View exposing (view)
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Widget as A11y_Widget
+import Array
 import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -26,7 +27,7 @@ import Lia.Settings.View as Settings
 import Lia.Sync.Types as Sync_
 import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
-import Lia.Utils exposing (modal)
+import Lia.Utils exposing (checkFalse, modal)
 import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
 
@@ -130,17 +131,10 @@ viewSlide screen model =
                     model.settings
                     model.definition
                     model.sync
-                , Config.init
-                    model.translation
-                    ( model.langCodeOriginal, model.langCode )
-                    model.settings
-                    model.sync
-                    screen
-                    section
-                    model.section_active
-                    model.media
-                    |> Markdown.view
-                    |> Html.map UpdateMarkdown
+                , model.sections
+                    |> Array.toIndexedList
+                    |> List.map (showSection model screen)
+                    |> Html.div [ Attr.class "lia-slide__container" ]
                 , slideBottom
                     model.translation
                     (screen.width < 400)
@@ -174,6 +168,20 @@ viewSlide screen model =
                 , Html.text "Ups, something went wrong"
                 ]
             ]
+
+
+showSection model screen ( id, section ) =
+    Config.init
+        model.translation
+        ( model.langCodeOriginal, model.langCode )
+        model.settings
+        model.sync
+        screen
+        section
+        model.section_active
+        model.media
+        |> Markdown.view (model.section_active /= id) (Maybe.withDefault model.persistent section.persistent)
+        |> Html.map UpdateMarkdown
 
 
 {-| **@private:** used to display the text2speech output settings and spoken

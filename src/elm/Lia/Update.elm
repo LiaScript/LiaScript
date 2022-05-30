@@ -21,11 +21,11 @@ import Lia.Section exposing (Section)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
+import Lia.Utils exposing (checkFalse, checkPersistency)
 import Return exposing (Return)
 import Service.Console
 import Service.Database
 import Service.Event as Event exposing (Event)
-import Service.Script
 import Service.Slide
 import Session exposing (Session)
 import Translations exposing (Lang(..))
@@ -470,7 +470,10 @@ generate model =
                     else
                         case parse_section model.search_index model.definition sec of
                             Ok new_sec ->
-                                { new_sec | sync = sec.sync }
+                                { new_sec
+                                    | sync = sec.sync
+                                    , persistent = Maybe.map (.macro >> checkPersistency) new_sec.definition
+                                }
 
                             Err msg ->
                                 { sec

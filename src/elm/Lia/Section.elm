@@ -84,6 +84,7 @@ type alias Section =
     , footnote2show : Maybe String
     , editor_line : Int
     , sync : Maybe Sync
+    , persistent : Maybe Bool
     }
 
 
@@ -172,6 +173,7 @@ init id base =
     , footnote2show = Nothing
     , editor_line = base.editor_line + 1
     , sync = Nothing
+    , persistent = Nothing
     }
 
 

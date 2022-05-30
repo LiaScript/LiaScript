@@ -88,6 +88,7 @@ type alias Model =
     , media : Dict String ( Int, Int )
     , modal : Maybe String
     , sync : Sync.Settings
+    , persistent : Bool
     }
 
 
@@ -149,6 +150,7 @@ init hasShareApi openTOC settings allowedBackends url readme origin anchor =
     , media = Dict.empty
     , modal = Nothing
     , sync = Sync.init allowedBackends
+    , persistent = False
     }
 
 
