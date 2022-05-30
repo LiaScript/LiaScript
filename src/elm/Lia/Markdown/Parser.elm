@@ -31,6 +31,7 @@ import Combine
         , whitespace
         , withState
         )
+import Combine.Char
 import Lia.Markdown.Chart.Parser as Chart
 import Lia.Markdown.Code.Parser as Code
 import Lia.Markdown.Effect.Model exposing (set_annotation)
@@ -130,6 +131,7 @@ elements =
         , md_annotations
             |> map checkForCitation
             |> andMap paragraph
+        , htmlComment
         ]
 
 
@@ -456,6 +458,14 @@ problem =
         |> keep lineWithProblems
         |> ignore newline
         |> map Markdown.Problem
+
+
+htmlComment : Parser Context Markdown.Block
+htmlComment =
+    Indent.skip
+        |> ignore Indent.check
+        |> ignore (comment Combine.Char.anyChar)
+        |> onsuccess Markdown.HtmlComment
 
 
 md_annotations : Parser Context Parameters

@@ -24,13 +24,16 @@
     }
   }
 
-  &__content {
-    height: 100%;
+  &__container {
     margin-top: calc(#{$header-height-mobile});
-    max-width: 144rem;
+    height: 100%;
     overflow: auto;
-    padding: 0 3rem;
     position: relative;
+  }
+
+  &__content {
+    max-width: 144rem;
+    padding: 0 3rem;
     width: 100%;
 
     @include breakpoint("md") {

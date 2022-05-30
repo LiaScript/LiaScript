@@ -94,12 +94,19 @@ export async function extract(link: string, params: Params) {
   } else {
     backup[link][key] = data
   }
+  ;[]
 
   return data
 }
 
 function iframe(url: string) {
   return `<iframe src="${url}" style="width: 100%; height: inherit" allowfullscreen loading="lazy"></iframe>`
+}
+
+function init(event: Event) {
+  if (event.target instanceof HTMLElement) {
+    event.target.style.width = '100%'
+  }
 }
 
 customElements.define(
@@ -186,13 +193,30 @@ customElements.define(
               } catch (e) {
                 div.innerHTML = iframe(url_)
               }
+
+              const newChild = div.children[0]
+              if (newChild) {
+                // directly loads iframe
+                if (newChild.nodeName === 'IFRAME') {
+                  newChild.addEventListener('load', init)
+                }
+                // SketchFab loads iframe in a div
+                else if (
+                  newChild.childElementCount === 1 &&
+                  newChild.children[0].nodeName === 'IFRAME'
+                ) {
+                  newChild.children[0].addEventListener('load', init)
+                }
+                // in all other cases simply add a dynamic length
+                else if (newChild instanceof HTMLElement) {
+                  newChild.style.width = '100%'
+                }
+              }
             })
             .catch((err: any) => {
-              div.innerHTML = `<iframe src="${url_}" style="width: ${
-                options.maxwidth ? options.maxwidth + 'px' : '100%'
-              }; height: ${
+              div.innerHTML = `<iframe src="${url_}" style="width: 100%; height: ${
                 options.maxheight ? options.maxheight + 'px' : 'inherit'
-              };" allowfullscreen loading="lazy"></iframe>`
+              };" allowfullscreen loading="lazy""></iframe>`
             })
         }
       }

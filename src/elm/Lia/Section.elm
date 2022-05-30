@@ -83,6 +83,7 @@ type alias Section =
     , footnotes : Footnote.Model
     , footnote2show : Maybe String
     , sync : Maybe Sync
+    , persistent : Maybe Bool
     }
 
 
@@ -169,6 +170,7 @@ init id base =
     , footnotes = Footnote.init
     , footnote2show = Nothing
     , sync = Nothing
+    , persistent = Nothing
     }
 
 

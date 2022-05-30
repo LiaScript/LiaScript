@@ -126,6 +126,9 @@ encBlock b =
                 [ ( "HTML", JE.object [ HTML.encode encBlock node ] ) ]
                     |> HTML.maybeEncParameters a
 
+            HtmlComment ->
+                []
+
 
 ol : ( String, Blocks ) -> JE.Value
 ol ( id, blocks ) =

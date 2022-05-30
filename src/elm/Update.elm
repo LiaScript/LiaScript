@@ -13,12 +13,13 @@ import Browser
 import Browser.Events
 import Browser.Navigation as Navigation
 import Const
+import Dict
 import Error.Message
 import Error.Report
 import Http
 import Index.Update as Index
+import Index.Version
 import Json.Decode as JD
-import Json.Encode as JE
 import Lia.Definition.Types as Definition
 import Lia.Json.Decode
 import Lia.Markdown.Code.Log exposing (Level(..))
@@ -312,17 +313,26 @@ update msg model =
                             Error.Message.loadingCourse url info
                                 |> Error.Report.add model.state
                     }
-                    |> Tuple.mapSecond
-                        (\cmd ->
-                            Cmd.batch
-                                [ { cmd = "offline_TODO"
-                                  , param = JE.string url
-                                  }
-                                    |> Event.init "offline"
-                                    |> event2js
-                                , cmd
-                                ]
-                        )
+
+            else if isOffline info && model.preload /= Nothing then
+                ( model
+                , { version =
+                        model.preload
+                            |> Maybe.andThen .active
+                            |> Maybe.withDefault
+                                (model.preload
+                                    |> Maybe.andThen
+                                        (.versions
+                                            >> Dict.keys
+                                            >> Index.Version.max
+                                        )
+                                    |> Maybe.withDefault "0"
+                                )
+                  , url = url
+                  }
+                    |> Service.Database.index_restore
+                    |> event2js
+                )
 
             else
                 ( model
@@ -358,6 +368,19 @@ update msg model =
 
             else
                 ( model, download Load_Template_Result (Const.urlProxy ++ url) )
+
+
+isOffline : Http.Error -> Bool
+isOffline error =
+    case error of
+        Http.NetworkError ->
+            True
+
+        Http.Timeout ->
+            True
+
+        _ ->
+            False
 
 
 {-| **@private:** Parsing has been finished, initialize lia, update the url and
