@@ -213,7 +213,6 @@ chart lang width isFormatted attr mode class matrix =
                         |> List.tail
                         |> Maybe.withDefault []
                         |> List.map .string
-                        |> List.reverse
             in
             body
                 |> Matrix.transpose
