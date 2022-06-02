@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.11
+version:  0.10.12
 language: en
 narrator: UK English Male
 
@@ -294,6 +294,10 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.12** (02/06/2022)
+
+- fix: Bug in heatmap-representation of tables ...
 
 **0.10.11** (30/05/2022)
 
