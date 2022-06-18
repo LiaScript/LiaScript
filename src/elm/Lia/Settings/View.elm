@@ -406,6 +406,7 @@ viewEditorTheme lang tabbable theme =
                 , A11y_Key.tabbable tabbable
                 ]
                 [ [ ( "chrome", "Chrome" )
+                  , ( "cloud9_day", "Cloud9 Day" )
                   , ( "clouds", "Clouds" )
                   , ( "crimson_editor", "Crimson Editor" )
                   , ( "dawn", "Dawn" )
@@ -425,6 +426,7 @@ viewEditorTheme lang tabbable theme =
                     |> Html.optgroup [ Attr.attribute "label" (Trans.cBright lang), A11y_Widget.hidden True ]
                 , [ ( "ambiance", "Ambiance" )
                   , ( "chaos", "Chaos" )
+                  , ( "cloud9_night", "Cloud9 Night" )
                   , ( "clouds_midnight", "Clouds Midnight" )
                   , ( "cobalt", "Cobalt" )
                   , ( "dracula", "Dracula" )
@@ -432,7 +434,7 @@ viewEditorTheme lang tabbable theme =
                   , ( "gruvbox", "Gruvbox" )
                   , ( "idle_fingers", "idle Fingers" )
                   , ( "kr_theme", "krTheme" )
-                  , ( "herbivore", "Merbivore" )
+                  , ( "merbivore", "Merbivore" )
                   , ( "merbivore_soft", "Merbivore Soft" )
                   , ( "mono_industrial", "Mono Industrial" )
                   , ( "monokai", "Monokai" )

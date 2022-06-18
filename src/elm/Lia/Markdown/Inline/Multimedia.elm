@@ -1,6 +1,15 @@
-module Lia.Markdown.Inline.Multimedia exposing (audio, movie)
+module Lia.Markdown.Inline.Multimedia exposing
+    ( audio
+    , movie
+    , website
+    )
 
 import Lia.Parser.PatReplace exposing (replace, root)
+
+
+website =
+    { youtube = "https://www.youtube.com/embed/"
+    }
 
 
 {-| <http://embedcodedailymotion.blogspot.com/2016/05/dailymotion-embed-generator-tdborder.html>
@@ -14,7 +23,7 @@ movie : String -> ( Bool, String )
 movie =
     [ { by =
             \url w ->
-                "https://www.youtube.com/embed/"
+                website.youtube
                     ++ w
                     ++ preserve url youTubeRules
       , pattern = root "(?:youtu\\.be/|youtube\\.com/(?:(?:watch)?\\?(?:.*&)?v(?:i)?=|(?:v|vi|user)/))([^\\?&\"'<> #]+)"

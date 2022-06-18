@@ -21,6 +21,7 @@ import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Config as Config exposing (Config)
+import Lia.Markdown.Inline.Multimedia exposing (website)
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), combine)
 import Lia.Section exposing (SubSection)
@@ -418,7 +419,10 @@ reference config ref attr =
                     Html.div [ Attr.class "lia-iframe-wrapper" ]
                         [ printLink config alt_ title_ url_
                         , Html.iframe
-                            (Attr.src url_
+                            ((url_
+                                |> addTranslation config
+                                |> Attr.src
+                             )
                                 :: Attr.attribute "allowfullscreen" ""
                                 :: Attr.attribute "loading" "lazy"
                                 :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
@@ -495,6 +499,29 @@ reference config ref attr =
                         |> CList.addWhen (title config title_)
                     )
                 |> figure config title_ (Just 300) "image"
+
+
+addTranslation : Config sub -> String -> String
+addTranslation config url_ =
+    if String.startsWith website.youtube url_ then
+        url_
+            ++ (if String.contains "?" url_ then
+                    "&hl="
+
+                else
+                    "?hl="
+               )
+            ++ getLang config
+
+    else
+        url_
+
+
+getLang : Config sub -> String
+getLang config =
+    config.translations
+        |> Maybe.map Tuple.second
+        |> Maybe.withDefault (Translations.baseLang config.lang)
 
 
 printLink : Config sub -> Inlines -> Maybe Inlines -> String -> Html (Msg sub)
