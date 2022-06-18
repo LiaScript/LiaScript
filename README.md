@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.12
+version:  0.10.14
 language: en
 narrator: UK English Male
 
@@ -294,6 +294,16 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.14** (18/02/2022)
+
+- fix: Preprocessing parsing with > and < in title
+- chore: Update parcel, ace-editor, sass, and typescript
+- improve: internationalization of embedded YouTube controls
+- fix: index-view on small screens once cut off the main title
+- improve: Quiz, Survey, and Task defintion, which is now closer to GitHub, spaces
+  are allowed but not mandatory (`- [X]` vs. `-[X]`)
+- improve: add < and > to escape characters
 
 **0.10.12** (02/06/2022)
 
