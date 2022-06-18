@@ -51,7 +51,7 @@ body =
     [ regex "(?:[^#`<]+|[\\x0D\n]+|<!--[\\S\\s]{0,1000}?-->)" -- comment
     , regex "(`{3,})[\\S\\s]*?\\1" -- code_block or ascii art
     , regex "`.+?`" -- code_block or ascii art
-    , regex "(?:<([\\w+\\-]+)[\\S\\s]*?</\\1>|`|<)"
+    , regex "(?:<([\\w+\\-]+)[\\S\\s]*?<[ \t]*/[ \t]*\\1[ \t]*>|`|<)"
     , regex "#+(\\w|[^\\u0000-\\u007F]|[ \t]*\n)"
     , withColumn check |> keep (string "#")
     ]
