@@ -469,7 +469,7 @@ stringSuperscript =
 
 stringCharacters : Parser s (Parameters -> Inline)
 stringCharacters =
-    regex "[\\[\\]\\(\\)~:_;=${}\\-+\"*]"
+    regex "[\\[\\]\\(\\)~:_;=${}\\-+\"*<>]"
         |> map Chars
 
 
@@ -481,7 +481,7 @@ stringSpaces =
 
 stringBase2 : Parser s (Parameters -> Inline)
 stringBase2 =
-    regex "[^\n*|<>+\\-]+"
+    regex "[^\n*|+\\-]+"
         |> map Chars
 
 
