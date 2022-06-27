@@ -97,7 +97,7 @@ customElements.define(
         minLines: 1,
         annotations: [],
         fontSize: '1.5rem',
-        fontFamily: 'LiaSourceCodePro',
+        fontFamily: 'var(--global-font-mono,)',
       }
 
       let markers = {
