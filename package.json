@@ -57,7 +57,7 @@
     "@typescript-eslint/parser": "^4.33.0",
     "@webcomponents/webcomponentsjs": "^2.6.0",
     "ace-builds": "^1.6.0",
-    "caniuse-lite": "^1.0.30001356",
+    "caniuse-lite": "^1.0.30001359",
     "dexie": "^2.0.4",
     "echarts": "^5.3.2",
     "echarts-wordcloud": "^2.0.0",
