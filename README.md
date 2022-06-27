@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.14
+version:  0.10.15
 language: en
 narrator: UK English Male
 
@@ -295,7 +295,24 @@ This will apply the following four patches:
 
 ## Version-Changes
 
-**0.10.14** (18/02/2022)
+**0.10.15** (27/06/2022)
+
+- feat: Add `font` macro to import external fonts such as egyptian hieroglyphs
+        or cuneiform:
+
+  ``` markdown
+  <!--
+  author: ...
+  link:   https://fonts.googleapis.com/css2?family=Noto+Sans+Egyptian+Hieroglyphs&display=swap
+  font:   Noto Sans Egyptian Hieroglyphs, ...
+  -->
+  # Course
+
+  > Some hieroglyphs: __𓈖𓆓 𓊽𓉐𓉐 𓈖𓏲𓇯𓂝𓏴𓃾 𓉐𓃾𓂝𓃻𓁶𓃾 𓌓𓁶𓌓𓆓𓂝𓃾 𓌅𓂧𓌅𓀠 𓀠𓇯𓈖__
+  ```
+- chore: Update parcel, ace, sass, caniuse, ...
+
+**0.10.14** (18/06/2022)
 
 - fix: Preprocessing parsing with > and < in title
 - chore: Update parcel, ace-editor, sass, and typescript
