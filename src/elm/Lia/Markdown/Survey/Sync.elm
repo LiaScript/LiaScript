@@ -274,9 +274,6 @@ density { steps, width } sample =
             List.maximum sample
                 |> Maybe.withDefault 0
 
-        _ =
-            Debug.log "--" width
-
         diff =
             round (maxi - mini)
 
