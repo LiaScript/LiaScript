@@ -68,7 +68,7 @@ view config attr survey model sync =
                     |> view_survey config attr "select" model survey.id
                     |> viewSelectSync config inlines (Sync_.get config.sync survey.id sync)
 
-            Vector button questions analyse ->
+            Vector button questions analysis ->
                 vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
                     |> view_vector questions
                     |> view_survey config
@@ -82,7 +82,7 @@ view config attr survey model sync =
                         model
                         survey.id
                     |> viewVectorSync config
-                        analyse
+                        analysis
                         questions
                         (Sync_.get config.sync survey.id sync)
 
@@ -305,7 +305,7 @@ vectorBlockQuantity config data =
                                 Nothing
                     )
                 |> List.concat
-                |> Sync.density { steps = Nothing, width = 4 }
+                |> Sync.density { steps = Just 50, width = 10 }
     in
     JE.object
         [ ( "grid"
