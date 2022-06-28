@@ -316,6 +316,7 @@ vectorBlockQuantity config data =
                 , ( "right", JE.int 20 )
                 ]
           )
+        , ( "tooltip", JE.object [ ( "trigger", JE.string "axis" ) ] )
         , ( "xAxis"
           , JE.object
                 [ ( "type", JE.string "category" )
