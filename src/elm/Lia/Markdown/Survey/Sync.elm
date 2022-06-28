@@ -266,22 +266,33 @@ gaussKDE xi x =
 density : { steps : Maybe Int, width : Float } -> List Float -> { x : List Float, y : List Float }
 density { steps, width } sample =
     let
-        minimum =
+        mini =
             List.minimum sample
                 |> Maybe.withDefault 0
 
-        maximum =
+        maxi =
             List.maximum sample
                 |> Maybe.withDefault 0
 
+        diff =
+            round (maxi - mini)
+
         realSteps =
-            Maybe.withDefault (2 * round (maximum - minimum)) steps
+            Maybe.withDefault
+                (if diff == 0 then
+                    4 * round width
+
+                 else
+                    4 * diff
+                )
+                steps
 
         stepWidth =
-            ((maximum + width) - (minimum - width)) / toFloat realSteps
+            ((maxi + width) - (mini - width))
+                / toFloat realSteps
 
         xiData =
-            (minimum - width)
+            (mini - width)
                 |> List.repeat realSteps
                 |> List.indexedMap (\i v -> v + (toFloat i * stepWidth))
 

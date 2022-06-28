@@ -101,11 +101,11 @@ pattern p =
 
 id_str : Parser s String
 id_str =
-    "\\w(\\w+| )*"
+    "\\S[^)\\]]*"
         |> regex
         |> andThen
             (\s ->
-                if s == "X" then
+                if s == "X" || s == "x" then
                     fail ""
 
                 else
