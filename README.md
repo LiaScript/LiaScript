@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.15
+version:  0.10.16
 language: en
 narrator: UK English Male
 
@@ -294,6 +294,24 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.16** (28/06/2022)
+
+- improved surveys:
+
+  - fixed quantitative representation for small sets
+  - add tooltips to quantitative outputs
+  - relaxed rules for ids ...
+
+    ``` markdown
+    Would yo please rate it?
+    
+        [(5 ⭐)] ⭐ ⭐ ⭐ ⭐ ⭐
+        [(4 ⭐)] ⭐ ⭐ ⭐ ⭐
+        [(3 ⭐)] ⭐ ⭐ ⭐
+        [(2 ⭐)] ⭐ ⭐
+        [(1 ⭐)] ⭐
+    ```
 
 **0.10.15** (27/06/2022)
 
