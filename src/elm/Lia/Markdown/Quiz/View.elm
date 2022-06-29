@@ -185,7 +185,12 @@ viewSync config syncData quiz =
                         |> JE.list JE.object
                   )
                 ]
-                |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
+                |> Chart.eCharts
+                    { lang = config.lang
+                    , attr = [ ( "style", "height: 120px; width: 100%" ) ]
+                    , light = config.light
+                    }
+                    Nothing
                 |> List.singleton
                 |> List.append quiz
 

@@ -222,7 +222,12 @@ wordCloud config data =
                 |> JE.list JE.object
           )
         ]
-        |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
+        |> Chart.eCharts
+            { lang = config.lang
+            , attr = [ ( "style", "height: 120px; width: 100%" ) ]
+            , light = config.light
+            }
+            Nothing
 
 
 vectorBlockCategory : Config sub -> List Sync.Data -> Html msg
@@ -287,7 +292,12 @@ vectorBlockCategory config data =
                 |> JE.list JE.object
           )
         ]
-        |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
+        |> Chart.eCharts
+            { lang = config.lang
+            , attr = [ ( "style", "height: 120px; width: 100%" ) ]
+            , light = config.light
+            }
+            Nothing
 
 
 vectorBlockQuantity : Config sub -> List Sync.Data -> Html msg
@@ -341,7 +351,12 @@ vectorBlockQuantity config data =
                 |> JE.list JE.object
           )
         ]
-        |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
+        |> Chart.eCharts
+            { lang = config.lang
+            , attr = [ ( "style", "height: 120px; width: 100%" ) ]
+            , light = config.light
+            }
+            Nothing
 
 
 matrixBlock : Config sub -> List Inlines -> List (List Sync.Data) -> Html msg
@@ -437,7 +452,12 @@ matrixBlock config categories data =
                 |> JE.list JE.object
           )
         ]
-        |> Chart.eCharts config.lang [ ( "style", "height: 200px; width: 100%" ) ] True Nothing
+        |> Chart.eCharts
+            { lang = config.lang
+            , attr = [ ( "style", "height: 200px; width: 100%" ) ]
+            , light = config.light
+            }
+            Nothing
 
 
 textBlock : String -> Html msg
