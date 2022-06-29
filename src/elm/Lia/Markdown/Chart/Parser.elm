@@ -41,41 +41,47 @@ parse =
                         |> List.filterMap identity
                         |> Dict.fromList
             in
-            data
-                |> List.reverse
-                |> List.indexedMap Tuple.pair
-                |> List.map
-                    (\( y, l ) ->
-                        l
-                            |> Dict.map
-                                (\_ xs ->
-                                    xs
-                                        |> List.map
-                                            (\x ->
-                                                Point (toFloat x * x_segment + x0)
-                                                    (toFloat y * y_segment + y0)
-                                            )
-                                )
-                    )
-                |> List.foldr magicMerge Dict.empty
-                |> Dict.map (\_ v -> List.sortBy .x v)
-                |> Dict.map
-                    (\k v ->
-                        if v |> List.map .x |> unique Nothing then
-                            labels
-                                |> Dict.get (String.fromChar k)
-                                |> Lines v
+            { xLimits = { min = Nothing, max = Nothing }
+            , yLimits = { min = Nothing, max = Nothing }
+            , title = title
+            , yLabel =
+                y_label
+                    |> String.concat
+                    |> String.trim
+            , xLabel = x_label
+            , legend = Dict.values labels
+            , diagrams =
+                data
+                    |> List.reverse
+                    |> List.indexedMap Tuple.pair
+                    |> List.map
+                        (\( y, l ) ->
+                            l
+                                |> Dict.map
+                                    (\_ xs ->
+                                        xs
+                                            |> List.map
+                                                (\x ->
+                                                    Point (toFloat x * x_segment + x0)
+                                                        (toFloat y * y_segment + y0)
+                                                )
+                                    )
+                        )
+                    |> List.foldr magicMerge Dict.empty
+                    |> Dict.map (\_ v -> List.sortBy .x v)
+                    |> Dict.map
+                        (\k v ->
+                            if v |> List.map .x |> unique Nothing then
+                                labels
+                                    |> Dict.get (String.fromChar k)
+                                    |> Lines v
 
-                        else
-                            labels
-                                |> Dict.get (String.fromChar k)
-                                |> Dots v
-                    )
-                |> Chart
-                    title
-                    (y_label |> String.concat |> String.trim)
-                    x_label
-                    (Dict.values labels)
+                            else
+                                labels
+                                    |> Dict.get (String.fromChar k)
+                                    |> Dots v
+                        )
+            }
     in
     optional "" (regex "[\t ]*[^\n\\|`]*\n")
         |> map (String.trim >> chart)
