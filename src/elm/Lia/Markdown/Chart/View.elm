@@ -26,169 +26,153 @@ import FStatistics
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode as JE
-import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Labels)
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
+import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Labels, Settings)
+import Lia.Markdown.HTML.Attributes exposing (annotation)
 import Maybe
-import Translations exposing (Lang, getCodeFromLn)
+import Translations exposing (getCodeFromLn)
 
 
-view : Lang -> Parameters -> Bool -> Chart -> Html msg
-view lang attr light =
-    encode True >> eCharts lang attr light Nothing
+view : Settings -> Chart -> Html msg
+view settings =
+    encode True >> eCharts settings Nothing
 
 
-viewChart : Lang -> Parameters -> Bool -> Chart -> Html msg
-viewChart lang attr light =
-    encode False >> eCharts lang attr light Nothing
+viewChart : Settings -> Chart -> Html msg
+viewChart settings =
+    encode False >> eCharts settings Nothing
 
 
 viewLines :
-    Lang
-    -> Parameters
-    -> Bool
+    Settings
     -> Labels
     -> List String
     -> List ( String, List (Maybe Float) )
     -> Html msg
-viewLines lang attr light labels category data =
+viewLines settings labels category data =
     encodeBasic "line" labels category data
-        |> eCharts lang attr light Nothing
+        |> eCharts settings Nothing
 
 
 viewPoints :
-    Lang
-    -> Parameters
-    -> Bool
+    Settings
     -> Labels
     -> List String
     -> List ( String, List (Maybe Float) )
     -> Html msg
-viewPoints lang attr light labels category data =
+viewPoints settings labels category data =
     encodeBasic "scatter" labels category data
-        |> eCharts lang attr light Nothing
+        |> eCharts settings Nothing
 
 
 viewBarChart :
-    Lang
-    -> Parameters
-    -> Bool
+    Settings
     -> Labels
     -> List String
     -> List ( Maybe String, List (Maybe Float) )
     -> Html msg
-viewBarChart lang attr light labels category data =
-    encodeBarChart labels category data
-        |> eCharts lang attr light Nothing
+viewBarChart settings labels category data =
+    { labels = labels
+    , category = category
+    , data = data
+    }
+        |> encodeBarChart
+        |> eCharts settings Nothing
 
 
 viewBoxPlot :
-    Lang
-    -> Parameters
-    -> Bool
+    Settings
     -> Labels
     -> List String
     -> List (List (Maybe Float))
     -> Html msg
-viewBoxPlot lang attr light labels category data =
+viewBoxPlot settings labels category data =
     encodeBoxPlot labels category data
-        |> eCharts lang attr light Nothing
+        |> eCharts settings Nothing
 
 
 viewParallel :
-    Lang
-    -> Parameters
-    -> Bool
+    Settings
     -> Labels
     -> List String
     -> List (List (Maybe Float))
     -> Html msg
-viewParallel lang attr light labels category data =
+viewParallel settings labels category data =
     encodeParallel labels category data
-        |> eCharts lang attr light Nothing
+        |> eCharts settings Nothing
 
 
 viewGraph :
-    Lang
-    -> Parameters
-    -> Bool
+    Settings
     -> Labels
     -> List String
     -> List ( String, String, Float )
     -> Html msg
-viewGraph lang attr light labels nodes edges =
+viewGraph settings labels nodes edges =
     encodeGraph labels nodes edges
-        |> eCharts lang attr light Nothing
+        |> eCharts settings Nothing
 
 
 viewSankey :
-    Lang
-    -> Parameters
-    -> Bool
+    Settings
     -> Labels
     -> List String
     -> List ( String, String, Float )
     -> Html msg
-viewSankey lang attr light labels nodes edges =
+viewSankey settings labels nodes edges =
     encodeSankey labels nodes edges
-        |> eCharts lang attr light Nothing
+        |> eCharts settings Nothing
 
 
-viewRadarChart : Lang -> Parameters -> Bool -> Labels -> List String -> List ( String, List (Maybe Float) ) -> Html msg
-viewRadarChart lang attr light labels category data =
+viewRadarChart : Settings -> Labels -> List String -> List ( String, List (Maybe Float) ) -> Html msg
+viewRadarChart settings labels category data =
     encodeRadarChart labels category data
-        |> eCharts lang attr light Nothing
+        |> eCharts settings Nothing
 
 
-viewMapChart : Lang -> Parameters -> Bool -> Labels -> List ( String, Maybe Float ) -> Maybe String -> Html msg
-viewMapChart lang attr light labels data json =
+viewMapChart : Settings -> Labels -> List ( String, Maybe Float ) -> Maybe String -> Html msg
+viewMapChart settings labels data json =
     encodeMapChart labels data json
-        |> eCharts lang attr light json
+        |> eCharts settings json
 
 
 viewPieChart :
-    Lang
+    Settings
     -> Int
-    -> Parameters
-    -> Bool
     -> Labels
     -> Maybe (List String)
     -> List (List ( String, Float ))
     -> Html msg
-viewPieChart lang width attr light labels subtitle data =
+viewPieChart settings width labels subtitle data =
     encodePieChart width labels subtitle data
-        |> eCharts lang attr light Nothing
+        |> eCharts settings Nothing
 
 
 viewFunnel :
-    Lang
+    Settings
     -> Int
-    -> Parameters
-    -> Bool
     -> Labels
     -> Maybe (List String)
     -> List (List ( String, Float ))
     -> Html msg
-viewFunnel lang _ attr light labels subtitle data =
+viewFunnel settings _ labels subtitle data =
     encodeFunnel labels subtitle data
-        |> eCharts lang attr light Nothing
+        |> eCharts settings Nothing
 
 
 viewHeatMap :
-    Lang
-    -> Parameters
-    -> Bool
+    Settings
     -> Labels
     -> List String
     -> List String
     -> List (List ( Int, Int, Maybe Float ))
     -> Html msg
-viewHeatMap lang attr light labels x y data =
+viewHeatMap settings labels x y data =
     encodeHeatMap labels x y data
-        |> eCharts lang attr light Nothing
+        |> eCharts settings Nothing
 
 
-eCharts : Lang -> Parameters -> Bool -> Maybe String -> JE.Value -> Html msg
-eCharts lang attr light json option =
+eCharts : Settings -> Maybe String -> JE.Value -> Html msg
+eCharts { lang, attr, light } json option =
     Html.node "lia-chart"
         (List.append
             [ Attr.attribute "mode" <|
@@ -530,8 +514,13 @@ encodeBoxPlot labels category data =
         |> JE.object
 
 
-encodeBarChart : Labels -> List String -> List ( Maybe String, List (Maybe Float) ) -> JE.Value
-encodeBarChart labels category data =
+encodeBarChart :
+    { labels : Labels
+    , category : List String
+    , data : List ( Maybe String, List (Maybe Float) )
+    }
+    -> JE.Value
+encodeBarChart { labels, category, data } =
     let
         bars =
             data

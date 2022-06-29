@@ -107,6 +107,9 @@ chart lang width isFormatted attr mode class matrix =
 
         labels =
             getLabels attr head
+
+        settings =
+            { lang = lang, attr = attr, light = mode }
     in
     case class of
         BarChart ->
@@ -124,7 +127,7 @@ chart lang width isFormatted attr mode class matrix =
                         , row |> List.tail |> Maybe.map (List.map .float) |> Maybe.withDefault []
                         )
                     )
-                |> Chart.viewBarChart lang attr mode labels category
+                |> Chart.viewBarChart settings labels category
 
         PieChart ->
             if
@@ -139,7 +142,7 @@ chart lang width isFormatted attr mode class matrix =
                         (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
                             >> List.filterMap identity
                         )
-                    |> Chart.viewPieChart lang width attr mode labels Nothing
+                    |> Chart.viewPieChart settings width labels Nothing
 
             else
                 let
@@ -161,7 +164,7 @@ chart lang width isFormatted attr mode class matrix =
                 in
                 data
                     |> List.map (List.map2 (\c -> Maybe.map (Tuple.pair c)) category >> List.filterMap identity)
-                    |> Chart.viewPieChart lang width attr mode labels sub
+                    |> Chart.viewPieChart settings width labels sub
 
         Funnel ->
             if
@@ -176,7 +179,7 @@ chart lang width isFormatted attr mode class matrix =
                         (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
                             >> List.filterMap identity
                         )
-                    |> Chart.viewFunnel lang width attr mode labels Nothing
+                    |> Chart.viewFunnel settings width labels Nothing
 
             else
                 let
@@ -198,7 +201,7 @@ chart lang width isFormatted attr mode class matrix =
                 in
                 data
                     |> List.map (List.map2 (\c -> Maybe.map (Tuple.pair c)) category >> List.filterMap identity)
-                    |> Chart.viewFunnel lang width attr mode labels sub
+                    |> Chart.viewFunnel settings width labels sub
 
         HeatMap ->
             let
@@ -222,7 +225,7 @@ chart lang width isFormatted attr mode class matrix =
                         row
                             |> List.indexedMap (\x_ cell -> ( x_, y_, cell.float ))
                     )
-                |> Chart.viewHeatMap lang attr mode labels y x
+                |> Chart.viewHeatMap settings labels y x
 
         Radar ->
             let
@@ -239,7 +242,7 @@ chart lang width isFormatted attr mode class matrix =
                         , row |> List.tail |> Maybe.map (List.map .float) |> Maybe.withDefault []
                         )
                     )
-                |> Chart.viewRadarChart lang attr mode labels categories
+                |> Chart.viewRadarChart settings labels categories
 
         Parallel ->
             let
@@ -254,13 +257,13 @@ chart lang width isFormatted attr mode class matrix =
                 |> Matrix.tail
                 |> Matrix.map .float
                 |> Matrix.transpose
-                |> Chart.viewParallel lang attr mode labels category
+                |> Chart.viewParallel settings labels category
 
         BoxPlot ->
             body
                 |> Matrix.map .float
                 |> Matrix.transpose
-                |> Chart.viewBoxPlot lang attr mode labels (List.map .string head)
+                |> Chart.viewBoxPlot settings labels (List.map .string head)
 
         Graph ->
             let
@@ -309,7 +312,7 @@ chart lang width isFormatted attr mode class matrix =
                     )
                 |> List.filterMap identity
                 |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
-                |> Chart.viewGraph lang attr mode labels nodes
+                |> Chart.viewGraph settings labels nodes
 
         Sankey ->
             let
@@ -358,7 +361,7 @@ chart lang width isFormatted attr mode class matrix =
                     )
                 |> List.filterMap identity
                 |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
-                |> Chart.viewSankey lang attr mode labels nodes
+                |> Chart.viewSankey settings labels nodes
 
         Map ->
             let
@@ -384,11 +387,7 @@ chart lang width isFormatted attr mode class matrix =
             in
             attr
                 |> Param.get "data-src"
-                |> Chart.viewMapChart lang
-                    attr
-                    mode
-                    labels
-                    values
+                |> Chart.viewMapChart settings labels values
 
         _ ->
             let
@@ -437,7 +436,7 @@ chart lang width isFormatted attr mode class matrix =
                 , legend = legend
                 , diagrams = diagrams |> Dict.fromList
                 }
-                    |> Chart.viewChart lang attr mode
+                    |> Chart.viewChart settings
 
             else
                 let
@@ -464,9 +463,7 @@ chart lang width isFormatted attr mode class matrix =
                         else
                             Chart.viewPoints
                        )
-                        lang
-                        attr
-                        mode
+                        settings
                         labels
                         xValues
 
