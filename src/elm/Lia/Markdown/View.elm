@@ -412,7 +412,12 @@ view_block config block =
                 elements
 
         Chart attr chart ->
-            Lazy.lazy4 Charts.view config.main.lang attr config.light chart
+            Lazy.lazy2 Charts.view
+                { lang = config.main.lang
+                , attr = attr
+                , light = config.light
+                }
+                chart
 
         ASCII attr bob ->
             view_ascii config attr bob

@@ -104,8 +104,12 @@ customElements.define(
         // TODO: Check for more appropriate roles...
         self.setAttribute('aria-role', 'figure alert')
         self.setAttribute('aria-relevant', 'text')
-        this.updateChart()
-        this.resizeChart()
+
+        // this forces to wait for the chart until geoJson is loaded
+        if (!this.geoJson.url) {
+          this.updateChart()
+          this.resizeChart()
+        }
 
         try {
           if (this.parentElement) {

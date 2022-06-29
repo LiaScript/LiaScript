@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.16
+version:  0.10.17
 language: en
 narrator: UK English Male
 
@@ -294,6 +294,23 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.17** (29/06/2022)
+
+- improved charts:
+
+  - fix: failing first load of geoJson data
+  - refactor: internal charting
+  - feat: Add axis-limit definitions
+    
+    ``` markdown
+    <!-- data-xlim="0,5" data-ylim=",20.0">
+    | x | y |
+    |---|---|
+    | 1 | 2 |
+    | 3 | 4 |
+    ```
+
 
 **0.10.16** (28/06/2022)
 
