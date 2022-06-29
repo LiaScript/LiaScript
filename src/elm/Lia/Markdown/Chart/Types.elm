@@ -1,5 +1,6 @@
 module Lia.Markdown.Chart.Types exposing
     ( Chart
+    , Data
     , Diagram(..)
     , Labels
     , Point
@@ -42,4 +43,11 @@ type alias Settings =
     { lang : Lang
     , attr : Parameters
     , light : Bool
+    }
+
+
+type alias Data x =
+    { labels : Labels
+    , category : List String
+    , data : List x
     }
