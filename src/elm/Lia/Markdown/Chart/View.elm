@@ -125,7 +125,7 @@ eCharts { lang, attr, light } json option =
         []
 
 
-minMax : List comparable -> Maybe ( comparable, comparable )
+minMax : List Float -> Maybe ( Float, Float )
 minMax list =
     case list of
         [] ->
@@ -399,11 +399,11 @@ encodeBoxPlot { labels, category, data } =
                     |> JE.list JE.string
                )
              ]
-                |> CList.addWhen
-                    (labels.x |> Maybe.map (JE.string >> Tuple.pair "name"))
+                |> CList.addWhen (labels.x |> Maybe.map (JE.string >> Tuple.pair "name"))
+                |> addAxisLimits labels.xLimits
             )
       )
-    , yAxis "value" labels.y []
+    , yAxis labels.yLimits "value" labels.y []
     , toolbox Nothing
         { saveAsImage = True
         , dataView = True
@@ -477,14 +477,14 @@ encodeBarChart { labels, category, data } =
                 |> JE.list identity
     in
     [ ( "xAxis"
-      , JE.object
-            ([ ( "type", JE.string "category" )
-             , ( "data", category |> JE.list JE.string )
-             ]
-                |> CList.addWhen (labels.x |> Maybe.map (\title -> ( "name", JE.string title )))
-            )
+      , [ ( "type", JE.string "category" )
+        , ( "data", category |> JE.list JE.string )
+        ]
+            |> CList.addWhen (labels.x |> Maybe.map (\title -> ( "name", JE.string title )))
+            |> addAxisLimits labels.xLimits
+            |> JE.object
       )
-    , yAxis "value" labels.y []
+    , yAxis labels.yLimits "value" labels.y []
     , grid
     , ( "legend"
       , [ ( "data"
@@ -526,10 +526,16 @@ grid =
     )
 
 
+addAxisLimits : { min : Maybe String, max : Maybe String } -> List ( String, JE.Value ) -> List ( String, JE.Value )
+addAxisLimits { min, max } =
+    CList.addWhen (min |> Maybe.map (JE.string >> Tuple.pair "min"))
+        >> CList.addWhen (max |> Maybe.map (JE.string >> Tuple.pair "max"))
+
+
 encodeBasic : String -> Data ( String, List (Maybe Float) ) -> JE.Value
 encodeBasic type_ { labels, category, data } =
-    [ xAxis Nothing "category" labels.x category
-    , yAxis "value" labels.y []
+    [ xAxis labels.xLimits "category" labels.x category
+    , yAxis labels.yLimits "value" labels.y []
     , grid
     , data
         |> List.map Tuple.first
@@ -611,6 +617,7 @@ encodeMapChart json data =
                 |> List.filterMap Tuple.second
                 |> minMax
                 |> Maybe.withDefault ( 0, 0 )
+                |> Tuple.mapBoth String.fromFloat String.fromFloat
     in
     [ ( "series"
       , [ JE.object
@@ -649,8 +656,16 @@ encodeMapChart json data =
       )
     , ( "visualMap"
       , JE.object
-            [ ( "min", JE.float min )
-            , ( "max", JE.float max )
+            [ ( "min"
+              , data.labels.xLimits.min
+                    |> Maybe.withDefault min
+                    |> JE.string
+              )
+            , ( "max"
+              , data.labels.xLimits.max
+                    |> Maybe.withDefault max
+                    |> JE.string
+              )
             , ( "calculable", JE.bool True )
             , ( "itemHeight", JE.string "150px" )
             , ( "right", JE.string "0" )
@@ -792,26 +807,25 @@ encodeLegend params data =
     )
 
 
-xAxis : Maybe ( Float, Float ) -> String -> Maybe String -> List String -> ( String, JE.Value )
+xAxis : { min : Maybe String, max : Maybe String } -> String -> Maybe String -> List String -> ( String, JE.Value )
 xAxis =
     axis True
 
 
-yAxis : String -> Maybe String -> List String -> ( String, JE.Value )
+yAxis : { min : Maybe String, max : Maybe String } -> String -> Maybe String -> List String -> ( String, JE.Value )
 yAxis =
-    axis False Nothing
+    axis False
 
 
-axis : Bool -> Maybe ( Float, Float ) -> String -> Maybe String -> List String -> ( String, JE.Value )
-axis x min_max type_ title data =
+axis : Bool -> { min : Maybe String, max : Maybe String } -> String -> Maybe String -> List String -> ( String, JE.Value )
+axis x limits type_ title data =
     ( if x then
         "xAxis"
 
       else
         "yAxis"
     , [ ( "type", JE.string type_ ) ]
-        |> add (Tuple.first >> JE.float >> Tuple.pair "min") min_max
-        |> add (Tuple.second >> JE.float >> Tuple.pair "max") min_max
+        |> addAxisLimits limits
         |> add (JE.string >> Tuple.pair "name") title
         |> List.append
             (if data == [] then
@@ -860,8 +874,8 @@ encodeHeatMap yLabels { labels, category, data } =
                 --, ( "right", JE.string "0%" )
                 ]
       )
-    , xAxis Nothing "category" labels.x category
-    , yAxis "category" labels.y yLabels
+    , xAxis labels.xLimits "category" labels.x category
+    , yAxis labels.yLimits "category" labels.y yLabels
     , ( "visualMap"
       , JE.object
             [ ( "min", JE.float min )
@@ -1390,6 +1404,7 @@ encode withColor chart =
                     )
                 |> minMax
                 |> Maybe.withDefault ( 0, 0 )
+                |> Tuple.mapBoth String.fromFloat String.fromFloat
     in
     JE.object
         [ ( "textStyle"
@@ -1397,8 +1412,20 @@ encode withColor chart =
                 [ ( "fontFamily", JE.string "Roboto" )
                 ]
           )
-        , xAxis (Just ( min, max )) "value" (Just chart.xLabel) []
-        , yAxis "value" (Just chart.yLabel) []
+        , xAxis
+            { min =
+                chart.xLimits.min
+                    |> Maybe.withDefault min
+                    |> Just
+            , max =
+                chart.xLimits.max
+                    |> Maybe.withDefault max
+                    |> Just
+            }
+            "value"
+            (Just chart.xLabel)
+            []
+        , yAxis chart.yLimits "value" (Just chart.yLabel) []
         , ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
         , ( "legend"
           , JE.object

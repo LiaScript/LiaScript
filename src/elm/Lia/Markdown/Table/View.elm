@@ -485,6 +485,8 @@ chart lang width isFormatted attr mode class matrix =
                 , xLabel = labels.x |> Maybe.withDefault ""
                 , legend = legend
                 , diagrams = diagrams |> Dict.fromList
+                , xLimits = labels.xLimits
+                , yLimits = labels.yLimits
                 }
                     |> Chart.viewChart settings
 
@@ -535,7 +537,31 @@ getLabels attr row =
         Param.get "data-xlabel" attr
     , y =
         Param.get "data-ylabel" attr
+    , xLimits = getMinMax "data-xlim" attr
+    , yLimits = getMinMax "data-ylim" attr
     }
+
+
+getMinMax : String -> Parameters -> { min : Maybe String, max : Maybe String }
+getMinMax name attr =
+    case Param.get name attr |> Maybe.map (String.split "," >> List.map String.trim) of
+        Just [ "", "" ] ->
+            { min = Nothing, max = Nothing }
+
+        Just [ "", max ] ->
+            { min = Nothing, max = Just max }
+
+        Just [ min, "" ] ->
+            { min = Just min, max = Nothing }
+
+        Just [ min ] ->
+            { min = Just min, max = Nothing }
+
+        Just [ min, max ] ->
+            { min = Just min, max = Just max }
+
+        _ ->
+            { min = Nothing, max = Nothing }
 
 
 getState : Int -> Vector -> State

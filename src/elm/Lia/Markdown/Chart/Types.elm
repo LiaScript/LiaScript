@@ -24,6 +24,14 @@ type alias Chart =
     , xLabel : String
     , legend : List String
     , diagrams : Dict Char Diagram
+    , xLimits :
+        { min : Maybe String
+        , max : Maybe String
+        }
+    , yLimits :
+        { min : Maybe String
+        , max : Maybe String
+        }
     }
 
 
@@ -31,6 +39,14 @@ type alias Labels =
     { main : Maybe String
     , x : Maybe String
     , y : Maybe String
+    , xLimits :
+        { min : Maybe String
+        , max : Maybe String
+        }
+    , yLimits :
+        { min : Maybe String
+        , max : Maybe String
+        }
     }
 
 
