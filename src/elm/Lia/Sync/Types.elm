@@ -15,7 +15,7 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Lia.Sync.Container.Local as Local
+import Lia.Sync.Container.Container as Local
 import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
 import Set exposing (Set)

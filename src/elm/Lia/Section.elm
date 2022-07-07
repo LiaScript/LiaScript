@@ -24,8 +24,8 @@ import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
 import Lia.Markdown.Types as Markdown
+import Lia.Sync.Container.Container as Local
 import Lia.Sync.Container.Global as Global
-import Lia.Sync.Container.Local as Local
 
 
 {-| This is the main record to contain all section related information.

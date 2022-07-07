@@ -48,7 +48,7 @@ import Lia.Markdown.Quiz.Types
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
-import Lia.Sync.Container.Local exposing (Container)
+import Lia.Sync.Container.Container exposing (Container)
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (btn, btnIcon, percentage)
 import List.Extra
