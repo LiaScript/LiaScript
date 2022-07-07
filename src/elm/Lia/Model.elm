@@ -130,7 +130,7 @@ init hasShareApi openTOC settings backends url readme origin anchor =
                                 Nothing
 
                             else
-                                Just backends.enabled
+                                set.sync
                     }
                )
     , error = Nothing
