@@ -1,4 +1,4 @@
-module Lia.Sync.Container.Container exposing
+module Lia.Sync.Container exposing
     ( Container
     , decode
     , decoder
@@ -48,7 +48,6 @@ import Array exposing (Array)
 import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
-import Set exposing (Set)
 
 
 {-| A local container is an `Array` of `Dict`s, which mirrors the state to be

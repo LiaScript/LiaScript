@@ -35,7 +35,7 @@ import Array exposing (Array)
 import Dict
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Sync.Container.Container as Local
+import Lia.Sync.Container as Local
 
 
 {-| This is an `Array` of Local.Containers. It might be the case, that there

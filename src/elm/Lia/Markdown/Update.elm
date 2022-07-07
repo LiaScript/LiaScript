@@ -26,7 +26,7 @@ import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Markdown.Task.Update as Task
 import Lia.Section as Section exposing (Section, SubSection(..))
-import Lia.Sync.Container.Container as Container
+import Lia.Sync.Container as Container
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
 import Return exposing (Return)
