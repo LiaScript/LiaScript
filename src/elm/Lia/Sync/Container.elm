@@ -7,6 +7,7 @@ module Lia.Sync.Container exposing
     , get
     , init
     , isEmpty
+    , toMaybe
     , union
     , union_
     )
@@ -216,3 +217,12 @@ the custom `sync` type has to be passed.
 decoder : JD.Decoder sync -> JD.Decoder (Container sync)
 decoder fn =
     JD.array (JD.dict fn) |> JD.map Container
+
+
+toMaybe : Container sync -> Maybe (Container sync)
+toMaybe (Container sync) =
+    if Array.isEmpty sync then
+        Nothing
+
+    else
+        Just (Container sync)

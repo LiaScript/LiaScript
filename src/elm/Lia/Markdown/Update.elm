@@ -136,7 +136,7 @@ update sync globals msg section =
                             |> Container.decode Quiz_.decoder
                         )
                     of
-                        ( Just old, Ok new ) ->
+                        ( old, Ok new ) ->
                             case Container.union old new of
                                 ( True, state ) ->
                                     section
@@ -154,11 +154,10 @@ update sync globals msg section =
                                         |> Section.syncQuiz state
                                         |> Return.val
 
-                        ( Nothing, Ok state ) ->
-                            section
-                                |> Section.syncQuiz state
-                                |> Return.val
-
+                        --( Nothing, Ok state ) ->
+                        --    section
+                        --        |> Section.syncQuiz state
+                        --        |> Return.val
                         _ ->
                             section
                                 |> Return.val
@@ -173,7 +172,7 @@ update sync globals msg section =
                             |> Container.decode Survey_.decoder
                         )
                     of
-                        ( Just old, Ok new ) ->
+                        ( old, Ok new ) ->
                             case Container.union old new of
                                 ( True, state ) ->
                                     section
@@ -191,11 +190,10 @@ update sync globals msg section =
                                         |> Section.syncSurvey state
                                         |> Return.val
 
-                        ( Nothing, Ok state ) ->
-                            section
-                                |> Section.syncSurvey state
-                                |> Return.val
-
+                        --( Nothing, Ok state ) ->
+                        --    section
+                        --        |> Section.syncSurvey state
+                        --        |> Return.val
                         _ ->
                             section
                                 |> Return.val
@@ -235,10 +233,7 @@ syncQuiz sync ret =
             case
                 ret.value.quiz_vector
                     |> Container.init id Quiz_.sync
-                    |> Container.union
-                        (ret.value.sync.quiz
-                            |> Maybe.withDefault Container.empty
-                        )
+                    |> Container.union ret.value.sync.quiz
             of
                 ( True, state ) ->
                     { ret | synchronize = False }
@@ -265,10 +260,7 @@ syncSurvey sync ret =
             case
                 ret.value.survey_vector
                     |> Container.init id Survey_.sync
-                    |> Container.union
-                        (ret.value.sync.survey
-                            |> Maybe.withDefault Container.empty
-                        )
+                    |> Container.union ret.value.sync.survey
             of
                 ( True, state ) ->
                     { ret | synchronize = False }

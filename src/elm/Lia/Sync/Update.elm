@@ -9,10 +9,10 @@ module Lia.Sync.Update exposing
 import Array
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Markdown.Code.Editor exposing (mode)
 import Lia.Markdown.Quiz.Sync as Quiz
 import Lia.Markdown.Survey.Sync as Survey
 import Lia.Section as Section exposing (Sections)
-import Lia.Sync.Container.Global as Global
 import Lia.Sync.Room as Room
 import Lia.Sync.Types exposing (Settings, State(..), id)
 import Lia.Sync.Via as Backend exposing (Backend)
@@ -124,6 +124,11 @@ update session model msg =
                                         |> Session.update
                                     )
 
+                ( "update", param ) ->
+                    model
+                        |> Return.val
+                        |> Debug.log "TODO"
+
                 ( "disconnect", _ ) ->
                     { model
                         | sync =
@@ -148,29 +153,30 @@ update session model msg =
                                 Return.val model
 
                             else
-                                case
-                                    ( param
-                                        |> JD.decodeValue (JD.at [ "data", "quiz" ] (Global.decoder Quiz.decoder))
-                                        |> Result.map (Global.union (globalGet .quiz model.sections))
-                                    , param
-                                        |> JD.decodeValue (JD.at [ "data", "survey" ] (Global.decoder Survey.decoder))
-                                        |> Result.map (Global.union (globalGet .survey model.sections))
-                                    )
-                                of
-                                    ( Ok ( quizUpdate, quizState ), Ok ( surveyUpdate, surveyState ) ) ->
-                                        { model
-                                            | sync = { sync | peers = Set.insert peerID sync.peers }
-                                            , sections = Section.sync quizState surveyState model.sections
-                                        }
-                                            |> (if quizUpdate || surveyUpdate || not (Set.member peerID sync.peers) then
-                                                    globalSync
+                                {- case
+                                       ( param
+                                           |> JD.decodeValue (JD.at [ "data", "quiz" ] (Global.decoder Quiz.decoder))
+                                           |> Result.map (Global.union (globalGet .quiz model.sections))
+                                       , param
+                                           |> JD.decodeValue (JD.at [ "data", "survey" ] (Global.decoder Survey.decoder))
+                                           |> Result.map (Global.union (globalGet .survey model.sections))
+                                       )
+                                   of
+                                       ( Ok ( quizUpdate, quizState ), Ok ( surveyUpdate, surveyState ) ) ->
+                                           { model
+                                               | sync = { sync | peers = Set.insert peerID sync.peers }
+                                               , sections = Section.sync quizState surveyState model.sections
+                                           }
+                                               |> (if quizUpdate || surveyUpdate || not (Set.member peerID sync.peers) then
+                                                       globalSync
 
-                                                else
-                                                    Return.val
-                                               )
+                                                   else
+                                                       Return.val
+                                                  )
 
-                                    _ ->
-                                        Return.val model
+                                       _ ->
+                                -}
+                                Return.val model
 
                         _ ->
                             Return.val model
@@ -289,34 +295,11 @@ join : { model | sync : Settings, sections : Sections } -> Return { model | sync
 join model =
     case model.sync.state of
         Connected id ->
-            { model | sections = Array.map (Section.syncInit id) model.sections }
-                |> globalSync
-
-        _ ->
-            Return.val model
-
-
-globalSync :
-    { model | sync : Settings, sections : Sections }
-    -> Return { model | sync : Settings, sections : Sections } msg sub
-globalSync model =
-    case model.sync.state of
-        Connected id ->
             model
                 |> Return.val
                 |> Return.batchEvent
-                    ([ ( "quiz"
-                       , model.sections
-                            |> globalGet .quiz
-                            |> Global.encode Quiz.encoder
-                       )
-                     , ( "survey"
-                       , model.sections
-                            |> globalGet .survey
-                            |> Global.encode Survey.encoder
-                       )
-                     ]
-                        |> JE.object
+                    (model.sections
+                        |> JE.array (Section.syncInit id >> Section.syncEncode)
                         |> Service.Sync.join id
                     )
 

@@ -4,13 +4,14 @@ module Lia.Section exposing
     , Sections
     , SubSection(..)
     , init
-    , sync
+    , syncEncode
     , syncInit
     , syncQuiz
     , syncSurvey
     )
 
 import Array exposing (Array)
+import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
@@ -24,8 +25,7 @@ import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
 import Lia.Markdown.Types as Markdown
-import Lia.Sync.Container as Local
-import Lia.Sync.Container.Global as Global
+import Lia.Sync.Container as Container exposing (Container)
 
 
 {-| This is the main record to contain all section related information.
@@ -89,8 +89,8 @@ type alias Section =
 
 
 type alias Sync =
-    { quiz : Maybe (Local.Container Quiz_.Sync)
-    , survey : Maybe (Local.Container Survey_.Sync)
+    { quiz : Container Quiz_.Sync
+    , survey : Container Survey_.Sync
     }
 
 
@@ -170,73 +170,42 @@ init seed id base =
     , definition = Nothing
     , footnotes = Footnote.init
     , footnote2show = Nothing
-    , sync = Sync Nothing Nothing
+    , sync = Sync Container.empty Container.empty
     , persistent = Nothing
     , seed = seed + (10 * id)
     }
 
 
-syncInit : String -> Section -> Section
+syncInit : String -> Section -> Sync
 syncInit id section =
-    { section
-        | sync =
-            { quiz =
-                section.quiz_vector
-                    |> Local.init id Quiz_.sync
-                    |> Just
-            , survey =
-                section.survey_vector
-                    |> Local.init id Survey_.sync
-                    |> Just
-            }
+    { quiz =
+        section.quiz_vector
+            |> Container.init id Quiz_.sync
+    , survey =
+        section.survey_vector
+            |> Container.init id Survey_.sync
     }
 
 
-sync : Global.Container Quiz_.Sync -> Global.Container Survey_.Sync -> Sections -> Sections
-sync quiz survey =
-    syncHelper syncQuiz (indexes quiz)
-        >> syncHelper syncSurvey (indexes survey)
+syncEncode : Sync -> JE.Value
+syncEncode s =
+    JE.object
+        []
 
 
-indexes : Global.Container sync -> List ( Int, Local.Container sync )
-indexes =
-    Array.toIndexedList
-        >> List.filterMap (\( i, s ) -> s |> Maybe.map (Tuple.pair i))
-
-
-syncHelper : (Local.Container sync -> Section -> Section) -> List ( Int, Local.Container sync ) -> Sections -> Sections
-syncHelper fn tuples sections =
-    case tuples of
-        [] ->
-            sections
-
-        ( i, state ) :: ts ->
-            syncHelper fn
-                ts
-                (sections
-                    |> Array.get i
-                    |> Maybe.map (\sec -> Array.set i (fn state sec) sections)
-                    |> Maybe.withDefault sections
-                )
-
-
-syncQuiz : Local.Container Quiz_.Sync -> Section -> Section
+syncQuiz : Container Quiz_.Sync -> Section -> Section
 syncQuiz state section =
     let
         localSync =
             section.sync
     in
-    { section
-        | sync = { localSync | quiz = Just state }
-    }
+    { section | sync = { localSync | quiz = state } }
 
 
-syncSurvey : Local.Container Survey_.Sync -> Section -> Section
+syncSurvey : Container Survey_.Sync -> Section -> Section
 syncSurvey state section =
     let
         localSync =
             section.sync
     in
-    { section
-        | sync = { localSync | survey = Just state }
-    }
+    { section | sync = { localSync | survey = state } }

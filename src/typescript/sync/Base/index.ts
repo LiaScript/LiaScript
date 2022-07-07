@@ -170,8 +170,8 @@ export class Sync {
    * LiaScript will start joining, by sending a join message to be published.
    *
    */
-  join() {
-    this.cbConnection('connect', this.token)
+  sendJoin() {
+    this.cbConnection('join', this.token)
   }
 
   leave() {

@@ -5,6 +5,7 @@ module Lia.Markdown.View exposing
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
+import Array
 import Conditional.List as CList
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
@@ -35,6 +36,7 @@ import Lia.Markdown.Types exposing (Block(..), Blocks)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
+import Lia.Sync.Container as Container
 import Lia.Utils exposing (modal)
 import Lia.Voice as Voice
 import MD5
@@ -372,6 +374,7 @@ view_block config block =
 
         Survey attr survey ->
             config.section.sync.survey
+                |> Container.toMaybe
                 |> Surveys.view config.main attr survey config.section.survey_vector
                 |> Tuple.mapSecond (Html.map UpdateSurvey)
                 |> scriptView config.view
@@ -537,6 +540,7 @@ viewQuiz config labeledBy attr quiz solution =
         case solution of
             Nothing ->
                 config.section.sync.quiz
+                    |> Container.toMaybe
                     |> Quizzes.view config.main labeledBy quiz config.section.quiz_vector
                     |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
                     |> Tuple.mapSecond (Html.map UpdateQuiz)
@@ -544,6 +548,7 @@ viewQuiz config labeledBy attr quiz solution =
             Just ( answer, hidden_effects ) ->
                 if Quizzes.showSolution quiz config.section.quiz_vector then
                     config.section.sync.quiz
+                        |> Container.toMaybe
                         |> Quizzes.view config.main labeledBy quiz config.section.quiz_vector
                         |> Tuple.mapSecond (List.map (Html.map UpdateQuiz))
                         |> Tuple.mapSecond
@@ -558,6 +563,7 @@ viewQuiz config labeledBy attr quiz solution =
 
                 else
                     config.section.sync.quiz
+                        |> Container.toMaybe
                         |> Quizzes.view config.main labeledBy quiz config.section.quiz_vector
                         |> Tuple.mapSecond (List.map (Html.map UpdateQuiz))
                         |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
