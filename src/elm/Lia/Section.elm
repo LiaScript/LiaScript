@@ -82,7 +82,7 @@ type alias Section =
     , definition : Maybe Definition
     , footnotes : Footnote.Model
     , footnote2show : Maybe String
-    , sync : Maybe Sync
+    , sync : Sync
     , persistent : Maybe Bool
     , seed : Int
     }
@@ -170,7 +170,7 @@ init seed id base =
     , definition = Nothing
     , footnotes = Footnote.init
     , footnote2show = Nothing
-    , sync = Nothing
+    , sync = Sync Nothing Nothing
     , persistent = Nothing
     , seed = seed + (10 * id)
     }
@@ -180,40 +180,15 @@ syncInit : String -> Section -> Section
 syncInit id section =
     { section
         | sync =
-            case ( Array.isEmpty section.quiz_vector, Array.isEmpty section.survey_vector ) of
-                ( True, True ) ->
-                    Nothing
-
-                ( True, False ) ->
-                    Just
-                        { quiz = Nothing
-                        , survey =
-                            section.survey_vector
-                                |> Local.init id Survey_.sync
-                                |> Just
-                        }
-
-                ( False, True ) ->
-                    Just
-                        { quiz =
-                            section.quiz_vector
-                                |> Local.init id Quiz_.sync
-                                |> Just
-                        , survey =
-                            Nothing
-                        }
-
-                ( False, False ) ->
-                    Just
-                        { quiz =
-                            section.quiz_vector
-                                |> Local.init id Quiz_.sync
-                                |> Just
-                        , survey =
-                            section.survey_vector
-                                |> Local.init id Survey_.sync
-                                |> Just
-                        }
+            { quiz =
+                section.quiz_vector
+                    |> Local.init id Quiz_.sync
+                    |> Just
+            , survey =
+                section.survey_vector
+                    |> Local.init id Survey_.sync
+                    |> Just
+            }
     }
 
 
@@ -247,31 +222,21 @@ syncHelper fn tuples sections =
 
 syncQuiz : Local.Container Quiz_.Sync -> Section -> Section
 syncQuiz state section =
+    let
+        localSync =
+            section.sync
+    in
     { section
-        | sync =
-            case section.sync of
-                Just sub ->
-                    Just { sub | quiz = Just state }
-
-                Nothing ->
-                    Just
-                        { quiz = Just state
-                        , survey = Nothing
-                        }
+        | sync = { localSync | quiz = Just state }
     }
 
 
 syncSurvey : Local.Container Survey_.Sync -> Section -> Section
 syncSurvey state section =
+    let
+        localSync =
+            section.sync
+    in
     { section
-        | sync =
-            case section.sync of
-                Just sub ->
-                    Just { sub | survey = Just state }
-
-                Nothing ->
-                    Just
-                        { survey = Just state
-                        , quiz = Nothing
-                        }
+        | sync = { localSync | survey = Just state }
     }

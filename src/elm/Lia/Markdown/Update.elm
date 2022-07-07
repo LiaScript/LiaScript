@@ -128,7 +128,7 @@ update sync globals msg section =
             case event.message.cmd of
                 "quiz" ->
                     case
-                        ( Maybe.andThen .quiz section.sync
+                        ( section.sync.quiz
                         , event
                             |> Event.message
                             -- TODO
@@ -165,7 +165,7 @@ update sync globals msg section =
 
                 "survey" ->
                     case
-                        ( Maybe.andThen .survey section.sync
+                        ( section.sync.survey
                         , event
                             |> Event.message
                             -- TODO
@@ -236,8 +236,7 @@ syncQuiz sync ret =
                 ret.value.quiz_vector
                     |> Container.init id Quiz_.sync
                     |> Container.union
-                        (ret.value.sync
-                            |> Maybe.andThen .quiz
+                        (ret.value.sync.quiz
                             |> Maybe.withDefault Container.empty
                         )
             of
@@ -267,8 +266,7 @@ syncSurvey sync ret =
                 ret.value.survey_vector
                     |> Container.init id Survey_.sync
                     |> Container.union
-                        (ret.value.sync
-                            |> Maybe.andThen .survey
+                        (ret.value.sync.survey
                             |> Maybe.withDefault Container.empty
                         )
             of

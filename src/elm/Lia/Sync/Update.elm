@@ -325,4 +325,4 @@ globalSync model =
 
 
 globalGet fn =
-    Array.map (.sync >> Maybe.andThen fn)
+    Array.map (.sync >> fn)

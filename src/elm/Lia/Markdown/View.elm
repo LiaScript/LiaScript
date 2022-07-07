@@ -371,8 +371,7 @@ view_block config block =
             viewQuiz config Nothing attr quiz solution
 
         Survey attr survey ->
-            config.section.sync
-                |> Maybe.andThen .survey
+            config.section.sync.survey
                 |> Surveys.view config.main attr survey config.section.survey_vector
                 |> Tuple.mapSecond (Html.map UpdateSurvey)
                 |> scriptView config.view
@@ -537,16 +536,14 @@ viewQuiz config labeledBy attr quiz solution =
     scriptView config.view <|
         case solution of
             Nothing ->
-                config.section.sync
-                    |> Maybe.andThen .quiz
+                config.section.sync.quiz
                     |> Quizzes.view config.main labeledBy quiz config.section.quiz_vector
                     |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
                     |> Tuple.mapSecond (Html.map UpdateQuiz)
 
             Just ( answer, hidden_effects ) ->
                 if Quizzes.showSolution quiz config.section.quiz_vector then
-                    config.section.sync
-                        |> Maybe.andThen .quiz
+                    config.section.sync.quiz
                         |> Quizzes.view config.main labeledBy quiz config.section.quiz_vector
                         |> Tuple.mapSecond (List.map (Html.map UpdateQuiz))
                         |> Tuple.mapSecond
@@ -560,8 +557,7 @@ viewQuiz config labeledBy attr quiz solution =
                         |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
 
                 else
-                    config.section.sync
-                        |> Maybe.andThen .quiz
+                    config.section.sync.quiz
                         |> Quizzes.view config.main labeledBy quiz config.section.quiz_vector
                         |> Tuple.mapSecond (List.map (Html.map UpdateQuiz))
                         |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
