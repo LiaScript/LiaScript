@@ -73,6 +73,7 @@
     "node-elm-compiler": "^5.0.6",
     "parcel": "^2.8.0",
     "parcel-reporter-multiple-static-file-copier": "^1.0.5",
+    "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
     "sass": "^1.56.1",
     "tsc": "^2.0.4",
@@ -103,5 +104,8 @@
   },
   "directories": {
     "test": "tests"
+  },
+  "dependencies": {
+    "yjs": "^13.5.39"
   }
 }
