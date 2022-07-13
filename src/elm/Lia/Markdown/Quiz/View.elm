@@ -1,6 +1,7 @@
 module Lia.Markdown.Quiz.View exposing
     ( class
     , showSolution
+    , syncAttributes
     , view
     )
 
@@ -62,6 +63,11 @@ import Translations
         , quizLabelSolution
         , quizSolution
         )
+
+
+syncAttributes : List ( String, String )
+syncAttributes =
+    [ ( "style", "height: 120px; width: 100%" ), ( "class", "lia-quiz__sync" ) ]
 
 
 {-| Main Quiz view function.
@@ -187,7 +193,7 @@ viewSync config syncData quiz =
                 ]
                 |> Chart.eCharts
                     { lang = config.lang
-                    , attr = [ ( "style", "height: 120px; width: 100%" ) ]
+                    , attr = syncAttributes
                     , light = config.light
                     }
                     Nothing
