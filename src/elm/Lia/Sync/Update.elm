@@ -9,9 +9,7 @@ module Lia.Sync.Update exposing
 import Array
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Code.Editor exposing (mode)
-import Lia.Markdown.Quiz.Sync as Quiz
-import Lia.Markdown.Survey.Sync as Survey
+import Lia.Markdown.Update exposing (synchronize)
 import Lia.Section as Section exposing (Sections)
 import Lia.Sync.Room as Room
 import Lia.Sync.Types exposing (Settings, State(..), id)
@@ -125,9 +123,7 @@ update session model msg =
                                     )
 
                 ( "update", param ) ->
-                    model
-                        |> Return.val
-                        |> Debug.log "TODO"
+                    synchronize model param
 
                 ( "disconnect", _ ) ->
                     { model
@@ -147,36 +143,18 @@ update session model msg =
 
                 --|> leave (id model.sync.state)
                 ( "join", param ) ->
-                    case ( JD.decodeValue (JD.field "id" JD.string) param, id sync.state ) of
-                        ( Ok peerID, Just ownID ) ->
+                    case
+                        ( JD.decodeValue (JD.field "id" JD.string) param
+                        , id sync.state
+                        , JD.decodeValue (JD.field "data" JD.value) param
+                        )
+                    of
+                        ( Ok peerID, Just ownID, Ok data ) ->
                             if ownID == peerID then
                                 Return.val model
 
                             else
-                                {- case
-                                       ( param
-                                           |> JD.decodeValue (JD.at [ "data", "quiz" ] (Global.decoder Quiz.decoder))
-                                           |> Result.map (Global.union (globalGet .quiz model.sections))
-                                       , param
-                                           |> JD.decodeValue (JD.at [ "data", "survey" ] (Global.decoder Survey.decoder))
-                                           |> Result.map (Global.union (globalGet .survey model.sections))
-                                       )
-                                   of
-                                       ( Ok ( quizUpdate, quizState ), Ok ( surveyUpdate, surveyState ) ) ->
-                                           { model
-                                               | sync = { sync | peers = Set.insert peerID sync.peers }
-                                               , sections = Section.sync quizState surveyState model.sections
-                                           }
-                                               |> (if quizUpdate || surveyUpdate || not (Set.member peerID sync.peers) then
-                                                       globalSync
-
-                                                   else
-                                                       Return.val
-                                                  )
-
-                                       _ ->
-                                -}
-                                Return.val model
+                                synchronize model data
 
                         _ ->
                             Return.val model
@@ -299,7 +277,7 @@ join model =
                 |> Return.val
                 |> Return.batchEvent
                     (model.sections
-                        |> JE.array (Section.syncInit id >> Section.syncEncode)
+                        |> JE.array (Section.sync id)
                         |> Service.Sync.join id
                     )
 
@@ -307,5 +285,13 @@ join model =
             Return.val model
 
 
-globalGet fn =
-    Array.map (.sync >> fn)
+synchronize : { model | sync : Settings, sections : Sections } -> JD.Value -> Return { model | sync : Settings, sections : Sections } msg sub
+synchronize model json =
+    { model
+        | sections =
+            json
+                |> JD.decodeValue (JD.list Section.syncDecoder)
+                |> Result.map (List.map2 Section.syncUpdate (Array.toList model.sections) >> Array.fromList)
+                |> Result.withDefault model.sections
+    }
+        |> Return.val

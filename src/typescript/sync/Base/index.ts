@@ -1,6 +1,6 @@
 import Lia from '../../liascript/types/lia.d'
 
-import * as Y from 'yjs'
+import { CRDT } from './db'
 
 /* This function is only required to generate a random string, that is used
 as a personal ID for every peer, since it is not possible at the moment to
@@ -47,6 +47,8 @@ export class Sync {
   protected cbConnection: (topic: string, msg: string) => void
   protected cbRelay: (data: Lia.Event) => void
 
+  protected db: CRDT
+
   /** To initialize the communication, two callbacks are required. While the
    * first is used to send configuration messages about successful join or
    * leaving, the second one is only used to relay messages from the network
@@ -79,6 +81,8 @@ export class Sync {
     this.urlCounter = 0
     this.cbConnection = cbConnection
     this.cbRelay = cbRelay
+
+    this.db = new CRDT(token)
   }
 
   /* to have a valid connection 3 things are required:
@@ -142,7 +146,16 @@ export class Sync {
   }
 
   publish(event: any) {
-    console.warn('overwrite this method')
+    if (event === null) return event
+
+    switch (event.message.cmd) {
+      case 'join': {
+        this.txJoin(event)
+        break
+      }
+    }
+
+    return event
   }
 
   /** Not like in the common sense, this method provides and interface to the
@@ -233,4 +246,14 @@ export class Sync {
       obj.init(false, e.message)
     }
   }
+
+  txJoin(event: Lia.Event) {
+    this.db.init(event.message.param.data)
+
+    this.db.toJSON()
+
+    console.warn('##################################', this.db.encode())
+  }
+
+  rxJoin() {}
 }

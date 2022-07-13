@@ -4,13 +4,17 @@ module Lia.Section exposing
     , Sections
     , SubSection(..)
     , init
+    , sync
+    , syncDecoder
     , syncEncode
     , syncInit
     , syncQuiz
     , syncSurvey
+    , syncUpdate
     )
 
 import Array exposing (Array)
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Types as Code
@@ -178,19 +182,34 @@ init seed id base =
 
 syncInit : String -> Section -> Sync
 syncInit id section =
-    { quiz =
-        section.quiz_vector
-            |> Container.init id Quiz_.sync
-    , survey =
-        section.survey_vector
-            |> Container.init id Survey_.sync
+    { quiz = Container.init id Quiz_.sync section.quiz_vector
+    , survey = Container.init id Survey_.sync section.survey_vector
     }
 
 
 syncEncode : Sync -> JE.Value
 syncEncode s =
     JE.object
-        []
+        [ ( "q", Container.encode Quiz_.encoder s.quiz )
+        , ( "s", Container.encode Survey_.encoder s.survey )
+        ]
+
+
+syncDecoder : JD.Decoder Sync
+syncDecoder =
+    JD.map2 Sync
+        (JD.field "q" (Container.decoder Quiz_.decoder))
+        (JD.field "s" (Container.decoder Survey_.decoder))
+
+
+sync : String -> Section -> JE.Value
+sync id =
+    syncInit id >> syncEncode
+
+
+syncUpdate : Section -> Sync -> Section
+syncUpdate section s =
+    { section | sync = s }
 
 
 syncQuiz : Container Quiz_.Sync -> Section -> Section

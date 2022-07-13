@@ -77,6 +77,8 @@ export class Sync extends Base.Sync {
 
   publish(message: Object | null) {
     if (this.gun) {
+      message = super.publish(message)
+
       this.gun.get(this.store).put({
         msg: Crypto.encode(message),
       })
