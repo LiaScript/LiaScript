@@ -94,7 +94,6 @@ update sync globals msg section =
                 |> Return.mapVal (\v -> { section | quiz_vector = v })
                 |> Return.mapEvents "quiz" section.id
                 |> updateScript
-                |> syncQuiz sync
 
         UpdateTask childMsg ->
             section.task_vector
@@ -116,7 +115,6 @@ update sync globals msg section =
                 |> Return.mapVal (\v -> { section | survey_vector = v })
                 |> Return.mapEvents "survey" section.id
                 |> updateScript
-                |> syncSurvey sync
 
         UpdateTable childMsg ->
             section.table_vector
@@ -224,60 +222,6 @@ update sync globals msg section =
 
         NoOp ->
             Return.val section
-
-
-syncQuiz : Sync.State -> Return Section msg sub -> Return Section msg sub
-syncQuiz sync ret =
-    case ( ret.synchronize, Sync.id sync ) of
-        ( True, Just id ) ->
-            case
-                ret.value.quiz_vector
-                    |> Container.init id Quiz_.sync
-                    |> Container.union ret.value.sync.quiz
-            of
-                ( True, state ) ->
-                    { ret | synchronize = False }
-                        |> Return.mapVal (Section.syncQuiz state)
-                        |> Return.batchEvent
-                            (state
-                                |> Container.encode Quiz_.encoder
-                                |> Service.Sync.publish "quiz"
-                                |> Event.pushWithId "local" ret.value.id
-                            )
-
-                ( False, state ) ->
-                    { ret | synchronize = False }
-                        |> Return.mapVal (Section.syncQuiz state)
-
-        _ ->
-            { ret | synchronize = False }
-
-
-syncSurvey : Sync.State -> Return Section msg sub -> Return Section msg sub
-syncSurvey sync ret =
-    case ( ret.synchronize, Sync.id sync ) of
-        ( True, Just id ) ->
-            case
-                ret.value.survey_vector
-                    |> Container.init id Survey_.sync
-                    |> Container.union ret.value.sync.survey
-            of
-                ( True, state ) ->
-                    { ret | synchronize = False }
-                        |> Return.mapVal (Section.syncSurvey state)
-                        |> Return.batchEvent
-                            (state
-                                |> Container.encode Survey_.encoder
-                                |> Service.Sync.publish "survey"
-                                |> Event.pushWithId "local" ret.value.id
-                            )
-
-                ( False, state ) ->
-                    { ret | synchronize = False }
-                        |> Return.mapVal (Section.syncSurvey state)
-
-        _ ->
-            ret
 
 
 subs :

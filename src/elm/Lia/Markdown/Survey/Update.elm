@@ -12,6 +12,7 @@ import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Survey.Json as Json
+import Lia.Markdown.Survey.Sync as Sync
 import Lia.Markdown.Survey.Types exposing (Element, State(..), Vector, toString)
 import Return exposing (Return)
 import Service.Database
