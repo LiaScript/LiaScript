@@ -53,10 +53,7 @@ export class Sync extends Base.Sync {
             let event = Crypto.decode(data.msg)
 
             if (event) {
-              // prevent looping
-              if (event.message.param.id !== self.token) {
-                self.sendToLia(event)
-              }
+              self.rxEvent(event)
             }
           } catch (e) {
             console.warn('GunDB', e.message)
@@ -68,16 +65,16 @@ export class Sync extends Base.Sync {
     }
   }
 
-  disconnect(event: Object) {
+  disconnect(event: Lia.Event) {
     this.publish(null)
     this.publish(event)
 
     delete this.gun
   }
 
-  publish(message: Object | null) {
+  publish(message: Lia.Event | null) {
     if (this.gun) {
-      message = super.publish(message)
+      message = this.txEvent(message)
 
       this.gun.get(this.store).put({
         msg: Crypto.encode(message),

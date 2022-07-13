@@ -145,19 +145,6 @@ export class Sync {
     return null
   }
 
-  publish(event: any) {
-    if (event === null) return event
-
-    switch (event.message.cmd) {
-      case 'join': {
-        this.txJoin(event)
-        break
-      }
-    }
-
-    return event
-  }
-
   /** Not like in the common sense, this method provides and interface to the
    * LiaScript event system. Every received message should be send back by this
    * method.
@@ -179,17 +166,12 @@ export class Sync {
   sendConnect() {
     this.sync('connect', this.token)
   }
-  /** Send a connection message to the LiaScript Sync module, this after this
-   * LiaScript will start joining, by sending a join message to be published.
-   *
-   */
-  sendJoin() {
-    this.cbConnection('join', this.token)
-  }
 
-  leave() {
-    //this.publish(this.syncMsg('leave', this.token))
-    //this.sync('disconnect')
+  update() {
+    this.sync('update', {
+      peers: this.db.getPeers(),
+      data: this.db.toJSON(),
+    })
   }
 
   /** __At first, make sure that the resource has not been loaded before!__ And
@@ -247,13 +229,52 @@ export class Sync {
     }
   }
 
-  txJoin(event: Lia.Event) {
-    this.db.init(event.message.param.data)
+  txEvent(event: Lia.Event | null) {
+    if (event === null) return event
 
-    this.db.toJSON()
+    switch (event.message.cmd) {
+      case 'join': {
+        this.db.init(event.message.param)
+        event.message.param = this.db.encode()
+        this.update()
+        break
+      }
 
-    console.warn('##################################', this.db.encode())
+      case 'leave': {
+        this.db.destroy()
+        if (!event.message.param) {
+          event.message.param = this.token
+        }
+        break
+      }
+
+      default: {
+        console.warn('unknown command:', event.message)
+      }
+    }
+
+    return event
   }
 
-  rxJoin() {}
+  rxEvent(event: Lia.Event | null) {
+    if (event === null) return event
+
+    switch (event.message.cmd) {
+      case 'join': {
+        this.db.apply(event.message.param)
+        this.update()
+        break
+      }
+
+      case 'leave': {
+        this.db.removePeer(event.message.param)
+        this.update()
+        break
+      }
+
+      default: {
+        console.warn('unknown command:', event.message)
+      }
+    }
+  }
 }

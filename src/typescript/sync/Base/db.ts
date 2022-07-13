@@ -2,6 +2,19 @@ import * as Y from 'yjs'
 
 import * as State from './state'
 
+function encode(data: Uint8Array) {
+  return Array.from(data)
+}
+
+function decode(data: number[]) {
+  return Uint8Array.from(data)
+}
+
+const PEERS = 'peers'
+const QUIZ = 'q'
+const SURVEY = 's'
+const DB = 'DB'
+
 export class CRDT {
   protected doc: Y.Doc
   protected db: Y.Map<any>
@@ -9,25 +22,33 @@ export class CRDT {
 
   constructor(peerID: string) {
     this.doc = new Y.Doc()
-    this.db = this.doc.getMap('DB')
+    this.db = this.doc.getMap(DB)
     this.length = 0
 
     const peers = new Y.Map()
     peers.set(peerID, true)
-    this.db.set('peers', peers)
+    this.db.set(PEERS, peers)
   }
 
   init(data: State.Vector) {
     this.length = Math.max(this.length, data.length)
 
     for (let i = 0; i < data.length; i++) {
-      this.initMap('q', i, data[i]['q'])
-      this.initMap('s', i, data[i]['s'])
+      this.initMap(QUIZ, i, data[i][QUIZ])
+      this.initMap(SURVEY, i, data[i][SURVEY])
     }
   }
 
   encode() {
-    return Y.encodeStateAsUpdate(this.doc)
+    return encode(Y.encodeStateAsUpdate(this.doc))
+  }
+
+  destroy() {
+    console.warn('TODO: destroy')
+  }
+
+  apply(update: number[]) {
+    Y.applyUpdate(this.doc, decode(update))
   }
 
   protected initMap(key: string, id: number, data: State.Data[]) {
@@ -48,12 +69,30 @@ export class CRDT {
 
     for (let i = 0; i < this.length; i++) {
       vector.push({
-        s: this.getAllObjects('s', i),
-        q: this.getAllObjects('q', i),
+        SURVEY: this.getAllObjects(SURVEY, i),
+        QUIZ: this.getAllObjects(QUIZ, i),
       })
     }
 
     return vector
+  }
+
+  getPeers() {
+    const peers = this.db.get(PEERS).toJSON()
+
+    if (peers) {
+      return Object.entries(peers)
+        .filter(([_, value]) => value)
+        .map(([key, _]) => key)
+    }
+
+    return []
+  }
+
+  removePeer(peerID: string) {
+    const peers = this.db.get(PEERS)
+    peers.set(peerID, false)
+    this.db.set(PEERS, peers)
   }
 
   id(key: string, id1: number, id2: number) {

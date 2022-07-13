@@ -62,13 +62,9 @@ disconnect id =
         |> publish "disconnect"
 
 
-join : String -> JE.Value -> Event
-join id message =
-    [ ( "id", JE.string id )
-    , ( "data", message )
-    ]
-        |> JE.object
-        |> publish "join"
+join : JE.Value -> Event
+join =
+    publish "join"
 
 
 publish : String -> JE.Value -> Event

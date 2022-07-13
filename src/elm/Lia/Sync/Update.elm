@@ -9,6 +9,7 @@ module Lia.Sync.Update exposing
 import Array
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Markdown.Code.Editor exposing (mode)
 import Lia.Markdown.Update exposing (synchronize)
 import Lia.Section as Section exposing (Sections)
 import Lia.Sync.Room as Room
@@ -61,6 +62,9 @@ update session model msg =
     case msg of
         Handle event ->
             case Event.message event of
+                ( "update", param ) ->
+                    synchronize model param
+
                 ( "error", param ) ->
                     case ( JD.decodeValue JD.string param, sync.sync.select ) of
                         ( Ok message, Just ( True, _ ) ) ->
@@ -122,9 +126,6 @@ update session model msg =
                                         |> Session.update
                                     )
 
-                ( "update", param ) ->
-                    synchronize model param
-
                 ( "disconnect", _ ) ->
                     { model
                         | sync =
@@ -140,24 +141,6 @@ update session model msg =
                                 |> Session.setQuery model.readme
                                 |> Session.update
                             )
-
-                --|> leave (id model.sync.state)
-                ( "join", param ) ->
-                    case
-                        ( JD.decodeValue (JD.field "id" JD.string) param
-                        , id sync.state
-                        , JD.decodeValue (JD.field "data" JD.value) param
-                        )
-                    of
-                        ( Ok peerID, Just ownID, Ok data ) ->
-                            if ownID == peerID then
-                                Return.val model
-
-                            else
-                                synchronize model data
-
-                        _ ->
-                            Return.val model
 
                 ( "leave", param ) ->
                     { model
@@ -269,7 +252,9 @@ isConnected sync =
             False
 
 
-join : { model | sync : Settings, sections : Sections } -> Return { model | sync : Settings, sections : Sections } msg sub
+join :
+    { model | sync : Settings, sections : Sections }
+    -> Return { model | sync : Settings, sections : Sections } msg sub
 join model =
     case model.sync.state of
         Connected id ->
@@ -278,7 +263,7 @@ join model =
                 |> Return.batchEvent
                     (model.sections
                         |> JE.array (Section.sync id)
-                        |> Service.Sync.join id
+                        |> Service.Sync.join
                     )
 
         _ ->
@@ -290,8 +275,18 @@ synchronize model json =
     { model
         | sections =
             json
-                |> JD.decodeValue (JD.list Section.syncDecoder)
+                |> JD.decodeValue (JD.field "data" (JD.list Section.syncDecoder))
                 |> Result.map (List.map2 Section.syncUpdate (Array.toList model.sections) >> Array.fromList)
                 |> Result.withDefault model.sections
+        , sync =
+            json
+                |> JD.decodeValue (JD.field "peers" (JD.list JD.string))
+                |> Result.map (setPeers model.sync)
+                |> Result.withDefault model.sync
     }
         |> Return.val
+
+
+setPeers : Settings -> List String -> Settings
+setPeers sync peers =
+    { sync | peers = Set.fromList peers }
