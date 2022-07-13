@@ -377,6 +377,16 @@ handle =
     Handle
 
 
-doSync : Maybe Int -> Int -> Return Vector msg sub
+doSync : Maybe Int -> Maybe Int -> Return Vector msg sub -> Return Vector msg sub
 doSync sectionID id ret =
-    ret
+    case sectionID of
+        Nothing ->
+            ret
+
+        Just _ ->
+            ret
+                |> Return.batchEvents
+                    (ret.value
+                        |> Array.toList
+                        |> List.indexedMap Sync.event
+                    )
