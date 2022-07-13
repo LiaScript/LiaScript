@@ -14,6 +14,7 @@ import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
+import Lia.Markdown.Quiz.Sync as Sync
 import Lia.Markdown.Quiz.Types
     exposing
         ( Element
@@ -65,7 +66,7 @@ update sectionID scripts msg vector =
                                 -->> syncSolution id
                                 |> update_ id vector
                                 |> store sectionID
-                                |> doSync sectionID id
+                                |> doSync sectionID (Just id)
 
                         Just scriptID ->
                             vector
@@ -114,7 +115,7 @@ update sectionID scripts msg vector =
                             _ ->
                                 return
                    )
-                |> doSync sectionID id
+                |> doSync sectionID (Just id)
 
         Handle event ->
             case Event.destructure event of
@@ -125,7 +126,7 @@ update sectionID scripts msg vector =
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
-                        |> Return.doSync
+                        |> doSync sectionID Nothing
 
                 ( Just "eval", id, ( "eval", param ) ) ->
                     case
@@ -139,14 +140,14 @@ update sectionID scripts msg vector =
                                 |> update_ id vector
                                 |> store sectionID
                                 |> Return.script (JS.submit scriptID event)
-                                |> doSync sectionID id
+                                |> doSync sectionID (Just id)
 
                         Nothing ->
                             param
                                 |> evalEventDecoder
                                 |> update_ id vector
                                 |> store sectionID
-                                |> doSync sectionID id
+                                |> doSync sectionID (Just id)
 
                 ( Just "restore", _, ( cmd, param ) ) ->
                     param
@@ -155,7 +156,7 @@ update sectionID scripts msg vector =
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
-                        |> Return.doSync
+                        |> doSync sectionID Nothing
 
                 {- |> (\ret ->
                         case sync of
@@ -418,15 +419,24 @@ init fn return =
 
 
 doSync : Maybe Int -> Maybe Int -> Return Vector msg sub -> Return Vector msg sub
-doSync sectionID id ret =
-    case sectionID of
-        Nothing ->
+doSync sectionID vectorID ret =
+    case ( sectionID, vectorID ) of
+        ( Nothing, _ ) ->
             ret
 
-        Just _ ->
+        ( Just _, Nothing ) ->
             ret
                 |> Return.batchEvents
                     (ret.value
                         |> Array.toList
                         |> List.indexedMap Sync.event
+                    )
+
+        ( Just _, Just id ) ->
+            ret
+                |> Return.batchEvent
+                    (ret.value
+                        |> Array.get id
+                        |> Maybe.map (Sync.event id)
+                        |> Maybe.withDefault Event.none
                     )

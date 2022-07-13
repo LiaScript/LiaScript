@@ -72,7 +72,7 @@ update sectionID scripts msg vector =
                                 in
                                 new_vector
                                     |> Return.val
-                                    |> Return.doSync
+                                    |> doSync sectionID (Just id)
                                     |> store sectionID
 
                             else
@@ -118,7 +118,7 @@ update sectionID scripts msg vector =
                         |> Result.map (merge vector)
                         |> Result.withDefault vector
                         |> Return.val
-                        |> Return.doSync
+                        |> doSync sectionID Nothing
                         |> init (\i s -> execute i s.state)
 
                 ( Just "eval", section, ( "eval", param ) ) ->
@@ -133,14 +133,14 @@ update sectionID scripts msg vector =
                                 |> update_ section vector
                                 |> store sectionID
                                 |> Return.script (JS.submit scriptID event)
-                                |> Return.doSync
+                                |> doSync sectionID (Just section)
 
                         Nothing ->
                             param
                                 |> evalEventDecoder
                                 |> update_ section vector
                                 |> store sectionID
-                                |> Return.doSync
+                                |> doSync sectionID (Just section)
 
                 {- let
                        eval =
@@ -163,7 +163,7 @@ update sectionID scripts msg vector =
                         |> Result.map (merge vector)
                         |> Result.withDefault vector
                         |> Return.val
-                        |> Return.doSync
+                        |> doSync sectionID Nothing
                         |> init (\i s -> execute i s.state)
 
                 _ ->
@@ -378,15 +378,24 @@ handle =
 
 
 doSync : Maybe Int -> Maybe Int -> Return Vector msg sub -> Return Vector msg sub
-doSync sectionID id ret =
-    case sectionID of
-        Nothing ->
+doSync sectionID vectorID ret =
+    case ( sectionID, vectorID ) of
+        ( Nothing, _ ) ->
             ret
 
-        Just _ ->
+        ( Just _, Nothing ) ->
             ret
                 |> Return.batchEvents
                     (ret.value
                         |> Array.toList
                         |> List.indexedMap Sync.event
+                    )
+
+        ( Just _, Just id ) ->
+            ret
+                |> Return.batchEvent
+                    (ret.value
+                        |> Array.get id
+                        |> Maybe.map (Sync.event id)
+                        |> Maybe.withDefault Event.none
                     )

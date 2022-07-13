@@ -71,3 +71,13 @@ publish : String -> JE.Value -> Event
 publish cmd message =
     { cmd = cmd, param = message }
         |> Event.init "sync"
+
+
+survey : Int -> JE.Value -> Event
+survey id =
+    publish "survey" >> Event.pushWithId "id" id
+
+
+quiz : Int -> JE.Value -> Event
+quiz id =
+    publish "quiz" >> Event.pushWithId "id" id
