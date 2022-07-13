@@ -375,3 +375,8 @@ submittable vector idx =
 handle : Event -> Msg sub
 handle =
     Handle
+
+
+doSync : Maybe Int -> Int -> Return Vector msg sub
+doSync sectionID id ret =
+    ret

@@ -65,7 +65,7 @@ update sectionID scripts msg vector =
                                 -->> syncSolution id
                                 |> update_ id vector
                                 |> store sectionID
-                                |> Return.doSync
+                                |> doSync sectionID id
 
                         Just scriptID ->
                             vector
@@ -114,7 +114,7 @@ update sectionID scripts msg vector =
                             _ ->
                                 return
                    )
-                |> Return.doSync
+                |> doSync sectionID id
 
         Handle event ->
             case Event.destructure event of
@@ -139,14 +139,14 @@ update sectionID scripts msg vector =
                                 |> update_ id vector
                                 |> store sectionID
                                 |> Return.script (JS.submit scriptID event)
-                                |> Return.doSync
+                                |> doSync sectionID id
 
                         Nothing ->
                             param
                                 |> evalEventDecoder
                                 |> update_ id vector
                                 |> store sectionID
-                                |> Return.doSync
+                                |> doSync sectionID id
 
                 ( Just "restore", _, ( cmd, param ) ) ->
                     param
@@ -415,3 +415,13 @@ init fn return =
         )
         return
         return.value
+
+
+doSync : Maybe Int -> Int -> Return Vector msg sub -> Return Vector msg sub
+doSync sectionID id ret =
+    case sectionID of
+        Nothing ->
+            ret
+
+        Just secID ->
+            ret

@@ -22,6 +22,7 @@ export class CRDT {
 
   constructor(peerID: string) {
     this.doc = new Y.Doc()
+
     this.db = this.doc.getMap(DB)
     this.length = 0
 
