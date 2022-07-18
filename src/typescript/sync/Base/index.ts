@@ -109,6 +109,16 @@ export class Sync {
    * @returns null if now room and course has been defined, otherwise a string
    */
   uniqueID(): string | null {
+    // used for literal room names, defined by the user
+    if (
+      typeof this.room === 'string' &&
+      ((this.room.startsWith('"') && this.room.endsWith('"')) ||
+        (this.room.startsWith("'") && this.room.endsWith("'")))
+    ) {
+      return this.room
+    }
+
+    // otherwise a combination of course-url and room-name are used
     if (this.course && this.room) {
       return JSON.stringify({
         course: this.course,
