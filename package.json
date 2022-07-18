@@ -1,6 +1,6 @@
 {
   "name": "@liascript/editor",
-  "version": "1.1.0--0.10.17",
+  "version": "1.1.0--0.10.18",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",

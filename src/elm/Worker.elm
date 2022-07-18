@@ -58,7 +58,7 @@ main =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( Lia.Script.init False True JE.null [] "" "" "" Nothing
+    ( Lia.Script.init False True JE.null { support = [], enabled = False } "" "" "" Nothing
         |> Model Idle "" Nothing
     , if flags.cmd == "" then
         Cmd.none

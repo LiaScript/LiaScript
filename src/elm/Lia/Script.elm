@@ -392,7 +392,7 @@ searchIndex index str =
 
 {-| Alias for model initialization defined by `Lia.Model.int`
 -}
-init : Bool -> Bool -> JE.Value -> List String -> String -> String -> String -> Maybe String -> Model
+init : Bool -> Bool -> JE.Value -> { support : List String, enabled : Bool } -> String -> String -> String -> Maybe String -> Model
 init =
     Lia.Model.init
 
