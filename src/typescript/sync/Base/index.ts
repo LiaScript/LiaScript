@@ -229,9 +229,7 @@ export class Sync {
     }
   }
 
-  txEvent(event: Lia.Event | null) {
-    if (event === null) return event
-
+  txEvent(event: Lia.Event) {
     switch (event.message.cmd) {
       case 'join': {
         this.db.init(event.message.param)
@@ -256,9 +254,7 @@ export class Sync {
     return event
   }
 
-  rxEvent(event: Lia.Event | null) {
-    if (event === null) return event
-
+  rxEvent(event: Lia.Event) {
     switch (event.message.cmd) {
       case 'join': {
         this.db.apply(event.message.param)

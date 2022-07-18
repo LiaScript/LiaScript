@@ -74,7 +74,9 @@ export class Sync extends Base.Sync {
 
   publish(message: Lia.Event | null) {
     if (this.gun) {
-      message = this.txEvent(message)
+      if (message != null) {
+        message = this.txEvent(message)
+      }
 
       this.gun.get(this.store).put({
         msg: Crypto.encode(message),
