@@ -58,8 +58,11 @@ export class LiaScript {
         },
         hasShareAPI: Share.isSupported(),
         hasIndex: connector.hasIndex(),
-        syncSupport: Sync.supported(allowSync),
         fullPage: fullPage,
+        sync: {
+          support: Sync.supported,
+          enabled: allowSync,
+        },
       },
     })
 

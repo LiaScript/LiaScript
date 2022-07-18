@@ -10,7 +10,6 @@ import Index.Model as Index
 import Json.Encode as JE
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Script
-import Lia.Settings.Types exposing (Settings)
 import Lia.Sync.Types as Sync
 import Model exposing (Model, State(..))
 import Session exposing (Screen, Session)
@@ -64,7 +63,10 @@ type alias Flags =
     , screen : Screen
     , hasShareAPI : Bool
     , hasIndex : Bool
-    , syncSupport : List String
+    , sync :
+        { support : List String
+        , enabled : Bool
+        }
     , fullPage : Maybe Bool
     }
 
@@ -108,7 +110,7 @@ init flags url key =
                 flags.hasShareAPI
                 openTableOfContents
                 flags.settings
-                flags.syncSupport
+                flags.sync
                 (get_base subURL)
                 "README.md"
                 ""
@@ -123,7 +125,7 @@ init flags url key =
                 flags.hasShareAPI
                 openTableOfContents
                 flags.settings
-                flags.syncSupport
+                flags.sync
                 (query
                     |> Url.fromString
                     |> Maybe.withDefault { courseUrl | query = Just query }
@@ -144,7 +146,7 @@ init flags url key =
                         flags.hasShareAPI
                         openTableOfContents
                         flags.settings
-                        flags.syncSupport
+                        flags.sync
                         ""
                         ""
                         ""
@@ -157,7 +159,7 @@ init flags url key =
                         flags.hasShareAPI
                         openTableOfContents
                         flags.settings
-                        flags.syncSupport
+                        flags.sync
                         (get_base courseUrl)
                         query
                         (get_origin courseUrl.query)
@@ -171,7 +173,7 @@ init flags url key =
                         flags.hasShareAPI
                         openTableOfContents
                         flags.settings
-                        flags.syncSupport
+                        flags.sync
                         (get_base courseUrl)
                         room.course
                         (get_origin (Just room.course))
@@ -186,7 +188,7 @@ init flags url key =
                 flags.hasShareAPI
                 openTableOfContents
                 flags.settings
-                flags.syncSupport
+                flags.sync
                 ""
                 ""
                 ""

@@ -13,21 +13,17 @@ var elmSend: Lia.Send | null
 const Service = {
   PORT: 'sync',
 
-  supported: function (allowSync: boolean) {
-    return allowSync
-      ? [
-          // beaker is only supported within the beaker-browser
-          Beaker.isSupported() ? 'beaker' : '',
-          // remove these strings if you want to enable or disable certain sync support
-          'edrys',
-          'gun',
+  supported: [
+    // beaker is only supported within the beaker-browser
+    Beaker.isSupported() ? 'beaker' : '',
+    // remove these strings if you want to enable or disable certain sync support
+    'edrys',
+    'gun',
 
-          //'jitsi',
-          //'matrix',
-          'pubnub',
-        ]
-      : []
-  },
+    //'jitsi',
+    //'matrix',
+    'pubnub',
+  ],
 
   init: function (elmSend_: Lia.Send) {
     elmSend = elmSend_
