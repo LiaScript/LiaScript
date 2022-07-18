@@ -13,6 +13,7 @@ import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Markdown.Quiz.View exposing (syncAttributes)
 import Lia.Markdown.Survey.Model
     exposing
         ( getErrorMessage
@@ -224,7 +225,7 @@ wordCloud config data =
         ]
         |> Chart.eCharts
             { lang = config.lang
-            , attr = [ ( "style", "height: 120px; width: 100%" ) ]
+            , attr = syncAttributes
             , light = config.light
             }
             Nothing
@@ -294,7 +295,7 @@ vectorBlockCategory config data =
         ]
         |> Chart.eCharts
             { lang = config.lang
-            , attr = [ ( "style", "height: 120px; width: 100%" ) ]
+            , attr = syncAttributes
             , light = config.light
             }
             Nothing
@@ -353,7 +354,7 @@ vectorBlockQuantity config data =
         ]
         |> Chart.eCharts
             { lang = config.lang
-            , attr = [ ( "style", "height: 120px; width: 100%" ) ]
+            , attr = syncAttributes
             , light = config.light
             }
             Nothing
@@ -454,7 +455,7 @@ matrixBlock config categories data =
         ]
         |> Chart.eCharts
             { lang = config.lang
-            , attr = [ ( "style", "height: 200px; width: 100%" ) ]
+            , attr = syncAttributes
             , light = config.light
             }
             Nothing

@@ -107,8 +107,8 @@ type alias Model =
     active section (defaults to 1)
 
 -}
-init : Bool -> Bool -> JE.Value -> List String -> String -> String -> String -> Maybe String -> Model
-init hasShareApi openTOC settings allowedBackends url readme origin anchor =
+init : Bool -> Bool -> JE.Value -> { support : List String, enabled : Bool } -> String -> String -> String -> Maybe String -> Model
+init hasShareApi openTOC settings backends url readme origin anchor =
     let
         default =
             Settings.init hasShareApi Settings.Presentation
@@ -126,7 +126,7 @@ init hasShareApi openTOC settings allowedBackends url readme origin anchor =
                     { set
                         | table_of_contents = openTOC
                         , sync =
-                            if List.isEmpty allowedBackends then
+                            if List.isEmpty backends.support then
                                 Nothing
 
                             else
@@ -147,7 +147,7 @@ init hasShareApi openTOC settings allowedBackends url readme origin anchor =
     , search_index = identity
     , media = Dict.empty
     , modal = Nothing
-    , sync = Sync.init allowedBackends
+    , sync = Sync.init backends.support
     , persistent = False
     }
 

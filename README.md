@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.17
+version:  0.10.18
 language: en
 narrator: UK English Male
 
@@ -294,6 +294,26 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.18** (18/07/2022)
+
+- improved Sync:
+  
+  - Supported backends for syncing courses can now also be used in systems
+    that do not support it by default. All sync-systems are now supported in
+    all cases, it might be simply disabled ...
+
+    To enable, you can use the macro:
+
+    `classroom: enable`
+  - Add 'literal' "room-names"
+
+    Currently a room-name and a course-URL are used to generate a unique ID
+    for a room. However, the user has now also the possibility to define a
+    room-name within " or '. In this case only the room-name is used as the
+    ID.
+
+  - fix(Styling): Sync now below the quiz/survey
 
 **0.10.17** (29/06/2022)
 
