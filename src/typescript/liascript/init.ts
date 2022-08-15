@@ -6,6 +6,10 @@ export function initGlobals() {
     window.LIA = {}
   }
 
+  if (!window.LIA.version) {
+    window.LIA.version = '0.10.18'
+  }
+
   if (!window.LIA.eventSemaphore) {
     window.LIA.eventSemaphore = 0
   }

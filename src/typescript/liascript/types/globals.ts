@@ -20,6 +20,11 @@ declare global {
        */
       eventSemaphore: number
 
+      /**
+       * LiaScript version string for local checks ...
+       */
+      version: string
+
       /** port to send messages to the internal LiaScript, should only be used
        * for very seldomly, since it offers a direct port
        */
