@@ -42,7 +42,7 @@ function init(name: string) {
   // @ts-ignore
   if (!window.LIA[name]) {
     // @ts-ignore
-    window.LIA[name] = (_: any) => notDefined('name')
+    window.LIA[name] = (_: any) => notDefined(name)
   }
 }
 
