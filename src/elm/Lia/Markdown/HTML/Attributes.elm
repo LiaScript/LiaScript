@@ -234,7 +234,7 @@ allowedProtocol : String -> Bool
 allowedProtocol url =
     case
         url
-            |> String.split "://"
+            |> String.split ":"
             |> List.head
             |> Maybe.withDefault ""
             |> String.toLower
@@ -258,6 +258,9 @@ allowedProtocol url =
             True
 
         "ipns" ->
+            True
+
+        "blob" ->
             True
 
         _ ->
