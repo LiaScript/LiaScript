@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.18
+version:  0.10.19
 language: en
 narrator: UK English Male
 
@@ -294,6 +294,11 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.19** (24/08/2022)
+
+- minor fixes in the window.LIA interface
+- add blob - URLS to allowed types
 
 **0.10.18** (18/07/2022)
 
