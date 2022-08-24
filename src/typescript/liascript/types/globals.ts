@@ -96,7 +96,7 @@ declare global {
       /** This is experimental feature, used by an editor to send code, which
        * is translated and updated just in time
        */
-      jit: (code: string) => void
+      jit?: (code: string) => void
 
       /** This function shall be overwritten, it will be automatically called
        * if the course has been parsed and is ready. The value that is passed
