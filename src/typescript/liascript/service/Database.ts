@@ -124,6 +124,14 @@ const Service = {
 
         if (window.LIA.onReady) {
           window.LIA.onReady(param.definition)
+        } else {
+          // this callback might be required, when `onload` on an iframe will not trigger,
+          // which can be used to register an onReady callback
+          try {
+            window.parent.liaReady(param.definition)
+          } catch (e) {
+            console.log('no parent frame to send readiness')
+          }
         }
 
         // this will add the font definition
