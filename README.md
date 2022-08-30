@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.19
+version:  0.10.20
 language: en
 narrator: UK English Male
 
@@ -294,6 +294,11 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.20** (30/08/2022)
+
+- add `window.parent.liaReady` as an alternative callback to an parent frame, which
+  can be used if `onload` for an `<iframe>` fails or is not triggered
 
 **0.10.19** (24/08/2022)
 
