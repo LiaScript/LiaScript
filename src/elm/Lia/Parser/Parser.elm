@@ -31,7 +31,9 @@ parse_definition : String -> String -> Result String ( Definition, ( String, Int
 parse_definition base code =
     case
         Combine.runParser
-            (Lia.Definition.Parser.parse
+            -- used to prevent false outputs if the first line does not start with a comment
+            (regex "[\n\t ]*"
+                |> keep Lia.Definition.Parser.parse
                 |> ignore
                     (or (string "#")
                         (stringTill (regex "\n#"))
