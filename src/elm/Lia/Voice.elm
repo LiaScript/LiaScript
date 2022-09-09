@@ -74,7 +74,7 @@ voices =
     , toVoice "Slovak" "sk" True False
     , toVoice "Spanish Latin American" "es" True True
     , toVoice "Spanish" "es" True False
-    , toVoice "Swahili" "si" False True
+    , toVoice "Swahili" "sw" False True
     , toVoice "Swedish" "sv" True True
     , toVoice "Tamil" "ta" True True
     , toVoice "Thai" "th" True True

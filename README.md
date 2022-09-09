@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.20
+version:  0.10.21
 language: en
 narrator: UK English Male
 
@@ -294,6 +294,12 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.21** (09/09/2022)
+
+- fix: Corrected shortcode for Swahili
+- improve: Parsing of main comment is not ignored, if it does not start on the
+  first line. 
 
 **0.10.20** (30/08/2022)
 
