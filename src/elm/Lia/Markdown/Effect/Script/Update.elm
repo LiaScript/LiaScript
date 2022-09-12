@@ -94,7 +94,22 @@ update main msg scripts =
         Activate active id ->
             case Array.get id scripts of
                 Just node ->
-                    if not active then
+                    if active then
+                        Array.set id
+                            { node
+                                | input =
+                                    if node.updated then
+                                        node.input
+
+                                    else
+                                        Input.active active node.input
+                                , updated = False
+                            }
+                            scripts
+                            |> Return.val
+                            |> Return.cmd (focus NoOp "lia-focus")
+
+                    else
                         reRun
                             (\js ->
                                 { js
@@ -110,27 +125,6 @@ update main msg scripts =
                             Cmd.none
                             id
                             scripts
-
-                    else
-                        Array.set id
-                            { node
-                                | input =
-                                    if node.updated then
-                                        node.input
-
-                                    else
-                                        Input.active active node.input
-                                , updated = False
-                            }
-                            scripts
-                            |> Return.val
-                            |> Return.cmd
-                                (if active then
-                                    focus NoOp "lia-focus"
-
-                                 else
-                                    Cmd.none
-                                )
 
                 Nothing ->
                     Return.val scripts
