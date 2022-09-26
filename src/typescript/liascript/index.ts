@@ -36,7 +36,6 @@ export class LiaScript {
   public sync?: any
 
   constructor(
-    elem: HTMLElement,
     connector: Connector,
     allowSync: boolean = false,
     debug: boolean = false,
@@ -79,7 +78,11 @@ export class LiaScript {
 
     this.connector = connector
 
-    this.initEventSystem(elem, this.app.ports.event2js.subscribe, sender)
+    this.initEventSystem(
+      document.body,
+      this.app.ports.event2js.subscribe,
+      sender
+    )
 
     let self = this
 

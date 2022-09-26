@@ -23,7 +23,6 @@ import('../../typescript/connectors/Browser/index').then(function (Browser) {
     }
 
     const app = new Lia.LiaScript(
-      document.body,
       new Connector(),
       false, // allowSync
       debug

@@ -1,11 +1,7 @@
-global._babelPolyfill = false
-import '@babel/polyfill'
-
-import LiaScript from '../../typescript/liascript/index'
+import { LiaScript } from '../../typescript/liascript/index'
 import { Connector } from '../../typescript/connectors/Base/index'
-import TTS from '../../typescript/liascript/tts'
 
-import '../../scss/main.scss'
+import customCSS from 'bundle-text:../../scss/main.scss'
 
 import '../../typescript/webcomponents/editor'
 import '../../typescript/webcomponents/formula'
@@ -19,39 +15,83 @@ customElements.define(
   'lia-script',
 
   class extends HTMLElement {
-    private container: HTMLDivElement
-    private debug: boolean
+    private debug: boolean = false
     private app: any
+    private embed: boolean = false
 
-    private courseURL: string | null
-    private responsiveVoiceKey: string | null
+    private courseURL: string | null = null
+    private responsiveVoiceKey: string | null = null
+    private scriptUrl?: string
+    private course?: string
 
     constructor() {
       super()
-
-      this.debug = false
-      this.courseURL = null
-      this.responsiveVoiceKey = null
-
       if (process.env.NODE_ENV === 'development') {
         this.debug = true
       }
-
-      this.container = document.createElement('div')
     }
 
     connectedCallback() {
-      const shadowRoot = this.attachShadow({
-        mode: 'open',
-      })
+      this.course = this.innerHTML || ''
 
-      shadowRoot.appendChild(this.container)
+      this.course = this.course.trim()
 
-      let self = this
-      setTimeout(function () {
-        self.initLia()
-        self.initResponsiveVoice()
-      }, 10)
+      //this.innerHTML = ''
+
+      this.embed = this.getAttribute('embed') !== 'false'
+      this.responsiveVoiceKey = this.getAttribute('responsiveVoiceKey')
+      this.scriptUrl = document.currentScript?.src
+
+      // shadowRoot.appendChild(this.container)
+      if (this.embed) {
+        const shadowRoot = this.attachShadow({
+          mode: 'open',
+        })
+
+        const iframe = document.createElement('iframe')
+        iframe.sandbox = 'allow-scripts allow-same-origin'
+
+        //iframe.referrerPolicy = 'same-origin'
+
+        const style = this.getAttribute('style')
+
+        if (style) {
+          iframe.style = style
+          iframe.style.border = 'none'
+          iframe.style.display = 'block'
+        } else {
+          iframe.style.width = '100%'
+          iframe.style.height = '600px'
+          iframe.style.border = 'none'
+        }
+
+        this.style.display = 'block'
+
+        iframe.src = './?ReadMe.md'
+
+        shadowRoot.append(iframe)
+
+        iframe.contentDocument?.write(`<!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+          <style>
+            ${customCSS}
+          </style>
+          <script type="module" src="${this.scriptUrl}"></script>
+        <body>
+          <lia-script src="ReadMe.md" embed="false">${this.course}</lia-script>
+        </body>
+        </html>`)
+
+        iframe.contentDocument?.close()
+      } else {
+        const self = this
+        setTimeout(function () {
+          self.initLia()
+        }, 1)
+      }
     }
 
     initLia() {
@@ -60,7 +100,6 @@ customElements.define(
       // Load the Markdown document defined by the src attribute
       if (typeof this.courseURL === 'string') {
         this.app = new LiaScript(
-          this.container,
           new Connector(),
           false, // allowSync
           this.debug,
@@ -70,23 +109,12 @@ customElements.define(
       } // Load the Content from within the web component
       else {
         this.app = new LiaScript(
-          this.container,
           new Connector(),
           false, // allowSync
           this.debug,
           null,
           this.innerHTML.trimStart()
         )
-      }
-
-      window.showFootnote = (key) => this.app.footnote(key)
-    }
-
-    initResponsiveVoice() {
-      this.responsiveVoiceKey = this.getAttribute('responsiveVoiceKey')
-
-      if (typeof this.responsiveVoiceKey === 'string') {
-        TTS.inject(this.responsiveVoiceKey)
       }
     }
 

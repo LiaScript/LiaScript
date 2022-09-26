@@ -95,7 +95,7 @@ export class Connector {
     this.initSettings(null, true)
   }
 
-  getFromIndex(_uidDB: string) {
+  async getFromIndex(_uidDB: string) {
     return null
   }
 }
