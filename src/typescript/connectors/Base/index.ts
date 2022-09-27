@@ -45,11 +45,22 @@ export class Connector {
   }
 
   setSettings(data: Lia.Settings) {
-    localStorage.setItem(Settings.PORT, JSON.stringify(data))
+    try {
+      localStorage.setItem(Settings.PORT, JSON.stringify(data))
+    } catch (e) {
+      console.warn('cannot write to localStorage')
+    }
   }
 
   getSettings() {
-    const data = localStorage.getItem(Settings.PORT)
+    let data: string | null = ''
+
+    try {
+      data = localStorage.getItem(Settings.PORT)
+    } catch (e) {
+      console.warn('cannot write to localStorage')
+    }
+
     let json: Lia.Settings | null = null
 
     if (typeof data === 'string') {

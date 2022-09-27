@@ -36,7 +36,12 @@ customElements.define(
 
       this.course = this.course.trim()
 
+      this.courseURL = this.getAttribute('src')
       //this.innerHTML = ''
+
+      const source = this.courseURL ? `src="${this.courseURL}"` : null
+
+      const course = source ? undefined : this.course
 
       this.embed = this.getAttribute('embed') !== 'false'
       this.responsiveVoiceKey = this.getAttribute('responsiveVoiceKey')
@@ -45,13 +50,13 @@ customElements.define(
       // shadowRoot.appendChild(this.container)
       if (this.embed) {
         const shadowRoot = this.attachShadow({
-          mode: 'open',
+          mode: 'closed',
         })
 
         const iframe = document.createElement('iframe')
-        iframe.sandbox = 'allow-scripts allow-same-origin'
+        iframe.sandbox = 'allow-scripts'
 
-        //iframe.referrerPolicy = 'same-origin'
+        //iframe.referrerPolicy = 'origin-when-cross-origin'
 
         const style = this.getAttribute('style')
 
@@ -67,7 +72,8 @@ customElements.define(
 
         this.style.display = 'block'
 
-        iframe.src = './?ReadMe.md'
+        iframe.src = 'http://localhost:1234/?README.md#1'
+        iframe.name = 'liascript'
 
         shadowRoot.append(iframe)
 
@@ -81,7 +87,7 @@ customElements.define(
           </style>
           <script type="module" src="${this.scriptUrl}"></script>
         <body>
-          <lia-script src="ReadMe.md" embed="false">${this.course}</lia-script>
+          <lia-script ${source} embed="false">${course}</lia-script>
         </body>
         </html>`)
 
@@ -99,6 +105,8 @@ customElements.define(
 
       // Load the Markdown document defined by the src attribute
       if (typeof this.courseURL === 'string') {
+        console.warn('#############')
+
         this.app = new LiaScript(
           new Connector(),
           false, // allowSync
