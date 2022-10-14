@@ -209,53 +209,53 @@ encodeGraph { labels, category, data } =
         , ( "draggable", JE.bool True )
         , ( "data"
           , category
-                |> List.map
+                |> JE.list
                     (\node ->
-                        [ ( "id", JE.string node )
-                        , ( "name", JE.string node )
+                        JE.object
+                            [ ( "id", JE.string node )
+                            , ( "name", JE.string node )
 
-                        --, ( "fixed", JE.bool True )
-                        --, ( "x", JE.int 100 )
-                        --, ( "y", JE.int 100 )
-                        ]
+                            --, ( "fixed", JE.bool True )
+                            --, ( "x", JE.int 100 )
+                            --, ( "y", JE.int 100 )
+                            ]
                     )
-                |> JE.list JE.object
           )
         , ( "edges"
           , data
-                |> List.map
+                |> JE.list
                     (\( source, target, v ) ->
-                        [ ( "source", JE.string source )
-                        , ( "target", JE.string target )
-                        , ( "symbolSize", JE.list JE.int [ 5 ] )
-                        , ( "value", JE.float v )
-                        , ( "lineStyle"
-                          , [ ( "width", JE.float <| lineWidth v )
-                            , ( "curveness"
-                              , JE.float <|
-                                    if directed then
-                                        0
+                        JE.object
+                            [ ( "source", JE.string source )
+                            , ( "target", JE.string target )
+                            , ( "symbolSize", JE.list JE.int [ 5 ] )
+                            , ( "value", JE.float v )
+                            , ( "lineStyle"
+                              , [ ( "width", JE.float <| lineWidth v )
+                                , ( "curveness"
+                                  , JE.float <|
+                                        if directed then
+                                            0
 
-                                    else if Dict.get ( target, source ) dict == Nothing then
-                                        0
+                                        else if Dict.get ( target, source ) dict == Nothing then
+                                            0
 
-                                    else
-                                        0.25
-                              )
-                            , ( "opacity"
-                              , JE.float <|
-                                    if v > 0 then
-                                        0.9
+                                        else
+                                            0.25
+                                  )
+                                , ( "opacity"
+                                  , JE.float <|
+                                        if v > 0 then
+                                            0.9
 
-                                    else
-                                        0.3
+                                        else
+                                            0.3
+                                  )
+                                ]
+                                    |> JE.object
                               )
                             ]
-                                |> JE.object
-                          )
-                        ]
                     )
-                |> JE.list JE.object
           )
         ]
             |> List.singleton
@@ -305,19 +305,18 @@ encodeSankey { labels, category, data } =
         , ( "animation", JE.bool True )
         , ( "data"
           , category
-                |> List.map (\node -> [ ( "name", JE.string node ) ])
-                |> JE.list JE.object
+                |> JE.list (\node -> JE.object [ ( "name", JE.string node ) ])
           )
         , ( "edges"
           , cleared
-                |> List.map
+                |> JE.list
                     (\( ( source, target ), v ) ->
-                        [ ( "source", JE.string source )
-                        , ( "target", JE.string target )
-                        , ( "value", JE.float v )
-                        ]
+                        JE.object
+                            [ ( "source", JE.string source )
+                            , ( "target", JE.string target )
+                            , ( "value", JE.float v )
+                            ]
                     )
-                |> JE.list JE.object
           )
         , ( "lineStyle", JE.object [ ( "color", JE.string "source" ) ] )
         ]
@@ -393,9 +392,7 @@ encodeBoxPlot { labels, category, data } =
       , JE.object
             ([ ( "type", JE.string "category" )
              , ( "data"
-               , boxplots
-                    |> List.map Tuple.first
-                    |> JE.list JE.string
+               , JE.list (Tuple.first >> JE.string) boxplots
                )
              ]
                 |> CList.addWhen (labels.x |> Maybe.map (JE.string >> Tuple.pair "name"))
@@ -721,15 +718,15 @@ encodeRadarChart { labels, category, data } =
 
         values =
             data
-                |> List.map
+                |> JE.list
                     (\( name_, value ) ->
-                        [ ( "name", JE.string name_ )
-                        , ( "value"
-                          , value |> JE.list (Maybe.withDefault 0 >> JE.float)
-                          )
-                        ]
+                        JE.object
+                            [ ( "name", JE.string name_ )
+                            , ( "value"
+                              , value |> JE.list (Maybe.withDefault 0 >> JE.float)
+                              )
+                            ]
                     )
-                |> JE.list JE.object
     in
     [ ( "radar"
       , JE.object
