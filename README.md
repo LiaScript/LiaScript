@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.21
+version:  0.10.22
 language: en
 narrator: UK English Male
 
@@ -294,6 +294,13 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.22** (14/10/2022)
+
+- fix: browser caching for editor
+- fix: quizzes, surveys, and tasks can now be listed wit \*, \-, \+
+- optimizations for table/diagram encoding
+- improved navigation for empty resources (can now be used in editors and web-components)
 
 **0.10.21** (09/09/2022)
 
