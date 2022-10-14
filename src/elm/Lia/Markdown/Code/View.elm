@@ -188,15 +188,7 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
                                     else
                                         codeMaximize lang
                                 , msg =
-                                    Just <|
-                                        FlipFullscreen
-                                            (if executable then
-                                                Evaluate id_1
-
-                                             else
-                                                Highlight id_1
-                                            )
-                                            id_2
+                                    Just <| FlipFullscreen (Evaluate id_1) id_2
                                 , icon =
                                     if file.fullscreen then
                                         "icon-chevron-up"

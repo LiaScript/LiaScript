@@ -57,11 +57,20 @@ export class Sync {
     cbConnection: (topic: string, msg: string) => void,
     cbRelay: (data: Lia.Event) => void
   ) {
-    let token = window.localStorage.getItem('lia-token')
+    let token
 
-    if (!token) {
+    try {
+      token = window.localStorage.getItem('lia-token')
+
+      if (!token) {
+        token = random()
+
+        window.localStorage.setItem('lia-token', token)
+      }
+    } catch (e) {
+      console.warn('cannot write to localStorage')
+
       token = random()
-      window.localStorage.setItem('lia-token', token)
     }
 
     this.token = token

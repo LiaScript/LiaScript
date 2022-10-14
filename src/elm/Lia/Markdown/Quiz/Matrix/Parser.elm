@@ -43,7 +43,7 @@ header : Parser Context (List Inlines)
 header =
     maybe Indent.check
         |> ignore spaces
-        |> ignore (regex "(?:- )?\\[")
+        |> ignore (regex "(?:(\\-|\\+\\*)[\t ]*)?\\[")
         |> keep (many1 options)
         |> ignore (string "]")
         |> ignore newline
