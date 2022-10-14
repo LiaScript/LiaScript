@@ -40,7 +40,8 @@ export function allowedProtocol(url: string) {
     url.startsWith('hyper://') ||
     url.startsWith('dat://') ||
     url.startsWith('ipfs://') ||
-    url.startsWith('ipns://')
+    url.startsWith('ipns://') ||
+    url.startsWith('blob:')
   )
 }
 

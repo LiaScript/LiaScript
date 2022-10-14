@@ -20,6 +20,11 @@ declare global {
        */
       eventSemaphore: number
 
+      /**
+       * LiaScript version string for local checks ...
+       */
+      version: string
+
       /** port to send messages to the internal LiaScript, should only be used
        * for very seldomly, since it offers a direct port
        */
@@ -91,7 +96,7 @@ declare global {
       /** This is experimental feature, used by an editor to send code, which
        * is translated and updated just in time
        */
-      jit: (code: string) => void
+      jit?: (code: string) => void
 
       /** This function shall be overwritten, it will be automatically called
        * if the course has been parsed and is ready. The value that is passed

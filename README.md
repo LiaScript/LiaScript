@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.18
+version:  0.10.22
 language: en
 narrator: UK English Male
 
@@ -294,6 +294,29 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.22** (14/10/2022)
+
+- fix: browser caching for editor
+- fix: quizzes, surveys, and tasks can now be listed wit \*, \-, \+
+- optimizations for table/diagram encoding
+- improved navigation for empty resources (can now be used in editors and web-components)
+
+**0.10.21** (09/09/2022)
+
+- fix: Corrected shortcode for Swahili
+- improve: Parsing of main comment is not ignored, if it does not start on the
+  first line. 
+
+**0.10.20** (30/08/2022)
+
+- add `window.parent.liaReady` as an alternative callback to an parent frame, which
+  can be used if `onload` for an `<iframe>` fails or is not triggered
+
+**0.10.19** (24/08/2022)
+
+- minor fixes in the window.LIA interface
+- add blob - URLS to allowed types
 
 **0.10.18** (18/07/2022)
 

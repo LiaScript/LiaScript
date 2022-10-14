@@ -6,6 +6,10 @@ export function initGlobals() {
     window.LIA = {}
   }
 
+  if (!window.LIA.version) {
+    window.LIA.version = '0.10.20'
+  }
+
   if (!window.LIA.eventSemaphore) {
     window.LIA.eventSemaphore = 0
   }
@@ -34,7 +38,7 @@ export function initGlobals() {
   init('gotoPrevious')
   init('gotoLine')
   init('lineGoto')
-  init('jit')
+
   init('injectResposivevoice')
 }
 
@@ -42,7 +46,7 @@ function init(name: string) {
   // @ts-ignore
   if (!window.LIA[name]) {
     // @ts-ignore
-    window.LIA[name] = (_: any) => notDefined('name')
+    window.LIA[name] = (_: any) => notDefined(name)
   }
 }
 
