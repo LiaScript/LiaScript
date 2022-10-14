@@ -229,13 +229,15 @@ update msg model =
                             else
                                 Cmd.none
 
-                        ( Nothing, Just oldCoursURL ) ->
-                            { url | query = Just oldCoursURL }
+                        ( Nothing, Just oldCourseURL ) ->
+                            { url | query = Just oldCourseURL }
                                 |> Url.toString
                                 |> Navigation.load
 
                         _ ->
-                            Cmd.none
+                            url
+                                |> Url.toString
+                                |> Navigation.load
                     )
 
                 Browser.External href ->
