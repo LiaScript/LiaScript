@@ -17,7 +17,6 @@ import('../../typescript/connectors/Browser/index').then(function (Browser) {
     }
 
     const app = new Lia.LiaScript(
-      document.body,
       new Browser.Connector(),
       true, // allowSync
       debug

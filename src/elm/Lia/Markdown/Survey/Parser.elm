@@ -94,7 +94,7 @@ toSelect quiz =
 pattern : Parser Context a -> Parser Context a
 pattern p =
     maybe Indent.check
-        |> ignore (regex "\\-?[\t ]*\\[")
+        |> ignore (regex "(\\-|\\+|\\*)?[\t ]*\\[")
         |> keep p
         |> ignore (regex "\\][\t ]*")
 

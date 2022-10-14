@@ -19,7 +19,6 @@ import('../../typescript/connectors/SCORM2004/index').then(function (
     }
 
     const app = new Lia.LiaScript(
-      document.body,
       new SCORM2004.Connector(),
       false, // allowSync
       debug

@@ -8,7 +8,6 @@ import('../../typescript/connectors/Base/index').then(function (Base) {
   }
 
   var app = new Lia.LiaScript(
-    document.body,
     new Base.Connector(),
     false, // allowSync
     debug

@@ -167,9 +167,7 @@ viewSync config syncData quiz =
                   , JE.object
                         [ ( "type", JE.string "category" )
                         , ( "data"
-                          , chartData
-                                |> List.map Tuple.first
-                                |> JE.list identity
+                          , JE.list Tuple.first chartData
                           )
                         ]
                   )
@@ -182,9 +180,7 @@ viewSync config syncData quiz =
                 , ( "series"
                   , [ [ ( "type", JE.string "bar" )
                       , ( "data"
-                        , chartData
-                            |> List.map Tuple.second
-                            |> JE.list identity
+                        , JE.list Tuple.second chartData
                         )
                       ]
                     ]
