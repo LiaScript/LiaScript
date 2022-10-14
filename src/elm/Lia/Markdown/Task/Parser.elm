@@ -34,7 +34,7 @@ some JavaScript code that is executed every time the user changes the input.
 parse : Parser Context Task
 parse =
     either "[xX]" " "
-        |> groupBy (regex "-[ \t]?\\[") (string "]")
+        |> groupBy (regex "(\\-|\\*|\\+)[ \t]?\\[") (string "]")
         |> map List.unzip
         |> andThen modify_State
 
