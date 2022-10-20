@@ -98,6 +98,10 @@ declare global {
        */
       jit?: (code: string) => void
 
+      /** Re-parse the entire course
+       */
+      compile?: (code: string) => void
+
       /** This function shall be overwritten, it will be automatically called
        * if the course has been parsed and is ready. The value that is passed
        * back is the entire definition sector, which means all meta data,

@@ -18,11 +18,21 @@ import('../../typescript/connectors/Base/index').then(function (Base) {
     switch (event.data.cmd) {
       case 'jit':
         if (window.LIA.jit) {
+          window.LIA.scrollUpOnMain = false
+          window.LIA.focusOnMain = false
           window.LIA.jit(event.data.param)
         } else {
           console.warn('window.LIA.jit not defined')
         }
         break
+      case 'compile':
+        if (window.LIA.compile) {
+          window.LIA.scrollUpOnMain = false
+          window.LIA.focusOnMain = false
+          window.LIA.compile(event.data.param)
+        } else {
+          console.warn('window.LIA.compile not defined')
+        }
       case 'goto':
         window.LIA.gotoLine(event.data.param)
         break
@@ -31,6 +41,18 @@ import('../../typescript/connectors/Base/index').then(function (Base) {
         break
       case 'responsivevoice':
         window.LIA.injectResposivevoice(event.data.param)
+        break
+      case 'base':
+        const base = document.createElement('base')
+        base.href = event.data.param
+        document.head.appendChild(base)
+        break
+      case 'eval':
+        try {
+          eval(event.data.param)
+        } catch (e) {
+          console.warn('liascript error: ', e)
+        }
         break
       default:
         console.warn('could not handle event: ', event)

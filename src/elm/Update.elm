@@ -9,6 +9,7 @@ port module Update exposing
 
 -- UPDATE
 
+import Array
 import Browser
 import Browser.Events
 import Browser.Navigation as Navigation
@@ -58,6 +59,9 @@ port event2elm : (Event -> msg) -> Sub msg
 port jit : (String -> msg) -> Sub msg
 
 
+port compile : (String -> msg) -> Sub msg
+
+
 {-| Base message structure for Lia
 
   - `LiaScript`: if a course has been successfully parsed, all communication is
@@ -89,13 +93,15 @@ type Msg
     | UrlChanged Url.Url
     | Load_ReadMe_Result String (Result Http.Error String)
     | Load_Template_Result String (Result Http.Error String)
-    | JIT String
+    | Port_JIT String
+    | Port_Compile String
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ jit JIT
+        [ jit Port_JIT
+        , compile Port_Compile
         , event2elm Handle
         , Sub.map LiaScript (Lia.Script.subscriptions model.lia)
         , Sub.map Resize (Browser.Events.onResize Screen)
@@ -126,12 +132,29 @@ batch map ret =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        JIT code ->
+        Port_JIT code ->
             load_readme
                 (code ++ "\n")
                 { model
                     | parse_steps = 1
                     , lia = model.lia |> Lia.Script.backup
+                    , lia_ = model.lia
+                }
+
+        Port_Compile code ->
+            let
+                lia =
+                    model.lia
+            in
+            load_readme
+                (code ++ "\n")
+                { model
+                    | parse_steps = 4
+                    , lia =
+                        { lia
+                            | backup = Dict.empty
+                            , sections = Array.empty
+                        }
                     , lia_ = model.lia
                 }
 

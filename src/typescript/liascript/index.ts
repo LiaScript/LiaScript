@@ -112,6 +112,7 @@ export class LiaScript {
 
     // port to jit compiler
     window.LIA.jit = this.app.ports.jit.send
+    window.LIA.compile = this.app.ports.compile.send
 
     window.LIA.gotoLine = function (line: number) {
       sender({
