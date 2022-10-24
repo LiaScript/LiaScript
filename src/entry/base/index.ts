@@ -47,11 +47,19 @@ import('../../typescript/connectors/Base/index').then(function (Base) {
         base.href = event.data.param
         document.head.appendChild(base)
         break
+      case 'inject':
+        if (window.injectHandler) {
+          window.injectHandler(event.data.param)
+        } else {
+          console.warn('no injectHandler defined')
+        }
+
+        break
       case 'eval':
         try {
           eval(event.data.param)
         } catch (e) {
-          console.warn('liascript error: ', e)
+          console.warn('liascript error: ', event.data.param, e)
         }
         break
       default:

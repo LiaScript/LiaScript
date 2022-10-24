@@ -52,6 +52,7 @@ export function initGlobals() {
   init('gotoPrevious')
   init('gotoLine')
   init('lineGoto')
+  init('fetchError')
 
   init('injectResposivevoice')
 }
@@ -60,7 +61,7 @@ function init(name: string) {
   // @ts-ignore
   if (!window.LIA[name]) {
     // @ts-ignore
-    window.LIA[name] = (_: any) => notDefined(name)
+    window.LIA[name] = (...args: any[]) => notDefined(name)
   }
 }
 
