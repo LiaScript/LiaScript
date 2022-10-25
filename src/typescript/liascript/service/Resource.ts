@@ -62,33 +62,72 @@ export function loadScript(url: string, withSemaphore = false) {
         log.info('successfully loaded =>', url)
       }
       tag.onerror = function (e: any) {
-        if (url.startsWith('blob:')) {
+        if (!url.startsWith('blob:')) {
+          loadScriptAsBlob(url, withSemaphore)
+        } else {
           window.LIA.eventSemaphore--
           log.warn('could not load blob =>', url, e)
           return
         }
-
-        log.warn('could not load =>', url, e)
-        log.warn('will try to import as blob')
-
-        fetch(url)
-          .then((response) => response.text())
-          .then((script: string) => {
-            const blob = new Blob([script], { type: 'text/javascript' })
-            const blobUrl = window.URL.createObjectURL(blob)
-            loadScript(blobUrl, withSemaphore)
-          })
-          .catch((e) => {
-            window.LIA.eventSemaphore--
-            log.warn('could not load as blob =>', url, e)
-          })
       }
     }
 
     document.head.appendChild(tag)
   } catch (e) {
     log.warn('failed loading script => ', e)
+    loadScriptAsBlob(url, withSemaphore)
   }
+}
+
+function loadScriptAsBlob(url: string, withSemaphore) {
+  if (!url.startsWith('blob:')) {
+    loadAsBlob(
+      'script',
+      url,
+      (blobUrl: string) => {
+        loadScript(blobUrl, withSemaphore)
+      },
+      (url, error) => {
+        window.LIA.eventSemaphore--
+        log.warn('could not load', url, 'as blob =>', error)
+      }
+    )
+  }
+}
+
+function loadAsBlob(
+  tag: string,
+  url: string,
+  onOk: (blobUrl: string) => void,
+  onError: (url: string, e: any) => void
+) {
+  if (url.startsWith('blob:')) {
+    console.warn('failed to load blob', url)
+    return
+  }
+
+  let type = 'text/'
+  switch (tag) {
+    case 'script':
+      type += 'javascript'
+      break
+    case 'link':
+      type += 'css'
+      break
+    default:
+      type += 'plain'
+  }
+
+  fetch(url)
+    .then((response) => response.text())
+    .then((text: string) => {
+      const blob = new Blob([text], { type })
+      const blobUrl = window.URL.createObjectURL(blob)
+      onOk(blobUrl)
+    })
+    .catch((e) => {
+      onError(url, e)
+    })
 }
 
 /**
@@ -106,23 +145,19 @@ function loadLink(url: string) {
   } catch (e: any) {
     if (url.startsWith('blob:')) {
       log.warn('failed loading style => ', url, e.message)
-
-      log.warn('failed loading style as blob =>', url, e)
-      return
+    } else {
+      log.warn('could not load =>', url, e)
+      log.warn('will try to import as blob')
+      loadAsBlob(
+        'script',
+        url,
+        (blobUrl: string) => {
+          loadLink(blobUrl)
+        },
+        (url, error) => {
+          log.warn('could not load', url, 'as blob =>', error)
+        }
+      )
     }
-
-    log.warn('could not load =>', url, e)
-    log.warn('will try to import as blob')
-
-    fetch(url)
-      .then((response) => response.text())
-      .then((script: string) => {
-        const blob = new Blob([script], { type: 'text/css' })
-        const blobUrl = window.URL.createObjectURL(blob)
-        loadLink(blobUrl)
-      })
-      .catch((e) => {
-        log.warn('could not load as blob =>', url, e)
-      })
   }
 }
