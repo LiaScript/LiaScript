@@ -83,6 +83,7 @@ export function loadScript(url: string, withSemaphore = false) {
       tag.onerror = function (_e: any) {
         window.LIA.eventSemaphore--
         console.warn('could not load =>', url)
+        window.LIA.fetchError('script', url)
       }
     }
 
@@ -160,6 +161,7 @@ function loadAsBlob(
       onOk(blobUrl)
     })
     .catch((e) => {
+      window.LIA.fetchError(tag, url)
       log.warn('could not load', url, 'as blob =>', e.message)
       if (onError) {
         onError(url, e)
