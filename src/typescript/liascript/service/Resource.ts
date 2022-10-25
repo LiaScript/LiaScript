@@ -36,6 +36,19 @@ export const Service = {
 }
 
 /**
+ * This is a custom origin matcher that works also with
+ * @param url
+ * @returns
+ */
+function origin(url: string) {
+  const match = url.match(/.*?:\/\/[^\/]*/)
+
+  if (match && match.length > 0) return match[0]
+
+  return null
+}
+
+/**
  * Load a external JavaScript resource dynamically and attach it to the
  * HTML-head.
  *
@@ -43,10 +56,8 @@ export const Service = {
  * @param withSemaphore - indicates it the global semaphore should be applied.
  */
 export function loadScript(url: string, withSemaphore = false) {
-  const file = new URL(url)
-
   // try to load all local scripts as blobs
-  if (!url.startsWith('blob:') && file.origin === window.location.origin) {
+  if (!url.startsWith('blob:') && origin(url) === window.location.origin) {
     loadScriptAsBlob(url, withSemaphore)
     return
   }
@@ -69,9 +80,9 @@ export function loadScript(url: string, withSemaphore = false) {
         window.LIA.eventSemaphore--
         log.info('successfully loaded =>', url)
       }
-      tag.onerror = function (e: any) {
+      tag.onerror = function (_e: any) {
         window.LIA.eventSemaphore--
-        console.warn('something went wrong', e)
+        console.warn('could not load =>', url)
       }
     }
 
@@ -82,7 +93,7 @@ export function loadScript(url: string, withSemaphore = false) {
   }
 }
 
-function loadScriptAsBlob(url: string, withSemaphore) {
+function loadScriptAsBlob(url: string, withSemaphore: boolean) {
   if (!url.startsWith('blob:')) {
     loadAsBlob(
       'script',
@@ -168,7 +179,8 @@ function loadLink(url: string) {
     tag.rel = 'stylesheet'
     tag.type = 'text/css'
 
-    tag.onerror = (event) => {
+    tag.onerror = (_event) => {
+      console.warn('could not load =>', url)
       loadAsBlob('link', url, (blobUrl: string) => {
         loadLink(blobUrl)
       })
