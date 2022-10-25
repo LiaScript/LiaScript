@@ -43,6 +43,14 @@ export const Service = {
  * @param withSemaphore - indicates it the global semaphore should be applied.
  */
 export function loadScript(url: string, withSemaphore = false) {
+  const file = new URL(url)
+
+  // try to load all local scripts as blobs
+  if (!url.startsWith('blob:') && file.origin === window.location.origin) {
+    loadScriptAsBlob(url, withSemaphore)
+    return
+  }
+
   try {
     let tag = document.createElement('script')
 
@@ -62,13 +70,8 @@ export function loadScript(url: string, withSemaphore = false) {
         log.info('successfully loaded =>', url)
       }
       tag.onerror = function (e: any) {
-        if (!url.startsWith('blob:')) {
-          loadScriptAsBlob(url, withSemaphore)
-        } else {
-          window.LIA.eventSemaphore--
-          log.warn('could not load blob =>', url, e)
-          return
-        }
+        window.LIA.eventSemaphore--
+        console.warn('something went wrong', e)
       }
     }
 
@@ -120,14 +123,33 @@ function loadAsBlob(
   }
 
   fetch(url)
-    .then((response) => response.text())
+    .then((response) => {
+      const header = response.headers.get('Content-Disposition')
+
+      let match = header?.match('filename="([^"]+)"')
+      let filename = ''
+
+      if (match && match.length > 0) {
+        filename = match[1]
+      }
+
+      const src = new URL(url)
+
+      if (filename !== src.pathname.split('/').slice(-1)[0]) {
+        throw new Error(
+          `false redirect received "${filename}" instead of "${src.pathname}"`
+        )
+      }
+
+      return response.text()
+    })
     .then((text: string) => {
       const blob = new Blob([text], { type })
       const blobUrl = window.URL.createObjectURL(blob)
       onOk(blobUrl)
     })
     .catch((e) => {
-      log.warn('could not load', url, 'as blob =>', e)
+      log.warn('could not load', url, 'as blob =>', e.message)
       if (onError) {
         onError(url, e)
       }
@@ -144,6 +166,13 @@ function loadLink(url: string) {
     let tag = document.createElement('link')
     tag.href = url
     tag.rel = 'stylesheet'
+    tag.type = 'text/css'
+
+    tag.onerror = (event) => {
+      loadAsBlob('link', url, (blobUrl: string) => {
+        loadLink(blobUrl)
+      })
+    }
 
     document.head.appendChild(tag)
   } catch (e: any) {
