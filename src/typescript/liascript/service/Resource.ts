@@ -87,10 +87,11 @@ function loadScriptAsBlob(url: string, withSemaphore) {
       (blobUrl: string) => {
         loadScript(blobUrl, withSemaphore)
       },
-      (url, error) => {
-        window.LIA.eventSemaphore--
-        log.warn('could not load', url, 'as blob =>', error)
-      }
+      withSemaphore
+        ? (_url, _error) => {
+            window.LIA.eventSemaphore--
+          }
+        : undefined
     )
   }
 }
@@ -99,7 +100,7 @@ function loadAsBlob(
   tag: string,
   url: string,
   onOk: (blobUrl: string) => void,
-  onError: (url: string, e: any) => void
+  onError?: (url: string, e: any) => void
 ) {
   if (url.startsWith('blob:')) {
     console.warn('failed to load blob', url)
@@ -126,7 +127,10 @@ function loadAsBlob(
       onOk(blobUrl)
     })
     .catch((e) => {
-      onError(url, e)
+      log.warn('could not load', url, 'as blob =>', e)
+      if (onError) {
+        onError(url, e)
+      }
     })
 }
 
@@ -148,16 +152,9 @@ function loadLink(url: string) {
     } else {
       log.warn('could not load =>', url, e)
       log.warn('will try to import as blob')
-      loadAsBlob(
-        'script',
-        url,
-        (blobUrl: string) => {
-          loadLink(blobUrl)
-        },
-        (url, error) => {
-          log.warn('could not load', url, 'as blob =>', error)
-        }
-      )
+      loadAsBlob('link', url, (blobUrl: string) => {
+        loadLink(blobUrl)
+      })
     }
   }
 }
