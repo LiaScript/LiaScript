@@ -111,7 +111,7 @@ init : Bool -> Bool -> JE.Value -> { support : List String, enabled : Bool } -> 
 init hasShareApi openTOC settings backends url readme origin anchor =
     let
         default =
-            Settings.init hasShareApi Settings.Presentation
+            Settings.init hasShareApi Settings.Textbook
     in
     { url = url
     , repositoryUrl = repo readme

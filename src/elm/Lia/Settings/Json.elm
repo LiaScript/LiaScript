@@ -24,17 +24,19 @@ fromModel model =
 
 
 fromMode : Mode -> JE.Value
-fromMode mode =
-    JE.string <|
-        case mode of
-            Textbook ->
-                "Textbook"
+fromMode _ =
+    {- JE.string <|
+       case mode of
+           Textbook ->
+               "Textbook"
 
-            Presentation ->
-                "Presentation"
+           Presentation ->
+               "Presentation"
 
-            Slides ->
-                "Slides"
+           Slides ->
+               "Slides"
+    -}
+    JE.string "Textbook"
 
 
 settings : Settings -> Bool -> Mode -> String -> Bool -> String -> Int -> Bool -> String -> Bool -> Settings
@@ -75,16 +77,18 @@ toModel model =
 
 
 toMode : String -> JD.Decoder Mode
-toMode str =
-    case str of
-        "Textbook" ->
-            JD.succeed Textbook
+toMode _ =
+    {- case str of
+       "Textbook" ->
+           JD.succeed Textbook
 
-        "Presentation" ->
-            JD.succeed Presentation
+       "Presentation" ->
+           JD.succeed Presentation
 
-        "Slides" ->
-            JD.succeed Slides
+       "Slides" ->
+           JD.succeed Slides
 
-        _ ->
-            JD.fail "unknown presentation mode"
+       _ ->
+           JD.fail "unknown presentation mode"
+    -}
+    JD.succeed Textbook
