@@ -4,6 +4,8 @@ module Lia.Voice exposing
     , getVoiceFor
     )
 
+import List.Extra
+
 
 type alias Voice =
     { translated : Bool
@@ -111,29 +113,14 @@ toVoice name lang female male =
 getLang : String -> Maybe String
 getLang voice =
     voices
-        |> List.filterMap
-            (\v ->
-                if v.male == Just voice || v.female == Just voice then
-                    Just v.lang
-
-                else
-                    Nothing
-            )
-        |> List.head
+        |> List.Extra.find (\v -> v.male == Just voice || v.female == Just voice)
+        |> Maybe.map .lang
 
 
 getVoiceFromLang : String -> Bool -> Maybe String
 getVoiceFromLang lang male =
     voices
-        |> List.filterMap
-            (\v ->
-                if v.lang == lang then
-                    Just v
-
-                else
-                    Nothing
-            )
-        |> List.head
+        |> List.Extra.find (\v -> v.lang == lang)
         |> Maybe.andThen (getVoice male)
 
 

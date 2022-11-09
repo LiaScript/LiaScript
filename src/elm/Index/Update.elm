@@ -12,11 +12,11 @@ import Index.Model exposing (Course, Model, Release)
 import Index.Version as Version
 import Json.Decode as JD
 import Lia.Definition.Json.Decode as Definition
-import Lia.Markdown.Code.Editor exposing (mode)
 import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
+import List.Extra
 import Service.Console
 import Service.Database
 import Service.Event exposing (Event)
@@ -98,8 +98,7 @@ update msg settings model =
 
                                 Nothing ->
                                     model.courses
-                                        |> List.filter (.id >> (==) courseID)
-                                        |> List.head
+                                        |> List.Extra.find (.id >> (==) courseID)
                                         |> Maybe.map
                                             (\c ->
                                                 c.versions

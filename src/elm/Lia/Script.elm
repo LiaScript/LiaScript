@@ -35,6 +35,7 @@ import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
 import Lia.Utils exposing (checkFalse, checkPersistency)
 import Lia.View
+import List.Extra
 import Return exposing (Return)
 import Service.Database
 import Service.Event exposing (Event)
@@ -363,7 +364,7 @@ searchIndex index str =
                 |> String.toLower
                 |> filterIndex
     in
-    case index |> List.filter fn |> List.head of
+    case List.Extra.find fn index of
         Just ( _, key ) ->
             key
 
