@@ -469,14 +469,18 @@ function toCard(
   let card = ''
 
   if (image) {
-    // TODO: relative images are ignored at the moment
-    if (!image.startsWith('./')) {
+    try {
+      if (!helper.allowedProtocol(image)) {
+        // redefine the image url from relative to absolute
+        image = new URL(image, url).toString()
+      }
+
       // add a possible alt attribute if exists
       image_alt = image_alt ? `alt="${image_alt}"` : ''
 
       // the light background is required for transparent images in dark mode
       card += `<img src="${image}" ${image_alt} style="background-color:white; margin-bottom: 1.5rem;">`
-    }
+    } catch (e) {}
   }
   if (title) card += `<h4>${title}</h4>`
   if (description) card += description
