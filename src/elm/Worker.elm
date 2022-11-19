@@ -16,6 +16,7 @@ import Model exposing (State(..))
 import Platform
 import Process
 import Task
+import Url
 
 
 port output : ( Bool, String ) -> Cmd msg
@@ -28,7 +29,7 @@ type Msg
     = Handle (List String)
     | LiaParse
     | Load_ReadMe_Result String (Result Http.Error String)
-    | Load_Template_Result (Result Http.Error String)
+    | Load_Template_Result String (Result Http.Error String)
 
 
 type alias Model =
@@ -99,7 +100,24 @@ update msg model =
             )
 
         Handle [ cmd, readme ] ->
-            load_readme readme { model | cmd = cmd }
+            case Url.fromString readme of
+                Nothing ->
+                    load_readme readme { model | cmd = cmd }
+
+                _ ->
+                    let
+                        lia =
+                            Lia.Script.init False True JE.null { support = [], enabled = False } "" "" "" Nothing
+                    in
+                    ( { model
+                        | cmd = cmd
+                        , lia =
+                            { lia
+                                | readme = readme
+                            }
+                      }
+                    , download Load_ReadMe_Result readme
+                    )
 
         Handle cmd ->
             ( model
@@ -122,7 +140,7 @@ update msg model =
                 |> error (url ++ " Load_ReadMe_Result")
             )
 
-        Load_Template_Result (Ok template) ->
+        Load_Template_Result url (Ok template) ->
             parsing
                 { model
                     | lia =
@@ -138,7 +156,7 @@ update msg model =
                                 model.state
                 }
 
-        Load_Template_Result (Err info) ->
+        Load_Template_Result url (Err info) ->
             ( { model | state = Error.Report.add model.state (parse_error info) }
             , info
                 |> parse_error
@@ -301,6 +319,11 @@ parse_error msg =
             "Bad body " ++ body
 
 
-download : (Result Http.Error String -> Msg) -> String -> Cmd Msg
+{-| **@private:** Used by multiple times to connect a download with a message.
+-}
+download : (String -> Result Http.Error String -> Msg) -> String -> Cmd Msg
 download msg url =
-    Http.get { url = url, expect = Http.expectString msg }
+    Http.get
+        { url = url
+        , expect = Http.expectString (msg url)
+        }
