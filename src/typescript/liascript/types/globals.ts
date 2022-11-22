@@ -103,7 +103,7 @@ declare global {
        * back is the entire definition sector, which means all meta data,
        * including title, comment, logo, macro, etc...
        */
-      onReady?: (params: any) => void
+      onReady: (params: any) => void
 
       /** This function can be used by external editors to make use of the
        * dynamic code-injection for responsivevoice. A key from the website

@@ -36,6 +36,19 @@ export const Service = {
 }
 
 /**
+ * This is a custom origin matcher that works also with
+ * @param url
+ * @returns
+ */
+function origin(url: string) {
+  const match = url.match(/.*?:\/\/[^\/]*/)
+
+  if (match && match.length > 0) return match[0]
+
+  return null
+}
+
+/**
  * Load a external JavaScript resource dynamically and attach it to the
  * HTML-head.
  *
@@ -43,6 +56,12 @@ export const Service = {
  * @param withSemaphore - indicates it the global semaphore should be applied.
  */
 export function loadScript(url: string, withSemaphore = false) {
+  // try to load all local scripts as blobs
+  if (!url.startsWith('blob:') && origin(url) === window.location.origin) {
+    loadScriptAsBlob(url, withSemaphore)
+    return
+  }
+
   try {
     let tag = document.createElement('script')
 
@@ -61,16 +80,91 @@ export function loadScript(url: string, withSemaphore = false) {
         window.LIA.eventSemaphore--
         log.info('successfully loaded =>', url)
       }
-      tag.onerror = function (e: any) {
+      tag.onerror = function (_e: any) {
         window.LIA.eventSemaphore--
-        log.warn('could not load =>', url, e)
+        console.warn('could not load =>', url)
       }
     }
 
     document.head.appendChild(tag)
   } catch (e) {
     log.warn('failed loading script => ', e)
+    loadScriptAsBlob(url, withSemaphore)
   }
+}
+
+function loadScriptAsBlob(url: string, withSemaphore: boolean) {
+  if (!url.startsWith('blob:')) {
+    loadAsBlob(
+      'script',
+      url,
+      (blobUrl: string) => {
+        loadScript(blobUrl, withSemaphore)
+      },
+      withSemaphore
+        ? (_url, _error) => {
+            window.LIA.eventSemaphore--
+          }
+        : undefined
+    )
+  }
+}
+
+function loadAsBlob(
+  tag: string,
+  url: string,
+  onOk: (blobUrl: string) => void,
+  onError?: (url: string, e: any) => void
+) {
+  if (url.startsWith('blob:')) {
+    console.warn('failed to load blob', url)
+    return
+  }
+
+  let type = 'text/'
+  switch (tag) {
+    case 'script':
+      type += 'javascript'
+      break
+    case 'link':
+      type += 'css'
+      break
+    default:
+      type += 'plain'
+  }
+
+  fetch(url)
+    .then((response) => {
+      const header = response.headers.get('Content-Disposition')
+
+      let match = header?.match('filename="([^"]+)"')
+      let filename = ''
+
+      if (match && match.length > 0) {
+        filename = match[1]
+      }
+
+      const src = new URL(url)
+
+      if (filename !== src.pathname.split('/').slice(-1)[0]) {
+        throw new Error(
+          `false redirect received "${filename}" instead of "${src.pathname}"`
+        )
+      }
+
+      return response.text()
+    })
+    .then((text: string) => {
+      const blob = new Blob([text], { type })
+      const blobUrl = window.URL.createObjectURL(blob)
+      onOk(blobUrl)
+    })
+    .catch((e) => {
+      log.warn('could not load', url, 'as blob =>', e.message)
+      if (onError) {
+        onError(url, e)
+      }
+    })
 }
 
 /**
@@ -83,9 +177,25 @@ function loadLink(url: string) {
     let tag = document.createElement('link')
     tag.href = url
     tag.rel = 'stylesheet'
+    tag.type = 'text/css'
+
+    tag.onerror = (_event) => {
+      console.warn('could not load =>', url)
+      loadAsBlob('link', url, (blobUrl: string) => {
+        loadLink(blobUrl)
+      })
+    }
 
     document.head.appendChild(tag)
   } catch (e: any) {
-    log.warn('failed loading style => ', e.message)
+    if (url.startsWith('blob:')) {
+      log.warn('failed loading style => ', url, e.message)
+    } else {
+      log.warn('could not load =>', url, e)
+      log.warn('will try to import as blob')
+      loadAsBlob('link', url, (blobUrl: string) => {
+        loadLink(blobUrl)
+      })
+    }
   }
 }
