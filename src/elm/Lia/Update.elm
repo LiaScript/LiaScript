@@ -348,7 +348,18 @@ update session msg model =
                         |> Return.batchEvents (Service.Slide.initialize model.section_active :: model.to_do)
                         |> Return.batchEvent
                             (if model.section_active < Array.length model.sections then
-                                Service.Script.exec 100 <| "window.LIA.goto(" ++ String.fromInt (model.section_active + 1) ++ ")"
+                                Service.Script.exec
+                                    (if model.section_active == 0 then
+                                        -- Add timeout so that first slide, so that scripts can be loaded
+                                        5000
+
+                                     else
+                                        100
+                                    )
+                                <|
+                                    "window.LIA.goto("
+                                        ++ String.fromInt (model.section_active + 1)
+                                        ++ ")"
 
                              else
                                 Event.none
