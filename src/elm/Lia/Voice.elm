@@ -152,12 +152,27 @@ isMale =
         >> Maybe.withDefault False
 
 
+{-|
+
+    getVoiceFor "Russian Female" ( "en", "en" )
+    --> Just { translated = False, lang = "ru", name = "Russian Female" }
+
+    getVoiceFor "Russian Female" ( "en", "de" )
+    --> Just { translated = False, lang = "ru", name = "Russian Female" }
+
+    getVoiceFor "US English Male" ( "en", "en" )
+    --> Just { translated = False, lang = "en", name = "US English Male" }
+
+    getVoiceFor "US English Male" ( "en", "de" )
+    --> Just { translated = True, lang = "de", name = "Deutsch Male" }
+
+-}
 getVoiceFor : String -> ( String, String ) -> Maybe Voice
 getVoiceFor voice ( langOld, langNew ) =
     if langOld == langNew then
         -- Nothing has changed
         Just
-            { translated = True
+            { translated = False
             , lang =
                 voice
                     |> getLang
@@ -176,6 +191,9 @@ getVoiceFor voice ( langOld, langNew ) =
         -- the voice
         Just
             { translated = False
-            , lang = langOld
+            , lang =
+                voice
+                    |> getLang
+                    |> Maybe.withDefault langNew
             , name = voice
             }
