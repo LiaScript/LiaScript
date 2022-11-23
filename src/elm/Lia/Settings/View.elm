@@ -233,7 +233,7 @@ viewTooltips lang tabbable width enabled =
                 , A11y_Key.tabbable tabbable
                 ]
                 []
-            , Html.text "Tooltips"
+            , Html.text (Trans.confTooltip lang)
             ]
 
     else
@@ -255,7 +255,7 @@ viewTTSSettings lang tabbable tts =
             , Attr.disabled (not (tts.isBrowserSupported && tts.isResponsiveVoiceSupported))
             ]
             []
-        , Html.text "Prefer Browser TTS"
+        , Html.text (Trans.ttsPreferBrowser lang)
         ]
 
 

@@ -211,7 +211,7 @@ slideBottom lang tiny settings slide effects =
                     ]
                     [ Html.div [ Attr.class "lia-responsive-voice__control" ]
                         [ btnReplay lang sound settings
-                        , responsiveVoice { tiny = tiny, show = sound, tts = settings.tts }
+                        , responsiveVoice { lang = lang, tiny = tiny, show = sound, tts = settings.tts }
                         , btnStop lang settings
                         ]
                     ]
@@ -428,8 +428,8 @@ slideNavigation lang mode slide effect =
 -- ]
 
 
-responsiveVoice : { tiny : Bool, show : Bool, tts : TTS } -> Html msg
-responsiveVoice { tiny, show, tts } =
+responsiveVoice : { lang : Lang, tiny : Bool, show : Bool, tts : TTS } -> Html msg
+responsiveVoice { lang, tiny, show, tts } =
     Html.small
         [ Attr.class "lia-responsive-voice__info notranslate"
         , Attr.attribute "translate" "no"
@@ -448,30 +448,30 @@ responsiveVoice { tiny, show, tts } =
         ]
         (case ( tts.isBrowserSupported, tts.isResponsiveVoiceSupported, tts.preferBrowser ) of
             ( True, False, _ ) ->
-                browserTTSText
+                [ browserTTSText lang ]
 
             ( False, True, _ ) ->
                 responsiveVoiceTTSText
 
             ( True, True, True ) ->
-                browserTTSText
+                [ browserTTSText lang ]
 
             ( True, True, False ) ->
                 responsiveVoiceTTSText
 
             ( False, False, _ ) ->
-                noTTSText
+                [ noTTSText lang ]
         )
 
 
-noTTSText : List (Html msg)
+noTTSText : Lang -> Html msg
 noTTSText =
-    [ Html.text "Browser does not support Text-to-Speech, try another one." ]
+    Trans.ttsUnsupported >> Html.text
 
 
-browserTTSText : List (Html msg)
+browserTTSText : Lang -> Html msg
 browserTTSText =
-    [ Html.text "Using Browser internal Text-to-Speech engine." ]
+    Trans.ttsUsingBrowser >> Html.text
 
 
 responsiveVoiceTTSText : List (Html msg)

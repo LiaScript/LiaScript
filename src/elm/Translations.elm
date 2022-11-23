@@ -3451,6 +3451,108 @@ qrErr lang =
             "Error while encoding to QR code"
 
 
+ttsPreferBrowser : Lang -> String
+ttsPreferBrowser lang =
+    case lang of 
+        Bg ->
+            "Предпочитам TTS на браузъра"
+
+        De ->
+            "Browser-TTS bevorzugen"
+
+        Es ->
+            "Preferir TTS del navegador"
+
+        Ko ->
+            "브라우저 TTS 선호"
+
+        Nl ->
+            "Voorkeur browser TTS"
+
+        Ru ->
+            "Предпочитать браузерный TTS"
+
+        Tw ->
+            "首选浏览器 TTS"
+
+        Uk ->
+            "Надаю перевагу браузеру TTS"
+
+        Zh ->
+            "首选浏览器 TTS"
+
+        _ ->
+            "Prefer browser TTS"
+
+
+ttsUsingBrowser : Lang -> String
+ttsUsingBrowser lang =
+    case lang of 
+        Bg ->
+            "Използване на вътрешната машина за синтезиран говор на браузъра."
+
+        De ->
+            "Verwendung der internen Text-zu-Speech-Engine des Browsers."
+
+        Es ->
+            "Usando el motor interno de conversión de texto a voz del navegador."
+
+        Ko ->
+            "브라우저의 내부 텍스트 음성 변환 엔진을 사용합니다."
+
+        Nl ->
+            "De interne tekst-naar-spraak-engine van de browser gebruiken."
+
+        Ru ->
+            "Используя внутренний механизм преобразования текста в речь браузера."
+
+        Tw ->
+            "使用浏览器的内部文本转语音引擎。"
+
+        Uk ->
+            "Використання внутрішньої системи синтезу мовлення у браузері."
+
+        Zh ->
+            "使用浏览器的内部文本转语音引擎。"
+
+        _ ->
+            "Using the browser's internal Text-to-Speech engine."
+
+
+ttsUnsupported : Lang -> String
+ttsUnsupported lang =
+    case lang of 
+        Bg ->
+            "Вашият браузър не поддържа Text-to-Speech, опитайте друг."
+
+        De ->
+            "Ihr Browser unterstützt kein Text-to-Speech, versuchen Sie es mit einem anderen."
+
+        Es ->
+            "Tu navegador no es compatible con Text-to-Speech, prueba con otro."
+
+        Ko ->
+            "당신의 브라우저는 Text-to-Speech를 지원하지 않습니다. 다른 것을 시도해 보세요."
+
+        Nl ->
+            "Uw browser ondersteunt tekst-naar-spraak niet, probeer een andere."
+
+        Ru ->
+            "Ваш браузер не поддерживает преобразование текста в речь, попробуйте другой."
+
+        Tw ->
+            "您的浏览器不支持文本转语音，请换一个浏览器。"
+
+        Uk ->
+            "Ваш браузер не підтримує синтез мовлення з тексту, спробуйте інший."
+
+        Zh ->
+            "您的浏览器不支持文本转语音，请换一个浏览器。"
+
+        _ ->
+            "Your browser does not support Text-to-Speech, try another one."
+
+
 home : Lang -> String
 home lang =
     case lang of 
@@ -3462,6 +3564,22 @@ home lang =
 
         _ ->
             "Home"
+
+
+confTooltip : Lang -> String
+confTooltip lang =
+    case lang of 
+        De ->
+            "Tooltipps"
+
+        Ru ->
+            "подсказки"
+
+        Uk ->
+            "підказки"
+
+        _ ->
+            "Tooltips"
 
 
 chartBoxplot : Lang -> String
