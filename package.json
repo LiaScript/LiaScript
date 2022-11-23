@@ -101,5 +101,9 @@
   },
   "directories": {
     "test": "tests"
+  },
+  "dependencies": {
+    "easy-speech": "^1.2.0",
+    "elm-review": "^2.8.2"
   }
 }

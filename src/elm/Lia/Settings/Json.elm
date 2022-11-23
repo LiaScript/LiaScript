@@ -20,6 +20,7 @@ fromModel model =
         , ( "sound", JE.bool model.sound )
         , ( "lang", JE.string model.lang )
         , ( "tooltips", JE.bool model.tooltips )
+        , ( "PreferBrowserTTS", JE.bool model.tts.preferBrowser )
         ]
 
 
@@ -37,8 +38,12 @@ fromMode mode =
                 "Slides"
 
 
-settings : Settings -> Bool -> Mode -> String -> Bool -> String -> Int -> Bool -> String -> Bool -> Settings
-settings model toc mode theme light editor font_size sound lang tooltips =
+settings : Settings -> Bool -> Mode -> String -> Bool -> String -> Int -> Bool -> String -> Bool -> Bool -> Settings
+settings model toc mode theme light editor font_size sound lang tooltips preferBrowserTTS =
+    let
+        tts =
+            model.tts
+    in
     { model
         | table_of_contents = toc
         , mode = mode
@@ -49,6 +54,7 @@ settings model toc mode theme light editor font_size sound lang tooltips =
         , sound = sound
         , lang = lang
         , tooltips = tooltips
+        , tts = { tts | preferBrowser = preferBrowserTTS }
     }
 
 
@@ -68,8 +74,15 @@ toModel model =
             -- why they might not be stored within the settings
             -- and treated differently
             |> JD.map2 (|>)
-                (JD.maybe (JD.field "tooltips" JD.bool)
+                (JD.field "tooltips" JD.bool
+                    |> JD.maybe
                     |> JD.map (Maybe.withDefault False)
+                )
+            -- additionally tts might be not set for the same reason
+            |> JD.map2 (|>)
+                (JD.field "browserTTS" JD.bool
+                    |> JD.maybe
+                    |> JD.map (Maybe.withDefault True)
                 )
         )
 

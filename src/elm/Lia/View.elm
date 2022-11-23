@@ -21,13 +21,13 @@ import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Section exposing (SubSection)
-import Lia.Settings.Types exposing (Mode(..), Settings)
+import Lia.Settings.Types exposing (Mode(..), Settings, TTS)
 import Lia.Settings.Update as Settings_
 import Lia.Settings.View as Settings
 import Lia.Sync.Types as Sync_
 import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
-import Lia.Utils exposing (checkFalse, modal)
+import Lia.Utils exposing (modal)
 import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
 
@@ -211,7 +211,7 @@ slideBottom lang tiny settings slide effects =
                     ]
                     [ Html.div [ Attr.class "lia-responsive-voice__control" ]
                         [ btnReplay lang sound settings
-                        , responsiveVoice tiny sound
+                        , responsiveVoice { tiny = tiny, show = sound, tts = settings.tts }
                         , btnStop lang settings
                         ]
                     ]
@@ -428,8 +428,8 @@ slideNavigation lang mode slide effect =
 -- ]
 
 
-responsiveVoice : Bool -> Bool -> Html msg
-responsiveVoice tiny show =
+responsiveVoice : { tiny : Bool, show : Bool, tts : TTS } -> Html msg
+responsiveVoice { tiny, show, tts } =
     Html.small
         [ Attr.class "lia-responsive-voice__info notranslate"
         , Attr.attribute "translate" "no"
@@ -446,22 +446,52 @@ responsiveVoice tiny show =
             else
                 "80%"
         ]
-        [ Html.a [ Attr.class "lia-link", Attr.href "https://responsivevoice.org", Attr.target "_blank" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
-        , Html.text " licensed under "
-        , Html.a
-            [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/"
-            , Attr.target "_blank"
-            ]
-            [ Html.img
-                [ Attr.title "ResponsiveVoice Text To Speech"
-                , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"
-                , Attr.alt "95x15"
-                , Attr.width 95
-                , Attr.height 15
-                ]
-                []
-            ]
+        (case ( tts.isBrowserSupported, tts.isResponsiveVoiceSupported, tts.preferBrowser ) of
+            ( True, False, _ ) ->
+                browserTTSText
+
+            ( False, True, _ ) ->
+                responsiveVoiceTTSText
+
+            ( True, True, True ) ->
+                browserTTSText
+
+            ( True, True, False ) ->
+                responsiveVoiceTTSText
+
+            ( False, False, _ ) ->
+                noTTSText
+        )
+
+
+noTTSText : List (Html msg)
+noTTSText =
+    [ Html.text "Browser does not support Text-to-Speech, try another one." ]
+
+
+browserTTSText : List (Html msg)
+browserTTSText =
+    [ Html.text "Using Browser internal Text-to-Speech engine." ]
+
+
+responsiveVoiceTTSText : List (Html msg)
+responsiveVoiceTTSText =
+    [ Html.a [ Attr.class "lia-link", Attr.href "https://responsivevoice.org", Attr.target "_blank" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
+    , Html.text " licensed under "
+    , Html.a
+        [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/"
+        , Attr.target "_blank"
         ]
+        [ Html.img
+            [ Attr.title "ResponsiveVoice Text To Speech"
+            , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"
+            , Attr.alt "95x15"
+            , Attr.width 95
+            , Attr.height 15
+            ]
+            []
+        ]
+    ]
 
 
 showModal : Model -> Html Msg

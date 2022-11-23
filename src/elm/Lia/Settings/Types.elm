@@ -2,8 +2,11 @@ module Lia.Settings.Types exposing
     ( Action(..)
     , Mode(..)
     , Settings
+    , TTS
     , init
     )
+
+import Translations exposing (Lang(..))
 
 
 type alias Settings =
@@ -24,6 +27,14 @@ type alias Settings =
     , customTheme : Maybe String
     , tooltips : Bool
     , sync : Maybe Bool
+    , tts : TTS
+    }
+
+
+type alias TTS =
+    { preferBrowser : Bool
+    , isBrowserSupported : Bool
+    , isResponsiveVoiceSupported : Bool
     }
 
 
@@ -61,4 +72,9 @@ init hasShareApi mode =
     , customTheme = Nothing
     , tooltips = False
     , sync = Just False
+    , tts =
+        { preferBrowser = False
+        , isBrowserSupported = False
+        , isResponsiveVoiceSupported = False
+        }
     }

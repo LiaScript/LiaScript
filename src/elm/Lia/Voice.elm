@@ -158,7 +158,10 @@ getVoiceFor voice ( langOld, langNew ) =
         -- Nothing has changed
         Just
             { translated = True
-            , lang = langOld
+            , lang =
+                voice
+                    |> getLang
+                    |> Maybe.withDefault langOld
             , name = voice
             }
 
