@@ -18,13 +18,20 @@ const modes: {
   as: 'actionscript',
   /* ------------------------------------- */
   ada: 'ada',
+  adb: 'ada',
   alda: 'alda',
   /* ------------------------------------- */
   apache: 'apache_conf',
   apacheconf: 'apache_conf',
   apache_conf: 'apache_conf',
+  htaccess: 'apache_conf',
+  htgroups: 'apache_conf',
+  htpasswd: 'apache_conf',
   /* ------------------------------------- */
   apex: 'apex',
+  cls: 'apex',
+  trigger: 'apex',
+  tgr: 'apex',
   /* ------------------------------------- */
   applescript: 'applescript',
   oascript: 'applescript',
@@ -38,6 +45,8 @@ const modes: {
   arm: 'assembly_x86',
   /* ------------------------------------- */
   asl: 'asl',
+  dsl: 'asl',
+  'asl.json': 'asl',
   /* ------------------------------------- */
   asciidoc: 'asciidoc',
   adoc: 'asciidoc',
@@ -49,6 +58,7 @@ const modes: {
   /* ------------------------------------- */
   avrasm: 'assembly_x86',
   asm: 'assembly_x86',
+  a: 'assembly_x86',
 
   // !--------------------------------------
   // ! B
@@ -58,6 +68,8 @@ const modes: {
   sh: 'sh',
   /* ------------------------------------- */
   basic: 'vbscript',
+  bibtex: 'bibtex',
+  bib: 'bibtex',
 
   // !--------------------------------------
   // ! C
@@ -67,24 +79,31 @@ const modes: {
   h: 'c_pp',
   /* ------------------------------------- */
   c9search: 'c9search',
+  c9search_results: 'c9search',
   /* ------------------------------------- */
   cirru: 'cirru',
   /* ------------------------------------- */
   clojure: 'clojure',
   clj: 'clojure',
+  cljs: 'clojure',
   edn: 'clojure',
   /* ------------------------------------- */
   cmake: 'makefile',
   'cmake.in': 'makefile',
   /* ------------------------------------- */
   cobol: 'cobol',
+  cbl: 'cobol',
+  cob: 'cobol',
   /* ------------------------------------- */
   coffeescript: 'coffee',
   coffee: 'coffee',
+  cakefile: 'coffee',
+  cf: 'coffee',
   cson: 'coffee',
   iced: 'coffee',
   /* ------------------------------------- */
   coldfusion: 'coldfusion',
+  cfm: 'coldfusion',
   /* ------------------------------------- */
   cpp: 'c_cpp',
   cc: 'c_cpp',
@@ -107,8 +126,11 @@ const modes: {
   'c#': 'csharp',
   /* ------------------------------------- */
   csound_document: 'csound_document',
+  csd: 'csound_document',
   csound_orchestra: 'csound_orchestra',
+  orc: 'csound_orchestra',
   csound_score: 'csound_score',
+  sco: 'csound_score',
   /* ------------------------------------- */
   csp: 'csp',
   /* ------------------------------------- */
@@ -121,6 +143,7 @@ const modes: {
   // !--------------------------------------
 
   d: 'd',
+  di: 'd',
   /* ------------------------------------- */
   dart: 'dart',
   /* ------------------------------------- */
@@ -145,6 +168,7 @@ const modes: {
   batchfile: 'batchfile',
   /* ------------------------------------- */
   drools: 'drools',
+  drl: 'drools',
   /* ------------------------------------- */
   dot: 'dot',
 
@@ -153,8 +177,11 @@ const modes: {
   // !--------------------------------------
 
   edifact: 'edifact',
+  edi: 'edifact',
   /* ------------------------------------- */
   eiffel: 'eiffel',
+  e: 'eiffel',
+  ge: 'eiffel',
   /* ------------------------------------- */
   ejs: 'ejs',
   /* ------------------------------------- */
@@ -166,19 +193,29 @@ const modes: {
   /* ------------------------------------- */
   erlang: 'erlang',
   erl: 'erlang',
+  hrl: 'erlang',
 
   // !--------------------------------------
   // ! F
   // !--------------------------------------
 
   forth: 'forth',
+  frt: 'forth',
+  ldr: 'forth',
+  fth: 'forth',
+  '4th': 'forth',
   /* ------------------------------------- */
   fortran: 'fortran',
   f90: 'fortran',
   f95: 'fortran',
+  f: 'fortran',
   /* ------------------------------------- */
   fsharp: 'fsharp',
+  fsi: 'fsharp',
   fs: 'fsharp',
+  mli: 'fsharp',
+  fsx: 'fsharp',
+  fsscript: 'fsharp',
   'f#': 'fsharp',
   /* ------------------------------------- */
   fsl: 'fsl',
@@ -198,6 +235,8 @@ const modes: {
   gitignore: 'gitignore',
   /* ------------------------------------- */
   glsl: 'glsl',
+  frag: 'glsl',
+  vert: 'glsl',
   /* ------------------------------------- */
   gobstones: 'gobstones',
   /* ------------------------------------- */
@@ -205,6 +244,7 @@ const modes: {
   golang: 'golang',
   /* ------------------------------------- */
   graphqlschema: 'graphqlschema',
+  gql: 'graphqlschema',
   /* ------------------------------------- */
   groovy: 'groovy',
 
@@ -219,11 +259,14 @@ const modes: {
   'html.hbs': 'handlebars',
   'html.handlebars': 'handlebars',
   htmlbars: 'handlebars',
+  tpl: 'handlebars',
+  mustache: 'handlebars',
   /* ------------------------------------- */
   haskell: 'haskell',
   hs: 'haskell',
   /* ------------------------------------- */
   haskell_cabal: 'haskell_cabal',
+  cabal: 'haskell_cabal',
   /* ------------------------------------- */
   haxe: 'haxe',
   hx: 'haxe',
@@ -231,8 +274,11 @@ const modes: {
   hjson: 'hjson',
   /* ------------------------------------- */
   html_elixir: 'html_elixir',
+  'html.eex': 'html_elixir',
   /* ------------------------------------- */
   html_ruby: 'html_ruby',
+  erb: 'html_ruby',
+  'html.erb': 'html_ruby',
   /* ------------------------------------- */
   hy: 'lisp',
   hylang: 'lisp',
@@ -242,6 +288,10 @@ const modes: {
   // !--------------------------------------
 
   ini: 'ini',
+  conf: 'ini',
+  cfg: 'ini',
+  prefs: 'ini',
+
   toml: 'toml',
   /* ------------------------------------- */
   io: 'io',
@@ -254,25 +304,32 @@ const modes: {
   jack: 'jack',
   /* ------------------------------------- */
   jade: 'jade',
+  pug: 'jade',
   /* ------------------------------------- */
   java: 'java',
   jsp: 'jsp',
   /* ------------------------------------- */
   javascript: 'javascript',
   js: 'javascript',
+  jsm: 'javascript',
   jsx: 'jsx',
-  mjs: 'javascript',
   cjs: 'javascript',
+  mjs: 'javascript',
+  /* ------------------------------------- */
+  jexl: 'jexl',
   /* ------------------------------------- */
   json: 'json',
   /* ------------------------------------- */
   json5: 'json5',
   /* ------------------------------------- */
   jsoniq: 'jsoniq',
+  jq: 'jsoniq',
   /* ------------------------------------- */
   jssm: 'jssm',
+  jssm_state: 'jssm',
   /* ------------------------------------- */
   julia: 'julia',
+  jl: 'julia',
 
   // !--------------------------------------
   // ! K
@@ -288,6 +345,7 @@ const modes: {
   // !--------------------------------------
 
   latex: 'latex',
+  ltx: 'latex',
   tex: 'tex',
   /* ------------------------------------- */
   latte: 'latte',
@@ -302,14 +360,19 @@ const modes: {
   ls: 'livescript',
   /* ------------------------------------- */
   logiql: 'logiql',
+  lql: 'logiql',
+  /* ------------------------------------- */
+  log: 'log',
   /* ------------------------------------- */
   logtalk: 'logtalk',
+  lgt: 'logtalk',
   /* ------------------------------------- */
   lsl: 'lsl',
   /* ------------------------------------- */
   lua: 'lua',
   /* ------------------------------------- */
   luapage: 'luapage',
+  lp: 'luapage',
   /* ------------------------------------- */
   lucene: 'lucene',
 
@@ -321,6 +384,8 @@ const modes: {
   make: 'makefile',
   mak: 'makefile',
   mk: 'makefile',
+  gnumakefile: 'makefile',
+  ocamlmakefile: 'makefile',
   /* ------------------------------------- */
   markdown: 'markdown',
   md: 'markdown',
@@ -332,8 +397,10 @@ const modes: {
   matlab: 'matlab',
   /* ------------------------------------- */
   maze: 'maze',
+  mz: 'maze',
   /* ------------------------------------- */
   mediawiki: 'mediawiki',
+  wiki: 'mediawiki',
   /* ------------------------------------- */
   mel: 'mel',
   /* ------------------------------------- */
@@ -343,6 +410,8 @@ const modes: {
   mixal: 'mixal',
   /* ------------------------------------- */
   mushcode: 'mushcode',
+  mc: 'mushcode',
+  mush: 'mushcode',
   /* ------------------------------------- */
   mysql: 'mysql',
 
@@ -359,8 +428,12 @@ const modes: {
   nixos: 'nix',
   /* ------------------------------------- */
   nsis: 'nsis',
+  nsh: 'nsis',
   /* ------------------------------------- */
   nunjacks: 'nunjacks',
+  nunjs: 'nunjacks',
+  nj: 'nunjacks',
+  njk: 'nunjacks',
 
   // !--------------------------------------
   // ! O
@@ -373,8 +446,8 @@ const modes: {
   'obj-c++': 'objectivec',
   'objective-c++': 'objectivec',
   /* ------------------------------------- */
-  ml: 'ocaml',
   ocaml: 'ocaml',
+  ml: 'ocaml',
   /* ------------------------------------- */
   openscad: 'scad',
   scad: 'scad',
@@ -382,7 +455,9 @@ const modes: {
   // !--------------------------------------
   // ! P
   // !--------------------------------------
-
+  partiql: 'partiql',
+  pql: 'partiql',
+  /* ------------------------------------- */
   perl: 'perl',
   pl: 'perl',
   pm: 'perl',
@@ -392,6 +467,17 @@ const modes: {
   postgresql: 'pgsql',
   /* ------------------------------------- */
   php: 'php',
+  inc: 'php',
+  phtml: 'php',
+  shtml: 'php',
+  php3: 'php',
+  php4: 'php',
+  php5: 'php',
+  phps: 'php',
+  phpt: 'php',
+  aw: 'php',
+  ctp: 'php',
+  module: 'php',
   /* ------------------------------------- */
   php_laravel_blade: 'php_laravel_blade',
   /* ------------------------------------- */
@@ -407,6 +493,9 @@ const modes: {
   ps1: 'powershell',
   /* ------------------------------------- */
   praat: 'praat',
+  praatscript: 'praat',
+  psc: 'praat',
+  proc: 'praat',
   /* ------------------------------------- */
   prisma: 'prisma',
   /* ------------------------------------- */
@@ -414,6 +503,7 @@ const modes: {
   pde: 'c_cpp',
   /* ------------------------------------- */
   prolog: 'prolog',
+  plg: 'prolog',
   /* ------------------------------------- */
   properties: 'properties',
   /* ------------------------------------- */
@@ -430,8 +520,6 @@ const modes: {
   py: 'python',
   gyp: 'python',
   ipython: 'python',
-  /*-------------------------------------- */
-  partiql: 'partiql',
 
   // !--------------------------------------
   // ! Q
@@ -458,6 +546,9 @@ const modes: {
   /* ------------------------------------- */
   rhtml: 'rhtml',
   /* ------------------------------------- */
+  robot: 'robot',
+  resource: 'robot',
+  /* ------------------------------------- */
   rst: 'rst',
   rest: 'rst',
   /* ------------------------------------- */
@@ -465,6 +556,7 @@ const modes: {
   gemspec: 'ruby',
   irb: 'ruby',
   podspec: 'ruby',
+  guardfile: 'ruby',
   rb: 'ruby',
   thor: 'ruby',
   /* ------------------------------------- */
@@ -480,8 +572,15 @@ const modes: {
   sass: 'sass',
   /* ------------------------------------- */
   scala: 'scala',
+  sbt: 'scala',
   /* ------------------------------------- */
   scheme: 'scheme',
+  scm: 'scheme',
+  sm: 'scheme',
+  rkt: 'scheme',
+  oak: 'scheme',
+  /* ------------------------------------- */
+  scrypt: 'scrypt',
   /* ------------------------------------- */
   scss: 'scss',
   /* ------------------------------------- */
@@ -492,16 +591,19 @@ const modes: {
   sjs: 'sjs',
   /* ------------------------------------- */
   slim: 'slim',
+  skim: 'slim',
   /* ------------------------------------- */
   smarty: 'smarty',
   /* ------------------------------------- */
   smithy: 'smithy',
   /* ------------------------------------- */
   soy: 'soy',
+  soy_template: 'soy',
   /* ------------------------------------- */
   space: 'space',
   /* ------------------------------------- */
   sparql: 'sparql',
+  rq: 'sparql',
   /* ------------------------------------- */
   sql: 'sql',
   /* ------------------------------------- */
@@ -520,12 +622,17 @@ const modes: {
   tk: 'tcl',
   /* ------------------------------------- */
   terraform: 'terraform',
+  tf: 'terraform',
+  tfvars: 'terraform',
+  terragrunt: 'terraform',
   /* ------------------------------------- */
   textile: 'textile',
   /* ------------------------------------- */
   turtle: 'turtle',
+  ttl: 'turtle',
   /* ------------------------------------- */
   twig: 'twig',
+  swig: 'twig',
   craftcms: 'twig',
   /* ------------------------------------- */
   typescript: 'typescript',
@@ -546,21 +653,30 @@ const modes: {
   vbs: 'vbscript',
   /* ------------------------------------- */
   velocity: 'velocity',
+  vm: 'velocity',
   /* ------------------------------------- */
   verilog: 'verilog',
   sv: 'verilog',
   svh: 'verilog',
   v: 'verilog',
+  vh: 'verilog',
   /* ------------------------------------- */
   vhdl: 'vhdl',
+  vhd: 'vhdl',
   /* ------------------------------------- */
   visualforce: 'visualforce',
+  vfp: 'visualforce',
+  component: 'visualforce',
+  page: 'visualforce',
 
   // !--------------------------------------
   // ! W
   // !--------------------------------------
 
   wollok: 'wollok',
+  wlk: 'wollok',
+  wpgm: 'wollok',
+  wtest: 'wollok',
 
   // !--------------------------------------
   // ! X
@@ -573,12 +689,23 @@ const modes: {
   html: 'html',
   plist: 'xml',
   rss: 'xml',
+  wdsl: 'xml',
   svg: 'svg',
   wsf: 'xml',
-  xhtml: 'xml',
+  xbl: 'xml',
+  xhtml: 'html',
   xjb: 'xml',
   xsd: 'xml',
   xsl: 'xml',
+  htm: 'html',
+  vue: 'html',
+  we: 'html',
+  wpy: 'html',
+  mathml: 'xml',
+  mml: 'xml',
+  rdf: 'xml',
+  xaml: 'xml',
+  xul: 'xml',
   /* ------------------------------------- */
   xquery: 'xquery',
   xpath: 'xquery',
@@ -596,4 +723,5 @@ const modes: {
   // !--------------------------------------
 
   zeek: 'zeek',
+  bro: 'zeek',
 }

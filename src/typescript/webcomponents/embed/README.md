@@ -1,6 +1,6 @@
 # oEmbed Service Providers
 
-__date__: 21/10/2022
+__date__: 28/11/2022
 
 __23HQ:__ https://www.23hq.com
 
@@ -58,7 +58,7 @@ Learn how the iCIMS leading enterprise recruiting platform empowers employers to
 
 __amCharts Live Editor:__ https://live.amcharts.com/
 
-
+amCharts live editor: create, configure, tweak, edit data, export, import, save, share in a single interface, the user-friendly way.
 
 ---
 
@@ -341,13 +341,13 @@ __Curated:__ https://curated.co/
 
 __CustomerDB:__ https://customerdb.com/
 
-
+The domain name CustomerDB.com is for sale. Make an offer or buy it now at a set price.
 
 ---
 
 __dadan:__ https://www.dadan.io
 
-
+Record, edit, share, and collaborate using video messages. Create simple instructions, powerful product demos, and personal greetings with dadan.
 
 ---
 
@@ -359,7 +359,7 @@ Die neuesten News-, Sport-, Musik- und Unterhaltungsvideos auf Dailymotion
 
 __DALEXNI:__ https://dalexni.com/
 
-Upload, share, track, manage your files in one simple to use file host.
+
 
 ---
 
@@ -437,7 +437,7 @@ __EgliseInfo:__ https://egliseinfo.catholique.fr/
 
 __Embedery:__ https://embedery.com/
 
-Build and publish popups for your business to engage your visitors, increase sales, and achieve more with Embedery, a tool anyone can use within minutes.
+Build popups, in-web messaging around user flows that convert your visitors into customers
 
 ---
 
@@ -461,7 +461,7 @@ __Ethfiddle:__ https://www.ethfiddle.com/
 
 __EventLive:__ https://eventlive.pro
 
-The easiest way to live stream your wedding ceremony. Use your smartphone and go live in 5 minutes or less. Schedule your virtual wedding today!
+Live stream events easily, using a mobile device. It works on iOS as well as Android Smartphones. Works on any location with WiFi or a Data Plan. Try it today.
 
 ---
 
@@ -509,7 +509,7 @@ __Firework:__ https://fireworktv.com/
 
 __FITE:__ https://www.fite.tv/
 
-✓ 1,000+ live events per year ✓ 7M strong fan community ✓ Watch: Jake Paul vs Anderson Silva, Triller Fight Club: Lineage of Greatness II, Rugby League World Cup: All Events Men's Bundle, RIZIN 39, Top Rank: Vasiliy Lomachenko vs Jamaine Ortiz, AEW: Full Gear 2022, NJPW: Rumble on 44th Street Bundle, NWA: Hard Times in New Orleans ✓ Statistics & interviews
+✓ 1,000+ live events per year ✓ 7M strong fan community ✓ Watch: Jose Zepeda vs Regis Prograis, ROH: Final Battle 2022, BKFC UK, Newcastle: Mick Terrill vs Steve Banks, BKB 29, Boxxer: Adam Azim vs Rylan Charlton, Wrestling Revolver: Season Finale ✓ Statistics & interviews
 
 ---
 
@@ -647,7 +647,7 @@ PDF to flipbook converter. Free, no ads, no watermarks and highly customizable w
 
 __hihaho:__ https://www.hihaho.com
 
-Make your videos click with our easy to use interactive video platform. More engagement, better conversion with our software. Start for free!
+
 
 ---
 
@@ -671,7 +671,7 @@ Create your own podcast: find links to audio files on the Web; huffduff the link
 
 __Hulu:__ https://www.hulu.com/
 
-Watch TV shows and movies online. Stream TV episodes of Grey's Anatomy, This Is Us, Bob's Burgers, Brooklyn Nine-Nine, Empire, SNL, and popular movies on your favorite devices. Start your free trial now. Cancel anytime.
+
 
 ---
 
@@ -707,7 +707,7 @@ Restaurant menu maker that lets you instantly create your menus like a pro. Now 
 
 __Incredible:__ https://incredible.dev
 
-A collaborative developer video content creation platform that enables you to become the best dev video creator.
+
 
 ---
 
@@ -809,7 +809,7 @@ __Kitchenbowl:__ https://www.kitchenbowl.com
 
 __kmdr:__ https://kmdr.sh
 
-Diese Domain steht zum Verkauf!
+
 
 ---
 
@@ -869,7 +869,7 @@ Live stream to any audience, no matter the scale. We make it easy to stream your
 
 __LottieFiles:__ https://lottiefiles.com/
 
-The world’s largest platform for Lottie animations. Add free animations anywhere (even if you don’t know motion design) or create, collaborate & ship motion easily with LottieFiles’ design & developer tools.
+Effortlessly bring the smallest, free, ready-to-use motion graphics for the web, app, social, and designs. Create, edit, test, collaborate, and ship Lottie animations in no time!
 
 ---
 
@@ -899,7 +899,7 @@ Our 3D cameras and virtual tour software platform help you digitize your buildi
 
 __me.me:__ https://me.me/
 
-🔍 Find 😂 Funny Memes⚡️ instantly. Updated daily, millions of the funniest memes worldwide for 🎂 Birthdays 🚌 School 🐱 Cats 🐸 Dank Memes ❤️ Love Memes
+
 
 ---
 
@@ -941,7 +941,7 @@ Build out documentation while you sleep. Easily editable, auto-generated workflo
 
 __Miro:__ https://miro.com/
 
-Scalable, secure, cross-device and enterprise-ready team collaboration whiteboard for distributed teams. Join 35M+ users from around the world.
+Scalable, secure, cross-device and enterprise-ready team collaboration whiteboard for distributed teams. Join 40M+ users from around the world.
 
 ---
 
@@ -1009,7 +1009,7 @@ Watch quality Canadian documentary, animation and fiction films online
 
 __NFTNDX.IO:__ https://www.nftndx.io/
 
-NFTNDX.IO allows you to check the authenticity of the NFTs, the transfers and other activities in the NFT space
+NFTNDX.IO allows you to check the authenticity of the NFTs, current owners and the transfers activities of these digital assets.
 
 ---
 
@@ -1093,7 +1093,7 @@ __OZ:__ https://www.oz.com/
 
 __Padlet:__ https://padlet.com/
 
-
+From your hobby to your career, your class notes to your final exam, your mood board to your runway show, padlets help you organize your life.
 
 ---
 
@@ -1112,6 +1112,12 @@ Pastery is the sweetest pastebin in the world. Pastery is a secure website where
 __Picturelfy:__ https://www.picturelfy.com/
 
 
+
+---
+
+__Pikasso:__ https://builder.pikasso.xyz
+
+Bring your NFT applications to market in no time on low-cost fees ecosystem. We take care of the NFT infrastructure so you can focus on the application.
 
 ---
 
@@ -1189,7 +1195,7 @@ Play hundreds of quizzes on all subjects, and create easily your own free questi
 
 __Quizz.biz:__ https://www.quizz.biz/
 
-Jouez à des milliers de quizz sur tous les sujets, et créez vos propres quiz simplement et gratuitement.
+Jouez à des milliers de Quiz sur tous les sujets, et créez vos propres quiz simplement et gratuitement.
 
 ---
 
@@ -1237,13 +1243,13 @@ ReverbNation helps Artists grow lasting careers by introducing them to music ind
 
 __Roomshare:__ https://roomshare.jp
 
-ルームシェアジャパン - 無料ルームシェア・シェアハウス募集サイト
+
 
 ---
 
 __RoosterTeeth:__ https://roosterteeth.com
 
-Season 3 Episode 6 - Things get shaken up yet again as everyone is merged into Team Earth! It’s stop and go as the 7 remaining Competitors test their MineCraft agility in the Red Light Green Challenge.  Only one from the Green Team can win the coveted Helmet of Kingdoms which provides safety from the Chopping Block.
+Season 1 Episode 1 - The first episode of Truck'd Up is off to a meaty start as 4 teams of 2 compete to re-create the Wendy's Pretzel Bacon Pub Cheese Burger. You know what they say, those who can't cook... sabotage!
 
 ---
 
@@ -1339,7 +1345,7 @@ Say hello to the modern podcast hosting, distribution, and analytics platform. S
 
 __Sizzle:__ https://onsizzle.com/
 
-The #1 source for urban, hip hop, and hood memes. Hip-hop song memes, soundcloud mixtapes, Viral IG videos & news of 2017, updated daily!!
+
 
 ---
 
@@ -1369,7 +1375,7 @@ Smash Notes is podcast summaries you can learn from. Can coffee kill you? What's
 
 __Smeme:__ https://smeme.com
 
-
+Home
 
 ---
 
@@ -1381,7 +1387,7 @@ Books of Ancient Sanskrit/Indic Literature
 
 __SmugMug:__ https://www.smugmug.com/
 
-Pro-Motion
+Whether you want a photo website that sells prints, secure client galleries or just need unlimited storage, let us be your all-in-one solution.
 
 ---
 
@@ -1405,13 +1411,13 @@ Speaker Deck is the best way to share presentations online. Simply upload your s
 
 __Spotify:__ https://spotify.com/
 
-Auf Spotify findest du deinen Sound.
+Spotify is a digital music service that gives you access to millions of songs.
 
 ---
 
 __Spotlightr:__ https://spotlightr.com
 
-Spotlightr is a professional video hosting solution with a sophisticated suite of video marketing tools that helps businesses grow with video.
+
 
 ---
 
@@ -1478,7 +1484,7 @@ Create and share interactive reports, presentations, personal stories, and more.
 
 __SwitcherStudio:__ https://www.switcherstudio.com/
 
-Livestream directly to Facebook, YouTube, LinkedIn, Twitch, or the platform of your choice with Switcher's easy to use live video production software.
+Switcher is a livestreaming app that allows you to stream directly to the platform of your choice. Switcher's livestreaming software makes it easy to use live video production software on any iOS device.
 
 ---
 
@@ -1574,7 +1580,7 @@ __Twitter:__ https://www.twitter.com/
 
 __TypeCast:__ https://typecast.ai
 
-Find the best online voice over for your scripts from over 100 text to speech AI voice actors.
+The online AI voice generator that can turn your text into life-like speech. Over 300+ hyper-realistic voices. Create your content just the way you want it!
 
 ---
 
@@ -1598,7 +1604,7 @@ University of Cambridge map and directory
 
 __UnivParis1.Pod:__ https://mediatheque.univ-paris1.fr/
 
- Bienvenue sur mediatheque.univ-paris1.fr !  Cette médiathèque vous permet de consulter, déposer et indexer des contenus audios et vidéos en vue de l…
+ Bienvenue sur mediatheque.univ-paris1.fr !  Cette plateforme de vidéos permet de consulter, déposer et indexer des contenus audios et vidéos pour le…
 
 ---
 
@@ -1778,7 +1784,7 @@ Discover pro player POVs and more esport related content right here on Znipe Tv.
 
 __Zoomable:__ https://zoomable.ca/
 
-
+Create Zoomable Image Instantly! Upload now or create from your desktop.
 
 ---
 
