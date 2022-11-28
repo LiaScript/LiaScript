@@ -5,6 +5,7 @@ module Lia.Voice exposing
     )
 
 import List.Extra
+import Translations exposing (Lang(..))
 
 
 type alias Voice =
@@ -110,55 +111,88 @@ toVoice name lang female male =
         )
 
 
+startsWith : String -> Maybe String -> Bool
+startsWith voice =
+    Maybe.map (String.startsWith voice) >> Maybe.withDefault False
+
+
 getLang : String -> Maybe String
 getLang voice =
     voices
-        |> List.Extra.find (\v -> v.male == Just voice || v.female == Just voice)
+        |> List.Extra.find (\v -> startsWith voice v.male || startsWith voice v.female)
         |> Maybe.map .lang
 
 
-getVoiceFromLang : String -> Bool -> Maybe String
+getVoiceFromLang : String -> Maybe Bool -> Maybe String
 getVoiceFromLang lang male =
     voices
         |> List.Extra.find (\v -> v.lang == lang)
         |> Maybe.andThen (getVoice male)
 
 
-getVoice : Bool -> ResponsiveVoice -> Maybe String
+getVoice : Maybe Bool -> ResponsiveVoice -> Maybe String
 getVoice male voice =
     case ( male, voice.male, voice.female ) of
-        ( True, Just maleVoice, _ ) ->
+        ( Just True, Just maleVoice, _ ) ->
             Just maleVoice
 
-        ( True, Nothing, Just femaleVoice ) ->
+        ( Just True, Nothing, Just femaleVoice ) ->
             Just femaleVoice
 
-        ( False, _, Just femaleVoice ) ->
+        ( Just False, _, Just femaleVoice ) ->
             Just femaleVoice
 
-        ( False, Just maleVoice, Nothing ) ->
+        ( Just False, Just maleVoice, Nothing ) ->
             Just maleVoice
 
-        ( _, Nothing, Nothing ) ->
+        ( Nothing, Just maleVoice, _ ) ->
+            Just maleVoice
+
+        ( Nothing, _, Just femaleVoice ) ->
+            Just femaleVoice
+
+        _ ->
             voice.default
 
 
-isMale : String -> Bool
-isMale =
-    String.split " "
-        >> List.reverse
-        >> List.head
-        >> Maybe.map ((==) "Male")
-        >> Maybe.withDefault False
+isMale : String -> Maybe Bool
+isMale voice =
+    case String.split " " voice of
+        [ _, "Male" ] ->
+            Just True
+
+        [ _, "Female" ] ->
+            Just False
+
+        _ ->
+            Nothing
 
 
+{-|
+
+    getVoiceFor "Russian Female" ( "en", "en" )
+    --> Just { translated = False, lang = "ru", name = "Russian Female" }
+
+    getVoiceFor "Russian Female" ( "en", "de" )
+    --> Just { translated = False, lang = "ru", name = "Russian Female" }
+
+    getVoiceFor "US English Male" ( "en", "en" )
+    --> Just { translated = False, lang = "en", name = "US English Male" }
+
+    getVoiceFor "US English Male" ( "en", "de" )
+    --> Just { translated = True, lang = "de", name = "Deutsch Male" }
+
+-}
 getVoiceFor : String -> ( String, String ) -> Maybe Voice
 getVoiceFor voice ( langOld, langNew ) =
     if langOld == langNew then
         -- Nothing has changed
         Just
-            { translated = True
-            , lang = langOld
+            { translated = False
+            , lang =
+                voice
+                    |> getLang
+                    |> Maybe.withDefault langOld
             , name = voice
             }
 
@@ -173,6 +207,9 @@ getVoiceFor voice ( langOld, langNew ) =
         -- the voice
         Just
             { translated = False
-            , lang = langOld
+            , lang =
+                voice
+                    |> getLang
+                    |> Maybe.withDefault langNew
             , name = voice
             }

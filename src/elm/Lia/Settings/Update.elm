@@ -43,15 +43,15 @@ type Toggle
     | SupportMenu
     | TranslateWithGoogle
     | Tooltips
+    | PreferBrowserTTS
 
 
 update :
-    Maybe { title : String, comment : Inlines }
-    -> Maybe Int
+    Maybe { title : String, comment : Inlines, effectID : Maybe Int }
     -> Msg
     -> Settings
     -> Return Settings Msg sub
-update main effectID msg model =
+update main msg model =
     case msg of
         Handle event ->
             case Event.destructure event of
@@ -63,13 +63,30 @@ update main effectID msg model =
                 _ ->
                     case event.service of
                         "tts" ->
-                            no_log Nothing
-                                { model
-                                    | speaking =
-                                        event
-                                            |> Service.TTS.decode
-                                            |> (==) Service.TTS.Start
-                                }
+                            no_log Nothing <|
+                                case Service.TTS.decode event of
+                                    Service.TTS.Start ->
+                                        { model | speaking = True }
+
+                                    Service.TTS.Stop ->
+                                        { model | speaking = False }
+
+                                    Service.TTS.BrowserTTS support ->
+                                        let
+                                            tts =
+                                                model.tts
+                                        in
+                                        { model | tts = { tts | isBrowserSupported = support } }
+
+                                    Service.TTS.ResponsiveVoiceTTS support ->
+                                        let
+                                            tts =
+                                                model.tts
+                                        in
+                                        { model | tts = { tts | isResponsiveVoiceSupported = support } }
+
+                                    _ ->
+                                        model
 
                         _ ->
                             log Nothing model
@@ -97,7 +114,8 @@ update main effectID msg model =
                             Service.TTS.cancel
 
                         else
-                            effectID
+                            main
+                                |> Maybe.andThen .effectID
                                 |> Maybe.map Service.TTS.readFrom
                                 |> Maybe.withDefault Event.none
                     )
@@ -174,6 +192,18 @@ update main effectID msg model =
                      }
                         |> Service.Share.link
                     )
+
+        Toggle PreferBrowserTTS ->
+            let
+                tts =
+                    model.tts
+
+                newPreference =
+                    not tts.preferBrowser
+            in
+            { model | tts = { tts | preferBrowser = newPreference } }
+                |> Return.val
+                |> Return.batchEvent (Service.TTS.preferBrowser newPreference)
 
         Toggle TranslateWithGoogle ->
             { model

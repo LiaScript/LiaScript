@@ -138,6 +138,9 @@ update main sound msg model =
                                     |> Return.val
                                     |> Return.batchEvent (Service.Console.warn info)
 
+                            _ ->
+                                Return.val model
+
                     ( Just "playback", id, ( "start", _ ) ) ->
                         Return.val { model | speaking = Just id }
 

@@ -1,6 +1,15 @@
 import log from '../log'
-
+import EasySpeech from 'easy-speech'
 import '../types/responsiveVoice'
+
+enum Gender {
+  Female,
+  Male,
+  Unknown,
+}
+
+var useBrowserTTS = false
+var browserVoices = {}
 
 var firstSpeak = true
 
@@ -11,16 +20,33 @@ const SETTINGS = 'settings'
 export const Service = {
   PORT: 'tts',
 
+  easySpeechSettings: null,
+
   init: function (elmSend_: Lia.Send) {
+    elmSend = elmSend_
+
     setTimeout(function () {
       firstSpeak = false
+
+      if (window.responsiveVoice) {
+        sendEnabledTTS('responsiveVoiceTTS')
+      }
 
       window.LIA.playback = function (event: Lia.Event) {
         playback(event)
       }
     }, 2000)
 
-    elmSend = elmSend_
+    this.easySpeechSettings = EasySpeech.detect()
+    EasySpeech.init()
+      .then((e) => {
+        useBrowserTTS = true
+
+        sendEnabledTTS('browserTTS')
+      })
+      .catch((e) => {
+        console.warn(e)
+      })
   },
 
   mute: function () {
@@ -60,6 +86,10 @@ export const Service = {
         break
       }
 
+      case 'browserTTS': {
+        useBrowserTTS = event.message.param ? true : false
+        break
+      }
       default:
         log.warn('(Service TTS) unknown message =>', event)
     }
@@ -73,69 +103,29 @@ function playback(event: Lia.Event) {
   const voice = event.message.param.voice
   const lang = event.message.param.lang
 
-  speak(
-    text,
-    voice,
-    lang,
-    function () {
-      event.message.cmd = 'start'
-      event.message.param = undefined
-      sendReply(event)
-    },
-    function () {
-      event.message.cmd = 'stop'
-      event.message.param = undefined
-      sendReply(event)
-    },
-    function (e: any) {
-      event.message.cmd = 'error'
-      event.message.param = e.toString()
-      sendReply(event)
-
-      console.warn('TTS playback failed:', e.toString())
-    }
-  )
+  speak(text, voice, lang, event)
 }
 
 function read(event: Lia.Event) {
   let element = document.getElementsByClassName(event.message.param)
-  let voice = element[0].getAttribute('data-voice') || 'default'
-  let lang = element[0].getAttribute('data-lang') || 'en'
 
-  let text = ''
+  if (element.length) {
+    let voice = element[0].getAttribute('data-voice') || 'default'
+    let lang = element[0].getAttribute('data-lang') || 'en'
 
-  for (let i = 0; i < element.length; i++) {
-    text += (element[i] as HTMLElement).innerText || element[i].textContent
-  }
+    let text = ''
 
-  // This is used to clean up effect numbers, which are marked by a \b
-  // \b(1.)\b is not visible to the user within the browser
-  text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
+    for (let i = 0; i < element.length; i++) {
+      text += (element[i] as HTMLElement).innerText || element[i].textContent
+    }
 
-  if (text !== '' && element[0]) {
-    speak(
-      text,
-      voice,
-      lang,
-      function () {
-        //event.track[0][0] = SETTINGS
-        event.message.cmd = 'start'
-        event.message.param = undefined
-        sendReply(event)
-      },
-      function () {
-        //event.track[0][0] = SETTINGS
-        event.message.cmd = 'stop'
-        event.message.param = undefined
-        sendReply(event)
-      },
-      function (e: any) {
-        //event.track[0][0] = SETTINGS
-        event.message.cmd = 'error'
-        event.message.param = e.toString()
-        sendReply(event)
-      }
-    )
+    // This is used to clean up effect numbers, which are marked by a \b
+    // \b(1.)\b is not visible to the user within the browser
+    text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
+
+    if (text !== '' && element[0]) {
+      speak(text, voice, lang, event)
+    }
   }
 }
 
@@ -145,8 +135,22 @@ function sendReply(event: Lia.Event) {
   }
 }
 
+function sendEnabledTTS(system: 'responsiveVoiceTTS' | 'browserTTS') {
+  sendReply({
+    reply: true,
+    track: [[SETTINGS, 0]],
+    service: 'tts',
+    message: {
+      cmd: system,
+      param: true,
+    },
+  })
+}
+
 export function inject(key: string) {
   if (typeof key === 'string') {
+    useBrowserTTS = false
+
     setTimeout(function () {
       const script = document.createElement('script')
       script.src =
@@ -157,29 +161,170 @@ export function inject(key: string) {
 
       script.onload = () => {
         window.responsiveVoice.init()
+        sendEnabledTTS('responsiveVoiceTTS')
       }
     }, 250)
   }
 }
 
 function cancel() {
-  if (window.responsiveVoice) window.responsiveVoice.cancel()
+  try {
+    EasySpeech.cancel()
+  } catch (e) {}
+
+  if (window.responsiveVoice) {
+    window.responsiveVoice.cancel()
+  }
 }
 
-function speak(
-  text: string,
-  voice: string,
-  lang: string,
-  onstart?: () => void,
-  onend?: () => void,
-  onerror?: (_: any) => void
-) {
+function speak(text: string, voice: string, lang: string, event: Lia.Event) {
+  if (useBrowserTTS) {
+    const syncVoice = getVoice(lang, voice)
+
+    // there was a voice
+    if (syncVoice) {
+      easySpeak(text, syncVoice, event)
+    }
+    // try responsive-voice
+    else if (window.responsiveVoice) {
+      responsiveSpeak(text, voice, event)
+    }
+    // if everything fails get the first voice from the browser
+    // and use it as the default voice
+    else {
+      const defaultVoice = getDefaultVoice()
+
+      if (defaultVoice) {
+        // store as default for the next run
+        browserVoices[toKey(lang, voice)] = defaultVoice
+
+        easySpeak(text, defaultVoice, event)
+      } else {
+        event.message.cmd = 'ERROR'
+        event.message.param = 'no TTS support'
+        sendReply(event)
+      }
+    }
+  } else if (window.responsiveVoice) {
+    responsiveSpeak(text, voice, event)
+  }
+}
+
+function easySpeak(text: string, syncVoice, event) {
+  EasySpeech.speak({
+    text: text,
+    voice: syncVoice,
+    start: function () {
+      event.message.cmd = 'start'
+      event.message.param = 'browser'
+      sendReply(event)
+    },
+    end: function () {
+      event.message.cmd = 'stop'
+      event.message.param = 'browser'
+      sendReply(event)
+    },
+    error: function (e: any) {
+      event.message.cmd = 'error'
+      event.message.param = e.toString()
+      sendReply(event)
+
+      console.warn('TTS playback failed:', e.toString())
+    },
+  })
+}
+
+function responsiveSpeak(text: string, voice: string, event: Lia.Event) {
   if (window.responsiveVoice)
     window.responsiveVoice.speak(text, voice, {
-      onstart: onstart,
-      onend: onend,
-      onerror: onerror,
+      onstart: function () {
+        event.message.cmd = 'start'
+        event.message.param = 'browser'
+        sendReply(event)
+      },
+
+      onend: function () {
+        event.message.cmd = 'stop'
+        event.message.param = 'browser'
+        sendReply(event)
+      },
+
+      onerror: function (e: any) {
+        event.message.cmd = 'error'
+        event.message.param = e.toString()
+        sendReply(event)
+
+        console.warn('TTS playback failed:', e.toString())
+      },
     })
+}
+
+function getDefaultVoice() {
+  const voices = EasySpeech.voices()
+
+  if (!voices) {
+    return null
+  }
+
+  return voices[0]
+}
+
+function toKey(lang: string, voice: string) {
+  return lang + ' - ' + voice
+}
+
+function getVoice(lang: string, voice: string) {
+  const key = toKey(lang, voice)
+
+  if (browserVoices[key]) {
+    return browserVoices[key]
+  }
+
+  const voices = EasySpeech.voices()
+
+  if (!voices) {
+    return null
+  }
+
+  let gender = detectGender(voice)
+
+  let temp
+  let bestFit
+
+  for (let i = 0; i < voices.length; i++) {
+    temp = voices[i]
+
+    if (
+      temp.lang.startsWith(lang) &&
+      gender === detectGender(temp.name + temp.voiceURI)
+    ) {
+      bestFit = temp
+      break
+    }
+
+    if (temp.lang.startsWith(lang) && !bestFit) {
+      bestFit = temp
+    }
+  }
+
+  if (bestFit) {
+    browserVoices[key] = bestFit
+    return bestFit
+  }
+
+  return null
+}
+
+function detectGender(voice: string) {
+  if (voice.match(/female/i)) {
+    return Gender.Female
+  }
+
+  if (voice.match(/male/i)) {
+    return Gender.Male
+  }
+
+  return Gender.Unknown
 }
 
 export default Service

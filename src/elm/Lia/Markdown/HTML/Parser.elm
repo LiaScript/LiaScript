@@ -51,6 +51,18 @@ tag parser =
                         |> ignore whitespace
                         |> ignore (string ">")
 
+                else if name == "svg" then
+                    stringTill (string "</svg>")
+                        |> map
+                            (attributes
+                                |> List.map (\( key, value ) -> key ++ "=\"" ++ value ++ "\" ")
+                                |> List.append [ ">" ]
+                                |> (::) "<svg"
+                                |> String.concat
+                                |> String.append
+                            )
+                        |> map InnerHtml
+
                 else
                     succeed (Node name attributes)
                         |> ignore (regex "[ \\t]*>[ \\t]*\\n*")

@@ -21,7 +21,7 @@ import Lia.Section exposing (Section)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
-import Lia.Utils exposing (checkFalse, checkPersistency)
+import Lia.Utils exposing (checkPersistency)
 import Return exposing (Return)
 import Service.Console
 import Service.Database
@@ -384,9 +384,19 @@ update session msg model =
                         return
                             |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
-                ( UpdateSettings childMsg, Just sec ) ->
-                    model.settings
-                        |> Settings.update (Just { title = model.title, comment = model.definition.comment }) (Just sec.effect_model.visible) childMsg
+                ( UpdateSettings childMsg, sec ) ->
+                    Settings.update
+                        (Just
+                            { title = model.title
+                            , comment = model.definition.comment
+                            , effectID =
+                                sec
+                                    |> Maybe.map .effect_model
+                                    |> Maybe.map .visible
+                            }
+                        )
+                        childMsg
+                        model.settings
                         |> Return.mapValCmd (\v -> { model | settings = v }) UpdateSettings
 
                 ( TTSReplay bool, sec ) ->
