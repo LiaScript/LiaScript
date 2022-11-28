@@ -35,7 +35,12 @@ import Service.Script exposing (Eval)
 
 parse : Parser Context Parameters -> Parser Context Code
 parse attr =
-    sepBy1 Indent.check (attr |> andThen listing)
+    sepBy1 Indent.check
+        (maybe macro
+            |> keep attr
+            |> ignore (maybe macro)
+            |> andThen listing
+        )
         |> map Tuple.pair
         |> andMap
             (maybe Indent.check

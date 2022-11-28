@@ -276,7 +276,7 @@ paths, as defined in function `base`:
 -}
 parse : String -> Parser context ( String, String )
 parse url =
-    regex "[A-Za-z0-9_\\-]+"
+    regex "[A-Za-z0-9_\\-:]+"
         |> map (String.toLower >> Tuple.pair)
         |> ignore whitespace
         |> andMap tagAttributeValue

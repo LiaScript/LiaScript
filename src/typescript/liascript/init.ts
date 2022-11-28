@@ -30,6 +30,20 @@ export function initGlobals() {
     window.LIA.debug = false
   }
 
+  if (window.LIA.onReady === undefined) {
+    window.LIA.onReady = (param: any) => {
+      if (parent) {
+        parent.postMessage(
+          {
+            cmd: 'lia-ready',
+            param: param,
+          },
+          '*'
+        )
+      }
+    }
+  }
+
   init('send')
   init('playback')
   init('showFootnote')

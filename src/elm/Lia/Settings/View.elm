@@ -24,7 +24,7 @@ import Html.Events exposing (onClick, onInput)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
-import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
+import Lia.Settings.Types exposing (Action(..), Mode(..), Settings, TTS)
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
 import Lia.Sync.Types as Sync
 import Lia.Utils
@@ -85,6 +85,8 @@ viewSettings lang tabbable width settings =
     , viewSizing lang tabbable settings.font_size
     , divider
     , viewTooltips lang tabbable width settings.tooltips
+    , divider
+    , viewTTSSettings lang tabbable settings.tts
     ]
 
 
@@ -231,11 +233,39 @@ viewTooltips lang tabbable width enabled =
                 , A11y_Key.tabbable tabbable
                 ]
                 []
-            , Html.text "Tooltips"
+            , Html.text (Trans.confTooltip lang)
             ]
 
     else
         Html.text ""
+
+
+viewTTSSettings : Lang -> Bool -> TTS -> Html Msg
+viewTTSSettings lang tabbable tts =
+    Html.label
+        [ Attr.class "lia-label"
+        , A11y_Widget.hidden (not tabbable)
+        ]
+        [ Html.input
+            [ Attr.class "lia-checkbox"
+            , Attr.type_ "checkbox"
+            , Attr.checked <|
+                case ( tts.isBrowserSupported, tts.isResponsiveVoiceSupported ) of
+                    ( True, False ) ->
+                        True
+
+                    ( False, True ) ->
+                        False
+
+                    _ ->
+                        tts.preferBrowser
+            , onClick (Toggle PreferBrowserTTS)
+            , A11y_Key.tabbable tabbable
+            , Attr.disabled (not (tts.isBrowserSupported && tts.isResponsiveVoiceSupported))
+            ]
+            []
+        , Html.text (Trans.ttsPreferBrowser lang)
+        ]
 
 
 fontButton : Lang -> Bool -> Int -> Int -> String -> Html Msg

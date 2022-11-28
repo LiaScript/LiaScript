@@ -11,6 +11,7 @@ const defaultSettings: Lia.Settings = {
   lang: 'en',
 
   tooltips: false,
+  preferBrowserTTS: true,
 }
 
 export const Settings = {
