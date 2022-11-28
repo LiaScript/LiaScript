@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.23
+version:  0.10.24
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,11 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.24** (28/11/2022)
+
+- Upgraded oEmbed endpoints
+- Updated language modes for ace-editor
 
 **0.10.23** (28/11/2022)
 
