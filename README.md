@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.22
+version:  0.10.23
 language: en
 narrator: UK English Male
 
@@ -88,6 +88,7 @@ upper ones, but to enable the preview the Dev-Server is used for the previews in
 
 - [liascript-preview](https://marketplace.visualstudio.com/items?itemName=LiaScript.liascript-preview)
 - [liascript-snippets](https://marketplace.visualstudio.com/items?itemName=LiaScript.liascript-snippets)
+- [liascript-preview-web](https://marketplace.visualstudio.com/items?itemName=LiaScript.liascript-preview-web)
 
 
 ---
@@ -294,6 +295,37 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.23** (28/11/2022)
+
+- Improve (TTS):
+
+  - Responsive-Voice is now used as a fallback, if the browser does not have TTS support,
+    otherwise the browser TTS gets preferred. The user can still change the preference.
+
+  - It is now also allowed to define only the preferred language without being explicit about the gender.
+    LiaScript will select an existing voice.
+
+    ``` markdown
+          --{{1 English}}--
+    The first english voice will be selected for this comment.
+    ```
+
+  - Fixes: Minor fixes in TTS translations.
+
+- Improve Tooltips: Wikipedia like link previews do now interpret also relative urls correctly.
+
+- Improve Code-Parser: Code-blocks can now also be added via macros to projects.
+
+- improve HTML:
+
+  - Add styling for `kdb` keyboard tags.  
+  - Add simple svg-parsing
+  - Add : to allowed chars for HTML-parameters, this enables RDFa annotations
+
+- chore: Upgrade of parcel, sass, caniuse, typescript, ace-builds, echarts
+
+- Minor improvements and refactoring ...
 
 **0.10.22** (14/10/2022)
 
