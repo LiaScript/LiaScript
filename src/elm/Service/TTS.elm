@@ -4,6 +4,7 @@ module Service.TTS exposing
     , cancel
     , decode
     , playback
+    , preferBrowser
     , readFrom
     )
 
@@ -17,6 +18,8 @@ type Msg
     = Start
     | Stop
     | Error String
+    | BrowserTTS Bool
+    | ResponsiveVoiceTTS Bool
 
 
 {-| Simple abort of any talking without sending a response
@@ -64,6 +67,13 @@ playback { voice, lang, text } =
         |> event "playback"
 
 
+{-| Switch tts
+-}
+preferBrowser : Bool -> Event
+preferBrowser =
+    JE.bool >> event "browserTTS"
+
+
 decode : Event -> Msg
 decode e =
     case e.service of
@@ -82,6 +92,22 @@ decode e =
 
                         Err msg ->
                             Error <| JD.errorToString msg
+
+                "browserTTS" ->
+                    case JD.decodeValue JD.bool e.message.param of
+                        Ok support ->
+                            BrowserTTS support
+
+                        Err _ ->
+                            BrowserTTS False
+
+                "responsiveVoiceTTS" ->
+                    case JD.decodeValue JD.bool e.message.param of
+                        Ok support ->
+                            ResponsiveVoiceTTS support
+
+                        Err _ ->
+                            ResponsiveVoiceTTS False
 
                 unknown ->
                     Error <| "unknown cmd => " ++ unknown

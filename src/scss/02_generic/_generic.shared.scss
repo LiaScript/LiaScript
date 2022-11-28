@@ -68,3 +68,17 @@ textarea {
     cursor: not-allowed;
   }
 }
+
+kbd {
+  display: inline-block;
+  padding: 3px 5px;
+  font: 1rem var(--global-font-mono);
+  line-height: 1rem;
+  //color: rgb(var(--text-color));
+  vertical-align: middle;
+  background-color: rgba(var(--color-highlight), 0.15);
+  border: solid 1px rgba(var(--color-highlight-dark), 0.15);
+  // border-bottom-color: rgb(var(--color-border));
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgb(var(--color-border));
+}

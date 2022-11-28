@@ -26,6 +26,7 @@ export type Settings = {
   sound: boolean
   lang: Lang
   tooltips: boolean
+  preferBrowserTTS: boolean
 }
 
 type Mode = 'Slides' | 'Presentation' | 'Textbook'
