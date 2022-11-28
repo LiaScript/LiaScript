@@ -249,7 +249,16 @@ viewTTSSettings lang tabbable tts =
         [ Html.input
             [ Attr.class "lia-checkbox"
             , Attr.type_ "checkbox"
-            , Attr.checked tts.preferBrowser
+            , Attr.checked <|
+                case ( tts.isBrowserSupported, tts.isResponsiveVoiceSupported ) of
+                    ( True, False ) ->
+                        True
+
+                    ( False, True ) ->
+                        False
+
+                    _ ->
+                        tts.preferBrowser
             , onClick (Toggle PreferBrowserTTS)
             , A11y_Key.tabbable tabbable
             , Attr.disabled (not (tts.isBrowserSupported && tts.isResponsiveVoiceSupported))
