@@ -145,17 +145,19 @@ const Service = {
         if (param.definition.macro.font) {
           try {
             const r = document.querySelector<HTMLElement>(':root')
-            const rs = getComputedStyle(r)
-            const fontSettings = ['family', 'mono', 'headline']
+            if (r) {
+              const rs = getComputedStyle(r)
+              const fontSettings = ['family', 'mono', 'headline']
 
-            fontSettings.forEach((val) => {
-              const key = '--global-font-' + val
+              fontSettings.forEach((val) => {
+                const key = '--global-font-' + val
 
-              r.style.setProperty(
-                key,
-                rs.getPropertyValue(key) + ',' + param.definition.macro.font
-              )
-            })
+                r.style.setProperty(
+                  key,
+                  rs.getPropertyValue(key) + ',' + param.definition.macro.font
+                )
+              })
+            }
           } catch (e) {
             console.warn('could not load font')
           }
