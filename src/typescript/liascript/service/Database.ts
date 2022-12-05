@@ -102,16 +102,9 @@ const Service = {
 
         if (param.definition.onload !== '') {
           try {
-            // delay all scripts until onload gets executed
-            window.LIA.eventSemaphore++
-            Script.exec(
-              param.definition.onload +
-                '\n\nsetTimeout(function(){window.LIA.eventSemaphore--},100)',
-              350
-            )
+            Script.exec(param.definition.onload, 350)
           } catch (e) {
             console.warn('could not execute onload script', e)
-            window.LIA.eventSemaphore--
           }
         }
 
