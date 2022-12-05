@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.24
+version:  0.10.25
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,12 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.25** (05/12/2022)
+
+- improve: nested loading of macros, scripts can now load complex script-macro combinations
+- improve: font loading
+- fix: loading relative sources (js, css) now as blob files
 
 **0.10.24** (28/11/2022)
 

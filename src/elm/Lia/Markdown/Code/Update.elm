@@ -159,7 +159,7 @@ update sectionID scripts msg model =
                         "LIA: stop" ->
                             model
                                 |> maybe_project id stop
-                                |> Maybe.map2 (Event.updateVersion id) sectionID
+                                |> Maybe.map (Event.updateVersion id sectionID)
                                 |> maybe_update id model
 
                         "LIA: clear" ->
@@ -176,7 +176,7 @@ update sectionID scripts msg model =
                         _ ->
                             model
                                 |> maybe_project id (set_result False e)
-                                |> Maybe.map2 (Event.updateVersion id) sectionID
+                                |> Maybe.map (Event.updateVersion id sectionID)
                                 |> maybe_update id model
 
                 ( Just "project", id, ( "log", param ) ) ->
@@ -339,6 +339,9 @@ is_version_new sectionID idx return =
                 |> Return.replace return
                 |> Return.batchEvent (Event.updateAppend idx new_project repo_update sectionID_)
 
+        ( Nothing, Just ( new_project, _ ) ) ->
+            Return.replace return new_project
+
         _ ->
             return
 
@@ -477,5 +480,5 @@ load : Maybe Int -> Model -> Int -> Int -> Return Model msg sub
 load sectionID model id version =
     model
         |> maybe_project id (loadVersion version)
-        |> Maybe.map2 (Event.updateActive id) sectionID
+        |> Maybe.map (Event.updateActive id sectionID)
         |> maybe_update id model
