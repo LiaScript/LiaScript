@@ -62,25 +62,30 @@ store sectionID model =
             []
 
 
-updateVersion : Int -> Int -> Return Project msg sub -> Return Project msg sub
+updateVersion : Int -> Maybe Int -> Return Project msg sub -> Return Project msg sub
 updateVersion projectID sectionID return =
-    return
-        |> Return.batchEvent
-            ([ ( "version_active"
-               , JE.int return.value.version_active
-               )
-             , ( "log"
-               , Log.encode return.value.log
-               )
-             , ( "version"
-               , return.value.version
-                    |> Array.get return.value.version_active
-                    |> Maybe.map Json.fromVersion
-                    |> Maybe.withDefault JE.null
-               )
-             ]
-                |> update_ sectionID { cmd = "version", id = projectID }
-            )
+    case sectionID of
+        Just section ->
+            return
+                |> Return.batchEvent
+                    ([ ( "version_active"
+                       , JE.int return.value.version_active
+                       )
+                     , ( "log"
+                       , Log.encode return.value.log
+                       )
+                     , ( "version"
+                       , return.value.version
+                            |> Array.get return.value.version_active
+                            |> Maybe.map Json.fromVersion
+                            |> Maybe.withDefault JE.null
+                       )
+                     ]
+                        |> update_ section { cmd = "version", id = projectID }
+                    )
+
+        Nothing ->
+            return
 
 
 updateAppend : Int -> Project -> Repo -> Int -> Event
@@ -101,16 +106,21 @@ updateAppend projectID project repo_update sectionID =
         |> update_ sectionID { cmd = "append", id = projectID }
 
 
-updateActive : Int -> Int -> Return Project msg sub -> Return Project msg sub
+updateActive : Int -> Maybe Int -> Return Project msg sub -> Return Project msg sub
 updateActive projectID sectionID return =
-    return
-        |> Return.batchEvent
-            ([ ( "file", JE.array Json.fromFile return.value.file )
-             , ( "version_active", JE.int return.value.version_active )
-             , ( "log", Log.encode return.value.log )
-             ]
-                |> update_ sectionID { cmd = "active", id = projectID }
-            )
+    case sectionID of
+        Just section ->
+            return
+                |> Return.batchEvent
+                    ([ ( "file", JE.array Json.fromFile return.value.file )
+                     , ( "version_active", JE.int return.value.version_active )
+                     , ( "log", Log.encode return.value.log )
+                     ]
+                        |> update_ section { cmd = "active", id = projectID }
+                    )
+
+        Nothing ->
+            return
 
 
 flip_view : Maybe Int -> Int -> Int -> File -> List Event

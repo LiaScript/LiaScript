@@ -488,7 +488,7 @@ subHandle js json section =
         _ ->
             section
                 |> Return.val
-                |> Return.batchEvent (Service.Console.error "subHandle Problem")
+                |> Return.batchEvent (Service.Console.warn "subHandle Problem")
 
 
 handle : Sync.State -> Definition -> String -> Event -> Section -> Return Section Msg Msg

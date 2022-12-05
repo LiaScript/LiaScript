@@ -285,10 +285,23 @@ update main msg scripts =
                                     )
 
                 ( Just "sub", section, ( _, param ) ) ->
-                    case scripts |> Array.get section |> Maybe.andThen .result of
+                    let
+                        subParams =
+                            case Event.popWithId event of
+                                Just ( "sub", _, e ) ->
+                                    Event.encode e
+
+                                _ ->
+                                    param
+                    in
+                    case
+                        scripts
+                            |> Array.get section
+                            |> Maybe.andThen .result
+                    of
                         Just (IFrame lia) ->
                             lia
-                                |> main.handle scripts param
+                                |> main.handle scripts subParams
                                 |> Return.mapValCmd (\v -> Script.set section (\s -> { s | result = Just (IFrame v) }) scripts) (Sub section)
                                 |> Return.mapEvents "sub" section
 
