@@ -147,7 +147,7 @@ function loadAsBlob(
 
       const src = new URL(url)
 
-      if (filename !== src.pathname.split('/').slice(-1)[0]) {
+      if (filename && filename !== src.pathname.split('/').slice(-1)[0]) {
         throw new Error(
           `false redirect received "${filename}" instead of "${src.pathname}"`
         )
