@@ -353,13 +353,13 @@ update msg model =
                     |> Session.load
                 )
 
-        Load_Template_Result _ (Ok template) ->
+        Load_Template_Result url (Ok template) ->
             parsing
                 { model
                     | lia =
                         template
                             |> removeCR
-                            |> Lia.Script.add_imports model.lia
+                            |> Lia.Script.add_imports { model = model.lia, base = url }
                     , state =
                         case model.state of
                             Parsing b templates ->
