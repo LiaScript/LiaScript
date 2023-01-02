@@ -91,11 +91,12 @@ tagName =
 
 unscript : String -> Parser Context String
 unscript name =
-    if name == "script" then
-        fail ""
+    case name of
+        "script" ->
+            fail ""
 
-    else
-        succeed name
+        _ ->
+            succeed name
 
 
 closingTag : String -> Parser Context ()
