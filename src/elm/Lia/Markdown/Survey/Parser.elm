@@ -29,7 +29,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Parser as Block
 import Lia.Markdown.Quiz.Block.Types as BlockTypes
 import Lia.Markdown.Quiz.Parser exposing (maybeJS)
-import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..), analyseType)
+import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..), analysisType)
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
@@ -58,7 +58,7 @@ toVector : Bool -> List ( String, Inlines ) -> Type
 toVector bool definition =
     definition
         |> List.map Tuple.first
-        |> analyseType
+        |> analysisType
         |> Vector bool definition
 
 
