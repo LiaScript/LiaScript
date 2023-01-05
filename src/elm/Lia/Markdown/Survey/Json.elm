@@ -18,7 +18,6 @@ import Lia.Markdown.Survey.Types
         , Survey
         , Type(..)
         , Vector
-        , analysisType
         )
 
 

@@ -1,7 +1,9 @@
 module Lia.Markdown.Json.Encode exposing (..)
 
 import Json.Encode as JE
+import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Json as HTML
+import Lia.Markdown.HTML.Types exposing (Node)
 import Lia.Markdown.Inline.Json.Encode as Inline
 import Lia.Markdown.Quiz.Json as Quiz
 import Lia.Markdown.Survey.Json as Survey
@@ -123,11 +125,16 @@ encBlock b =
                     |> HTML.maybeEncParameters a
 
             HTML a node ->
-                [ ( "HTML", JE.object [ HTML.encode encBlock node ] ) ]
-                    |> HTML.maybeEncParameters a
+                htmlEncode a node
 
             HtmlComment ->
                 []
+
+
+htmlEncode : Parameters -> Node Block -> List ( String, JE.Value )
+htmlEncode a node =
+    [ HTML.encode encBlock node ]
+        |> HTML.maybeEncParameters a
 
 
 ol : ( String, Blocks ) -> JE.Value
