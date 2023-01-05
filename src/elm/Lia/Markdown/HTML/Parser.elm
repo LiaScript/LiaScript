@@ -12,91 +12,116 @@ import Combine
         , manyTill
         , map
         , maybe
-        , or
         , regex
         , string
         , succeed
         , whitespace
         , withState
         )
-import Lia.Markdown.HTML.Attributes as Params
-import Lia.Markdown.HTML.Types exposing (Node(..))
+import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
+import Lia.Markdown.HTML.Types as Tag exposing (Node(..))
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (stringTill)
 
 
 parse : Parser Context x -> Parser Context (Node x)
-parse =
-    tag >> or liaKeep
-
-
-tag : Parser Context x -> Parser Context (Node x)
-tag parser =
-    let
-        attr =
-            withState (.defines >> .base >> succeed)
-                |> andThen Params.parse
-    in
+parse parser =
     regex "[ \\t]*<[ \\t]*"
         |> keep tagName
         |> map Tuple.pair
         |> ignore whitespace
-        |> andMap (many attr)
-        |> andThen
-            (\( name, attributes ) ->
-                if isVoidElement name then
-                    succeed (Node name attributes [])
-                        |> ignore whitespace
-                        |> ignore (maybe (string "/"))
-                        |> ignore whitespace
-                        |> ignore (string ">")
-
-                else if name == "svg" then
-                    stringTill (string "</svg>")
-                        |> map
-                            (attributes
-                                |> List.map (\( key, value ) -> key ++ "=\"" ++ value ++ "\" ")
-                                |> List.append [ ">" ]
-                                |> (::) "<svg"
-                                |> String.concat
-                                |> String.append
-                            )
-                        |> map InnerHtml
-
-                else
-                    succeed (Node name attributes)
-                        |> ignore (regex "[ \\t]*>[ \\t]*\\n*")
-                        |> andMap
-                            (manyTill
-                                (parser |> ignore (regex "[\\n]*"))
-                                (closingTag name)
-                            )
-            )
+        |> andMap (many attrParser)
+        |> andThen (tag parser)
 
 
-liaKeep : Parser Context (Node x)
-liaKeep =
-    string "<lia-keep>"
-        |> keep (stringTill (string "</lia-keep>"))
-        |> map InnerHtml
+attrParser : Parser Context ( String, String )
+attrParser =
+    (.defines >> .base >> succeed)
+        |> withState
+        |> andThen Params.parse
 
 
-tagName : Parser Context String
+tag : Parser Context x -> ( Tag.Type, Parameters ) -> Parser Context (Node x)
+tag parser ( tagType, attributes ) =
+    case tagType of
+        Tag.HtmlNode name ->
+            succeed (Node name attributes)
+                |> ignore (regex "[ \\t]*>[ \\t]*\\n*")
+                |> andMap
+                    (manyTill
+                        (parser |> ignore (regex "[\\n]*"))
+                        (closingTag name)
+                    )
+
+        Tag.HtmlVoidNode name ->
+            succeed (Node name attributes [])
+                |> ignore whitespace
+                |> ignore (maybe (string "/"))
+                |> ignore whitespace
+                |> ignore (string ">")
+
+        Tag.WebComponent name ->
+            stringTill (closingTag name)
+                |> map (toStringNode name attributes)
+                |> map InnerHtml
+
+        Tag.LiaKeep ->
+            whitespace
+                |> ignore (string ">")
+                |> keep (stringTill (closingTag "lia-keep"))
+                |> map InnerHtml
+
+
+toStringNode : String -> Parameters -> String -> String
+toStringNode name attributes tagBody =
+    "<"
+        ++ name
+        ++ " "
+        ++ (attributes
+                |> List.map (\( key, value ) -> key ++ "=\"" ++ value ++ "\"")
+                |> String.join " "
+           )
+        ++ ">"
+        ++ tagBody
+        ++ "</"
+        ++ name
+        ++ ">"
+
+
+tagName : Parser Context Tag.Type
 tagName =
     "\\w+(\\-\\w+)*"
         |> regex
         |> map String.toLower
-        |> andThen unscript
+        |> andThen toTag
 
 
-unscript : String -> Parser Context String
-unscript name =
+toTag : String -> Parser Context Tag.Type
+toTag name =
     case name of
         "script" ->
             fail ""
 
+        "lia-keep" ->
+            succeed Tag.LiaKeep
+
+        "svg" ->
+            -- SVG and web-components are handled equally, since elm cannot directly
+            -- show SVGs at the moment ... later this might change if there is a tighter
+            -- integration between LiaScript and SVG
+            succeed (Tag.WebComponent name)
+
         _ ->
-            succeed name
+            succeed
+                (if String.contains "-" name then
+                    Tag.WebComponent name
+
+                 else if isVoidElement name then
+                    Tag.HtmlVoidNode name
+
+                 else
+                    Tag.HtmlNode name
+                )
 
 
 closingTag : String -> Parser Context ()
@@ -116,14 +141,6 @@ closingTag name =
     regex "[ \\t\\n]*</[ \\t]*"
         |> keep chompName
         |> ignore (regex "[ \\t\\n]*>")
-
-
-
--- webcomponents
--- isWebComponent : String -> Bool
--- isWebComponent =
---    String.contains "-"
--- Void elements
 
 
 isVoidElement : String -> Bool

@@ -1,5 +1,6 @@
 module Lia.Markdown.HTML.Types exposing
     ( Node(..)
+    , Type(..)
     , decode
     , encode
     , getContent
@@ -14,6 +15,13 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters)
 type Node content
     = Node String Parameters (List content)
     | InnerHtml String
+
+
+type Type
+    = WebComponent String
+    | HtmlNode String
+    | HtmlVoidNode String
+    | LiaKeep
 
 
 getContent : Node content -> List content
