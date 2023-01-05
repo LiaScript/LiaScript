@@ -340,7 +340,7 @@ view_block config block =
 
         Effect attr e ->
             e.content
-                |> List.map (view_block config)
+                |> viewBlocks config
                 |> Effect.block config.main config.section.effect_model attr e
 
         BulletList attr list ->
@@ -360,7 +360,7 @@ view_block config block =
             viewQuote config attr quote
 
         HTML attr node ->
-            HTML.view Html.div (view_block config) attr node
+            viewHTMLBlock config attr node
 
         Code code ->
             code
@@ -442,6 +442,16 @@ view_block config block =
 
         HtmlComment ->
             Html.text ""
+
+
+viewBlocks : Config Msg -> List Block -> List (Html Msg)
+viewBlocks config =
+    List.map (view_block config)
+
+
+viewHTMLBlock : Config Msg -> Parameters -> Node Block -> Html Msg
+viewHTMLBlock config attr node =
+    HTML.view Html.div (view_block config) attr node
 
 
 scriptView : (Inlines -> List (Html Msg)) -> ( Maybe Int, Html Msg ) -> Html Msg

@@ -19,6 +19,7 @@ import Lia.Markdown.Effect.Script.View as JS
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
+import Lia.Markdown.HTML.Types exposing (Node)
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Config as Config exposing (Config)
 import Lia.Markdown.Inline.Multimedia exposing (website)
@@ -41,26 +42,51 @@ viewer config =
     List.map (view config)
 
 
+viewRecursion : Config sub -> Inline -> Html (Msg sub)
+viewRecursion =
+    view
+
+
 view : Config sub -> Inline -> Html (Msg sub)
 view config element =
     case element of
+        -- Short cuts without recursion
         Chars e [] ->
             Html.text e
 
+        Bold (Chars e []) attr ->
+            Html.strong (annotation "lia-bold" attr) [ Html.text e ]
+
+        Italic (Chars e []) attr ->
+            Html.em (annotation "lia-italic" attr) [ Html.text e ]
+
+        Strike (Chars e []) attr ->
+            Html.s (annotation "lia-strike" attr) [ Html.text e ]
+
+        Underline (Chars e []) attr ->
+            Html.u (annotation "lia-underline" attr) [ Html.text e ]
+
+        Superscript (Chars e []) attr ->
+            Html.sup (annotation "lia-superscript" attr) [ Html.text e ]
+
+        -- recursive elements
+        Chars e attr ->
+            view config (Container [ Chars e [] ] attr)
+
         Bold e attr ->
-            Html.strong (annotation "lia-bold" attr) [ view config e ]
+            Html.strong (annotation "lia-bold" attr) [ viewRecursion config e ]
 
         Italic e attr ->
-            Html.em (annotation "lia-italic" attr) [ view config e ]
+            Html.em (annotation "lia-italic" attr) [ viewRecursion config e ]
 
         Strike e attr ->
-            Html.s (annotation "lia-strike" attr) [ view config e ]
+            Html.s (annotation "lia-strike" attr) [ viewRecursion config e ]
 
         Underline e attr ->
-            Html.u (annotation "lia-underline" attr) [ view config e ]
+            Html.u (annotation "lia-underline" attr) [ viewRecursion config e ]
 
         Superscript e attr ->
-            Html.sup (annotation "lia-superscript" attr) [ view config e ]
+            Html.sup (annotation "lia-superscript" attr) [ viewRecursion config e ]
 
         Verbatim e attr ->
             Html.code
@@ -92,11 +118,11 @@ view config element =
 
         Container list attr ->
             list
-                |> List.map (view config)
+                |> viewer config
                 |> Html.span (Attr.style "left" "initial" :: toAttribute attr)
 
         IHTML node attr ->
-            HTML.view Html.span (view config) attr node
+            htmlView config attr node
 
         EInline e attr ->
             e.content
@@ -109,11 +135,13 @@ view config element =
         Symbol e attr ->
             view config (Container [ Symbol e [] ] attr)
 
-        Chars e attr ->
-            view config (Container [ Chars e [] ] attr)
-
         Formula mode_ e attr ->
             view config (Container [ Formula mode_ e [] ] attr)
+
+
+htmlView : Config sub -> Parameters -> Node Inline -> Html (Msg sub)
+htmlView config =
+    HTML.view Html.span (view config)
 
 
 toText : Config sub -> Inline -> Html (Msg sub)
@@ -150,15 +178,15 @@ toText config element =
 
         Container list _ ->
             list
-                |> List.map (toText config)
+                |> toTextList config
                 |> Html.span []
 
         IHTML node attr ->
-            HTML.view Html.span (toText config) attr node
+            toHtmlText config attr node
 
         EInline e _ ->
             e.content
-                |> List.map (toText config)
+                |> toTextList config
                 |> Effect.inline config [] e
 
         Script id attr ->
@@ -166,6 +194,16 @@ toText config element =
 
         _ ->
             Html.text ""
+
+
+toHtmlText : Config sub -> Parameters -> Node Inline -> Html (Msg sub)
+toHtmlText config =
+    HTML.view Html.span (toText config)
+
+
+toTextList : Config sub -> Inlines -> List (Html (Msg sub))
+toTextList config =
+    List.map (toText config)
 
 
 reduce : Config sub -> List Inline -> List (Html (Msg sub))
@@ -232,10 +270,15 @@ reduce_ element =
             reduce_ e
 
         Container list _ ->
-            Container (List.map reduce_ list) []
+            reduce_List list
 
         _ ->
             element
+
+
+reduce_List : Inlines -> Inline
+reduce_List list =
+    Container (List.map reduce_ list) []
 
 
 viewMedia : Config sub -> Inline -> Html (Msg sub)
