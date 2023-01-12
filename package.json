@@ -65,6 +65,7 @@
     "echarts-wordcloud": "^2.0.0",
     "elm": "^0.19.1-5",
     "elm-hot": "^1.1.6",
+    "elm-review": "^2.8.2",
     "elm-test": "^0.19.1-revision6",
     "eslint": "^7.32.0",
     "katex": "^0.13.24",
@@ -102,8 +103,5 @@
   },
   "directories": {
     "test": "tests"
-  },
-  "dependencies": {
-    "elm-review": "^2.8.2"
   }
 }
