@@ -50,9 +50,11 @@ export class Sync extends Base.Sync {
         .get(this.store)
         .on(function (data: { msg: string }, key: string) {
           try {
-            let event = Crypto.decode(data.msg)
+            const [token, event] = Crypto.decode(data.msg)
 
-            if (event) {
+            console.warn('SSSSSSSSSSSSSSS', event)
+
+            if (token != self.token && event != null) {
               self.rxEvent(event)
             }
           } catch (e) {
@@ -78,8 +80,10 @@ export class Sync extends Base.Sync {
         message = this.txEvent(message)
       }
 
+      console.warn('-----------------', message)
+
       this.gun.get(this.store).put({
-        msg: Crypto.encode(message),
+        msg: Crypto.encode([this.token, message]),
       })
     }
   }

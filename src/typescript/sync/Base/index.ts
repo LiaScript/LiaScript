@@ -82,7 +82,11 @@ export class Sync {
     this.cbConnection = cbConnection
     this.cbRelay = cbRelay
 
-    this.db = new CRDT(token)
+    const self = this
+    this.db = new CRDT(token, (event) => {
+      console.warn('UUUUU', event)
+      self.update()
+    })
   }
 
   /* to have a valid connection 3 things are required:
@@ -168,10 +172,16 @@ export class Sync {
   }
 
   update() {
-    this.sync('update', {
-      peers: this.db.getPeers(),
-      data: this.db.toJSON(),
-    })
+    try {
+      this.sync('update', {
+        peers: this.db.getPeers(),
+        data: this.db.toJSON(),
+      })
+
+      console.warn('DB-state:', this.db)
+    } catch (e) {
+      console.warn('UPDATE fucked up,', e)
+    }
   }
 
   /** __At first, make sure that the resource has not been loaded before!__ And
@@ -246,8 +256,51 @@ export class Sync {
         break
       }
 
+      case 'quiz': {
+        console.warn('SyncTX quiz:', event)
+
+        if (event.track?.[0][0] === 'quiz' && event.track?.[1][0] === 'id') {
+          this.db.addQuiz(
+            event.track[0][1],
+            event.track[1][1],
+            event.message.param
+          )
+        } else {
+          console.warn('SyncTX wrong event ->', event)
+        }
+
+        console.warn('DB-state:', this.db)
+
+        event.message.cmd = 'update'
+        event.message.param = this.db.encode()
+
+        break
+      }
+
+      case 'survey': {
+        console.warn('SyncTX quiz:', event)
+
+        if (event.track?.[0][0] === 'survey' && event.track?.[1][0] === 'id') {
+          this.db.addSurvey(
+            event.track[0][1],
+            event.track[1][1],
+            event.message.param
+          )
+        } else {
+          console.warn('SyncTX wrong event ->', event)
+        }
+
+        console.warn('DB-state:', this.db)
+
+        event.message.cmd = 'update'
+        event.message.param = this.db.encode()
+
+        break
+      }
+
       default: {
-        console.warn('unknown command:', event.message)
+        console.warn('SyncTX unknown command:', event.message)
+        console.warn('DB-state:', this.db)
       }
     }
 
@@ -256,7 +309,10 @@ export class Sync {
 
   rxEvent(event: Lia.Event) {
     switch (event.message.cmd) {
+      case 'update':
       case 'join': {
+        console.warn('sssssssssssssss')
+
         this.db.apply(event.message.param)
         this.update()
         break
@@ -269,7 +325,8 @@ export class Sync {
       }
 
       default: {
-        console.warn('unknown command:', event.message)
+        console.warn('SyncRX unknown command:', event.message)
+        console.warn('DB-state:', this.db)
       }
     }
   }

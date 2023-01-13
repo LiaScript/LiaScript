@@ -42,9 +42,7 @@ const Service = {
             event_.message.param = msg
             event_.reply = true
 
-            console.warn(event_)
-
-            elmSend(event_)
+            if (elmSend) elmSend(event_)
           }
 
           switch (event.message.param.backend) {

@@ -2,33 +2,34 @@ import * as Y from 'yjs'
 
 import * as State from './state'
 
-function encode(data: Uint8Array) {
-  return Array.from(data)
-}
-
-function decode(data: number[]) {
-  return Uint8Array.from(data)
-}
+import { encode, decode } from 'uint8-to-base64'
 
 const PEERS = 'peers'
-const QUIZ = 'q'
-const SURVEY = 's'
 const DB = 'DB'
+
+export const QUIZ = 'q'
+export const SURVEY = 's'
 
 export class CRDT {
   protected doc: Y.Doc
   protected db: Y.Map<any>
+  protected peers: Y.Map<any>
   protected length: number
+  protected peerID: string
 
-  constructor(peerID: string) {
+  constructor(peerID: string, callback: (event: any) => void) {
     this.doc = new Y.Doc()
+
+    this.doc.on('afterTransaction', callback)
 
     this.db = this.doc.getMap(DB)
     this.length = 0
 
-    const peers = new Y.Map()
-    peers.set(peerID, true)
-    this.db.set(PEERS, peers)
+    this.peers = this.doc.getMap(PEERS)
+    this.peers.set(peerID, true)
+    //this.db.set(PEERS, peers)
+
+    this.peerID = peerID
   }
 
   init(data: State.Vector) {
@@ -48,14 +49,17 @@ export class CRDT {
     console.warn('TODO: destroy')
   }
 
-  apply(update: number[]) {
+  apply(update: string) {
     Y.applyUpdate(this.doc, decode(update))
   }
 
   protected initMap(key: string, id: number, data: State.Data[]) {
+    let newID
+    let state
+
     for (let i = 0; i < data.length; i++) {
-      const newID = this.id(key, id, i)
-      const state = this.db.has(newID) ? this.db.get(newID) : new Y.Map()
+      newID = this.id(key, id, i)
+      state = this.db.has(newID) ? this.db.get(newID) : new Y.Map()
 
       for (const key in data[i]) {
         state.set(key, data[i][key])
@@ -65,13 +69,12 @@ export class CRDT {
   }
 
   toJSON(): State.Vector {
-    let data = this.db.toJSON()
-    let vector = []
+    let vector: State.Vector = []
 
     for (let i = 0; i < this.length; i++) {
       vector.push({
-        SURVEY: this.getAllObjects(SURVEY, i),
-        QUIZ: this.getAllObjects(QUIZ, i),
+        s: this.getAllObjects(SURVEY, i),
+        q: this.getAllObjects(QUIZ, i),
       })
     }
 
@@ -79,7 +82,7 @@ export class CRDT {
   }
 
   getPeers() {
-    const peers = this.db.get(PEERS).toJSON()
+    const peers = this.peers.toJSON()
 
     if (peers) {
       return Object.entries(peers)
@@ -108,15 +111,44 @@ export class CRDT {
     return this.db.get(this.id(key, id, i))
   }
 
-  getAllObjects(key: string, id: number) {
-    let vector = []
+  set(key: string, id: number, i: number, value: any) {
+    try {
+      this.db.set(this.id(key, id, i), value)
+    } catch (e) {
+      console.warn('sync db set:', e)
+    }
+  }
+
+  getAllObjects(key: string, id: number): any {
+    let vector: any[] = []
+    let obj: any
 
     for (let i = 0; this.has(key, id, i); i++) {
-      const obj = this.get(key, id, i)
+      obj = this.get(key, id, i)
 
       vector.push(obj.toJSON())
     }
 
     return vector
+  }
+
+  addQuiz(id: number, i: number, value: any) {
+    this.addRecord(QUIZ, id, i, value)
+  }
+
+  addSurvey(id: number, i: number, value: any) {
+    this.addRecord(SURVEY, id, i, value)
+  }
+
+  addRecord(key: string, id: number, i: number, value: any) {
+    let record = this.get(key, id, i)
+
+    if (record) {
+      record.set(this.peerID, value)
+    } else {
+      record = new Y.Map()
+      record.set(this.peerID, value)
+      this.set(key, id, i, record)
+    }
   }
 }
