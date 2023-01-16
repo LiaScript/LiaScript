@@ -184,7 +184,6 @@ title sync =
                 , icon "icon-person icon-sm" [ Attr.style "padding-right" "4px" ]
                 , sync.peers
                     |> Set.size
-                    |> (+) 1
                     |> String.fromInt
                     |> Html.text
                 , Html.text ")"
