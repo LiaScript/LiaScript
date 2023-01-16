@@ -21,7 +21,8 @@ export class Sync extends Base.Sync {
     } else {
       this.load(
         [
-          'https://cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/gun.min.js',
+          'https://cdn.jsdelivr.net/npm/gun/gun.js',
+          //'https://cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/gun.min.js',
           //'//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/axe.min.js',
           //'//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/sea.min.js',
           Crypto.url,
@@ -38,10 +39,12 @@ export class Sync extends Base.Sync {
       )
     }
 
-    if (ok && window.Gun) {
+    const id = this.uniqueID()
+
+    if (ok && window.Gun && id) {
       this.gun = window.Gun({ peers: this.gunServer })
 
-      this.store = btoa(this.uniqueID())
+      this.store = btoa(id)
 
       Crypto.init(this.password)
 
@@ -52,10 +55,12 @@ export class Sync extends Base.Sync {
           try {
             const [token, event] = Crypto.decode(data.msg)
 
-            console.warn('SSSSSSSSSSSSSSS', event)
-
             if (token != self.token && event != null) {
-              self.rxEvent(event)
+              const response = self.rxEvent(event)
+
+              if (response) {
+                self.publish(response)
+              }
             }
           } catch (e) {
             console.warn('GunDB', e.message)
@@ -71,6 +76,8 @@ export class Sync extends Base.Sync {
     this.publish(null)
     this.publish(event)
 
+    console.warn('DISCONNECT', event)
+
     delete this.gun
   }
 
@@ -79,8 +86,6 @@ export class Sync extends Base.Sync {
       if (message != null) {
         message = this.txEvent(message)
       }
-
-      console.warn('-----------------', message)
 
       this.gun.get(this.store).put({
         msg: Crypto.encode([this.token, message]),
