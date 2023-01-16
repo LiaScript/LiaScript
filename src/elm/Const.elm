@@ -94,4 +94,4 @@ urlLiascriptCourse =
 -}
 gunDB_ServerURL : String
 gunDB_ServerURL =
-    "https://lia-gun.herokuapp.com/gun"
+    "https://peer.wallie.io/gun"

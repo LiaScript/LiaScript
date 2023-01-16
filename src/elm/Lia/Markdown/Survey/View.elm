@@ -26,7 +26,7 @@ import Lia.Markdown.Survey.Model
 import Lia.Markdown.Survey.Sync as Sync exposing (Sync, sync)
 import Lia.Markdown.Survey.Types
     exposing
-        ( Analyse(..)
+        ( Analysis(..)
         , State(..)
         , Survey
         , Type(..)
@@ -133,8 +133,8 @@ viewTextSync config lines syncData survey =
             Html.div [] [ survey ]
 
 
-viewVectorSync : Config sub -> Analyse -> List ( String, Inlines ) -> Maybe (List Sync) -> Html msg -> Html msg
-viewVectorSync config analyse questions syncData survey =
+viewVectorSync : Config sub -> Analysis -> List ( String, Inlines ) -> Maybe (List Sync) -> Html msg -> Html msg
+viewVectorSync config analyze questions syncData survey =
     case
         syncData
             |> Maybe.andThen (Sync.vector (List.map Tuple.first questions))
@@ -145,7 +145,7 @@ viewVectorSync config analyse questions syncData survey =
         Just data ->
             Html.div []
                 [ survey
-                , case analyse of
+                , case analyze of
                     Categorical ->
                         vectorBlockCategory config data
 

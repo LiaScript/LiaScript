@@ -16,7 +16,7 @@ encode encoder node =
             ( "Node"
             , JE.object
                 [ ( "tag", JE.string tag )
-                , ( "a", encParameters a )
+                , encParameters a
                 , ( "content", JE.list encoder content )
                 ]
             )
@@ -25,16 +25,17 @@ encode encoder node =
             ( "InnerHtml", JE.string code )
 
 
-encParameters : Parameters -> JE.Value
+encParameters : Parameters -> ( String, JE.Value )
 encParameters annotation =
-    case annotation of
+    ( "a"
+    , case annotation of
         [] ->
             JE.null
 
         _ ->
             annotation
-                |> List.map (\( key, value ) -> JE.list JE.string [ key, value ])
-                |> JE.list identity
+                |> JE.list (\( key, value ) -> JE.list JE.string [ key, value ])
+    )
 
 
 maybeEncParameters : Parameters -> List ( String, JE.Value ) -> List ( String, JE.Value )
@@ -43,4 +44,4 @@ maybeEncParameters a =
         identity
 
     else
-        (::) ( "a", encParameters a )
+        (::) (encParameters a)

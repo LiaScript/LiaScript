@@ -1,6 +1,6 @@
 {
   "name": "@liascript/editor",
-  "version": "1.1.0--0.10.25",
+  "version": "1.1.0--0.10.26",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -60,11 +60,12 @@
     "ace-builds": "^1.13.1",
     "caniuse-lite": "^1.0.30001436",
     "dexie": "^2.0.4",
-    "easy-speech": "^1.2.0",
+    "easy-speech": "^1.2.1",
     "echarts": "^5.4.0",
     "echarts-wordcloud": "^2.0.0",
     "elm": "^0.19.1-5",
     "elm-hot": "^1.1.6",
+    "elm-review": "^2.8.2",
     "elm-test": "^0.19.1-revision6",
     "eslint": "^7.32.0",
     "katex": "^0.13.24",
@@ -102,8 +103,5 @@
   },
   "directories": {
     "test": "tests"
-  },
-  "dependencies": {
-    "elm-review": "^2.8.2"
   }
 }

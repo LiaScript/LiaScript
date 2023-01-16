@@ -35,7 +35,7 @@ import Lia.Section as Section exposing (Section, Sections)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
-import Lia.Utils exposing (checkFalse, checkPersistency)
+import Lia.Utils exposing (checkFalse, checkPersistency, urlBasePath)
 import Lia.View
 import List.Extra
 import Return exposing (Return)
@@ -172,9 +172,9 @@ getSectionNumberFrom index fragment =
 This is only used to add imports, which might require to load additional
 resources and to add additional macros.
 -}
-add_imports : Model -> String -> Model
-add_imports model course_url =
-    case Parser.parse_definition model.url course_url of
+add_imports : { model : Model, base : String } -> String -> Model
+add_imports { model, base } code =
+    case Parser.parse_definition (urlBasePath base |> Maybe.withDefault "") code of
         Ok ( definition, _ ) ->
             add_todos definition model
 

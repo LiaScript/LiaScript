@@ -9,9 +9,20 @@ import * as helper from '../../helper'
  */
 var backup = Object()
 
-function findProvider(link: string): string | undefined {
-  link = link.replace('https://', '')
-  link = link.replace('http://', '')
+/**
+ * Handle providers according to the spec:
+ *
+ * <https://oembed.com/>
+ *
+ * The only difference is, that it will previously lookup the internal provider
+ * list and if there is no proper result, it will grab the website, if possible,
+ * and extract the provider URL from the link-tag within the header.
+ *
+ * @param url
+ * @returns
+ */
+async function findProvider(url: string): Promise<string | undefined> {
+  const link = url.replace('https://', '').replace('http://', '')
 
   const candidate = endpoints.find((endpoint: Endpoint) => {
     const [url, schema] = endpoint
@@ -27,6 +38,37 @@ function findProvider(link: string): string | undefined {
 
   if (candidate) {
     return 'https://' + candidate[0]
+  } else {
+    // try to grab the provider from the website
+    return fetchProviderFromWebsite(url)
+  }
+}
+
+async function fetchProviderFromWebsite(
+  url: string,
+  withoutProxy: boolean = true
+): Promise<string | undefined> {
+  try {
+    const res = await fetch(url)
+    const text = await res.text()
+
+    // find the oembed service as defined here:
+    // https://oembed.com
+    const match = text.match(
+      /<link.+?type="(application\/)?json\+oembed".+?(\/?[ \\n\\t]*>)/gi
+    )
+
+    if (match?.[0]) {
+      const href = match[0].match(/.*?href="(.*?)"/i)
+
+      return href?.[1]
+    }
+  } catch (err) {
+    // if the first loading fails, a second attempt is done with a
+    // proxy server in between
+    if (withoutProxy) {
+      return fetchProviderFromWebsite(helper.PROXY + url, false)
+    }
   }
 }
 
@@ -43,14 +85,14 @@ async function fetchEmbed(
   url = params.maxwidth ? `${url}&maxwidth=${params.maxwidth}` : url
   url = params.maxheight ? `${url}&maxheight=${params.maxheight}` : url
 
-  let res, json
+  let res: Response
+  let json: any
 
   if (prefix) {
     url = prefix + encodeURIComponent(url)
 
     res = await fetch(url)
-    json = await res.text()
-    json = JSON.parse(json)
+    json = JSON.parse(await res.text())
     json = JSON.parse(json.contents)
   } else {
     res = await fetch(url)
@@ -71,7 +113,7 @@ export async function extract(link: string, params: Params) {
     return backup[link][JSON.stringify(params)]
   }
 
-  const p = findProvider(link)
+  const p = await findProvider(link)
 
   if (!p) {
     throw new Error(`No provider found with given url "${link}"`)
