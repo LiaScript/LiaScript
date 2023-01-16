@@ -10,6 +10,15 @@ const DB = 'DB'
 export const QUIZ = 'q'
 export const SURVEY = 's'
 
+function sanitize(data: object, whitelist: string[]) {
+  return whitelist.reduce(
+    (result, key) =>
+      data[key] !== undefined
+        ? Object.assign(result, { [key]: data[key] })
+        : result,
+    {}
+  )
+}
 export class CRDT {
   protected doc: Y.Doc
   protected db: Y.Map<any>
