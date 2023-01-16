@@ -99,8 +99,6 @@ const Service = {
       default: {
         if (sync) {
           sync.publish(event)
-        } else {
-          log.warn('(Service Sync) unknown message =>', event.message)
         }
       }
     }
