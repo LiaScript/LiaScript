@@ -275,7 +275,17 @@ synchronize model json =
     { model
         | sections =
             json
-                |> JD.decodeValue (JD.field "data" (JD.list Section.syncDecoder))
+                |> JD.decodeValue
+                    (JD.field "data" (JD.list Section.syncDecoder)
+                        |> JD.andThen
+                            (\list ->
+                                if List.isEmpty list then
+                                    JD.fail "empty lists cannot be state vectors"
+
+                                else
+                                    JD.succeed list
+                            )
+                    )
                 |> Result.map (List.map2 Section.syncUpdate (Array.toList model.sections) >> Array.fromList)
                 |> Result.withDefault model.sections
         , sync =
