@@ -17,6 +17,7 @@ module Lia.Utils exposing
     , string2Color
     , toEscapeString
     , toJSstring
+    , urlBasePath
     )
 
 import Accessibility.Key as A11y_Key
@@ -315,3 +316,21 @@ checkPersistency =
     Dict.get "persistent"
         >> Maybe.map checkFalse
         >> Maybe.withDefault False
+
+
+{-| Cut of the file from an URL-string and return only the base:
+
+    urlBasePath "http://xy.com/path/file.me" == Just "http://xy.com/path/"
+
+    urlBasePath somefileonly.md == Nothing
+
+-}
+urlBasePath : String -> Maybe String
+urlBasePath =
+    String.split "/"
+        >> List.Extra.unconsLast
+        >> Maybe.map
+            (Tuple.second
+                >> String.join "/"
+                >> (\path -> path ++ "/")
+            )

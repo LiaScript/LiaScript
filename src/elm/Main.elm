@@ -11,6 +11,7 @@ import Json.Encode as JE
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Script
 import Lia.Sync.Types as Sync
+import Lia.Utils as Utils
 import Model exposing (Model, State(..))
 import Session exposing (Screen, Session)
 import Update
@@ -132,7 +133,10 @@ init flags url key =
                     |> get_base
                 )
                 query
-                (get_origin (Just query))
+                (query
+                    |> Utils.urlBasePath
+                    |> Maybe.withDefault ""
+                )
                 url.fragment
                 |> model { courseUrl | query = Just query } Loading
                 |> getIndex query
@@ -162,7 +166,10 @@ init flags url key =
                         flags.sync
                         (get_base courseUrl)
                         query
-                        (get_origin courseUrl.query)
+                        (courseUrl.query
+                            |> Maybe.andThen Utils.urlBasePath
+                            |> Maybe.withDefault ""
+                        )
                         fragment
                         |> model courseUrl Loading
                         |> getIndex query
@@ -176,7 +183,10 @@ init flags url key =
                         flags.sync
                         (get_base courseUrl)
                         room.course
-                        (get_origin (Just room.course))
+                        (room.course
+                            |> Utils.urlBasePath
+                            |> Maybe.withDefault ""
+                        )
                         fragment
                         |> model courseUrl Loading
                         |> openSync room
@@ -195,30 +205,6 @@ init flags url key =
                 url.fragment
                 |> model courseUrl Idle
                 |> Update.initIndex
-
-
-{-| Cut of the file from an URL-string and return only the base:
-
-    get_origin (Just "http://xy.com/path/file.me") == "http://xy.com/path/"
-
-    get_origin Nothing == ""
-
--}
-get_origin : Maybe String -> String
-get_origin query =
-    case query of
-        Just url ->
-            (url
-                |> String.split "/"
-                |> List.reverse
-                |> List.drop 1
-                |> List.reverse
-                |> String.join "/"
-            )
-                ++ "/"
-
-        Nothing ->
-            ""
 
 
 {-| **@private:** Make sure that the URL is modified accordingly.

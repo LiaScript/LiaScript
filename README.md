@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.25
+version:  0.10.26
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,20 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.26** (16/01/2023)
+
+- improve: The content of web-components is not parsed anymore by the LiaScript parser, which in most
+  cases will not require a `<lia-keep>` to handle the body appropriately.
+- fix: The default GunDB server has been updated to a working one, since some of the servers, hosted
+  on heroku, do not run anymore.
+- improve: oEmbed - provider list is updated and the service discovery now checks also the resource
+  website for oEmbed information.
+- fix: Easy-Speech now works also on KaiOS and the LiaScript interpreter will not crash anymore on
+  feature-Phones, based on text-to-speech output.
+- fix: Bug on Terminal resize, which required to shrink the terminal before its height could be increased.
+- improve: Loading of some JSON values and all view functions are now tail-recursive.
+- fix: import of relative resources now works also on GitHub.
 
 **0.10.25** (05/12/2022)
 

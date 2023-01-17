@@ -172,14 +172,14 @@ info supported about =
             ( GUN _, _ ) ->
                 [ link "GunDB" "https://gun.eco"
                 , Html.text " is a small, easy, and fast protocol for syncing data across various users."
-                , Html.text " It currently uses our free relay server hosted at "
+                , Html.text " You can use the default relay server hosted at "
                 , link Const.gunDB_ServerURL Const.gunDB_ServerURL
                 , Html.text ". Or, if you don't trust us ;-) you can also use one of the free hosted relay servers listed "
                 , link "here" "https://github.com/amark/gun/wiki/volunteer.dht"
                 , Html.text ". Multiple peers have to be separated by commas."
                 , Html.text " The implementation of this classroom can be found "
                 , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/Gun"
-                , Html.text ". We do not store or log any data, it is just an easy method for transmitting information to all connected users."
+                , Html.text ". No data is stored or logged, it is just an easy method for transmitting information to all connected users."
                 ]
 
             ( Jitsi, _ ) ->

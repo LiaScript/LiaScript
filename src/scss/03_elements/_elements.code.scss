@@ -65,6 +65,9 @@
     &__output {
       background-color: rgb(var(--lia-anthracite));
       margin: 0;
+      // when this value is changed, also the maxHeight value in
+      //   src/typescript/webcomponents/terminal.ts
+      // has to be changed accordingly
       max-height: 20rem;
       resize: vertical;
       overflow-y: auto;

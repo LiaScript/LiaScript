@@ -1,6 +1,8 @@
 module Lia.Markdown.Inline.Json.Encode exposing (encode)
 
+import Html.Attributes exposing (name)
 import Json.Encode as JE
+import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Json exposing (encParameters)
 import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
@@ -17,58 +19,48 @@ encInline element =
         case element of
             Chars str a ->
                 [ ( "Chars", JE.string str )
-                , ( "a", encParameters a )
+                , encParameters a
                 ]
 
             Symbol str a ->
                 [ ( "Symbol", JE.string str )
-                , ( "a", encParameters a )
+                , encParameters a
                 ]
 
             Bold x a ->
-                [ ( "Bold", encInline x )
-                , ( "a", encParameters a )
-                ]
+                baseEncoder "Bold" x a
 
             Italic x a ->
-                [ ( "Italic", encInline x )
-                , ( "a", encParameters a )
-                ]
+                baseEncoder "Italic" x a
 
             Strike x a ->
-                [ ( "Strike", encInline x )
-                , ( "a", encParameters a )
-                ]
+                baseEncoder "Strike" x a
 
             Underline x a ->
-                [ ( "Underline", encInline x )
-                , ( "a", encParameters a )
-                ]
+                baseEncoder "Underline" x a
 
             Superscript x a ->
-                [ ( "Superscript", encInline x )
-                , ( "a", encParameters a )
-                ]
+                baseEncoder "Superscript" x a
 
             Verbatim str a ->
                 [ ( "Verbatim", JE.string str )
-                , ( "a", encParameters a )
+                , encParameters a
                 ]
 
             Formula head body a ->
                 [ ( "Formula", JE.string head )
                 , ( "body", JE.string body )
-                , ( "a", encParameters a )
+                , encParameters a
                 ]
 
             Ref ref a ->
                 [ ( "Ref", encReference ref )
-                , ( "a", encParameters a )
+                , encParameters a
                 ]
 
             FootnoteMark str a ->
                 [ ( "FootnoteMark", JE.string str )
-                , ( "a", encParameters a )
+                , encParameters a
                 ]
 
             EInline e a ->
@@ -82,23 +74,35 @@ encInline element =
                 , ( "playback", JE.bool e.playback )
                 , ( "voice", JE.string e.voice )
                 , ( "id", JE.int e.id )
-                , ( "a", encParameters a )
+                , encParameters a
                 ]
 
             Container list a ->
                 [ ( "Container", encode list )
-                , ( "a", encParameters a )
+                , encParameters a
                 ]
 
             IHTML node a ->
-                [ ( "IHTML", HTML.encode encInline node )
-                , ( "a", encParameters a )
-                ]
+                htmlEncoder node a
 
             Script id a ->
                 [ ( "Script", JE.int id )
-                , ( "a", encParameters a )
+                , encParameters a
                 ]
+
+
+baseEncoder : String -> Inline -> Parameters -> List ( String, JE.Value )
+baseEncoder name content attr =
+    [ ( name, encInline content )
+    , encParameters attr
+    ]
+
+
+htmlEncoder : HTML.Node Inline -> Parameters -> List ( String, JE.Value )
+htmlEncoder node attr =
+    [ ( "IHTML", HTML.encode encInline node )
+    , encParameters attr
+    ]
 
 
 encReference : Reference -> JE.Value
