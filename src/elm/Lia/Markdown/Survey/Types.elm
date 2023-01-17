@@ -1,11 +1,11 @@
 module Lia.Markdown.Survey.Types exposing
-    ( Analyse(..)
+    ( Analysis(..)
     , Element
     , State(..)
     , Survey
     , Type(..)
     , Vector
-    , analyseType
+    , analysisType
     , toString
     )
 
@@ -86,17 +86,17 @@ type alias Survey =
 type Type
     = Text Int
     | Select (List Inlines)
-    | Vector Bool (List ( String, Inlines )) Analyse
+    | Vector Bool (List ( String, Inlines )) Analysis
     | Matrix Bool (List Inlines) (List String) (List Inlines)
 
 
-type Analyse
+type Analysis
     = Categorical
     | Quantitative
 
 
-analyseType : List String -> Analyse
-analyseType ids =
+analysisType : List String -> Analysis
+analysisType ids =
     if List.all isNumber ids then
         Quantitative
 
