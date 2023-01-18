@@ -134,9 +134,9 @@ update sync globals msg section =
                             |> Tuple.second
                             |> JD.decodeValue (JD.array Code_.decoder)
                     of
-                        Ok newState ->
+                        Ok state ->
                             section
-                                |> Section.syncCode newState
+                                |> Section.syncCode state
                                 |> Return.val
 
                         _ ->
@@ -145,72 +145,34 @@ update sync globals msg section =
 
                 "quiz" ->
                     case
-                        ( section.sync.quiz
-                        , event
+                        event
                             |> Event.message
                             -- TODO
                             |> Tuple.second
                             |> Container.decode Quiz_.decoder
-                        )
                     of
-                        ( old, Ok new ) ->
-                            case Container.union old new of
-                                ( True, state ) ->
-                                    section
-                                        |> Section.syncQuiz state
-                                        |> Return.val
-                                        |> Return.batchEvent
-                                            (state
-                                                |> Container.encode Quiz_.encoder
-                                                |> Service.Sync.publish "quiz"
-                                                |> Event.pushWithId "local" section.id
-                                            )
+                        Ok state ->
+                            section
+                                |> Section.syncQuiz state
+                                |> Return.val
 
-                                ( False, state ) ->
-                                    section
-                                        |> Section.syncQuiz state
-                                        |> Return.val
-
-                        --( Nothing, Ok state ) ->
-                        --    section
-                        --        |> Section.syncQuiz state
-                        --        |> Return.val
                         _ ->
                             section
                                 |> Return.val
 
                 "survey" ->
                     case
-                        ( section.sync.survey
-                        , event
+                        event
                             |> Event.message
                             -- TODO
                             |> Tuple.second
                             |> Container.decode Survey_.decoder
-                        )
                     of
-                        ( old, Ok new ) ->
-                            case Container.union old new of
-                                ( True, state ) ->
-                                    section
-                                        |> Section.syncSurvey state
-                                        |> Return.val
-                                        |> Return.batchEvent
-                                            (state
-                                                |> Container.encode Survey_.encoder
-                                                |> Service.Sync.publish "survey"
-                                                |> Event.pushWithId "local" section.id
-                                            )
+                        Ok state ->
+                            section
+                                |> Section.syncSurvey state
+                                |> Return.val
 
-                                ( False, state ) ->
-                                    section
-                                        |> Section.syncSurvey state
-                                        |> Return.val
-
-                        --( Nothing, Ok state ) ->
-                        --    section
-                        --        |> Section.syncSurvey state
-                        --        |> Return.val
                         _ ->
                             section
                                 |> Return.val
