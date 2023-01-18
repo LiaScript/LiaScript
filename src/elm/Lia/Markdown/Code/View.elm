@@ -3,7 +3,7 @@ module Lia.Markdown.Code.View exposing (view)
 import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
-import Array
+import Array exposing (Array)
 import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -13,6 +13,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Log as Log exposing (Log)
+import Lia.Markdown.Code.Sync exposing (Sync)
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Model)
 import Lia.Markdown.Code.Update exposing (Msg(..))
@@ -32,8 +33,8 @@ import Translations
         )
 
 
-view : Lang -> String -> Model -> Code -> Html Msg
-view lang theme model code =
+view : { lang : Lang, theme : String, model : Model, code : Code, sync : Array Sync } -> Html Msg
+view { lang, theme, model, code, sync } =
     case code of
         Highlight id_1 ->
             Array.get id_1 model.highlight
@@ -70,12 +71,14 @@ view lang theme model code =
                                 |> List.indexedMap (viewCode True lang theme project.running errors id_1)
                                 |> List.map2 (\a e -> e a) project.attr
                             )
-                            [ view_control lang
-                                id_1
-                                project.version_active
-                                (Array.length project.version)
-                                project.running
-                                (project.terminal /= Nothing)
+                            [ view_control
+                                { lang = lang
+                                , id = id_1
+                                , version_active = project.version_active
+                                , version_count = Array.length project.version
+                                , running = project.running
+                                , terminal = project.terminal /= Nothing
+                                }
                             , Html.div
                                 [ Attr.class "lia-code-terminal"
                                 , A11y_Role.log
@@ -399,8 +402,8 @@ scroll_to_end lines_ =
         |> Attr.property "scrollTop"
 
 
-view_control : Lang -> Int -> Int -> Int -> Bool -> Bool -> Html Msg
-view_control lang idx version_active version_count running terminal =
+view_control : { lang : Lang, id : Int, version_active : Int, version_count : Int, running : Bool, terminal : Bool } -> Html Msg
+view_control { lang, id, version_active, version_count, running, terminal } =
     let
         forward =
             running || (version_active == 0)
@@ -423,7 +426,7 @@ view_control lang idx version_active version_count running terminal =
                 ( True, True ) ->
                     btnIcon
                         { title = codeRunning lang
-                        , msg = Just <| Stop idx
+                        , msg = Just <| Stop id
                         , tabbable = True
                         , icon = "icon-stop-circle"
                         }
@@ -432,11 +435,23 @@ view_control lang idx version_active version_count running terminal =
                 _ ->
                     btnIcon
                         { title = codeExecute lang
-                        , msg = Just <| Eval idx
+                        , msg = Just <| Eval id
                         , tabbable = True
                         , icon = "icon-compile-circle"
                         }
                         [ Attr.class "lia-btn--transparent" ]
+            , btnIcon
+                { title = "switch to Sync"
+                , tabbable = True
+                , msg =
+                    if not backward then
+                        Just <| Last id
+
+                    else
+                        Nothing
+                , icon = "icon-sync"
+                }
+                [ Attr.class "lia-btn--transparent" ]
             ]
         , Html.div [ Attr.class "lia-code-control__version" ]
             [ btnIcon
@@ -444,7 +459,7 @@ view_control lang idx version_active version_count running terminal =
                 , tabbable = not forward
                 , msg =
                     if not forward then
-                        Just <| First idx
+                        Just <| First id
 
                     else
                         Nothing
@@ -456,7 +471,7 @@ view_control lang idx version_active version_count running terminal =
                 , tabbable = not forward
                 , msg =
                     if not forward then
-                        Just <| Load idx (version_active - 1)
+                        Just <| Load id (version_active - 1)
 
                     else
                         Nothing
@@ -472,7 +487,7 @@ view_control lang idx version_active version_count running terminal =
                 , tabbable = not backward
                 , msg =
                     if not backward then
-                        Just <| Load idx (version_active + 1)
+                        Just <| Load id (version_active + 1)
 
                     else
                         Nothing
@@ -484,7 +499,7 @@ view_control lang idx version_active version_count running terminal =
                 , tabbable = not backward
                 , msg =
                     if not backward then
-                        Just <| Last idx
+                        Just <| Last id
 
                     else
                         Nothing

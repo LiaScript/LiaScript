@@ -5,6 +5,7 @@ module Lia.Section exposing
     , SubSection(..)
     , init
     , sync
+    , syncCode
     , syncDecoder
     , syncEncode
     , syncInit
@@ -17,6 +18,7 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
+import Lia.Markdown.Code.Sync as Code_
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
@@ -95,6 +97,7 @@ type alias Section =
 type alias Sync =
     { quiz : Container Quiz_.Sync
     , survey : Container Survey_.Sync
+    , code : Array Code_.Sync
     }
 
 
@@ -174,7 +177,11 @@ init seed id base =
     , definition = Nothing
     , footnotes = Footnote.init
     , footnote2show = Nothing
-    , sync = Sync Container.empty Container.empty
+    , sync =
+        { quiz = Container.empty
+        , survey = Container.empty
+        , code = Array.empty
+        }
     , persistent = Nothing
     , seed = seed + (10 * id)
     }
@@ -184,6 +191,9 @@ syncInit : String -> Section -> Sync
 syncInit id section =
     { quiz = Container.init id Quiz_.sync section.quiz_vector
     , survey = Container.init id Survey_.sync section.survey_vector
+
+    -- Code is one global text with updates, not single files to be updated separately
+    , code = Array.map (Code_.sync >> Maybe.withDefault Array.empty) section.code_model.evaluate
     }
 
 
@@ -192,14 +202,16 @@ syncEncode s =
     JE.object
         [ ( "q", Container.encode Quiz_.encoder s.quiz )
         , ( "s", Container.encode Survey_.encoder s.survey )
+        , ( "c", JE.array Code_.encoder s.code )
         ]
 
 
 syncDecoder : JD.Decoder Sync
 syncDecoder =
-    JD.map2 Sync
+    JD.map3 Sync
         (JD.field "q" (Container.decoder Quiz_.decoder))
         (JD.field "s" (Container.decoder Survey_.decoder))
+        (JD.field "c" (JD.array Code_.decoder))
 
 
 sync : String -> Section -> JE.Value
@@ -228,3 +240,12 @@ syncSurvey state section =
             section.sync
     in
     { section | sync = { localSync | survey = state } }
+
+
+syncCode : Array Code_.Sync -> Section -> Section
+syncCode state section =
+    let
+        localSync =
+            section.sync
+    in
+    { section | sync = { localSync | code = state } }

@@ -11,8 +11,10 @@ port module Lia.Markdown.Update exposing
     , updateScript
     )
 
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
+import Lia.Markdown.Code.Sync as Code_
 import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
@@ -124,6 +126,23 @@ update sync globals msg section =
 
         Sync event ->
             case event.message.cmd of
+                "code" ->
+                    case
+                        event
+                            |> Event.message
+                            -- TODO
+                            |> Tuple.second
+                            |> JD.decodeValue (JD.array Code_.decoder)
+                    of
+                        Ok newState ->
+                            section
+                                |> Section.syncCode newState
+                                |> Return.val
+
+                        _ ->
+                            section
+                                |> Return.val
+
                 "quiz" ->
                     case
                         ( section.sync.quiz

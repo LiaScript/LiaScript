@@ -5,10 +5,10 @@ import * as State from './state'
 import { encode, decode } from 'uint8-to-base64'
 
 const PEERS = 'peers'
-const DB = 'DB'
 
-export const QUIZ = 'q'
-export const SURVEY = 's'
+const QUIZ = 'q'
+const SURVEY = 's'
+const CODE = 'c'
 
 function sanitize(data: object, whitelist: string[]) {
   return whitelist.reduce(
@@ -39,6 +39,8 @@ export class CRDT {
   init(data: State.Vector) {
     this.length = Math.max(this.length, data.length)
 
+    console.warn('XXXXXXXXXXXXX', data)
+
     for (let i = 0; i < data.length; i++) {
       this.initMap(QUIZ, i, data[i][QUIZ])
       this.initMap(SURVEY, i, data[i][SURVEY])
@@ -68,19 +70,19 @@ export class CRDT {
     console.warn(this.peers.toJSON())
     console.warn('*********** STATE ***********')
     console.warn(this.doc.toJSON())
+    console.warn('*********** DATA ************')
+    console.warn(this.doc)
   }
 
   protected initMap(key: string, id: number, data: State.Data[]) {
     if (data.length === 0) {
-      this.getMap(key, id, 0)
+      // this.getMap(key, id, 0)
       return
     }
 
     let state
     for (let i = 0; i < data.length; i++) {
       state = this.getMap(key, id, i)
-
-      console.warn('SSSSSSSSSSSSSSSSSS', key, id, data)
 
       for (const identifier in data[i]) {
         state.set(identifier, data[i][key])
@@ -95,6 +97,7 @@ export class CRDT {
       vector.push({
         s: this.getAllObjects(SURVEY, i),
         q: this.getAllObjects(QUIZ, i),
+        c: [],
       })
     }
 
@@ -122,7 +125,7 @@ export class CRDT {
   }
 
   has(key: string, id: number, i: number) {
-    return Object.keys(this.getMap(key, id, i).toJSON()).length !== 0
+    return this.doc.toJSON()[this.id(key, id, i)] !== undefined
   }
 
   getMap(key: string, id: number, i: number): Y.Map<any> {
