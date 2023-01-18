@@ -84,7 +84,6 @@ export class Sync {
 
     const self = this
     this.db = new CRDT(token, (event) => {
-      console.warn('UUUUU', event)
       self.update()
     })
   }
@@ -177,10 +176,8 @@ export class Sync {
         peers: this.db.getPeers(),
         data: this.db.toJSON(),
       })
-
-      console.warn('DB-state:', this.db)
     } catch (e) {
-      console.warn('UPDATE fucked up,', e)
+      console.warn('Sync Update ->', e)
     }
   }
 
@@ -241,6 +238,9 @@ export class Sync {
 
   txEvent(event: Lia.Event) {
     switch (event.message.cmd) {
+      case 'update': {
+        break
+      }
       case 'join': {
         this.db.init(event.message.param)
         event.message.param = this.db.encode()
@@ -257,8 +257,6 @@ export class Sync {
       }
 
       case 'quiz': {
-        console.warn('SyncTX quiz:', event)
-
         if (event.track?.[0][0] === 'quiz' && event.track?.[1][0] === 'id') {
           this.db.addQuiz(
             event.track[0][1],
@@ -269,8 +267,6 @@ export class Sync {
           console.warn('SyncTX wrong event ->', event)
         }
 
-        console.warn('DB-state:', this.db)
-
         event.message.cmd = 'update'
         event.message.param = this.db.encode()
 
@@ -278,8 +274,6 @@ export class Sync {
       }
 
       case 'survey': {
-        console.warn('SyncTX quiz:', event)
-
         if (event.track?.[0][0] === 'survey' && event.track?.[1][0] === 'id') {
           this.db.addSurvey(
             event.track[0][1],
@@ -290,8 +284,6 @@ export class Sync {
           console.warn('SyncTX wrong event ->', event)
         }
 
-        console.warn('DB-state:', this.db)
-
         event.message.cmd = 'update'
         event.message.param = this.db.encode()
 
@@ -300,10 +292,10 @@ export class Sync {
 
       default: {
         console.warn('SyncTX unknown command:', event.message)
-        console.warn('DB-state:', this.db)
       }
     }
 
+    this.db.log()
     return event
   }
 
@@ -311,9 +303,10 @@ export class Sync {
     switch (event.message.cmd) {
       case 'update':
       case 'join': {
-        console.warn('sssssssssssssss')
-
-        this.db.apply(event.message.param)
+        if (this.db.apply(event.message.param)) {
+          event.message.param = this.db.encode()
+          return event
+        }
         this.update()
         break
       }
@@ -326,8 +319,9 @@ export class Sync {
 
       default: {
         console.warn('SyncRX unknown command:', event.message)
-        console.warn('DB-state:', this.db)
       }
     }
+
+    this.db.log()
   }
 }

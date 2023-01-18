@@ -21,7 +21,6 @@ function sanitize(data: object, whitelist: string[]) {
 }
 export class CRDT {
   protected doc: Y.Doc
-  protected db: Y.Map<any>
   protected peers: Y.Map<any>
   protected length: number
   protected peerID: string
@@ -31,13 +30,9 @@ export class CRDT {
 
     this.doc.on('afterTransaction', callback)
 
-    this.db = this.doc.getMap(DB)
     this.length = 0
-
     this.peers = this.doc.getMap(PEERS)
     this.peers.set(peerID, true)
-    //this.db.set(PEERS, peers)
-
     this.peerID = peerID
   }
 
@@ -58,22 +53,38 @@ export class CRDT {
     console.warn('TODO: destroy')
   }
 
-  apply(update: string) {
+  apply(update: string): boolean {
+    const before = Y.encodeStateAsUpdate(this.doc)
+
     Y.applyUpdate(this.doc, decode(update))
+
+    const after = Y.encodeStateAsUpdate(this.doc)
+
+    return JSON.stringify(before) != JSON.stringify(after)
+  }
+
+  log() {
+    console.warn('*********** PEERS ***********')
+    console.warn(this.peers.toJSON())
+    console.warn('*********** STATE ***********')
+    console.warn(this.doc.toJSON())
   }
 
   protected initMap(key: string, id: number, data: State.Data[]) {
-    let newID
+    if (data.length === 0) {
+      this.getMap(key, id, 0)
+      return
+    }
+
     let state
-
     for (let i = 0; i < data.length; i++) {
-      newID = this.id(key, id, i)
-      state = this.db.has(newID) ? this.db.get(newID) : new Y.Map()
+      state = this.getMap(key, id, i)
 
-      for (const key in data[i]) {
-        state.set(key, data[i][key])
+      console.warn('SSSSSSSSSSSSSSSSSS', key, id, data)
+
+      for (const identifier in data[i]) {
+        state.set(identifier, data[i][key])
       }
-      this.db.set(newID, state)
     }
   }
 
@@ -103,9 +114,7 @@ export class CRDT {
   }
 
   removePeer(peerID: string) {
-    const peers = this.db.get(PEERS)
-    peers.set(peerID, false)
-    this.db.set(PEERS, peers)
+    this.peers.set(peerID, false)
   }
 
   id(key: string, id1: number, id2: number) {
@@ -113,19 +122,11 @@ export class CRDT {
   }
 
   has(key: string, id: number, i: number) {
-    return this.db.has(this.id(key, id, i))
+    return Object.keys(this.getMap(key, id, i).toJSON()).length !== 0
   }
 
-  get(key: string, id: number, i: number) {
-    return this.db.get(this.id(key, id, i))
-  }
-
-  set(key: string, id: number, i: number, value: any) {
-    try {
-      this.db.set(this.id(key, id, i), value)
-    } catch (e) {
-      console.warn('sync db set:', e)
-    }
+  getMap(key: string, id: number, i: number): Y.Map<any> {
+    return this.doc.getMap(this.id(key, id, i))
   }
 
   getAllObjects(key: string, id: number): any {
@@ -133,8 +134,7 @@ export class CRDT {
     let obj: any
 
     for (let i = 0; this.has(key, id, i); i++) {
-      obj = this.get(key, id, i)
-
+      obj = this.getMap(key, id, i)
       vector.push(obj.toJSON())
     }
 
@@ -150,14 +150,7 @@ export class CRDT {
   }
 
   addRecord(key: string, id: number, i: number, value: any) {
-    let record = this.get(key, id, i)
-
-    if (record) {
-      record.set(this.peerID, value)
-    } else {
-      record = new Y.Map()
-      record.set(this.peerID, value)
-      this.set(key, id, i, record)
-    }
+    let record = this.getMap(key, id, i)
+    record.set(this.peerID, value)
   }
 }
