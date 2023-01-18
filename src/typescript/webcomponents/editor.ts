@@ -48,6 +48,11 @@ customElements.define(
     private _ariaLabel: string
     private model: {
       value: string
+      update: {
+        action: 'insert' | 'remove'
+        index: number
+        content: string
+      }
       theme: string
       mode: string
       shared: null | string
@@ -79,6 +84,11 @@ customElements.define(
 
       this.model = {
         value: '',
+        update: {
+          action: 'insert',
+          index: 0,
+          content: '',
+        },
         theme: '',
         mode: 'text',
         shared: null,
@@ -138,6 +148,12 @@ customElements.define(
         fontFamily: this.model.fontFamily,
       })
 
+      this.model.update = {
+        action: 'insert',
+        index: 1,
+        content: this.model.value,
+      }
+
       if (!this.model.showCursor) {
         this._editor.renderer.$cursorLayer.element.style.display = 'none'
       }
@@ -152,9 +168,18 @@ customElements.define(
 
       input.setAttribute('role', 'application')
       if (!this.model.readOnly) {
-        const runDispatch = helper.debounce(() => {
+        const runDispatch = helper.debounce((event: any) => {
           this.model.value = this._editor.getValue()
-          this.dispatchEvent(new CustomEvent('editorChanged'))
+          this.dispatchEvent(new CustomEvent('editorUpdate'))
+
+          this.model.update = {
+            action: event.action,
+            index: this._editor
+              .getSession()
+              .doc.positionToIndex(event.start, 0),
+            content: event.lines.join('\n'),
+          }
+          this.dispatchEvent(new CustomEvent('editorUpdateEvent'))
         })
 
         this._editor.on('change', runDispatch)
@@ -471,6 +496,24 @@ customElements.define(
         this.model.value = value
         this.setOption('value', value)
       }
+    }
+
+    get update(): {
+      action: 'insert' | 'remove'
+      index: number
+      content: string
+    } {
+      console.warn('WWWWWWWWWWWWWWWWWWWWWWW', this.model.update)
+
+      return this.model.update
+    }
+
+    set update(event: {
+      action: 'insert' | 'remove'
+      index: number
+      content: string
+    }) {
+      console.warn('Problem Ace: set update event =>', event)
     }
 
     get focusing() {

@@ -1,9 +1,11 @@
 module Lia.Markdown.Code.Editor exposing
-    ( annotations
+    ( Event
+    , annotations
     , editor
     , enableBasicAutocompletion
     , enableLiveAutocompletion
     , enableSnippets
+    , encode
     , extensions
     , firstLineNumber
     , focusing
@@ -13,6 +15,8 @@ module Lia.Markdown.Code.Editor exposing
     , maxLines
     , mode
     , onChange
+    , onChangeEvent
+    , onChangeEvent2
     , readOnly
     , showCursor
     , showGutter
@@ -31,6 +35,22 @@ import Json.Decode as JD
 import Json.Encode as JE
 
 
+type alias Event =
+    { action : String
+    , index : Int
+    , content : String
+    }
+
+
+encode : Event -> JE.Value
+encode event =
+    JE.object
+        [ ( "action", JE.string event.action )
+        , ( "index", JE.int event.index )
+        , ( "content", JE.string event.content )
+        ]
+
+
 editor : List (Html.Attribute msg) -> List (Html msg) -> Html msg
 editor attr =
     Attr.style "display" "block"
@@ -43,7 +63,26 @@ onChange msg =
     JD.string
         |> JD.at [ "target", "value" ]
         |> JD.map msg
-        |> Html.Events.on "editorChanged"
+        |> Html.Events.on "editorUpdate"
+
+
+onChangeEvent : (Event -> msg) -> Html.Attribute msg
+onChangeEvent msg =
+    JD.map3 Event
+        (JD.field "action" JD.string)
+        (JD.field "index" JD.int)
+        (JD.field "content" JD.string)
+        |> JD.at [ "target", "update" ]
+        |> JD.map msg
+        |> Html.Events.on "editorUpdateEvent"
+
+
+onChangeEvent2 : (JD.Value -> msg) -> Html.Attribute msg
+onChangeEvent2 msg =
+    JD.value
+        |> JD.at [ "target", "update" ]
+        |> JD.map msg
+        |> Html.Events.on "editorUpdateEvent"
 
 
 onFocus : msg -> Html.Attribute msg
