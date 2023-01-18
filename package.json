@@ -61,7 +61,7 @@
     "caniuse-lite": "^1.0.30001436",
     "dexie": "^2.0.4",
     "easy-speech": "^1.2.1",
-    "echarts": "^5.4.0",
+    "echarts": "^5.4.1",
     "echarts-wordcloud": "^2.0.0",
     "elm": "^0.19.1-5",
     "elm-hot": "^1.1.6",
