@@ -39,8 +39,6 @@ export class CRDT {
   init(data: State.Vector) {
     this.length = Math.max(this.length, data.length)
 
-    console.warn('XXXXXXXXXXXXX', data)
-
     for (let i = 0; i < data.length; i++) {
       this.initMap(QUIZ, i, data[i][QUIZ])
       this.initMap(SURVEY, i, data[i][SURVEY])
@@ -125,7 +123,7 @@ export class CRDT {
   }
 
   has(key: string, id: number, i: number) {
-    return this.doc.toJSON()[this.id(key, id, i)] !== undefined
+    return this.doc.share.has[this.id(key, id, i)] !== undefined
   }
 
   getMap(key: string, id: number, i: number): Y.Map<any> {
