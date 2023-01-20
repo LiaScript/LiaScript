@@ -46,10 +46,11 @@ customElements.define(
     private _editor: any
     private _focus: boolean
     private _ariaLabel: string
+    private blockUpdate: boolean
     private model: {
       value: string
       update: {
-        action: 'insert' | 'remove'
+        action: 'insert' | 'remove' | 'retain'
         index: number
         content: string
       }
@@ -78,14 +79,14 @@ customElements.define(
       super()
 
       ace.config.set('basePath', 'editor/')
-
+      this.blockUpdate = true
       this._focus = false
       this._ariaLabel = 'editor'
 
       this.model = {
         value: '',
         update: {
-          action: 'insert',
+          action: 'retain',
           index: 0,
           content: '',
         },
@@ -149,9 +150,9 @@ customElements.define(
       })
 
       this.model.update = {
-        action: 'insert',
-        index: 1,
-        content: this.model.value,
+        action: 'retain',
+        index: 0,
+        content: '',
       }
 
       if (!this.model.showCursor) {
@@ -172,6 +173,8 @@ customElements.define(
           this.model.value = this._editor.getValue()
           this.dispatchEvent(new CustomEvent('editorUpdate'))
 
+          const action = this.model.update.action
+
           this.model.update = {
             action: event.action,
             index: this._editor
@@ -179,7 +182,10 @@ customElements.define(
               .doc.positionToIndex(event.start, 0),
             content: event.lines.join('\n'),
           }
-          this.dispatchEvent(new CustomEvent('editorUpdateEvent'))
+
+          if (action !== 'retain') {
+            this.dispatchEvent(new CustomEvent('editorUpdateEvent'))
+          }
         })
 
         this._editor.on('change', runDispatch)
@@ -493,23 +499,23 @@ customElements.define(
 
     set value(value: string) {
       if (this.model.value !== value) {
+        this.model.update.action = 'retain'
+
         this.model.value = value
         this.setOption('value', value)
       }
     }
 
     get update(): {
-      action: 'insert' | 'remove'
+      action: 'insert' | 'remove' | 'retain'
       index: number
       content: string
     } {
-      console.warn('WWWWWWWWWWWWWWWWWWWWWWW', this.model.update)
-
       return this.model.update
     }
 
     set update(event: {
-      action: 'insert' | 'remove'
+      action: 'insert' | 'remove' | 'retain'
       index: number
       content: string
     }) {

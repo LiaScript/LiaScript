@@ -81,3 +81,13 @@ survey id =
 quiz : Int -> JE.Value -> Event
 quiz id =
     publish "quiz" >> Event.pushWithId "id" id
+
+
+code : Int -> Int -> JE.Value -> Event
+code id1 id2 msg =
+    [ ( "j", JE.int id2 )
+    , ( "msg", msg )
+    ]
+        |> JE.object
+        |> publish "code"
+        |> Event.pushWithId "id" id1

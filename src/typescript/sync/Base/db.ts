@@ -67,12 +67,14 @@ export class CRDT {
   }
 
   log() {
+    /*
     console.warn('*********** PEERS ***********')
     console.warn(this.peers.toJSON())
     console.warn('*********** STATE ***********')
     console.warn(this.doc.toJSON())
     console.warn('*********** DATA ************')
     console.warn(this.doc)
+    */
   }
 
   protected initMap(key: string, id: number, data: State.Data[]) {
@@ -199,6 +201,36 @@ export class CRDT {
       this.doc.clientID = 0
       code.insert(0, value)
       this.doc.clientID = backup
+    }
+  }
+
+  updateCode(
+    id: number,
+    i: number,
+    j: number,
+    msg: {
+      action: 'insert' | 'remove'
+      index: number
+      content: string
+    }
+  ) {
+    if (this.has(CODE, id, i, j)) {
+      const code = this.getText(CODE, id, i, j)
+
+      switch (msg.action) {
+        case 'insert': {
+          code.insert(msg.index, msg.content)
+
+          break
+        }
+        case 'remove': {
+          code.delete(msg.index, msg.content.length)
+          break
+        }
+        default: {
+          console.warn('Sync code, unknown action ->', msg)
+        }
+      }
     }
   }
 }

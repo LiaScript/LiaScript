@@ -290,6 +290,26 @@ export class Sync {
         break
       }
 
+      case 'code': {
+        if (event.track?.[0][0] === 'code' && event.track?.[1][0] === 'id') {
+          console.warn('**************************')
+          console.warn(event)
+
+          this.db.updateCode(
+            event.track[0][1],
+            event.track[1][1],
+            event.message.param.j,
+            event.message.param.msg
+          )
+
+          event.message.cmd = 'update'
+          event.message.param = this.db.encode()
+        } else {
+          console.warn('SyncTX wrong event ->', event)
+        }
+        break
+      }
+
       default: {
         console.warn('SyncTX unknown command:', event.message)
       }

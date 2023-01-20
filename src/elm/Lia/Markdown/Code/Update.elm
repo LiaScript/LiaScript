@@ -17,12 +17,14 @@ import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Return exposing (Return)
 import Service.Event as PEvent exposing (Event)
 import Service.Script as Script exposing (Eval)
+import Service.Sync as Sync
 
 
 type Msg
     = Eval Int
     | Stop Int
     | Update Int Int String
+    | Synchronize Int Int JE.Value
     | FlipView Code Int
     | FlipFullscreen Code Int
     | Load Int Int
@@ -31,6 +33,7 @@ type Msg
     | UpdateTerminal Int Terminal.Msg
     | Handle Event
     | Resize Code String
+    | ToggleSync Int
 
 
 handle : Event -> Msg
@@ -255,6 +258,23 @@ update sectionID scripts msg model =
                 |> maybe_project idx (update_terminal (Event.input idx) childMsg)
                 |> Maybe.map .value
                 |> maybe_update idx model
+
+        ToggleSync id ->
+            { model
+                | evaluate =
+                    CArray.setWhen id
+                        (model.evaluate
+                            |> Array.get id
+                            |> Maybe.map (\pro -> { pro | syncMode = not pro.syncMode })
+                        )
+                        model.evaluate
+            }
+                |> Return.val
+
+        Synchronize id1 id2 event ->
+            model
+                |> Return.val
+                |> Return.batchEvent (Sync.code id1 id2 event)
 
 
 onResize : Int -> String -> Array Project -> Array Project

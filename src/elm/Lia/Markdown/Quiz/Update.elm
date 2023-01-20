@@ -158,26 +158,6 @@ update sectionID scripts msg vector =
                         |> init (\i s -> execute i s.state)
                         |> doSync sectionID Nothing
 
-                {- |> (\ret ->
-                        case sync of
-                            Nothing ->
-                                ret
-
-                            Just sync_ ->
-                                let
-                                    ( vector_, events ) =
-                                        synchronize sync_ ret.value
-                                in
-                                vector_
-                                    |> Return.replace ret
-                                    |> Return.syncAppend events
-                   )
-                -}
-                {- Just ( "sync", Just section ) ->
-                   event
-                       |> Event.message
-                       |> syncUpdate vector section
-                -}
                 ( _, _, ( cmd, _ ) ) ->
                     vector
                         |> Return.val
@@ -217,60 +197,6 @@ clearOnLoad e =
 
         _ ->
             e
-
-
-
-{-
-   syncUpdate : Vector -> Int -> JE.Value -> Return Vector msg sub
-   syncUpdate vector id state =
-       case
-           ( Array.get id vector
-           , Container.decode Synchronization.decoder state
-           )
-       of
-           ( Just element, Ok sync ) ->
-               case Container.union element.sync sync of
-                   ( True, _ ) ->
-                       vector
-                           |> Return.val
-
-                   ( False, union ) ->
-                       vector
-                           |> Array.set id { element | sync = union }
-                           |> Return.val
-                           |> Return.sync (Event.initWithId "sync" id (Container.encode Synchronization.encoder union))
-
-           _ ->
-               Return.val vector
--}
-{-
-   syncSolution : Int -> Sync.Settings -> Return Element msg sub -> Return Element msg sub
-   syncSolution id sync ret =
-       case Synchronization.toState ret.value of
-           Just syncState ->
-               case Sync.insert sync syncState ret.value.sync of
-                   ( False, newSync ) ->
-                       ret
-                           |> Return.mapVal (\v -> { v | sync = newSync })
-                           |> Return.syncMsg id (Container.encode Synchronization.encoder newSync)
-
-                   _ ->
-                       ret
-
-           _ ->
-               ret
--}
-{-
-   synchronize : Sync.Settings -> Vector -> ( Vector, List Event )
-   synchronize sync vector =
-       vector
-           |> Array.indexedMap (\i -> Return.val >> syncSolution i sync)
-           |> Array.map (\ret -> ( ret.value, ret.synchronize ))
-           |> Array.toList
-           |> List.unzip
-           |> Tuple.mapSecond List.concat
-           |> Tuple.mapFirst Array.fromList
--}
 
 
 execute : Int -> State -> Script.Msg sub

@@ -55,6 +55,7 @@ type alias Project =
     , logSize : Maybe String
     , running : Bool
     , terminal : Maybe Terminal
+    , syncMode : Bool
     , attr : List Parameters
     }
 
@@ -125,6 +126,7 @@ initProject fullscreen array comment output =
     , logSize = Nothing
     , running = False
     , terminal = Nothing
+    , syncMode = False
     , repository = Dict.fromList repository
     }
 

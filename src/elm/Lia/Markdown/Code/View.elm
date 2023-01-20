@@ -13,7 +13,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Log as Log exposing (Log)
-import Lia.Markdown.Code.Sync exposing (Sync)
+import Lia.Markdown.Code.Sync exposing (Sync, sync)
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Model)
 import Lia.Markdown.Code.Update exposing (Msg(..))
@@ -42,7 +42,17 @@ view { lang, theme, model, code, sync } =
                     (\pro ->
                         pro.file
                             |> Array.toList
-                            |> List.indexedMap (viewCode False lang theme True (always JE.null) id_1)
+                            |> List.indexedMap
+                                (viewCode
+                                    { isExecutable = False
+                                    , lang = lang
+                                    , theme = theme
+                                    , isRunning = True
+                                    , errors = always JE.null
+                                    , sync = Nothing
+                                    , id_1 = id_1
+                                    }
+                                )
                             |> List.map2 (\a e -> e a) pro.attr
                             |> CList.attachIf (not <| Log.isEmpty pro.log)
                                 (Html.div
@@ -68,7 +78,22 @@ view { lang, theme, model, code, sync } =
                         (List.append
                             (project.file
                                 |> Array.toList
-                                |> List.indexedMap (viewCode True lang theme project.running errors id_1)
+                                |> List.indexedMap
+                                    (viewCode
+                                        { isExecutable = True
+                                        , lang = lang
+                                        , theme = theme
+                                        , isRunning = project.running
+                                        , errors = errors
+                                        , sync =
+                                            if project.syncMode == True && not (Array.isEmpty sync) then
+                                                Array.get id_1 sync
+
+                                            else
+                                                Nothing
+                                        , id_1 = id_1
+                                        }
+                                    )
                                 |> List.map2 (\a e -> e a) project.attr
                             )
                             [ view_control
@@ -78,6 +103,12 @@ view { lang, theme, model, code, sync } =
                                 , version_count = Array.length project.version
                                 , running = project.running
                                 , terminal = project.terminal /= Nothing
+                                , sync =
+                                    if Array.isEmpty sync then
+                                        Nothing
+
+                                    else
+                                        Just project.syncMode
                                 }
                             , Html.div
                                 [ Attr.class "lia-code-terminal"
@@ -127,10 +158,34 @@ list_get idx list =
                 list_get (idx - 1) xs
 
 
-viewCode : Bool -> Lang -> String -> Bool -> (Int -> JE.Value) -> Int -> Int -> File -> Parameters -> Html Msg
-viewCode executable lang theme running errors id_1 id_2 file attr =
+viewCode :
+    { isExecutable : Bool
+    , lang : Lang
+    , theme : String
+    , isRunning : Bool
+    , errors : Int -> JE.Value
+    , sync : Maybe Sync
+    , id_1 : Int
+    }
+    -> Int
+    -> File
+    -> Parameters
+    -> Html Msg
+viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1 } id_2 file attr =
     if file.name == "" then
-        Html.div (noTranslate [ Attr.class "lia-code__input" ]) [ evaluate executable theme attr running ( id_1, id_2 ) file (errors id_2) ]
+        Html.div (noTranslate [ Attr.class "lia-code__input" ])
+            [ evaluate
+                { isExecutable = isExecutable
+                , theme = theme
+                , attr = attr
+                , isRunning = isRunning
+                , id_1 = id_1
+                , id_2 = id_2
+                , file = file
+                , errors = errors id_2
+                , sync = Maybe.andThen (Array.get id_2) sync
+                }
+            ]
 
     else
         Html.div (noTranslate [ Attr.class "lia-accordion" ])
@@ -157,7 +212,7 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
                         , msg =
                             Just <|
                                 FlipView
-                                    (if executable then
+                                    (if isExecutable then
                                         Evaluate id_1
 
                                      else
@@ -182,7 +237,7 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
                         ]
                     ]
                     [ Html.div [ Attr.class "lia-code__input" ]
-                        [ if file.visible && executable then
+                        [ if file.visible && isExecutable then
                             btnIcon
                                 { title =
                                     if file.fullscreen then
@@ -204,7 +259,17 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
 
                           else
                             Html.text ""
-                        , evaluate executable theme attr running ( id_1, id_2 ) file (errors id_2)
+                        , evaluate
+                            { isExecutable = isExecutable
+                            , theme = theme
+                            , attr = attr
+                            , isRunning = isRunning
+                            , id_1 = id_1
+                            , id_2 = id_2
+                            , file = file
+                            , errors = errors id_2
+                            , sync = Maybe.andThen (Array.get id_2) sync
+                            }
                         ]
                     ]
                 ]
@@ -281,8 +346,19 @@ lines code =
 --         []
 
 
-evaluate : Bool -> String -> Parameters -> Bool -> ( Int, Int ) -> File -> JE.Value -> Html Msg
-evaluate executable theme attr running ( id_1, id_2 ) file errors =
+evaluate :
+    { isExecutable : Bool
+    , theme : String
+    , attr : Parameters
+    , isRunning : Bool
+    , id_1 : Int
+    , id_2 : Int
+    , file : File
+    , errors : JE.Value
+    , sync : Maybe String
+    }
+    -> Html Msg
+evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync } =
     let
         total_lines =
             lines file.code
@@ -298,9 +374,9 @@ evaluate executable theme attr running ( id_1, id_2 ) file errors =
                 total_lines
 
         readOnly =
-            if executable then
-                if running then
-                    running
+            if isExecutable then
+                if isRunning then
+                    isRunning
 
                 else
                     Params.isSet "data-readonly" attr
@@ -314,13 +390,18 @@ evaluate executable theme attr running ( id_1, id_2 ) file errors =
     Editor.editor
         (attr
             |> Params.toAttribute
-            |> List.append
-                (max_lines
-                    |> toStyle file.visible
+            |> List.append (toStyle file.visible max_lines)
+            |> CList.addIf (not readOnly)
+                (if sync == Nothing then
+                    Editor.onChange <| Update id_1 id_2
+
+                 else
+                    Editor.onChangeEvent2 <| Synchronize id_1 id_2
                 )
-            |> CList.addIf (not readOnly) (Editor.onChange <| Update id_1 id_2)
             |> List.append
-                [ Editor.value file.code
+                [ sync
+                    |> Maybe.withDefault file.code
+                    |> Editor.value
                 , Editor.mode file.lang
                 , attr
                     |> Params.get "data-theme"
@@ -359,12 +440,12 @@ evaluate executable theme attr running ( id_1, id_2 ) file errors =
                             |> Params.isSet "data-showgutter"
 
                     else
-                        executable
+                        isExecutable
                 , Editor.useSoftTabs False
                 , Editor.annotations errors
-                , Editor.enableBasicAutocompletion executable
-                , Editor.enableLiveAutocompletion executable
-                , Editor.enableSnippets executable
+                , Editor.enableBasicAutocompletion isExecutable
+                , Editor.enableLiveAutocompletion isExecutable
+                , Editor.enableSnippets isExecutable
                 , Editor.extensions [ "language_tools" ]
                 ]
         )
@@ -402,14 +483,17 @@ scroll_to_end lines_ =
         |> Attr.property "scrollTop"
 
 
-view_control : { lang : Lang, id : Int, version_active : Int, version_count : Int, running : Bool, terminal : Bool } -> Html Msg
-view_control { lang, id, version_active, version_count, running, terminal } =
+view_control : { lang : Lang, id : Int, version_active : Int, version_count : Int, running : Bool, terminal : Bool, sync : Maybe Bool } -> Html Msg
+view_control { lang, id, version_active, version_count, running, terminal, sync } =
     let
         forward =
             running || (version_active == 0)
 
         backward =
             running || (version_active == (version_count - 1))
+
+        deactivate_control =
+            sync == Just True
     in
     Html.div [ Attr.class "lia-code-control" ]
         [ Html.div [ Attr.class "lia-code-control__action" ]
@@ -440,69 +524,84 @@ view_control { lang, id, version_active, version_count, running, terminal } =
                         , icon = "icon-compile-circle"
                         }
                         [ Attr.class "lia-btn--transparent" ]
-            , btnIcon
-                { title = "switch to Sync"
-                , tabbable = True
-                , msg =
-                    if not backward then
-                        Just <| Last id
+            , case sync of
+                Nothing ->
+                    Html.text ""
 
-                    else
-                        Nothing
-                , icon = "icon-sync"
-                }
-                [ Attr.class "lia-btn--transparent" ]
+                Just True ->
+                    btnIcon
+                        { title = "Switch to Editor"
+                        , tabbable = True
+                        , msg = Just (ToggleSync id)
+                        , icon = "icon-sync"
+                        }
+                        [ Attr.class "lia-btn--transparent" ]
+
+                Just False ->
+                    btnIcon
+                        { title = "Switch to Sync"
+                        , tabbable = True
+                        , msg = Just (ToggleSync id)
+                        , icon = "icon-person"
+                        }
+                        [ Attr.class "lia-btn--transparent" ]
             ]
-        , Html.div [ Attr.class "lia-code-control__version" ]
+        , Html.div
+            [ Attr.class "lia-code-control__version"
+            , if deactivate_control then
+                Attr.style "filter" "blur(1.2px)"
+
+              else
+                Attr.class ""
+            ]
             [ btnIcon
                 { title = codeFirst lang
-                , tabbable = not forward
+                , tabbable = not (forward || deactivate_control)
                 , msg =
-                    if not forward then
-                        Just <| First id
+                    if forward || deactivate_control then
+                        Nothing
 
                     else
-                        Nothing
+                        Just <| First id
                 , icon = "icon-end-left"
                 }
                 [ Attr.class "lia-btn--transparent" ]
             , btnIcon
                 { title = codePrev lang
-                , tabbable = not forward
+                , tabbable = not (forward || deactivate_control)
                 , msg =
-                    if not forward then
-                        Just <| Load id (version_active - 1)
+                    if forward || deactivate_control then
+                        Nothing
 
                     else
-                        Nothing
+                        Just <| Load id (version_active - 1)
                 , icon = "icon-chevron-left"
                 }
                 [ Attr.class "lia-btn--transparent" ]
             , Html.span
-                [ Attr.class "lia-label"
-                ]
+                [ Attr.class "lia-label" ]
                 [ Html.text (String.fromInt version_active) ]
             , btnIcon
                 { title = codeNext lang
-                , tabbable = not backward
+                , tabbable = not (backward || deactivate_control)
                 , msg =
-                    if not backward then
-                        Just <| Load id (version_active + 1)
+                    if backward || deactivate_control then
+                        Nothing
 
                     else
-                        Nothing
+                        Just <| Load id (version_active + 1)
                 , icon = "icon-chevron-right"
                 }
                 [ Attr.class "lia-btn--transparent" ]
             , btnIcon
                 { title = codeLast lang
-                , tabbable = not backward
+                , tabbable = not (backward || deactivate_control)
                 , msg =
-                    if not backward then
-                        Just <| Last id
+                    if backward || deactivate_control then
+                        Nothing
 
                     else
-                        Nothing
+                        Just <| Last id
                 , icon = "icon-end-right"
                 }
                 [ Attr.class "lia-btn--transparent" ]
