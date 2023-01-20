@@ -483,7 +483,16 @@ scroll_to_end lines_ =
         |> Attr.property "scrollTop"
 
 
-view_control : { lang : Lang, id : Int, version_active : Int, version_count : Int, running : Bool, terminal : Bool, sync : Maybe Bool } -> Html Msg
+view_control :
+    { lang : Lang
+    , id : Int
+    , version_active : Int
+    , version_count : Int
+    , running : Bool
+    , terminal : Bool
+    , sync : Maybe Bool
+    }
+    -> Html Msg
 view_control { lang, id, version_active, version_count, running, terminal, sync } =
     let
         forward =
@@ -531,8 +540,13 @@ view_control { lang, id, version_active, version_count, running, terminal, sync 
                 Just True ->
                     btnIcon
                         { title = "Switch to Editor"
-                        , tabbable = True
-                        , msg = Just (ToggleSync id)
+                        , tabbable = not running
+                        , msg =
+                            if running then
+                                Nothing
+
+                            else
+                                Just (ToggleSync id)
                         , icon = "icon-sync"
                         }
                         [ Attr.class "lia-btn--transparent" ]
@@ -540,8 +554,13 @@ view_control { lang, id, version_active, version_count, running, terminal, sync 
                 Just False ->
                     btnIcon
                         { title = "Switch to Sync"
-                        , tabbable = True
-                        , msg = Just (ToggleSync id)
+                        , tabbable = not running
+                        , msg =
+                            if running then
+                                Nothing
+
+                            else
+                                Just (ToggleSync id)
                         , icon = "icon-person"
                         }
                         [ Attr.class "lia-btn--transparent" ]

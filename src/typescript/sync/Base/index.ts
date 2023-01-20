@@ -1,3 +1,4 @@
+import { getEnvironmentData } from 'worker_threads'
 import Lia from '../../liascript/types/lia.d'
 
 import { CRDT } from './db'
@@ -301,6 +302,27 @@ export class Sync {
             event.message.param.j,
             event.message.param.msg
           )
+
+          event.message.cmd = 'update'
+          event.message.param = this.db.encode()
+        } else {
+          console.warn('SyncTX wrong event ->', event)
+        }
+        break
+      }
+
+      case 'codes': {
+        if (event.track?.[0][0] === 'code' && event.track.length === 1) {
+          for (let i = 0; i < event.message.param.length; i++) {
+            for (let j = 0; j < event.message.param[i].length; j++) {
+              this.db.initCode(
+                event.track[0][1],
+                i,
+                j,
+                event.message.param[i][j]
+              )
+            }
+          }
 
           event.message.cmd = 'update'
           event.message.param = this.db.encode()

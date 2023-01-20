@@ -11,6 +11,7 @@ import Json.Encode as JE
 import Lia.Markdown.Code.Events as Event
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
+import Lia.Markdown.Code.Sync as Sync_
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Model, Project, loadVersion, updateVersion)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
@@ -147,6 +148,7 @@ update sectionID scripts msg model =
             case PEvent.destructure event of
                 ( Nothing, _, ( "load", param ) ) ->
                     restore sectionID param model
+                        |> doSync sectionID
 
                 ( Just "project", id, ( "eval", param ) ) ->
                     let
@@ -275,6 +277,26 @@ update sectionID scripts msg model =
             model
                 |> Return.val
                 |> Return.batchEvent (Sync.code id1 id2 event)
+
+
+doSync : Maybe Int -> Return Model msg sub -> Return Model msg sub
+doSync sectionID ret =
+    case sectionID of
+        Nothing ->
+            ret
+
+        Just _ ->
+            ret
+                |> Return.batchEvent
+                    (ret.value
+                        |> .evaluate
+                        |> Array.map Sync_.sync
+                        |> Sync.codes
+                    )
+
+
+
+--|> Return.batchEvents
 
 
 onResize : Int -> String -> Array Project -> Array Project

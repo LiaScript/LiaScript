@@ -193,7 +193,7 @@ syncInit id section =
     , survey = Container.init id Survey_.sync section.survey_vector
 
     -- Code is one global text with updates, not single files to be updated separately
-    , code = Array.map (Code_.sync >> Maybe.withDefault Array.empty) section.code_model.evaluate
+    , code = Array.map Code_.sync section.code_model.evaluate
     }
 
 

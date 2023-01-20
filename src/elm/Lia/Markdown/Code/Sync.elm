@@ -17,9 +17,9 @@ type alias Sync =
     Array String
 
 
-sync : Code.Project -> Maybe Sync
+sync : Code.Project -> Sync
 sync =
-    (Code.loadVersion 0 >> .file >> Array.map .code) >> Just
+    Code.loadVersion 0 >> .file >> Array.map .code
 
 
 decoder : JD.Decoder Sync

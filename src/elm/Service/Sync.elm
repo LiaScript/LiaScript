@@ -1,5 +1,6 @@
 module Service.Sync exposing (..)
 
+import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Sync.Via as Via
 import Service.Event as Event exposing (Event)
@@ -91,3 +92,8 @@ code id1 id2 msg =
         |> JE.object
         |> publish "code"
         |> Event.pushWithId "id" id1
+
+
+codes : Array (Array String) -> Event
+codes =
+    JE.array (JE.array JE.string) >> publish "codes"
