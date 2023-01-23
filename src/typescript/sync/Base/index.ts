@@ -1,4 +1,3 @@
-import { getEnvironmentData } from 'worker_threads'
 import Lia from '../../liascript/types/lia.d'
 
 import { CRDT } from './db'
@@ -84,9 +83,14 @@ export class Sync {
     this.cbRelay = cbRelay
 
     const self = this
-    this.db = new CRDT(token, (event, origin) => {
-      self.broadcast(self.db.encode())
 
+    this.db = new CRDT(token, (event, origin) => {
+      if (self.db) {
+        console.warn('ORIGIN', origin)
+        console.warn('DIFF  ', self.db.diff(event))
+        console.warn('EVENT ', event)
+        self.broadcast(self.db.encode())
+      }
       self.update()
     })
   }
@@ -180,6 +184,8 @@ export class Sync {
         peers: this.db.getPeers(),
         data: this.db.toJSON(),
       })
+
+      this.db.log()
     } catch (e) {
       console.warn('Sync Update ->', e)
     }
@@ -245,6 +251,8 @@ export class Sync {
   }
 
   publish(event: Lia.Event) {
+    console.warn('******** PUBLISH ********', event)
+
     switch (event.message.cmd) {
       case 'update': {
         break
@@ -326,8 +334,6 @@ export class Sync {
         console.warn('SyncTX unknown command:', event.message)
       }
     }
-
-    this.db.log()
   }
 
   applyUpdate(data: Uint8Array) {

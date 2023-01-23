@@ -33,8 +33,8 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector msg sub
-update sectionID scripts msg vector =
+update : Bool -> Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector msg sub
+update sync sectionID scripts msg vector =
     case msg of
         TextUpdate idx str ->
             update_text vector idx str
@@ -73,7 +73,7 @@ update sectionID scripts msg vector =
                                 in
                                 new_vector
                                     |> Return.val
-                                    |> doSync sectionID (Just id)
+                                    |> doSync sync sectionID (Just id)
                                     |> store sectionID
 
                             else
@@ -119,7 +119,7 @@ update sectionID scripts msg vector =
                         |> Result.map (merge vector)
                         |> Result.withDefault vector
                         |> Return.val
-                        |> doSync sectionID Nothing
+                        |> doSync sync sectionID Nothing
                         |> init (\i s -> execute i s.state)
 
                 ( Just "eval", section, ( "eval", param ) ) ->
@@ -134,14 +134,14 @@ update sectionID scripts msg vector =
                                 |> update_ section vector
                                 |> store sectionID
                                 |> Return.script (JS.submit scriptID event)
-                                |> doSync sectionID (Just section)
+                                |> doSync sync sectionID (Just section)
 
                         Nothing ->
                             param
                                 |> evalEventDecoder
                                 |> update_ section vector
                                 |> store sectionID
-                                |> doSync sectionID (Just section)
+                                |> doSync sync sectionID (Just section)
 
                 {- let
                        eval =
@@ -164,7 +164,7 @@ update sectionID scripts msg vector =
                         |> Result.map (merge vector)
                         |> Result.withDefault vector
                         |> Return.val
-                        |> doSync sectionID Nothing
+                        |> doSync sync sectionID Nothing
                         |> init (\i s -> execute i s.state)
 
                 _ ->
@@ -378,25 +378,29 @@ handle =
     Handle
 
 
-doSync : Maybe Int -> Maybe Int -> Return Vector msg sub -> Return Vector msg sub
-doSync sectionID vectorID ret =
-    case ( sectionID, vectorID ) of
-        ( Nothing, _ ) ->
-            ret
+doSync : Bool -> Maybe Int -> Maybe Int -> Return Vector msg sub -> Return Vector msg sub
+doSync sync sectionID vectorID ret =
+    if not sync then
+        ret
 
-        ( Just _, Nothing ) ->
-            ret
-                |> Return.batchEvents
-                    (ret.value
-                        |> Array.toList
-                        |> List.indexedMap Sync.event
-                    )
+    else
+        case ( sectionID, vectorID ) of
+            ( Nothing, _ ) ->
+                ret
 
-        ( Just _, Just id ) ->
-            ret
-                |> Return.batchEvent
-                    (ret.value
-                        |> Array.get id
-                        |> Maybe.map (Sync.event id)
-                        |> Maybe.withDefault Event.none
-                    )
+            ( Just _, Nothing ) ->
+                ret
+                    |> Return.batchEvents
+                        (ret.value
+                            |> Array.toList
+                            |> List.indexedMap Sync.event
+                        )
+
+            ( Just _, Just id ) ->
+                ret
+                    |> Return.batchEvent
+                        (ret.value
+                            |> Array.get id
+                            |> Maybe.map (Sync.event id)
+                            |> Maybe.withDefault Event.none
+                        )

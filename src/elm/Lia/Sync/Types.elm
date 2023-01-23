@@ -6,6 +6,7 @@ module Lia.Sync.Types exposing
     , id
     , init
     , initRoom
+    , isConnected
     , isSupported
     , title
     )
@@ -43,6 +44,16 @@ type alias Sync =
     , select : Maybe ( Bool, Backend )
     , open : Bool
     }
+
+
+isConnected : State -> Bool
+isConnected state =
+    case state of
+        Connected _ ->
+            True
+
+        _ ->
+            False
 
 
 init : List String -> Settings

@@ -45,8 +45,8 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector msg sub
-update sectionID scripts msg vector =
+update : Bool -> Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector msg sub
+update sync sectionID scripts msg vector =
     case msg of
         Block_Update id _ ->
             update_ id vector (state_ msg)
@@ -66,7 +66,7 @@ update sectionID scripts msg vector =
                                 -->> syncSolution id
                                 |> update_ id vector
                                 |> store sectionID
-                                |> doSync sectionID (Just id)
+                                |> doSync sync sectionID (Just id)
 
                         Just scriptID ->
                             vector
@@ -115,7 +115,7 @@ update sectionID scripts msg vector =
                             _ ->
                                 return
                    )
-                |> doSync sectionID (Just id)
+                |> doSync sync sectionID (Just id)
 
         Handle event ->
             case Event.destructure event of
@@ -126,7 +126,7 @@ update sectionID scripts msg vector =
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
-                        |> doSync sectionID Nothing
+                        |> doSync sync sectionID Nothing
 
                 ( Just "eval", id, ( "eval", param ) ) ->
                     case
@@ -140,14 +140,14 @@ update sectionID scripts msg vector =
                                 |> update_ id vector
                                 |> store sectionID
                                 |> Return.script (JS.submit scriptID event)
-                                |> doSync sectionID (Just id)
+                                |> doSync sync sectionID (Just id)
 
                         Nothing ->
                             param
                                 |> evalEventDecoder
                                 |> update_ id vector
                                 |> store sectionID
-                                |> doSync sectionID (Just id)
+                                |> doSync sync sectionID (Just id)
 
                 ( Just "restore", _, ( cmd, param ) ) ->
                     param
@@ -156,7 +156,7 @@ update sectionID scripts msg vector =
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
-                        |> doSync sectionID Nothing
+                        |> doSync sync sectionID Nothing
 
                 ( _, _, ( cmd, _ ) ) ->
                     vector
@@ -344,25 +344,29 @@ init fn return =
         return.value
 
 
-doSync : Maybe Int -> Maybe Int -> Return Vector msg sub -> Return Vector msg sub
-doSync sectionID vectorID ret =
-    case ( sectionID, vectorID ) of
-        ( Nothing, _ ) ->
-            ret
+doSync : Bool -> Maybe Int -> Maybe Int -> Return Vector msg sub -> Return Vector msg sub
+doSync sync sectionID vectorID ret =
+    if not sync then
+        ret
 
-        ( Just _, Nothing ) ->
-            ret
-                |> Return.batchEvents
-                    (ret.value
-                        |> Array.toList
-                        |> List.indexedMap Sync.event
-                    )
+    else
+        case ( sectionID, vectorID ) of
+            ( Nothing, _ ) ->
+                ret
 
-        ( Just _, Just id ) ->
-            ret
-                |> Return.batchEvent
-                    (ret.value
-                        |> Array.get id
-                        |> Maybe.map (Sync.event id)
-                        |> Maybe.withDefault Event.none
-                    )
+            ( Just _, Nothing ) ->
+                ret
+                    |> Return.batchEvents
+                        (ret.value
+                            |> Array.toList
+                            |> List.indexedMap Sync.event
+                        )
+
+            ( Just _, Just id ) ->
+                ret
+                    |> Return.batchEvent
+                        (ret.value
+                            |> Array.get id
+                            |> Maybe.map (Sync.event id)
+                            |> Maybe.withDefault Event.none
+                        )

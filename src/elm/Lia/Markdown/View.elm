@@ -5,7 +5,6 @@ module Lia.Markdown.View exposing
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
-import Array
 import Conditional.List as CList
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr

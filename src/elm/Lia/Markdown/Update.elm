@@ -34,7 +34,6 @@ import Lia.Utils exposing (focus)
 import Return exposing (Return)
 import Service.Console
 import Service.Event as Event exposing (Event)
-import Service.Sync
 import Service.TTS
 import Translations exposing (Lang(..))
 
@@ -92,7 +91,7 @@ update sync globals msg section =
 
         UpdateQuiz childMsg ->
             section.quiz_vector
-                |> Quiz.update (Just section.id) section.effect_model.javascript childMsg
+                |> Quiz.update (Sync.isConnected sync) (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | quiz_vector = v })
                 |> Return.mapEvents "quiz" section.id
                 |> updateScript
@@ -113,7 +112,7 @@ update sync globals msg section =
 
         UpdateSurvey childMsg ->
             section.survey_vector
-                |> Survey.update (Just section.id) section.effect_model.javascript childMsg
+                |> Survey.update (Sync.isConnected sync) (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | survey_vector = v })
                 |> Return.mapEvents "survey" section.id
                 |> updateScript
@@ -249,7 +248,7 @@ subUpdate js msg section =
                 UpdateQuiz childMsg ->
                     let
                         result =
-                            Quiz.update Nothing js childMsg subsection.quiz_vector
+                            Quiz.update False Nothing js childMsg subsection.quiz_vector
                     in
                     case result.sub of
                         Just _ ->
@@ -265,7 +264,7 @@ subUpdate js msg section =
                 UpdateSurvey childMsg ->
                     let
                         result =
-                            Survey.update Nothing js childMsg subsection.survey_vector
+                            Survey.update False Nothing js childMsg subsection.survey_vector
                     in
                     case result.sub of
                         Just _ ->

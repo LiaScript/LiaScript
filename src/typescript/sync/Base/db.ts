@@ -34,6 +34,9 @@ export class CRDT {
 
     this.length = 0
     this.peerID = peerID
+
+    this.peers = this.doc.getMap(PEERS)
+    this.peers.set(peerID, true)
   }
 
   init(data: State.Vector) {
@@ -41,9 +44,6 @@ export class CRDT {
 
     const self = this
     this.doc.transact(() => {
-      self.peers = this.doc.getMap(PEERS)
-      self.peers.set(self.peerID, true)
-
       for (let i = 0; i < data.length; i++) {
         self.initMap(QUIZ, i, data[i][QUIZ])
         self.initMap(SURVEY, i, data[i][SURVEY])
@@ -95,6 +95,10 @@ export class CRDT {
         this.initCode(id, i, j, data[i][j])
       }
     }
+  }
+
+  diff(state: Uint8Array) {
+    return Y.encodeStateAsUpdate(this.doc, state)
   }
 
   toJSON(): State.Vector {
@@ -188,7 +192,9 @@ export class CRDT {
 
   addRecord(key: string, id: number, i: number, value: any) {
     let record = this.getMap(key, id, i)
-    record.set(this.peerID, value)
+
+    if (record.toJSON()[this.peerID] === undefined)
+      record.set(this.peerID, value)
   }
 
   initCode(id: number, i: number, j: number, value: string) {
