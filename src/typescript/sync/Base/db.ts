@@ -1,8 +1,5 @@
 import * as Y from 'yjs'
-
 import * as State from './state'
-
-import { encode, decode } from 'uint8-to-base64'
 
 const PEERS = 'peers'
 
@@ -27,52 +24,52 @@ export class CRDT {
   protected length: number
   protected peerID: string
 
-  constructor(peerID: string, callback: (event: any) => void) {
+  constructor(
+    peerID: string,
+    callback: (event: any, origin: null | string) => void
+  ) {
     this.doc = new Y.Doc()
 
-    this.doc.on('afterTransaction', callback)
+    this.doc.on('update', callback)
 
     this.length = 0
-    this.peers = this.doc.getMap(PEERS)
-    this.peers.set(peerID, true)
     this.peerID = peerID
   }
 
   init(data: State.Vector) {
     this.length = Math.max(this.length, data.length)
 
-    for (let i = 0; i < data.length; i++) {
-      this.initMap(QUIZ, i, data[i][QUIZ])
-      this.initMap(SURVEY, i, data[i][SURVEY])
-      this.initText(i, data[i][CODE])
-    }
+    const self = this
+    this.doc.transact(() => {
+      self.peers = this.doc.getMap(PEERS)
+      self.peers.set(self.peerID, true)
+
+      for (let i = 0; i < data.length; i++) {
+        self.initMap(QUIZ, i, data[i][QUIZ])
+        self.initMap(SURVEY, i, data[i][SURVEY])
+        self.initText(i, data[i][CODE])
+      }
+    }, this.peerID)
   }
 
   encode() {
-    return encode(Y.encodeStateAsUpdate(this.doc))
+    return Y.encodeStateAsUpdate(this.doc)
   }
 
   destroy() {
     console.warn('TODO: destroy')
   }
 
-  apply(update: string): boolean {
-    const before = Y.encodeStateAsUpdate(this.doc)
-
-    Y.applyUpdate(this.doc, decode(update))
-
-    const after = Y.encodeStateAsUpdate(this.doc)
-
-    return JSON.stringify(before) != JSON.stringify(after)
+  applyUpdate(update: Uint8Array) {
+    Y.applyUpdate(this.doc, update)
   }
 
   log() {
-    /*
     console.warn('*********** PEERS ***********')
     console.warn(this.peers.toJSON())
     console.warn('*********** STATE ***********')
     console.warn(this.doc.toJSON())
-    console.warn('*********** DATA ************')
+    /*console.warn('*********** DATA ************')
     console.warn(this.doc)
     */
   }

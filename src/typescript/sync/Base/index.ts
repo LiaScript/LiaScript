@@ -84,7 +84,9 @@ export class Sync {
     this.cbRelay = cbRelay
 
     const self = this
-    this.db = new CRDT(token, (event) => {
+    this.db = new CRDT(token, (event, origin) => {
+      self.broadcast(self.db.encode())
+
       self.update()
     })
   }
@@ -173,6 +175,7 @@ export class Sync {
 
   update() {
     try {
+      // return the current state to LiaScript
       this.sync('update', {
         peers: this.db.getPeers(),
         data: this.db.toJSON(),
@@ -180,6 +183,10 @@ export class Sync {
     } catch (e) {
       console.warn('Sync Update ->', e)
     }
+  }
+
+  broadcast(data: Uint8Array) {
+    console.warn('broadcast needs to be implemented')
   }
 
   /** __At first, make sure that the resource has not been loaded before!__ And
@@ -237,15 +244,13 @@ export class Sync {
     }
   }
 
-  txEvent(event: Lia.Event) {
+  publish(event: Lia.Event) {
     switch (event.message.cmd) {
       case 'update': {
         break
       }
       case 'join': {
         this.db.init(event.message.param)
-        event.message.param = this.db.encode()
-        this.update()
         break
       }
 
@@ -268,9 +273,6 @@ export class Sync {
           console.warn('SyncTX wrong event ->', event)
         }
 
-        event.message.cmd = 'update'
-        event.message.param = this.db.encode()
-
         break
       }
 
@@ -285,26 +287,17 @@ export class Sync {
           console.warn('SyncTX wrong event ->', event)
         }
 
-        event.message.cmd = 'update'
-        event.message.param = this.db.encode()
-
         break
       }
 
       case 'code': {
         if (event.track?.[0][0] === 'code' && event.track?.[1][0] === 'id') {
-          console.warn('**************************')
-          console.warn(event)
-
           this.db.updateCode(
             event.track[0][1],
             event.track[1][1],
             event.message.param.j,
             event.message.param.msg
           )
-
-          event.message.cmd = 'update'
-          event.message.param = this.db.encode()
         } else {
           console.warn('SyncTX wrong event ->', event)
         }
@@ -323,9 +316,6 @@ export class Sync {
               )
             }
           }
-
-          event.message.cmd = 'update'
-          event.message.param = this.db.encode()
         } else {
           console.warn('SyncTX wrong event ->', event)
         }
@@ -338,32 +328,9 @@ export class Sync {
     }
 
     this.db.log()
-    return event
   }
 
-  rxEvent(event: Lia.Event) {
-    switch (event.message.cmd) {
-      case 'update':
-      case 'join': {
-        if (this.db.apply(event.message.param)) {
-          event.message.param = this.db.encode()
-          return event
-        }
-        this.update()
-        break
-      }
-
-      case 'leave': {
-        this.db.removePeer(event.message.param)
-        this.update()
-        break
-      }
-
-      default: {
-        console.warn('SyncRX unknown command:', event.message)
-      }
-    }
-
-    this.db.log()
+  applyUpdate(data: Uint8Array) {
+    this.db.applyUpdate(data)
   }
 }

@@ -2,6 +2,8 @@ import { Gun } from './gun.d'
 import * as Base from '../Base/index'
 import { Crypto } from '../Crypto'
 
+import { encode, decode } from 'uint8-to-base64'
+
 export class Sync extends Base.Sync {
   private gun?: Gun
   private store: string = ''
@@ -53,39 +55,35 @@ export class Sync extends Base.Sync {
         .get(this.store)
         .on(function (data: { msg: string }, key: string) {
           try {
-            const [token, event] = Crypto.decode(data.msg)
+            const [token, message] = Crypto.decode(data.msg)
 
-            if (token != self.token && event != null) {
-              const response = self.rxEvent(event)
-
-              if (response) {
-                self.publish(response)
-              }
+            if (token != self.token && message != null) {
+              self.applyUpdate(decode(message))
             }
           } catch (e) {
             console.warn('GunDB', e.message)
           }
         })
 
-      this.publish(null)
+      this.broadcast(null)
       this.sendConnect()
+    } else {
+      console.warn('Could not load resource:', error)
     }
   }
 
   disconnect(event: Lia.Event) {
-    this.publish(null)
-    this.publish(event)
+    this.broadcast(null)
+    //this.publish(event)
 
     console.warn('DISCONNECT', event)
 
     delete this.gun
   }
 
-  publish(message: Lia.Event | null) {
+  broadcast(data: null | Uint8Array): void {
     if (this.gun) {
-      if (message != null) {
-        message = this.txEvent(message)
-      }
+      const message = data == null ? null : encode(data)
 
       this.gun.get(this.store).put({
         msg: Crypto.encode([this.token, message]),
