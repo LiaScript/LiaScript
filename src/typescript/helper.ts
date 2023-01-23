@@ -32,6 +32,22 @@ export function debounce(func: any) {
   }
 }
 
+export function debounce2(
+  fn: (...params: any[]) => any,
+  ms: number = 1000,
+  immed: boolean = false
+) {
+  let timer: number | undefined = undefined
+
+  return function (this: any, ...args: any[]) {
+    if (timer === undefined && immed) {
+      fn.apply(this, args)
+    }
+    clearTimeout(timer)
+    return setTimeout(() => fn.apply(this, args), ms)
+  }
+}
+
 export function allowedProtocol(url: string) {
   return (
     url.startsWith('https://') ||

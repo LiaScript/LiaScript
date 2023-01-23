@@ -23,8 +23,8 @@ type Backend
     | Edrys
     | GUN String
     | Jitsi
-    | Matrix
-    | PubNub String String
+    | Matrix { baseURL : String, userId : String, accessToken : String }
+    | PubNub { pubKey : String, subKey : String }
 
 
 toString : Bool -> Backend -> String
@@ -48,13 +48,13 @@ toString full via =
         Jitsi ->
             "JitSi"
 
-        Matrix ->
+        Matrix { baseURL, userId, accessToken } ->
             "Matrix"
 
-        PubNub pub sub ->
+        PubNub { pubKey, subKey } ->
             "PubNub"
                 ++ (if full then
-                        "|" ++ pub ++ "|" ++ sub
+                        "|" ++ pubKey ++ "|" ++ subKey
 
                     else
                         ""
@@ -77,10 +77,10 @@ icon via =
             Jitsi ->
                 "icon-jitsi icon-xs"
 
-            Matrix ->
+            Matrix _ ->
                 "icon-matrix icon-xs"
 
-            PubNub _ _ ->
+            PubNub _ ->
                 "icon-pubnub icon-xs"
         )
         [ Attr.style "padding-right" "5px"
@@ -107,13 +107,22 @@ fromString via =
             Just Jitsi
 
         [ "matrix" ] ->
-            Just Matrix
+            Just <| Matrix { baseURL = "", userId = "", accessToken = "" }
+
+        [ "matrix", baseURL ] ->
+            Just <| Matrix { baseURL = baseURL, userId = "", accessToken = "" }
+
+        [ "matrix", baseURL, userId ] ->
+            Just <| Matrix { baseURL = baseURL, userId = userId, accessToken = "" }
+
+        [ "matrix", baseURL, userId, accessToken ] ->
+            Just <| Matrix { baseURL = baseURL, userId = userId, accessToken = accessToken }
 
         [ "pubnub" ] ->
-            Just (PubNub "" "")
+            Just <| PubNub { pubKey = "", subKey = "" }
 
         [ "pubnub", pub, sub ] ->
-            Just (PubNub pub sub)
+            Just <| PubNub { pubKey = pub, subKey = sub }
 
         _ ->
             Nothing
@@ -185,10 +194,10 @@ info supported about =
             ( Jitsi, _ ) ->
                 [ Html.text "Not ready yet, but will be updated soon" ]
 
-            ( Matrix, _ ) ->
+            ( Matrix _, _ ) ->
                 [ Html.text "Not ready yet, but will be updated soon" ]
 
-            ( PubNub _ _, _ ) ->
+            ( PubNub _, _ ) ->
                 [ link "PubNub" "https://www.pubnub.com"
                 , Html.text " is a realtime communication platform. "
                 , Html.text "To create a classroom that uses this service, you will only require an account, which is free for testing. "
@@ -219,14 +228,42 @@ view editable backend =
                 , label = Html.text "relay server"
                 }
 
-        PubNub pub sub ->
+        Matrix { baseURL, userId, accessToken } ->
+            Html.div []
+                [ input
+                    { active = editable
+                    , type_ = "input"
+                    , msg = InputMatrix "url"
+                    , label = Html.text "base URL"
+                    , value = baseURL
+                    , placeholder = "https://matrix.org"
+                    }
+                , input
+                    { active = editable
+                    , type_ = "input"
+                    , msg = InputMatrix "user"
+                    , label = Html.text "user ID"
+                    , value = userId
+                    , placeholder = "@USERID:matrix.org"
+                    }
+                , input
+                    { active = editable
+                    , type_ = "input"
+                    , msg = InputMatrix "token"
+                    , label = Html.text "access token"
+                    , value = accessToken
+                    , placeholder = "....MDAxM2lkZW50aWZpZXIga2V5CjAwMTBjaWQgZ2Vu...."
+                    }
+                ]
+
+        PubNub { pubKey, subKey } ->
             Html.div []
                 [ input
                     { active = editable
                     , type_ = "input"
                     , msg = InputPubNub "pub"
                     , label = Html.text "publishKey"
-                    , value = pub
+                    , value = pubKey
                     , placeholder = "pub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
                     }
                 , input
@@ -234,7 +271,7 @@ view editable backend =
                     , type_ = "input"
                     , msg = InputPubNub "sub"
                     , label = Html.text "subscribeKey"
-                    , value = sub
+                    , value = subKey
                     , placeholder = "sub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
                     }
                 ]
@@ -278,6 +315,7 @@ input c =
 type Msg
     = InputGun String
     | InputPubNub String String
+    | InputMatrix String String
 
 
 update : Msg -> Backend -> Backend
@@ -286,11 +324,20 @@ update msg backend =
         ( InputGun urls, GUN _ ) ->
             GUN urls
 
-        ( InputPubNub "pub" new, PubNub _ sub ) ->
-            PubNub new sub
+        ( InputPubNub "pub" new, PubNub data ) ->
+            PubNub { data | pubKey = new }
 
-        ( InputPubNub "sub" new, PubNub pub _ ) ->
-            PubNub pub new
+        ( InputPubNub "sub" new, PubNub data ) ->
+            PubNub { data | subKey = new }
+
+        ( InputMatrix "url" new, Matrix data ) ->
+            Matrix { data | baseURL = new }
+
+        ( InputMatrix "user" new, Matrix data ) ->
+            Matrix { data | userId = new }
+
+        ( InputMatrix "token" new, Matrix data ) ->
+            Matrix { data | accessToken = new }
 
         _ ->
             backend
@@ -302,7 +349,10 @@ eq a b =
         ( GUN _, GUN _ ) ->
             True
 
-        ( PubNub _ _, PubNub _ _ ) ->
+        ( Matrix _, Matrix _ ) ->
+            True
+
+        ( PubNub _, PubNub _ ) ->
             True
 
         _ ->

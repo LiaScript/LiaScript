@@ -57,8 +57,8 @@ init supportedBackends =
             , Via.Edrys
             , Via.GUN Const.gunDB_ServerURL
             , Via.Jitsi
-            , Via.Matrix
-            , Via.PubNub "" ""
+            , Via.Matrix { baseURL = "", userId = "", accessToken = "" }
+            , Via.PubNub { pubKey = "", subKey = "" }
             ]
                 |> List.map (isMember supported)
         , select = Nothing
@@ -81,7 +81,10 @@ isMember list element =
         ( (Via.GUN _) :: _, Via.GUN _ ) ->
             ( True, element )
 
-        ( (Via.PubNub _ _) :: _, Via.PubNub _ _ ) ->
+        ( (Via.Matrix _) :: _, Via.Matrix _ ) ->
+            ( True, element )
+
+        ( (Via.PubNub _) :: _, Via.PubNub _ ) ->
             ( True, element )
 
         ( e :: es, _ ) ->

@@ -40,10 +40,21 @@ connect param =
                             |> List.filter (String.isEmpty >> not)
                             |> JE.list JE.string
 
-                    Via.PubNub pub sub ->
+                    Via.Matrix { baseURL, userId, accessToken } ->
+                        let
+                            _ =
+                                Debug.log "++++++++++++++++++++++++++++++++" ( baseURL, userId, accessToken )
+                        in
                         JE.object
-                            [ ( "publishKey", JE.string pub )
-                            , ( "subscribeKey", JE.string sub )
+                            [ ( "baseURL", JE.string baseURL )
+                            , ( "userId", JE.string userId )
+                            , ( "accessToken", JE.string accessToken )
+                            ]
+
+                    Via.PubNub { pubKey, subKey } ->
+                        JE.object
+                            [ ( "publishKey", JE.string pubKey )
+                            , ( "subscribeKey", JE.string subKey )
                             ]
 
                     _ ->
@@ -52,6 +63,7 @@ connect param =
             ]
       )
     ]
+        |> Debug.log "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
         |> JE.object
         |> publish "connect"
 
