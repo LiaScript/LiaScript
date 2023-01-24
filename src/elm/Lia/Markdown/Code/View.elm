@@ -82,7 +82,15 @@ view { lang, theme, model, code, sync } =
                 Just project ->
                     let
                         errors =
-                            get_annotations project.log
+                            get_annotations <|
+                                if project.syncMode == True && not (Array.isEmpty sync) then
+                                    sync
+                                        |> Array.get id_1
+                                        |> Maybe.map .log
+                                        |> Maybe.withDefault Log.empty
+
+                                else
+                                    project.log
                     in
                     Html.div [ Attr.class "lia-code lia-code--block" ]
                         (List.append
