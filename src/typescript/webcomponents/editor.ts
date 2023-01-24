@@ -2,8 +2,6 @@
 import ace from 'ace-builds/src-min-noconflict/ace'
 import * as EDITOR from './editor-modes'
 
-import * as helper from '../helper'
-
 function markerStyle(name: string): string {
   if (typeof name === 'string') {
     name =
@@ -169,7 +167,7 @@ customElements.define(
 
       input.setAttribute('role', 'application')
       if (!this.model.readOnly) {
-        const runDispatch = helper.debounce((event: any) => {
+        const runDispatch = (event: any) => {
           this.model.value = this._editor.getValue()
           this.dispatchEvent(new CustomEvent('editorUpdate'))
 
@@ -186,7 +184,7 @@ customElements.define(
           if (action !== 'retain') {
             this.dispatchEvent(new CustomEvent('editorUpdateEvent'))
           }
-        })
+        }
 
         this._editor.on('change', runDispatch)
         input.setAttribute(
