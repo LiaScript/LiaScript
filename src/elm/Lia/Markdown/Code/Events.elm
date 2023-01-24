@@ -10,10 +10,11 @@ module Lia.Markdown.Code.Events exposing
     , updateVersion
     )
 
-import Array
+import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
+import Lia.Markdown.Code.Sync exposing (Sync)
 import Lia.Markdown.Code.Types exposing (File, Project, Repo, Vector)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
 import Return exposing (Return)
@@ -34,10 +35,20 @@ input projectID value =
         |> toProject projectID
 
 
-eval : Int -> Scripts a -> Project -> Event
-eval projectID scripts project =
-    project.file
-        |> Array.map .code
+eval : Array Sync -> Int -> Scripts a -> Project -> Event
+eval sync projectID scripts project =
+    let
+        files =
+            if project.syncMode then
+                sync
+                    |> Array.get projectID
+                    |> Maybe.map .file
+                    |> Maybe.withDefault Array.empty
+
+            else
+                Array.map .code project.file
+    in
+    files
         |> Array.toList
         |> Service.Script.eval project.evaluation (outputs scripts)
         -- navigate the evaluation within the Code module

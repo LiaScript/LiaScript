@@ -60,7 +60,17 @@ view { lang, theme, model, code, sync } =
                                     , A11y_Role.log
                                     , A11y_Widget.label (Translations.codeTerminal lang)
                                     ]
-                                    [ view_result (Highlight id_1) pro.logSize pro.log
+                                    [ view_result (Highlight id_1)
+                                        pro.logSize
+                                        (if pro.syncMode then
+                                            sync
+                                                |> Array.get id_1
+                                                |> Maybe.map .log
+                                                |> Maybe.withDefault Log.empty
+
+                                         else
+                                            pro.log
+                                        )
                                     ]
                                 )
                     )
@@ -120,7 +130,17 @@ view { lang, theme, model, code, sync } =
                                   else
                                     Attr.class ""
                                 ]
-                                [ view_result (Evaluate id_1) project.logSize project.log
+                                [ view_result (Evaluate id_1)
+                                    project.logSize
+                                    (if project.syncMode then
+                                        sync
+                                            |> Array.get id_1
+                                            |> Maybe.map .log
+                                            |> Maybe.withDefault Log.empty
+
+                                     else
+                                        project.log
+                                    )
                                 , case project.terminal of
                                     Nothing ->
                                         Html.text ""
@@ -183,7 +203,7 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1 } id_2 file 
                 , id_2 = id_2
                 , file = file
                 , errors = errors id_2
-                , sync = Maybe.andThen (Array.get id_2) sync
+                , sync = Maybe.andThen (.file >> Array.get id_2) sync
                 }
             ]
 
@@ -268,7 +288,7 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1 } id_2 file 
                             , id_2 = id_2
                             , file = file
                             , errors = errors id_2
-                            , sync = Maybe.andThen (Array.get id_2) sync
+                            , sync = Maybe.andThen (.file >> Array.get id_2) sync
                             }
                         ]
                     ]

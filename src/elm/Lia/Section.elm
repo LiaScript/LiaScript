@@ -220,8 +220,21 @@ sync id =
 
 
 syncUpdate : Section -> Sync -> Section
-syncUpdate section s =
-    { section | sync = s }
+syncUpdate section update =
+    { section
+        | sync =
+            if Array.isEmpty section.sync.code then
+                update
+
+            else
+                { update
+                    | code =
+                        List.map2 (\new old -> { new | log = old.log })
+                            (Array.toList update.code)
+                            (Array.toList section.sync.code)
+                            |> Array.fromList
+                }
+    }
 
 
 syncQuiz : Container Quiz_.Sync -> Section -> Section

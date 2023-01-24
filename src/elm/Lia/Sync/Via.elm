@@ -50,6 +50,12 @@ toString full via =
 
         Matrix { baseURL, userId, accessToken } ->
             "Matrix"
+                ++ (if full then
+                        "|" ++ baseURL ++ "|" ++ userId ++ "|" ++ accessToken
+
+                    else
+                        ""
+                   )
 
         PubNub { pubKey, subKey } ->
             "PubNub"

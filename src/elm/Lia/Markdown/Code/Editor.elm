@@ -14,9 +14,11 @@ module Lia.Markdown.Code.Editor exposing
     , marker
     , maxLines
     , mode
+    , onBlur
     , onChange
     , onChangeEvent
     , onChangeEvent2
+    , onFocus
     , readOnly
     , showCursor
     , showGutter

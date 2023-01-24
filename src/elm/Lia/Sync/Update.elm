@@ -9,7 +9,6 @@ module Lia.Sync.Update exposing
 import Array
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Code.Editor exposing (mode)
 import Lia.Markdown.Update exposing (synchronize)
 import Lia.Section as Section exposing (Sections)
 import Lia.Sync.Room as Room

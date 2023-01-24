@@ -41,10 +41,6 @@ connect param =
                             |> JE.list JE.string
 
                     Via.Matrix { baseURL, userId, accessToken } ->
-                        let
-                            _ =
-                                Debug.log "++++++++++++++++++++++++++++++++" ( baseURL, userId, accessToken )
-                        in
                         JE.object
                             [ ( "baseURL", JE.string baseURL )
                             , ( "userId", JE.string userId )
@@ -63,7 +59,6 @@ connect param =
             ]
       )
     ]
-        |> Debug.log "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
         |> JE.object
         |> publish "connect"
 

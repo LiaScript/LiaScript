@@ -11,6 +11,7 @@ port module Lia.Markdown.Update exposing
     , updateScript
     )
 
+import Array
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
@@ -83,9 +84,16 @@ update sync globals msg section =
                 |> Return.mapEvents "effect" section.id
 
         UpdateCode childMsg ->
-            section.code_model
-                |> Code.update (Just section.id) section.effect_model.javascript childMsg
-                |> Return.mapVal (\v -> { section | code_model = v })
+            let
+                oldSync =
+                    section.sync
+
+                ( newSync, newVal ) =
+                    section.code_model
+                        |> Code.update section.sync.code (Just section.id) section.effect_model.javascript childMsg
+            in
+            newVal
+                |> Return.mapVal (\v -> { section | code_model = v, sync = { oldSync | code = Maybe.withDefault oldSync.code newSync } })
                 |> Return.mapEvents "code" section.id
                 |> updateScript
 
@@ -241,7 +249,8 @@ subUpdate js msg section =
 
                 UpdateCode childMsg ->
                     subsection.code_model
-                        |> Code.update Nothing js childMsg
+                        |> Code.update Array.empty Nothing js childMsg
+                        |> Tuple.second
                         |> Return.mapValCmd (\v -> SubSection { subsection | code_model = v }) UpdateCode
                         |> Return.mapEvents "code" subsection.id
 
