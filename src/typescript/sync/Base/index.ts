@@ -86,12 +86,27 @@ export class Sync {
 
     this.db = new CRDT(token, (event, origin) => {
       if (self.db) {
-        console.warn('ORIGIN', origin)
-        console.warn('DIFF  ', self.db.diff(event))
-        console.warn('EVENT ', event)
-        self.broadcast(self.db.encode())
+        //console.warn('ORIGIN', origin)
+        //console.warn('DIFF  ', self.db.diff(event))
+        //console.warn('EVENT ', event)
+
+        switch (origin) {
+          case 'code': {
+            self.broadcast(event)
+            self.update()
+            break
+          }
+          case 'exit': {
+            self.broadcast(event)
+            self.destroy()
+            break
+          }
+          default: {
+            self.broadcast(self.db.encode())
+            self.update()
+          }
+        }
       }
-      self.update()
     })
   }
 
@@ -123,8 +138,13 @@ export class Sync {
     this.password = data.password
   }
 
-  disconnect(event: Lia.Event) {
-    console.warn('implement disconnect')
+  destroy() {
+    this.db.destroy()
+    this.cbConnection('disconnect', this.token)
+  }
+
+  disconnect() {
+    this.db.removePeer()
   }
 
   /** Sometimes it might be required to generate a unique room ID for different
@@ -185,7 +205,7 @@ export class Sync {
         data: this.db.toJSON(),
       })
 
-      this.db.log()
+      //this.db.log()
     } catch (e) {
       console.warn('Sync Update ->', e)
     }
@@ -262,14 +282,6 @@ export class Sync {
         break
       }
 
-      case 'leave': {
-        this.db.destroy()
-        if (!event.message.param) {
-          event.message.param = this.token
-        }
-        break
-      }
-
       case 'quiz': {
         if (event.track?.[0][0] === 'quiz' && event.track?.[1][0] === 'id') {
           this.db.addQuiz(
@@ -299,7 +311,11 @@ export class Sync {
       }
 
       case 'code': {
-        if (event.track?.[0][0] === 'code' && event.track?.[1][0] === 'id') {
+        if (
+          event.track?.[0][0] === 'code' &&
+          event.track?.[1][0] === 'id' &&
+          event.message.param.msg.action !== 'retain'
+        ) {
           this.db.updateCode(
             event.track[0][1],
             event.track[1][1],

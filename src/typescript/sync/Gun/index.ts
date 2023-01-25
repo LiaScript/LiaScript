@@ -9,6 +9,13 @@ export class Sync extends Base.Sync {
   private store: string = ''
   private gunServer: string[] = []
 
+  destroy() {
+    this.gunServer = []
+    delete this.gun
+
+    super.destroy()
+  }
+
   async connect(data: {
     course: string
     room: string
@@ -70,15 +77,6 @@ export class Sync extends Base.Sync {
     } else {
       console.warn('Could not load resource:', error)
     }
-  }
-
-  disconnect(event: Lia.Event) {
-    this.broadcast(null)
-    //this.publish(event)
-
-    console.warn('DISCONNECT', event)
-
-    delete this.gun
   }
 
   broadcast(data: null | Uint8Array): void {

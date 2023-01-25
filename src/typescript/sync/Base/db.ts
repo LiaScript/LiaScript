@@ -57,7 +57,7 @@ export class CRDT {
   }
 
   destroy() {
-    console.warn('TODO: destroy')
+    this.doc.destroy()
   }
 
   applyUpdate(update: Uint8Array) {
@@ -127,8 +127,10 @@ export class CRDT {
     return []
   }
 
-  removePeer(peerID: string) {
-    this.peers.set(peerID, false)
+  removePeer() {
+    this.doc.transact(() => {
+      this.peers.set(this.peerID, false)
+    }, 'exit')
   }
 
   id(key: string, id1: number, id2: number, id3?: number) {
@@ -223,7 +225,6 @@ export class CRDT {
       switch (msg.action) {
         case 'insert': {
           code.insert(msg.index, msg.content)
-
           break
         }
         case 'remove': {

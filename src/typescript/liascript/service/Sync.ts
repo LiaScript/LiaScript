@@ -82,15 +82,16 @@ const Service = {
 
       case 'disconnect': {
         if (sync) {
-          event.message.cmd = 'leave'
-          sync.disconnect(event)
+          sync.disconnect()
 
           sync = null
 
+          /*
           if (elmSend) {
             event.message.cmd = 'disconnect'
             elmSend(event)
           }
+          */
         }
 
         break

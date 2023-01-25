@@ -141,22 +141,6 @@ update session model msg =
                                 |> Session.update
                             )
 
-                ( "leave", param ) ->
-                    { model
-                        | sync =
-                            { sync
-                                | peers =
-                                    case JD.decodeValue JD.string param of
-                                        Ok peerID ->
-                                            Set.remove peerID sync.peers
-
-                                        _ ->
-                                            sync.peers
-                                , error = Nothing
-                            }
-                    }
-                        |> Return.val
-
                 _ ->
                     model
                         |> Return.val
