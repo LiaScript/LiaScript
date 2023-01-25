@@ -74,7 +74,7 @@ onChangeEvent msg =
         (JD.field "action" JD.string)
         (JD.field "index" JD.int)
         (JD.field "content" JD.string)
-        |> JD.at [ "target", "update" ]
+        |> JD.at [ "detail" ]
         |> JD.map msg
         |> Html.Events.on "editorUpdateEvent"
 
@@ -82,7 +82,7 @@ onChangeEvent msg =
 onChangeEvent2 : (JD.Value -> msg) -> Html.Attribute msg
 onChangeEvent2 msg =
     JD.value
-        |> JD.at [ "target", "update" ]
+        |> JD.at [ "detail" ]
         |> JD.map msg
         |> Html.Events.on "editorUpdateEvent"
 

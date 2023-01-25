@@ -147,11 +147,13 @@ updateVersion project =
                 |> Array.toList
     in
     if
-        project.version
-            |> Array.get project.version_active
-            |> Maybe.map Tuple.first
-            |> Maybe.map ((/=) hashes)
-            |> Maybe.withDefault False
+        not project.syncMode
+            && (project.version
+                    |> Array.get project.version_active
+                    |> Maybe.map Tuple.first
+                    |> Maybe.map ((/=) hashes)
+                    |> Maybe.withDefault False
+               )
     then
         let
             repository =

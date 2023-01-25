@@ -271,8 +271,6 @@ export class Sync {
   }
 
   publish(event: Lia.Event) {
-    console.warn('******** PUBLISH ********', event)
-
     switch (event.message.cmd) {
       case 'update': {
         break
@@ -311,11 +309,8 @@ export class Sync {
       }
 
       case 'code': {
-        if (
-          event.track?.[0][0] === 'code' &&
-          event.track?.[1][0] === 'id' &&
-          event.message.param.msg.action !== 'retain'
-        ) {
+        if (event.track?.[0][0] === 'code' && event.track?.[1][0] === 'id') {
+          console.warn('******** PUBLISH ********', event.message.param.msg)
           this.db.updateCode(
             event.track[0][1],
             event.track[1][1],

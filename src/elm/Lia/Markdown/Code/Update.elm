@@ -370,7 +370,13 @@ update sync sectionID scripts msg model =
         Synchronize id1 id2 event ->
             model
                 |> Return.val
-                |> Return.batchEvent (Sync.code id1 id2 event)
+                |> Return.batchEvent
+                    (if isSyncModeActive id1 model then
+                        Sync.code id1 id2 event
+
+                     else
+                        PEvent.none
+                    )
                 |> noSyncUpdate
 
 

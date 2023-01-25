@@ -1,6 +1,7 @@
 // @ts-ignore
 import ace from 'ace-builds/src-min-noconflict/ace'
 import * as EDITOR from './editor-modes'
+import * as helper from '../helper'
 
 function markerStyle(name: string): string {
   if (typeof name === 'string') {
@@ -148,7 +149,7 @@ customElements.define(
       })
 
       this.model.update = {
-        action: 'retain',
+        action: 'insert',
         index: 0,
         content: '',
       }
@@ -169,6 +170,7 @@ customElements.define(
       if (!this.model.readOnly) {
         const runDispatch = (event: any) => {
           this.model.value = this._editor.getValue()
+
           this.dispatchEvent(new CustomEvent('editorUpdate'))
 
           const action = this.model.update.action
@@ -182,7 +184,16 @@ customElements.define(
           }
 
           if (action !== 'retain') {
-            this.dispatchEvent(new CustomEvent('editorUpdateEvent'))
+            this.dispatchEvent(
+              new CustomEvent('editorUpdateEvent', {
+                detail: { ...this.model.update },
+              })
+            )
+          } else {
+            console.warn(
+              'SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS'
+            )
+            console.warn(this.model.update)
           }
         }
 
@@ -225,6 +236,7 @@ customElements.define(
 
     this.model[option] = value
     */
+
       if (this._editor) {
         try {
           this._editor.setOption(option, value)
@@ -498,7 +510,6 @@ customElements.define(
     set value(value: string) {
       if (this.model.value !== value) {
         this.model.update.action = 'retain'
-
         this.model.value = value
         this.setOption('value', value)
       }
