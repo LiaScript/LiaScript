@@ -127,9 +127,9 @@ export class CRDT {
     return []
   }
 
-  removePeer() {
+  removePeer(peerID?: string) {
     this.doc.transact(() => {
-      this.peers.set(this.peerID, false)
+      this.peers.set(peerID || this.peerID, false)
     }, 'exit')
   }
 

@@ -106,6 +106,8 @@ export class Sync {
             self.update()
           }
         }
+
+        self.db.log()
       }
     })
   }

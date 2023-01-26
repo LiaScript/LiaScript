@@ -1,10 +1,21 @@
 import * as Base from '../Base/index'
 import log from '../../liascript/log'
+
+import { encode, decode } from 'uint8-to-base64'
 export class Sync extends Base.Sync {
   private pubnub: any
   private channel: string = ''
   private publishKey?: string
   private subscribeKey?: string
+
+  destroy() {
+    if (this.pubnub) {
+      this.pubnub.unsubscribeAll()
+      this.pubnub.stop()
+    }
+
+    super.destroy()
+  }
 
   async connect(data: {
     course: string
@@ -17,7 +28,7 @@ export class Sync extends Base.Sync {
     this.publishKey = data.config.publishKey
     this.subscribeKey = data.config.subscribeKey
 
-    if (window.PubNub) {
+    if (window['PubNub']) {
       this.init(true)
     } else {
       this.load(['//cdn.pubnub.com/sdk/javascript/pubnub.4.33.1.min.js'], this)
@@ -31,9 +42,12 @@ export class Sync extends Base.Sync {
       )
     }
 
-    if (ok && window.PubNub) {
-      this.channel = btoa(this.uniqueID())
+    const id = this.uniqueID()
 
+    if (ok && window['PubNub'] && id) {
+      this.channel = btoa(id)
+
+      // @ts-ignore
       this.pubnub = new PubNub({
         publishKey: this.publishKey,
         subscribeKey: this.subscribeKey,
@@ -44,8 +58,6 @@ export class Sync extends Base.Sync {
         // presenceTimeout: 30,
         cipherKey: this.password,
       })
-
-      console.warn(this.pubnub)
 
       this.pubnub.subscribe({
         channels: [this.channel],
@@ -67,15 +79,15 @@ export class Sync extends Base.Sync {
         message: function (event: any) {
           // prevent return of self send messages
           if (event.publisher !== self.token) {
-            //console.log('SUB:', JSON.stringify(event.message.message))
-            self.sendToLia(event.message)
+            //console.log('SUB:', JSON.stringify(event.message))
+            self.applyUpdate(decode(event.message))
           }
         },
         presence: function (event: any) {
-          //console.log('presence: ', event)
+          // console.log('presence: ', event)
           switch (event.action) {
             case 'leave': {
-              self.sync('leave', event.uuid)
+              self.db.removePeer(event.uuid)
             }
           }
         },
@@ -83,25 +95,17 @@ export class Sync extends Base.Sync {
     }
   }
 
-  disconnect(event: Object) {
-    this.publish(event)
-    if (this.pubnub) {
-      this.pubnub.unsubscribeAll()
-      this.pubnub.stop()
-    }
-  }
-
-  publish(message: Object) {
+  broadcast(data: Uint8Array): void {
     if (this.pubnub) {
       //console.log('PUB: ', message.message)
       this.pubnub.publish(
         {
           channel: this.channel,
-          message: message,
+          message: encode(data),
           storeInHistory: false,
         },
         function (status: any, response: any) {
-          //console.log('PUBNUB publish', status, response)
+          // console.log('PUBNUB publish', status, response)
         }
       )
     }
