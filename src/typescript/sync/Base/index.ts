@@ -91,11 +91,11 @@ export class Sync {
         //console.warn('EVENT ', event)
 
         switch (origin) {
-          case 'code': {
+          /*case 'code': {
             self.broadcast(event)
             self.update()
             break
-          }
+          }*/
           case 'exit': {
             self.broadcast(event)
             self.destroy()

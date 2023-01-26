@@ -220,21 +220,23 @@ export class CRDT {
     }
   ) {
     if (this.has(CODE, id, i, j)) {
-      const code = this.getText(CODE, id, i, j)
+      this.doc.transact(() => {
+        const code = this.getText(CODE, id, i, j)
 
-      switch (msg.action) {
-        case 'insert': {
-          code.insert(msg.index, msg.content)
-          break
+        switch (msg.action) {
+          case 'insert': {
+            code.insert(msg.index, msg.content)
+            break
+          }
+          case 'remove': {
+            code.delete(msg.index, msg.content.length)
+            break
+          }
+          default: {
+            console.warn('Sync code, unknown action ->', msg)
+          }
         }
-        case 'remove': {
-          code.delete(msg.index, msg.content.length)
-          break
-        }
-        default: {
-          console.warn('Sync code, unknown action ->', msg)
-        }
-      }
+      }, 'code')
     }
   }
 }
