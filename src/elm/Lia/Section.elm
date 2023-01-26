@@ -9,6 +9,7 @@ module Lia.Section exposing
     , syncDecoder
     , syncEncode
     , syncInit
+    , syncOff
     , syncQuiz
     , syncSurvey
     , syncUpdate
@@ -262,3 +263,20 @@ syncCode state section =
             section.sync
     in
     { section | sync = { localSync | code = state } }
+
+
+syncOff : Sections -> Sections
+syncOff =
+    Array.map syncOff_
+
+
+syncOff_ : Section -> Section
+syncOff_ sec =
+    { sec
+        | sync =
+            { quiz = Container.empty
+            , survey = Container.empty
+            , code = Array.empty
+            }
+        , code_model = Code.syncOff sec.code_model
+    }

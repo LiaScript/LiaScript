@@ -11,6 +11,7 @@ module Lia.Markdown.Code.Types exposing
     , init
     , initProject
     , loadVersion
+    , syncOff
     , updateVersion
     )
 
@@ -87,6 +88,13 @@ type Code
 init : Model
 init =
     Model Array.empty Array.empty
+
+
+syncOff : Model -> Model
+syncOff model =
+    { model
+        | evaluate = Array.map (\p -> { p | syncMode = False }) model.evaluate
+    }
 
 
 toFile : Bool -> ( Snippet, Bool ) -> ( Parameters, File )

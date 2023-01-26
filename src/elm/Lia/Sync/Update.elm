@@ -133,6 +133,7 @@ update session model msg =
                                 , peers = Set.empty
                                 , error = Nothing
                             }
+                        , sections = Section.syncOff model.sections
                     }
                         |> Return.val
                         |> Return.cmd
