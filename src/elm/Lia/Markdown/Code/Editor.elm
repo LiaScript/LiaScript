@@ -1,6 +1,7 @@
 module Lia.Markdown.Code.Editor exposing
     ( Event
     , annotations
+    , blockUpdate
     , editor
     , enableBasicAutocompletion
     , enableLiveAutocompletion
@@ -66,6 +67,11 @@ onChange msg =
         |> JD.at [ "target", "value" ]
         |> JD.map msg
         |> Html.Events.on "editorUpdate"
+
+
+blockUpdate : Bool -> Html.Attribute msg
+blockUpdate =
+    boolean "blockUpdate"
 
 
 onChangeEvent : (Event -> msg) -> Html.Attribute msg

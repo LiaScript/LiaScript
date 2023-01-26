@@ -431,6 +431,8 @@ evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync 
                 )
             |> List.append
                 [ Editor.value code
+
+                --, Editor.blockUpdate (sync /= Nothing)
                 , Editor.mode file.lang
                 , attr
                     |> Params.get "data-theme"

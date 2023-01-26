@@ -85,13 +85,18 @@ update sync sectionID scripts msg model =
 
         --|> Return.sync (PEvent.initWithId "eval" idx JE.null)
         Update id_1 id_2 code_str ->
-            update_file
-                id_1
-                id_2
-                model
-                (\f -> { f | code = code_str })
-                (\_ -> [])
-                |> noSyncUpdate
+            if isSyncModeActive id_1 model then
+                Return.val model
+                    |> noSyncUpdate
+
+            else
+                update_file
+                    id_1
+                    id_2
+                    model
+                    (\f -> { f | code = code_str })
+                    (\_ -> [])
+                    |> noSyncUpdate
 
         FlipView (Evaluate projectID) fileID ->
             flipEval sectionID model projectID fileID

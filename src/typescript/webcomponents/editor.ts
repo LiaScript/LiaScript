@@ -45,11 +45,14 @@ customElements.define(
     private _editor: any
     private _focus: boolean
     private _ariaLabel: string
+    private _blockUpdate: boolean = false
+
+    private _blockEvents: boolean = false
 
     private model: {
       value: string
       update: {
-        action: 'insert' | 'remove' | 'retain'
+        action: 'insert' | 'remove'
         index: number
         content: string
       }
@@ -85,7 +88,7 @@ customElements.define(
       this.model = {
         value: '',
         update: {
-          action: 'retain',
+          action: 'insert',
           index: 0,
           content: '',
         },
@@ -169,35 +172,35 @@ customElements.define(
       input.setAttribute('role', 'application')
       if (!this.model.readOnly) {
         const runDispatch = (event: any) => {
+          if (this._blockEvents) {
+            return
+          }
+          //this.mux(() => {
+
           this.model.value = this._editor.getValue()
 
           this.dispatchEvent(new CustomEvent('editorUpdate'))
 
-          const action = this.model.update.action
+          if (!this.blockUpdate) {
+            this.model.update = {
+              action: event.action,
+              index: this._editor
+                .getSession()
+                .doc.positionToIndex(event.start, 0),
+              content: event.lines.join('\n'),
+            }
 
-          this.model.update = {
-            action: event.action,
-            index: this._editor
-              .getSession()
-              .doc.positionToIndex(event.start, 0),
-            content: event.lines.join('\n'),
-          }
-
-          if (action !== 'retain') {
             this.dispatchEvent(
               new CustomEvent('editorUpdateEvent', {
                 detail: { ...this.model.update },
               })
             )
-          } else {
-            console.warn(
-              'SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS'
-            )
-            console.warn(this.model.update)
           }
+          // })
         }
 
         this._editor.on('change', runDispatch)
+
         input.setAttribute(
           'aria-label',
           'Code-editor in ' + this.model.mode + ' mode'
@@ -509,14 +512,36 @@ customElements.define(
 
     set value(value: string) {
       if (this.model.value !== value) {
-        this.model.update.action = 'retain'
         this.model.value = value
-        this.setOption('value', value)
+
+        if (this._editor) {
+          this.blockUpdate = true
+
+          this._blockEvents = true
+          const cursor = this._editor.getSelection().getCursor()
+          this.setOption('value', value)
+          this._editor.getSelection().moveTo(cursor.row, cursor.column)
+          this._blockEvents = false
+
+          setTimeout(() => {
+            this.blockUpdate = false
+          }, 150)
+        }
       }
     }
 
+    get blockUpdate() {
+      //console.warn('Getting block of ->', this._blockUpdate)
+      return this._blockUpdate
+    }
+
+    set blockUpdate(value: boolean) {
+      //console.warn('Setting block to ->', value)
+      this._blockUpdate = value
+    }
+
     get update(): {
-      action: 'insert' | 'remove' | 'retain'
+      action: 'insert' | 'remove'
       index: number
       content: string
     } {
@@ -524,7 +549,7 @@ customElements.define(
     }
 
     set update(event: {
-      action: 'insert' | 'remove' | 'retain'
+      action: 'insert' | 'remove'
       index: number
       content: string
     }) {
