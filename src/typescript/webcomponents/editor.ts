@@ -45,7 +45,7 @@ customElements.define(
     private _editor: any
     private _focus: boolean
     private _ariaLabel: string
-    private blockUpdate: boolean
+
     private model: {
       value: string
       update: {
@@ -78,7 +78,7 @@ customElements.define(
       super()
 
       ace.config.set('basePath', 'editor/')
-      this.blockUpdate = true
+
       this._focus = false
       this._ariaLabel = 'editor'
 

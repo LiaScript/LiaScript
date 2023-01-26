@@ -388,8 +388,11 @@ evaluate :
     -> Html Msg
 evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync } =
     let
+        code =
+            Maybe.withDefault file.code sync
+
         total_lines =
-            lines file.code
+            lines code
 
         max_lines =
             if file.fullscreen then
@@ -427,9 +430,7 @@ evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync 
                     Editor.onChangeEvent2 <| Synchronize id_1 id_2
                 )
             |> List.append
-                [ sync
-                    |> Maybe.withDefault file.code
-                    |> Editor.value
+                [ Editor.value code
                 , Editor.mode file.lang
                 , attr
                     |> Params.get "data-theme"
