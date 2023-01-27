@@ -1,39 +1,43 @@
-import Lia from '../../liascript/types/lia.d'
-
+//import { MatrixProvider } from "matrix-crdt";
 import * as Base from '../Base/index'
 
 export class Sync extends Base.Sync {
   private client: any
 
-  private login?: {
+  private config: {
     user_id: string
     device_id: string
     access_token: string
     home_server: string
   }
 
-  constructor(send: Lia.Send) {
-    super(send)
-  }
-
-  async connect(data: {
+  connect(data: {
     course: string
     room: string
-    username: string
     password?: string
+    config: {
+      baseURL: string
+      userId: string
+      accessToken: string
+    }
   }) {
     super.connect(data)
 
-    if (window.matrixcs) {
+    if (window['matrixcs']) {
       this.init(true)
     } else {
-      this.load(['vendor/browser-matrix.min.js'], this)
+      this.load(
+        [
+          'https://cdn.jsdelivr.net/npm/matrix-js-sdk@23.1.1/lib/browser-index.min.js',
+        ],
+        this
+      )
     }
   }
 
   init(ok: boolean, error?: string) {
-    if (ok && window.matrixcs) {
-      this.client = window.matrixcs.createClient('https://matrix.org')
+    if (ok && window['matrixcs']) {
+      this.client = window['matrixcs'].createClient('https://matrix.org')
 
       let self = this
 
