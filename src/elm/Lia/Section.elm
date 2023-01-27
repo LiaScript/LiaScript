@@ -230,12 +230,27 @@ syncUpdate section update =
             else
                 { update
                     | code =
-                        List.map2 (\new old -> { new | log = old.log })
-                            (Array.toList update.code)
+                        merge (Array.toList update.code)
                             (Array.toList section.sync.code)
                             |> Array.fromList
                 }
     }
+
+
+merge : List Code_.Sync -> List Code_.Sync -> List Code_.Sync
+merge new old =
+    case ( new, old ) of
+        ( n :: ns, o :: os ) ->
+            { n | log = o.log } :: merge ns os
+
+        ( n :: ns, [] ) ->
+            n :: merge ns []
+
+        ( [], o :: os ) ->
+            o :: merge [] os
+
+        ( [], [] ) ->
+            []
 
 
 syncQuiz : Container Quiz_.Sync -> Section -> Section

@@ -61,7 +61,14 @@ export class CRDT {
   }
 
   applyUpdate(update: Uint8Array) {
-    Y.applyUpdate(this.doc, update)
+    this.doc.transact(() => {
+      // this is required to update the online settings, if the user has been offline
+      // or if the system had determined that he is offline
+      if (this.peers.get(this.peerID) === false) {
+        this.peers.set(this.peerID, true)
+      }
+      Y.applyUpdate(this.doc, update)
+    })
   }
 
   log() {

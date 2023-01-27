@@ -312,7 +312,6 @@ export class Sync {
 
       case 'code': {
         if (event.track?.[0][0] === 'code' && event.track?.[1][0] === 'id') {
-          console.warn('******** PUBLISH ********', event.message.param.msg)
           this.db.updateCode(
             event.track[0][1],
             event.track[1][1],

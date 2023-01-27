@@ -175,7 +175,6 @@ customElements.define(
           if (this._blockEvents) {
             return
           }
-          //this.mux(() => {
 
           this.model.value = this._editor.getValue()
 
