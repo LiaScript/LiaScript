@@ -1,5 +1,6 @@
 import Lia from '../../liascript/types/lia.d'
 
+import * as helper from '../../helper'
 import { CRDT } from './db'
 
 /* This function is only required to generate a random string, that is used
@@ -84,6 +85,10 @@ export class Sync {
 
     const self = this
 
+    const throttleBroadcast = helper.throttle(() => {
+      self.broadcast(self.db.encode())
+    }, 1000)
+
     this.db = new CRDT(token, (event, origin) => {
       if (self.db) {
         //console.warn('ORIGIN', origin)
@@ -102,12 +107,12 @@ export class Sync {
             break
           }
           default: {
-            self.broadcast(self.db.encode())
+            throttleBroadcast()
             self.update()
           }
         }
 
-        self.db.log()
+        // self.db.log()
       }
     })
   }
