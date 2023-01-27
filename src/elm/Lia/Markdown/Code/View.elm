@@ -570,7 +570,7 @@ view_control { lang, id, version_active, version_count, running, terminal, sync 
 
                 Just True ->
                     btnIcon
-                        { title = "Switch to Editor"
+                        { title = "switch to base editor"
                         , tabbable = not running
                         , msg =
                             if running then
@@ -578,13 +578,13 @@ view_control { lang, id, version_active, version_count, running, terminal, sync 
 
                             else
                                 Just (ToggleSync id)
-                        , icon = "icon-sync"
+                        , icon = "icon-class-on"
                         }
                         [ Attr.class "lia-btn--transparent" ]
 
                 Just False ->
                     btnIcon
-                        { title = "Switch to Sync"
+                        { title = "switch to collaborative editor"
                         , tabbable = not running
                         , msg =
                             if running then
@@ -592,7 +592,7 @@ view_control { lang, id, version_active, version_count, running, terminal, sync 
 
                             else
                                 Just (ToggleSync id)
-                        , icon = "icon-person"
+                        , icon = "icon-class-off"
                         }
                         [ Attr.class "lia-btn--transparent" ]
             ]
