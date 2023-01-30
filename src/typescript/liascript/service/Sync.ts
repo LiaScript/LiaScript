@@ -1,7 +1,7 @@
 import * as Beaker from '../../sync/Beaker/index'
 import * as Edrys from '../../sync/Edrys/index'
 //import * as Jitsi from '../../sync/Jitsi/index'
-//import * as Matrix from '../../sync/Matrix/index'
+import * as Matrix from '../../sync/Matrix/index'
 import * as PubNub from '../../sync/PubNub/index'
 import * as GUN from '../../sync/Gun/index'
 
@@ -21,7 +21,7 @@ const Service = {
     'gun',
 
     //'jitsi',
-    //'matrix',
+    'matrix',
     'pubnub',
   ],
 
@@ -63,7 +63,7 @@ const Service = {
               break
 
             case 'matrix':
-              //sync = new Matrix.Sync(elmSend)
+              sync = new Matrix.Sync(cbConnection, elmSend)
               break
 
             case 'pubnub':

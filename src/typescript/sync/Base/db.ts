@@ -7,30 +7,21 @@ const QUIZ = 'q'
 const SURVEY = 's'
 const CODE = 'c'
 
-window['Y'] = Y
-
-function sanitize(data: object, whitelist: string[]) {
-  return whitelist.reduce(
-    (result, key) =>
-      data[key] !== undefined
-        ? Object.assign(result, { [key]: data[key] })
-        : result,
-    {}
-  )
-}
 export class CRDT {
-  protected doc: Y.Doc
+  public doc: Y.Doc
   protected peers: Y.Map<any>
   protected length: number
   protected peerID: string
 
   constructor(
     peerID: string,
-    callback: (event: any, origin: null | string) => void
+    callback?: (event: any, origin: null | string) => void
   ) {
     this.doc = new Y.Doc()
 
-    this.doc.on('update', callback)
+    if (callback) {
+      this.doc.on('update', callback)
+    }
 
     this.length = 0
     this.peerID = peerID

@@ -70,6 +70,7 @@
     "eslint": "^7.32.0",
     "katex": "^0.13.24",
     "logger.ts": "^1.0.5",
+    "matrix-crdt": "^0.2.0",
     "node-elm-compiler": "^5.0.6",
     "parcel": "^2.8.0",
     "parcel-reporter-multiple-static-file-copier": "^1.0.5",

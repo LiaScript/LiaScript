@@ -1,14 +1,34 @@
-//import { MatrixProvider } from "matrix-crdt";
+import { MatrixProvider } from 'matrix-crdt'
+import { MatrixClient } from 'matrix-js-sdk'
 import * as Base from '../Base/index'
 
+/**
+ * Implemented according to:
+ *
+ * <https://github.com/yousefED/matrix-crdt>
+ */
+
 export class Sync extends Base.Sync {
-  private client: any
+  private client: MatrixClient
+  private provider: any
 
   private config: {
-    user_id: string
-    device_id: string
-    access_token: string
-    home_server: string
+    baseURL: string
+    userId: string
+    accessToken: string
+  }
+
+  constructor(
+    cbConnection: (topic: string, msg: string) => void,
+    cbRelay: (data: Lia.Event) => void
+  ) {
+    // do not use the default update-observer
+    super(cbConnection, cbRelay, false)
+  }
+
+  destroy() {
+    this.client
+    super.destroy()
   }
 
   connect(data: {
@@ -22,6 +42,7 @@ export class Sync extends Base.Sync {
     }
   }) {
     super.connect(data)
+    this.config = data.config
 
     if (window['matrixcs']) {
       this.init(true)
@@ -36,16 +57,48 @@ export class Sync extends Base.Sync {
   }
 
   init(ok: boolean, error?: string) {
-    if (ok && window['matrixcs']) {
-      this.client = window['matrixcs'].createClient('https://matrix.org')
+    const id = this.uniqueID()
 
-      let self = this
+    if (ok && window['matrixcs'] && id) {
+      try {
+        this.client = window['matrixcs'].createClient(this.config)
 
-      this.client.registerGuest({ username: this.token }).then((login: any) => {
-        self.login = login
+        // Extra configuration needed for certain matrix-js-sdk
+        // calls to work without calling sync start functions
+        try {
+          // @ts-ignore
+          this.client.canSupportVoip = false
+          // @ts-ignore
+          this.client.clientOpts = {
+            lazyLoadMembers: true,
+          }
+        } catch (e) {
+          console.warn('Matrix set protected params failed:', e.message)
+        }
 
-        console.warn('checking', self)
-      })
+        this.provider = new MatrixProvider(this.db.doc, this.client, {
+          type: 'alias',
+          alias: id,
+        })
+        this.provider.initialize()
+
+        const self = this
+        this.db.doc.on('update', (event: any, origin: string) => {
+          if (origin === 'exit') {
+            self.destroy()
+          } else {
+            self.update()
+          }
+        })
+        this.sendConnect()
+      } catch (e) {
+        this.sendDisconnectError('Could not connect to Matrix: ' + e.message)
+      }
+    } else {
+      this.sendDisconnectError('Could not load Matrix browser lib. ' + error)
     }
   }
+
+  // Avoid annoying warnings
+  broadcast(data: Uint8Array): void {}
 }

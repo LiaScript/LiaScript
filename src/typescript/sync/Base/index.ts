@@ -57,10 +57,12 @@ export class Sync {
    *
    * @param cbConnection - send messages directly to the sync module
    * @param cbRelay - simply relay messages to LiaScript
+   * @param useInternalCallback - set this to false when custom y-js update-observers are used
    */
   constructor(
     cbConnection: (topic: string, msg: string) => void,
-    cbRelay: (data: Lia.Event) => void
+    cbRelay: (data: Lia.Event) => void,
+    useInternalCallback: boolean = true
   ) {
     let token
 
@@ -89,32 +91,28 @@ export class Sync {
       self.broadcast(self.db.encode())
     }, 1000)
 
-    this.db = new CRDT(token, (event, origin) => {
-      if (self.db) {
-        //console.warn('ORIGIN', origin)
-        //console.warn('DIFF  ', self.db.diff(event))
-        //console.warn('EVENT ', event)
+    this.db = new CRDT(
+      token,
+      useInternalCallback
+        ? (event, origin) => {
+            if (self.db) {
+              switch (origin) {
+                case 'exit': {
+                  self.broadcast(event)
+                  self.destroy()
+                  break
+                }
+                default: {
+                  throttleBroadcast()
+                  self.update()
+                }
+              }
 
-        switch (origin) {
-          /*case 'code': {
-            self.broadcast(event)
-            self.update()
-            break
-          }*/
-          case 'exit': {
-            self.broadcast(event)
-            self.destroy()
-            break
+              // self.db.log()
+            }
           }
-          default: {
-            throttleBroadcast()
-            self.update()
-          }
-        }
-
-        // self.db.log()
-      }
-    })
+        : undefined
+    )
   }
 
   /* to have a valid connection 3 things are required:

@@ -176,7 +176,7 @@ info =
         , Html.text "To synchronize the state between users, we apply "
         , link "Conflict Free Replicated Datatypes (CRDTs)" "https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type"
         , Html.text " as implemented by "
-        , link "Y-js" "https://github.com/yjs/yjs"
+        , yjsLink
         , Html.text ". Communication is realized with the help of different backends, which only provide a relay service. "
         , Html.text "The implementation can be found "
         , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync"
@@ -200,6 +200,11 @@ info =
         , Html.text "Note, most backend services are free, and you can also host them by your own. "
         , Html.text "There might be cases where the synchronization is slow or there are collisions, but we are working in the background on optimizations and fixes ;-)"
         ]
+
+
+yjsLink : Html msg
+yjsLink =
+    link "Y-js" "https://github.com/yjs/yjs"
 
 
 infoOn : Bool -> Backend -> Html msg
@@ -254,7 +259,16 @@ infoOn supported about =
                 [ Html.text "Not ready yet, but will be updated soon" ]
 
             ( Matrix _, _ ) ->
-                [ Html.text "Not ready yet, but will be updated soon" ]
+                [ link "[Matrix]" "https://matrix.org"
+                , Html.text " is an open network/standard/project for secure and decentralized real-time communication. "
+                , Html.text " You can find more information about it "
+                , link "here on Wikipedia" "https://en.wikipedia.org/wiki/Matrix_(protocol)"
+                , Html.text ". Thus, if you have access to the following settings, you can establish a classroom that uses the "
+                , link "Matrix-CRDT" "https://github.com/yousefED/matrix-crdt"
+                , Html.text " provider for "
+                , yjsLink
+                , Html.text "."
+                ]
 
             ( PubNub _, _ ) ->
                 [ link "PubNub" "https://www.pubnub.com"
