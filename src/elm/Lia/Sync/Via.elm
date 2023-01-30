@@ -5,6 +5,7 @@ module Lia.Sync.Via exposing
     , fromString
     , icon
     , info
+    , infoOn
     , input
     , toString
     , update
@@ -144,14 +145,66 @@ mapHead fn list =
             list
 
 
-info : Bool -> Backend -> Html msg
-info supported about =
+box : List (Html msg) -> Html msg
+box =
     Html.p
         [ Attr.style "padding" "5px 15px 5px 15px"
         , Attr.style "border" "1px solid white"
         , Attr.style "margin-top" "2rem"
         ]
-    <|
+
+
+line : Html msg
+line =
+    Html.hr [ Attr.style "margin" "5px 0px" ] []
+
+
+info : Html msg
+info =
+    box
+        [ Html.text "The LiaScript classroom enables a lightweight collaboration between small groups of users. "
+        , Html.text "\"Lightweight\" means that there is no chat (video-conferencing), no logging, and no user roles. "
+        , Html.text "Instead, there is only one global state created and shared between the browsers of all users. "
+        , Html.text "Thus, a user joins a room with her/his data and when she/he leaves, this data gets removed from the classroom. "
+        , Html.text "No data is stored, and no data gets preserved, it is only shared among uses during a classroom session. "
+        , Html.text "LiaScript enables the synchronization on the following elements:"
+        , Html.ol [ Attr.style "padding" "10px 25px 0px" ]
+            [ Html.li [] [ Html.text "Global overview on quizzes" ]
+            , Html.li [] [ Html.text "Global overview on surveys" ]
+            , Html.li [] [ Html.text "Collaborative editing of executable code snippets (you have to switch to sync-mode, per editor)" ]
+            ]
+        , Html.text "To synchronize the state between users, we apply "
+        , link "Conflict Free Replicated Datatypes (CRDTs)" "https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type"
+        , Html.text " as implemented by "
+        , link "Y-js" "https://github.com/yjs/yjs"
+        , Html.text ". Communication is realized with the help of different backends, which only provide a relay service. "
+        , Html.text "The implementation can be found "
+        , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync"
+        , Html.text ". Different browsers might support different backends, which require different settings. "
+        , Html.text "You can help us with implementing other backend services. "
+        , line
+        , Html.text "Every room needs a unique name; you can click on the generator-button to do this randomly. "
+        , Html.text "After a successful connection, you can either share your settings with your audience or the new URL, which contains the entire classroom configuration. "
+        , Html.text "A combination of your course-URL and the room name are used to create a unique ID and to prevent collisions with other courses. "
+        , Html.text "However, if you want to establish a connection between exported courses (see "
+        , link "LiaScript-Exporter" ""
+        , Html.text ") on different platforms, such as "
+        , link "Moodle" "https://en.wikipedia.org/wiki/Moodle"
+        , Html.text ", "
+        , link "ILIAS" "https://en.wikipedia.org/wiki/ILIAS"
+        , Html.text ", "
+        , link "OPAL" "https://de.wikipedia.org/wiki/OPAL_(Lernplattform)"
+        , Html.text ", etc., you can put your room name in single or double quotation marks. "
+        , Html.text "This will instruct LiaScript to use the room name only (no course-URL), but you will have to make sure that all users are on the same course and version, to prevent collisions ..."
+        , line
+        , Html.text "Note, most backend services are free, and you can also host them by your own. "
+        , Html.text "There might be cases where the synchronization is slow or there are collisions, but we are working in the background on optimizations and fixes ;-)"
+        ]
+
+
+infoOn : Bool -> Backend -> Html msg
+infoOn supported about =
+    box <|
         case ( about, supported ) of
             ( Beaker, True ) ->
                 [ Html.text "We are glad you are using the "
