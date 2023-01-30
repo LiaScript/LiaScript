@@ -3,6 +3,12 @@ import ace from 'ace-builds/src-min-noconflict/ace'
 import * as EDITOR from './editor-modes'
 import * as helper from '../helper'
 
+type Update = {
+  action: 'insert' | 'remove'
+  index: number
+  content: string
+}
+
 function markerStyle(name: string): string {
   if (typeof name === 'string') {
     name =
@@ -39,6 +45,29 @@ function addMarker(color: string, name?: string | undefined) {
   }
 }
 
+function throttle(cb: (_: Update[]) => void, delay: number = 300) {
+  let storedArgs: Update[] = []
+  let timerID: number | null = null
+
+  function checkStoredArgs() {
+    if (storedArgs.length > 0) {
+      cb(storedArgs)
+      storedArgs = []
+    }
+
+    timerID = null
+  }
+
+  return (args: Update) => {
+    if (timerID) {
+      window.clearTimeout(timerID)
+    }
+
+    storedArgs.push(args)
+    timerID = window.setTimeout(checkStoredArgs, delay)
+  }
+}
+
 customElements.define(
   'lia-editor',
   class extends HTMLElement {
@@ -51,11 +80,6 @@ customElements.define(
 
     private model: {
       value: string
-      update: {
-        action: 'insert' | 'remove'
-        index: number
-        content: string
-      }
       theme: string
       mode: string
       shared: null | string
@@ -87,11 +111,6 @@ customElements.define(
 
       this.model = {
         value: '',
-        update: {
-          action: 'insert',
-          index: 0,
-          content: '',
-        },
         theme: '',
         mode: 'text',
         shared: null,
@@ -151,12 +170,6 @@ customElements.define(
         fontFamily: this.model.fontFamily,
       })
 
-      this.model.update = {
-        action: 'insert',
-        index: 0,
-        content: '',
-      }
-
       if (!this.model.showCursor) {
         this._editor.renderer.$cursorLayer.element.style.display = 'none'
       }
@@ -168,6 +181,14 @@ customElements.define(
       this._editor.setAutoScrollEditorIntoView(true)
 
       const input = this._editor.textInput.getElement()
+
+      const dispatchUpdateEvent = throttle((events: Update[]) => {
+        this.dispatchEvent(
+          new CustomEvent('editorUpdateEvent', {
+            detail: events,
+          })
+        )
+      })
 
       input.setAttribute('role', 'application')
       if (!this.model.readOnly) {
@@ -181,21 +202,14 @@ customElements.define(
           this.dispatchEvent(new CustomEvent('editorUpdate'))
 
           if (!this.blockUpdate) {
-            this.model.update = {
+            dispatchUpdateEvent({
               action: event.action,
               index: this._editor
                 .getSession()
                 .doc.positionToIndex(event.start, 0),
               content: event.lines.join('\n'),
-            }
-
-            this.dispatchEvent(
-              new CustomEvent('editorUpdateEvent', {
-                detail: { ...this.model.update },
-              })
-            )
+            })
           }
-          // })
         }
 
         this._editor.on('change', runDispatch)

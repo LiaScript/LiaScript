@@ -31,6 +31,7 @@ module Lia.Markdown.Code.Editor exposing
     , value
     )
 
+import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events
@@ -45,12 +46,17 @@ type alias Event =
     }
 
 
-encode : Event -> JE.Value
-encode event =
+encode : Array Event -> JE.Value
+encode =
+    JE.array encode_
+
+
+encode_ : Event -> JE.Value
+encode_ { action, index, content } =
     JE.object
-        [ ( "action", JE.string event.action )
-        , ( "index", JE.int event.index )
-        , ( "content", JE.string event.content )
+        [ ( "action", JE.string action )
+        , ( "index", JE.int index )
+        , ( "content", JE.string content )
         ]
 
 
@@ -74,12 +80,13 @@ blockUpdate =
     boolean "blockUpdate"
 
 
-onChangeEvent : (Event -> msg) -> Html.Attribute msg
+onChangeEvent : (Array Event -> msg) -> Html.Attribute msg
 onChangeEvent msg =
     JD.map3 Event
         (JD.field "action" JD.string)
         (JD.field "index" JD.int)
         (JD.field "content" JD.string)
+        |> JD.array
         |> JD.at [ "detail" ]
         |> JD.map msg
         |> Html.Events.on "editorUpdateEvent"

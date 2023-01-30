@@ -220,27 +220,29 @@ export class CRDT {
     id: number,
     i: number,
     j: number,
-    msg: {
+    messages: Array<{
       action: 'insert' | 'remove'
       index: number
       content: string
-    }
+    }>
   ) {
     if (this.has(CODE, id, i, j)) {
       this.doc.transact(() => {
         const code = this.getText(CODE, id, i, j)
 
-        switch (msg.action) {
-          case 'insert': {
-            code.insert(msg.index, msg.content)
-            break
-          }
-          case 'remove': {
-            code.delete(msg.index, msg.content.length)
-            break
-          }
-          default: {
-            console.warn('Sync code, unknown action ->', msg)
+        for (let msg of messages) {
+          switch (msg.action) {
+            case 'insert': {
+              code.insert(msg.index, msg.content)
+              break
+            }
+            case 'remove': {
+              code.delete(msg.index, msg.content.length)
+              break
+            }
+            default: {
+              console.warn('Sync code, unknown action ->', msg)
+            }
           }
         }
       }, 'code')
