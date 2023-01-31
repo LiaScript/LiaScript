@@ -59,6 +59,7 @@
     "@webcomponents/webcomponentsjs": "^2.6.0",
     "ace-builds": "^1.14.0",
     "caniuse-lite": "^1.0.30001445",
+    "crypto-browserify": "^3.12.0",
     "dexie": "^2.0.4",
     "easy-speech": "^1.2.1",
     "echarts": "^5.4.1",
@@ -77,11 +78,12 @@
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
     "sass": "^1.56.1",
+    "stream-browserify": "^3.0.0",
     "tsc": "^2.0.4",
     "typescript": "^4.9.4",
     "uint8-to-base64": "^0.2.0",
+    "util": "^0.12.5",
     "workbox-cli": "^6.5.4",
-    "y-generic-sync": "^1.0.5",
     "yjs": "^13.5.39"
   },
   "browserslist": [

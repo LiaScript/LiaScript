@@ -23,7 +23,7 @@ type Backend
     = Beaker
     | Edrys
     | GUN String
-    | Jitsi
+    | Jitsi String
     | Matrix { baseURL : String, userId : String, accessToken : String }
     | PubNub { pubKey : String, subKey : String }
 
@@ -46,8 +46,14 @@ toString full via =
                         ""
                    )
 
-        Jitsi ->
+        Jitsi domain ->
             "JitSi"
+                ++ (if full then
+                        "|" ++ domain
+
+                    else
+                        ""
+                   )
 
         Matrix { baseURL, userId, accessToken } ->
             "Matrix"
@@ -81,7 +87,7 @@ icon via =
             GUN _ ->
                 "icon-gundb icon-xs"
 
-            Jitsi ->
+            Jitsi _ ->
                 "icon-jitsi icon-xs"
 
             Matrix _ ->
@@ -111,7 +117,10 @@ fromString via =
             Just (GUN urls)
 
         [ "jitsi" ] ->
-            Just Jitsi
+            Just (Jitsi "")
+
+        [ "jitsi", domain ] ->
+            Just (Jitsi domain)
 
         [ "matrix" ] ->
             Just <| Matrix { baseURL = "", userId = "", accessToken = "" }
@@ -255,8 +264,14 @@ infoOn supported about =
                 , Html.text ". No data is stored or logged, it is just an easy method for transmitting information to all connected users."
                 ]
 
-            ( Jitsi, _ ) ->
-                [ Html.text "Not ready yet, but will be updated soon" ]
+            ( Jitsi _, _ ) ->
+                [ link "Jitsi" "https://en.wikipedia.org/wiki/Jitsi"
+                , Html.text " is a free and open-source multiplatform for video conferencing, voice over IP, and instant messaging. "
+                , Html.text "It is probably best known for its public video conferencing server "
+                , link "https://meet.jit.si" "https://meet.jit.si"
+                , Html.text ", that we use a backend to establish classrooms via data-channels. "
+                , Html.text "However, you can use their default service or host a server by your own, then you will have to change the domain setting."
+                ]
 
             ( Matrix _, _ ) ->
                 [ link "[Matrix]" "https://matrix.org"
@@ -299,6 +314,16 @@ view editable backend =
                 , value = urls
                 , placeholder = ""
                 , label = Html.text "relay server"
+                }
+
+        Jitsi domain ->
+            input
+                { active = editable
+                , type_ = "input"
+                , msg = InputJitsi
+                , value = domain
+                , placeholder = ""
+                , label = Html.text "domain"
                 }
 
         Matrix { baseURL, userId, accessToken } ->
@@ -389,6 +414,7 @@ type Msg
     = InputGun String
     | InputPubNub String String
     | InputMatrix String String
+    | InputJitsi String
 
 
 update : Msg -> Backend -> Backend
@@ -396,6 +422,9 @@ update msg backend =
     case ( msg, backend ) of
         ( InputGun urls, GUN _ ) ->
             GUN urls
+
+        ( InputJitsi domain, Jitsi _ ) ->
+            Jitsi domain
 
         ( InputPubNub "pub" new, PubNub data ) ->
             PubNub { data | pubKey = new }
@@ -426,6 +455,9 @@ eq a b =
             True
 
         ( PubNub _, PubNub _ ) ->
+            True
+
+        ( Jitsi _, Jitsi _ ) ->
             True
 
         _ ->

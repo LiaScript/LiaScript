@@ -67,7 +67,7 @@ init supportedBackends =
             [ Via.Beaker
             , Via.Edrys
             , Via.GUN Const.gunDB_ServerURL
-            , Via.Jitsi
+            , Via.Jitsi Const.jitsi_Domain
             , Via.Matrix { baseURL = "", userId = "", accessToken = "" }
             , Via.PubNub { pubKey = "", subKey = "" }
             ]
@@ -96,6 +96,9 @@ isMember list element =
             ( True, element )
 
         ( (Via.PubNub _) :: _, Via.PubNub _ ) ->
+            ( True, element )
+
+        ( (Via.Jitsi _) :: _, Via.Jitsi _ ) ->
             ( True, element )
 
         ( e :: es, _ ) ->

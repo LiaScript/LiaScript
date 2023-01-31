@@ -40,6 +40,10 @@ connect param =
                             |> List.filter (String.isEmpty >> not)
                             |> JE.list JE.string
 
+                    Via.Jitsi domain ->
+                        domain
+                            |> JE.string
+
                     Via.Matrix { baseURL, userId, accessToken } ->
                         JE.object
                             [ ( "baseURL", JE.string baseURL )
