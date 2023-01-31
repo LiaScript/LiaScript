@@ -27,6 +27,7 @@ type alias Settings =
     , customTheme : Maybe String
     , tooltips : Bool
     , sync : Maybe Bool
+    , showQRCode : Bool
     , tts : TTS
     }
 
@@ -72,6 +73,7 @@ init hasShareApi mode =
     , customTheme = Nothing
     , tooltips = False
     , sync = Just False
+    , showQRCode = False
     , tts =
         { preferBrowser = False
         , isBrowserSupported = False
