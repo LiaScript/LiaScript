@@ -148,10 +148,19 @@ filter : Settings -> Dict String sync -> Maybe (List sync)
 filter settings container =
     case id settings.state of
         Just main ->
-            container
-                |> Dict.filter (filter_ (Set.insert main settings.peers))
-                |> Dict.values
-                |> Just
+            -- only show the result of a voting or quizzes if the user has also solved it ...
+            if
+                container
+                    |> Dict.keys
+                    |> List.member main
+            then
+                container
+                    |> Dict.filter (filter_ (Set.insert main settings.peers))
+                    |> Dict.values
+                    |> Just
+
+            else
+                Nothing
 
         _ ->
             Nothing
@@ -174,6 +183,8 @@ filter_ ids key _ =
     Set.member key ids
 
 
+{-| Get the own unique user-id only if a connection was established.
+-}
 id : State -> Maybe String
 id state =
     case state of
