@@ -553,22 +553,6 @@ customElements.define(
       this._blockUpdate = value
     }
 
-    get update(): {
-      action: 'insert' | 'remove'
-      index: number
-      content: string
-    } {
-      return this.model.update
-    }
-
-    set update(event: {
-      action: 'insert' | 'remove'
-      index: number
-      content: string
-    }) {
-      console.warn('Problem Ace: set update event =>', event)
-    }
-
     get focusing() {
       return this._focus
     }

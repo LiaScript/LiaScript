@@ -20,6 +20,32 @@ function random(length: number = 16) {
   return str
 }
 
+function dynamicGossip(self: Sync) {
+  let timerID: number | null = null
+
+  function delay() {
+    return (self.db.getPeers().length + 1) * 2000
+  }
+
+  function publish() {
+    try {
+      self.broadcast(self.db.encode())
+
+      timerID = window.setTimeout(publish, delay())
+    } catch (e) {
+      timerID = null
+    }
+  }
+
+  return () => {
+    if (timerID) {
+      window.clearTimeout(timerID)
+    }
+
+    timerID = window.setTimeout(publish, delay())
+  }
+}
+
 export class Sync {
   /** A course is defined by the URL, which shall be loaded by all users.
    */
@@ -48,7 +74,8 @@ export class Sync {
   protected cbConnection: (topic: string, msg: string) => void
   protected cbRelay: (data: Lia.Event) => void
 
-  protected db: CRDT
+  public db: CRDT
+  public gossip: () => void
 
   /** To initialize the communication, two callbacks are required. While the
    * first is used to send configuration messages about successful join or
@@ -87,8 +114,11 @@ export class Sync {
 
     const self = this
 
+    const gossip = dynamicGossip(self)
+    this.gossip = gossip
     const throttleBroadcast = helper.throttle(() => {
       self.broadcast(self.db.encode())
+      gossip()
     }, 1000)
 
     this.db = new CRDT(
@@ -282,6 +312,7 @@ export class Sync {
       }
       case 'join': {
         this.db.init(event.message.param)
+        this.gossip()
         break
       }
 

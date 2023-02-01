@@ -113,7 +113,7 @@ export class CRDT {
     return vector
   }
 
-  getPeers() {
+  getPeers(): string[] {
     const peers = this.peers.toJSON()
 
     if (peers) {
