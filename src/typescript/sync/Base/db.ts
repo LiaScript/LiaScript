@@ -126,9 +126,12 @@ export class CRDT {
   }
 
   removePeer(peerID?: string) {
-    this.doc.transact(() => {
-      this.peers.set(peerID || this.peerID, false)
-    }, 'exit')
+    this.doc.transact(
+      () => {
+        this.peers.set(peerID || this.peerID, false)
+      },
+      peerID ? undefined : 'exit'
+    )
   }
 
   id(key: string, id1: number, id2: number, id3?: number) {
