@@ -64,6 +64,7 @@ type alias Flags =
     , screen : Screen
     , hasShareAPI : Bool
     , hasIndex : Bool
+    , seed : Int
     , sync :
         { support : List String
         , enabled : Bool
@@ -107,6 +108,7 @@ init flags url key =
                     { courseUrl | query = Just "README.md" }
             in
             Lia.Script.init
+                flags.seed
                 flags.hasShareAPI
                 openTableOfContents
                 flags.settings
@@ -122,6 +124,7 @@ init flags url key =
         -- Check if a URL was passed as a parameter
         ( _, Just query, _ ) ->
             Lia.Script.init
+                flags.seed
                 flags.hasShareAPI
                 openTableOfContents
                 flags.settings
@@ -146,6 +149,7 @@ init flags url key =
             case Session.getType courseUrl of
                 Session.Index ->
                     Lia.Script.init
+                        flags.seed
                         flags.hasShareAPI
                         openTableOfContents
                         flags.settings
@@ -159,6 +163,7 @@ init flags url key =
 
                 Session.Course _ fragment ->
                     Lia.Script.init
+                        flags.seed
                         flags.hasShareAPI
                         openTableOfContents
                         flags.settings
@@ -176,6 +181,7 @@ init flags url key =
 
                 Session.Class room fragment ->
                     Lia.Script.init
+                        flags.seed
                         flags.hasShareAPI
                         openTableOfContents
                         flags.settings
@@ -194,6 +200,7 @@ init flags url key =
 
         _ ->
             Lia.Script.init
+                flags.seed
                 flags.hasShareAPI
                 openTableOfContents
                 flags.settings
