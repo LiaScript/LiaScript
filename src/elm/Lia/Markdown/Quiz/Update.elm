@@ -370,10 +370,13 @@ check solution e =
         |> Return.val
 
 
-merge : Array { a | scriptID : Maybe Int } -> Array { a | scriptID : Maybe Int } -> Array { a | scriptID : Maybe Int }
+merge :
+    Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
+    -> Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
+    -> Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
 merge v1 =
     Array.toList
-        >> List.map2 (\sID body -> { body | scriptID = sID.scriptID }) (Array.toList v1)
+        >> List.map2 (\sID body -> { body | scriptID = sID.scriptID, randomize = sID.randomize }) (Array.toList v1)
         >> Array.fromList
 
 

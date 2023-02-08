@@ -35,6 +35,7 @@ type alias Element =
     , hint : Int
     , error_msg : String
     , scriptID : Maybe Int
+    , randomize : Maybe (List Int)
     }
 
 

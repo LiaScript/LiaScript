@@ -229,12 +229,16 @@ viewState config elem quiz =
                     (elem.solved == Solution.Open)
                     (Solution.toClass ( elem.solved, elem.trial ))
                     q
-                |> Tuple.mapSecond (List.map (Html.map (Vector_Update quiz.id)))
+                |> Tuple.mapSecond
+                    (shuffle elem.randomize
+                        >> List.map (Html.map (Vector_Update quiz.id))
+                    )
 
         ( Matrix_State s, Matrix_Type q ) ->
             ( []
             , [ s
                     |> Matrix.view config
+                        (shuffle elem.randomize)
                         (elem.solved == Solution.Open)
                         (Solution.toClass ( elem.solved, elem.trial ))
                         q
@@ -244,6 +248,19 @@ viewState config elem quiz =
 
         _ ->
             ( [], [] )
+
+
+shuffle : Maybe (List Int) -> List x -> List x
+shuffle randomize rows =
+    case randomize of
+        Nothing ->
+            rows
+
+        Just order ->
+            rows
+                |> List.map2 Tuple.pair order
+                |> List.sortBy Tuple.first
+                |> List.map Tuple.second
 
 
 {-| **private:** Return the current quiz as List of elements that contains:
