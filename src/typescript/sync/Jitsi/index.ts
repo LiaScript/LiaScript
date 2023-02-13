@@ -40,6 +40,7 @@ export class Sync extends Base {
 
     if (ok && window['JitsiMeetJS'] && id) {
       window['JitsiMeetJS'].init()
+      window['JitsiMeetJS'].setLogLevel(window['JitsiMeetJS'].logLevels.ERROR)
 
       // https://codepen.io/chadwallacehart/pen/bGLypLY?editors=1010
       this.connection = new window['JitsiMeetJS'].JitsiConnection(null, null, {
