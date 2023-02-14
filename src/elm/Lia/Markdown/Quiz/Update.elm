@@ -14,9 +14,18 @@ import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type(..), Vector, comp, toState)
+import Lia.Markdown.Quiz.Types
+    exposing
+        ( Element
+        , State(..)
+        , Type(..)
+        , Vector
+        , comp
+        , reset
+        , toState
+        )
 import Lia.Markdown.Quiz.Vector.Update as Vector
-import Return exposing (Return, script)
+import Return exposing (Return)
 import Service.Console
 import Service.Database
 import Service.Event as Event exposing (Event)
@@ -112,7 +121,7 @@ update sectionID scripts msg vector =
                 ( Nothing, _, ( "load", param ) ) ->
                     param
                         |> Json.toVector
-                        |> Result.map (merge vector)
+                        |> Result.map (merge vector >> Array.map clearOnLoad)
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
@@ -142,7 +151,7 @@ update sectionID scripts msg vector =
                 ( Just "restore", _, ( cmd, param ) ) ->
                     param
                         |> Json.toVector
-                        |> Result.map (merge vector)
+                        |> Result.map (merge vector >> Array.map clearOnLoad)
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
@@ -197,6 +206,16 @@ toString state =
 
         _ ->
             ""
+
+
+clearOnLoad : Element -> Element
+clearOnLoad e =
+    case ( e.randomize, e.solved ) of
+        ( Just _, Solution.Open ) ->
+            { e | state = reset e.state }
+
+        _ ->
+            e
 
 
 
@@ -370,10 +389,13 @@ check solution e =
         |> Return.val
 
 
-merge : Array { a | scriptID : Maybe Int } -> Array { a | scriptID : Maybe Int } -> Array { a | scriptID : Maybe Int }
+merge :
+    Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
+    -> Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
+    -> Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
 merge v1 =
     Array.toList
-        >> List.map2 (\sID body -> { body | scriptID = sID.scriptID }) (Array.toList v1)
+        >> List.map2 (\sID body -> { body | scriptID = sID.scriptID, randomize = sID.randomize }) (Array.toList v1)
         >> Array.fromList
 
 

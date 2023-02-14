@@ -84,6 +84,7 @@ type alias Section =
     , footnote2show : Maybe String
     , sync : Maybe Sync
     , persistent : Maybe Bool
+    , seed : Int
     }
 
 
@@ -149,8 +150,8 @@ type alias Base =
 {-| Initialize a section with a back-reference to its position within an array
 as well as the preprocessed section data (indentation, title, body-code).
 -}
-init : Int -> Base -> Section
-init id base =
+init : Int -> Int -> Base -> Section
+init seed id base =
     { code = base.code
     , title = base.title
     , indentation = base.indentation
@@ -171,6 +172,7 @@ init id base =
     , footnote2show = Nothing
     , sync = Nothing
     , persistent = Nothing
+    , seed = seed + (10 * id)
     }
 
 

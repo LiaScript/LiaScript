@@ -1,6 +1,7 @@
 module Lia.Markdown.Quiz.Parser exposing
     ( maybeJS
     , parse
+    , randomize
     )
 
 import Array
@@ -41,10 +42,11 @@ import Lia.Markdown.Quiz.Vector.Parser as Vector
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
+import PseudoRandom
 
 
-parse : Parser Context Quiz
-parse =
+parse : Maybe Int -> Parser Context Quiz
+parse seed =
     [ map Matrix_Type Matrix.parse
     , map Vector_Type Vector.parse
     , onsuccess Generic_Type generic
@@ -52,11 +54,28 @@ parse =
     ]
         |> choice
         |> andThen adds
-        |> andThen modify_State
+        |> andThen (modify_State seed)
 
 
+randomize : Maybe Int -> Type -> Maybe (List Int)
+randomize seed typeOf =
+    case ( seed, typeOf ) of
+        ( Just randomSeed, Vector_Type vec ) ->
+            Just
+                (PseudoRandom.integerSequence
+                    (List.length vec.options)
+                    randomSeed
+                )
 
---andThen maybeJS
+        ( Just randomSeed, Matrix_Type vec ) ->
+            Just
+                (PseudoRandom.integerSequence
+                    (List.length vec.options)
+                    randomSeed
+                )
+
+        _ ->
+            Nothing
 
 
 adds : Type -> Parser Context Quiz
@@ -87,14 +106,14 @@ hints =
         |> optional []
 
 
-modify_State : Quiz -> Parser Context Quiz
-modify_State q =
+modify_State : Maybe Int -> Quiz -> Parser Context Quiz
+modify_State seed q =
     let
         add_state id s =
             { s
                 | quiz_vector =
                     Array.push
-                        (Element Solution.Open (initState q.quiz) 0 0 "" id)
+                        (Element Solution.Open (initState q.quiz) 0 0 "" id (randomize seed q.quiz))
                         s.quiz_vector
             }
     in
