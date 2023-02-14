@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.27
+version:  0.10.28
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,12 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.28** (14/02/2023)
+
+- refact(Sync): Add code splitting for faster loading
+- chore: Npm upgrade of ace, caniuse, sass
+- chore: Add bundle analyzer for inspecting code-size
 
 **0.10.27** (14/02/2023)
 
