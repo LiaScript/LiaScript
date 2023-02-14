@@ -1,8 +1,13 @@
 // @ts-ignore
 import ace from 'ace-builds/src-min-noconflict/ace'
 import * as EDITOR from './editor-modes'
-
 import * as helper from '../helper'
+
+type Update = {
+  action: 'insert' | 'remove'
+  index: number
+  content: string
+}
 
 function markerStyle(name: string): string {
   if (typeof name === 'string') {
@@ -40,12 +45,39 @@ function addMarker(color: string, name?: string | undefined) {
   }
 }
 
+function throttle(cb: (_: Update[]) => void, delay: number = 300) {
+  let storedArgs: Update[] = []
+  let timerID: number | null = null
+
+  function checkStoredArgs() {
+    if (storedArgs.length > 0) {
+      cb(storedArgs)
+      storedArgs = []
+    }
+
+    timerID = null
+  }
+
+  return (args: Update) => {
+    if (timerID) {
+      window.clearTimeout(timerID)
+    }
+
+    storedArgs.push(args)
+    timerID = window.setTimeout(checkStoredArgs, delay)
+  }
+}
+
 customElements.define(
   'lia-editor',
   class extends HTMLElement {
     private _editor: any
     private _focus: boolean
     private _ariaLabel: string
+    private _blockUpdate: boolean = false
+
+    private _blockEvents: boolean = false
+
     private model: {
       value: string
       theme: string
@@ -151,14 +183,38 @@ customElements.define(
 
       const input = this._editor.textInput.getElement()
 
+      const dispatchUpdateEvent = throttle((events: Update[]) => {
+        this.dispatchEvent(
+          new CustomEvent('editorUpdateEvent', {
+            detail: events,
+          })
+        )
+      })
+
       input.setAttribute('role', 'application')
       if (!this.model.readOnly) {
-        const runDispatch = helper.debounce(() => {
+        const runDispatch = (event: any) => {
+          if (this._blockEvents) {
+            return
+          }
+
           this.model.value = this._editor.getValue()
-          this.dispatchEvent(new CustomEvent('editorChanged'))
-        })
+
+          this.dispatchEvent(new CustomEvent('editorUpdate'))
+
+          if (!this.blockUpdate) {
+            dispatchUpdateEvent({
+              action: event.action,
+              index: this._editor
+                .getSession()
+                .doc.positionToIndex(event.start, 0),
+              content: event.lines.join('\n'),
+            })
+          }
+        }
 
         this._editor.on('change', runDispatch)
+
         input.setAttribute(
           'aria-label',
           'Code-editor in ' + this.model.mode + ' mode'
@@ -197,6 +253,7 @@ customElements.define(
 
     this.model[option] = value
     */
+
       if (this._editor) {
         try {
           this._editor.setOption(option, value)
@@ -470,8 +527,31 @@ customElements.define(
     set value(value: string) {
       if (this.model.value !== value) {
         this.model.value = value
-        this.setOption('value', value)
+
+        if (this._editor) {
+          this.blockUpdate = true
+
+          this._blockEvents = true
+          const cursor = this._editor.getSelection().getCursor()
+          this.setOption('value', value)
+          this._editor.getSelection().moveTo(cursor.row, cursor.column)
+          this._blockEvents = false
+
+          setTimeout(() => {
+            this.blockUpdate = false
+          }, 150)
+        }
       }
+    }
+
+    get blockUpdate() {
+      //console.warn('Getting block of ->', this._blockUpdate)
+      return this._blockUpdate
+    }
+
+    set blockUpdate(value: boolean) {
+      //console.warn('Setting block to ->', value)
+      this._blockUpdate = value
     }
 
     get focusing() {

@@ -11,8 +11,11 @@ port module Lia.Markdown.Update exposing
     , updateScript
     )
 
+import Array
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
+import Lia.Markdown.Code.Sync as Code_
 import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
@@ -26,13 +29,12 @@ import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Markdown.Task.Update as Task
 import Lia.Section as Section exposing (Section, SubSection(..))
-import Lia.Sync.Container.Local as Container
+import Lia.Sync.Container as Container
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
 import Return exposing (Return)
 import Service.Console
 import Service.Event as Event exposing (Event)
-import Service.Sync
 import Service.TTS
 import Translations exposing (Lang(..))
 
@@ -82,19 +84,25 @@ update sync globals msg section =
                 |> Return.mapEvents "effect" section.id
 
         UpdateCode childMsg ->
-            section.code_model
-                |> Code.update (Just section.id) section.effect_model.javascript childMsg
-                |> Return.mapVal (\v -> { section | code_model = v })
+            let
+                oldSync =
+                    section.sync
+
+                ( newSync, newVal ) =
+                    section.code_model
+                        |> Code.update section.sync.code (Just section.id) section.effect_model.javascript childMsg
+            in
+            newVal
+                |> Return.mapVal (\v -> { section | code_model = v, sync = { oldSync | code = Maybe.withDefault oldSync.code newSync } })
                 |> Return.mapEvents "code" section.id
                 |> updateScript
 
         UpdateQuiz childMsg ->
             section.quiz_vector
-                |> Quiz.update (Just section.id) section.effect_model.javascript childMsg
+                |> Quiz.update (Sync.isConnected sync) (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | quiz_vector = v })
                 |> Return.mapEvents "quiz" section.id
                 |> updateScript
-                |> syncQuiz sync
 
         UpdateTask childMsg ->
             section.task_vector
@@ -112,11 +120,10 @@ update sync globals msg section =
 
         UpdateSurvey childMsg ->
             section.survey_vector
-                |> Survey.update (Just section.id) section.effect_model.javascript childMsg
+                |> Survey.update (Sync.isConnected sync) (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | survey_vector = v })
                 |> Return.mapEvents "survey" section.id
                 |> updateScript
-                |> syncSurvey sync
 
         UpdateTable childMsg ->
             section.table_vector
@@ -126,35 +133,32 @@ update sync globals msg section =
 
         Sync event ->
             case event.message.cmd of
+                "code" ->
+                    case
+                        event
+                            |> Event.message
+                            -- TODO
+                            |> Tuple.second
+                            |> JD.decodeValue (JD.array Code_.decoder)
+                    of
+                        Ok state ->
+                            section
+                                |> Section.syncCode state
+                                |> Return.val
+
+                        _ ->
+                            section
+                                |> Return.val
+
                 "quiz" ->
                     case
-                        ( Maybe.andThen .quiz section.sync
-                        , event
+                        event
                             |> Event.message
                             -- TODO
                             |> Tuple.second
                             |> Container.decode Quiz_.decoder
-                        )
                     of
-                        ( Just old, Ok new ) ->
-                            case Container.union old new of
-                                ( True, state ) ->
-                                    section
-                                        |> Section.syncQuiz state
-                                        |> Return.val
-                                        |> Return.batchEvent
-                                            (state
-                                                |> Container.encode Quiz_.encoder
-                                                |> Service.Sync.publish "quiz"
-                                                |> Event.pushWithId "local" section.id
-                                            )
-
-                                ( False, state ) ->
-                                    section
-                                        |> Section.syncQuiz state
-                                        |> Return.val
-
-                        ( Nothing, Ok state ) ->
+                        Ok state ->
                             section
                                 |> Section.syncQuiz state
                                 |> Return.val
@@ -165,33 +169,13 @@ update sync globals msg section =
 
                 "survey" ->
                     case
-                        ( Maybe.andThen .survey section.sync
-                        , event
+                        event
                             |> Event.message
                             -- TODO
                             |> Tuple.second
                             |> Container.decode Survey_.decoder
-                        )
                     of
-                        ( Just old, Ok new ) ->
-                            case Container.union old new of
-                                ( True, state ) ->
-                                    section
-                                        |> Section.syncSurvey state
-                                        |> Return.val
-                                        |> Return.batchEvent
-                                            (state
-                                                |> Container.encode Survey_.encoder
-                                                |> Service.Sync.publish "survey"
-                                                |> Event.pushWithId "local" section.id
-                                            )
-
-                                ( False, state ) ->
-                                    section
-                                        |> Section.syncSurvey state
-                                        |> Return.val
-
-                        ( Nothing, Ok state ) ->
+                        Ok state ->
                             section
                                 |> Section.syncSurvey state
                                 |> Return.val
@@ -226,68 +210,6 @@ update sync globals msg section =
 
         NoOp ->
             Return.val section
-
-
-syncQuiz : Sync.State -> Return Section msg sub -> Return Section msg sub
-syncQuiz sync ret =
-    case ( ret.synchronize, Sync.id sync ) of
-        ( True, Just id ) ->
-            case
-                ret.value.quiz_vector
-                    |> Container.init id Quiz_.sync
-                    |> Container.union
-                        (ret.value.sync
-                            |> Maybe.andThen .quiz
-                            |> Maybe.withDefault Container.empty
-                        )
-            of
-                ( True, state ) ->
-                    { ret | synchronize = False }
-                        |> Return.mapVal (Section.syncQuiz state)
-                        |> Return.batchEvent
-                            (state
-                                |> Container.encode Quiz_.encoder
-                                |> Service.Sync.publish "quiz"
-                                |> Event.pushWithId "local" ret.value.id
-                            )
-
-                ( False, state ) ->
-                    { ret | synchronize = False }
-                        |> Return.mapVal (Section.syncQuiz state)
-
-        _ ->
-            { ret | synchronize = False }
-
-
-syncSurvey : Sync.State -> Return Section msg sub -> Return Section msg sub
-syncSurvey sync ret =
-    case ( ret.synchronize, Sync.id sync ) of
-        ( True, Just id ) ->
-            case
-                ret.value.survey_vector
-                    |> Container.init id Survey_.sync
-                    |> Container.union
-                        (ret.value.sync
-                            |> Maybe.andThen .survey
-                            |> Maybe.withDefault Container.empty
-                        )
-            of
-                ( True, state ) ->
-                    { ret | synchronize = False }
-                        |> Return.mapVal (Section.syncSurvey state)
-                        |> Return.batchEvent
-                            (state
-                                |> Container.encode Survey_.encoder
-                                |> Service.Sync.publish "survey"
-                                |> Event.pushWithId "local" ret.value.id
-                            )
-
-                ( False, state ) ->
-                    { ret | synchronize = False }
-                        |> Return.mapVal (Section.syncSurvey state)
-
-        _ ->
-            ret
 
 
 subs :
@@ -327,14 +249,15 @@ subUpdate js msg section =
 
                 UpdateCode childMsg ->
                     subsection.code_model
-                        |> Code.update Nothing js childMsg
+                        |> Code.update Array.empty Nothing js childMsg
+                        |> Tuple.second
                         |> Return.mapValCmd (\v -> SubSection { subsection | code_model = v }) UpdateCode
                         |> Return.mapEvents "code" subsection.id
 
                 UpdateQuiz childMsg ->
                     let
                         result =
-                            Quiz.update Nothing js childMsg subsection.quiz_vector
+                            Quiz.update False Nothing js childMsg subsection.quiz_vector
                     in
                     case result.sub of
                         Just _ ->
@@ -350,7 +273,7 @@ subUpdate js msg section =
                 UpdateSurvey childMsg ->
                     let
                         result =
-                            Survey.update Nothing js childMsg subsection.survey_vector
+                            Survey.update False Nothing js childMsg subsection.survey_vector
                     in
                     case result.sub of
                         Just _ ->

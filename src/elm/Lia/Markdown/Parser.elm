@@ -48,7 +48,7 @@ import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Table.Parser as Table
 import Lia.Markdown.Task.Parser as Task
 import Lia.Markdown.Types as Markdown
-import Lia.Parser.Context exposing (Context)
+import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
 import Lia.Parser.Indentation as Indent
 import Lia.Parser.Preprocessor exposing (title_tag)
@@ -108,8 +108,17 @@ elements =
             |> map Markdown.Survey
             |> andMap Survey.parse
         , md_annotations
-            |> map Markdown.Quiz
-            |> andMap Quiz.parse
+            |> andThen
+                (\attr ->
+                    map (Markdown.Quiz attr) <|
+                        if Attributes.isSet "data-randomize" attr then
+                            Context.getSeed
+                                |> map Just
+                                |> andThen Quiz.parse
+
+                        else
+                            Quiz.parse Nothing
+                )
             |> andMap solution
         , md_annotations
             |> map Markdown.Task

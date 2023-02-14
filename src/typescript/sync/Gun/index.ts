@@ -7,6 +7,13 @@ export class Sync extends Base.Sync {
   private store: string = ''
   private gunServer: string[] = []
 
+  destroy() {
+    this.gunServer = []
+    delete this.gun
+
+    super.destroy()
+  }
+
   async connect(data: {
     course: string
     room: string
@@ -21,7 +28,8 @@ export class Sync extends Base.Sync {
     } else {
       this.load(
         [
-          'https://cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/gun.min.js',
+          'https://cdn.jsdelivr.net/npm/gun/gun.js',
+          //'https://cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/gun.min.js',
           //'//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/axe.min.js',
           //'//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/sea.min.js',
           Crypto.url,
@@ -38,10 +46,12 @@ export class Sync extends Base.Sync {
       )
     }
 
-    if (ok && window.Gun) {
+    const id = this.uniqueID()
+
+    if (ok && window.Gun && id) {
       this.gun = window.Gun({ peers: this.gunServer })
 
-      this.store = btoa(this.uniqueID())
+      this.store = btoa(id)
 
       Crypto.init(this.password)
 
@@ -50,35 +60,29 @@ export class Sync extends Base.Sync {
         .get(this.store)
         .on(function (data: { msg: string }, key: string) {
           try {
-            let event = Crypto.decode(data.msg)
+            const [token, message] = Crypto.decode(data.msg)
 
-            if (event) {
-              // prevent looping
-              if (event.message.param.id !== self.token) {
-                self.sendToLia(event)
-              }
+            if (token != self.token && message != null) {
+              self.applyUpdate(Base.base64_to_unit8(message))
             }
           } catch (e) {
             console.warn('GunDB', e.message)
           }
         })
 
-      this.publish(null)
+      this.broadcast(null)
       this.sendConnect()
+    } else {
+      console.warn('Could not load resource:', error)
     }
   }
 
-  disconnect(event: Object) {
-    this.publish(null)
-    this.publish(event)
-
-    delete this.gun
-  }
-
-  publish(message: Object | null) {
+  broadcast(data: null | Uint8Array): void {
     if (this.gun) {
+      const message = data == null ? null : Base.uint8_to_base64(data)
+
       this.gun.get(this.store).put({
-        msg: Crypto.encode(message),
+        msg: Crypto.encode([this.token, message]),
       })
     }
   }

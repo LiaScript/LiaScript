@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.26
+version:  0.10.28
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,30 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.28** (14/02/2023)
+
+- refact(Sync): Add code splitting for faster loading
+- chore: Npm upgrade of ace, caniuse, sass
+- chore: Add bundle analyzer for inspecting code-size
+
+**0.10.27** (14/02/2023)
+
+- feat: New classroom that allows synchronizing quizzes, surveys, and editable code based on Y-js
+- fix: Service worker required a reload on updates, no should be fixed
+- feat: Quiz with randomize option for vector and matrix quizzes applied to shuffle rows:
+
+  ``` markdown
+  <!-- data-randomize -->
+  - [[X]] option 1
+  - [[ ]] option 2
+  - [[ ]] option 3
+  ```
+
+- feat: Clickable QR-Code at the share options displays a larger image
+- fix: Buggy handling of escape sequences for backticks in macros.
+- chore: Npm update echarts, ace-builds, typescript.
+- lang: Add french translation and friendly error message if quiz solution was not correct yet.
 
 **0.10.26** (16/01/2023)
 

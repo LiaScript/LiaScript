@@ -20,16 +20,14 @@ workbox.routing.registerRoute(
   // path starts with '/admin/'
   ({request, url}) => request.mode === 'navigate' &&
                       !url.pathname.startsWith('/LiveEditor/'),
-  new workbox.strategies.StaleWhileRevalidate()
+  new workbox.strategies.NetworkFirst()
 );
 
-workbox.routing.registerRoute(/\/$/, new workbox.strategies.NetworkFirst())
 workbox.routing.registerRoute(/\/*/, new workbox.strategies.NetworkFirst())
-workbox.routing.registerRoute(/.+\/*/, new workbox.strategies.NetworkFirst())
 
 workbox.routing.registerRoute(
   /https:\/\/code\.responsivevoice\.org/,
-  new workbox.strategies.StaleWhileRevalidate(),
+  new workbox.strategies.NetworkFirst(),
 )
 
 workbox.precaching.precacheAndRoute(self.__WB_MANIFEST)

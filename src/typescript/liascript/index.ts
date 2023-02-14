@@ -51,6 +51,7 @@ export class LiaScript {
         courseUrl: window.LIA.defaultCourseURL || courseUrl,
         script: script,
         settings: connector.getSettings(),
+        seed: Math.round(Math.random() * 10000000),
         screen: {
           width: window.innerWidth,
           height: window.innerHeight,

@@ -38,6 +38,7 @@ type Toggle
     = TableOfContents
     | Sound
     | Light
+    | QRCode
     | Sync
     | Action Action
     | SupportMenu
@@ -128,6 +129,9 @@ update main msg model =
 
         Toggle Sync ->
             no_log Nothing { model | sync = Maybe.map not model.sync }
+
+        Toggle QRCode ->
+            no_log Nothing { model | showQRCode = not model.showQRCode }
 
         Toggle (Action action) ->
             no_log

@@ -15,8 +15,8 @@ import Lia.Markdown.Quiz.Vector.Types as Vector
 import List
 
 
-view : Config sub -> Bool -> String -> Quiz -> State -> Html (Msg sub)
-view config open class quiz state =
+view : Config sub -> (List (Html (Msg sub)) -> List (Html (Msg sub))) -> Bool -> String -> Quiz -> State -> Html (Msg sub)
+view config shuffle open class quiz state =
     Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-last-col-sticky" ]
         [ Html.table [ Attr.class "lia-table lia-survey-matrix is-alternating" ]
             [ header config quiz.headers
@@ -24,6 +24,7 @@ view config open class quiz state =
                 |> Array.toList
                 |> List.indexedMap (tr open class)
                 |> List.map2 (add_text config) quiz.options
+                |> shuffle
                 |> Html.tbody [ Attr.class "lia-table__body lia-survey-matrix__body" ]
             ]
         ]

@@ -517,18 +517,15 @@ responsiveVoiceTTSText =
 
 showModal : Model -> Html Msg
 showModal model =
-    case ( model.modal, model.settings.sync ) of
-        ( Nothing, Just False ) ->
-            Html.text ""
-
-        ( _, Just True ) ->
+    case ( model.settings.sync, model.modal, model.settings.showQRCode ) of
+        ( Just True, _, _ ) ->
             model.sync
                 |> Sync.view
                 |> Html.map UpdateSync
                 |> List.singleton
                 |> modal (UpdateSettings (Settings_.Toggle Settings_.Sync)) Nothing
 
-        ( Just url, _ ) ->
+        ( _, Just url, _ ) ->
             modal (Media ( "", Nothing, Nothing ))
                 Nothing
                 [ Html.figure
@@ -553,5 +550,22 @@ showModal model =
                     ]
                 ]
 
-        ( _, Nothing ) ->
+        ( _, _, True ) ->
+            modal
+                (UpdateSettings (Settings_.Toggle Settings_.QRCode))
+                Nothing
+                [ Html.div
+                    [ Attr.style "height" "80%"
+                    , Attr.style "max-height" "800px"
+                    , Attr.style "width" "80%"
+                    , Attr.style "max-width" "800px"
+                    , Attr.style "margin-top" "calc(100vh * 0.08)"
+                    ]
+                    [ model.url
+                        |> Settings.qrCodeView model.translation
+                        |> Html.map UpdateSettings
+                    ]
+                ]
+
+        _ ->
             Html.text ""

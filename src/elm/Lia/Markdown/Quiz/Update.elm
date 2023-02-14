@@ -14,9 +14,19 @@ import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type(..), Vector, comp, toState)
+import Lia.Markdown.Quiz.Sync as Sync
+import Lia.Markdown.Quiz.Types
+    exposing
+        ( Element
+        , State(..)
+        , Type(..)
+        , Vector
+        , comp
+        , reset
+        , toState
+        )
 import Lia.Markdown.Quiz.Vector.Update as Vector
-import Return exposing (Return, script)
+import Return exposing (Return)
 import Service.Console
 import Service.Database
 import Service.Event as Event exposing (Event)
@@ -35,8 +45,8 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector msg sub
-update sectionID scripts msg vector =
+update : Bool -> Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector msg sub
+update sync sectionID scripts msg vector =
     case msg of
         Block_Update id _ ->
             update_ id vector (state_ msg)
@@ -56,7 +66,7 @@ update sectionID scripts msg vector =
                                 -->> syncSolution id
                                 |> update_ id vector
                                 |> store sectionID
-                                |> Return.doSync
+                                |> doSync sync sectionID (Just id)
 
                         Just scriptID ->
                             vector
@@ -105,18 +115,18 @@ update sectionID scripts msg vector =
                             _ ->
                                 return
                    )
-                |> Return.doSync
+                |> doSync sync sectionID (Just id)
 
         Handle event ->
             case Event.destructure event of
                 ( Nothing, _, ( "load", param ) ) ->
                     param
                         |> Json.toVector
-                        |> Result.map (merge vector)
+                        |> Result.map (merge vector >> Array.map clearOnLoad)
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
-                        |> Return.doSync
+                        |> doSync sync sectionID Nothing
 
                 ( Just "eval", id, ( "eval", param ) ) ->
                     case
@@ -130,44 +140,24 @@ update sectionID scripts msg vector =
                                 |> update_ id vector
                                 |> store sectionID
                                 |> Return.script (JS.submit scriptID event)
-                                |> Return.doSync
+                                |> doSync sync sectionID (Just id)
 
                         Nothing ->
                             param
                                 |> evalEventDecoder
                                 |> update_ id vector
                                 |> store sectionID
-                                |> Return.doSync
+                                |> doSync sync sectionID (Just id)
 
                 ( Just "restore", _, ( cmd, param ) ) ->
                     param
                         |> Json.toVector
-                        |> Result.map (merge vector)
+                        |> Result.map (merge vector >> Array.map clearOnLoad)
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
-                        |> Return.doSync
+                        |> doSync sync sectionID Nothing
 
-                {- |> (\ret ->
-                        case sync of
-                            Nothing ->
-                                ret
-
-                            Just sync_ ->
-                                let
-                                    ( vector_, events ) =
-                                        synchronize sync_ ret.value
-                                in
-                                vector_
-                                    |> Return.replace ret
-                                    |> Return.syncAppend events
-                   )
-                -}
-                {- Just ( "sync", Just section ) ->
-                   event
-                       |> Event.message
-                       |> syncUpdate vector section
-                -}
                 ( _, _, ( cmd, _ ) ) ->
                     vector
                         |> Return.val
@@ -199,58 +189,14 @@ toString state =
             ""
 
 
+clearOnLoad : Element -> Element
+clearOnLoad e =
+    case ( e.randomize, e.solved ) of
+        ( Just _, Solution.Open ) ->
+            { e | state = reset e.state }
 
-{-
-   syncUpdate : Vector -> Int -> JE.Value -> Return Vector msg sub
-   syncUpdate vector id state =
-       case
-           ( Array.get id vector
-           , Container.decode Synchronization.decoder state
-           )
-       of
-           ( Just element, Ok sync ) ->
-               case Container.union element.sync sync of
-                   ( True, _ ) ->
-                       vector
-                           |> Return.val
-
-                   ( False, union ) ->
-                       vector
-                           |> Array.set id { element | sync = union }
-                           |> Return.val
-                           |> Return.sync (Event.initWithId "sync" id (Container.encode Synchronization.encoder union))
-
-           _ ->
-               Return.val vector
--}
-{-
-   syncSolution : Int -> Sync.Settings -> Return Element msg sub -> Return Element msg sub
-   syncSolution id sync ret =
-       case Synchronization.toState ret.value of
-           Just syncState ->
-               case Sync.insert sync syncState ret.value.sync of
-                   ( False, newSync ) ->
-                       ret
-                           |> Return.mapVal (\v -> { v | sync = newSync })
-                           |> Return.syncMsg id (Container.encode Synchronization.encoder newSync)
-
-                   _ ->
-                       ret
-
-           _ ->
-               ret
--}
-{-
-   synchronize : Sync.Settings -> Vector -> ( Vector, List Event )
-   synchronize sync vector =
-       vector
-           |> Array.indexedMap (\i -> Return.val >> syncSolution i sync)
-           |> Array.map (\ret -> ( ret.value, ret.synchronize ))
-           |> Array.toList
-           |> List.unzip
-           |> Tuple.mapSecond List.concat
-           |> Tuple.mapFirst Array.fromList
--}
+        _ ->
+            e
 
 
 execute : Int -> State -> Script.Msg sub
@@ -370,10 +316,13 @@ check solution e =
         |> Return.val
 
 
-merge : Array { a | scriptID : Maybe Int } -> Array { a | scriptID : Maybe Int } -> Array { a | scriptID : Maybe Int }
+merge :
+    Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
+    -> Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
+    -> Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
 merge v1 =
     Array.toList
-        >> List.map2 (\sID body -> { body | scriptID = sID.scriptID }) (Array.toList v1)
+        >> List.map2 (\sID body -> { body | scriptID = sID.scriptID, randomize = sID.randomize }) (Array.toList v1)
         >> Array.fromList
 
 
@@ -393,3 +342,31 @@ init fn return =
         )
         return
         return.value
+
+
+doSync : Bool -> Maybe Int -> Maybe Int -> Return Vector msg sub -> Return Vector msg sub
+doSync sync sectionID vectorID ret =
+    if not sync then
+        ret
+
+    else
+        case ( sectionID, vectorID ) of
+            ( Nothing, _ ) ->
+                ret
+
+            ( Just _, Nothing ) ->
+                ret
+                    |> Return.batchEvents
+                        (ret.value
+                            |> Array.toList
+                            |> List.indexedMap Sync.event
+                        )
+
+            ( Just _, Just id ) ->
+                ret
+                    |> Return.batchEvent
+                        (ret.value
+                            |> Array.get id
+                            |> Maybe.map (Sync.event id)
+                            |> Maybe.withDefault Event.none
+                        )

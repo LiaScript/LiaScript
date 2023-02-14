@@ -31,6 +31,12 @@ toVector : JD.Value -> Result JD.Error Vector
 toVector =
     JD.bool
         |> JD.array
-        |> JD.map (\v -> { state = v, scriptID = Nothing })
+        |> JD.map
+            (\v ->
+                { state = v
+                , scriptID = Nothing
+                , randomize = Nothing
+                }
+            )
         |> JD.array
         |> JD.decodeValue

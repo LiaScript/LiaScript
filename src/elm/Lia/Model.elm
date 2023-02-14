@@ -88,6 +88,7 @@ type alias Model =
     , modal : Maybe String
     , sync : Sync.Settings
     , persistent : Bool
+    , seed : Int
     }
 
 
@@ -107,8 +108,8 @@ type alias Model =
     active section (defaults to 1)
 
 -}
-init : Bool -> Bool -> JE.Value -> { support : List String, enabled : Bool } -> String -> String -> String -> Maybe String -> Model
-init hasShareApi openTOC settings backends url readme origin anchor =
+init : Int -> Bool -> Bool -> JE.Value -> { support : List String, enabled : Bool } -> String -> String -> String -> Maybe String -> Model
+init seed hasShareApi openTOC settings backends url readme origin anchor =
     let
         default =
             Settings.init hasShareApi Settings.Textbook
@@ -149,6 +150,7 @@ init hasShareApi openTOC settings backends url readme origin anchor =
     , modal = Nothing
     , sync = Sync.init backends.support
     , persistent = False
+    , seed = seed
     }
 
 

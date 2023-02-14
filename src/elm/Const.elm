@@ -3,6 +3,7 @@ module Const exposing
     , globalBreakpoints
     , gunDB_ServerURL
     , icon
+    , jitsi_Domain
     , tooltipBreakpoint
     , urlLiascript
     , urlLiascriptCourse
@@ -95,3 +96,10 @@ urlLiascriptCourse =
 gunDB_ServerURL : String
 gunDB_ServerURL =
     "https://peer.wallie.io/gun"
+
+
+{-| Default Jitsi domain
+-}
+jitsi_Domain : String
+jitsi_Domain =
+    "meet.jit.si"

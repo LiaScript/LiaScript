@@ -1,5 +1,6 @@
 module Lia.Parser.Context exposing
     ( Context
+    , getSeed
     , init
     , searchIndex
     )
@@ -10,7 +11,7 @@ parsing. It is passed to all successively applied parser.
 -}
 
 import Array
-import Combine exposing (Parser, succeed, withState)
+import Combine exposing (Parser, keep, modifyState, succeed, withState)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
@@ -21,6 +22,7 @@ import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
 import Lia.Section exposing (SubSection)
+import PseudoRandom as Random
 
 
 {-| The `Context` defines the current state of the parser. It keeps track of the
@@ -65,14 +67,15 @@ type alias Context =
     , footnotes : Footnote.Model
     , defines_updated : Bool
     , search_index : String -> String
+    , seed : Int
     }
 
 
 {-| Initialize the current `Context` with a searchIndex function and the global
 definitions.
 -}
-init : Maybe (String -> String) -> Definition -> Context
-init search_index global =
+init : Maybe Int -> Maybe (String -> String) -> Definition -> Context
+init seed search_index global =
     { indentation = []
     , indentation_skip = False
     , task_vector = Array.empty
@@ -88,6 +91,7 @@ init search_index global =
     , footnotes = Footnote.init
     , defines_updated = False
     , search_index = Maybe.withDefault identity search_index
+    , seed = seed |> Maybe.withDefault 0
     }
 
 
@@ -96,3 +100,18 @@ init search_index global =
 searchIndex : Parser Context (String -> String)
 searchIndex =
     withState (.search_index >> succeed)
+
+
+getSeed : Parser Context Int
+getSeed =
+    modifyState
+        (\state ->
+            { state
+                | seed =
+                    state.seed
+                        |> Random.integerSequence 1
+                        |> List.head
+                        |> Maybe.withDefault 0
+            }
+        )
+        |> keep (withState (.seed >> succeed))

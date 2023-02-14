@@ -191,6 +191,7 @@ add_state state id c =
                 , state = state
                 , errorMsg = Nothing
                 , scriptID = id
+                , randomize = Nothing
                 }
                 c.survey_vector
     }

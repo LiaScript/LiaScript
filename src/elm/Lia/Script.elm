@@ -316,10 +316,14 @@ parse_section : Model -> String -> ( Model, Maybe String )
 parse_section model code =
     case Parser.parse_titles model.definition code of
         Ok ( sec, rest ) ->
-            ( { model
+            ( let
+                seed =
+                    model.seed
+              in
+              { model
                 | sections =
                     Array.push
-                        (Section.init (pages model) sec)
+                        (Section.init seed (pages model) sec)
                         model.sections
               }
             , if String.isEmpty rest then
@@ -375,7 +379,7 @@ searchIndex index str =
 
 {-| Alias for model initialization defined by `Lia.Model.int`
 -}
-init : Bool -> Bool -> JE.Value -> { support : List String, enabled : Bool } -> String -> String -> String -> Maybe String -> Model
+init : Int -> Bool -> Bool -> JE.Value -> { support : List String, enabled : Bool } -> String -> String -> String -> Maybe String -> Model
 init =
     Lia.Model.init
 

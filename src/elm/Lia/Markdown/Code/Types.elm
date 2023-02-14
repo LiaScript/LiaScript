@@ -11,6 +11,7 @@ module Lia.Markdown.Code.Types exposing
     , init
     , initProject
     , loadVersion
+    , syncOff
     , updateVersion
     )
 
@@ -55,6 +56,7 @@ type alias Project =
     , logSize : Maybe String
     , running : Bool
     , terminal : Maybe Terminal
+    , syncMode : Bool
     , attr : List Parameters
     }
 
@@ -86,6 +88,13 @@ type Code
 init : Model
 init =
     Model Array.empty Array.empty
+
+
+syncOff : Model -> Model
+syncOff model =
+    { model
+        | evaluate = Array.map (\p -> { p | syncMode = False }) model.evaluate
+    }
 
 
 toFile : Bool -> ( Snippet, Bool ) -> ( Parameters, File )
@@ -125,6 +134,7 @@ initProject fullscreen array comment output =
     , logSize = Nothing
     , running = False
     , terminal = Nothing
+    , syncMode = False
     , repository = Dict.fromList repository
     }
 
@@ -145,11 +155,13 @@ updateVersion project =
                 |> Array.toList
     in
     if
-        project.version
-            |> Array.get project.version_active
-            |> Maybe.map Tuple.first
-            |> Maybe.map ((/=) hashes)
-            |> Maybe.withDefault False
+        not project.syncMode
+            && (project.version
+                    |> Array.get project.version_active
+                    |> Maybe.map Tuple.first
+                    |> Maybe.map ((/=) hashes)
+                    |> Maybe.withDefault False
+               )
     then
         let
             repository =

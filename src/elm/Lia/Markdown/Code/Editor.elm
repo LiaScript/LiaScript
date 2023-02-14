@@ -1,9 +1,12 @@
 module Lia.Markdown.Code.Editor exposing
-    ( annotations
+    ( Event
+    , annotations
+    , blockUpdate
     , editor
     , enableBasicAutocompletion
     , enableLiveAutocompletion
     , enableSnippets
+    , encode
     , extensions
     , firstLineNumber
     , focusing
@@ -12,7 +15,11 @@ module Lia.Markdown.Code.Editor exposing
     , marker
     , maxLines
     , mode
+    , onBlur
     , onChange
+    , onChangeEvent
+    , onChangeEvent2
+    , onFocus
     , readOnly
     , showCursor
     , showGutter
@@ -24,11 +31,33 @@ module Lia.Markdown.Code.Editor exposing
     , value
     )
 
+import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events
 import Json.Decode as JD
 import Json.Encode as JE
+
+
+type alias Event =
+    { action : String
+    , index : Int
+    , content : String
+    }
+
+
+encode : Array Event -> JE.Value
+encode =
+    JE.array encode_
+
+
+encode_ : Event -> JE.Value
+encode_ { action, index, content } =
+    JE.object
+        [ ( "action", JE.string action )
+        , ( "index", JE.int index )
+        , ( "content", JE.string content )
+        ]
 
 
 editor : List (Html.Attribute msg) -> List (Html msg) -> Html msg
@@ -43,7 +72,32 @@ onChange msg =
     JD.string
         |> JD.at [ "target", "value" ]
         |> JD.map msg
-        |> Html.Events.on "editorChanged"
+        |> Html.Events.on "editorUpdate"
+
+
+blockUpdate : Bool -> Html.Attribute msg
+blockUpdate =
+    boolean "blockUpdate"
+
+
+onChangeEvent : (Array Event -> msg) -> Html.Attribute msg
+onChangeEvent msg =
+    JD.map3 Event
+        (JD.field "action" JD.string)
+        (JD.field "index" JD.int)
+        (JD.field "content" JD.string)
+        |> JD.array
+        |> JD.at [ "detail" ]
+        |> JD.map msg
+        |> Html.Events.on "editorUpdateEvent"
+
+
+onChangeEvent2 : (JD.Value -> msg) -> Html.Attribute msg
+onChangeEvent2 msg =
+    JD.value
+        |> JD.at [ "detail" ]
+        |> JD.map msg
+        |> Html.Events.on "editorUpdateEvent"
 
 
 onFocus : msg -> Html.Attribute msg
