@@ -1,7 +1,6 @@
-import { Sync as Base } from '../Base/index'
-import { encode, decode } from 'uint8-to-base64'
+import * as Base from '../Base/index'
 
-export class Sync extends Base {
+export class Sync extends Base.Sync {
   private connection: any
   private conferenceRoom: any
   private domain?: string
@@ -110,7 +109,7 @@ export class Sync extends Base {
             window['JitsiMeetJS'].events.conference.ENDPOINT_MESSAGE_RECEIVED,
             (participant, message) => {
               self.users[participant.getId()] = participant.getDisplayName()
-              self.applyUpdate(decode(message))
+              self.applyUpdate(Base.base64_to_unit8(message))
             }
           )
 
@@ -137,7 +136,7 @@ export class Sync extends Base {
 
   broadcast(data: Uint8Array): void {
     try {
-      this.conferenceRoom?.sendEndpointMessage('', encode(data))
+      this.conferenceRoom?.sendEndpointMessage('', Base.uint8_to_base64(data))
     } catch (_) {}
   }
 }
