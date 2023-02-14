@@ -46,6 +46,7 @@ const Service = {
           }
 
           switch (event.message.param.backend) {
+            /*
             case 'beaker':
               if (!Beaker) {
                 Beaker = await import('../../sync/Beaker/index')
@@ -93,7 +94,7 @@ const Service = {
 
               sync = new PubNub.Sync(cbConnection, elmSend)
               break
-
+            */
             default:
               log.error('could not load =>', event.message)
           }
