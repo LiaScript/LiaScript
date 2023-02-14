@@ -1,7 +1,6 @@
 import * as Base from '../Base/index'
 import log from '../../liascript/log'
 
-import { encode, decode } from 'uint8-to-base64'
 export class Sync extends Base.Sync {
   private pubnub: any
   private channel: string = ''
@@ -80,7 +79,7 @@ export class Sync extends Base.Sync {
           // prevent return of self send messages
           if (event.publisher !== self.token) {
             //console.log('SUB:', JSON.stringify(event.message))
-            self.applyUpdate(decode(event.message))
+            self.applyUpdate(Base.base64_to_unit8(event.message))
           }
         },
         presence: function (event: any) {
@@ -101,7 +100,7 @@ export class Sync extends Base.Sync {
       this.pubnub.publish(
         {
           channel: this.channel,
-          message: encode(data),
+          message: Base.uint8_to_base64(data),
           storeInHistory: false,
         },
         function (status: any, response: any) {

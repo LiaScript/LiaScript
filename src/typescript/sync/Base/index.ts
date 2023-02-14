@@ -3,6 +3,15 @@ import Lia from '../../liascript/types/lia.d'
 import * as helper from '../../helper'
 import { CRDT } from './db'
 
+import { encode, decode } from 'uint8-to-base64'
+
+export function uint8_to_base64(data: Uint8Array): string {
+  return encode(data)
+}
+export function base64_to_unit8(data: string): Uint8Array {
+  return decode(data)
+}
+
 /* This function is only required to generate a random string, that is used
 as a personal ID for every peer, since it is not possible at the moment to
 get the own peer ID from the beaker browser.

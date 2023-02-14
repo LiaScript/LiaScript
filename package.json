@@ -1,6 +1,6 @@
 {
   "name": "@liascript/editor",
-  "version": "1.1.0--0.10.26",
+  "version": "1.1.0--0.10.28",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -27,6 +27,7 @@
     "sw": "npx workbox injectManifest workbox-config.js",
     "translate": "elm-i18n-gen lia-localization/locale src/elm/Translations.elm",
     "test": "npx elm-test",
+    "analyze": "npm run clean && npx parcel build --no-source-maps --reporter @parcel/reporter-bundle-analyzer src/entry/app/index.html",
     "watch": "npm run watch:dev",
     "build": "npm run build:app",
     "build:app": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/app/index.html && npm run sw",
@@ -48,17 +49,18 @@
     "build:webcomponentPublic": "npm run clean && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md"
   },
   "devDependencies": {
-    "@parcel/packager-raw-url": "^2.8.0",
-    "@parcel/transformer-elm": "^2.8.0",
-    "@parcel/transformer-image": "^2.8.0",
-    "@parcel/transformer-inline-string": "^2.8.0",
-    "@parcel/transformer-sass": "^2.8.0",
-    "@parcel/transformer-webmanifest": "^2.8.0",
+    "@parcel/packager-raw-url": "^2.8.3",
+    "@parcel/reporter-bundle-analyzer": "^2.8.3",
+    "@parcel/transformer-elm": "^2.8.3",
+    "@parcel/transformer-image": "^2.8.3",
+    "@parcel/transformer-inline-string": "^2.8.3",
+    "@parcel/transformer-sass": "^2.8.3",
+    "@parcel/transformer-webmanifest": "^2.8.3",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "@webcomponents/webcomponentsjs": "^2.6.0",
-    "ace-builds": "^1.14.0",
-    "caniuse-lite": "^1.0.30001445",
+    "ace-builds": "^1.15.1",
+    "caniuse-lite": "^1.0.30001452",
     "crypto-browserify": "^3.12.0",
     "dexie": "^2.0.4",
     "easy-speech": "^1.2.1",
@@ -73,11 +75,11 @@
     "logger.ts": "^1.0.5",
     "matrix-crdt": "^0.2.0",
     "node-elm-compiler": "^5.0.6",
-    "parcel": "^2.8.0",
+    "parcel": "^2.8.3",
     "parcel-reporter-multiple-static-file-copier": "^1.0.5",
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
-    "sass": "^1.56.1",
+    "sass": "^1.58.1",
     "stream-browserify": "^3.0.0",
     "tsc": "^2.0.4",
     "typescript": "^4.9.4",
@@ -87,7 +89,7 @@
     "yjs": "^13.5.39"
   },
   "browserslist": [
-    "cover 94.0%"
+    "cover 90.0%"
   ],
   "multipleStaticFileCopier": [
     {

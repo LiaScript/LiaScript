@@ -2,26 +2,6 @@ import Beaker from './beaker.d'
 
 import * as Base from '../Base/index'
 
-/*
-function encode(json: object) {
-  return new TextEncoder().encode(JSON.stringify(json))
-}
-
-function decode(message: Uint8Array) {
-  let string = new TextDecoder().decode(message)
-
-  try {
-    return JSON.parse(string)
-  } catch (e) {
-    console.warn('Sync(Beaker): ', e)
-  }
-}
-*/
-
-export function isSupported(): boolean {
-  return window.beaker && window.location.protocol === 'hyper:' ? true : false
-}
-
 export class Sync extends Base.Sync {
   private peerIds: Set<number> = new Set()
 

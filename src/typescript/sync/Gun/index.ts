@@ -2,8 +2,6 @@ import { Gun } from './gun.d'
 import * as Base from '../Base/index'
 import { Crypto } from '../Crypto'
 
-import { encode, decode } from 'uint8-to-base64'
-
 export class Sync extends Base.Sync {
   private gun?: Gun
   private store: string = ''
@@ -65,7 +63,7 @@ export class Sync extends Base.Sync {
             const [token, message] = Crypto.decode(data.msg)
 
             if (token != self.token && message != null) {
-              self.applyUpdate(decode(message))
+              self.applyUpdate(Base.base64_to_unit8(message))
             }
           } catch (e) {
             console.warn('GunDB', e.message)
@@ -81,7 +79,7 @@ export class Sync extends Base.Sync {
 
   broadcast(data: null | Uint8Array): void {
     if (this.gun) {
-      const message = data == null ? null : encode(data)
+      const message = data == null ? null : Base.uint8_to_base64(data)
 
       this.gun.get(this.store).put({
         msg: Crypto.encode([this.token, message]),
