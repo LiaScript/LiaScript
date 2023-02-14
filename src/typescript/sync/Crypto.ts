@@ -4,12 +4,18 @@ export const Crypto = {
   crypt: null,
 
   check: function (): boolean {
+    // @ts-ignore
     return window.SimpleCrypto ? true : false
   },
 
-  init: function (password: string) {
+  init: function (password?: string) {
     try {
-      this.crypt = password.length > 0 ? new SimpleCrypto(password) : null
+      if (typeof password === 'string' && password.length > 0) {
+        // @ts-ignore
+        this.crypt = new SimpleCrypto(password)
+      } else {
+        this.crypt = null
+      }
     } catch (e) {
       console.warn('cypher: ', e)
       this.crypt = null

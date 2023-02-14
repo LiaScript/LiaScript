@@ -4,6 +4,7 @@ module Lia.Markdown.Survey.Sync exposing
     , decoder
     , density
     , encoder
+    , event
     , matrix
     , select
     , sync
@@ -20,6 +21,8 @@ import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Utils exposing (percentage)
 import List.Extra
+import Service.Event as Event exposing (Event)
+import Service.Sync
 
 
 type Sync
@@ -40,6 +43,13 @@ sync survey =
 
     else
         Nothing
+
+
+event : Int -> Survey.Element -> Event
+event id =
+    sync
+        >> Maybe.map (encoder >> Service.Sync.survey id)
+        >> Maybe.withDefault Event.none
 
 
 wordCount : List Sync -> Maybe (List Data)

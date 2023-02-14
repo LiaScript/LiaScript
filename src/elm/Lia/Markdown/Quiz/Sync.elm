@@ -2,12 +2,15 @@ module Lia.Markdown.Quiz.Sync exposing
     ( Sync
     , decoder
     , encoder
+    , event
     , sync
     )
 
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
+import Service.Event as Event exposing (Event)
+import Service.Sync
 
 
 type alias Sync =
@@ -25,6 +28,13 @@ sync quiz =
 
         Solution.Open ->
             Nothing
+
+
+event : Int -> { quiz | trial : Int, solved : Solution } -> Event
+event id =
+    sync
+        >> Maybe.map (encoder >> Service.Sync.quiz id)
+        >> Maybe.withDefault Event.none
 
 
 encoder : Sync -> JE.Value

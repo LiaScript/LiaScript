@@ -67,7 +67,7 @@ project :
     -> Repo
     -> (List Parameters -> Project)
 project files version active log repository =
-    Project files -1 version active repository "" log Nothing False Nothing
+    Project files -1 version active repository "" log Nothing False Nothing False
 
 
 toProject : JD.Decoder (List Parameters -> Project)

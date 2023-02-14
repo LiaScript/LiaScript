@@ -1,5 +1,6 @@
 module Service.Sync exposing (..)
 
+import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Sync.Via as Via
 import Service.Event as Event exposing (Event)
@@ -39,10 +40,21 @@ connect param =
                             |> List.filter (String.isEmpty >> not)
                             |> JE.list JE.string
 
-                    Via.PubNub pub sub ->
+                    Via.Jitsi domain ->
+                        domain
+                            |> JE.string
+
+                    Via.Matrix { baseURL, userId, accessToken } ->
                         JE.object
-                            [ ( "publishKey", JE.string pub )
-                            , ( "subscribeKey", JE.string sub )
+                            [ ( "baseURL", JE.string baseURL )
+                            , ( "userId", JE.string userId )
+                            , ( "accessToken", JE.string accessToken )
+                            ]
+
+                    Via.PubNub { pubKey, subKey } ->
+                        JE.object
+                            [ ( "publishKey", JE.string pubKey )
+                            , ( "subscribeKey", JE.string subKey )
                             ]
 
                     _ ->
@@ -62,16 +74,37 @@ disconnect id =
         |> publish "disconnect"
 
 
-join : String -> JE.Value -> Event
-join id message =
-    [ ( "id", JE.string id )
-    , ( "data", message )
-    ]
-        |> JE.object
-        |> publish "join"
+join : JE.Value -> Event
+join =
+    publish "join"
 
 
 publish : String -> JE.Value -> Event
 publish cmd message =
     { cmd = cmd, param = message }
         |> Event.init "sync"
+
+
+survey : Int -> JE.Value -> Event
+survey id =
+    publish "survey" >> Event.pushWithId "id" id
+
+
+quiz : Int -> JE.Value -> Event
+quiz id =
+    publish "quiz" >> Event.pushWithId "id" id
+
+
+code : Int -> Int -> JE.Value -> Event
+code id1 id2 msg =
+    [ ( "j", JE.int id2 )
+    , ( "msg", msg )
+    ]
+        |> JE.object
+        |> publish "code"
+        |> Event.pushWithId "id" id1
+
+
+codes : Array (Array String) -> Event
+codes =
+    JE.array (JE.array JE.string) >> publish "codes"

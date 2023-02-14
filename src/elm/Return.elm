@@ -4,7 +4,6 @@ module Return exposing
     , batchEvent
     , batchEvents
     , cmd
-    , doSync
     , mapCmd
     , mapEvents
     , mapVal
@@ -23,7 +22,6 @@ type alias Return model msg sub =
     , command : Cmd msg
     , events : List Event
     , sub : Maybe (Script.Msg sub)
-    , synchronize : Bool
     }
 
 
@@ -34,7 +32,6 @@ val model =
         Cmd.none
         []
         Nothing
-        False
 
 
 batchEvent : Event -> Return model msg sub -> Return model msg sub
@@ -75,22 +72,20 @@ cmd c r =
 
 
 mapCmd : (msgA -> msgB) -> Return model msgA sub -> Return model msgB sub
-mapCmd fn { value, command, sub, events, synchronize } =
+mapCmd fn { value, command, sub, events } =
     { value = value
     , command = Cmd.map fn command
     , events = events
     , sub = sub
-    , synchronize = synchronize
     }
 
 
 mapValCmd : (modelA -> modelB) -> (msgA -> msgB) -> Return modelA msgA sub -> Return modelB msgB sub
-mapValCmd fnVal fnMsg { value, command, sub, events, synchronize } =
+mapValCmd fnVal fnMsg { value, command, sub, events } =
     { value = fnVal value
     , command = Cmd.map fnMsg command
     , events = events
     , sub = sub
-    , synchronize = synchronize
     }
 
 
@@ -105,20 +100,14 @@ script s r =
 
 
 mapVal : (modelA -> modelB) -> Return modelA msg sub -> Return modelB msg sub
-mapVal fn { value, command, events, sub, synchronize } =
+mapVal fn { value, command, events, sub } =
     { value = fn value
     , command = command
     , events = events
     , sub = sub
-    , synchronize = synchronize
     }
 
 
 replace : Return model_ msg sub -> model -> Return model msg sub
 replace r m =
     mapVal (always m) r
-
-
-doSync : Return model msg sub -> Return model msg sub
-doSync r =
-    { r | synchronize = True }
