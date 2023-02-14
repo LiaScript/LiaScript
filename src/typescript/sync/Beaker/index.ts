@@ -18,10 +18,6 @@ function decode(message: Uint8Array) {
 }
 */
 
-export function isSupported(): boolean {
-  return window.beaker && window.location.protocol === 'hyper:' ? true : false
-}
-
 export class Sync extends Base.Sync {
   private peerIds: Set<number> = new Set()
 
