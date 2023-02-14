@@ -18,9 +18,9 @@ import Translations
 screen `width` is only used to render the course with an opened or closed table
 of contents.
 -}
-decode : Sync.Settings -> JD.Value -> Result JD.Error Model
-decode sync =
-    JD.decodeValue (toModel sync)
+decode : Int -> Sync.Settings -> JD.Value -> Result JD.Error Model
+decode seed sync =
+    JD.decodeValue (toModel seed sync)
 
 
 andMap : String -> JD.Decoder a -> JD.Decoder (a -> value) -> JD.Decoder value
@@ -28,8 +28,8 @@ andMap key dec =
     JD.map2 (|>) (JD.field key dec)
 
 
-toModel : Sync.Settings -> JD.Decoder Model
-toModel sync =
+toModel : Int -> Sync.Settings -> JD.Decoder Model
+toModel seed sync =
     JD.succeed Model
         |> andMap "url" JD.string
         |> andMap "readme" (JD.string |> JD.map repo)
@@ -38,7 +38,7 @@ toModel sync =
         |> andMap "str_title" JD.string
         |> JD.map2 (|>) (JD.succeed (Settings.init False Settings.Slides))
         |> JD.map2 (|>) (JD.succeed Nothing)
-        |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap Section.init))
+        |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap (Section.init seed)))
         |> andMap "section_active" JD.int
         |> JD.map2 (|>) (JD.succeed Nothing)
         |> andMap "definition" Definition.decode
@@ -57,6 +57,7 @@ toModel sync =
         |> JD.map2 (|>) (JD.succeed Nothing)
         |> JD.map2 (|>) (JD.succeed sync)
         |> JD.map2 (|>) (JD.succeed False)
+        |> JD.map2 (|>) (JD.succeed seed)
 
 
 toSectionBase : JD.Decoder Section.Base

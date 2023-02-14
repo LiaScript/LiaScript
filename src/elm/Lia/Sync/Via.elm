@@ -5,6 +5,7 @@ module Lia.Sync.Via exposing
     , fromString
     , icon
     , info
+    , infoOn
     , input
     , toString
     , update
@@ -22,9 +23,9 @@ type Backend
     = Beaker
     | Edrys
     | GUN String
-    | Jitsi
-    | Matrix
-    | PubNub String String
+    | Jitsi String
+    | Matrix { baseURL : String, userId : String, accessToken : String }
+    | PubNub { pubKey : String, subKey : String }
 
 
 toString : Bool -> Backend -> String
@@ -45,16 +46,28 @@ toString full via =
                         ""
                    )
 
-        Jitsi ->
+        Jitsi domain ->
             "JitSi"
+                ++ (if full then
+                        "|" ++ domain
 
-        Matrix ->
+                    else
+                        ""
+                   )
+
+        Matrix { baseURL, userId, accessToken } ->
             "Matrix"
+                ++ (if full then
+                        "|" ++ baseURL ++ "|" ++ userId ++ "|" ++ accessToken
 
-        PubNub pub sub ->
+                    else
+                        ""
+                   )
+
+        PubNub { pubKey, subKey } ->
             "PubNub"
                 ++ (if full then
-                        "|" ++ pub ++ "|" ++ sub
+                        "|" ++ pubKey ++ "|" ++ subKey
 
                     else
                         ""
@@ -74,13 +87,13 @@ icon via =
             GUN _ ->
                 "icon-gundb icon-xs"
 
-            Jitsi ->
+            Jitsi _ ->
                 "icon-jitsi icon-xs"
 
-            Matrix ->
+            Matrix _ ->
                 "icon-matrix icon-xs"
 
-            PubNub _ _ ->
+            PubNub _ ->
                 "icon-pubnub icon-xs"
         )
         [ Attr.style "padding-right" "5px"
@@ -104,16 +117,28 @@ fromString via =
             Just (GUN urls)
 
         [ "jitsi" ] ->
-            Just Jitsi
+            Just (Jitsi "")
+
+        [ "jitsi", domain ] ->
+            Just (Jitsi domain)
 
         [ "matrix" ] ->
-            Just Matrix
+            Just <| Matrix { baseURL = "", userId = "", accessToken = "" }
+
+        [ "matrix", baseURL ] ->
+            Just <| Matrix { baseURL = baseURL, userId = "", accessToken = "" }
+
+        [ "matrix", baseURL, userId ] ->
+            Just <| Matrix { baseURL = baseURL, userId = userId, accessToken = "" }
+
+        [ "matrix", baseURL, userId, accessToken ] ->
+            Just <| Matrix { baseURL = baseURL, userId = userId, accessToken = accessToken }
 
         [ "pubnub" ] ->
-            Just (PubNub "" "")
+            Just <| PubNub { pubKey = "", subKey = "" }
 
         [ "pubnub", pub, sub ] ->
-            Just (PubNub pub sub)
+            Just <| PubNub { pubKey = pub, subKey = sub }
 
         _ ->
             Nothing
@@ -129,14 +154,71 @@ mapHead fn list =
             list
 
 
-info : Bool -> Backend -> Html msg
-info supported about =
+box : List (Html msg) -> Html msg
+box =
     Html.p
         [ Attr.style "padding" "5px 15px 5px 15px"
         , Attr.style "border" "1px solid white"
         , Attr.style "margin-top" "2rem"
         ]
-    <|
+
+
+line : Html msg
+line =
+    Html.hr [ Attr.style "margin" "5px 0px" ] []
+
+
+info : Html msg
+info =
+    box
+        [ Html.text "The LiaScript classroom enables a lightweight collaboration between small groups of users. "
+        , Html.text "\"Lightweight\" means that there is no chat (video-conferencing), no logging, and no user roles. "
+        , Html.text "Instead, there is only one global state created and shared between the browsers of all users. "
+        , Html.text "Thus, a user joins a room with her/his data and when she/he leaves, this data gets removed from the classroom. "
+        , Html.text "No data is stored, and no data gets preserved, it is only shared among uses during a classroom session. "
+        , Html.text "LiaScript enables the synchronization on the following elements:"
+        , Html.ol [ Attr.style "padding" "10px 25px 0px" ]
+            [ Html.li [] [ Html.text "Global overview on quizzes" ]
+            , Html.li [] [ Html.text "Global overview on surveys" ]
+            , Html.li [] [ Html.text "Collaborative editing of executable code snippets (you have to switch to sync-mode, per editor)" ]
+            ]
+        , Html.text "To synchronize the state between users, we apply "
+        , link "Conflict Free Replicated Datatypes (CRDTs)" "https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type"
+        , Html.text " as implemented by "
+        , yjsLink
+        , Html.text ". Communication is realized with the help of different backends, which only provide a relay service. "
+        , Html.text "The implementation can be found "
+        , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync"
+        , Html.text ". Different browsers might support different backends, which require different settings. "
+        , Html.text "You can help us with implementing other backend services. "
+        , line
+        , Html.text "Every room needs a unique name; you can click on the generator-button to do this randomly. "
+        , Html.text "After a successful connection, you can either share your settings with your audience or the new URL, which contains the entire classroom configuration. "
+        , Html.text "A combination of your course-URL and the room name are used to create a unique ID and to prevent collisions with other courses. "
+        , Html.text "However, if you want to establish a connection between exported courses (see "
+        , link "LiaScript-Exporter" ""
+        , Html.text ") on different platforms, such as "
+        , link "Moodle" "https://en.wikipedia.org/wiki/Moodle"
+        , Html.text ", "
+        , link "ILIAS" "https://en.wikipedia.org/wiki/ILIAS"
+        , Html.text ", "
+        , link "OPAL" "https://de.wikipedia.org/wiki/OPAL_(Lernplattform)"
+        , Html.text ", etc., you can put your room name in single or double quotation marks. "
+        , Html.text "This will instruct LiaScript to use the room name only (no course-URL), but you will have to make sure that all users are on the same course and version, to prevent collisions ..."
+        , line
+        , Html.text "Note, most backend services are free, and you can also host them by your own. "
+        , Html.text "There might be cases where the synchronization is slow or there are collisions, but we are working in the background on optimizations and fixes ;-)"
+        ]
+
+
+yjsLink : Html msg
+yjsLink =
+    link "Y-js" "https://github.com/yjs/yjs"
+
+
+infoOn : Bool -> Backend -> Html msg
+infoOn supported about =
+    box <|
         case ( about, supported ) of
             ( Beaker, True ) ->
                 [ Html.text "We are glad you are using the "
@@ -182,13 +264,28 @@ info supported about =
                 , Html.text ". No data is stored or logged, it is just an easy method for transmitting information to all connected users."
                 ]
 
-            ( Jitsi, _ ) ->
-                [ Html.text "Not ready yet, but will be updated soon" ]
+            ( Jitsi _, _ ) ->
+                [ link "Jitsi" "https://en.wikipedia.org/wiki/Jitsi"
+                , Html.text " is a free and open-source multiplatform for video conferencing, voice over IP, and instant messaging. "
+                , Html.text "It is probably best known for its public video conferencing server "
+                , link "https://meet.jit.si" "https://meet.jit.si"
+                , Html.text ", that we use a backend to establish classrooms via data-channels. "
+                , Html.text "However, you can use their default service or host a server by your own, then you will have to change the domain setting."
+                ]
 
-            ( Matrix, _ ) ->
-                [ Html.text "Not ready yet, but will be updated soon" ]
+            ( Matrix _, _ ) ->
+                [ link "[Matrix]" "https://matrix.org"
+                , Html.text " is an open network/standard/project for secure and decentralized real-time communication. "
+                , Html.text " You can find more information about it "
+                , link "here on Wikipedia" "https://en.wikipedia.org/wiki/Matrix_(protocol)"
+                , Html.text ". Thus, if you have access to the following settings, you can establish a classroom that uses the "
+                , link "Matrix-CRDT" "https://github.com/yousefED/matrix-crdt"
+                , Html.text " provider for "
+                , yjsLink
+                , Html.text "."
+                ]
 
-            ( PubNub _ _, _ ) ->
+            ( PubNub _, _ ) ->
                 [ link "PubNub" "https://www.pubnub.com"
                 , Html.text " is a realtime communication platform. "
                 , Html.text "To create a classroom that uses this service, you will only require an account, which is free for testing. "
@@ -219,14 +316,52 @@ view editable backend =
                 , label = Html.text "relay server"
                 }
 
-        PubNub pub sub ->
+        Jitsi domain ->
+            input
+                { active = editable
+                , type_ = "input"
+                , msg = InputJitsi
+                , value = domain
+                , placeholder = ""
+                , label = Html.text "domain"
+                }
+
+        Matrix { baseURL, userId, accessToken } ->
+            Html.div []
+                [ input
+                    { active = editable
+                    , type_ = "input"
+                    , msg = InputMatrix "url"
+                    , label = Html.text "base URL"
+                    , value = baseURL
+                    , placeholder = "https://matrix.org"
+                    }
+                , input
+                    { active = editable
+                    , type_ = "input"
+                    , msg = InputMatrix "user"
+                    , label = Html.text "user ID"
+                    , value = userId
+                    , placeholder = "@USERID:matrix.org"
+                    }
+                , input
+                    { active = editable
+                    , type_ = "input"
+                    , msg = InputMatrix "token"
+                    , label = Html.text "access token"
+                    , value = accessToken
+                    , placeholder = "....MDAxM2lkZW50aWZpZXIga2V5CjAwMTBjaWQgZ2Vu...."
+                    }
+                ]
+
+        PubNub { pubKey, subKey } ->
             Html.div []
                 [ input
                     { active = editable
                     , type_ = "input"
                     , msg = InputPubNub "pub"
                     , label = Html.text "publishKey"
-                    , value = pub
+                    , value = pubKey
                     , placeholder = "pub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
                     }
                 , input
@@ -234,7 +369,7 @@ view editable backend =
                     , type_ = "input"
                     , msg = InputPubNub "sub"
                     , label = Html.text "subscribeKey"
-                    , value = sub
+                    , value = subKey
                     , placeholder = "sub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
                     }
                 ]
@@ -278,6 +413,8 @@ input c =
 type Msg
     = InputGun String
     | InputPubNub String String
+    | InputMatrix String String
+    | InputJitsi String
 
 
 update : Msg -> Backend -> Backend
@@ -286,11 +423,23 @@ update msg backend =
         ( InputGun urls, GUN _ ) ->
             GUN urls
 
-        ( InputPubNub "pub" new, PubNub _ sub ) ->
-            PubNub new sub
+        ( InputJitsi domain, Jitsi _ ) ->
+            Jitsi domain
 
-        ( InputPubNub "sub" new, PubNub pub _ ) ->
-            PubNub pub new
+        ( InputPubNub "pub" new, PubNub data ) ->
+            PubNub { data | pubKey = new }
+
+        ( InputPubNub "sub" new, PubNub data ) ->
+            PubNub { data | subKey = new }
+
+        ( InputMatrix "url" new, Matrix data ) ->
+            Matrix { data | baseURL = new }
+
+        ( InputMatrix "user" new, Matrix data ) ->
+            Matrix { data | userId = new }
+
+        ( InputMatrix "token" new, Matrix data ) ->
+            Matrix { data | accessToken = new }
 
         _ ->
             backend
@@ -302,7 +451,13 @@ eq a b =
         ( GUN _, GUN _ ) ->
             True
 
-        ( PubNub _ _, PubNub _ _ ) ->
+        ( Matrix _, Matrix _ ) ->
+            True
+
+        ( PubNub _, PubNub _ ) ->
+            True
+
+        ( Jitsi _, Jitsi _ ) ->
             True
 
         _ ->

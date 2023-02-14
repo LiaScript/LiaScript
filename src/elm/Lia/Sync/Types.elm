@@ -6,6 +6,7 @@ module Lia.Sync.Types exposing
     , id
     , init
     , initRoom
+    , isConnected
     , isSupported
     , title
     )
@@ -15,7 +16,7 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Lia.Sync.Container.Local as Local
+import Lia.Sync.Container as Local
 import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
 import Set exposing (Set)
@@ -45,6 +46,16 @@ type alias Sync =
     }
 
 
+isConnected : State -> Bool
+isConnected state =
+    case state of
+        Connected _ ->
+            True
+
+        _ ->
+            False
+
+
 init : List String -> Settings
 init supportedBackends =
     let
@@ -56,9 +67,9 @@ init supportedBackends =
             [ Via.Beaker
             , Via.Edrys
             , Via.GUN Const.gunDB_ServerURL
-            , Via.Jitsi
-            , Via.Matrix
-            , Via.PubNub "" ""
+            , Via.Jitsi Const.jitsi_Domain
+            , Via.Matrix { baseURL = "", userId = "", accessToken = "" }
+            , Via.PubNub { pubKey = "", subKey = "" }
             ]
                 |> List.map (isMember supported)
         , select = Nothing
@@ -81,7 +92,13 @@ isMember list element =
         ( (Via.GUN _) :: _, Via.GUN _ ) ->
             ( True, element )
 
-        ( (Via.PubNub _ _) :: _, Via.PubNub _ _ ) ->
+        ( (Via.Matrix _) :: _, Via.Matrix _ ) ->
+            ( True, element )
+
+        ( (Via.PubNub _) :: _, Via.PubNub _ ) ->
+            ( True, element )
+
+        ( (Via.Jitsi _) :: _, Via.Jitsi _ ) ->
             ( True, element )
 
         ( e :: es, _ ) ->
@@ -131,10 +148,19 @@ filter : Settings -> Dict String sync -> Maybe (List sync)
 filter settings container =
     case id settings.state of
         Just main ->
-            container
-                |> Dict.filter (filter_ (Set.insert main settings.peers))
-                |> Dict.values
-                |> Just
+            -- only show the result of a voting or quizzes if the user has also solved it ...
+            if
+                container
+                    |> Dict.keys
+                    |> List.member main
+            then
+                container
+                    |> Dict.filter (filter_ (Set.insert main settings.peers))
+                    |> Dict.values
+                    |> Just
+
+            else
+                Nothing
 
         _ ->
             Nothing
@@ -157,6 +183,8 @@ filter_ ids key _ =
     Set.member key ids
 
 
+{-| Get the own unique user-id only if a connection was established.
+-}
 id : State -> Maybe String
 id state =
     case state of
@@ -184,7 +212,6 @@ title sync =
                 , icon "icon-person icon-sm" [ Attr.style "padding-right" "4px" ]
                 , sync.peers
                     |> Set.size
-                    |> (+) 1
                     |> String.fromInt
                     |> Html.text
                 , Html.text ")"

@@ -1,6 +1,7 @@
 module Lia.Parser.Context exposing
     ( Context
     , getLine
+    , getSeed
     , init
     , searchIndex
     )
@@ -15,7 +16,9 @@ import Combine
     exposing
         ( Parser
         , andMap
+        , keep
         , map
+        , modifyState
         , succeed
         , withLine
         , withState
@@ -31,6 +34,7 @@ import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
 import Lia.Section exposing (SubSection)
+import PseudoRandom as Random
 
 
 {-| The `Context` defines the current state of the parser. It keeps track of the
@@ -77,11 +81,15 @@ type alias Context =
     , search_index : String -> String
     , editor_line : Int
     , backup : Dict String String
+    , seed : Int
     }
 
 
-init : Dict String String -> Maybe (String -> String) -> Int -> Definition -> Context
-init backup search_index editor_line global =
+{-| Initialize the current `Context` with a searchIndex function and the global
+definitions.
+-}
+init : Dict String String -> Maybe Int -> Maybe (String -> String) -> Int -> Definition -> Context
+init backup seed search_index editor_line global =
     { indentation = []
     , indentation_skip = False
     , task_vector = Array.empty
@@ -99,6 +107,7 @@ init backup search_index editor_line global =
     , search_index = Maybe.withDefault identity search_index
     , editor_line = editor_line
     , backup = backup
+    , seed = seed |> Maybe.withDefault 0
     }
 
 
@@ -114,3 +123,18 @@ getLine =
     withState (.editor_line >> succeed)
         |> map (+)
         |> andMap (withLine succeed)
+
+
+getSeed : Parser Context Int
+getSeed =
+    modifyState
+        (\state ->
+            { state
+                | seed =
+                    state.seed
+                        |> Random.integerSequence 1
+                        |> List.head
+                        |> Maybe.withDefault 0
+            }
+        )
+        |> keep (withState (.seed >> succeed))

@@ -8,6 +8,7 @@ module Lia.Settings.View exposing
     , menuSettings
     , menuShare
     , menuTranslations
+    , qrCodeView
     )
 
 import Accessibility.Aria as A11y_Aria
@@ -32,6 +33,7 @@ import Lia.Utils
         ( blockKeydown
         , btn
         , btnIcon
+        , modal
         , noTranslate
         )
 import QRCode
@@ -407,16 +409,17 @@ submenu isActive =
         ]
 
 
-qrCodeView : Lang -> String -> Html msg
+qrCodeView : Lang -> String -> Html Msg
 qrCodeView lang url =
     url
         |> QRCode.fromString
         |> Result.map
-            (QRCode.toSvgWithoutQuietZone
-                [ Attr.style "background-color" "#FFF"
-                , Attr.style "padding" "0.4rem"
-                , Attr.alt (Trans.qrCode lang ++ ": " ++ url)
-                ]
+            ([ Attr.style "background-color" "#FFF"
+             , Attr.style "padding" "0.4rem"
+             , Attr.alt (Trans.qrCode lang ++ ": " ++ url)
+             , onClick <| Toggle QRCode
+             ]
+                |> QRCode.toSvgWithoutQuietZone
             )
         |> Result.withDefault (Html.text <| Trans.qrErr lang)
 

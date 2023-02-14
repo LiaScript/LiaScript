@@ -34,7 +34,7 @@ view settings =
         , select open settings.sync
         , case settings.sync.select of
             Nothing ->
-                Html.text ""
+                Backend.info
 
             Just ( support, via ) ->
                 Html.div []
@@ -76,7 +76,7 @@ view settings =
                         |> Html.map Backend
                     , button settings
                     , viewError settings.error
-                    , Backend.info support via
+                    , Backend.infoOn support via
                     ]
         ]
 

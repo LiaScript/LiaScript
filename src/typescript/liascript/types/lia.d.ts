@@ -38,6 +38,7 @@ type Lang =
   | 'en'
   | 'es'
   | 'fa'
+  | 'fr'
   | 'hy'
   | 'ko'
   | 'nl'

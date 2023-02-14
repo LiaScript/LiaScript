@@ -9,10 +9,8 @@ module Lia.Sync.Update exposing
 import Array
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Quiz.Sync as Quiz
-import Lia.Markdown.Survey.Sync as Survey
+import Lia.Markdown.Update exposing (synchronize)
 import Lia.Section as Section exposing (Sections)
-import Lia.Sync.Container.Global as Global
 import Lia.Sync.Room as Room
 import Lia.Sync.Types exposing (Settings, State(..), id)
 import Lia.Sync.Via as Backend exposing (Backend)
@@ -63,6 +61,9 @@ update session model msg =
     case msg of
         Handle event ->
             case Event.message event of
+                ( "update", param ) ->
+                    synchronize model param
+
                 ( "error", param ) ->
                     case ( JD.decodeValue JD.string param, sync.sync.select ) of
                         ( Ok message, Just ( True, _ ) ) ->
@@ -132,6 +133,7 @@ update session model msg =
                                 , peers = Set.empty
                                 , error = Nothing
                             }
+                        , sections = Section.syncOff model.sections
                     }
                         |> Return.val
                         |> Return.cmd
@@ -139,57 +141,6 @@ update session model msg =
                                 |> Session.setQuery model.readme
                                 |> Session.update
                             )
-
-                --|> leave (id model.sync.state)
-                ( "join", param ) ->
-                    case ( JD.decodeValue (JD.field "id" JD.string) param, id sync.state ) of
-                        ( Ok peerID, Just ownID ) ->
-                            if ownID == peerID then
-                                Return.val model
-
-                            else
-                                case
-                                    ( param
-                                        |> JD.decodeValue (JD.at [ "data", "quiz" ] (Global.decoder Quiz.decoder))
-                                        |> Result.map (Global.union (globalGet .quiz model.sections))
-                                    , param
-                                        |> JD.decodeValue (JD.at [ "data", "survey" ] (Global.decoder Survey.decoder))
-                                        |> Result.map (Global.union (globalGet .survey model.sections))
-                                    )
-                                of
-                                    ( Ok ( quizUpdate, quizState ), Ok ( surveyUpdate, surveyState ) ) ->
-                                        { model
-                                            | sync = { sync | peers = Set.insert peerID sync.peers }
-                                            , sections = Section.sync quizState surveyState model.sections
-                                        }
-                                            |> (if quizUpdate || surveyUpdate || not (Set.member peerID sync.peers) then
-                                                    globalSync
-
-                                                else
-                                                    Return.val
-                                               )
-
-                                    _ ->
-                                        Return.val model
-
-                        _ ->
-                            Return.val model
-
-                ( "leave", param ) ->
-                    { model
-                        | sync =
-                            { sync
-                                | peers =
-                                    case JD.decodeValue JD.string param of
-                                        Ok peerID ->
-                                            Set.remove peerID sync.peers
-
-                                        _ ->
-                                            sync.peers
-                                , error = Nothing
-                            }
-                    }
-                        |> Return.val
 
                 _ ->
                     model
@@ -285,44 +236,51 @@ isConnected sync =
             False
 
 
-join : { model | sync : Settings, sections : Sections } -> Return { model | sync : Settings, sections : Sections } msg sub
-join model =
-    case model.sync.state of
-        Connected id ->
-            { model | sections = Array.map (Section.syncInit id) model.sections }
-                |> globalSync
-
-        _ ->
-            Return.val model
-
-
-globalSync :
+join :
     { model | sync : Settings, sections : Sections }
     -> Return { model | sync : Settings, sections : Sections } msg sub
-globalSync model =
+join model =
     case model.sync.state of
         Connected id ->
             model
                 |> Return.val
                 |> Return.batchEvent
-                    ([ ( "quiz"
-                       , model.sections
-                            |> globalGet .quiz
-                            |> Global.encode Quiz.encoder
-                       )
-                     , ( "survey"
-                       , model.sections
-                            |> globalGet .survey
-                            |> Global.encode Survey.encoder
-                       )
-                     ]
-                        |> JE.object
-                        |> Service.Sync.join id
+                    (model.sections
+                        |> JE.array (Section.sync id)
+                        |> Service.Sync.join
                     )
 
         _ ->
             Return.val model
 
 
-globalGet fn =
-    Array.map (.sync >> Maybe.andThen fn)
+synchronize : { model | sync : Settings, sections : Sections } -> JD.Value -> Return { model | sync : Settings, sections : Sections } msg sub
+synchronize model json =
+    { model
+        | sections =
+            json
+                |> JD.decodeValue
+                    (JD.field "data" (JD.list Section.syncDecoder)
+                        |> JD.andThen
+                            (\list ->
+                                if List.isEmpty list then
+                                    JD.fail "empty lists cannot be state vectors"
+
+                                else
+                                    JD.succeed list
+                            )
+                    )
+                |> Result.map (List.map2 Section.syncUpdate (Array.toList model.sections) >> Array.fromList)
+                |> Result.withDefault model.sections
+        , sync =
+            json
+                |> JD.decodeValue (JD.field "peers" (JD.list JD.string))
+                |> Result.map (setPeers model.sync)
+                |> Result.withDefault model.sync
+    }
+        |> Return.val
+
+
+setPeers : Settings -> List String -> Settings
+setPeers sync peers =
+    { sync | peers = Set.fromList peers }

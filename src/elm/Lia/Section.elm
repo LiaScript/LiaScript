@@ -5,13 +5,21 @@ module Lia.Section exposing
     , SubSection(..)
     , init
     , sync
+    , syncCode
+    , syncDecoder
+    , syncEncode
     , syncInit
+    , syncOff
     , syncQuiz
     , syncSurvey
+    , syncUpdate
     )
 
 import Array exposing (Array)
+import Json.Decode as JD
+import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
+import Lia.Markdown.Code.Sync as Code_
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
@@ -24,8 +32,7 @@ import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
 import Lia.Markdown.Types as Markdown
-import Lia.Sync.Container.Global as Global
-import Lia.Sync.Container.Local as Local
+import Lia.Sync.Container as Container exposing (Container)
 
 
 {-| This is the main record to contain all section related information.
@@ -83,14 +90,16 @@ type alias Section =
     , footnotes : Footnote.Model
     , footnote2show : Maybe String
     , editor_line : Int
-    , sync : Maybe Sync
+    , sync : Sync
     , persistent : Maybe Bool
+    , seed : Int
     }
 
 
 type alias Sync =
-    { quiz : Maybe (Local.Container Quiz_.Sync)
-    , survey : Maybe (Local.Container Survey_.Sync)
+    { quiz : Container Quiz_.Sync
+    , survey : Container Survey_.Sync
+    , code : Array Code_.Sync
     }
 
 
@@ -151,8 +160,8 @@ type alias Base =
 {-| Initialize a section with a back-reference to its position within an array
 as well as the preprocessed section data (indentation, title, body-code).
 -}
-init : Int -> Base -> Section
-init id base =
+init : Int -> Int -> Base -> Section
+init seed id base =
     { code = base.code
     , title = base.title
     , indentation = base.indentation
@@ -172,107 +181,120 @@ init id base =
     , footnotes = Footnote.init
     , footnote2show = Nothing
     , editor_line = base.editor_line + 1
-    , sync = Nothing
+    , sync =
+        { quiz = Container.empty
+        , survey = Container.empty
+        , code = Array.empty
+        }
     , persistent = Nothing
+    , seed = seed + (10 * id)
     }
 
 
-syncInit : String -> Section -> Section
+syncInit : String -> Section -> Sync
 syncInit id section =
-    { section
-        | sync =
-            case ( Array.isEmpty section.quiz_vector, Array.isEmpty section.survey_vector ) of
-                ( True, True ) ->
-                    Nothing
+    { quiz = Container.init id Quiz_.sync section.quiz_vector
+    , survey = Container.init id Survey_.sync section.survey_vector
 
-                ( True, False ) ->
-                    Just
-                        { quiz = Nothing
-                        , survey =
-                            section.survey_vector
-                                |> Local.init id Survey_.sync
-                                |> Just
-                        }
-
-                ( False, True ) ->
-                    Just
-                        { quiz =
-                            section.quiz_vector
-                                |> Local.init id Quiz_.sync
-                                |> Just
-                        , survey =
-                            Nothing
-                        }
-
-                ( False, False ) ->
-                    Just
-                        { quiz =
-                            section.quiz_vector
-                                |> Local.init id Quiz_.sync
-                                |> Just
-                        , survey =
-                            section.survey_vector
-                                |> Local.init id Survey_.sync
-                                |> Just
-                        }
+    -- Code is one global text with updates, not single files to be updated separately
+    , code = Array.map Code_.sync section.code_model.evaluate
     }
 
 
-sync : Global.Container Quiz_.Sync -> Global.Container Survey_.Sync -> Sections -> Sections
-sync quiz survey =
-    syncHelper syncQuiz (indexes quiz)
-        >> syncHelper syncSurvey (indexes survey)
+syncEncode : Sync -> JE.Value
+syncEncode s =
+    JE.object
+        [ ( "q", Container.encode Quiz_.encoder s.quiz )
+        , ( "s", Container.encode Survey_.encoder s.survey )
+        , ( "c", JE.array Code_.encoder s.code )
+        ]
 
 
-indexes : Global.Container sync -> List ( Int, Local.Container sync )
-indexes =
-    Array.toIndexedList
-        >> List.filterMap (\( i, s ) -> s |> Maybe.map (Tuple.pair i))
+syncDecoder : JD.Decoder Sync
+syncDecoder =
+    JD.map3 Sync
+        (JD.field "q" (Container.decoder Quiz_.decoder))
+        (JD.field "s" (Container.decoder Survey_.decoder))
+        (JD.field "c" (JD.array Code_.decoder))
 
 
-syncHelper : (Local.Container sync -> Section -> Section) -> List ( Int, Local.Container sync ) -> Sections -> Sections
-syncHelper fn tuples sections =
-    case tuples of
-        [] ->
-            sections
-
-        ( i, state ) :: ts ->
-            syncHelper fn
-                ts
-                (sections
-                    |> Array.get i
-                    |> Maybe.map (\sec -> Array.set i (fn state sec) sections)
-                    |> Maybe.withDefault sections
-                )
+sync : String -> Section -> JE.Value
+sync id =
+    syncInit id >> syncEncode
 
 
-syncQuiz : Local.Container Quiz_.Sync -> Section -> Section
+syncUpdate : Section -> Sync -> Section
+syncUpdate section update =
+    { section
+        | sync =
+            if Array.isEmpty section.sync.code then
+                update
+
+            else
+                { update
+                    | code =
+                        merge (Array.toList update.code)
+                            (Array.toList section.sync.code)
+                            |> Array.fromList
+                }
+    }
+
+
+merge : List Code_.Sync -> List Code_.Sync -> List Code_.Sync
+merge new old =
+    case ( new, old ) of
+        ( n :: ns, o :: os ) ->
+            { n | log = o.log } :: merge ns os
+
+        ( n :: ns, [] ) ->
+            n :: merge ns []
+
+        ( [], o :: os ) ->
+            o :: merge [] os
+
+        ( [], [] ) ->
+            []
+
+
+syncQuiz : Container Quiz_.Sync -> Section -> Section
 syncQuiz state section =
-    { section
-        | sync =
-            case section.sync of
-                Just sub ->
-                    Just { sub | quiz = Just state }
-
-                Nothing ->
-                    Just
-                        { quiz = Just state
-                        , survey = Nothing
-                        }
-    }
+    let
+        localSync =
+            section.sync
+    in
+    { section | sync = { localSync | quiz = state } }
 
 
-syncSurvey : Local.Container Survey_.Sync -> Section -> Section
+syncSurvey : Container Survey_.Sync -> Section -> Section
 syncSurvey state section =
-    { section
-        | sync =
-            case section.sync of
-                Just sub ->
-                    Just { sub | survey = Just state }
+    let
+        localSync =
+            section.sync
+    in
+    { section | sync = { localSync | survey = state } }
 
-                Nothing ->
-                    Just
-                        { survey = Just state
-                        , quiz = Nothing
-                        }
+
+syncCode : Array Code_.Sync -> Section -> Section
+syncCode state section =
+    let
+        localSync =
+            section.sync
+    in
+    { section | sync = { localSync | code = state } }
+
+
+syncOff : Sections -> Sections
+syncOff =
+    Array.map syncOff_
+
+
+syncOff_ : Section -> Section
+syncOff_ sec =
+    { sec
+        | sync =
+            { quiz = Container.empty
+            , survey = Container.empty
+            , code = Array.empty
+            }
+        , code_model = Code.syncOff sec.code_model
     }

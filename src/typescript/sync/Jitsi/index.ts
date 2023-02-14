@@ -1,21 +1,34 @@
-import Lia from '../../liascript/types/lia.d'
-
 import { Sync as Base } from '../Base/index'
-//import * from '../../../../node_modules/@types/jitsi-meet/index.d'
+import { encode, decode } from 'uint8-to-base64'
 
 export class Sync extends Base {
   private connection: any
+  private conferenceRoom: any
+  private domain?: string
+  private users: { [id: string]: string | null } = {}
 
-  constructor(send: Lia.Send) {
-    super(send)
+  destroy() {
+    this.connection?.disconnect()
+    super.destroy()
+  }
 
-    if (window.JitsiMeetJS) {
+  async connect(data: {
+    course: string
+    room: string
+    password?: string
+    config?: any
+  }) {
+    super.connect(data)
+    this.domain = data.config || 'meet.jit.si'
+
+    if (window['JitsiMeetJS']) {
       this.init(true)
     } else {
       this.load(
         [
-          'https://code.jquery.com/jquery-3.5.1.min.js',
+          //'https://code.jquery.com/jquery-3.5.1.min.js',
           'https://meet.jit.si/libs/lib-jitsi-meet.min.js',
+          //'https://meet.jit.si/external_api.js',
         ],
         this
       )
@@ -23,60 +36,108 @@ export class Sync extends Base {
   }
 
   init(ok: boolean, error?: string) {
-    window.JitsiMeetJS.init()
+    const id = this.uniqueID()
 
-    this.connection = new window.JitsiMeetJS.JitsiConnection(null, null, {
-      clientNode: 'http://jitsi.org/jitsimeet',
-      hosts: {
-        // XMPP domain.
-        domain: 'https://localhost:1234',
+    if (ok && window['JitsiMeetJS'] && id) {
+      window['JitsiMeetJS'].init()
+      window['JitsiMeetJS'].setLogLevel(window['JitsiMeetJS'].logLevels.ERROR)
 
-        // When using authentication, domain for guest users.
-        // anonymousdomain: 'guest.example.com',
+      // https://codepen.io/chadwallacehart/pen/bGLypLY?editors=1010
+      this.connection = new window['JitsiMeetJS'].JitsiConnection(null, null, {
+        hosts: {
+          domain: this.domain,
+          muc: `conference.${this.domain}`,
+          focus: `focus.${this.domain}`,
+        },
+        configOverwrite: { openBridgeChannel: true },
+        serviceUrl: `https://${this.domain}/http-bind?room=${btoa(id)}`, // Note: wss not avail on meet.jit.si
+        clientNode: 'http://jitsi.org/jitsimeet',
+      })
 
-        // Domain for authenticated users. Defaults to <domain>.
-        // authdomain: 'jitsi-meet.example.com',
+      const self = this
+      this.connection.addEventListener(
+        window['JitsiMeetJS'].events.connection.CONNECTION_ESTABLISHED,
+        function () {
+          const confOptions = {
+            configOverwrite: { openBridgeChannel: true },
+            enableLayerSuspension: true,
+            p2p: {
+              enabled: false,
+            },
+          }
 
-        // Focus component domain. Defaults to focus.<domain>.
-        // focus: 'focus.jitsi-meet.example.com',
+          self.conferenceRoom = self.connection.initJitsiConference(
+            btoa(id).toLowerCase(),
+            confOptions
+          )
 
-        // XMPP MUC domain. FIXME: use XEP-0030 to discover it
-      },
-    })
+          self.conferenceRoom.setDisplayName(self.token)
 
-    this.connection.addEventListener(
-      window.JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
-      function () {
-        console.warn('Conn established')
-      }
-    )
+          self.conferenceRoom.on(
+            window['JitsiMeetJS'].events.conference.CONFERENCE_JOINED,
+            () => {
+              self.sendConnect()
+            }
+          )
 
-    this.connection.addEventListener(
-      window.JitsiMeetJS.events.connection.CONNECTION_FAILED,
-      function (e) {
-        console.warn('Conn failed', e)
-      }
-    )
-    this.connection.addEventListener(
-      window.JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED,
-      function (e) {
-        console.warn('Conn disconnected', e)
-      }
-    )
+          self.conferenceRoom.on(
+            window['JitsiMeetJS'].errors.conference.PASSWORD_REQUIRED,
+            () => {
+              self.sendDisconnectError('password required')
+            }
+          )
 
-    console.warn('###########################################', this.connection)
+          self.conferenceRoom.on(
+            window['JitsiMeetJS'].events.conference.USER_JOINED,
+            (id) => {
+              self.users[id] = null
+            }
+          )
+          self.conferenceRoom.on(
+            window['JitsiMeetJS'].events.conference.USER_LEFT,
+            (id) => {
+              const token = self.users[id]
 
-    this.connection.connect()
+              if (token) {
+                self.db.removePeer(token)
+              }
+
+              delete self.users[id]
+            }
+          )
+
+          self.conferenceRoom.on(
+            window['JitsiMeetJS'].events.conference.ENDPOINT_MESSAGE_RECEIVED,
+            (participant, message) => {
+              self.users[participant.getId()] = participant.getDisplayName()
+              self.applyUpdate(decode(message))
+            }
+          )
+
+          self.conferenceRoom.join()
+        }
+      )
+
+      this.connection.addEventListener(
+        window['JitsiMeetJS'].events.connection.CONNECTION_FAILED,
+        (e: any) => {
+          self.sendDisconnectError('Connection failed' + e)
+        }
+      )
+      this.connection.addEventListener(
+        window['JitsiMeetJS'].events.connection.CONNECTION_DISCONNECTED,
+        (e: any) => {
+          self.disconnect()
+        }
+      )
+
+      this.connection.connect()
+    }
   }
 
-  connect(data: {
-    course: string
-    room: string
-    username: string
-    password?: string
-  }) {}
-
-  disconnect() {}
-
-  publish(message: Object) {}
+  broadcast(data: Uint8Array): void {
+    try {
+      this.conferenceRoom?.sendEndpointMessage('', encode(data))
+    } catch (_) {}
+  }
 }

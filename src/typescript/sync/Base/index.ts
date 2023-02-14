@@ -1,5 +1,8 @@
 import Lia from '../../liascript/types/lia.d'
 
+import * as helper from '../../helper'
+import { CRDT } from './db'
+
 /* This function is only required to generate a random string, that is used
 as a personal ID for every peer, since it is not possible at the moment to
 get the own peer ID from the beaker browser.
@@ -15,6 +18,32 @@ function random(length: number = 16) {
   }
 
   return str
+}
+
+function dynamicGossip(self: Sync) {
+  let timerID: number | null = null
+
+  function delay() {
+    return (self.db.getPeers().length + 1) * 2000
+  }
+
+  function publish() {
+    try {
+      self.broadcast(self.db.encode())
+
+      timerID = window.setTimeout(publish, delay())
+    } catch (e) {
+      timerID = null
+    }
+  }
+
+  return () => {
+    if (timerID) {
+      window.clearTimeout(timerID)
+    }
+
+    timerID = window.setTimeout(publish, delay())
+  }
 }
 
 export class Sync {
@@ -45,6 +74,9 @@ export class Sync {
   protected cbConnection: (topic: string, msg: string) => void
   protected cbRelay: (data: Lia.Event) => void
 
+  public db: CRDT
+  public gossip: () => void
+
   /** To initialize the communication, two callbacks are required. While the
    * first is used to send configuration messages about successful join or
    * leaving, the second one is only used to relay messages from the network
@@ -52,10 +84,12 @@ export class Sync {
    *
    * @param cbConnection - send messages directly to the sync module
    * @param cbRelay - simply relay messages to LiaScript
+   * @param useInternalCallback - set this to false when custom y-js update-observers are used
    */
   constructor(
     cbConnection: (topic: string, msg: string) => void,
-    cbRelay: (data: Lia.Event) => void
+    cbRelay: (data: Lia.Event) => void,
+    useInternalCallback: boolean = true
   ) {
     let token
 
@@ -77,6 +111,38 @@ export class Sync {
     this.urlCounter = 0
     this.cbConnection = cbConnection
     this.cbRelay = cbRelay
+
+    const self = this
+
+    const gossip = dynamicGossip(self)
+    this.gossip = gossip
+    const throttleBroadcast = helper.throttle(() => {
+      self.broadcast(self.db.encode())
+      gossip()
+    }, 1000)
+
+    this.db = new CRDT(
+      token,
+      useInternalCallback
+        ? (event, origin) => {
+            if (self.db) {
+              switch (origin) {
+                case 'exit': {
+                  self.broadcast(event)
+                  self.destroy()
+                  break
+                }
+                default: {
+                  throttleBroadcast()
+                  self.update()
+                }
+              }
+
+              // self.db.log()
+            }
+          }
+        : undefined
+    )
   }
 
   /* to have a valid connection 3 things are required:
@@ -107,8 +173,13 @@ export class Sync {
     this.password = data.password
   }
 
-  disconnect(event: Lia.Event) {
-    console.warn('implement disconnect')
+  destroy() {
+    this.db.destroy()
+    this.cbConnection('disconnect', this.token)
+  }
+
+  disconnect() {
+    this.db.removePeer()
   }
 
   /** Sometimes it might be required to generate a unique room ID for different
@@ -139,10 +210,6 @@ export class Sync {
     return null
   }
 
-  publish(event: any) {
-    console.warn('overwrite this method')
-  }
-
   /** Not like in the common sense, this method provides and interface to the
    * LiaScript event system. Every received message should be send back by this
    * method.
@@ -164,17 +231,23 @@ export class Sync {
   sendConnect() {
     this.sync('connect', this.token)
   }
-  /** Send a connection message to the LiaScript Sync module, this after this
-   * LiaScript will start joining, by sending a join message to be published.
-   *
-   */
-  join() {
-    this.cbConnection('connect', this.token)
+
+  update() {
+    try {
+      // return the current state to LiaScript
+      this.sync('update', {
+        peers: this.db.getPeers(),
+        data: this.db.toJSON(),
+      })
+
+      //this.db.log()
+    } catch (e) {
+      console.warn('Sync Update ->', e)
+    }
   }
 
-  leave() {
-    //this.publish(this.syncMsg('leave', this.token))
-    //this.sync('disconnect')
+  broadcast(data: Uint8Array) {
+    console.warn('broadcast needs to be implemented')
   }
 
   /** __At first, make sure that the resource has not been loaded before!__ And
@@ -230,5 +303,86 @@ export class Sync {
       console.error('load: ', e)
       obj.init(false, e.message)
     }
+  }
+
+  publish(event: Lia.Event) {
+    switch (event.message.cmd) {
+      case 'update': {
+        break
+      }
+      case 'join': {
+        this.db.init(event.message.param)
+        this.gossip()
+        break
+      }
+
+      case 'quiz': {
+        if (event.track?.[0][0] === 'quiz' && event.track?.[1][0] === 'id') {
+          this.db.addQuiz(
+            event.track[0][1],
+            event.track[1][1],
+            event.message.param
+          )
+        } else {
+          console.warn('SyncTX wrong event ->', event)
+        }
+
+        break
+      }
+
+      case 'survey': {
+        if (event.track?.[0][0] === 'survey' && event.track?.[1][0] === 'id') {
+          this.db.addSurvey(
+            event.track[0][1],
+            event.track[1][1],
+            event.message.param
+          )
+        } else {
+          console.warn('SyncTX wrong event ->', event)
+        }
+
+        break
+      }
+
+      case 'code': {
+        if (event.track?.[0][0] === 'code' && event.track?.[1][0] === 'id') {
+          this.db.updateCode(
+            event.track[0][1],
+            event.track[1][1],
+            event.message.param.j,
+            event.message.param.msg
+          )
+        } else {
+          console.warn('SyncTX wrong event ->', event)
+        }
+        break
+      }
+
+      case 'codes': {
+        if (event.track?.[0][0] === 'code' && event.track.length === 1) {
+          for (let i = 0; i < event.message.param.length; i++) {
+            for (let j = 0; j < event.message.param[i].length; j++) {
+              this.db.initCode(
+                event.track[0][1],
+                i,
+                j,
+                event.message.param[i][j]
+              )
+            }
+          }
+        } else {
+          console.warn('SyncTX wrong event ->', event)
+        }
+        break
+      }
+
+      default: {
+        console.warn('SyncTX unknown command:', event.message)
+      }
+    }
+  }
+
+  applyUpdate(data: Uint8Array) {
+    this.db.applyUpdate(data)
   }
 }

@@ -2,6 +2,7 @@ import Beaker from './beaker.d'
 
 import * as Base from '../Base/index'
 
+/*
 function encode(json: object) {
   return new TextEncoder().encode(JSON.stringify(json))
 }
@@ -15,6 +16,7 @@ function decode(message: Uint8Array) {
     console.warn('Sync(Beaker): ', e)
   }
 }
+*/
 
 export function isSupported(): boolean {
   return window.beaker && window.location.protocol === 'hyper:' ? true : false
@@ -25,6 +27,13 @@ export class Sync extends Base.Sync {
 
   private peerEvent?: Beaker.Event
   private peerChannelEvent?: Beaker.UserEvent
+
+  destroy() {
+    if (this.peerChannelEvent) {
+      this.peerChannelEvent.close()
+    }
+    super.destroy()
+  }
 
   connect(data: {
     course: string
@@ -46,46 +55,32 @@ export class Sync extends Base.Sync {
     })
     this.peerEvent.addEventListener('leave', (e: Beaker.Message) => {
       self.peerIds.delete(e.peerId)
-      self.sync('leave', e.peerId)
 
       console.warn('LEAVE', e)
     })
 
-    this.peerChannelEvent = window.beaker.peersockets.join(this.uniqueID())
-    this.peerChannelEvent.addEventListener(
-      'message',
-      function (event: Beaker.Message) {
-        const message = decode(event.message)
+    const id = this.uniqueID()
 
-        if (message) {
-          self.sendToLia(message)
+    if (id) {
+      this.peerChannelEvent = window.beaker.peersockets.join(id)
+      this.peerChannelEvent.addEventListener(
+        'message',
+        function (event: Beaker.Message) {
+          if (event.message) {
+            self.applyUpdate(event.message)
+          }
         }
-      }
-    )
+      )
 
-    this.sendConnect()
-  }
-
-  disconnect() {
-    if (this.peerChannelEvent) {
-      this.peerChannelEvent.close()
+      this.sendConnect()
     }
   }
 
-  publish(message: Object) {
-    console.warn('BEAKER', message)
+  broadcast(data: Uint8Array): void {
     if (this.peerChannelEvent) {
-      let msg = encode(message)
-
       for (let peerId of this.peerIds) {
-        this.peerChannelEvent.send(peerId, msg)
+        this.peerChannelEvent.send(peerId, data)
       }
-    }
-  }
-
-  sendTo(peerId: number, message: Object) {
-    if (this.peerChannelEvent) {
-      this.peerChannelEvent.send(peerId, encode(message))
     }
   }
 }

@@ -1,7 +1,7 @@
 import * as Beaker from '../../sync/Beaker/index'
 import * as Edrys from '../../sync/Edrys/index'
-//import * as Jitsi from '../../sync/Jitsi/index'
-//import * as Matrix from '../../sync/Matrix/index'
+import * as Jitsi from '../../sync/Jitsi/index'
+import * as Matrix from '../../sync/Matrix/index'
 import * as PubNub from '../../sync/PubNub/index'
 import * as GUN from '../../sync/Gun/index'
 
@@ -20,8 +20,8 @@ const Service = {
     'edrys',
     'gun',
 
-    //'jitsi',
-    //'matrix',
+    'jitsi',
+    'matrix',
     'pubnub',
   ],
 
@@ -42,9 +42,7 @@ const Service = {
             event_.message.param = msg
             event_.reply = true
 
-            console.warn(event_)
-
-            elmSend(event_)
+            if (elmSend) elmSend(event_)
           }
 
           switch (event.message.param.backend) {
@@ -61,11 +59,11 @@ const Service = {
               break
 
             case 'jitsi':
-              //sync = new Jitsi.Sync(elmSend)
+              sync = new Jitsi.Sync(cbConnection, elmSend)
               break
 
             case 'matrix':
-              //sync = new Matrix.Sync(elmSend)
+              sync = new Matrix.Sync(cbConnection, elmSend)
               break
 
             case 'pubnub':
@@ -84,15 +82,16 @@ const Service = {
 
       case 'disconnect': {
         if (sync) {
-          event.message.cmd = 'leave'
-          sync.disconnect(event)
+          sync.disconnect()
 
           sync = null
 
+          /*
           if (elmSend) {
             event.message.cmd = 'disconnect'
             elmSend(event)
           }
+          */
         }
 
         break
@@ -101,8 +100,6 @@ const Service = {
       default: {
         if (sync) {
           sync.publish(event)
-        } else {
-          log.warn('(Service Sync) unknown message =>', event.message)
         }
       }
     }
