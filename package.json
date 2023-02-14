@@ -91,9 +91,6 @@
     "workbox-cli": "^6.5.4",
     "yjs": "^13.5.39"
   },
-  "browserslist": [
-    "cover 90.0%"
-  ],
   "multipleStaticFileCopier": [
     {
       "origin": "static",
