@@ -15,14 +15,13 @@ const Service = {
 
   supported: [
     // beaker is only supported within the beaker-browser
-    window.beaker && window.location.protocol === 'hyper:' ? 'beaker' : '',
+    //window.beaker && window.location.protocol === 'hyper:' ? 'beaker' : '',
     // remove these strings if you want to enable or disable certain sync support
-    'edrys',
-    'gun',
-
-    'jitsi',
-    'matrix',
-    'pubnub',
+    //'edrys',
+    //'gun',
+    //'jitsi',
+    //'matrix',
+    //'pubnub',
   ],
 
   init: function (elmSend_: Lia.Send) {
@@ -46,6 +45,7 @@ const Service = {
           }
 
           switch (event.message.param.backend) {
+            /*
             case 'beaker':
               if (!Beaker) {
                 Beaker = await import('../../sync/Beaker/index')
@@ -93,7 +93,7 @@ const Service = {
 
               sync = new PubNub.Sync(cbConnection, elmSend)
               break
-
+            */
             default:
               log.error('could not load =>', event.message)
           }
