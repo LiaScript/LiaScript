@@ -9,6 +9,7 @@ module Lia.Markdown.Quiz.Types exposing
     , getClass
     , initState
     , isSolved
+    , reset
     , toState
     )
 
@@ -35,6 +36,7 @@ type alias Element =
     , hint : Int
     , error_msg : String
     , scriptID : Maybe Int
+    , randomize : Maybe (List Int)
     }
 
 
@@ -79,6 +81,28 @@ initState quiz =
             q.solution
                 |> Matrix.initState
                 |> Matrix_State
+
+
+reset : State -> State
+reset state =
+    case state of
+        Block_State s ->
+            s
+                |> Block.initState
+                |> Block_State
+
+        Vector_State s ->
+            s
+                |> Vector.initState
+                |> Vector_State
+
+        Matrix_State s ->
+            s
+                |> Matrix.initState
+                |> Matrix_State
+
+        _ ->
+            state
 
 
 toState : Type -> State

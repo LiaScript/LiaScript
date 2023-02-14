@@ -14,6 +14,7 @@ type Lang
     | De
     | Es
     | Fa
+    | Fr
     | Hy
     | Ko
     | Nl
@@ -44,6 +45,9 @@ getLnFromCode code =
 
         "fa" ->
             Just Fa
+
+        "fr" ->
+            Just Fr
 
         "hy" ->
             Just Hy
@@ -93,6 +97,9 @@ getCodeFromLn lang =
         Fa ->
             "fa"
 
+        Fr ->
+            "fr"
+
         Hy ->
             "hy"
 
@@ -135,6 +142,9 @@ baseNext lang =
 
         Fa ->
             "بعدی"
+
+        Fr ->
+            "suivant"
 
         Hy ->
             "հաջորդը"
@@ -179,6 +189,9 @@ basePrev lang =
         Fa ->
             "قبلی"
 
+        Fr ->
+            "précédent"
+
         Hy ->
             "նախորդը"
 
@@ -221,6 +234,9 @@ basePlay lang =
 
         Fa ->
             "بازی کن"
+
+        Fr ->
+            "Lecture"
 
         Hy ->
             "Խաղացեք"
@@ -265,6 +281,9 @@ baseStop lang =
         Fa ->
             "بس کن"
 
+        Fr ->
+            "Arrêt"
+
         Hy ->
             "դադարեցրեք"
 
@@ -307,6 +326,9 @@ baseFont lang str0 =
 
         Fa ->
             "اندازه قلم: " ++ str0 ++ ""
+
+        Fr ->
+            "Taille de police : " ++ str0 ++ ""
 
         Hy ->
             "Տառատեսակի չափը ՝ " ++ str0 ++ ""
@@ -351,6 +373,9 @@ baseSize1 lang =
         Fa ->
             "کوچک"
 
+        Fr ->
+            "petit"
+
         Hy ->
             "փոքր"
 
@@ -393,6 +418,9 @@ baseSize2 lang =
 
         Fa ->
             "متوسط"
+
+        Fr ->
+            "moyen"
 
         Hy ->
             "միջին"
@@ -437,6 +465,9 @@ baseSize3 lang =
         Fa ->
             "بزرگ"
 
+        Fr ->
+            "grand"
+
         Hy ->
             "մեծ"
 
@@ -479,6 +510,9 @@ baseSearch lang =
 
         Fa ->
             "جستجو"
+
+        Fr ->
+            "Recherche"
 
         Hy ->
             "փնտրել"
@@ -523,6 +557,9 @@ baseDelete lang =
         Fa ->
             "جستجو را حذف کنید"
 
+        Fr ->
+            "Effacer la recherche"
+
         Hy ->
             "ջնջել որոնումը"
 
@@ -565,6 +602,9 @@ baseResults lang =
 
         Fa ->
             "نتایج"
+
+        Fr ->
+            "Résultats"
 
         Hy ->
             "արդյունքներ"
@@ -609,6 +649,9 @@ baseOneResult lang =
         Fa ->
             "یک نتیجه"
 
+        Fr ->
+            "un résultat"
+
         Hy ->
             "մեկ արդյունք"
 
@@ -651,6 +694,9 @@ baseNoResult lang =
 
         Fa ->
             "هیچ نتیجه ای"
+
+        Fr ->
+            "aucun résultat"
 
         Hy ->
             "արդյունք չկա"
@@ -695,6 +741,9 @@ baseToc lang =
         Fa ->
             "فهرست مطالب"
 
+        Fr ->
+            "Table des matières"
+
         Hy ->
             "բովանդակություն"
 
@@ -737,6 +786,9 @@ baseShow lang =
 
         Fa ->
             "نشان دادن"
+
+        Fr ->
+            "montrer"
 
         Hy ->
             "ցույց տալ"
@@ -781,6 +833,9 @@ baseHide lang =
         Fa ->
             "پنهان کردن"
 
+        Fr ->
+            "cacher"
+
         Hy ->
             "թաքցնել"
 
@@ -823,6 +878,9 @@ baseEditor lang =
 
         Fa ->
             "به سبک ویرایشگر"
+
+        Fr ->
+            "Style de l'éditeur"
 
         Hy ->
             "խմբագիր ոճով"
@@ -867,6 +925,9 @@ baseLang lang =
         Fa ->
             "فارسی"
 
+        Fr ->
+            "Français"
+
         Hy ->
             "հայերեն"
 
@@ -909,6 +970,9 @@ no_translation lang =
 
         Fa ->
             "در دست ترجمه"
+
+        Fr ->
+            "traductions non disponibles"
 
         Hy ->
             "դեռ թագմանություն չկա"
@@ -953,6 +1017,9 @@ translateWithGoogle lang =
         Fa ->
             "ترجمه با Google (آزمایشی)"
 
+        Fr ->
+            "Traduire avec Google (expérimental)"
+
         Hy ->
             "Թարգմանեք Google- ի միջոցով (փորձնական)"
 
@@ -995,6 +1062,9 @@ cColor lang =
 
         Fa ->
             "رنگ"
+
+        Fr ->
+            "Couleur"
 
         Hy ->
             "գույն"
@@ -1039,6 +1109,9 @@ cSchema lang =
         Fa ->
             "طرح رنگی"
 
+        Fr ->
+            "Schéma de couleurs"
+
         Hy ->
             "Գունային սխեման"
 
@@ -1081,6 +1154,9 @@ cDark lang =
 
         Fa ->
             "حالت تاریک"
+
+        Fr ->
+            "Mode sombre"
 
         Hy ->
             "մութ ռեժիմ"
@@ -1125,6 +1201,9 @@ cBright lang =
         Fa ->
             "حالت روشن"
 
+        Fr ->
+            "Mode clair"
+
         Hy ->
             "թեթև ռեժիմ"
 
@@ -1167,6 +1246,9 @@ cDefault lang =
 
         Fa ->
             "پیشفرض"
+
+        Fr ->
+            "Standard"
 
         Hy ->
             "կանխադրված"
@@ -1211,6 +1293,9 @@ cBlue lang =
         Fa ->
             "آبی"
 
+        Fr ->
+            "Bleu"
+
         Hy ->
             "կապույտ"
 
@@ -1253,6 +1338,9 @@ cRed lang =
 
         Fa ->
             "قرمز"
+
+        Fr ->
+            "Rouge"
 
         Hy ->
             "կարմիր"
@@ -1297,6 +1385,9 @@ cYellow lang =
         Fa ->
             "رنگ زرد"
 
+        Fr ->
+            "Jaune"
+
         Hy ->
             "դեղին"
 
@@ -1339,6 +1430,9 @@ cTurquoise lang =
 
         Fa ->
             "فیروزه"
+
+        Fr ->
+            "Turquoise"
 
         Hy ->
             "փիրուզագույն"
@@ -1383,6 +1477,9 @@ modeMode lang =
         Fa ->
             "حالت ارائه"
 
+        Fr ->
+            "Mode de présentation"
+
         Hy ->
             "Ներկայացման ռեժիմ"
 
@@ -1425,6 +1522,9 @@ modeTextbook lang =
 
         Fa ->
             "کتاب"
+
+        Fr ->
+            "Manuel"
 
         Hy ->
             "գիրք"
@@ -1469,6 +1569,9 @@ modePresentation lang =
         Fa ->
             "ارائه"
 
+        Fr ->
+            "Présentation"
+
         Hy ->
             "ներկայացում"
 
@@ -1511,6 +1614,9 @@ modeSlides lang =
 
         Fa ->
             "اسلایدها"
+
+        Fr ->
+            "Diapositives"
 
         Hy ->
             "սլայդներ"
@@ -1555,6 +1661,9 @@ soundOn lang =
         Fa ->
             "صدا روشن"
 
+        Fr ->
+            "Haut-parleur activé"
+
         Hy ->
             "ձայնով"
 
@@ -1597,6 +1706,9 @@ soundOff lang =
 
         Fa ->
             "صدا خاموش"
+
+        Fr ->
+            "Haut-parleur désactivé"
 
         Hy ->
             "առանց ձայն"
@@ -1641,6 +1753,9 @@ infoAuthor lang =
         Fa ->
             "نویسنده: "
 
+        Fr ->
+            "Auteur : "
+
         Hy ->
             "հեղինակ: "
 
@@ -1683,6 +1798,9 @@ infoDate lang =
 
         Fa ->
             "تاریخ: "
+
+        Fr ->
+            "Date : "
 
         Hy ->
             "ամսաթիվ: "
@@ -1727,6 +1845,9 @@ infoEmail lang =
         Fa ->
             "ایمیل: "
 
+        Fr ->
+            "E-mail : "
+
         Hy ->
             "էլ․ փոստ: "
 
@@ -1769,6 +1890,9 @@ infoVersion lang =
 
         Fa ->
             "نسخه: "
+
+        Fr ->
+            "Version : "
 
         Hy ->
             "տարբերակ: "
@@ -1813,6 +1937,9 @@ confInformation lang =
         Fa ->
             "اطلاعات"
 
+        Fr ->
+            "Informations"
+
         Hy ->
             "ինֆորմացիա"
 
@@ -1855,6 +1982,9 @@ confSettings lang =
 
         Fa ->
             "تنظیمات"
+
+        Fr ->
+            "Paramètres"
 
         Hy ->
             "կարգավորումներ"
@@ -1899,6 +2029,9 @@ confShare lang =
         Fa ->
             "اشتراک"
 
+        Fr ->
+            "Partager"
+
         Hy ->
             "կիսվել"
 
@@ -1941,6 +2074,9 @@ confShareVia lang =
 
         Fa ->
             "اشتراک گذاری از طریق ..."
+
+        Fr ->
+            "Partager via ..."
 
         Hy ->
             "տարածել միջոցով ..."
@@ -1985,6 +2121,9 @@ confTranslations lang =
         Fa ->
             "ترجمه ها"
 
+        Fr ->
+            "Traductions"
+
         Hy ->
             "թարգմանություններ"
 
@@ -2027,6 +2166,9 @@ codeExecute lang =
 
         Fa ->
             "اجرا"
+
+        Fr ->
+            "Exécuter"
 
         Hy ->
             "իրականացնել"
@@ -2071,6 +2213,9 @@ codeRunning lang =
         Fa ->
             "در حال اجرا"
 
+        Fr ->
+            "en cours d'exécution"
+
         Hy ->
             "ընթանում է"
 
@@ -2113,6 +2258,9 @@ codePrev lang =
 
         Fa ->
             "نسخه قبلی"
+
+        Fr ->
+            "version précédente"
 
         Hy ->
             "նախորդ տարբերակը"
@@ -2157,6 +2305,9 @@ codeNext lang =
         Fa ->
             "نسخه بعدی"
 
+        Fr ->
+            "version suivante"
+
         Hy ->
             "հաջորդ տարբերակը"
 
@@ -2199,6 +2350,9 @@ codeFirst lang =
 
         Fa ->
             "نسخه اولیه"
+
+        Fr ->
+            "première version"
 
         Hy ->
             "առաջին տարբերակը"
@@ -2243,6 +2397,9 @@ codeLast lang =
         Fa ->
             "آخرین نسخه"
 
+        Fr ->
+            "dernière version"
+
         Hy ->
             "վերջին տարբերակը"
 
@@ -2285,6 +2442,9 @@ codeMinimize lang =
 
         Fa ->
             "کوچک کردن پنجره"
+
+        Fr ->
+            "Réduire l'affichage"
 
         Hy ->
             "նվազեցնել տեսքը"
@@ -2329,6 +2489,9 @@ codeMaximize lang =
         Fa ->
             "بزرگ کردن پنجره"
 
+        Fr ->
+            "Maximiser l'affichage"
+
         Hy ->
             "բարձրագունել տեսքը"
 
@@ -2369,6 +2532,9 @@ codeTerminal lang =
         Fa ->
             "پایانه"
 
+        Fr ->
+            "Terminal"
+
         Hy ->
             "տերմինալ"
 
@@ -2408,6 +2574,9 @@ quizCheck lang =
 
         Fa ->
             "بررسی"
+
+        Fr ->
+            "Vérifier"
 
         Hy ->
             "ստուգել"
@@ -2452,6 +2621,9 @@ quizSolution lang =
         Fa ->
             "نمایش راهکار"
 
+        Fr ->
+            "Afficher la solution"
+
         Hy ->
             "ցույց տալ լուծումը"
 
@@ -2494,6 +2666,9 @@ quizHint lang =
 
         Fa ->
             "نمایش یادآوری"
+
+        Fr ->
+            "Afficher l'indice"
 
         Hy ->
             "ցուցադրել ակնարկ"
@@ -2538,6 +2713,9 @@ quizSelection lang =
         Fa ->
             "انتخاب"
 
+        Fr ->
+            "Sélection"
+
         Hy ->
             "ընտրություն"
 
@@ -2580,6 +2758,9 @@ quizLabelCheck lang =
 
         Fa ->
             "پاسخ را بررسی کنید. پاسخ صحیح یا نادرست علامت گذاری شده است."
+
+        Fr ->
+            "Vérifiez la réponse. La réponse sera marquée comme correcte ou incorrecte."
 
         Hy ->
             "Ստուգեք պատասխանը: Պատասխանը նշվում է որպես ճիշտ կամ սխալ:"
@@ -2624,6 +2805,9 @@ quizLabelSolution lang =
         Fa ->
             "راه حل را نشان دهید. مسابقه به عنوان حل شده علامت گذاری شده است."
 
+        Fr ->
+            "Affichez la solution. Le quiz sera marqué comme résolu."
+
         Hy ->
             "Showույց տվեք լուծումը: Վիկտորինան նշվում է որպես լուծված:"
 
@@ -2667,11 +2851,14 @@ quizAnswerSuccess lang =
         Fa ->
             "تبریک می گویم ، جواب صحیحی بود"
 
+        Fr ->
+            "Félicitations, c'était la bonne réponse"
+
         Hy ->
             "Շնորհավորում եմ, դա ճիշտ պատասխանն էր"
 
         Ko ->
-            "축하합니다. 올바른 답을 선택했습니다."
+            "축하합니다. 올바른 답을 선택했습니다"
 
         Nl ->
             "Gefeliciteerd, dat was het juiste antwoord"
@@ -2696,43 +2883,46 @@ quizAnswerError : Lang -> String
 quizAnswerError lang =
     case lang of 
         Ar ->
-            "هذه ليست الإجابة الصحيحة"
+            "لم يتم إعطاء الإجابة الصحيحة بعد"
 
         Bg ->
-            "Това не е верният отговор"
+            "Все още не е даден правилният отговор"
 
         De ->
-            "Das ist nicht die richtige Antwort"
+            "Die richtige Antwort wurde noch nicht gegeben"
 
         Es ->
-            "Esa no es la respuesta correcta"
+            "La respuesta correcta aún no ha sido dada"
 
         Fa ->
-            "پاسخ درستی نیست"
+            "بله، این ترجمه فارسی است"
+
+        Fr ->
+            "La réponse correcte n'a pas encore été donnée"
 
         Hy ->
-            "Դա ճիշտ պատասխան չէ"
+            "Ճիշտ պատասխանը դեռևս չի տրվել"
 
         Ko ->
-            "선택한 답은 올바르지 않습니다."
+            "정답이 아직 제시되지 않았습니다"
 
         Nl ->
-            "Dat is niet het juiste antwoord"
+            "Het juiste antwoord is nog niet gegeven"
 
         Ru ->
-            "Это не правильный ответ"
+            "Правильный ответ еще не дан"
 
         Tw ->
-            "那不是正确的答案"
+            "正確的答案還沒有被給出"
 
         Uk ->
-            "Це не правильна відповідь"
+            "Правильна відповідь ще не надана"
 
         Zh ->
-            "那不是正确的答案"
+            "正确的答案尚未给出"
 
         _ ->
-            "That's not the right answer"
+            "The correct answer has not yet been given"
 
 
 quizAnswerResolved : Lang -> String
@@ -2753,11 +2943,14 @@ quizAnswerResolved lang =
         Fa ->
             "پاسخ حل شده"
 
+        Fr ->
+            "Réponse résolue"
+
         Hy ->
             "Լուծված պատասխան"
 
         Ko ->
-            "이미 푼 퀴즈입니다."
+            "이미 푼 퀴즈입니다"
 
         Nl ->
             "Opgelost antwoord"
@@ -2795,6 +2988,9 @@ surveySubmit lang =
 
         Fa ->
             "ارسال"
+
+        Fr ->
+            "Soumettre"
 
         Hy ->
             "ներկայացնել"
@@ -2839,6 +3035,9 @@ surveySubmitted lang =
         Fa ->
             "تشکر"
 
+        Fr ->
+            "Merci"
+
         Hy ->
             "շնորհակալություն"
 
@@ -2882,6 +3081,9 @@ surveyText lang =
         Fa ->
             "لطفا متن وارد کنید"
 
+        Fr ->
+            "Saisie de texte ..."
+
         Hy ->
             "Մուտքագրեք որոշ տեքստ"
 
@@ -2919,6 +3121,9 @@ sortAsc lang =
         Es ->
             "orden ascendente"
 
+        Fr ->
+            "trier par ordre croissant"
+
         Ko ->
             "오름차순 정렬"
 
@@ -2946,6 +3151,9 @@ sortDesc lang =
 
         Es ->
             "orden descendiente"
+
+        Fr ->
+            "trier par ordre décroissant"
 
         Ko ->
             "내림차순 정렬"
@@ -2975,6 +3183,9 @@ sortNot lang =
         Es ->
             "no ordenado"
 
+        Fr ->
+            "non trié"
+
         Ko ->
             "정렬 안 됨"
 
@@ -3000,6 +3211,9 @@ chartPie lang =
         De ->
             "Tortendiagramm"
 
+        Fr ->
+            "Diagramme en secteurs"
+
         Ko ->
             "파이 차트"
 
@@ -3021,6 +3235,9 @@ chartBar lang =
 
         De ->
             "Balkendiagramm"
+
+        Fr ->
+            "Diagramme en bâtons"
 
         Ko ->
             "바 차트"
@@ -3044,6 +3261,9 @@ chartLine lang =
         De ->
             "Liniendiagramm"
 
+        Fr ->
+            "Graphique linéaire"
+
         Ko ->
             "라인 차트"
 
@@ -3065,6 +3285,9 @@ chartScatter lang =
 
         De ->
             "Streudiagramm"
+
+        Fr ->
+            "Nuage de points"
 
         Ko ->
             "분포도"
@@ -3088,6 +3311,9 @@ chartEffectScatter lang =
         De ->
             "Welligkeits-Streudiagramm"
 
+        Fr ->
+            "Nuage de points ondulé"
+
         Ko ->
             "리플 분포도"
 
@@ -3109,6 +3335,9 @@ chartRadar lang =
 
         De ->
             "Radar-Karte"
+
+        Fr ->
+            "Graphique en radar"
 
         Ko ->
             "레이더 차트"
@@ -3132,6 +3361,9 @@ chartTree lang =
         De ->
             "Baum"
 
+        Fr ->
+            "Arbre"
+
         Ko ->
             "트리"
 
@@ -3153,6 +3385,9 @@ chartTreemap lang =
 
         De ->
             "Baumkarte"
+
+        Fr ->
+            "Carte arborescente"
 
         Ko ->
             "트리맵"
@@ -3176,6 +3411,9 @@ chartK lang =
         De ->
             "K Liniendiagramm"
 
+        Fr ->
+            "Graphique en K"
+
         Ko ->
             "K 라인 차트"
 
@@ -3197,6 +3435,9 @@ chartHeatmap lang =
 
         De ->
             "Heatmap"
+
+        Fr ->
+            "Carte de chaleur"
 
         Ko ->
             "히트 맵"
@@ -3220,6 +3461,9 @@ chartMap lang =
         De ->
             "Karte"
 
+        Fr ->
+            "Carte"
+
         Ko ->
             "맵"
 
@@ -3241,6 +3485,9 @@ chartParallel lang =
 
         De ->
             "Parallele Koordinatenkarte"
+
+        Fr ->
+            "Carte de coordonnées parallèles"
 
         Ko ->
             "평행 좌표 맵"
@@ -3264,6 +3511,9 @@ chartLines lang =
         De ->
             "Liniendiagramm"
 
+        Fr ->
+            "Graphe linéaire"
+
         Ko ->
             "선 그래프"
 
@@ -3285,6 +3535,9 @@ chartGraph lang =
 
         De ->
             "Beziehungsgrafik"
+
+        Fr ->
+            "Graphe de relations"
 
         Ko ->
             "관계도"
@@ -3308,6 +3561,9 @@ chartSankey lang =
         De ->
             "Sankey-Diagramm"
 
+        Fr ->
+            "Diagramme de Sankey"
+
         Ko ->
             "생키 다이어그램"
 
@@ -3330,6 +3586,9 @@ chartFunnel lang =
         De ->
             "Trichterdiagramm"
 
+        Fr ->
+            "Entonnoir"
+
         Ko ->
             "퍼널 차트"
 
@@ -3351,6 +3610,9 @@ chartPictorialBar lang =
 
         De ->
             "Bildlicher Balken"
+
+        Fr ->
+            "Barre picturale"
 
         Ko ->
             "픽토리얼 바"
@@ -3382,6 +3644,9 @@ qrCode lang =
 
         Fa ->
             "کد QR برای وب سایت"
+
+        Fr ->
+            "Code QR pour site web"
 
         Hy ->
             "Վեբ կայքի QR կոդ"
@@ -3426,6 +3691,9 @@ qrErr lang =
         Fa ->
             "خطا هنگام رمزگذاری روی کد QR"
 
+        Fr ->
+            "Erreur lors de l'encodage en code QR"
+
         Hy ->
             "Սխալ QR կոդի կոդավորման ժամանակ"
 
@@ -3463,6 +3731,9 @@ ttsPreferBrowser lang =
         Es ->
             "Preferir TTS del navegador"
 
+        Fr ->
+            "Préférer le TTS du navigateur"
+
         Ko ->
             "브라우저 TTS 선호"
 
@@ -3496,6 +3767,9 @@ ttsUsingBrowser lang =
 
         Es ->
             "Usando el motor interno de conversión de texto a voz del navegador."
+
+        Fr ->
+            "Utilisation du moteur de synthèse vocale intégré du navigateur."
 
         Ko ->
             "브라우저의 내부 텍스트 음성 변환 엔진을 사용합니다."
@@ -3531,6 +3805,9 @@ ttsUnsupported lang =
         Es ->
             "Tu navegador no es compatible con Text-to-Speech, prueba con otro."
 
+        Fr ->
+            "Votre navigateur ne prend pas en charge le texte en discours, essayez-en un autre."
+
         Ko ->
             "당신의 브라우저는 Text-to-Speech를 지원하지 않습니다. 다른 것을 시도해 보세요."
 
@@ -3559,6 +3836,9 @@ home lang =
         De ->
             "Übersicht"
 
+        Fr ->
+            "Vue d'ensemble"
+
         Ko ->
             "집"
 
@@ -3571,6 +3851,9 @@ confTooltip lang =
     case lang of 
         De ->
             "Tooltipps"
+
+        Fr ->
+            "Infobulles"
 
         Ru ->
             "подсказки"
@@ -3587,6 +3870,9 @@ chartBoxplot lang =
     case lang of 
         De ->
             "Boxplot"
+
+        Fr ->
+            "Boîte à moustaches"
 
         Ko ->
             "상자 그림"
@@ -3607,6 +3893,9 @@ chartCandlestick lang =
         De ->
             "Kerzenständer"
 
+        Fr ->
+            "Chandelier"
+
         Ko ->
             "캔들스틱 차트"
 
@@ -3625,6 +3914,9 @@ chartGauge lang =
     case lang of 
         De ->
             "Meßanzeige"
+
+        Fr ->
+            "Jauge"
 
         Ko ->
             "게이지"
@@ -3645,6 +3937,9 @@ chartThemeRiver lang =
         De ->
             "Thematische Flusskarte"
 
+        Fr ->
+            "Carte à flux thématique"
+
         Ko ->
             "테마 리버 맵"
 
@@ -3663,6 +3958,9 @@ chartSunburst lang =
     case lang of 
         De ->
             "Sonnenausbruch"
+
+        Fr ->
+            "Sunburst"
 
         Ko ->
             "선버스트 차트"

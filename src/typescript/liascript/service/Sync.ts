@@ -1,27 +1,27 @@
-import * as Beaker from '../../sync/Beaker/index'
-import * as Edrys from '../../sync/Edrys/index'
-//import * as Jitsi from '../../sync/Jitsi/index'
-//import * as Matrix from '../../sync/Matrix/index'
-import * as PubNub from '../../sync/PubNub/index'
-import * as GUN from '../../sync/Gun/index'
-
 import log from '../log'
 
 var sync: any
 var elmSend: Lia.Send | null
+
+var Beaker
+var Edrys
+var Jitsi
+var Matrix
+var PubNub
+var Gun
 
 const Service = {
   PORT: 'sync',
 
   supported: [
     // beaker is only supported within the beaker-browser
-    Beaker.isSupported() ? 'beaker' : '',
+    window.beaker && window.location.protocol === 'hyper:' ? 'beaker' : '',
     // remove these strings if you want to enable or disable certain sync support
     'edrys',
     'gun',
 
-    //'jitsi',
-    //'matrix',
+    'jitsi',
+    'matrix',
     'pubnub',
   ],
 
@@ -29,7 +29,7 @@ const Service = {
     elmSend = elmSend_
   },
 
-  handle: function (event: Lia.Event) {
+  handle: async function (event: Lia.Event) {
     switch (event.message.cmd) {
       case 'connect': {
         if (sync) sync = undefined
@@ -42,33 +42,55 @@ const Service = {
             event_.message.param = msg
             event_.reply = true
 
-            console.warn(event_)
-
-            elmSend(event_)
+            if (elmSend) elmSend(event_)
           }
 
           switch (event.message.param.backend) {
             case 'beaker':
+              if (!Beaker) {
+                Beaker = await import('../../sync/Beaker/index')
+              }
+
               sync = new Beaker.Sync(cbConnection, elmSend)
               break
 
             case 'edrys':
+              if (!Edrys) {
+                Edrys = await import('../../sync/Edrys/index')
+              }
+
               sync = new Edrys.Sync(cbConnection, elmSend)
               break
 
             case 'gun':
-              sync = new GUN.Sync(cbConnection, elmSend)
+              if (!Gun) {
+                Gun = await import('../../sync/Gun/index')
+              }
+
+              sync = new Gun.Sync(cbConnection, elmSend)
               break
 
             case 'jitsi':
-              //sync = new Jitsi.Sync(elmSend)
+              if (!Jitsi) {
+                Jitsi = await import('../../sync/Jitsi/index')
+              }
+
+              sync = new Jitsi.Sync(cbConnection, elmSend)
               break
 
             case 'matrix':
-              //sync = new Matrix.Sync(elmSend)
+              if (!Matrix) {
+                Matrix = await import('../../sync/Matrix/index')
+              }
+
+              sync = new Matrix.Sync(cbConnection, elmSend)
               break
 
             case 'pubnub':
+              if (!PubNub) {
+                PubNub = await import('../../sync/PubNub/index')
+              }
+
               sync = new PubNub.Sync(cbConnection, elmSend)
               break
 
@@ -84,15 +106,16 @@ const Service = {
 
       case 'disconnect': {
         if (sync) {
-          event.message.cmd = 'leave'
-          sync.disconnect(event)
+          sync.disconnect()
 
           sync = null
 
+          /*
           if (elmSend) {
             event.message.cmd = 'disconnect'
             elmSend(event)
           }
+          */
         }
 
         break
@@ -101,8 +124,6 @@ const Service = {
       default: {
         if (sync) {
           sync.publish(event)
-        } else {
-          log.warn('(Service Sync) unknown message =>', event.message)
         }
       }
     }

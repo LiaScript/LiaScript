@@ -52,6 +52,7 @@ modify_State ( states, tasks ) =
                     Array.push
                         { state = Array.fromList states
                         , scriptID = m
+                        , randomize = Nothing
                         }
                         s.task_vector
                 , effect_model =
@@ -76,6 +77,7 @@ modify_State ( states, tasks ) =
                                                                 (toString
                                                                     { state = Array.fromList states
                                                                     , scriptID = Nothing
+                                                                    , randomize = Nothing
                                                                     }
                                                                 )
                                                             )

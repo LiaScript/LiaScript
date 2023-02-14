@@ -11,3 +11,4 @@ dist
 static/README.md
 backup/**
 benchmark
+parcel-bundle-reports

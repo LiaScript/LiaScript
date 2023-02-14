@@ -19,6 +19,7 @@
             "elm/url": "1.0.0",
             "elm-community/list-extra": "8.5.2",
             "f0i/statistics": "2.0.0",
+            "jxxcarlson/elm-pseudorandom": "1.0.3",
             "pablohirafuji/elm-qrcode": "4.0.1",
             "rtfeldman/elm-hex": "1.0.0",
             "tesk9/accessible-html": "4.1.1",

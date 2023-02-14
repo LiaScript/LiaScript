@@ -1,4 +1,5 @@
 import * as Base from '../Base/index'
+import { encode, decode } from 'uint8-to-base64'
 
 export class Sync extends Base.Sync {
   private subject: string = 'liasync'
@@ -15,9 +16,14 @@ export class Sync extends Base.Sync {
     this.init(true)
   }
 
+  destroy() {
+    // TODO: release event Handler
+    super.destroy()
+  }
+
   init(ok: boolean, error?: string) {
     if (ok) {
-      this.subject = this.room
+      this.subject = this.room || 'liasync'
 
       let self = this
 
@@ -39,7 +45,9 @@ export class Sync extends Base.Sync {
               event.body = JSON.parse(event.body)
 
               if (event.body.message.param.id !== self.token) {
-                self.sendToLia(event.body)
+                if (event.body) {
+                  self.applyUpdate(decode(event.body))
+                }
               }
             }
           }
@@ -54,18 +62,14 @@ export class Sync extends Base.Sync {
         if (!self.connected) {
           self.sendDisconnectError('This seems not to be an Edrys classroom')
         }
-      }, 1234)
+      }, 2000)
     }
   }
 
-  disconnect(event: Object) {
-    this.publish(null)
-    this.publish(event)
-
-    // todo release event-handler
-  }
-
-  publish(message: Object | null) {
-    window.parent.postMessage({ subject: this.subject, body: message }, '*')
+  broadcast(data: Uint8Array | null) {
+    window.parent.postMessage(
+      { subject: this.subject, body: data ? encode(data) : null },
+      '*'
+    )
   }
 }

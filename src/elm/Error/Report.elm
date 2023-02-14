@@ -56,7 +56,7 @@ toReport errors =
         [ slide "What is LiaScript?" 2 Report.whatIsLiaScript
         , slide "Get Help?" 2 Report.getHelp
         ]
-        |> List.indexedMap Section.init
+        |> List.indexedMap (Section.init 0)
         |> Array.fromList
 
 

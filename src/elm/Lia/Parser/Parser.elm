@@ -40,7 +40,7 @@ parse_definition base code =
             )
             (base
                 |> Lia.Definition.Types.default
-                |> init Nothing
+                |> init Nothing Nothing
             )
             (code ++ "\n")
     of
@@ -63,7 +63,7 @@ parse_definition base code =
 
 parse_titles : Definition -> String -> Result String ( Section.Base, String )
 parse_titles defines code =
-    case Combine.runParser Preprocessor.section (init Nothing defines) code of
+    case Combine.runParser Preprocessor.section (init Nothing Nothing defines) code of
         Ok ( _, data, rslt ) ->
             Ok ( rslt, data.input )
 
@@ -78,9 +78,10 @@ parse_section :
     -> Result String Section
 parse_section search_index global sec =
     case
+        -- TODO add random
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (init (Just search_index) { global | section = sec.id })
+            (init (Just sec.seed) (Just search_index) { global | section = sec.id })
             sec.code
     of
         Ok ( state, _, es ) ->
@@ -97,7 +98,8 @@ parse_subsection globals id code =
             (Lia.Definition.Parser.parse |> keep Markdown.run)
             (globals
                 |> Maybe.withDefault (Lia.Definition.Types.default "")
-                |> init Nothing
+                -- TODO: random
+                |> init Nothing Nothing
             )
             (String.trim code ++ "\n")
     of

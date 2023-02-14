@@ -33,7 +33,7 @@ import Lia.Markdown.Survey.Types
         , Vector
         )
 import Lia.Markdown.Survey.Update exposing (Msg(..))
-import Lia.Sync.Container.Local exposing (Container)
+import Lia.Sync.Container exposing (Container)
 import Lia.Sync.Types as Sync_
 import Lia.Utils
     exposing
