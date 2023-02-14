@@ -27,7 +27,7 @@
     "sw": "npx workbox injectManifest workbox-config.js",
     "translate": "elm-i18n-gen lia-localization/locale src/elm/Translations.elm",
     "test": "npx elm-test",
-    "analyze": "npx parcel build --no-source-maps --reporter @parcel/reporter-bundle-analyzer src/entry/app/index.html",
+    "analyze": "npm run clean && npx parcel build --no-source-maps --reporter @parcel/reporter-bundle-analyzer src/entry/app/index.html",
     "watch": "npm run watch:dev",
     "build": "npm run build:app",
     "build:app": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/app/index.html && npm run sw",
@@ -89,7 +89,7 @@
     "yjs": "^13.5.39"
   },
   "browserslist": [
-    "cover 94.0%"
+    "cover 90.0%"
   ],
   "multipleStaticFileCopier": [
     {
