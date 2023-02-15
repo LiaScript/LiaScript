@@ -17,15 +17,18 @@ help:
 clean:
 	rm -rf dist
 
+minify:
+	npm run minify:js
+
 all: clean app index manifest responsivevoice preview
 	rm dist/*.md
 
-all2: optimize all deoptimize
+all2: optimize all deoptimize minify
 
 editor: base index responsivevoice
 	rm dist/README.md
 
-editor2: optimize editor deoptimize
+editor2: optimize editor deoptimize minify
 
 base:
 	npm run build:base
