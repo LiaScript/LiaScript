@@ -5099,6 +5099,52 @@ chartLine lang =
             "Line chart"
 
 
+chartScatter : Lang -> String
+chartScatter lang =
+    case lang of 
+        Am ->
+            "መስመር ግርግር ስቀር ቦታ"
+
+        Ar ->
+            "مخطط مبعثر"
+
+        Bn ->
+            "স্ক্যাটার প্লট"
+
+        De ->
+            "Streudiagramm"
+
+        Fr ->
+            "Nuage de points"
+
+        Hi ->
+            "स्कैटरप्लॉट"
+
+        Ja ->
+            "散布図"
+
+        Ko ->
+            "분포도"
+
+        Pa ->
+            "ਸਿਆਨਾ ਚਿੰਨ੍ਹ ਚਾਰਟ"
+
+        Pt ->
+            "Gráfico de dispersão"
+
+        Sw ->
+            "Kutawanya njama"
+
+        Tw ->
+            "散点图"
+
+        Zh ->
+            "散点图"
+
+        _ ->
+            "Scatter plot"
+
+
 chartRadar : Lang -> String
 chartRadar lang =
     case lang of 
@@ -5627,77 +5673,4 @@ qrErr lang =
 
         _ ->
             "Error while encoding to QR code"
-
-
-chartScatter : Lang -> String
-chartScatter lang =
-    case lang of 
-        Bn ->
-            "স্ক্যাটার প্লট"
-
-        Hi ->
-            "स्कैटरप्लॉट"
-
-
-chartEffectScatter : Lang -> String
-chartEffectScatter lang =
-    case lang of 
-        Hi ->
-            "रिपल स्कैटर प्लॉट"
-
-
-chartTree : Lang -> String
-chartTree lang =
-    case lang of 
-        Hi ->
-            "पेड़"
-
-
-chartTreemap : Lang -> String
-chartTreemap lang =
-    case lang of 
-        Hi ->
-            "ट्रीमैप"
-
-
-chartCandlestick : Lang -> String
-chartCandlestick lang =
-    case lang of 
-        Hi ->
-            "कैंडलस्टिक"
-
-
-chartK : Lang -> String
-chartK lang =
-    case lang of 
-        Hi ->
-            "K लाइन चार्ट"
-
-
-chartGauge : Lang -> String
-chartGauge lang =
-    case lang of 
-        Hi ->
-            "माप प्रदर्शन"
-
-
-chartPictorialBar : Lang -> String
-chartPictorialBar lang =
-    case lang of 
-        Hi ->
-            "सचित्र बार"
-
-
-chartThemeRiver : Lang -> String
-chartThemeRiver lang =
-    case lang of 
-        Hi ->
-            "विषयगत नदी मानचित्र"
-
-
-chartSunburst : Lang -> String
-chartSunburst lang =
-    case lang of 
-        Hi ->
-            "सनबर्स्ट"
 
