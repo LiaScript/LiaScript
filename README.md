@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.28
+version:  0.10.29
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,12 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.29** (16/02/2023)
+
+- Internationalization: added new languages (portuguese, amharic, swahili, panjabi, hindi, japanese)
+- Removed Matrix classroom due to size
+- chore: added additional minification step
 
 **0.10.28** (14/02/2023)
 
