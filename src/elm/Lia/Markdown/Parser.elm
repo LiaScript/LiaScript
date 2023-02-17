@@ -108,16 +108,27 @@ elements =
             |> map Markdown.Survey
             |> andMap Survey.parse
         , md_annotations
+            |> map Tuple.pair
+            |> andMap Context.getSeed
             |> andThen
-                (\attr ->
-                    map (Markdown.Quiz attr) <|
+                (\( attr, seed ) ->
+                    { randomize =
                         if Attributes.isSet "data-randomize" attr then
-                            Context.getSeed
-                                |> map Just
-                                |> andThen Quiz.parse
+                            Just seed
 
                         else
-                            Quiz.parse Nothing
+                            Nothing
+                    , maxTrials =
+                        attr
+                            |> Attributes.get "data-max-trials"
+                            |> Maybe.andThen String.toInt
+                    , score =
+                        attr
+                            |> Attributes.get "data-max-score"
+                            |> Maybe.andThen String.toInt
+                    }
+                        |> Quiz.parse
+                        |> map (Markdown.Quiz attr)
                 )
             |> andMap solution
         , md_annotations

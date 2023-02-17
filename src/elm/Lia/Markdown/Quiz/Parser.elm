@@ -1,7 +1,6 @@
 module Lia.Markdown.Quiz.Parser exposing
     ( maybeJS
     , parse
-    , randomize
     )
 
 import Array
@@ -32,8 +31,7 @@ import Lia.Markdown.Quiz.Matrix.Parser as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types
     exposing
-        ( Element
-        , Quiz
+        ( Quiz
         , State(..)
         , Type(..)
         , initState
@@ -45,8 +43,13 @@ import Lia.Parser.Indentation as Indent
 import PseudoRandom
 
 
-parse : Maybe Int -> Parser Context Quiz
-parse seed =
+parse :
+    { randomize : Maybe Int
+    , maxTrials : Maybe Int
+    , score : Maybe Int
+    }
+    -> Parser Context Quiz
+parse options =
     [ map Matrix_Type Matrix.parse
     , map Vector_Type Vector.parse
     , onsuccess Generic_Type generic
@@ -54,24 +57,27 @@ parse seed =
     ]
         |> choice
         |> andThen adds
-        |> andThen (modify_State seed)
+        |> andThen (modify_State options)
 
 
-randomize : Maybe Int -> Type -> Maybe (List Int)
-randomize seed typeOf =
-    case ( seed, typeOf ) of
-        ( Just randomSeed, Vector_Type vec ) ->
+randomize :
+    Type
+    -> Int
+    -> Maybe (List Int)
+randomize typeOf seed =
+    case typeOf of
+        Vector_Type vec ->
             Just
                 (PseudoRandom.integerSequence
                     (List.length vec.options)
-                    randomSeed
+                    seed
                 )
 
-        ( Just randomSeed, Matrix_Type vec ) ->
+        Matrix_Type vec ->
             Just
                 (PseudoRandom.integerSequence
                     (List.length vec.options)
-                    randomSeed
+                    seed
                 )
 
         _ ->
@@ -106,14 +112,30 @@ hints =
         |> optional []
 
 
-modify_State : Maybe Int -> Quiz -> Parser Context Quiz
-modify_State seed q =
+modify_State :
+    { randomize : Maybe Int
+    , maxTrials : Maybe Int
+    , score : Maybe Int
+    }
+    -> Quiz
+    -> Parser Context Quiz
+modify_State options q =
     let
         add_state id s =
             { s
                 | quiz_vector =
                     Array.push
-                        (Element Solution.Open (initState q.quiz) 0 0 "" id (randomize seed q.quiz))
+                        { solved = Solution.Open
+                        , state = initState q.quiz
+                        , trial = 0
+                        , maxTrials = options.maxTrials
+                        , hint = 0
+                        , error_msg = ""
+                        , scriptID = id
+                        , randomize =
+                            options.randomize
+                                |> Maybe.andThen (randomize q.quiz)
+                        }
                         s.quiz_vector
             }
     in
