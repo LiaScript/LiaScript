@@ -126,6 +126,10 @@ elements =
                         attr
                             |> Attributes.get "data-max-score"
                             |> Maybe.andThen String.toFloat
+                    , showResolveAt =
+                        attr
+                            |> Attributes.get "data-show-resolve-at"
+                            |> Maybe.andThen String.toInt
                     }
                         |> Quiz.parse
                         |> map (Markdown.Quiz attr)

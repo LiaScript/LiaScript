@@ -47,6 +47,7 @@ parse :
     { randomize : Maybe Int
     , maxTrials : Maybe Int
     , score : Maybe Float
+    , showResolveAt : Maybe Int
     }
     -> Parser Context Quiz
 parse options =
@@ -116,6 +117,7 @@ modify_State :
     { randomize : Maybe Int
     , maxTrials : Maybe Int
     , score : Maybe Float
+    , showResolveAt : Maybe Int
     }
     -> Quiz
     -> Parser Context Quiz
@@ -136,6 +138,7 @@ modify_State options q =
                             options.randomize
                                 |> Maybe.andThen (randomize q.quiz)
                         , score = options.score
+                        , showResolveAt = Maybe.withDefault 0 options.showResolveAt
                         }
                         s.quiz_vector
             }

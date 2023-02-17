@@ -39,6 +39,7 @@ type alias Element =
     , randomize : Maybe (List Int)
     , maxTrials : Maybe Int
     , score : Maybe Float
+    , showResolveAt : Int
     }
 
 

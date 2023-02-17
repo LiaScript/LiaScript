@@ -105,7 +105,7 @@ toElement =
         (JD.field "error_msg" JD.string)
         |> JD.andThen
             (\e ->
-                e Nothing Nothing Nothing Nothing
+                e Nothing Nothing Nothing Nothing 0
                     |> JD.succeed
             )
 
