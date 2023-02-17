@@ -33,11 +33,12 @@ type alias Element =
     { solved : Solution
     , state : State
     , trial : Int
-    , maxTrials : Maybe Int
     , hint : Int
     , error_msg : String
     , scriptID : Maybe Int
     , randomize : Maybe (List Int)
+    , maxTrials : Maybe Int
+    , score : Maybe Float
     }
 
 

@@ -97,15 +97,17 @@ toElement =
                 _ ->
                     JD.succeed Solution.ReSolved
     in
-    JD.map8 Element
+    JD.map5 Element
         (JD.field "solved" JD.int |> JD.andThen solved_decoder)
         (JD.field "state" toState)
         (JD.field "trial" JD.int)
-        (JD.succeed Nothing)
         (JD.field "hint" JD.int)
         (JD.field "error_msg" JD.string)
-        (JD.succeed Nothing)
-        (JD.succeed Nothing)
+        |> JD.andThen
+            (\e ->
+                e Nothing Nothing Nothing Nothing
+                    |> JD.succeed
+            )
 
 
 toState : JD.Decoder State

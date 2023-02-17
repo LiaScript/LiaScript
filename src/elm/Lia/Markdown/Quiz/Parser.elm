@@ -46,7 +46,7 @@ import PseudoRandom
 parse :
     { randomize : Maybe Int
     , maxTrials : Maybe Int
-    , score : Maybe Int
+    , score : Maybe Float
     }
     -> Parser Context Quiz
 parse options =
@@ -115,7 +115,7 @@ hints =
 modify_State :
     { randomize : Maybe Int
     , maxTrials : Maybe Int
-    , score : Maybe Int
+    , score : Maybe Float
     }
     -> Quiz
     -> Parser Context Quiz
@@ -135,6 +135,7 @@ modify_State options q =
                         , randomize =
                             options.randomize
                                 |> Maybe.andThen (randomize q.quiz)
+                        , score = options.score
                         }
                         s.quiz_vector
             }
