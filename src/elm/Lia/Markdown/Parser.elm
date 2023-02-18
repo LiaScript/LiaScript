@@ -52,6 +52,7 @@ import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
 import Lia.Parser.Indentation as Indent
 import Lia.Parser.Preprocessor exposing (title_tag)
+import Lia.Utils as Utils
 import SvgBob
 
 
@@ -128,8 +129,20 @@ elements =
                             |> Maybe.andThen String.toFloat
                     , showResolveAt =
                         attr
-                            |> Attributes.get "data-show-resolve-at"
-                            |> Maybe.andThen String.toInt
+                            |> Attributes.get "data-show-resolve-button"
+                            |> Maybe.andThen
+                                (\value ->
+                                    case String.toInt value of
+                                        Just int ->
+                                            Just int
+
+                                        Nothing ->
+                                            if Utils.checkFalse value then
+                                                Nothing
+
+                                            else
+                                                Just 100000
+                                )
                     }
                         |> Quiz.parse
                         |> map (Markdown.Quiz attr)
