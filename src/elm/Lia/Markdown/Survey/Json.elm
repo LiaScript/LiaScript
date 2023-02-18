@@ -131,11 +131,10 @@ toVector =
 
 toElement : JD.Decoder Element
 toElement =
-    JD.map5 Element
+    JD.map4 Element
         (JD.field "submitted" JD.bool)
         (JD.field "state" toState)
         (JD.maybe (JD.field "errorMessage" JD.string))
-        (JD.succeed Nothing)
         (JD.succeed Nothing)
 
 

@@ -122,7 +122,7 @@ update sync sectionID scripts msg vector =
                 ( Nothing, _, ( "load", param ) ) ->
                     param
                         |> Json.toVector
-                        |> Result.map (merge vector >> Array.map clearOnLoad)
+                        |> Result.map (mergeHelper vector)
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
@@ -152,7 +152,7 @@ update sync sectionID scripts msg vector =
                 ( Just "restore", _, ( cmd, param ) ) ->
                     param
                         |> Json.toVector
-                        |> Result.map (merge vector >> Array.map clearOnLoad)
+                        |> Result.map (mergeHelper vector)
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
@@ -187,16 +187,6 @@ toString state =
 
         _ ->
             ""
-
-
-clearOnLoad : Element -> Element
-clearOnLoad e =
-    case ( e.randomize, e.solved ) of
-        ( Just _, Solution.Open ) ->
-            { e | state = reset e.state }
-
-        _ ->
-            e
 
 
 execute : Int -> State -> Script.Msg sub
@@ -323,18 +313,40 @@ store sectionID return =
 check : Type -> Element -> Return Element msg sub
 check solution e =
     e
-        |> isSolved (Just solution) (comp solution e.state |> Debug.log "DDDDDDDDDDDDDDDDDDD")
+        |> isSolved (Just solution) (comp solution e.state)
         |> Return.val
 
 
-merge :
-    Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
-    -> Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
-    -> Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
-merge v1 =
+merge : (a -> a -> a) -> Array a -> Array a -> Array a
+merge map v1 =
     Array.toList
-        >> List.map2 (\sID body -> { body | scriptID = sID.scriptID, randomize = sID.randomize }) (Array.toList v1)
+        >> List.map2 map (Array.toList v1)
         >> Array.fromList
+
+
+mergeHelper : Array Element -> Array Element -> Array Element
+mergeHelper =
+    merge mergeMap
+
+
+mergeMap : Element -> Element -> Element
+mergeMap sID body =
+    { body
+        | scriptID = sID.scriptID
+        , randomize = sID.randomize
+        , maxTrials = sID.maxTrials
+        , showResolveAt = sID.showResolveAt
+        , score = sID.score
+        , state =
+            -- if the quiz is set to random and is not solved yet,
+            -- then it is reset on every load
+            case ( sID.randomize, body.solved ) of
+                ( Just _, Solution.Open ) ->
+                    reset body.state
+
+                _ ->
+                    body.state
+    }
 
 
 init :
