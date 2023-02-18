@@ -264,7 +264,7 @@ evalEventDecoder json =
 
 isSolved : Maybe Type -> Solution -> Element -> Element
 isSolved solution state e =
-    case ( e.maxTrials, e.solved ) of
+    case ( e.opt.maxTrials, e.solved ) of
         ( Nothing, Solution.Open ) ->
             { e
                 | trial = e.trial + 1
@@ -333,14 +333,11 @@ mergeMap : Element -> Element -> Element
 mergeMap sID body =
     { body
         | scriptID = sID.scriptID
-        , randomize = sID.randomize
-        , maxTrials = sID.maxTrials
-        , showResolveAt = sID.showResolveAt
-        , score = sID.score
+        , opt = sID.opt
         , state =
             -- if the quiz is set to random and is not solved yet,
             -- then it is reset on every load
-            case ( sID.randomize, body.solved ) of
+            case ( sID.opt.randomize, body.solved ) of
                 ( Just _, Solution.Open ) ->
                     reset body.state
 

@@ -23,6 +23,7 @@ import Combine
         , succeed
         , withState
         )
+import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (eScript)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
@@ -31,26 +32,22 @@ import Lia.Markdown.Quiz.Matrix.Parser as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types
     exposing
-        ( Quiz
+        ( Options
+        , Quiz
         , State(..)
         , Type(..)
         , initState
         )
 import Lia.Markdown.Quiz.Vector.Parser as Vector
-import Lia.Parser.Context exposing (Context)
+import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
+import Lia.Utils as Utils
 import PseudoRandom
 
 
-parse :
-    { randomize : Maybe Int
-    , maxTrials : Maybe Int
-    , score : Maybe Float
-    , showResolveAt : Maybe Int
-    }
-    -> Parser Context Quiz
-parse options =
+parse : Parameters -> Parser Context Quiz
+parse attr =
     [ map Matrix_Type Matrix.parse
     , map Vector_Type Vector.parse
     , onsuccess Generic_Type generic
@@ -58,7 +55,7 @@ parse options =
     ]
         |> choice
         |> andThen adds
-        |> andThen (modify_State options)
+        |> andThen (modify_State attr)
 
 
 randomize :
@@ -113,40 +110,65 @@ hints =
         |> optional []
 
 
-modify_State :
-    { randomize : Maybe Int
-    , maxTrials : Maybe Int
-    , score : Maybe Float
-    , showResolveAt : Maybe Int
-    }
-    -> Quiz
-    -> Parser Context Quiz
-modify_State options q =
+modify_State : Parameters -> Quiz -> Parser Context Quiz
+modify_State attr q =
     let
-        add_state id s =
+        add_state id seed s =
             { s
                 | quiz_vector =
                     Array.push
                         { solved = Solution.Open
                         , state = initState q.quiz
                         , trial = 0
-                        , maxTrials = options.maxTrials
                         , hint = 0
                         , error_msg = ""
                         , scriptID = id
-                        , randomize =
-                            options.randomize
-                                |> Maybe.andThen (randomize q.quiz)
-                        , score = options.score
-                        , showResolveAt = Maybe.withDefault 0 options.showResolveAt
+                        , opt = getOptions q.quiz seed attr
                         }
                         s.quiz_vector
             }
     in
     maybeJS
         |> map add_state
+        |> andMap Context.getSeed
         |> andThen modifyState
         |> keep (succeed q)
+
+
+getOptions : Type -> Int -> Parameters -> Options
+getOptions quiz seed attr =
+    { randomize =
+        if Attributes.isSet "data-randomize" attr then
+            randomize quiz seed
+
+        else
+            Nothing
+    , maxTrials =
+        attr
+            |> Attributes.get "data-max-trials"
+            |> Maybe.andThen String.toInt
+    , score =
+        attr
+            |> Attributes.get "data-max-score"
+            |> Maybe.andThen String.toFloat
+    , showResolveAt =
+        attr
+            |> Attributes.get "data-show-resolve-button"
+            |> Maybe.map
+                (\value ->
+                    case String.toInt value of
+                        Just trial ->
+                            abs trial
+
+                        Nothing ->
+                            if Utils.checkFalse value then
+                                0
+
+                            else
+                                100000
+                )
+            |> Maybe.withDefault 0
+    }
 
 
 maybeJS : Parser Context (Maybe Int)

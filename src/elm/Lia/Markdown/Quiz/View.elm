@@ -230,7 +230,7 @@ viewState config elem quiz =
                     (Solution.toClass ( elem.solved, elem.trial ))
                     q
                 |> Tuple.mapSecond
-                    (shuffle elem.randomize
+                    (shuffle elem.opt.randomize
                         >> List.map (Html.map (Vector_Update quiz.id))
                     )
 
@@ -238,7 +238,7 @@ viewState config elem quiz =
             ( []
             , [ s
                     |> Matrix.view config
-                        (shuffle elem.randomize)
+                        (shuffle elem.opt.randomize)
                         (elem.solved == Solution.Open)
                         (Solution.toClass ( elem.solved, elem.trial ))
                         q
@@ -291,7 +291,7 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
             { config = config
             , solution = state.solved
             , msg = ShowSolution quiz.id quiz.quiz
-            , hidden = state.trial < state.showResolveAt
+            , hidden = state.trial < state.opt.showResolveAt
             }
         , Translations.quizHint config.lang
             |> viewHintButton quiz.id (quiz.hints /= []) (Solution.Open == state.solved && state.hint < List.length quiz.hints)
