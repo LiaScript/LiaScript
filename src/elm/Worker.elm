@@ -191,7 +191,7 @@ respond model =
             , ( "quiz"
               , lia.sections
                     |> Array.map .quiz_vector
-                    |> JE.array Quiz.fromVector
+                    |> JE.array (Quiz.fromVector True)
               )
             , ( "survey"
               , lia.sections
