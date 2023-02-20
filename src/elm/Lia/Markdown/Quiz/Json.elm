@@ -104,7 +104,13 @@ toElement =
         (JD.field "hint" JD.int)
         (JD.field "error_msg" JD.string)
         (JD.succeed Nothing)
-        (JD.succeed Nothing)
+        (JD.succeed
+            { randomize = Nothing
+            , maxTrials = Nothing
+            , score = Nothing
+            , showResolveAt = 0
+            }
+        )
 
 
 toState : JD.Decoder State

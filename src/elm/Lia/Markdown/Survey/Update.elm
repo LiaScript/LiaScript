@@ -116,7 +116,7 @@ update sync sectionID scripts msg vector =
                 ( Nothing, _, ( "load", param ) ) ->
                     param
                         |> Json.toVector
-                        |> Result.map (merge vector)
+                        |> Result.map (merge (\sID body -> { body | scriptID = sID.scriptID }) vector)
                         |> Result.withDefault vector
                         |> Return.val
                         |> doSync sync sectionID Nothing
@@ -161,7 +161,7 @@ update sync sectionID scripts msg vector =
                 ( Just "restore", _, ( cmd, param ) ) ->
                     param
                         |> Json.toVector
-                        |> Result.map (merge vector)
+                        |> Result.map (merge (\sID body -> { body | scriptID = sID.scriptID }) vector)
                         |> Result.withDefault vector
                         |> Return.val
                         |> doSync sync sectionID Nothing
