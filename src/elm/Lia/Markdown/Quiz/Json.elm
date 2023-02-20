@@ -68,7 +68,7 @@ fromOptions : Options -> ( String, JE.Value )
 fromOptions opt =
     ( "score"
     , opt.score
-        |> Maybe.withDefault 0
+        |> Maybe.withDefault 1
         |> JE.float
     )
 
