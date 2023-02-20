@@ -4,13 +4,14 @@ module Lia.Markdown.Quiz.Json exposing
     , toVector
     )
 
+import Conditional.List as CList
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Inline.Json.Encode as Inline
 import Lia.Markdown.Quiz.Block.Json as Block
 import Lia.Markdown.Quiz.Matrix.Json as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Markdown.Quiz.Types exposing (Element, Quiz, State(..), Type(..), Vector)
+import Lia.Markdown.Quiz.Types exposing (Element, Options, Quiz, State(..), Type(..), Vector)
 import Lia.Markdown.Quiz.Vector.Json as Vector
 
 
@@ -34,32 +35,42 @@ encode quiz =
         ]
 
 
-fromVector : Vector -> JE.Value
-fromVector =
-    JE.array fromElement
+fromVector : Bool -> Vector -> JE.Value
+fromVector withScore =
+    JE.array (fromElement withScore)
 
 
-fromElement : Element -> JE.Value
-fromElement element =
-    JE.object
-        [ ( "solved"
-          , JE.int
-                (case element.solved of
-                    Solution.Open ->
-                        0
+fromElement : Bool -> Element -> JE.Value
+fromElement withScore element =
+    [ ( "solved"
+      , JE.int
+            (case element.solved of
+                Solution.Open ->
+                    0
 
-                    Solution.Solved ->
-                        1
+                Solution.Solved ->
+                    1
 
-                    Solution.ReSolved ->
-                        -1
-                )
-          )
-        , ( "state", fromState element.state )
-        , ( "trial", JE.int element.trial )
-        , ( "hint", JE.int element.hint )
-        , ( "error_msg", JE.string element.error_msg )
-        ]
+                Solution.ReSolved ->
+                    -1
+            )
+      )
+    , ( "state", fromState element.state )
+    , ( "trial", JE.int element.trial )
+    , ( "hint", JE.int element.hint )
+    , ( "error_msg", JE.string element.error_msg )
+    ]
+        |> CList.addIf withScore (fromOptions element.opt)
+        |> JE.object
+
+
+fromOptions : Options -> ( String, JE.Value )
+fromOptions opt =
+    ( "score"
+    , opt.score
+        |> Maybe.withDefault 0
+        |> JE.float
+    )
 
 
 fromState : State -> JE.Value

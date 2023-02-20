@@ -302,7 +302,7 @@ store sectionID return =
             return
                 |> Return.batchEvent
                     (return.value
-                        |> Json.fromVector
+                        |> Json.fromVector False
                         |> Service.Database.store "quiz" id
                     )
 
