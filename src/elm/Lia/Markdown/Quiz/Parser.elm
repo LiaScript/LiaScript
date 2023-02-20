@@ -149,11 +149,11 @@ getOptions quiz seed attr =
             |> Maybe.andThen String.toInt
     , score =
         attr
-            |> Attributes.get "data-max-score"
+            |> Attributes.get "data-score"
             |> Maybe.andThen String.toFloat
     , showResolveAt =
         attr
-            |> Attributes.get "data-show-resolve-button"
+            |> Attributes.get "data-solution-button"
             |> Maybe.map
                 (\value ->
                     case String.toInt value of
