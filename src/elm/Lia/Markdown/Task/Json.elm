@@ -35,7 +35,6 @@ toVector =
             (\v ->
                 { state = v
                 , scriptID = Nothing
-                , randomize = Nothing
                 }
             )
         |> JD.array

@@ -24,7 +24,6 @@ type alias Element =
     , state : State
     , errorMsg : Maybe String
     , scriptID : Maybe Int
-    , randomize : Maybe (List Int)
     }
 
 

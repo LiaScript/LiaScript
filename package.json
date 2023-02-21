@@ -1,6 +1,6 @@
 {
   "name": "@liascript/editor",
-  "version": "1.1.0--0.10.28",
+  "version": "1.1.0--0.10.30",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -46,7 +46,9 @@
     "build:worker": "npm run clean && npx parcel build --no-source-maps --target node src/entry/worker/index.js",
     "watch:webcomponent": "npx parcel serve src/entry/webcomponent/index.html --open",
     "build:webcomponent": "npm run clean && npx parcel build --no-source-maps src/entry/webcomponent/index.ts && rm dist/README.md",
-    "build:webcomponentPublic": "npm run clean && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md"
+    "build:webcomponentPublic": "npm run clean && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md",
+  
+    "minify:js": "find dist -name \"*.js\" -print0 | xargs -0 -P 4 -I {} sh -c 'before=$(wc -c < {}); minify {} > {}.min && after=$(wc -c < {}.min); if [ ${after} -lt ${before} ]; then mv {}.min {}; reduction=$((${before}-${after})); percent=$(awk \"BEGIN {printf \\\"%.2f\\\", ${reduction}/${before}*100}\"); echo \"{} reduced from ${before} to ${after} bytes (${percent}% reduction)\"; else rm {}.min; echo \"{} no reduction achieved, file size unchanged\"; fi'"
   },
   "devDependencies": {
     "@parcel/packager-raw-url": "^2.8.3",

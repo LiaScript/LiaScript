@@ -230,7 +230,7 @@ viewState config elem quiz =
                     (Solution.toClass ( elem.solved, elem.trial ))
                     q
                 |> Tuple.mapSecond
-                    (shuffle elem.randomize
+                    (shuffle elem.opt.randomize
                         >> List.map (Html.map (Vector_Update quiz.id))
                     )
 
@@ -238,7 +238,7 @@ viewState config elem quiz =
             ( []
             , [ s
                     |> Matrix.view config
-                        (shuffle elem.randomize)
+                        (shuffle elem.opt.randomize)
                         (elem.solved == Solution.Open)
                         (Solution.toClass ( elem.solved, elem.trial ))
                         q
@@ -287,7 +287,12 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
         body
     , Html.div [ Attr.class "lia-quiz__control" ]
         [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz)
-        , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
+        , viewSolutionButton
+            { config = config
+            , solution = state.solved
+            , msg = ShowSolution quiz.id quiz.quiz
+            , hidden = state.trial < state.opt.showResolveAt
+            }
         , Translations.quizHint config.lang
             |> viewHintButton quiz.id (quiz.hints /= []) (Solution.Open == state.solved && state.hint < List.length quiz.hints)
         ]
@@ -363,8 +368,8 @@ viewFeedback lang state =
 {-| **private:** Show the solution button only if the quiz has not been solved
 yet.
 -}
-viewSolutionButton : Config sub -> Solution -> Msg sub -> Html (Msg sub)
-viewSolutionButton config solution msg =
+viewSolutionButton : { config : Config sub, hidden : Bool, solution : Solution, msg : Msg sub } -> Html (Msg sub)
+viewSolutionButton { config, hidden, solution, msg } =
     btnIcon
         { title = quizSolution config.lang
         , msg =
@@ -373,10 +378,15 @@ viewSolutionButton config solution msg =
 
             else
                 Nothing
-        , tabbable = True
+        , tabbable = not hidden && solution == Solution.Open
         , icon = "icon-resolve"
         }
-        [ Attr.class "lia-btn--transparent lia-quiz__resolve", A11y_Widget.label (quizLabelSolution config.lang) ]
+        [ Attr.classList
+            [ ( "lia-btn--transparent lia-quiz__resolve", True )
+            , ( "hide", hidden )
+            ]
+        , A11y_Widget.label (quizLabelSolution config.lang)
+        ]
 
 
 {-| **private:** Show the main check-button to compare the current state of the
