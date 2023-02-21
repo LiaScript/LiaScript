@@ -19,9 +19,8 @@ const Service = {
     // remove these strings if you want to enable or disable certain sync support
     'edrys',
     'gun',
-
     'jitsi',
-    'matrix',
+    //'matrix',
     'pubnub',
   ],
 
@@ -48,7 +47,11 @@ const Service = {
           switch (event.message.param.backend) {
             case 'beaker':
               if (!Beaker) {
-                Beaker = await import('../../sync/Beaker/index')
+                import('../../sync/Beaker/index').then((e) => {
+                  Beaker = e
+                  Service.handle(event)
+                })
+                return
               }
 
               sync = new Beaker.Sync(cbConnection, elmSend)
@@ -56,15 +59,24 @@ const Service = {
 
             case 'edrys':
               if (!Edrys) {
-                Edrys = await import('../../sync/Edrys/index')
+                import('../../sync/Edrys/index').then((e) => {
+                  Edrys = e
+                  Service.handle(event)
+                })
+                return
               }
 
               sync = new Edrys.Sync(cbConnection, elmSend)
+
               break
 
             case 'gun':
               if (!Gun) {
-                Gun = await import('../../sync/Gun/index')
+                import('../../sync/Gun/index').then((e) => {
+                  Gun = e
+                  Service.handle(event)
+                })
+                return
               }
 
               sync = new Gun.Sync(cbConnection, elmSend)
@@ -72,23 +84,37 @@ const Service = {
 
             case 'jitsi':
               if (!Jitsi) {
-                Jitsi = await import('../../sync/Jitsi/index')
+                import('../../sync/Jitsi/index').then((e) => {
+                  Jitsi = e
+                  Service.handle(event)
+                })
+                return
               }
 
               sync = new Jitsi.Sync(cbConnection, elmSend)
               break
 
+            /*
             case 'matrix':
               if (!Matrix) {
-                Matrix = await import('../../sync/Matrix/index')
+                import('../../sync/Matrix/index').then((e) => {
+                  Matrix = e
+                  Service.handle(event)
+                })
+                return
               }
 
               sync = new Matrix.Sync(cbConnection, elmSend)
               break
+            */
 
             case 'pubnub':
               if (!PubNub) {
-                PubNub = await import('../../sync/PubNub/index')
+                import('../../sync/PubNub/index').then((e) => {
+                  PubNub = e
+                  Service.handle(event)
+                })
+                return
               }
 
               sync = new PubNub.Sync(cbConnection, elmSend)

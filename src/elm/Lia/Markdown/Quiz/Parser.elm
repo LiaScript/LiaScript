@@ -1,7 +1,6 @@
 module Lia.Markdown.Quiz.Parser exposing
     ( maybeJS
     , parse
-    , randomize
     )
 
 import Array
@@ -24,6 +23,7 @@ import Combine
         , succeed
         , withState
         )
+import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (eScript)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
@@ -32,21 +32,22 @@ import Lia.Markdown.Quiz.Matrix.Parser as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types
     exposing
-        ( Element
+        ( Options
         , Quiz
         , State(..)
         , Type(..)
         , initState
         )
 import Lia.Markdown.Quiz.Vector.Parser as Vector
-import Lia.Parser.Context exposing (Context)
+import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
+import Lia.Utils as Utils
 import PseudoRandom
 
 
-parse : Maybe Int -> Parser Context Quiz
-parse seed =
+parse : Parameters -> Parser Context Quiz
+parse attr =
     [ map Matrix_Type Matrix.parse
     , map Vector_Type Vector.parse
     , onsuccess Generic_Type generic
@@ -54,24 +55,27 @@ parse seed =
     ]
         |> choice
         |> andThen adds
-        |> andThen (modify_State seed)
+        |> andThen (modify_State attr)
 
 
-randomize : Maybe Int -> Type -> Maybe (List Int)
-randomize seed typeOf =
-    case ( seed, typeOf ) of
-        ( Just randomSeed, Vector_Type vec ) ->
+randomize :
+    Type
+    -> Int
+    -> Maybe (List Int)
+randomize typeOf seed =
+    case typeOf of
+        Vector_Type vec ->
             Just
                 (PseudoRandom.integerSequence
                     (List.length vec.options)
-                    randomSeed
+                    seed
                 )
 
-        ( Just randomSeed, Matrix_Type vec ) ->
+        Matrix_Type vec ->
             Just
                 (PseudoRandom.integerSequence
                     (List.length vec.options)
-                    randomSeed
+                    seed
                 )
 
         _ ->
@@ -106,21 +110,65 @@ hints =
         |> optional []
 
 
-modify_State : Maybe Int -> Quiz -> Parser Context Quiz
-modify_State seed q =
+modify_State : Parameters -> Quiz -> Parser Context Quiz
+modify_State attr q =
     let
-        add_state id s =
+        add_state id seed s =
             { s
                 | quiz_vector =
                     Array.push
-                        (Element Solution.Open (initState q.quiz) 0 0 "" id (randomize seed q.quiz))
+                        { solved = Solution.Open
+                        , state = initState q.quiz
+                        , trial = 0
+                        , hint = 0
+                        , error_msg = ""
+                        , scriptID = id
+                        , opt = getOptions q.quiz seed attr
+                        }
                         s.quiz_vector
             }
     in
     maybeJS
         |> map add_state
+        |> andMap Context.getSeed
         |> andThen modifyState
         |> keep (succeed q)
+
+
+getOptions : Type -> Int -> Parameters -> Options
+getOptions quiz seed attr =
+    { randomize =
+        if Attributes.isSet "data-randomize" attr then
+            randomize quiz seed
+
+        else
+            Nothing
+    , maxTrials =
+        attr
+            |> Attributes.get "data-max-trials"
+            |> Maybe.andThen String.toInt
+    , score =
+        attr
+            |> Attributes.get "data-score"
+            |> Maybe.andThen String.toFloat
+    , showResolveAt =
+        attr
+            |> Attributes.get "data-solution-button"
+            |> Maybe.map
+                (\value ->
+                    case String.toInt value of
+                        Just trial ->
+                            abs trial
+
+                        Nothing ->
+                            if Utils.checkFalse value then
+                                0
+
+                            else
+                                100000
+                )
+            |> Maybe.withDefault 0
+    }
 
 
 maybeJS : Parser Context (Maybe Int)

@@ -11,7 +11,7 @@ import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Task.Json as Json
 import Lia.Markdown.Task.Types exposing (Element, Vector, toString)
-import Return exposing (Return, script)
+import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Script
@@ -90,7 +90,7 @@ update sectionID scripts msg vector =
                 ( Nothing, _, ( "load", param ) ) ->
                     param
                         |> Json.toVector
-                        |> Result.map (merge vector)
+                        |> Result.map (merge (\sID body -> { body | scriptID = sID.scriptID }) vector)
                         |> Result.withDefault vector
                         |> Return.val
                         |> init execute

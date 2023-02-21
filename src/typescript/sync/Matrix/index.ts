@@ -1,5 +1,4 @@
-import { MatrixProvider } from 'matrix-crdt'
-import { MatrixClient } from 'matrix-js-sdk'
+import * as Matrix from 'matrix-crdt'
 import * as Base from '../Base/index'
 
 /**
@@ -9,7 +8,7 @@ import * as Base from '../Base/index'
  */
 
 export class Sync extends Base.Sync {
-  private client: MatrixClient
+  private client: any
   private provider: any
 
   private config: {
@@ -76,7 +75,7 @@ export class Sync extends Base.Sync {
           console.warn('Matrix set protected params failed:', e.message)
         }
 
-        this.provider = new MatrixProvider(this.db.doc, this.client, {
+        this.provider = new Matrix.MatrixProvider(this.db.doc, this.client, {
           type: 'alias',
           alias: id,
         })

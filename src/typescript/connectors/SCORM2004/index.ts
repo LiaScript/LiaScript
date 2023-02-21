@@ -1,6 +1,48 @@
 import * as Base from '../Base/index'
 import { CMIElement, SCORM } from './scorm.d'
 import log from '../../liascript/log'
+
+const short = {
+  SingleChoice: 'sc',
+  MultipleChoice: 'mc',
+  Text: 'tx',
+  Select: 'st',
+  Matrix: 'mx',
+  Generic: 'gn',
+  error_msg: 'err',
+}
+
+// return the key value pair order, this way only short has to be defined once
+const long = Object.entries(short).reduce((acc, [key, value]) => {
+  acc[value] = key
+  return acc
+}, {})
+
+function renameJsonKeys(jsonObject: any, replacements: Object) {
+  if (typeof jsonObject !== 'object' || jsonObject === null) {
+    return jsonObject
+  }
+
+  if (Array.isArray(jsonObject)) {
+    return jsonObject.map((element) => renameJsonKeys(element, replacements))
+  }
+
+  const modifiedObject = {}
+  for (const [key, value] of Object.entries(jsonObject)) {
+    const newKey = replacements[key] || key
+    modifiedObject[newKey] = renameJsonKeys(value, replacements)
+  }
+  return modifiedObject
+}
+
+function encodeJSON(json: any) {
+  return JSON.stringify(renameJsonKeys(json, short))
+}
+
+function decodeJSON(json: string) {
+  return renameJsonKeys(JSON.parse(json), long)
+}
+
 /**
  * This implementation of a SCORM 2004 connector for LiaScript is mainly based
  * on the definitions at:
@@ -67,9 +109,9 @@ class Connector extends Base.Connector {
     this.id = { quiz: [], survey: [], task: [] }
 
     // try if there is an SCORM 2004 api accessible
-    if (window.API_1484_11 || window.top.API_1484_11) {
+    if (window.API_1484_11 || window.top?.API_1484_11) {
       LOG('successfully opened API')
-      this.scorm = window.API_1484_11 || window.top.API_1484_11
+      this.scorm = window.API_1484_11 || window.top?.API_1484_11
 
       LOG('loading quizzes ...')
       try {
@@ -103,39 +145,41 @@ class Connector extends Base.Connector {
   }
 
   init() {
-    if (!this.scorm) return
+    if (this.scorm) {
+      LOG('Initialize ', this.scorm.Initialize(''))
 
-    LOG('Initialize ', this.scorm.Initialize(''))
+      // store state information only in normal mode
+      let mode = this.scorm.GetValue('cmi.mode')
+      this.active = mode === 'normal'
 
-    // store state information only in normal mode
-    let mode = this.scorm.GetValue('cmi.mode')
-    this.active = mode === 'normal'
+      this.scaled_passing_score = JSON.parse(
+        this.scorm.GetValue('cmi.scaled_passing_score')
+      )
 
-    this.active = true
+      LOG('open location ...')
+      this.location = jsonParse(this.scorm.GetValue('cmi.location'))
+      LOG('... ', this.location)
 
-    this.scaled_passing_score = JSON.parse(
-      this.scorm.GetValue('cmi.scaled_passing_score')
-    )
+      // if no location has been stored so far, this is the first visit
+      if (this.location === null) {
+        this.slide(0)
 
-    LOG('open location ...')
-    this.location = jsonParse(this.scorm.GetValue('cmi.location'))
-    LOG('... ', this.location)
+        // store all data as interactions with an sequential id
+        let id = 0
+        id = this.initFirst('quiz', id)
+        id = this.initFirst('survey', id)
+        id = this.initFirst('task', id)
+      } else {
+        // restore the current state from the interactions
+        let id = 0
+        id = this.initSecond('quiz', id)
+        id = this.initSecond('survey', id)
+        id = this.initSecond('task', id)
+      }
 
-    // if no location has been stored so far, this is the first visit
-    if (this.location === null) {
-      this.slide(0)
-
-      // store all data as interactions with an sequential id
-      let id = 0
-      id = this.initFirst('quiz', id)
-      id = this.initFirst('survey', id)
-      id = this.initFirst('task', id)
-    } else {
-      // restore the current state from the interactions
-      let id = 0
-      id = this.initSecond('quiz', id)
-      id = this.initSecond('survey', id)
-      id = this.initSecond('task', id)
+      // calculate the new/old scoring value
+      window['SCORE'] = 0
+      this.score()
     }
   }
 
@@ -172,9 +216,11 @@ class Connector extends Base.Connector {
 
       for (let i = 0; i < this.db[key][slide].length; i++) {
         let data = this.getInteraction(id)
+
         if (data) {
-          this.db[key][slide][i] = data[2]
+          this.db[key][slide][i] = data
         }
+
         this.id[key][slide].push(id)
 
         id++
@@ -244,6 +290,9 @@ class Connector extends Base.Connector {
           record.data[i]
         )
 
+        // store the changed data in memory
+        this.db[record.table][record.id][i] = record.data[i]
+
         // mark quizzes if possible
         if (record.table == 'quiz') {
           this.updateQuiz(this.id[record.table][record.id][i], record.data[i])
@@ -259,19 +308,29 @@ class Connector extends Base.Connector {
   score(): void {
     if (!this.active || !this.scaled_passing_score) return
 
-    let total = this.db.quiz.reduce((a, b) => a + b.length, 0)
+    let total = 0
+    let solved = 0
+    let finished = 0
+    let count = 0
 
-    let solved = this.db.quiz
-      .map((e) => e.filter((f) => f === true))
-      .reduce((a, b) => a + b.length, 0)
+    for (let i = 0; i < this.db.quiz.length; i++) {
+      for (let j = 0; j < this.db.quiz[i].length; j++) {
+        count = this.db.quiz[i][j].score
 
-    // since a user can try out quizzes as much often as he or she wants, only
-    // solved or resolved quizzes are taken into account
-    let finished = this.db.quiz
-      .map((e) => e.filter((f) => f != null))
-      .reduce((a, b) => a + b.length, 0)
+        total += count
 
-    let score = solved === 0 ? 0 : solved / total
+        switch (this.db.quiz[i][j].solved) {
+          case 1: {
+            solved += count
+          }
+          case -1: {
+            finished += count
+          }
+        }
+      }
+    }
+
+    const score = solved === 0 ? 0 : solved / total
 
     this.write('cmi.score.min', '0')
     this.write('cmi.score.max', JSON.stringify(total))
@@ -279,9 +338,11 @@ class Connector extends Base.Connector {
 
     if (score >= this.scaled_passing_score) {
       this.write('cmi.success_status', 'passed')
-    } else if (finished === solved) {
+    } else if (finished === total) {
       this.write('cmi.success_status', 'failed')
     }
+
+    window['SCORE'] = score
   }
 
   /**
@@ -291,24 +352,24 @@ class Connector extends Base.Connector {
    * @param data
    */
   write(uri: CMIElement, data: string): void {
-    if (!this.scorm) return
+    if (this.scorm) {
+      LOG('write: ', uri, data)
 
-    LOG('write: ', uri, data)
+      if (this.scorm.SetValue(uri, data) === 'false') {
+        console.warn('error occurred for', uri, data)
 
-    if (this.scorm.SetValue(uri, data) === 'false') {
-      console.warn('error occurred for ', uri, data)
-
-      let error = this.scorm.GetLastError()
-      console.warn('GetLastError:', error)
-      if (error) {
-        console.warn('GetErrorString:', this.scorm.GetErrorString(error))
-        console.warn('GetDiagnostic:', this.scorm.GetDiagnostic(error))
-      } else {
-        console.warn('GetDiagnostic:', this.scorm.GetDiagnostic(''))
+        let error = this.scorm.GetLastError()
+        console.warn('GetLastError:', error)
+        if (error) {
+          console.warn('GetErrorString:', this.scorm.GetErrorString(error))
+          console.warn('GetDiagnostic:', this.scorm.GetDiagnostic(error))
+        } else {
+          console.warn('GetDiagnostic:', this.scorm.GetDiagnostic(''))
+        }
       }
-    }
 
-    this.scorm.Commit('')
+      this.scorm.Commit('')
+    }
   }
 
   /**
@@ -364,7 +425,7 @@ class Connector extends Base.Connector {
    * @param state
    */
   updateInteraction(id: number, state: any): void {
-    this.write(`cmi.interactions.${id}.learner_response`, JSON.stringify(state))
+    this.write(`cmi.interactions.${id}.learner_response`, encodeJSON(state))
   }
 
   /**
@@ -376,9 +437,11 @@ class Connector extends Base.Connector {
     if (!this.active) return null
 
     try {
-      return JSON.parse(
-        this.scorm.GetValue(`cmi.interactions.${id}.learner_response`)
-      )
+      if (this.scorm) {
+        return decodeJSON(
+          this.scorm.GetValue(`cmi.interactions.${id}.learner_response`)
+        )
+      }
     } catch (e) {
       console.warn('SCORM: getInteraction => ', e)
     }
@@ -416,7 +479,7 @@ function neq(a: any, b: any) {
  * @param args
  */
 function LOG(...args) {
-  log.info('SCORM2004: ' + args)
+  log.info('SCORM2004: ', ...args)
 }
 
 /**
@@ -427,7 +490,7 @@ function LOG(...args) {
  * @param args
  */
 function WARN(...args) {
-  log.warn('SCORM2004: ' + args)
+  log.warn('SCORM2004: ', ...args)
 }
 
 export { Connector }

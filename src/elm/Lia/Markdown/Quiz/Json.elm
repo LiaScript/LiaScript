@@ -41,25 +41,30 @@ fromVector =
 
 fromElement : Element -> JE.Value
 fromElement element =
-    JE.object
-        [ ( "solved"
-          , JE.int
-                (case element.solved of
-                    Solution.Open ->
-                        0
+    [ ( "solved"
+      , JE.int
+            (case element.solved of
+                Solution.Open ->
+                    0
 
-                    Solution.Solved ->
-                        1
+                Solution.Solved ->
+                    1
 
-                    Solution.ReSolved ->
-                        -1
-                )
-          )
-        , ( "state", fromState element.state )
-        , ( "trial", JE.int element.trial )
-        , ( "hint", JE.int element.hint )
-        , ( "error_msg", JE.string element.error_msg )
-        ]
+                Solution.ReSolved ->
+                    -1
+            )
+      )
+    , ( "state", fromState element.state )
+    , ( "trial", JE.int element.trial )
+    , ( "hint", JE.int element.hint )
+    , ( "error_msg", JE.string element.error_msg )
+    , ( "score"
+      , element.opt.score
+            |> Maybe.withDefault 1
+            |> JE.float
+      )
+    ]
+        |> JE.object
 
 
 fromState : State -> JE.Value
@@ -104,7 +109,13 @@ toElement =
         (JD.field "hint" JD.int)
         (JD.field "error_msg" JD.string)
         (JD.succeed Nothing)
-        (JD.succeed Nothing)
+        (JD.succeed
+            { randomize = Nothing
+            , maxTrials = Nothing
+            , score = Nothing
+            , showResolveAt = 0
+            }
+        )
 
 
 toState : JD.Decoder State

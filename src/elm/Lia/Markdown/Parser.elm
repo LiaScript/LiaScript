@@ -48,7 +48,7 @@ import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Table.Parser as Table
 import Lia.Markdown.Task.Parser as Task
 import Lia.Markdown.Types as Markdown
-import Lia.Parser.Context as Context exposing (Context)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
 import Lia.Parser.Indentation as Indent
 import Lia.Parser.Preprocessor exposing (title_tag)
@@ -108,17 +108,46 @@ elements =
             |> map Markdown.Survey
             |> andMap Survey.parse
         , md_annotations
-            |> andThen
-                (\attr ->
-                    map (Markdown.Quiz attr) <|
-                        if Attributes.isSet "data-randomize" attr then
-                            Context.getSeed
-                                |> map Just
-                                |> andThen Quiz.parse
+            |> andThen (\attr -> Quiz.parse attr |> map (Markdown.Quiz attr))
+            {- > map Tuple.pair
+               |> andMap Context.getSeed
+               |> andThen
+                   (\( attr, seed ) ->
+                       { randomize =
+                           if Attributes.isSet "data-randomize" attr then
+                               Just seed
 
-                        else
-                            Quiz.parse Nothing
-                )
+                           else
+                               Nothing
+                       , maxTrials =
+                           attr
+                               |> Attributes.get "data-max-trials"
+                               |> Maybe.andThen String.toInt
+                       , score =
+                           attr
+                               |> Attributes.get "data-max-score"
+                               |> Maybe.andThen String.toFloat
+                       , showResolveAt =
+                           attr
+                               |> Attributes.get "data-show-resolve-button"
+                               |> Maybe.andThen
+                                   (\value ->
+                                       case String.toInt value of
+                                           Just trial ->
+                                               abs trial
+
+                                           Nothing ->
+                                               if Utils.checkFalse value then
+                                                   0
+
+                                               else
+                                                   100000
+                                   )
+                       }
+                           |> Quiz.parse
+                           |> map (Markdown.Quiz attr)
+                   )
+            -}
             |> andMap solution
         , md_annotations
             |> map Markdown.Task
