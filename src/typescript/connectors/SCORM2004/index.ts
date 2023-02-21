@@ -141,6 +141,8 @@ class Connector extends Base.Connector {
       }
 
       this.init()
+    } else {
+      console.warn('SCORM2004: Could not find API')
     }
   }
 
@@ -151,6 +153,14 @@ class Connector extends Base.Connector {
       // store state information only in normal mode
       let mode = this.scorm.GetValue('cmi.mode')
       this.active = mode === 'normal'
+
+      console.warn(
+        'SCORM2004: Running in',
+        mode,
+        'mode, results will ',
+        this.active ? '' : 'NOT',
+        'be stored!'
+      )
 
       this.scaled_passing_score = JSON.parse(
         this.scorm.GetValue('cmi.scaled_passing_score')
@@ -334,12 +344,15 @@ class Connector extends Base.Connector {
 
     this.write('cmi.score.min', '0')
     this.write('cmi.score.max', JSON.stringify(total))
+    this.write('cmi.score.scaled', JSON.stringify(score))
     this.write('cmi.score.raw', JSON.stringify(solved))
 
     if (score >= this.scaled_passing_score) {
       this.write('cmi.success_status', 'passed')
-    } else if (finished === total) {
+      this.write('cmi.completion_status', 'completed')
+    } else if (finished + solved === total) {
       this.write('cmi.success_status', 'failed')
+      this.write('cmi.completion_status', 'completed')
     }
 
     window['SCORE'] = score
@@ -443,7 +456,7 @@ class Connector extends Base.Connector {
         )
       }
     } catch (e) {
-      console.warn('SCORM: getInteraction => ', e)
+      console.warn('SCORM2004: getInteraction => ', e)
     }
 
     return null
@@ -479,7 +492,7 @@ function neq(a: any, b: any) {
  * @param args
  */
 function LOG(...args) {
-  log.info('SCORM2004: ', ...args)
+  console.log('SCORM2004: ', ...args)
 }
 
 /**
@@ -490,7 +503,7 @@ function LOG(...args) {
  * @param args
  */
 function WARN(...args) {
-  log.warn('SCORM2004: ', ...args)
+  console.log('SCORM2004: ', ...args)
 }
 
 export { Connector }
