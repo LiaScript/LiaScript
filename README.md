@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.29
+version:  0.10.30
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,17 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.30** (21/02/2023)
+
+- add more quiz options:
+
+  - `data-max-trials`: An integer value before the quiz is automatically solved
+  - `data-solution-button`: can be used with a boolean value to hide this button entirely,
+    or by adding an integer value the trial-number can be defined at which this button is show.
+    "0" means it is immediately visible, "1" only after the first trial
+  - `data-score`: This can be used together with the scorm export, to increase or decrease the
+    score of a quiz. This value takes a float value and by default it is set to "1".
 
 **0.10.29** (16/02/2023)
 
