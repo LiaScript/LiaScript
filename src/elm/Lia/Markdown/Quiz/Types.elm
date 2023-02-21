@@ -1,6 +1,7 @@
 module Lia.Markdown.Quiz.Types exposing
     ( Element
     , Hints
+    , Options
     , Quiz
     , State(..)
     , Type(..)
@@ -36,7 +37,15 @@ type alias Element =
     , hint : Int
     , error_msg : String
     , scriptID : Maybe Int
-    , randomize : Maybe (List Int)
+    , opt : Options
+    }
+
+
+type alias Options =
+    { randomize : Maybe (List Int)
+    , maxTrials : Maybe Int
+    , score : Maybe Float
+    , showResolveAt : Int
     }
 
 

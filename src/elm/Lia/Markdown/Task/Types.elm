@@ -30,7 +30,6 @@ type alias Vector =
 type alias Element =
     { state : Array Bool
     , scriptID : Maybe Int
-    , randomize : Maybe (List Int)
     }
 
 

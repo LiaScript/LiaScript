@@ -13,7 +13,7 @@ import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
-import Lia.Markdown.Quiz.Solution as Solution
+import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
 import Lia.Markdown.Quiz.Sync as Sync
 import Lia.Markdown.Quiz.Types
     exposing
@@ -122,7 +122,7 @@ update sync sectionID scripts msg vector =
                 ( Nothing, _, ( "load", param ) ) ->
                     param
                         |> Json.toVector
-                        |> Result.map (merge vector >> Array.map clearOnLoad)
+                        |> Result.map (mergeHelper vector)
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
@@ -152,7 +152,7 @@ update sync sectionID scripts msg vector =
                 ( Just "restore", _, ( cmd, param ) ) ->
                     param
                         |> Json.toVector
-                        |> Result.map (merge vector >> Array.map clearOnLoad)
+                        |> Result.map (mergeHelper vector)
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
@@ -187,16 +187,6 @@ toString state =
 
         _ ->
             ""
-
-
-clearOnLoad : Element -> Element
-clearOnLoad e =
-    case ( e.randomize, e.solved ) of
-        ( Just _, Solution.Open ) ->
-            { e | state = reset e.state }
-
-        _ ->
-            e
 
 
 execute : Int -> State -> Script.Msg sub
@@ -260,36 +250,49 @@ evalEventDecoder json =
     in
     if eval.ok then
         if eval.result == "true" then
-            \e ->
-                Return.val <|
-                    if e.solved == Solution.Open then
-                        { e
-                            | trial = e.trial + 1
-                            , solved = Solution.Solved
-                            , error_msg = ""
-                        }
-
-                    else
-                        e
+            isSolved Nothing Solution.Solved >> Return.val
 
         else if String.startsWith "LIA:" eval.result then
             Return.val
 
         else
-            \e ->
-                Return.val <|
-                    if e.solved == Solution.Open then
-                        { e
-                            | trial = e.trial + 1
-                            , solved = Solution.Open
-                            , error_msg = ""
-                        }
-
-                    else
-                        e
+            isSolved Nothing Solution.Open >> Return.val
 
     else
         \e -> Return.val { e | error_msg = eval.result }
+
+
+isSolved : Maybe Type -> Solution -> Element -> Element
+isSolved solution state e =
+    case ( e.opt.maxTrials, e.solved ) of
+        ( Nothing, Solution.Open ) ->
+            { e
+                | trial = e.trial + 1
+                , solved = state
+                , error_msg = ""
+            }
+
+        ( Just maxTrials, Solution.Open ) ->
+            if e.trial + 1 < maxTrials then
+                { e
+                    | trial = e.trial + 1
+                    , solved = state
+                    , error_msg = ""
+                }
+
+            else
+                { e
+                    | trial = e.trial + 1
+                    , solved = Solution.ReSolved
+                    , error_msg = ""
+                    , state =
+                        solution
+                            |> Maybe.map toState
+                            |> Maybe.withDefault e.state
+                }
+
+        _ ->
+            e
 
 
 store : Maybe Int -> Return Vector msg sub -> Return Vector msg sub
@@ -309,21 +312,38 @@ store sectionID return =
 
 check : Type -> Element -> Return Element msg sub
 check solution e =
-    { e
-        | trial = e.trial + 1
-        , solved = comp solution e.state
-    }
+    e
+        |> isSolved (Just solution) (comp solution e.state)
         |> Return.val
 
 
-merge :
-    Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
-    -> Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
-    -> Array { a | scriptID : Maybe Int, randomize : Maybe (List Int) }
-merge v1 =
+merge : (a -> a -> a) -> Array a -> Array a -> Array a
+merge map v1 =
     Array.toList
-        >> List.map2 (\sID body -> { body | scriptID = sID.scriptID, randomize = sID.randomize }) (Array.toList v1)
+        >> List.map2 map (Array.toList v1)
         >> Array.fromList
+
+
+mergeHelper : Array Element -> Array Element -> Array Element
+mergeHelper =
+    merge mergeMap
+
+
+mergeMap : Element -> Element -> Element
+mergeMap sID body =
+    { body
+        | scriptID = sID.scriptID
+        , opt = sID.opt
+        , state =
+            -- if the quiz is set to random and is not solved yet,
+            -- then it is reset on every load
+            case ( sID.opt.randomize, body.solved ) of
+                ( Just _, Solution.Open ) ->
+                    reset body.state
+
+                _ ->
+                    body.state
+    }
 
 
 init :
