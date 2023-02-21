@@ -4,14 +4,13 @@ module Lia.Markdown.Quiz.Json exposing
     , toVector
     )
 
-import Conditional.List as CList
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Inline.Json.Encode as Inline
 import Lia.Markdown.Quiz.Block.Json as Block
 import Lia.Markdown.Quiz.Matrix.Json as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Markdown.Quiz.Types exposing (Element, Options, Quiz, State(..), Type(..), Vector)
+import Lia.Markdown.Quiz.Types exposing (Element, Quiz, State(..), Type(..), Vector)
 import Lia.Markdown.Quiz.Vector.Json as Vector
 
 
@@ -35,13 +34,13 @@ encode quiz =
         ]
 
 
-fromVector : Bool -> Vector -> JE.Value
-fromVector withScore =
-    JE.array (fromElement withScore)
+fromVector : Vector -> JE.Value
+fromVector =
+    JE.array fromElement
 
 
-fromElement : Bool -> Element -> JE.Value
-fromElement withScore element =
+fromElement : Element -> JE.Value
+fromElement element =
     [ ( "solved"
       , JE.int
             (case element.solved of
@@ -59,18 +58,13 @@ fromElement withScore element =
     , ( "trial", JE.int element.trial )
     , ( "hint", JE.int element.hint )
     , ( "error_msg", JE.string element.error_msg )
+    , ( "score"
+      , element.opt.score
+            |> Maybe.withDefault 1
+            |> JE.float
+      )
     ]
-        |> CList.addIf withScore (fromOptions element.opt)
         |> JE.object
-
-
-fromOptions : Options -> ( String, JE.Value )
-fromOptions opt =
-    ( "score"
-    , opt.score
-        |> Maybe.withDefault 1
-        |> JE.float
-    )
 
 
 fromState : State -> JE.Value
