@@ -1,6 +1,7 @@
 import * as Base from '../Base/index'
 import { CMIElement, SCORM } from './scorm.d'
 import log from '../../liascript/log'
+import { Settings } from '../Base/settings'
 
 const short = {
   SingleChoice: 'sc',
@@ -142,6 +143,48 @@ class Connector extends Base.Connector {
 
       this.init()
     }
+  }
+
+  initSettings(data: Lia.Settings | null, local = false) {
+    return Settings.init(data, false, this.setSettings)
+  }
+
+  setSettings(data: Lia.Settings) {
+    if (this.active && this.scorm) {
+      this.write('cmi.suspend_data', JSON.stringify(data))
+    } else {
+      console.warn('cannot write to "cmi.suspend_data"')
+    }
+  }
+
+  getSettings() {
+    let data: string | null = ''
+
+    try {
+      data = this.scorm?.GetValue('cmi.suspend_data') || null
+    } catch (e) {
+      console.warn('cannot write to localStorage')
+    }
+
+    let json: Lia.Settings | null = null
+
+    if (typeof data === 'string') {
+      try {
+        json = JSON.parse(data)
+      } catch (e) {
+        console.warn('getSettings =>', e)
+      }
+
+      if (!json) {
+        json = Settings.data
+      }
+
+      if (window.innerWidth <= 768) {
+        json.table_of_contents = false
+      }
+    }
+
+    return json
   }
 
   init() {
