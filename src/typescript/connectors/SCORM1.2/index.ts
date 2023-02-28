@@ -72,7 +72,7 @@ Hava fun ;-)`
   }
 
   countInteractions(): number | null {
-    if (!this.scorm) return
+    if (!this.scorm) return null
 
     let value = parseInt(this.scorm.LMSGetValue('cmi.interactions._count'))
 
