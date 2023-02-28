@@ -61,9 +61,9 @@ tag parser ( tagType, attributes ) =
                 |> ignore (string ">")
 
         Tag.WebComponent name ->
-            stringTill (closingTag name)
-                |> map (toStringNode name attributes)
-                |> map InnerHtml
+            succeed (OuterHtml name attributes)
+                |> ignore (regex "[ \\t]*>")
+                |> andMap (stringTill (closingTag name))
 
         Tag.LiaKeep ->
             whitespace
