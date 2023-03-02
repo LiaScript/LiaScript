@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.30
+version:  0.10.31
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,21 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.31** (02/03/2023)
+
+* improve(Webcomponents): Web components to not have to be wrapped into `<lia-keep>` tags to preserve their inner structure.
+  The body of a Webcomponent is not parsed by the internal LiaScript parser and directly passed to the component.
+* feat(Quiz): `data-hint-button` can now also be defined to show the hint button after a certain amount of wrong trials.
+* improve(SCORM-Connector):
+
+  - Works now with the [SCORM-Cloud](https://app.cloud.scorm.com) by checking the compatibility setting:
+    
+    "Wrap SCO Window with API"
+
+  - User settings (color, font-size, etc.) are preserved within the SCORM LMS
+
+* feat(Settings): The global `window.LIA.settings` option can now be used to interactively change the user-settings from JavaScript.
 
 **0.10.30** (21/02/2023)
 
