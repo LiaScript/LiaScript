@@ -46,6 +46,7 @@ type alias Options =
     , maxTrials : Maybe Int
     , score : Maybe Float
     , showResolveAt : Int
+    , showHintsAt : Int
     }
 
 
