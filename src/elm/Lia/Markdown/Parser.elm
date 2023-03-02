@@ -109,45 +109,6 @@ elements =
             |> andMap Survey.parse
         , md_annotations
             |> andThen (\attr -> Quiz.parse attr |> map (Markdown.Quiz attr))
-            {- > map Tuple.pair
-               |> andMap Context.getSeed
-               |> andThen
-                   (\( attr, seed ) ->
-                       { randomize =
-                           if Attributes.isSet "data-randomize" attr then
-                               Just seed
-
-                           else
-                               Nothing
-                       , maxTrials =
-                           attr
-                               |> Attributes.get "data-max-trials"
-                               |> Maybe.andThen String.toInt
-                       , score =
-                           attr
-                               |> Attributes.get "data-max-score"
-                               |> Maybe.andThen String.toFloat
-                       , showResolveAt =
-                           attr
-                               |> Attributes.get "data-show-resolve-button"
-                               |> Maybe.andThen
-                                   (\value ->
-                                       case String.toInt value of
-                                           Just trial ->
-                                               abs trial
-
-                                           Nothing ->
-                                               if Utils.checkFalse value then
-                                                   0
-
-                                               else
-                                                   100000
-                                   )
-                       }
-                           |> Quiz.parse
-                           |> map (Markdown.Quiz attr)
-                   )
-            -}
             |> andMap solution
         , md_annotations
             |> map Markdown.Task

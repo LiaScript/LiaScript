@@ -24,6 +24,15 @@ encode encoder node =
         InnerHtml code ->
             ( "InnerHtml", JE.string code )
 
+        OuterHtml tag a content ->
+            ( "OuterHtml"
+            , JE.object
+                [ ( "tag", JE.string tag )
+                , encParameters a
+                , ( "content", JE.string content )
+                ]
+            )
+
 
 encParameters : Parameters -> ( String, JE.Value )
 encParameters annotation =

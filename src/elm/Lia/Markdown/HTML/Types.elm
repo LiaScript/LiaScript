@@ -15,6 +15,7 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters)
 type Node content
     = Node String Parameters (List content)
     | InnerHtml String
+    | OuterHtml String Parameters String
 
 
 type Type
@@ -30,7 +31,7 @@ getContent node =
         Node _ _ content ->
             content
 
-        InnerHtml _ ->
+        _ ->
             []
 
 
@@ -50,6 +51,16 @@ encode contentEncoder obj =
 
             InnerHtml content ->
                 [ ( "node_inline", JE.string content ) ]
+
+            OuterHtml name attr body ->
+                [ ( "node_outline", JE.string name )
+                , ( "attr"
+                  , attr
+                        |> Dict.fromList
+                        |> JE.dict identity JE.string
+                  )
+                , ( "body", JE.string body )
+                ]
 
 
 decode : JD.Decoder content -> JD.Decoder (Node content)

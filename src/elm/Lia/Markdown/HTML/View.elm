@@ -21,3 +21,11 @@ view containerX fn attr obj =
 
         InnerHtml content ->
             containerX [ Attr.property "innerHTML" <| JE.string content ] []
+
+        OuterHtml name attrs body ->
+            Html.node name
+                (attr
+                    |> List.append attrs
+                    |> toAttribute
+                )
+                [ Html.text body ]
