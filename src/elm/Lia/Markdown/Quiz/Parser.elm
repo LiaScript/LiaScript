@@ -154,21 +154,28 @@ getOptions quiz seed attr =
     , showResolveAt =
         attr
             |> Attributes.get "data-solution-button"
-            |> Maybe.map
-                (\value ->
-                    case String.toInt value of
-                        Just trial ->
-                            abs trial
-
-                        Nothing ->
-                            if Utils.checkFalse value then
-                                0
-
-                            else
-                                100000
-                )
+            |> Maybe.map revealAt
+            |> Maybe.withDefault 0
+    , showHintsAt =
+        attr
+            |> Attributes.get "data-hint-button"
+            |> Maybe.map revealAt
             |> Maybe.withDefault 0
     }
+
+
+revealAt : String -> Int
+revealAt value =
+    case String.toInt value of
+        Just trial ->
+            abs trial
+
+        Nothing ->
+            if Utils.checkFalse value then
+                0
+
+            else
+                100000
 
 
 maybeJS : Parser Context (Maybe Int)

@@ -1,6 +1,7 @@
 import * as Base from '../Base/index'
 import { CMIElement, SCORM } from './scorm.d'
 import log from '../../liascript/log'
+import { Settings } from '../Base/settings'
 
 const short = {
   SingleChoice: 'sc',
@@ -141,7 +142,51 @@ class Connector extends Base.Connector {
       }
 
       this.init()
+    } else {
+      console.warn('SCORM2004: Could not find API')
     }
+  }
+
+  initSettings(data: Lia.Settings | null, local = false) {
+    return Settings.init(data, false, this.setSettings)
+  }
+
+  setSettings(data: Lia.Settings) {
+    if (this.active && this.scorm) {
+      this.write('cmi.suspend_data', JSON.stringify(data))
+    } else {
+      console.warn('cannot write to "cmi.suspend_data"')
+    }
+  }
+
+  getSettings() {
+    let data: string | null = ''
+
+    try {
+      data = this.scorm?.GetValue('cmi.suspend_data') || null
+    } catch (e) {
+      console.warn('cannot write to localStorage')
+    }
+
+    let json: Lia.Settings | null = null
+
+    if (typeof data === 'string') {
+      try {
+        json = JSON.parse(data)
+      } catch (e) {
+        console.warn('getSettings =>', e)
+      }
+
+      if (!json) {
+        json = Settings.data
+      }
+
+      if (window.innerWidth <= 768) {
+        json.table_of_contents = false
+      }
+    }
+
+    return json
   }
 
   init() {
@@ -151,6 +196,14 @@ class Connector extends Base.Connector {
       // store state information only in normal mode
       let mode = this.scorm.GetValue('cmi.mode')
       this.active = mode === 'normal'
+
+      console.warn(
+        'SCORM2004: Running in',
+        mode,
+        'mode, results will ',
+        this.active ? '' : 'NOT',
+        'be stored!'
+      )
 
       this.scaled_passing_score = JSON.parse(
         this.scorm.GetValue('cmi.scaled_passing_score')
@@ -334,12 +387,15 @@ class Connector extends Base.Connector {
 
     this.write('cmi.score.min', '0')
     this.write('cmi.score.max', JSON.stringify(total))
+    this.write('cmi.score.scaled', JSON.stringify(score))
     this.write('cmi.score.raw', JSON.stringify(solved))
 
     if (score >= this.scaled_passing_score) {
       this.write('cmi.success_status', 'passed')
-    } else if (finished === total) {
+      this.write('cmi.completion_status', 'completed')
+    } else if (finished + solved === total) {
       this.write('cmi.success_status', 'failed')
+      this.write('cmi.completion_status', 'completed')
     }
 
     window['SCORE'] = score
@@ -443,7 +499,7 @@ class Connector extends Base.Connector {
         )
       }
     } catch (e) {
-      console.warn('SCORM: getInteraction => ', e)
+      console.warn('SCORM2004: getInteraction => ', e)
     }
 
     return null
@@ -479,7 +535,7 @@ function neq(a: any, b: any) {
  * @param args
  */
 function LOG(...args) {
-  log.info('SCORM2004: ', ...args)
+  console.log('SCORM2004: ', ...args)
 }
 
 /**
@@ -490,7 +546,7 @@ function LOG(...args) {
  * @param args
  */
 function WARN(...args) {
-  log.warn('SCORM2004: ', ...args)
+  console.log('SCORM2004: ', ...args)
 }
 
 export { Connector }

@@ -114,6 +114,7 @@ toElement =
             , maxTrials = Nothing
             , score = Nothing
             , showResolveAt = 0
+            , showHintsAt = 0
             }
         )
 

@@ -41,7 +41,7 @@ export class Connector {
   }
 
   initSettings(data: Lia.Settings | null, local = false) {
-    return Settings.init(data, local)
+    return Settings.init(data, local, this.setSettings)
   }
 
   setSettings(data: Lia.Settings) {
@@ -71,7 +71,7 @@ export class Connector {
       }
 
       if (!json) {
-        json = Settings.default
+        json = Settings.data
       }
 
       if (window.innerWidth <= 768) {

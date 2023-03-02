@@ -1,3 +1,5 @@
+import Lia from '../../liascript/types/lia.d'
+
 declare global {
   interface Window {
     onmsgesturechange?: any
