@@ -128,7 +128,7 @@ const Service = {
           // this callback might be required, when `onload` on an iframe will not trigger,
           // which can be used to register an onReady callback
           try {
-            window.parent.liaReady(param.definition)
+            window.parent['liaReady'](param.definition)
           } catch (e) {
             console.log('no parent frame to send readiness')
           }

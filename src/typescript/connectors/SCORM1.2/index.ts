@@ -1,6 +1,7 @@
-import { SCORM } from './scorm'
+import { CMIElement, SCORM } from './scorm'
 
 import * as Base from '../Base/index'
+import { Settings } from '../Base/settings'
 
 /**
  * A simple json-parser that does not trow an error, but returns null if it fails
@@ -72,7 +73,7 @@ Hava fun ;-)`
   }
 
   countInteractions(): number | null {
-    if (!this.scorm) return
+    if (!this.scorm) return null
 
     let value = parseInt(this.scorm.LMSGetValue('cmi.interactions._count'))
 
@@ -92,6 +93,53 @@ Hava fun ;-)`
       'Objective could not be stored, content exceeds 256Bytes!'
     )
     return false
+  }
+
+  initSettings(data: Lia.Settings | null, local = false) {
+    return Settings.init(data, false, this.setSettings)
+  }
+
+  setSettings(data: Lia.Settings) {
+    this.write(`cmi.suspend_data`, JSON.stringify(data))
+  }
+
+  getSettings() {
+    let data: string | null = ''
+
+    try {
+      data = this.scorm?.LMSGetValue('cmi.suspend_data') || null
+    } catch (e) {
+      console.warn('cannot write to localStorage')
+    }
+
+    let json: Lia.Settings | null = null
+
+    if (typeof data === 'string') {
+      try {
+        json = JSON.parse(data)
+      } catch (e) {
+        console.warn('getSettings =>', e)
+      }
+
+      if (!json) {
+        json = Settings.data
+      }
+
+      if (window.innerWidth <= 768) {
+        json.table_of_contents = false
+      }
+    }
+
+    return json
+  }
+
+  write(uri: CMIElement, data: string) {
+    if (this.scorm) {
+      this.scorm.LMSSetValue(uri, data)
+      this.scorm.LMSCommit('')
+    } else {
+      console.warn('SCORM: could not write')
+    }
   }
 }
 

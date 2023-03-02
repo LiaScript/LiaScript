@@ -293,8 +293,12 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
             , msg = ShowSolution quiz.id quiz.quiz
             , hidden = state.trial < state.opt.showResolveAt
             }
-        , Translations.quizHint config.lang
-            |> viewHintButton quiz.id (quiz.hints /= []) (Solution.Open == state.solved && state.hint < List.length quiz.hints)
+        , viewHintButton
+            { id = quiz.id
+            , show = (quiz.hints /= []) && (state.trial >= state.opt.showHintsAt)
+            , active = Solution.Open == state.solved && state.hint < List.length quiz.hints
+            , title = Translations.quizHint config.lang
+            }
         ]
     , viewFeedback config.lang state
     , viewHints config state.hint quiz.hints
@@ -436,8 +440,8 @@ viewHints config counter hints =
 {-| **private:** Show a generic hint button, every time it is clicked it will
 reveal another hint from the list.
 -}
-viewHintButton : Int -> Bool -> Bool -> String -> Html (Msg sub)
-viewHintButton id show active title =
+viewHintButton : { id : Int, show : Bool, active : Bool, title : String } -> Html (Msg sub)
+viewHintButton { id, show, active, title } =
     if show then
         btnIcon
             { title = title

@@ -29,7 +29,11 @@ export type Settings = {
   preferBrowserTTS: boolean
 }
 
-type Mode = 'Slides' | 'Presentation' | 'Textbook'
+export enum Mode {
+  Slides = 'Slides',
+  Presentation = 'Presentation',
+  Textbook = 'Textbook',
+}
 
 type Lang =
   | 'ar'

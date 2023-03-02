@@ -130,6 +130,8 @@ declare global {
        * as well. (window.LIA.debug has to be set to true)
        */
       log?: (type: 'log' | 'warn' | 'error', ...args: any) => void
+
+      settings: Lia.Settings
     }
   }
 }
