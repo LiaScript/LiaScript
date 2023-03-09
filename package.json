@@ -47,7 +47,6 @@
     "watch:webcomponent": "npx parcel serve src/entry/webcomponent/index.html --open",
     "build:webcomponent": "npm run clean && npx parcel build --no-source-maps src/entry/webcomponent/index.ts && rm dist/README.md",
     "build:webcomponentPublic": "npm run clean && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md",
-  
     "minify:js": "find dist -name \"*.js\" -print0 | xargs -0 -P 4 -I {} sh -c 'before=$(wc -c < {}); minify {} > {}.min && after=$(wc -c < {}.min); if [ ${after} -lt ${before} ]; then mv {}.min {}; reduction=$((${before}-${after})); percent=$(awk \"BEGIN {printf \\\"%.2f\\\", ${reduction}/${before}*100}\"); echo \"{} reduced from ${before} to ${after} bytes (${percent}% reduction)\"; else rm {}.min; echo \"{} no reduction achieved, file size unchanged\"; fi'"
   },
   "devDependencies": {
@@ -61,8 +60,8 @@
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "@webcomponents/webcomponentsjs": "^2.6.0",
-    "ace-builds": "^1.15.1",
-    "caniuse-lite": "^1.0.30001452",
+    "ace-builds": "^1.15.3",
+    "caniuse-lite": "^1.0.30001464",
     "crypto-browserify": "^3.12.0",
     "dexie": "^2.0.4",
     "easy-speech": "^1.2.1",
@@ -84,7 +83,7 @@
     "sass": "^1.58.1",
     "stream-browserify": "^3.0.0",
     "tsc": "^2.0.4",
-    "typescript": "^4.9.4",
+    "typescript": "^4.9.5",
     "uint8-to-base64": "^0.2.0",
     "util": "^0.12.5",
     "workbox-cli": "^6.5.4",
