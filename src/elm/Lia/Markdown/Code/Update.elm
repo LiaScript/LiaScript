@@ -567,11 +567,11 @@ set_result e project =
                     | version =
                         Array.set
                             project.version_active
-                            ( code, Log.add_Eval e project.log )
+                            ( code, Log.add_Eval e Log.empty )
                             project.version
                     , running = False
                     , terminal = Nothing
-                    , log = Log.add_Eval e project.log
+                    , log = Log.add_Eval e Log.empty
                 }
 
             Nothing ->
