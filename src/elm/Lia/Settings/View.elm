@@ -33,7 +33,6 @@ import Lia.Utils
         ( blockKeydown
         , btn
         , btnIcon
-        , modal
         , noTranslate
         )
 import QRCode

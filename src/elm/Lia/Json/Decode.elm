@@ -3,6 +3,7 @@ module Lia.Json.Decode exposing (decode)
 import Array
 import Dict
 import Json.Decode as JD
+import Lia.Chat.Model as Chat
 import Lia.Definition.Json.Decode as Definition
 import Lia.Index.Model as Index
 import Lia.Markdown.Inline.Json.Decode as Inline
@@ -57,6 +58,8 @@ toModel seed sync =
         |> JD.map2 (|>) (JD.succeed sync)
         |> JD.map2 (|>) (JD.succeed False)
         |> JD.map2 (|>) (JD.succeed seed)
+        |> JD.map2 (|>) (JD.succeed Nothing)
+        |> JD.map2 (|>) (JD.succeed Chat.init)
 
 
 toSectionBase : JD.Decoder Section.Base

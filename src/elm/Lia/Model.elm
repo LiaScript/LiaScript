@@ -7,6 +7,7 @@ module Lia.Model exposing
 import Array
 import Dict exposing (Dict)
 import Json.Encode as JE
+import Lia.Chat.Model as Chat
 import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
 import Lia.Index.Model as Index
 import Lia.Parser.PatReplace exposing (repo)
@@ -16,6 +17,7 @@ import Lia.Settings.Types as Settings exposing (Settings)
 import Lia.Sync.Types as Sync
 import Service.Event exposing (Event)
 import Service.Resource
+import SplitPane
 import Translations
 
 
@@ -89,6 +91,8 @@ type alias Model =
     , sync : Sync.Settings
     , persistent : Bool
     , seed : Int
+    , pane : Maybe SplitPane.State
+    , chat : Chat.Model
     }
 
 
@@ -151,6 +155,8 @@ init seed hasShareApi openTOC settings backends url readme origin anchor =
     , sync = Sync.init backends.support
     , persistent = False
     , seed = seed
+    , pane = Just <| SplitPane.init SplitPane.Horizontal
+    , chat = Chat.init
     }
 
 

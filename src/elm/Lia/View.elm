@@ -10,6 +10,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
+import Lia.Chat.View as Chat
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
 import Lia.Markdown.Code.Editor exposing (mode)
@@ -43,9 +44,13 @@ import Translations as Trans exposing (Lang)
 -}
 view : Screen -> Bool -> Model -> Html Msg
 view screen hasIndex model =
-    Html.div
-        (Settings.design model.settings)
-        (viewIndex hasIndex model :: viewSlide screen model)
+    Html.div [ Attr.style "display" "flex" ]
+        [ Html.div
+            (Settings.design model.settings)
+            (viewIndex hasIndex model :: viewSlide screen model)
+        , Chat.view model.chat
+            |> Html.map UpdateChat
+        ]
 
 
 {-| **@private:** Display the side section that contains the document search,

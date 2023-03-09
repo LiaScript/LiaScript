@@ -7,10 +7,12 @@ port module Lia.Update exposing
     )
 
 import Array exposing (Array)
+import Conditional.List as CList
 import Const
 import Dict
 import Html.Attributes exposing (width)
 import Json.Decode as JD
+import Lia.Chat.Update as Chat
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Effect.Update as Effect
@@ -28,6 +30,7 @@ import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Slide
 import Session exposing (Session)
+import SplitPane
 import Translations exposing (Lang(..))
 
 
@@ -41,14 +44,15 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     case get_active_section model of
         Just section ->
-            Sub.batch
-                [ section
-                    |> Markdown.subscriptions
-                    |> Sub.map UpdateMarkdown
+            [ section
+                |> Markdown.subscriptions
+                |> Sub.map UpdateMarkdown
 
-                --, Sub.map UpdateSync Sync.subscriptions
-                , media Media
-                ]
+            --, Sub.map UpdateSync Sync.subscriptions
+            , media Media
+            ]
+                |> CList.addWhen (model.pane |> Maybe.map (SplitPane.subscriptions >> Sub.map Pane))
+                |> Sub.batch
 
         Nothing ->
             media Media
@@ -84,11 +88,13 @@ type Msg
     | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
     | UpdateSync Sync.Msg
+    | UpdateChat Chat.Msg
     | Handle Event
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
     | TTSReplay Bool
     | Media ( String, Maybe Int, Maybe Int )
+    | Pane SplitPane.Msg
 
 
 update : Session -> Msg -> Model -> Return Model Msg Markdown.Msg
@@ -290,6 +296,22 @@ update session msg model =
 
                     _ ->
                         model
+
+        Pane paneMsg ->
+            Return.val
+                { model
+                    | pane =
+                        model.pane
+                            |> Maybe.map (SplitPane.update paneMsg)
+                }
+
+        UpdateChat childMsg ->
+            { model
+                | chat =
+                    model.chat
+                        |> Chat.update childMsg
+            }
+                |> Return.val
 
         _ ->
             case ( msg, get_active_section model ) of

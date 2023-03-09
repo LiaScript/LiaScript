@@ -26,7 +26,7 @@ $slide-margin-left-textbook: 19rem !default;
   position: relative;
   transition: $global-transition;
   transition-property: left, right, width;
-  width: 100vw;
+  width: 100%;
   overflow-x: hidden;
 
   @include breakpoint("sm", "max") {
