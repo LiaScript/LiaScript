@@ -244,9 +244,11 @@ export class Sync {
   update() {
     try {
       // return the current state to LiaScript
+      const peers = this.db.getPeers()
       this.sync('update', {
-        peers: this.db.getPeers(),
+        peers: peers,
         data: this.db.toJSON(),
+        cursors: this.db.getCursors(peers),
       })
 
       //this.db.log()
@@ -381,6 +383,14 @@ export class Sync {
           }
         } else {
           console.warn('SyncTX wrong event ->', event)
+        }
+        break
+      }
+
+      case 'cursor': {
+        //this.db.setCursor(event.track[0])
+        if (event.track?.[0][0] == 'code') {
+          this.db.setCursor(event.track[0][1], event.message.param)
         }
         break
       }

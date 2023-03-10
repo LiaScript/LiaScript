@@ -1,7 +1,9 @@
 import * as Y from 'yjs'
 import * as State from './state'
+import * as helper from '../../helper'
 
 const PEERS = 'peers'
+const CURSORS = 'cursors'
 
 const QUIZ = 'q'
 const SURVEY = 's'
@@ -9,9 +11,11 @@ const CODE = 'c'
 
 export class CRDT {
   public doc: Y.Doc
-  protected peers: Y.Map<any>
+  protected peers: Y.Map<boolean>
+  protected cursors: Y.Map<State.Cursor>
   protected length: number
   protected peerID: string
+  protected color?: string
 
   constructor(
     peerID: string,
@@ -27,6 +31,8 @@ export class CRDT {
     this.peerID = peerID
 
     this.peers = this.doc.getMap(PEERS)
+    this.cursors = this.doc.getMap(CURSORS)
+
     this.peers.set(peerID, true)
   }
 
@@ -111,6 +117,19 @@ export class CRDT {
     }
 
     return vector
+  }
+
+  getCursors(keys: string[]) {
+    const cursors: State.Cursor[] = []
+    const json = this.cursors.toJSON()
+
+    for (let key of keys) {
+      if (key === this.peerID || json[key] === undefined) continue
+
+      cursors.push(json[key])
+    }
+
+    return cursors
   }
 
   getPeers(): string[] {
@@ -241,5 +260,36 @@ export class CRDT {
         }
       }, 'code')
     }
+  }
+
+  getColor(): string {
+    if (!this.color) {
+      this.color = helper.getColorFor(this.peerID)
+    }
+    return this.color
+  }
+
+  setCursor(
+    section: number,
+    cursor: {
+      project: number
+      file: number
+      position: { row: number; column: number }
+    }
+  ) {
+    this.doc.transact(() => {
+      this.cursors.set(this.peerID, {
+        id: this.peerID,
+        section: section,
+        project: cursor.project,
+        file: cursor.file,
+        position: cursor.position,
+        color: this.getColor(),
+      })
+    }, 'cursor')
+  }
+
+  removeCursor() {
+    this.cursors.delete(this.peerID)
   }
 }

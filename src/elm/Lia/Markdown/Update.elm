@@ -67,7 +67,15 @@ subscriptions _ =
     footnote FootnoteShow
 
 
-update : Sync.State -> Definition -> Msg -> Section -> Return Section Msg Msg
+update :
+    { sync
+        | state : Sync.State
+        , cursors : List Sync.Cursor
+    }
+    -> Definition
+    -> Msg
+    -> Section
+    -> Return Section Msg Msg
 update sync globals msg section =
     case msg of
         UpdateEffect sound childMsg ->
@@ -99,7 +107,7 @@ update sync globals msg section =
 
         UpdateQuiz childMsg ->
             section.quiz_vector
-                |> Quiz.update (Sync.isConnected sync) (Just section.id) section.effect_model.javascript childMsg
+                |> Quiz.update (Sync.isConnected sync.state) (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | quiz_vector = v })
                 |> Return.mapEvents "quiz" section.id
                 |> updateScript
@@ -120,7 +128,7 @@ update sync globals msg section =
 
         UpdateSurvey childMsg ->
             section.survey_vector
-                |> Survey.update (Sync.isConnected sync) (Just section.id) section.effect_model.javascript childMsg
+                |> Survey.update (Sync.isConnected sync.state) (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | survey_vector = v })
                 |> Return.mapEvents "survey" section.id
                 |> updateScript
@@ -354,17 +362,42 @@ updateScript return =
                 |> Return.batchEvents ret.events
 
 
-nextEffect : Sync.State -> Definition -> Bool -> Section -> Return Section Msg Msg
+nextEffect :
+    { sync
+        | state : Sync.State
+        , cursors : List Sync.Cursor
+    }
+    -> Definition
+    -> Bool
+    -> Section
+    -> Return Section Msg Msg
 nextEffect sync globals sound =
     update sync globals (UpdateEffect sound Effect.next)
 
 
-previousEffect : Sync.State -> Definition -> Bool -> Section -> Return Section Msg Msg
+previousEffect :
+    { sync
+        | state : Sync.State
+        , cursors : List Sync.Cursor
+    }
+    -> Definition
+    -> Bool
+    -> Section
+    -> Return Section Msg Msg
 previousEffect sync globals sound =
     update sync globals (UpdateEffect sound Effect.previous)
 
 
-initEffect : Sync.State -> Definition -> Bool -> Bool -> Section -> Return Section Msg Msg
+initEffect :
+    { sync
+        | state : Sync.State
+        , cursors : List Sync.Cursor
+    }
+    -> Definition
+    -> Bool
+    -> Bool
+    -> Section
+    -> Return Section Msg Msg
 initEffect sync globals run_all_javascript sound =
     update sync globals (UpdateEffect sound (Effect.init run_all_javascript))
 
@@ -401,7 +434,16 @@ subHandle js json section =
                 |> Return.batchEvent (Service.Console.warn "subHandle Problem")
 
 
-handle : Sync.State -> Definition -> String -> Event -> Section -> Return Section Msg Msg
+handle :
+    { sync
+        | state : Sync.State
+        , cursors : List Sync.Cursor
+    }
+    -> Definition
+    -> String
+    -> Event
+    -> Section
+    -> Return Section Msg Msg
 handle sync globals topic event section =
     case topic of
         "code" ->

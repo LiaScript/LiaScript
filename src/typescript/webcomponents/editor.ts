@@ -1,12 +1,25 @@
 // @ts-ignore
 import ace from 'ace-builds/src-min-noconflict/ace'
 import * as EDITOR from './editor-modes'
-import * as helper from '../helper'
+
+import * as AceCollabExt from '@convergencelabs/ace-collab-ext'
+import '@convergencelabs/ace-collab-ext/dist/css/ace-collab-ext.min.css'
 
 type Update = {
   action: 'insert' | 'remove'
   index: number
   content: string
+}
+
+type Position = {
+  row: number
+  column: number
+}
+
+type Cursor = {
+  id: string
+  color: string
+  position: Position
 }
 
 function markerStyle(name: string): string {
@@ -68,15 +81,42 @@ function throttle(cb: (_: Update[]) => void, delay: number = 300) {
   }
 }
 
+function debounce(cb: (_: any) => void, delay: number = 300) {
+  let storedArg: any | undefined
+  let timerID: number | null = null
+
+  function checkStoredArgs() {
+    if (storedArg !== undefined) {
+      cb(storedArg)
+      storedArg = undefined
+    }
+
+    timerID = null
+  }
+
+  return (arg: any) => {
+    if (timerID) {
+      window.clearTimeout(timerID)
+    }
+
+    storedArg = arg
+    timerID = window.setTimeout(checkStoredArgs, delay)
+  }
+}
+
 customElements.define(
   'lia-editor',
   class extends HTMLElement {
     private _editor: any
+    private cursorManager: any
     private _focus: boolean
     private _ariaLabel: string
     private _blockUpdate: boolean = false
 
     private _blockEvents: boolean = false
+
+    private _cursors: Cursor[] = []
+    private _catchCursorUpdates: boolean = false
 
     private model: {
       value: string
@@ -190,6 +230,14 @@ customElements.define(
         )
       })
 
+      const dispatchUpdateCursor = debounce((events: Position) => {
+        this.dispatchEvent(
+          new CustomEvent('editorUpdateCursor', {
+            detail: events,
+          })
+        )
+      })
+
       input.setAttribute('role', 'application')
       if (!this.model.readOnly) {
         const runDispatch = (event: any) => {
@@ -212,11 +260,26 @@ customElements.define(
           }
         }
 
+        const cursorDispatch = () => {
+          if (this.catchCursorUpdates) {
+            const pos = this._editor?.selection.getCursor()
+
+            if (pos) {
+              dispatchUpdateCursor(pos)
+            }
+          }
+        }
+
         this._editor.on('change', runDispatch)
+        this._editor.session.selection.on('changeCursor', cursorDispatch)
 
         input.setAttribute(
           'aria-label',
           'Code-editor in ' + this.model.mode + ' mode'
+        )
+
+        this.cursorManager = new AceCollabExt.AceMultiCursorManager(
+          this._editor.getSession()
         )
       } else {
         input.setAttribute(
@@ -551,6 +614,108 @@ customElements.define(
     set blockUpdate(value: boolean) {
       //console.warn('Setting block to ->', value)
       this._blockUpdate = value
+    }
+
+    get catchCursorUpdates() {
+      //console.warn('Getting block of ->', this._blockUpdate)
+      return this._catchCursorUpdates
+    }
+
+    set catchCursorUpdates(value: boolean) {
+      if (this._catchCursorUpdates !== value) {
+        this._catchCursorUpdates = value
+        this.setCursors()
+      }
+    }
+
+    async getSession() {
+      if (this._editor) {
+        return Promise.resolve(this._editor.getSession()) // object already exists, return it immediately
+      }
+
+      const self = this
+      return new Promise((resolve, reject) => {
+        let elapsed = 0
+        const checkExistence = setInterval(() => {
+          elapsed += 100
+          if (self._editor) {
+            // check if the object exists
+            clearInterval(checkExistence) // stop checking
+            resolve(self._editor.getSession()) // return the object
+          } else if (elapsed >= 1000) {
+            clearInterval(checkExistence) // stop checking
+            reject(null) // return null if object is not created after maxDelay
+          }
+        }, 100)
+      })
+    }
+
+    /**
+     * Initialize the collaborative cursors, if collaborative is set to true, otherwise delete the cursorManager.
+     */
+    async setCursors() {
+      if (this._catchCursorUpdates) {
+        if (!this.cursorManager) {
+          this.cursorManager = new AceCollabExt.AceMultiCursorManager(
+            await this.getSession()
+          )
+
+          for (let { id, color, position } of this._cursors) {
+            this.cursorManager.addCursor(id, '', color, position)
+          }
+        }
+      } else {
+        if (this.cursorManager) {
+          this.cursorManager.removeAll()
+          delete this.cursorManager
+        }
+      }
+    }
+
+    get cursors() {
+      return this._cursors
+    }
+    set cursors(value: Cursor[]) {
+      if (this.cursorManager) {
+        // delete all not existing cursors
+        for (let oldCursor of this._cursors) {
+          let remove = true
+          for (let newCursor of value) {
+            if (oldCursor.id == newCursor.id) {
+              remove = false
+              break
+            }
+          }
+
+          if (remove) {
+            this.cursorManager.removeCursor(oldCursor.id)
+          }
+        }
+
+        for (let newCursor of value) {
+          let add = true
+
+          for (let oldCursor of this._cursors) {
+            if (oldCursor.id == newCursor.id) {
+              add = false
+              break
+            }
+          }
+
+          if (add) {
+            this.cursorManager.addCursor(
+              newCursor.id,
+              '',
+              newCursor.color,
+              newCursor.position
+            )
+          } else {
+            this.cursorManager.setCursor(newCursor.id, newCursor.position)
+          }
+        }
+
+        this._cursors = value
+      }
     }
 
     get focusing() {

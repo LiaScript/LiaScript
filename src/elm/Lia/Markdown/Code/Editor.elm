@@ -1,7 +1,10 @@
 module Lia.Markdown.Code.Editor exposing
-    ( Event
+    ( Cursor
+    , Event
     , annotations
     , blockUpdate
+    , catchCursorUpdates
+    , decodeCursor
     , editor
     , enableBasicAutocompletion
     , enableLiveAutocompletion
@@ -17,10 +20,13 @@ module Lia.Markdown.Code.Editor exposing
     , mode
     , onBlur
     , onChange
+    , onChangeCursor
+    , onChangeCursor2
     , onChangeEvent
     , onChangeEvent2
     , onFocus
     , readOnly
+    , setCursors
     , showCursor
     , showGutter
     , showPrintMargin
@@ -46,6 +52,12 @@ type alias Event =
     }
 
 
+type alias Cursor =
+    { row : Int
+    , column : Int
+    }
+
+
 encode : Array Event -> JE.Value
 encode =
     JE.array encode_
@@ -58,6 +70,12 @@ encode_ { action, index, content } =
         , ( "index", JE.int index )
         , ( "content", JE.string content )
         ]
+
+
+decodeCursor =
+    JD.map2 Cursor
+        (JD.field "row" JD.int)
+        (JD.field "column" JD.int)
 
 
 editor : List (Html.Attribute msg) -> List (Html msg) -> Html msg
@@ -98,6 +116,53 @@ onChangeEvent2 msg =
         |> JD.at [ "detail" ]
         |> JD.map msg
         |> Html.Events.on "editorUpdateEvent"
+
+
+{-| This attribute has to be set to true, to instruct the editor to send cursor updates.
+Otherwise, the `onChangeCursor` and 'onChangeCursor2' will remain silent.
+-}
+catchCursorUpdates : Bool -> Html.Attribute msg
+catchCursorUpdates =
+    boolean "catchCursorUpdates"
+
+
+onChangeCursor : (Cursor -> msg) -> Html.Attribute msg
+onChangeCursor msg =
+    decodeCursor
+        |> JD.at [ "detail" ]
+        |> JD.map msg
+        |> Html.Events.on "editorUpdateCursor"
+
+
+{-| Catch the updated of cursor movements, which for simplicity are not decoded.
+
+    `Cursor --> {row: Int, column: Int}
+
+-}
+onChangeCursor2 : (JD.Value -> msg) -> Html.Attribute msg
+onChangeCursor2 msg =
+    JD.value
+        |> JD.at [ "detail" ]
+        |> JD.map msg
+        |> Html.Events.on "editorUpdateCursor"
+
+
+setCursors : List { cursor | id : String, color : String, position : Cursor } -> Html.Attribute msg
+setCursors =
+    JE.list
+        (\cursor ->
+            JE.object
+                [ ( "id", JE.string cursor.id )
+                , ( "color", JE.string cursor.color )
+                , ( "position"
+                  , JE.object
+                        [ ( "row", JE.int cursor.position.row )
+                        , ( "column", JE.int cursor.position.column )
+                        ]
+                  )
+                ]
+        )
+        >> Attr.property "cursors"
 
 
 onFocus : msg -> Html.Attribute msg

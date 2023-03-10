@@ -12,7 +12,14 @@ import Json.Encode as JE
 import Lia.Markdown.Update exposing (synchronize)
 import Lia.Section as Section exposing (Sections)
 import Lia.Sync.Room as Room
-import Lia.Sync.Types exposing (Settings, State(..), id)
+import Lia.Sync.Types
+    exposing
+        ( Settings
+        , State(..)
+        , decodeCursors
+        , decodePeers
+        , id
+        )
 import Lia.Sync.Via as Backend exposing (Backend)
 import Random
 import Return exposing (Return)
@@ -273,14 +280,20 @@ synchronize model json =
                 |> Result.map (List.map2 Section.syncUpdate (Array.toList model.sections) >> Array.fromList)
                 |> Result.withDefault model.sections
         , sync =
-            json
-                |> JD.decodeValue (JD.field "peers" (JD.list JD.string))
-                |> Result.map (setPeers model.sync)
-                |> Result.withDefault model.sync
+            let
+                sync =
+                    model.sync
+            in
+            { sync
+                | peers =
+                    json
+                        |> decodePeers
+                        |> Result.map Set.fromList
+                        |> Result.withDefault sync.peers
+                , cursors =
+                    json
+                        |> decodeCursors
+                        |> Result.withDefault sync.cursors
+            }
     }
         |> Return.val
-
-
-setPeers : Settings -> List String -> Settings
-setPeers sync peers =
-    { sync | peers = Set.fromList peers }

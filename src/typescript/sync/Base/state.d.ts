@@ -7,3 +7,15 @@ export type Section = {
 }
 
 export type Vector = Section[]
+
+export type Cursor = {
+  id: string
+  section: number
+  project: number
+  file: number
+  position: {
+    row: number
+    column: number
+  }
+  color: string
+}

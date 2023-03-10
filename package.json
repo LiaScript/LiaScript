@@ -50,6 +50,7 @@
     "minify:js": "find dist -name \"*.js\" -print0 | xargs -0 -P 4 -I {} sh -c 'before=$(wc -c < {}); minify {} > {}.min && after=$(wc -c < {}.min); if [ ${after} -lt ${before} ]; then mv {}.min {}; reduction=$((${before}-${after})); percent=$(awk \"BEGIN {printf \\\"%.2f\\\", ${reduction}/${before}*100}\"); echo \"{} reduced from ${before} to ${after} bytes (${percent}% reduction)\"; else rm {}.min; echo \"{} no reduction achieved, file size unchanged\"; fi'"
   },
   "devDependencies": {
+    "@convergencelabs/ace-collab-ext": "^0.6.0",
     "@parcel/packager-raw-url": "^2.8.3",
     "@parcel/reporter-bundle-analyzer": "^2.8.3",
     "@parcel/transformer-elm": "^2.8.3",

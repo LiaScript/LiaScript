@@ -105,6 +105,17 @@ code id1 id2 msg =
         |> Event.pushWithId "id" id1
 
 
+cursor : Int -> Int -> JE.Value -> Event
+cursor id1 id2 msg =
+    [ ( "project", JE.int id1 )
+    , ( "file", JE.int id2 )
+    , ( "position", msg )
+    ]
+        |> JE.object
+        |> publish "cursor"
+        |> Event.push "cursor"
+
+
 codes : Array (Array String) -> Event
 codes =
     JE.array (JE.array JE.string) >> publish "codes"
