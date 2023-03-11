@@ -388,7 +388,6 @@ export class Sync {
       }
 
       case 'cursor': {
-        //this.db.setCursor(event.track[0])
         if (event.track?.[0][0] == 'code') {
           this.db.setCursor(event.track[0][1], event.message.param)
         }

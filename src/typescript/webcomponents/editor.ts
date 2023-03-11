@@ -16,10 +16,13 @@ type Position = {
   column: number
 }
 
+type Selection = [] | [number, number, number, number]
+
 type Cursor = {
   id: string
   color: string
   position: Position
+  selection: Selection
 }
 
 function markerStyle(name: string): string {
@@ -58,7 +61,7 @@ function addMarker(color: string, name?: string | undefined) {
   }
 }
 
-function throttle(cb: (_: Update[]) => void, delay: number = 300) {
+function throttle(cb: (_: Update[]) => void, delay: number = 500) {
   let storedArgs: Update[] = []
   let timerID: number | null = null
 
@@ -81,7 +84,7 @@ function throttle(cb: (_: Update[]) => void, delay: number = 300) {
   }
 }
 
-function debounce(cb: (_: any) => void, delay: number = 300) {
+function debounce(cb: (_: any) => void, delay: number = 1000) {
   let storedArg: any | undefined
   let timerID: number | null = null
 
@@ -108,13 +111,14 @@ customElements.define(
   'lia-editor',
   class extends HTMLElement {
     private _editor: any
-    private cursorManager: any
     private _focus: boolean
     private _ariaLabel: string
     private _blockUpdate: boolean = false
 
     private _blockEvents: boolean = false
 
+    private cursorManager: any
+    private selectManager: any
     private _cursors: Cursor[] = []
     private _catchCursorUpdates: boolean = false
 
@@ -230,13 +234,15 @@ customElements.define(
         )
       })
 
-      const dispatchUpdateCursor = debounce((events: Position) => {
-        this.dispatchEvent(
-          new CustomEvent('editorUpdateCursor', {
-            detail: events,
-          })
-        )
-      })
+      const dispatchUpdateCursor = debounce(
+        (events: { position: Position; selection: Selection }) => {
+          this.dispatchEvent(
+            new CustomEvent('editorUpdateCursor', {
+              detail: events,
+            })
+          )
+        }
+      )
 
       input.setAttribute('role', 'application')
       if (!this.model.readOnly) {
@@ -261,11 +267,17 @@ customElements.define(
         }
 
         const cursorDispatch = () => {
-          if (this.catchCursorUpdates) {
-            const pos = this._editor?.selection.getCursor()
+          if (this.catchCursorUpdates && this._editor) {
+            const { start, end } = this._editor.getSelectionRange()
+            const selection =
+              start.row == end.row && start.column == end.column
+                ? []
+                : [start.row, start.column, end.row, end.column]
 
-            if (pos) {
-              dispatchUpdateCursor(pos)
+            const position = this._editor.selection.getCursor()
+
+            if (position) {
+              dispatchUpdateCursor({ position, selection })
             }
           }
         }
@@ -276,10 +288,6 @@ customElements.define(
         input.setAttribute(
           'aria-label',
           'Code-editor in ' + this.model.mode + ' mode'
-        )
-
-        this.cursorManager = new AceCollabExt.AceMultiCursorManager(
-          this._editor.getSession()
         )
       } else {
         input.setAttribute(
@@ -656,8 +664,11 @@ customElements.define(
     async setCursors() {
       if (this._catchCursorUpdates) {
         if (!this.cursorManager) {
-          this.cursorManager = new AceCollabExt.AceMultiCursorManager(
-            await this.getSession()
+          const session = await this.getSession()
+          this.cursorManager = new AceCollabExt.AceMultiCursorManager(session)
+
+          this.selectManager = new AceCollabExt.AceMultiSelectionManager(
+            session
           )
 
           for (let { id, color, position } of this._cursors) {
@@ -667,6 +678,7 @@ customElements.define(
       } else {
         if (this.cursorManager) {
           this.cursorManager.removeAll()
+          this.selectManager.removeAll()
           delete this.cursorManager
         }
       }
@@ -677,45 +689,78 @@ customElements.define(
     }
     set cursors(value: Cursor[]) {
       if (this.cursorManager) {
-        // delete all not existing cursors
-        for (let oldCursor of this._cursors) {
-          let remove = true
-          for (let newCursor of value) {
-            if (oldCursor.id == newCursor.id) {
-              remove = false
-              break
-            }
-          }
-
-          if (remove) {
-            this.cursorManager.removeCursor(oldCursor.id)
-          }
-        }
-
-        for (let newCursor of value) {
-          let add = true
-
+        try {
+          // delete all not existing cursors
           for (let oldCursor of this._cursors) {
-            if (oldCursor.id == newCursor.id) {
-              add = false
-              break
+            let remove = true
+            for (let newCursor of value) {
+              if (oldCursor.id == newCursor.id) {
+                remove = false
+                break
+              }
+            }
+
+            if (remove) {
+              this.cursorManager.removeCursor(oldCursor.id)
+              try {
+                this.selectManager.clearSelection(oldCursor.id)
+              } catch (e) {}
+              try {
+                this.selectManager.removeSelection(oldCursor.id)
+              } catch (e) {}
             }
           }
 
-          if (add) {
-            this.cursorManager.addCursor(
-              newCursor.id,
-              '',
-              newCursor.color,
-              newCursor.position
-            )
-          } else {
-            this.cursorManager.setCursor(newCursor.id, newCursor.position)
-          }
-        }
+          for (let newCursor of value) {
+            let add = true
 
-        this._cursors = value
+            for (let oldCursor of this._cursors) {
+              if (oldCursor.id == newCursor.id) {
+                add = false
+                break
+              }
+            }
+
+            if (add) {
+              this.cursorManager.addCursor(
+                newCursor.id,
+                '',
+                newCursor.color,
+                newCursor.position
+              )
+
+              this.selectManager.addSelection(
+                newCursor.id,
+                '',
+                newCursor.color,
+                this.toRange(newCursor.selection)
+              )
+            } else {
+              this.cursorManager.setCursor(newCursor.id, newCursor.position)
+              try {
+                this.selectManager.clearSelection(newCursor.id)
+              } catch (e) {}
+              this.selectManager.setSelection(
+                newCursor.id,
+                this.toRange(newCursor.selection)
+              )
+            }
+          }
+        } catch (e) {
+          console.warn('ace error:', e.message)
+        }
       }
+
+      this._cursors = value
+    }
+
+    toRange(selection: [] | [number, number, number, number]) {
+      if (selection.length === 0) return []
+
+      let Range = ace.require('ace/range').Range
+      const [start1, end1, start2, end2] = selection
+
+      return [new Range(start1, end1, start2, end2)]
     }
 
     get focusing() {

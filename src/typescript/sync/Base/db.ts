@@ -274,7 +274,10 @@ export class CRDT {
     cursor: {
       project: number
       file: number
-      position: { row: number; column: number }
+      state: {
+        position: { row: number; column: number }
+        selection: [] | [number, number, number, number]
+      }
     }
   ) {
     this.doc.transact(() => {
@@ -283,7 +286,7 @@ export class CRDT {
         section: section,
         project: cursor.project,
         file: cursor.file,
-        position: cursor.position,
+        state: cursor.state,
         color: this.getColor(),
       })
     }, 'cursor')

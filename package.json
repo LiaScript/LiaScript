@@ -79,6 +79,7 @@
     "node-elm-compiler": "^5.0.6",
     "parcel": "^2.8.3",
     "parcel-reporter-multiple-static-file-copier": "^1.0.5",
+    "parcel-reporter-static-files-copy": "^1.5.0",
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
     "sass": "^1.58.1",
@@ -93,25 +94,18 @@
   "browserslist": [
     "cover 90.0%"
   ],
-  "multipleStaticFileCopier": [
+  "staticFiles": [
     {
-      "origin": "static",
-      "destination": "dist/"
+      "staticPath": "static"
     },
     {
-      "origin": "node_modules/ace-builds/src-min-noconflict",
-      "destination": "dist/editor/"
+      "staticPath": "node_modules/katex/dist/katex.min.css"
     },
     {
-      "origin": "node_modules/katex/dist/katex.min.css",
-      "destination": "dist/katex.min.css"
+      "staticPath": "node_modules/ace-builds/src-min-noconflict",
+      "staticOutPath": "editor"
     }
   ],
-  "staticFiles": {
-    "staticPath": [
-      "static"
-    ]
-  },
   "directories": {
     "test": "tests"
   }

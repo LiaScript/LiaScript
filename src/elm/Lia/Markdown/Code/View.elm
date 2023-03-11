@@ -447,11 +447,11 @@ evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync,
                     [ Editor.catchCursorUpdates True
                     , Editor.onChangeEvent2 <| Synchronize id_1 id_2
                     , Editor.onChangeCursor2 <| SynchronizeCursor id_1 id_2
-                    , Editor.setCursors cursors
                     ]
                 )
             |> List.append
                 [ Editor.value code
+                , Editor.setCursors cursors
 
                 --, Editor.blockUpdate (sync /= Nothing)
                 , Editor.mode file.lang

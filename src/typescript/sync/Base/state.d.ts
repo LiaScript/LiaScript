@@ -13,9 +13,12 @@ export type Cursor = {
   section: number
   project: number
   file: number
-  position: {
-    row: number
-    column: number
+  state: {
+    position: {
+      row: number
+      column: number
+    }
+    selection: [] | [number, number, number, number]
   }
   color: string
 }

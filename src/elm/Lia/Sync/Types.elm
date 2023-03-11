@@ -40,7 +40,7 @@ type alias Cursor =
     , section : Int
     , project : Int
     , file : Int
-    , position : Editor.Cursor
+    , state : Editor.Cursor
     }
 
 
@@ -256,4 +256,4 @@ decodeCursor =
         (JD.field "section" JD.int)
         (JD.field "project" JD.int)
         (JD.field "file" JD.int)
-        (JD.field "position" Editor.decodeCursor)
+        (JD.field "state" Editor.decodeCursor)

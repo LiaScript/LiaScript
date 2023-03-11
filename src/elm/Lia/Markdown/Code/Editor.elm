@@ -53,8 +53,11 @@ type alias Event =
 
 
 type alias Cursor =
-    { row : Int
-    , column : Int
+    { position :
+        { row : Int
+        , column : Int
+        }
+    , selection : List Int
     }
 
 
@@ -72,10 +75,16 @@ encode_ { action, index, content } =
         ]
 
 
+decodeCursor : JD.Decoder Cursor
 decodeCursor =
     JD.map2 Cursor
-        (JD.field "row" JD.int)
-        (JD.field "column" JD.int)
+        (JD.field "position"
+            (JD.map2 (\row column -> { row = row, column = column })
+                (JD.field "row" JD.int)
+                (JD.field "column" JD.int)
+            )
+        )
+        (JD.field "selection" (JD.list JD.int))
 
 
 editor : List (Html.Attribute msg) -> List (Html msg) -> Html msg
@@ -147,7 +156,7 @@ onChangeCursor2 msg =
         |> Html.Events.on "editorUpdateCursor"
 
 
-setCursors : List { cursor | id : String, color : String, position : Cursor } -> Html.Attribute msg
+setCursors : List { cursor | id : String, color : String, state : Cursor } -> Html.Attribute msg
 setCursors =
     JE.list
         (\cursor ->
@@ -156,10 +165,11 @@ setCursors =
                 , ( "color", JE.string cursor.color )
                 , ( "position"
                   , JE.object
-                        [ ( "row", JE.int cursor.position.row )
-                        , ( "column", JE.int cursor.position.column )
+                        [ ( "row", JE.int cursor.state.position.row )
+                        , ( "column", JE.int cursor.state.position.column )
                         ]
                   )
+                , ( "selection", JE.list JE.int cursor.state.selection )
                 ]
         )
         >> Attr.property "cursors"

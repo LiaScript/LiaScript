@@ -109,7 +109,7 @@ cursor : Int -> Int -> JE.Value -> Event
 cursor id1 id2 msg =
     [ ( "project", JE.int id1 )
     , ( "file", JE.int id2 )
-    , ( "position", msg )
+    , ( "state", msg )
     ]
         |> JE.object
         |> publish "cursor"
