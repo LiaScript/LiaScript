@@ -97,7 +97,7 @@ editor attr =
 onChange : (String -> msg) -> Html.Attribute msg
 onChange msg =
     JD.string
-        |> JD.at [ "target", "value" ]
+        |> JD.at [ "detail" ]
         |> JD.map msg
         |> Html.Events.on "editorUpdate"
 

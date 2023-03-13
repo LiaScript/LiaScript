@@ -238,14 +238,14 @@ title sync =
             Html.text "Classroom (pending)"
 
 
-decodePeers : JD.Value -> Result JD.Error (List String)
+decodePeers : JD.Decoder (List String)
 decodePeers =
-    JD.decodeValue (JD.field "peers" (JD.list JD.string))
+    JD.list JD.string
 
 
-decodeCursors : JD.Value -> Result JD.Error (List Cursor)
+decodeCursors : JD.Decoder (List Cursor)
 decodeCursors =
-    JD.decodeValue (JD.field "cursors" (JD.list decodeCursor))
+    JD.list decodeCursor
 
 
 decodeCursor : JD.Decoder Cursor

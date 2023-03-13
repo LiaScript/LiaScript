@@ -61,29 +61,45 @@ function addMarker(color: string, name?: string | undefined) {
   }
 }
 
-function throttle(cb: (_: Update[]) => void, delay: number = 500) {
-  let storedArgs: Update[] = []
+function throttle(
+  cb: (
+    change: Update[],
+    cursor?: { position: Position; selection: Selection }
+  ) => void,
+  delay: number = 500
+) {
+  let storedChange: Update[] = []
+  let storedCursor
+
   let timerID: number | null = null
 
   function checkStoredArgs() {
-    if (storedArgs.length > 0) {
-      cb(storedArgs)
-      storedArgs = []
+    if (storedChange.length > 0 || storedCursor) {
+      cb(storedChange, storedCursor)
+      storedChange = []
+      storedCursor = undefined
     }
 
     timerID = null
   }
 
-  return (args: Update) => {
+  return (
+    change: Update | null,
+    cursor?: { position: Position; selection: Selection }
+  ) => {
     if (timerID) {
       window.clearTimeout(timerID)
     }
 
-    storedArgs.push(args)
+    if (change !== null) storedChange.push(change)
+    if (cursor) {
+      storedCursor = cursor
+    }
     timerID = window.setTimeout(checkStoredArgs, delay)
   }
 }
 
+/*
 function debounce(cb: (_: any) => void, delay: number = 1000) {
   let storedArg: any | undefined
   let timerID: number | null = null
@@ -106,6 +122,7 @@ function debounce(cb: (_: any) => void, delay: number = 1000) {
     timerID = window.setTimeout(checkStoredArgs, delay)
   }
 }
+*/
 
 customElements.define(
   'lia-editor',
@@ -121,6 +138,7 @@ customElements.define(
     private selectManager: any
     private _cursors: Cursor[] = []
     private _catchCursorUpdates: boolean = false
+    private cursorPosition?: Position
 
     private model: {
       value: string
@@ -226,21 +244,24 @@ customElements.define(
 
       const input = this._editor.textInput.getElement()
 
-      const dispatchUpdateEvent = throttle((events: Update[]) => {
-        this.dispatchEvent(
-          new CustomEvent('editorUpdateEvent', {
-            detail: events,
-          })
-        )
-      })
+      const dispatchUpdateEvent = throttle(
+        (
+          changes: Update[],
+          cursor?: { position: Position; selection: Selection }
+        ) => {
+          if (changes.length > 0)
+            this.dispatchEvent(
+              new CustomEvent('editorUpdateEvent', {
+                detail: changes,
+              })
+            )
 
-      const dispatchUpdateCursor = debounce(
-        (events: { position: Position; selection: Selection }) => {
-          this.dispatchEvent(
-            new CustomEvent('editorUpdateCursor', {
-              detail: events,
-            })
-          )
+          if (cursor)
+            this.dispatchEvent(
+              new CustomEvent('editorUpdateCursor', {
+                detail: cursor,
+              })
+            )
         }
       )
 
@@ -253,7 +274,11 @@ customElements.define(
 
           this.model.value = this._editor.getValue()
 
-          this.dispatchEvent(new CustomEvent('editorUpdate'))
+          this.dispatchEvent(
+            new CustomEvent('editorUpdate', {
+              detail: this.model.value,
+            })
+          )
 
           if (!this.blockUpdate) {
             dispatchUpdateEvent({
@@ -269,15 +294,18 @@ customElements.define(
         const cursorDispatch = () => {
           if (this.catchCursorUpdates && this._editor) {
             const { start, end } = this._editor.getSelectionRange()
-            const selection =
+            const selection: Selection =
               start.row == end.row && start.column == end.column
                 ? []
                 : [start.row, start.column, end.row, end.column]
 
-            const position = this._editor.selection.getCursor()
+            this.cursorPosition = this._editor.selection.getCursor()
 
-            if (position) {
-              dispatchUpdateCursor({ position, selection })
+            if (this.cursorPosition) {
+              dispatchUpdateEvent(null, {
+                position: this.cursorPosition,
+                selection,
+              })
             }
           }
         }
@@ -594,23 +622,27 @@ customElements.define(
       return this.model.value
     }
 
+    async setValue(value: string) {
+      const session = await this.getSession()
+
+      this._blockEvents = true
+      this.blockUpdate = true
+
+      this.model.value = value
+
+      const cursor = this._editor.getCursorPosition()
+
+      session.setValue(value)
+
+      this._editor.moveCursorToPosition(cursor)
+
+      this._blockEvents = false
+      this.blockUpdate = false
+    }
+
     set value(value: string) {
       if (this.model.value !== value) {
-        this.model.value = value
-
-        if (this._editor) {
-          this.blockUpdate = true
-
-          this._blockEvents = true
-          const cursor = this._editor.getSelection().getCursor()
-          this.setOption('value', value)
-          this._editor.getSelection().moveTo(cursor.row, cursor.column)
-          this._blockEvents = false
-
-          setTimeout(() => {
-            this.blockUpdate = false
-          }, 150)
-        }
+        this.setValue(value)
       }
     }
 

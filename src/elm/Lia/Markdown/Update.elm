@@ -5,7 +5,6 @@ port module Lia.Markdown.Update exposing
     , nextEffect
     , previousEffect
     , subscriptions
-    , synchronize
     , ttsReplay
     , update
     , updateScript
@@ -53,13 +52,7 @@ type Msg
     | FootnoteHide
     | FootnoteShow String
     | Script (Script.Msg Msg)
-    | Sync Event
     | NoOp
-
-
-synchronize : Event -> Msg
-synchronize event =
-    Sync event
 
 
 subscriptions : Section -> Sub Msg
@@ -138,63 +131,6 @@ update sync globals msg section =
                 |> Table.update childMsg
                 |> Return.mapVal (\v -> { section | table_vector = v })
                 |> Return.mapEvents "table" section.id
-
-        Sync event ->
-            case event.message.cmd of
-                "code" ->
-                    case
-                        event
-                            |> Event.message
-                            -- TODO
-                            |> Tuple.second
-                            |> JD.decodeValue (JD.array Code_.decoder)
-                    of
-                        Ok state ->
-                            section
-                                |> Section.syncCode state
-                                |> Return.val
-
-                        _ ->
-                            section
-                                |> Return.val
-
-                "quiz" ->
-                    case
-                        event
-                            |> Event.message
-                            -- TODO
-                            |> Tuple.second
-                            |> Container.decode Quiz_.decoder
-                    of
-                        Ok state ->
-                            section
-                                |> Section.syncQuiz state
-                                |> Return.val
-
-                        _ ->
-                            section
-                                |> Return.val
-
-                "survey" ->
-                    case
-                        event
-                            |> Event.message
-                            -- TODO
-                            |> Tuple.second
-                            |> Container.decode Survey_.decoder
-                    of
-                        Ok state ->
-                            section
-                                |> Section.syncSurvey state
-                                |> Return.val
-
-                        _ ->
-                            section
-                                |> Return.val
-
-                _ ->
-                    section
-                        |> Return.val
 
         FootnoteShow key ->
             { section | footnote2show = Just key }
