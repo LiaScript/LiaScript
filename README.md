@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.31
+version:  0.10.32
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,14 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.10.32** (14/03/2023)
+
+* improve: Better an fine granular handling of synchronous data structures.
+* fix: Cursor jumping in collaborative edit mode
+* feat: Show moving cursors and selections within the editor of foreign users in classroom mode.
+* improve: Styled terminals now have a highlighted resize-handler.
+* fix: Edrys can now also be used as a backend for classrooms.
 
 **0.10.31** (02/03/2023)
 

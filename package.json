@@ -1,6 +1,6 @@
 {
   "name": "liascript",
-  "version": "0.10.31",
+  "version": "0.10.32",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -49,10 +49,10 @@
     "watch:webcomponent": "npx parcel serve src/entry/webcomponent/index.html --open",
     "build:webcomponent": "npm run clean && npx parcel build --no-source-maps src/entry/webcomponent/index.ts && rm dist/README.md",
     "build:webcomponentPublic": "npm run clean && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md",
-  
     "minify:js": "find dist -name \"*.js\" -print0 | xargs -0 -P 4 -I {} sh -c 'before=$(wc -c < {}); minify {} > {}.min && after=$(wc -c < {}.min); if [ ${after} -lt ${before} ]; then mv {}.min {}; reduction=$((${before}-${after})); percent=$(awk \"BEGIN {printf \\\"%.2f\\\", ${reduction}/${before}*100}\"); echo \"{} reduced from ${before} to ${after} bytes (${percent}% reduction)\"; else rm {}.min; echo \"{} no reduction achieved, file size unchanged\"; fi'"
   },
   "devDependencies": {
+    "@convergencelabs/ace-collab-ext": "^0.6.0",
     "@parcel/packager-raw-url": "^2.8.3",
     "@parcel/reporter-bundle-analyzer": "^2.8.3",
     "@parcel/transformer-elm": "^2.8.3",
@@ -63,8 +63,8 @@
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "@webcomponents/webcomponentsjs": "^2.6.0",
-    "ace-builds": "^1.15.1",
-    "caniuse-lite": "^1.0.30001452",
+    "ace-builds": "^1.15.3",
+    "caniuse-lite": "^1.0.30001464",
     "crypto-browserify": "^3.12.0",
     "dexie": "^2.0.4",
     "easy-speech": "^1.2.1",
@@ -81,36 +81,33 @@
     "node-elm-compiler": "^5.0.6",
     "parcel": "^2.8.3",
     "parcel-reporter-multiple-static-file-copier": "^1.0.5",
+    "parcel-reporter-static-files-copy": "^1.5.0",
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
     "sass": "^1.58.1",
     "stream-browserify": "^3.0.0",
     "tsc": "^2.0.4",
-    "typescript": "^4.9.4",
+    "typescript": "^4.9.5",
     "uint8-to-base64": "^0.2.0",
     "util": "^0.12.5",
     "workbox-cli": "^6.5.4",
     "yjs": "^13.5.39"
   },
-  "multipleStaticFileCopier": [
+  "browserslist": [
+    "cover 90.0%"
+  ],
+  "staticFiles": [
     {
-      "origin": "static",
-      "destination": "dist/"
+      "staticPath": "static"
     },
     {
-      "origin": "node_modules/ace-builds/src-min-noconflict",
-      "destination": "dist/editor/"
+      "staticPath": "node_modules/katex/dist/katex.min.css"
     },
     {
-      "origin": "node_modules/katex/dist/katex.min.css",
-      "destination": "dist/katex.min.css"
+      "staticPath": "node_modules/ace-builds/src-min-noconflict",
+      "staticOutPath": "editor"
     }
   ],
-  "staticFiles": {
-    "staticPath": [
-      "static"
-    ]
-  },
   "directories": {
     "test": "tests"
   }

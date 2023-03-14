@@ -1,7 +1,10 @@
 module Lia.Markdown.Code.Editor exposing
-    ( Event
+    ( Cursor
+    , Event
     , annotations
     , blockUpdate
+    , catchCursorUpdates
+    , decodeCursor
     , editor
     , enableBasicAutocompletion
     , enableLiveAutocompletion
@@ -17,10 +20,13 @@ module Lia.Markdown.Code.Editor exposing
     , mode
     , onBlur
     , onChange
+    , onChangeCursor
+    , onChangeCursor2
     , onChangeEvent
     , onChangeEvent2
     , onFocus
     , readOnly
+    , setCursors
     , showCursor
     , showGutter
     , showPrintMargin
@@ -46,6 +52,15 @@ type alias Event =
     }
 
 
+type alias Cursor =
+    { position :
+        { row : Int
+        , column : Int
+        }
+    , selection : List Int
+    }
+
+
 encode : Array Event -> JE.Value
 encode =
     JE.array encode_
@@ -60,6 +75,18 @@ encode_ { action, index, content } =
         ]
 
 
+decodeCursor : JD.Decoder Cursor
+decodeCursor =
+    JD.map2 Cursor
+        (JD.field "position"
+            (JD.map2 (\row column -> { row = row, column = column })
+                (JD.field "row" JD.int)
+                (JD.field "column" JD.int)
+            )
+        )
+        (JD.field "selection" (JD.list JD.int))
+
+
 editor : List (Html.Attribute msg) -> List (Html msg) -> Html msg
 editor attr =
     Attr.style "display" "block"
@@ -70,7 +97,7 @@ editor attr =
 onChange : (String -> msg) -> Html.Attribute msg
 onChange msg =
     JD.string
-        |> JD.at [ "target", "value" ]
+        |> JD.at [ "detail" ]
         |> JD.map msg
         |> Html.Events.on "editorUpdate"
 
@@ -98,6 +125,54 @@ onChangeEvent2 msg =
         |> JD.at [ "detail" ]
         |> JD.map msg
         |> Html.Events.on "editorUpdateEvent"
+
+
+{-| This attribute has to be set to true, to instruct the editor to send cursor updates.
+Otherwise, the `onChangeCursor` and 'onChangeCursor2' will remain silent.
+-}
+catchCursorUpdates : Bool -> Html.Attribute msg
+catchCursorUpdates =
+    boolean "catchCursorUpdates"
+
+
+onChangeCursor : (Cursor -> msg) -> Html.Attribute msg
+onChangeCursor msg =
+    decodeCursor
+        |> JD.at [ "detail" ]
+        |> JD.map msg
+        |> Html.Events.on "editorUpdateCursor"
+
+
+{-| Catch the updated of cursor movements, which for simplicity are not decoded.
+
+    `Cursor --> {row: Int, column: Int}
+
+-}
+onChangeCursor2 : (JD.Value -> msg) -> Html.Attribute msg
+onChangeCursor2 msg =
+    JD.value
+        |> JD.at [ "detail" ]
+        |> JD.map msg
+        |> Html.Events.on "editorUpdateCursor"
+
+
+setCursors : List { cursor | id : String, color : String, state : Cursor } -> Html.Attribute msg
+setCursors =
+    JE.list
+        (\cursor ->
+            JE.object
+                [ ( "id", JE.string cursor.id )
+                , ( "color", JE.string cursor.color )
+                , ( "position"
+                  , JE.object
+                        [ ( "row", JE.int cursor.state.position.row )
+                        , ( "column", JE.int cursor.state.position.column )
+                        ]
+                  )
+                , ( "selection", JE.list JE.int cursor.state.selection )
+                ]
+        )
+        >> Attr.property "cursors"
 
 
 onFocus : msg -> Html.Attribute msg

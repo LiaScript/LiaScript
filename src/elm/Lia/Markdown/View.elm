@@ -369,6 +369,13 @@ view_block config block =
             , model = config.section.code_model
             , code = code
             , sync = config.section.sync.code
+            , cursors =
+                config.main.sync
+                    |> Maybe.map
+                        (.cursors
+                            >> List.filter (\cursor -> cursor.section == config.section.id)
+                        )
+                    |> Maybe.withDefault []
             }
                 |> Codes.view
                 |> Html.map UpdateCode

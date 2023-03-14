@@ -31,7 +31,16 @@ type alias Config sub =
     }
 
 
-init : Lang -> ( String, String ) -> Settings -> Sync.Settings -> Screen -> Section -> Int -> Dict String ( Int, Int ) -> Config sub
+init :
+    Lang
+    -> ( String, String )
+    -> Settings
+    -> Sync.Settings
+    -> Screen
+    -> Section
+    -> Int
+    -> Dict String ( Int, Int )
+    -> Config sub
 init lang translations settings sync screen section id media =
     let
         config =

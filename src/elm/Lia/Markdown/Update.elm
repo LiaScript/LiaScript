@@ -5,7 +5,6 @@ port module Lia.Markdown.Update exposing
     , nextEffect
     , previousEffect
     , subscriptions
-    , synchronize
     , ttsReplay
     , update
     , updateScript
@@ -53,13 +52,7 @@ type Msg
     | FootnoteHide
     | FootnoteShow String
     | Script (Script.Msg Msg)
-    | Sync Event
     | NoOp
-
-
-synchronize : Event -> Msg
-synchronize event =
-    Sync event
 
 
 subscriptions : Section -> Sub Msg
@@ -67,7 +60,15 @@ subscriptions _ =
     footnote FootnoteShow
 
 
-update : Sync.State -> Definition -> Msg -> Section -> Return Section Msg Msg
+update :
+    { sync
+        | state : Sync.State
+        , cursors : List Sync.Cursor
+    }
+    -> Definition
+    -> Msg
+    -> Section
+    -> Return Section Msg Msg
 update sync globals msg section =
     case msg of
         UpdateEffect sound childMsg ->
@@ -99,7 +100,7 @@ update sync globals msg section =
 
         UpdateQuiz childMsg ->
             section.quiz_vector
-                |> Quiz.update (Sync.isConnected sync) (Just section.id) section.effect_model.javascript childMsg
+                |> Quiz.update (Sync.isConnected sync.state) (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | quiz_vector = v })
                 |> Return.mapEvents "quiz" section.id
                 |> updateScript
@@ -120,7 +121,7 @@ update sync globals msg section =
 
         UpdateSurvey childMsg ->
             section.survey_vector
-                |> Survey.update (Sync.isConnected sync) (Just section.id) section.effect_model.javascript childMsg
+                |> Survey.update (Sync.isConnected sync.state) (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | survey_vector = v })
                 |> Return.mapEvents "survey" section.id
                 |> updateScript
@@ -130,63 +131,6 @@ update sync globals msg section =
                 |> Table.update childMsg
                 |> Return.mapVal (\v -> { section | table_vector = v })
                 |> Return.mapEvents "table" section.id
-
-        Sync event ->
-            case event.message.cmd of
-                "code" ->
-                    case
-                        event
-                            |> Event.message
-                            -- TODO
-                            |> Tuple.second
-                            |> JD.decodeValue (JD.array Code_.decoder)
-                    of
-                        Ok state ->
-                            section
-                                |> Section.syncCode state
-                                |> Return.val
-
-                        _ ->
-                            section
-                                |> Return.val
-
-                "quiz" ->
-                    case
-                        event
-                            |> Event.message
-                            -- TODO
-                            |> Tuple.second
-                            |> Container.decode Quiz_.decoder
-                    of
-                        Ok state ->
-                            section
-                                |> Section.syncQuiz state
-                                |> Return.val
-
-                        _ ->
-                            section
-                                |> Return.val
-
-                "survey" ->
-                    case
-                        event
-                            |> Event.message
-                            -- TODO
-                            |> Tuple.second
-                            |> Container.decode Survey_.decoder
-                    of
-                        Ok state ->
-                            section
-                                |> Section.syncSurvey state
-                                |> Return.val
-
-                        _ ->
-                            section
-                                |> Return.val
-
-                _ ->
-                    section
-                        |> Return.val
 
         FootnoteShow key ->
             { section | footnote2show = Just key }
@@ -354,17 +298,42 @@ updateScript return =
                 |> Return.batchEvents ret.events
 
 
-nextEffect : Sync.State -> Definition -> Bool -> Section -> Return Section Msg Msg
+nextEffect :
+    { sync
+        | state : Sync.State
+        , cursors : List Sync.Cursor
+    }
+    -> Definition
+    -> Bool
+    -> Section
+    -> Return Section Msg Msg
 nextEffect sync globals sound =
     update sync globals (UpdateEffect sound Effect.next)
 
 
-previousEffect : Sync.State -> Definition -> Bool -> Section -> Return Section Msg Msg
+previousEffect :
+    { sync
+        | state : Sync.State
+        , cursors : List Sync.Cursor
+    }
+    -> Definition
+    -> Bool
+    -> Section
+    -> Return Section Msg Msg
 previousEffect sync globals sound =
     update sync globals (UpdateEffect sound Effect.previous)
 
 
-initEffect : Sync.State -> Definition -> Bool -> Bool -> Section -> Return Section Msg Msg
+initEffect :
+    { sync
+        | state : Sync.State
+        , cursors : List Sync.Cursor
+    }
+    -> Definition
+    -> Bool
+    -> Bool
+    -> Section
+    -> Return Section Msg Msg
 initEffect sync globals run_all_javascript sound section =
     let
         return =
@@ -414,7 +383,16 @@ subHandle js json section =
                 |> Return.batchEvent (Service.Console.warn "subHandle Problem")
 
 
-handle : Sync.State -> Definition -> String -> Event -> Section -> Return Section Msg Msg
+handle :
+    { sync
+        | state : Sync.State
+        , cursors : List Sync.Cursor
+    }
+    -> Definition
+    -> String
+    -> Event
+    -> Section
+    -> Return Section Msg Msg
 handle sync globals topic event section =
     case topic of
         "code" ->

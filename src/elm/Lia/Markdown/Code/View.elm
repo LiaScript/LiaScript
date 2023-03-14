@@ -18,6 +18,7 @@ import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Model)
 import Lia.Markdown.Code.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
+import Lia.Sync.Types as Sync
 import Lia.Utils exposing (btnIcon, noTranslate)
 import Translations
     exposing
@@ -33,8 +34,16 @@ import Translations
         )
 
 
-view : { lang : Lang, theme : String, model : Model, code : Code, sync : Array Sync } -> Html Msg
-view { lang, theme, model, code, sync } =
+view :
+    { lang : Lang
+    , theme : String
+    , model : Model
+    , code : Code
+    , sync : Array Sync
+    , cursors : List Sync.Cursor
+    }
+    -> Html Msg
+view { lang, theme, model, code, sync, cursors } =
     case code of
         Highlight id_1 ->
             Array.get id_1 model.highlight
@@ -51,6 +60,7 @@ view { lang, theme, model, code, sync } =
                                     , errors = always JE.null
                                     , sync = Nothing
                                     , id_1 = id_1
+                                    , cursors = []
                                     }
                                 )
                             |> List.map2 (\a e -> e a) pro.attr
@@ -110,6 +120,7 @@ view { lang, theme, model, code, sync } =
                                             else
                                                 Nothing
                                         , id_1 = id_1
+                                        , cursors = cursors
                                         }
                                     )
                                 |> List.map2 (\a e -> e a) project.attr
@@ -194,12 +205,13 @@ viewCode :
     , errors : Int -> JE.Value
     , sync : Maybe Sync
     , id_1 : Int
+    , cursors : List Sync.Cursor
     }
     -> Int
     -> File
     -> Parameters
     -> Html Msg
-viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1 } id_2 file attr =
+viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1, cursors } id_2 file attr =
     if file.name == "" then
         Html.div (noTranslate [ Attr.class "lia-code__input" ])
             [ evaluate
@@ -212,6 +224,7 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1 } id_2 file 
                 , file = file
                 , errors = errors id_2
                 , sync = Maybe.andThen (.file >> Array.get id_2) sync
+                , cursors = List.filter (\cursor -> cursor.project == id_1 && cursor.file == id_2) cursors
                 }
             ]
 
@@ -297,6 +310,7 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1 } id_2 file 
                             , file = file
                             , errors = errors id_2
                             , sync = Maybe.andThen (.file >> Array.get id_2) sync
+                            , cursors = List.filter (\cursor -> cursor.project == id_1 && cursor.file == id_2) cursors
                             }
                         ]
                     ]
@@ -385,9 +399,10 @@ evaluate :
     , file : File
     , errors : JE.Value
     , sync : Maybe String
+    , cursors : List Sync.Cursor
     }
     -> Html Msg
-evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync } =
+evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync, cursors } =
     let
         code =
             Maybe.withDefault file.code sync
@@ -422,15 +437,21 @@ evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync 
         (attr
             |> Params.toAttribute
             |> List.append (toStyle file.visible max_lines)
-            |> CList.addIf (not readOnly)
+            |> CList.appendIf (not readOnly)
                 (if sync == Nothing then
-                    Editor.onChange <| Update id_1 id_2
+                    [ Editor.catchCursorUpdates False
+                    , Editor.onChange <| Update id_1 id_2
+                    ]
 
                  else
-                    Editor.onChangeEvent2 <| Synchronize id_1 id_2
+                    [ Editor.catchCursorUpdates True
+                    , Editor.onChangeEvent2 <| Synchronize id_1 id_2
+                    , Editor.onChangeCursor2 <| SynchronizeCursor id_1 id_2
+                    ]
                 )
             |> List.append
                 [ Editor.value code
+                , Editor.setCursors cursors
 
                 --, Editor.blockUpdate (sync /= Nothing)
                 , Editor.mode file.lang

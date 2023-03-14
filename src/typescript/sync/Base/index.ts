@@ -37,6 +37,7 @@ function dynamicGossip(self: Sync) {
   }
 
   function publish() {
+    if (!self.isConnected) return
     try {
       self.broadcast(self.db.encode())
 
@@ -56,6 +57,7 @@ function dynamicGossip(self: Sync) {
 }
 
 export class Sync {
+  public isConnected: boolean = false
   /** A course is defined by the URL, which shall be loaded by all users.
    */
   protected course?: string
@@ -136,18 +138,41 @@ export class Sync {
         ? (event, origin) => {
             if (self.db) {
               switch (origin) {
+                case 'cursor': {
+                  this.sync('update', { cmd: 'cursor', param: event })
+                  break
+                }
+                case 'peer': {
+                  this.sync('update', { cmd: 'peer', param: event })
+                  break
+                }
+                case 'code': {
+                  this.sync('update', { cmd: 'code', param: event })
+                  break
+                }
+                case 'quiz': {
+                  this.sync('update', { cmd: 'quiz', param: event })
+                  break
+                }
+                case 'survey': {
+                  this.sync('update', { cmd: 'survey', param: event })
+                  break
+                }
                 case 'exit': {
-                  self.broadcast(event)
-                  self.destroy()
+                  try {
+                    origin = null
+
+                    this.broadcast(event)
+                    this.destroy()
+                  } catch (e) {}
                   break
                 }
                 default: {
-                  throttleBroadcast()
-                  self.update()
+                  console.warn('Sync unknown origin', origin)
                 }
               }
 
-              // self.db.log()
+              if (origin) throttleBroadcast()
             }
           }
         : undefined
@@ -180,11 +205,14 @@ export class Sync {
     this.room = data.room
     this.course = data.course
     this.password = data.password
+
+    this.isConnected = true
   }
 
   destroy() {
     this.db.destroy()
     this.cbConnection('disconnect', this.token)
+    this.isConnected = false
   }
 
   disconnect() {
@@ -244,9 +272,11 @@ export class Sync {
   update() {
     try {
       // return the current state to LiaScript
+      const peers = this.db.getPeers()
       this.sync('update', {
-        peers: this.db.getPeers(),
+        peers: peers,
         data: this.db.toJSON(),
+        cursors: this.db.getCursors(peers),
       })
 
       //this.db.log()
@@ -381,6 +411,13 @@ export class Sync {
           }
         } else {
           console.warn('SyncTX wrong event ->', event)
+        }
+        break
+      }
+
+      case 'cursor': {
+        if (event.track?.[0][0] == 'code') {
+          this.db.setCursor(event.track[0][1], event.message.param)
         }
         break
       }

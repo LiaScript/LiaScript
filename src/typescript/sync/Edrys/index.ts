@@ -4,6 +4,7 @@ import { encode, decode } from 'uint8-to-base64'
 export class Sync extends Base.Sync {
   private subject: string = 'liasync'
   private connected: boolean = false
+  private listener?: (e: MessageEvent<any>) => void
 
   async connect(data: {
     course: string
@@ -17,7 +18,7 @@ export class Sync extends Base.Sync {
   }
 
   destroy() {
-    // TODO: release event Handler
+    if (this.listener) window.removeEventListener('message', this.listener)
     super.destroy()
   }
 
@@ -27,7 +28,7 @@ export class Sync extends Base.Sync {
 
       let self = this
 
-      window.addEventListener('message', function (e) {
+      this.listener = function (e) {
         try {
           // Get the sent data
           let event = e.data
@@ -42,21 +43,19 @@ export class Sync extends Base.Sync {
               break
             }
             default: {
-              event.body = JSON.parse(event.body)
-
-              if (event.body.message.param.id !== self.token) {
-                if (event.body) {
-                  self.applyUpdate(decode(event.body))
-                }
+              if (event.body) {
+                self.applyUpdate(decode(event.body))
               }
             }
           }
         } catch (error) {
           console.warn('Edrys', error.message)
         }
-      })
+      }
 
-      window.parent.postMessage({ subject: 'init', body: '' }, '*')
+      window.addEventListener('message', this.listener)
+
+      this.broadcast(null, 'init')
 
       setTimeout(function () {
         if (!self.connected) {
@@ -66,9 +65,9 @@ export class Sync extends Base.Sync {
     }
   }
 
-  broadcast(data: Uint8Array | null) {
+  broadcast(data: Uint8Array | null, topic?: string) {
     window.parent.postMessage(
-      { subject: this.subject, body: data ? encode(data) : null },
+      { subject: topic || this.subject, body: data ? encode(data) : null },
       '*'
     )
   }
