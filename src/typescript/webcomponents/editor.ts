@@ -333,6 +333,7 @@ customElements.define(
       this._editor.on('blur', function () {
         self._focus = false
         self.dispatchEvent(new CustomEvent('editorFocus'))
+        self._editor.clearSelection()
       })
 
       this.setMarker()
