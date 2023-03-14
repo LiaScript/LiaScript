@@ -27,6 +27,7 @@ type Msg
     | Stop Int
     | Update Int Int String
     | Synchronize Int Int JE.Value
+    | SynchronizeCursor Int Int JE.Value
     | FlipView Code Int
     | FlipFullscreen Code Int
     | Load Int Int
@@ -378,6 +379,18 @@ update sync sectionID scripts msg model =
                 |> Return.batchEvent
                     (if isSyncModeActive id1 model then
                         Sync.code id1 id2 event
+
+                     else
+                        PEvent.none
+                    )
+                |> noSyncUpdate
+
+        SynchronizeCursor id1 id2 position ->
+            model
+                |> Return.val
+                |> Return.batchEvent
+                    (if isSyncModeActive id1 model then
+                        Sync.cursor id1 id2 position
 
                      else
                         PEvent.none

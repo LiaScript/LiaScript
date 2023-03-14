@@ -9,13 +9,24 @@ module Lia.Sync.Update exposing
 import Array
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Update exposing (synchronize)
+import Lia.Markdown.Code.Sync as Code
+import Lia.Markdown.Quiz.Sync as Quiz
+import Lia.Markdown.Survey.Sync as Survey
 import Lia.Section as Section exposing (Sections)
+import Lia.Sync.Container as Container
 import Lia.Sync.Room as Room
-import Lia.Sync.Types exposing (Settings, State(..), id)
+import Lia.Sync.Types
+    exposing
+        ( Settings
+        , State(..)
+        , decodeCursors
+        , decodePeers
+        , id
+        )
 import Lia.Sync.Via as Backend exposing (Backend)
 import Random
 import Return exposing (Return)
+import Service.Console as Console
 import Service.Event as Event exposing (Event)
 import Service.Sync
 import Session exposing (Session)
@@ -256,31 +267,93 @@ join model =
 
 synchronize : { model | sync : Settings, sections : Sections } -> JD.Value -> Return { model | sync : Settings, sections : Sections } msg sub
 synchronize model json =
-    { model
-        | sections =
+    case
+        JD.decodeValue
+            (JD.map2 Tuple.pair
+                (JD.field "cmd" JD.string)
+                (JD.field "param" JD.value)
+            )
             json
-                |> JD.decodeValue
-                    (JD.field "data" (JD.list Section.syncDecoder)
-                        |> JD.andThen
-                            (\list ->
-                                if List.isEmpty list then
-                                    JD.fail "empty lists cannot be state vectors"
+    of
+        Ok ( "cursor", param ) ->
+            let
+                sync =
+                    model.sync
+            in
+            { model
+                | sync =
+                    { sync
+                        | cursors =
+                            param
+                                |> JD.decodeValue decodeCursors
+                                |> Result.withDefault sync.cursors
+                    }
+            }
+                |> Return.val
 
-                                else
-                                    JD.succeed list
+        Ok ( "peer", param ) ->
+            let
+                sync =
+                    model.sync
+            in
+            { model
+                | sync =
+                    { sync
+                        | peers =
+                            param
+                                |> JD.decodeValue decodePeers
+                                |> Result.map Set.fromList
+                                |> Result.withDefault sync.peers
+                    }
+            }
+                |> Return.val
+
+        Ok ( "code", param ) ->
+            { model
+                | sections =
+                    param
+                        |> JD.decodeValue
+                            (JD.list (JD.array Code.decoder)
+                                |> JD.andThen
+                                    (\list ->
+                                        if List.isEmpty list then
+                                            JD.fail "empty lists cannot be state vectors"
+
+                                        else
+                                            JD.succeed list
+                                    )
                             )
-                    )
-                |> Result.map (List.map2 Section.syncUpdate (Array.toList model.sections) >> Array.fromList)
-                |> Result.withDefault model.sections
-        , sync =
-            json
-                |> JD.decodeValue (JD.field "peers" (JD.list JD.string))
-                |> Result.map (setPeers model.sync)
-                |> Result.withDefault model.sync
-    }
-        |> Return.val
+                        |> Result.map (List.map2 Section.syncCode (Array.toList model.sections) >> Array.fromList)
+                        |> Result.withDefault model.sections
+            }
+                |> Return.val
 
+        Ok ( "quiz", param ) ->
+            { model
+                | sections =
+                    param
+                        |> JD.decodeValue (JD.list (Container.decoder Quiz.decoder))
+                        |> Result.map (List.map2 Section.syncQuiz (Array.toList model.sections) >> Array.fromList)
+                        |> Result.withDefault model.sections
+            }
+                |> Return.val
 
-setPeers : Settings -> List String -> Settings
-setPeers sync peers =
-    { sync | peers = Set.fromList peers }
+        Ok ( "survey", param ) ->
+            { model
+                | sections =
+                    param
+                        |> JD.decodeValue (JD.list (Container.decoder Survey.decoder))
+                        |> Result.map (List.map2 Section.syncSurvey (Array.toList model.sections) >> Array.fromList)
+                        |> Result.withDefault model.sections
+            }
+                |> Return.val
+
+        Ok ( cmd, _ ) ->
+            model
+                |> Return.val
+                |> Return.batchEvent (Console.warn ("Sync: unknown command -> " ++ cmd))
+
+        Err info ->
+            model
+                |> Return.val
+                |> Return.batchEvent (Console.warn ("Sync: decoding error -> " ++ JD.errorToString info))

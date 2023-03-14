@@ -1,7 +1,10 @@
 module Lia.Sync.Types exposing
-    ( Settings
+    ( Cursor
+    , Settings
     , State(..)
     , Sync
+    , decodeCursors
+    , decodePeers
     , get
     , id
     , init
@@ -16,6 +19,8 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
+import Json.Decode as JD
+import Lia.Markdown.Code.Editor as Editor
 import Lia.Sync.Container as Local
 import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
@@ -29,6 +34,16 @@ type State
     | Disconnected
 
 
+type alias Cursor =
+    { id : String
+    , color : String
+    , section : Int
+    , project : Int
+    , file : Int
+    , state : Editor.Cursor
+    }
+
+
 type alias Settings =
     { sync : Sync
     , state : State
@@ -36,6 +51,7 @@ type alias Settings =
     , password : String
     , peers : Set String
     , error : Maybe String
+    , cursors : List Cursor
     }
 
 
@@ -80,6 +96,7 @@ init supportedBackends =
     , password = ""
     , peers = Set.empty
     , error = Nothing
+    , cursors = []
     }
 
 
@@ -219,3 +236,24 @@ title sync =
 
         Pending ->
             Html.text "Classroom (pending)"
+
+
+decodePeers : JD.Decoder (List String)
+decodePeers =
+    JD.list JD.string
+
+
+decodeCursors : JD.Decoder (List Cursor)
+decodeCursors =
+    JD.list decodeCursor
+
+
+decodeCursor : JD.Decoder Cursor
+decodeCursor =
+    JD.map6 Cursor
+        (JD.field "id" JD.string)
+        (JD.field "color" JD.string)
+        (JD.field "section" JD.int)
+        (JD.field "project" JD.int)
+        (JD.field "file" JD.int)
+        (JD.field "state" Editor.decodeCursor)
