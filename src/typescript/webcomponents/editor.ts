@@ -1,12 +1,28 @@
 // @ts-ignore
 import ace from 'ace-builds/src-min-noconflict/ace'
 import * as EDITOR from './editor-modes'
-import * as helper from '../helper'
+
+import * as AceCollabExt from '@convergencelabs/ace-collab-ext'
+import '@convergencelabs/ace-collab-ext/dist/css/ace-collab-ext.min.css'
 
 type Update = {
   action: 'insert' | 'remove'
   index: number
   content: string
+}
+
+type Position = {
+  row: number
+  column: number
+}
+
+type Selection = [] | [number, number, number, number]
+
+type Cursor = {
+  id: string
+  color: string
+  position: Position
+  selection: Selection
 }
 
 function markerStyle(name: string): string {
@@ -45,28 +61,68 @@ function addMarker(color: string, name?: string | undefined) {
   }
 }
 
-function throttle(cb: (_: Update[]) => void, delay: number = 300) {
-  let storedArgs: Update[] = []
+function throttle(
+  cb: (
+    change: Update[],
+    cursor?: { position: Position; selection: Selection }
+  ) => void,
+  delay: number = 500
+) {
+  let storedChange: Update[] = []
+  let storedCursor
+
   let timerID: number | null = null
 
   function checkStoredArgs() {
-    if (storedArgs.length > 0) {
-      cb(storedArgs)
-      storedArgs = []
+    if (storedChange.length > 0 || storedCursor) {
+      cb(storedChange, storedCursor)
+      storedChange = []
+      storedCursor = undefined
     }
 
     timerID = null
   }
 
-  return (args: Update) => {
+  return (
+    change: Update | null,
+    cursor?: { position: Position; selection: Selection }
+  ) => {
     if (timerID) {
       window.clearTimeout(timerID)
     }
 
-    storedArgs.push(args)
+    if (change !== null) storedChange.push(change)
+    if (cursor) {
+      storedCursor = cursor
+    }
     timerID = window.setTimeout(checkStoredArgs, delay)
   }
 }
+
+/*
+function debounce(cb: (_: any) => void, delay: number = 1000) {
+  let storedArg: any | undefined
+  let timerID: number | null = null
+
+  function checkStoredArgs() {
+    if (storedArg !== undefined) {
+      cb(storedArg)
+      storedArg = undefined
+    }
+
+    timerID = null
+  }
+
+  return (arg: any) => {
+    if (timerID) {
+      window.clearTimeout(timerID)
+    }
+
+    storedArg = arg
+    timerID = window.setTimeout(checkStoredArgs, delay)
+  }
+}
+*/
 
 customElements.define(
   'lia-editor',
@@ -77,6 +133,12 @@ customElements.define(
     private _blockUpdate: boolean = false
 
     private _blockEvents: boolean = false
+
+    private cursorManager: any
+    private selectManager: any
+    private _cursors: Cursor[] = []
+    private _catchCursorUpdates: boolean = false
+    private cursorPosition?: Position
 
     private model: {
       value: string
@@ -182,13 +244,26 @@ customElements.define(
 
       const input = this._editor.textInput.getElement()
 
-      const dispatchUpdateEvent = throttle((events: Update[]) => {
-        this.dispatchEvent(
-          new CustomEvent('editorUpdateEvent', {
-            detail: events,
-          })
-        )
-      })
+      const dispatchUpdateEvent = throttle(
+        (
+          changes: Update[],
+          cursor?: { position: Position; selection: Selection }
+        ) => {
+          if (changes.length > 0)
+            this.dispatchEvent(
+              new CustomEvent('editorUpdateEvent', {
+                detail: changes,
+              })
+            )
+
+          if (cursor)
+            this.dispatchEvent(
+              new CustomEvent('editorUpdateCursor', {
+                detail: cursor,
+              })
+            )
+        }
+      )
 
       input.setAttribute('role', 'application')
       if (!this.model.readOnly) {
@@ -199,7 +274,11 @@ customElements.define(
 
           this.model.value = this._editor.getValue()
 
-          this.dispatchEvent(new CustomEvent('editorUpdate'))
+          this.dispatchEvent(
+            new CustomEvent('editorUpdate', {
+              detail: this.model.value,
+            })
+          )
 
           if (!this.blockUpdate) {
             dispatchUpdateEvent({
@@ -212,7 +291,27 @@ customElements.define(
           }
         }
 
+        const cursorDispatch = () => {
+          if (this.catchCursorUpdates && this._editor) {
+            const { start, end } = this._editor.getSelectionRange()
+            const selection: Selection =
+              start.row == end.row && start.column == end.column
+                ? []
+                : [start.row, start.column, end.row, end.column]
+
+            this.cursorPosition = this._editor.selection.getCursor()
+
+            if (this.cursorPosition) {
+              dispatchUpdateEvent(null, {
+                position: this.cursorPosition,
+                selection,
+              })
+            }
+          }
+        }
+
         this._editor.on('change', runDispatch)
+        this._editor.session.selection.on('changeCursor', cursorDispatch)
 
         input.setAttribute(
           'aria-label',
@@ -234,6 +333,7 @@ customElements.define(
       this._editor.on('blur', function () {
         self._focus = false
         self.dispatchEvent(new CustomEvent('editorFocus'))
+        self._editor.clearSelection()
       })
 
       this.setMarker()
@@ -523,23 +623,27 @@ customElements.define(
       return this.model.value
     }
 
+    async setValue(value: string) {
+      const session = await this.getSession()
+
+      this._blockEvents = true
+      this.blockUpdate = true
+
+      this.model.value = value
+
+      const cursor = this._editor.getCursorPosition()
+
+      session.setValue(value)
+
+      this._editor.moveCursorToPosition(cursor)
+
+      this._blockEvents = false
+      this.blockUpdate = false
+    }
+
     set value(value: string) {
       if (this.model.value !== value) {
-        this.model.value = value
-
-        if (this._editor) {
-          this.blockUpdate = true
-
-          this._blockEvents = true
-          const cursor = this._editor.getSelection().getCursor()
-          this.setOption('value', value)
-          this._editor.getSelection().moveTo(cursor.row, cursor.column)
-          this._blockEvents = false
-
-          setTimeout(() => {
-            this.blockUpdate = false
-          }, 150)
-        }
+        this.setValue(value)
       }
     }
 
@@ -551,6 +655,145 @@ customElements.define(
     set blockUpdate(value: boolean) {
       //console.warn('Setting block to ->', value)
       this._blockUpdate = value
+    }
+
+    get catchCursorUpdates() {
+      //console.warn('Getting block of ->', this._blockUpdate)
+      return this._catchCursorUpdates
+    }
+
+    set catchCursorUpdates(value: boolean) {
+      if (this._catchCursorUpdates !== value) {
+        this._catchCursorUpdates = value
+        this.setCursors()
+      }
+    }
+
+    async getSession() {
+      if (this._editor) {
+        return Promise.resolve(this._editor.getSession()) // object already exists, return it immediately
+      }
+
+      const self = this
+      return new Promise((resolve, reject) => {
+        let elapsed = 0
+        const checkExistence = setInterval(() => {
+          elapsed += 100
+          if (self._editor) {
+            // check if the object exists
+            clearInterval(checkExistence) // stop checking
+            resolve(self._editor.getSession()) // return the object
+          } else if (elapsed >= 1000) {
+            clearInterval(checkExistence) // stop checking
+            reject(null) // return null if object is not created after maxDelay
+          }
+        }, 100)
+      })
+    }
+
+    /**
+     * Initialize the collaborative cursors, if collaborative is set to true, otherwise delete the cursorManager.
+     */
+    async setCursors() {
+      if (this._catchCursorUpdates) {
+        if (!this.cursorManager) {
+          const session = await this.getSession()
+          this.cursorManager = new AceCollabExt.AceMultiCursorManager(session)
+
+          this.selectManager = new AceCollabExt.AceMultiSelectionManager(
+            session
+          )
+
+          for (let { id, color, position } of this._cursors) {
+            this.cursorManager.addCursor(id, '', color, position)
+          }
+        }
+      } else {
+        if (this.cursorManager) {
+          this.cursorManager.removeAll()
+          this.selectManager.removeAll()
+          delete this.cursorManager
+        }
+      }
+    }
+
+    get cursors() {
+      return this._cursors
+    }
+    set cursors(value: Cursor[]) {
+      if (this.cursorManager) {
+        try {
+          // delete all not existing cursors
+          for (let oldCursor of this._cursors) {
+            let remove = true
+            for (let newCursor of value) {
+              if (oldCursor.id == newCursor.id) {
+                remove = false
+                break
+              }
+            }
+
+            if (remove) {
+              this.cursorManager.removeCursor(oldCursor.id)
+              try {
+                this.selectManager.clearSelection(oldCursor.id)
+              } catch (e) {}
+              try {
+                this.selectManager.removeSelection(oldCursor.id)
+              } catch (e) {}
+            }
+          }
+
+          for (let newCursor of value) {
+            let add = true
+
+            for (let oldCursor of this._cursors) {
+              if (oldCursor.id == newCursor.id) {
+                add = false
+                break
+              }
+            }
+
+            if (add) {
+              this.cursorManager.addCursor(
+                newCursor.id,
+                '',
+                newCursor.color,
+                newCursor.position
+              )
+
+              this.selectManager.addSelection(
+                newCursor.id,
+                '',
+                newCursor.color,
+                this.toRange(newCursor.selection)
+              )
+            } else {
+              this.cursorManager.setCursor(newCursor.id, newCursor.position)
+              try {
+                this.selectManager.clearSelection(newCursor.id)
+              } catch (e) {}
+              this.selectManager.setSelection(
+                newCursor.id,
+                this.toRange(newCursor.selection)
+              )
+            }
+          }
+        } catch (e) {
+          console.warn('ace error:', e.message)
+        }
+      }
+
+      this._cursors = value
+    }
+
+    toRange(selection: [] | [number, number, number, number]) {
+      if (selection.length === 0) return []
+
+      let Range = ace.require('ace/range').Range
+      const [start1, end1, start2, end2] = selection
+
+      return [new Range(start1, end1, start2, end2)]
     }
 
     get focusing() {

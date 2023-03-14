@@ -105,8 +105,6 @@ customElements.define(
 
       // Load the Markdown document defined by the src attribute
       if (typeof this.courseURL === 'string') {
-        console.warn('#############')
-
         this.app = new LiaScript(
           new Connector(),
           false, // allowSync
