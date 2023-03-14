@@ -256,31 +256,43 @@ merge new old =
             []
 
 
-syncQuiz : Container Quiz_.Sync -> Section -> Section
-syncQuiz state section =
+syncQuiz : Section -> Container Quiz_.Sync -> Section
+syncQuiz section state =
     let
-        localSync =
+        local =
             section.sync
     in
-    { section | sync = { localSync | quiz = state } }
+    { section | sync = { local | quiz = state } }
 
 
-syncSurvey : Container Survey_.Sync -> Section -> Section
-syncSurvey state section =
+syncCode : Section -> Array Code_.Sync -> Section
+syncCode section state =
     let
-        localSync =
+        local =
             section.sync
     in
-    { section | sync = { localSync | survey = state } }
+    { section
+        | sync =
+            { local
+                | code =
+                    if Array.isEmpty section.sync.code then
+                        state
+
+                    else
+                        merge (Array.toList state)
+                            (Array.toList section.sync.code)
+                            |> Array.fromList
+            }
+    }
 
 
-syncCode : Array Code_.Sync -> Section -> Section
-syncCode state section =
+syncSurvey : Section -> Container Survey_.Sync -> Section
+syncSurvey section state =
     let
-        localSync =
+        local =
             section.sync
     in
-    { section | sync = { localSync | code = state } }
+    { section | sync = { local | survey = state } }
 
 
 syncOff : Sections -> Sections

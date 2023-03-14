@@ -87,4 +87,37 @@ export function allowedProtocol(url: string) {
   )
 }
 
+function getHashCode(str: string) {
+  let hash = 0
+  if (str.length == 0) {
+    return hash
+  }
+  for (let i = 0; i < str.length; i++) {
+    let char = str.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash = hash & hash // Convert to 32bit integer
+  }
+  return hash
+}
+
+function getColorCode(hashCode: number) {
+  let red = (hashCode & 0xff0000) >> 16
+  let green = (hashCode & 0x00ff00) >> 8
+  let blue = hashCode & 0x0000ff
+  return (
+    '#' + componentToHex(red) + componentToHex(green) + componentToHex(blue)
+  )
+}
+
+function componentToHex(c) {
+  let hex = c.toString(16)
+  return hex.length == 1 ? '0' + hex : hex
+}
+
+export function getColorFor(str: string) {
+  let hashCode = getHashCode(str)
+  let colorCode = getColorCode(hashCode)
+  return colorCode
+}
+
 export const PROXY = 'https://api.allorigins.win/get?url='
