@@ -5,7 +5,6 @@ import Array
 import Html exposing (Html, button)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Html.Lazy
 import Json.Encode as JE
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
@@ -104,7 +103,7 @@ viewTextSync config lines syncData survey =
             case
                 data
                     |> Sync.wordCount
-                    |> Maybe.map (Html.Lazy.lazy2 wordCloud config)
+                    |> Maybe.map (wordCloud config)
             of
                 Nothing ->
                     survey
