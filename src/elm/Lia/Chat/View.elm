@@ -1,6 +1,6 @@
 module Lia.Chat.View exposing (view)
 
-import Array
+import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
@@ -24,8 +24,8 @@ view config model =
         , Attr.style "flex-direction" "column"
         ]
         [ model.messages
-            |> Array.toList
-            |> List.indexedMap (viewMessage config)
+            |> Dict.toList
+            |> List.map (viewMessage config)
             |> Keyed.node "div"
                 [ Attr.style "display" "flex"
                 , Attr.style "flex-direction" "column"
@@ -60,8 +60,8 @@ view config model =
         ]
 
 
-viewMessage : (Section -> Config Markdown.Msg) -> Int -> Section -> ( String, Html Msg )
-viewMessage config id section =
+viewMessage : (Section -> Config Markdown.Msg) -> ( String, Section ) -> ( String, Html Msg )
+viewMessage config ( id, section ) =
     section
         |> config
         |> Markdown.viewContent
@@ -71,4 +71,4 @@ viewMessage config id section =
             , Attr.style "border" "black solid 1px"
             ]
         |> Html.map (UpdateMarkdown id)
-        |> Tuple.pair (String.fromInt id)
+        |> Tuple.pair id

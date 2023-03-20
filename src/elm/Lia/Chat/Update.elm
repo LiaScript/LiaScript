@@ -1,67 +1,84 @@
 module Lia.Chat.Update exposing
     ( Msg(..)
+    , handle
     , update
     )
 
-import Array
+import Dict
 import Lia.Chat.Model exposing (Model)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Update as Markdown
-import Lia.Parser.Parser exposing (parse_section)
-import Lia.Section as Section
 import Lia.Sync.Types as Sync
 import Return exposing (Return)
+import Service.Event as Event exposing (Event)
+import Service.Sync as Sync
 
 
 type Msg
     = Send
     | Input String
-    | UpdateMarkdown Int Markdown.Msg
+    | UpdateMarkdown String Markdown.Msg
+    | Handle Event
+
+
+handle =
+    Handle
 
 
 update :
     { msg : Msg
-    , searchIndex : String -> String
     , definition : Definition
     , model : Model
     , sync : { sync | state : Sync.State, cursors : List Sync.Cursor }
     }
     -> Return Model Msg Markdown.Msg
-update { msg, searchIndex, definition, model, sync } =
+update { msg, definition, model, sync } =
     case msg of
         UpdateMarkdown id childMsg ->
-            case Array.get id model.messages of
+            case Dict.get id model.messages of
                 Just section ->
                     section
                         |> Markdown.update sync definition childMsg
-                        |> Return.mapValCmd (\sec -> { model | messages = Array.set id sec model.messages }) (UpdateMarkdown id)
+                        |> Return.mapValCmd (\sec -> { model | messages = Dict.insert id sec model.messages }) (UpdateMarkdown id)
 
                 Nothing ->
                     model |> Return.val
+
+        Handle event ->
+            case Event.popWithId event of
+                Just ( topic, id, e ) ->
+                    let
+                        id_ =
+                            String.fromInt id
+                    in
+                    case Dict.get id_ model.messages of
+                        Just section ->
+                            section
+                                |> Markdown.handle sync definition topic e
+                                |> Return.mapValCmd
+                                    (\sec ->
+                                        { model
+                                            | messages = Dict.insert id_ sec model.messages
+                                        }
+                                    )
+                                    (UpdateMarkdown id_)
+
+                        _ ->
+                            Return.val model
+
+                _ ->
+                    Return.val model
 
         Input str ->
             { model | input = str }
                 |> Return.val
 
         Send ->
-            Return.val <|
-                if String.trim model.input == "" then
-                    model
+            if String.trim model.input == "" then
+                model
+                    |> Return.val
 
-                else
-                    { model
-                        | input = ""
-                        , messages =
-                            case
-                                model.input
-                                    ++ "\n\n"
-                                    |> Section.Base 5 []
-                                    |> Section.init 0 (Array.length model.messages)
-                                    |> parse_section searchIndex definition
-                            of
-                                Ok new ->
-                                    Array.push new model.messages
-
-                                Err _ ->
-                                    model.messages
-                    }
+            else
+                { model | input = "" }
+                    |> Return.val
+                    |> Return.batchEvent (Sync.chat model.input)

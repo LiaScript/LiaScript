@@ -221,11 +221,14 @@ update session msg model =
                             update session (Load True id) model
 
                         Just ( topic, id, e_ ) ->
-                            case Array.get id model.sections of
-                                Just sec ->
+                            case ( id < 1000000, Array.get id model.sections ) of
+                                ( True, Just sec ) ->
                                     sec
                                         |> Markdown.handle model.sync model.definition topic e_
                                         |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
+
+                                ( False, Nothing ) ->
+                                    update session (UpdateChat (Chat.handle event)) model
 
                                 _ ->
                                     Return.val model
@@ -258,6 +261,9 @@ update session msg model =
                             sec
                                 |> Markdown.handle model.sync model.definition topic e
                                 |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
+
+                        Just ( id, Nothing ) ->
+                            update session (UpdateChat (Chat.handle event)) model
 
                         _ ->
                             Return.val model
@@ -307,7 +313,6 @@ update session msg model =
 
         UpdateChat childMsg ->
             { msg = childMsg
-            , searchIndex = model.search_index
             , definition = model.definition
             , model = model.chat
             , sync = model.sync

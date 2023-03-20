@@ -20,6 +20,7 @@ export class CRDT {
   protected codes: Y.Map<Y.Text>
   protected quizzes: YKeyValue<State.Data>
   protected surveys: YKeyValue<State.Data>
+  protected chat: YKeyValue<{ message: String; color: String; user: String }>
 
   protected length: number
   protected peerID: string
@@ -45,6 +46,7 @@ export class CRDT {
 
     this.quizzes = new YKeyValue(this.doc.getArray(QUIZ))
     this.surveys = new YKeyValue(this.doc.getArray(SURVEY))
+    this.chat = new YKeyValue(this.doc.getArray('chat'))
 
     if (callback) {
       this.peers.observe((event: Y.YMapEvent<boolean>) => {
@@ -63,6 +65,21 @@ export class CRDT {
 
       this.surveys.on('change', (changes) => {
         callback(this.getAllMaps(this.surveys), 'survey')
+      })
+
+      this.chat.on('change', (changes) => {
+        const vector = []
+
+        let obj
+        for (let [id, op] of changes) {
+          if (op.action === 'add') {
+            obj = op.newValue
+            obj['id'] = parseInt(id)
+            vector.push(obj)
+          }
+        }
+
+        if (vector.length > 0) callback(vector, 'chat')
       })
 
       this.codes.observeDeep((events: Y.YEvent<Y.Text>[]) => {
@@ -278,6 +295,14 @@ export class CRDT {
 
       this.doc.clientID = backup
     }
+  }
+
+  addChatMessage(msg: string) {
+    this.chat.set('' + Date.now(), {
+      color: this.getColor(),
+      message: msg,
+      user: this.peerID,
+    })
   }
 
   updateCode(

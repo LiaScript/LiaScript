@@ -9,6 +9,10 @@ module Lia.Sync.Update exposing
 import Array
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Chat.Model as Chat
+import Lia.Chat.Sync as Chat
+import Lia.Definition.Types exposing (Definition)
+import Lia.Index.View exposing (search)
 import Lia.Markdown.Code.Sync as Code
 import Lia.Markdown.Quiz.Sync as Quiz
 import Lia.Markdown.Survey.Sync as Survey
@@ -52,18 +56,56 @@ type SyncMsg
 
 handle :
     Session
-    -> { model | sync : Settings, sections : Sections, readme : String }
+    ->
+        { model
+            | sync : Settings
+            , sections : Sections
+            , readme : String
+            , chat : Chat.Model
+            , search_index : String -> String
+            , definition : Definition
+        }
     -> Event
-    -> Return { model | sync : Settings, sections : Sections, readme : String } Msg sub
+    ->
+        Return
+            { model
+                | sync : Settings
+                , sections : Sections
+                , readme : String
+                , chat : Chat.Model
+                , search_index : String -> String
+                , definition : Definition
+            }
+            Msg
+            sub
 handle session model =
     Handle >> update session model
 
 
 update :
     Session
-    -> { model | sync : Settings, sections : Sections, readme : String }
+    ->
+        { model
+            | sync : Settings
+            , sections : Sections
+            , readme : String
+            , chat : Chat.Model
+            , search_index : String -> String
+            , definition : Definition
+        }
     -> Msg
-    -> Return { model | sync : Settings, sections : Sections, readme : String } Msg sub
+    ->
+        Return
+            { model
+                | sync : Settings
+                , sections : Sections
+                , readme : String
+                , chat : Chat.Model
+                , search_index : String -> String
+                , definition : Definition
+            }
+            Msg
+            sub
 update session model msg =
     let
         sync =
@@ -248,8 +290,18 @@ isConnected sync =
 
 
 join :
-    { model | sync : Settings, sections : Sections }
-    -> Return { model | sync : Settings, sections : Sections } msg sub
+    { model
+        | sync : Settings
+        , sections : Sections
+    }
+    ->
+        Return
+            { model
+                | sync : Settings
+                , sections : Sections
+            }
+            msg
+            sub
 join model =
     case model.sync.state of
         Connected id ->
@@ -265,7 +317,26 @@ join model =
             Return.val model
 
 
-synchronize : { model | sync : Settings, sections : Sections } -> JD.Value -> Return { model | sync : Settings, sections : Sections } msg sub
+synchronize :
+    { model
+        | sync : Settings
+        , sections : Sections
+        , chat : Chat.Model
+        , search_index : String -> String
+        , definition : Definition
+    }
+    -> JD.Value
+    ->
+        Return
+            { model
+                | sync : Settings
+                , sections : Sections
+                , chat : Chat.Model
+                , search_index : String -> String
+                , definition : Definition
+            }
+            msg
+            sub
 synchronize model json =
     case
         JD.decodeValue
@@ -288,6 +359,16 @@ synchronize model json =
                                 |> JD.decodeValue decodeCursors
                                 |> Result.withDefault sync.cursors
                     }
+            }
+                |> Return.val
+
+        Ok ( "chat", param ) ->
+            { model
+                | chat =
+                    param
+                        |> JD.decodeValue Chat.decoder
+                        |> Result.map (Chat.insert model.search_index model.definition model.chat)
+                        |> Result.withDefault model.chat
             }
                 |> Return.val
 
