@@ -89,6 +89,7 @@
     "uint8-to-base64": "^0.2.0",
     "util": "^0.12.5",
     "workbox-cli": "^6.5.4",
+    "y-utility": "^0.1.2",
     "yjs": "^13.5.39"
   },
   "browserslist": [

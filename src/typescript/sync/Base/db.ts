@@ -2,6 +2,8 @@ import * as Y from 'yjs'
 import * as State from './state'
 import * as helper from '../../helper'
 
+import { YKeyValue } from 'y-utility/y-keyvalue'
+
 const PEERS = 'peers'
 const CURSORS = 'cursors'
 
@@ -16,8 +18,8 @@ export class CRDT {
   protected peers: Y.Map<boolean>
   protected cursors: Y.Map<State.Cursor>
   protected codes: Y.Map<Y.Text>
-  protected quizzes: Y.Map<State.Data>
-  protected surveys: Y.Map<State.Data>
+  protected quizzes: YKeyValue<State.Data>
+  protected surveys: YKeyValue<State.Data>
 
   protected length: number
   protected peerID: string
@@ -40,8 +42,9 @@ export class CRDT {
     this.peers = this.doc.getMap(PEERS)
     this.cursors = this.doc.getMap(CURSORS)
     this.codes = this.doc.getMap(CODE)
-    this.quizzes = this.doc.getMap(QUIZ)
-    this.surveys = this.doc.getMap(SURVEY)
+
+    this.quizzes = new YKeyValue(this.doc.getArray(QUIZ))
+    this.surveys = new YKeyValue(this.doc.getArray(SURVEY))
 
     if (callback) {
       this.peers.observe((event: Y.YMapEvent<boolean>) => {
@@ -54,12 +57,12 @@ export class CRDT {
         callback(this.getCursors(peers), 'cursor')
       })
 
-      this.quizzes.observeDeep((event: Y.YEvent<any>[]) => {
-        callback(this.getQuiz(), 'quiz')
+      this.quizzes.on('change', (changes) => {
+        callback(this.getAllMaps(this.quizzes), 'quiz')
       })
 
-      this.surveys.observeDeep((event: Y.YEvent<any>[]) => {
-        callback(this.getSurvey(), 'survey')
+      this.surveys.on('change', (changes) => {
+        callback(this.getAllMaps(this.surveys), 'survey')
       })
 
       this.codes.observeDeep((events: Y.YEvent<Y.Text>[]) => {
@@ -99,6 +102,7 @@ export class CRDT {
       if (this.peers.get(this.peerID) === false) {
         this.peers.set(this.peerID, true)
       }
+
       Y.applyUpdate(this.doc, update)
     })
   }
@@ -113,25 +117,27 @@ export class CRDT {
     */
   }
 
-  protected initMap(map: Y.Map<State.Data>, id: number, data: State.Data[]) {
+  protected initMap(
+    map: YKeyValue<State.Data>,
+    id: number,
+    data: State.Data[]
+  ) {
     if (data.length === 0) return
 
     let state
-    const backup = this.doc.clientID
 
     for (let i = 0; i < data.length; i++) {
       state = map.get(this.id(id, i))
 
       if (!state) {
-        this.doc.clientID = 0
-        state = new Y.Map()
-        map.set(this.id(id, i), state)
-        this.doc.clientID = backup
+        state = {}
       }
 
       for (const key in data[i]) {
-        state.set(key, data[i][key])
+        state[key] = data[i][key]
       }
+
+      map.set(this.id(id, i), state)
     }
   }
 
@@ -149,40 +155,10 @@ export class CRDT {
     return Y.encodeStateAsUpdate(this.doc, state)
   }
 
-  toJSON(): State.Vector {
-    let vector: State.Vector = []
-
-    for (let i = 0; i < this.length; i++) {
-      vector.push({
-        s: [], //this.getAllMaps(SURVEY, i),
-        q: [], //this.getAllMaps(QUIZ, i),
-        c: this.getAllTexts(i),
-      })
-    }
-
-    return vector
-  }
-
   getCode(): string[][][] {
     let vector: string[][][] = []
     for (let i = 0; i < this.length; i++) {
       vector.push(this.getAllTexts(i))
-    }
-    return vector
-  }
-
-  getQuiz(): State.Data[][][] {
-    let vector: State.Data[][][] = []
-    for (let i = 0; i < this.length; i++) {
-      vector.push(this.getAllMaps(this.quizzes, i))
-    }
-    return vector
-  }
-
-  getSurvey(): State.Data[][][] {
-    let vector: State.Data[][][] = []
-    for (let i = 0; i < this.length; i++) {
-      vector.push(this.getAllMaps(this.surveys, i))
     }
     return vector
   }
@@ -234,13 +210,16 @@ export class CRDT {
     return this.doc.getMap(this.id(id, i))
   }
 
-  getAllMaps(map: Y.Map<State.Data>, id: number): any[] {
-    let vector: any[] = []
-    let obj: any
+  getAllMaps(map: YKeyValue<State.Data>): State.Data[][][] {
+    const vector: State.Data[][][] = []
 
-    for (let i = 0; map.has(this.id(id, i)); i++) {
-      obj = map.get(this.id(id, i))
-      vector.push(obj.toJSON())
+    for (let i = 0; i < this.length; i++) {
+      let sub = []
+      for (let j = 0; map.has(this.id(i, j)); j++) {
+        // @ts-ignore
+        sub.push(map.get(this.id(i, j)))
+      }
+      vector.push(sub)
     }
 
     return vector
@@ -273,20 +252,18 @@ export class CRDT {
     this.addRecord(this.surveys, id, i, value)
   }
 
-  addRecord(map: Y.Map<State.Data>, id: number, i: number, value: any) {
+  addRecord(map: YKeyValue<State.Data>, id: number, i: number, value: any) {
     let record = map.get(this.id(id, i))
 
     if (!record) {
-      const backup = this.doc.clientID
-      this.doc.clientID = 0
-      record = new Y.Map()
-      map.set(this.id(id, i), record)
-      this.doc.clientID = backup
+      record = {}
     }
 
-    if (!record.has(this.peerID)) {
-      record.set(this.peerID, value)
+    if (record[this.peerID] == undefined) {
+      record[this.peerID] = value
     }
+
+    map.set(this.id(id, i), record)
   }
 
   initCode(id: number, i: number, j: number, value: string) {
