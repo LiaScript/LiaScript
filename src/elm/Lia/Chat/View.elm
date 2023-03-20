@@ -1,14 +1,21 @@
 module Lia.Chat.View exposing (view)
 
+import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
+import Html.Keyed as Keyed
 import Lia.Chat.Model exposing (Model)
 import Lia.Chat.Update exposing (Msg(..))
+import Lia.Markdown.Code.Editor as Editor
+import Lia.Markdown.Config exposing (Config)
+import Lia.Markdown.Update as Markdown
+import Lia.Markdown.View as Markdown
+import Lia.Section exposing (Section)
 
 
-view : Model -> Html Msg
-view model =
+view : (Section -> Config Markdown.Msg) -> Model -> Html Msg
+view config model =
     Html.div
         [ Attr.style "background-color" "red"
         , Attr.style "width" "800px"
@@ -17,20 +24,32 @@ view model =
         , Attr.style "flex-direction" "column"
         ]
         [ model.messages
-            |> List.map viewMessage
-            |> Html.div
-                [ Attr.style "height" "calc(100% - 16rem)"
-                , Attr.style "display" "flex"
+            |> Array.toList
+            |> List.indexedMap (viewMessage config)
+            |> Keyed.node "div"
+                [ Attr.style "display" "flex"
                 , Attr.style "flex-direction" "column"
                 , Attr.style "justify-content" "flex-end"
+                , Attr.style "bottom" "0"
+                ]
+            |> List.singleton
+            |> Html.div
+                [ Attr.style "height" "calc(100% - 10rem)"
+                , Attr.style "overflow" "auto"
                 ]
         , Html.div
             [ Attr.style "padding" "1rem"
             , Attr.style "height" "16rem"
+            , Attr.id "parent"
             ]
-            [ Html.textarea
-                [ Event.onInput Input
-                , Attr.value model.input
+            [ Editor.editor
+                [ Editor.onChange Input
+                , Editor.value model.input
+                , Attr.style "min-height" "10rem"
+                , Attr.style "width" "100%"
+                , Editor.maxLines 4
+                , Editor.mode "markdown"
+                , Editor.showGutter False
                 ]
                 []
             , Html.button
@@ -41,11 +60,15 @@ view model =
         ]
 
 
-viewMessage : String -> Html msg
-viewMessage msg =
-    Html.div
-        [ Attr.style "padding" "1rem"
-        , Attr.style "margin" "1rem"
-        , Attr.style "background" "white"
-        ]
-        [ Html.text msg ]
+viewMessage : (Section -> Config Markdown.Msg) -> Int -> Section -> ( String, Html Msg )
+viewMessage config id section =
+    section
+        |> config
+        |> Markdown.viewContent
+        |> Html.div
+            [ Attr.style "padding" "1rem 1rem 0.1rem"
+            , Attr.style "margin" "0.4rem 1rem"
+            , Attr.style "border" "black solid 1px"
+            ]
+        |> Html.map (UpdateMarkdown id)
+        |> Tuple.pair (String.fromInt id)

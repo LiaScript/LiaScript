@@ -306,12 +306,20 @@ update session msg model =
                 }
 
         UpdateChat childMsg ->
-            { model
-                | chat =
-                    model.chat
-                        |> Chat.update childMsg
+            { msg = childMsg
+            , searchIndex = model.search_index
+            , definition = model.definition
+            , model = model.chat
+            , sync = model.sync
             }
-                |> Return.val
+                |> Chat.update
+                |> Return.mapValCmd
+                    (\chat ->
+                        { model
+                            | chat = chat
+                        }
+                    )
+                    UpdateChat
 
         _ ->
             case ( msg, get_active_section model ) of

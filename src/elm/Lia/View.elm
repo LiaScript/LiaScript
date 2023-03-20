@@ -14,14 +14,14 @@ import Lia.Chat.View as Chat
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
 import Lia.Markdown.Code.Editor exposing (mode)
-import Lia.Markdown.Config as Config
+import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.View exposing (state)
 import Lia.Markdown.HTML.Attributes exposing (toAttribute)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
-import Lia.Section exposing (SubSection)
+import Lia.Section exposing (Section, SubSection)
 import Lia.Settings.Types exposing (Mode(..), Settings, TTS)
 import Lia.Settings.Update as Settings_
 import Lia.Settings.View as Settings
@@ -48,7 +48,7 @@ view screen hasIndex model =
         [ Html.div
             (Settings.design model.settings)
             (viewIndex hasIndex model :: viewSlide screen model)
-        , Chat.view model.chat
+        , Chat.view (initConfig screen model) model.chat
             |> Html.map UpdateChat
         ]
 
@@ -175,16 +175,21 @@ viewSlide screen model =
             ]
 
 
-showSection model screen ( id, section ) =
+initConfig : Screen -> Model -> Section -> Config sub
+initConfig screen model =
     Config.init
         model.translation
         ( model.langCodeOriginal, model.langCode )
         model.settings
         model.sync
         screen
-        section
         model.section_active
         model.media
+
+
+showSection : Model -> Screen -> ( Int, Section ) -> Html Msg
+showSection model screen ( id, section ) =
+    initConfig screen model section
         |> Markdown.view (model.section_active /= id) (Maybe.withDefault model.persistent section.persistent)
         |> Html.map UpdateMarkdown
 

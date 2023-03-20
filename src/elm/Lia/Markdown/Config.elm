@@ -37,11 +37,11 @@ init :
     -> Settings
     -> Sync.Settings
     -> Screen
-    -> Section
     -> Int
     -> Dict String ( Int, Int )
+    -> Section
     -> Config sub
-init lang translations settings sync screen section id media =
+init lang translations settings sync screen id media section =
     let
         config =
             inline lang translations settings screen section.effect_model id media sync

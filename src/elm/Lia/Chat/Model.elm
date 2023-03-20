@@ -3,17 +3,18 @@ module Lia.Chat.Model exposing
     , init
     )
 
-import Lia.Section as Section
+import Array
+import Lia.Section exposing (Sections)
 
 
 type alias Model =
     { input : String
-    , messages : List Section.SubSection
+    , messages : Sections
     }
 
 
 init : Model
 init =
     { input = ""
-    , messages = []
+    , messages = Array.empty
     }

@@ -11,24 +11,19 @@ port module Lia.Markdown.Update exposing
     )
 
 import Array
-import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
-import Lia.Markdown.Code.Sync as Code_
 import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Gallery.Update as Gallery
-import Lia.Markdown.Quiz.Sync as Quiz_
 import Lia.Markdown.Quiz.Update as Quiz
-import Lia.Markdown.Survey.Sync as Survey_
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Markdown.Task.Update as Task
-import Lia.Section as Section exposing (Section, SubSection(..))
-import Lia.Sync.Container as Container
+import Lia.Section exposing (Section, SubSection(..))
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
 import Return exposing (Return)

@@ -1,6 +1,7 @@
 module Lia.Markdown.View exposing
     ( addTranslation
     , view
+    , viewContent
     )
 
 import Accessibility.Key as A11y_Key
@@ -133,6 +134,15 @@ view_body hidden ( config, footnote2show, footnotes ) =
                                 )
            )
         >> viewMain hidden
+
+
+viewContent : Config Msg -> List (Html Msg)
+viewContent config =
+    let
+        config_ =
+            Config.setSubViewer (subView config) config
+    in
+    fold config_ [] config_.section.body
 
 
 toHash : Block -> String
