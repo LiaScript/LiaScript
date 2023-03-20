@@ -54,7 +54,7 @@ $slide-margin-left-textbook: 19rem !default;
 
   @include breakpoint("sm") {
     &.lia-toc--visible {
-      left: $toc-width-desktop;
+      padding-left: $toc-width-desktop;
       width: calc(100% - #{$toc-width-desktop});
 
       .lia-header {
