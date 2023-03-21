@@ -382,7 +382,8 @@ view_block config block =
             , cursors =
                 config.main.sync
                     |> Maybe.map
-                        (.cursors
+                        (.data
+                            >> .cursor
                             >> List.filter (\cursor -> cursor.section == config.section.id)
                         )
                     |> Maybe.withDefault []

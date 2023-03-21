@@ -350,14 +350,20 @@ synchronize model json =
             let
                 sync =
                     model.sync
+
+                data =
+                    sync.data
             in
             { model
                 | sync =
                     { sync
-                        | cursors =
-                            param
-                                |> JD.decodeValue decodeCursors
-                                |> Result.withDefault sync.cursors
+                        | data =
+                            { data
+                                | cursor =
+                                    param
+                                        |> JD.decodeValue decodeCursors
+                                        |> Result.withDefault data.cursor
+                            }
                     }
             }
                 |> Return.val

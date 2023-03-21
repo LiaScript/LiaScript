@@ -29,7 +29,7 @@ update :
     { msg : Msg
     , definition : Definition
     , model : Model
-    , sync : { sync | state : Sync.State, cursors : List Sync.Cursor }
+    , sync : { sync | state : Sync.State, data : Sync.Data }
     }
     -> Return Model Msg Markdown.Msg
 update { msg, definition, model, sync } =

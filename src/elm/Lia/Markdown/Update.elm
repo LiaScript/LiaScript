@@ -58,7 +58,7 @@ subscriptions _ =
 update :
     { sync
         | state : Sync.State
-        , cursors : List Sync.Cursor
+        , data : Sync.Data
     }
     -> Definition
     -> Msg
@@ -296,7 +296,7 @@ updateScript return =
 nextEffect :
     { sync
         | state : Sync.State
-        , cursors : List Sync.Cursor
+        , data : Sync.Data
     }
     -> Definition
     -> Bool
@@ -309,7 +309,7 @@ nextEffect sync globals sound =
 previousEffect :
     { sync
         | state : Sync.State
-        , cursors : List Sync.Cursor
+        , data : Sync.Data
     }
     -> Definition
     -> Bool
@@ -322,7 +322,7 @@ previousEffect sync globals sound =
 initEffect :
     { sync
         | state : Sync.State
-        , cursors : List Sync.Cursor
+        , data : Sync.Data
     }
     -> Definition
     -> Bool
@@ -368,7 +368,7 @@ subHandle js json section =
 handle :
     { sync
         | state : Sync.State
-        , cursors : List Sync.Cursor
+        , data : Sync.Data
     }
     -> Definition
     -> String

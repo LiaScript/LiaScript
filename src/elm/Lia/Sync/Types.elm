@@ -1,5 +1,6 @@
 module Lia.Sync.Types exposing
     ( Cursor
+    , Data
     , Settings
     , State(..)
     , Sync
@@ -44,6 +45,11 @@ type alias Cursor =
     }
 
 
+type alias Data =
+    { cursor : List Cursor
+    }
+
+
 type alias Settings =
     { sync : Sync
     , state : State
@@ -51,7 +57,7 @@ type alias Settings =
     , password : String
     , peers : Set String
     , error : Maybe String
-    , cursors : List Cursor
+    , data : Data
     }
 
 
@@ -96,7 +102,9 @@ init supportedBackends =
     , password = ""
     , peers = Set.empty
     , error = Nothing
-    , cursors = []
+    , data =
+        { cursor = []
+        }
     }
 
 
