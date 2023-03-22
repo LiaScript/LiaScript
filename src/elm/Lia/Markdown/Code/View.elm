@@ -73,10 +73,7 @@ view { lang, theme, model, code, sync, cursors } =
                                     [ view_result (Highlight id_1)
                                         pro.logSize
                                         (if pro.syncMode then
-                                            sync
-                                                |> Array.get id_1
-                                                |> Maybe.map .log
-                                                |> Maybe.withDefault Log.empty
+                                            pro.syncLog
 
                                          else
                                             pro.log
@@ -94,10 +91,7 @@ view { lang, theme, model, code, sync, cursors } =
                         errors =
                             get_annotations <|
                                 if project.syncMode == True && not (Array.isEmpty sync) then
-                                    sync
-                                        |> Array.get id_1
-                                        |> Maybe.map .log
-                                        |> Maybe.withDefault Log.empty
+                                    project.syncLog
 
                                 else
                                     project.log
@@ -152,10 +146,7 @@ view { lang, theme, model, code, sync, cursors } =
                                 [ view_result (Evaluate id_1)
                                     project.logSize
                                     (if project.syncMode then
-                                        sync
-                                            |> Array.get id_1
-                                            |> Maybe.map .log
-                                            |> Maybe.withDefault Log.empty
+                                        project.syncLog
 
                                      else
                                         project.log
@@ -223,7 +214,7 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1, cursors } i
                 , id_2 = id_2
                 , file = file
                 , errors = errors id_2
-                , sync = Maybe.andThen (.file >> Array.get id_2) sync
+                , sync = Maybe.andThen (Array.get id_2) sync
                 , cursors = List.filter (\cursor -> cursor.project == id_1 && cursor.file == id_2) cursors
                 }
             ]
@@ -309,7 +300,7 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1, cursors } i
                             , id_2 = id_2
                             , file = file
                             , errors = errors id_2
-                            , sync = Maybe.andThen (.file >> Array.get id_2) sync
+                            , sync = Maybe.andThen (Array.get id_2) sync
                             , cursors = List.filter (\cursor -> cursor.project == id_1 && cursor.file == id_2) cursors
                             }
                         ]

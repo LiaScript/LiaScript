@@ -6,7 +6,6 @@ module Lia.Sync.Update exposing
     , update
     )
 
-import Array
 import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE

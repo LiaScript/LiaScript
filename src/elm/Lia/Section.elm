@@ -207,19 +207,3 @@ syncDecoder =
 sync : String -> Section -> JE.Value
 sync id =
     syncInit id >> syncEncode
-
-
-merge : List Code_.Sync -> List Code_.Sync -> List Code_.Sync
-merge new old =
-    case ( new, old ) of
-        ( n :: ns, o :: os ) ->
-            { n | log = o.log } :: merge ns os
-
-        ( n :: ns, [] ) ->
-            n :: merge ns []
-
-        ( [], o :: os ) ->
-            o :: merge [] os
-
-        ( [], [] ) ->
-            []

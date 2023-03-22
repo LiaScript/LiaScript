@@ -321,6 +321,7 @@ export class CRDT {
   }
 
   initCode(id: number, i: number, j: number, value: string) {
+    console.warn('SSSSSSSSSSSSSSSSSSSS', id, i, j, value)
     if (!this.codes.has(this.id(id, i, j))) {
       const backup = this.doc.clientID
 

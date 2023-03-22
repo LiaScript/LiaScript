@@ -22,7 +22,7 @@ import Lia.Markdown.Survey.Model
         , get_text_state
         , get_vector_state
         )
-import Lia.Markdown.Survey.Sync as Sync exposing (Sync, sync)
+import Lia.Markdown.Survey.Sync as Sync exposing (Sync)
 import Lia.Markdown.Survey.Types
     exposing
         ( Analysis(..)
@@ -32,7 +32,6 @@ import Lia.Markdown.Survey.Types
         , Vector
         )
 import Lia.Markdown.Survey.Update exposing (Msg(..))
-import Lia.Sync.Container exposing (Container)
 import Lia.Sync.Types as Sync_
 import Lia.Utils
     exposing

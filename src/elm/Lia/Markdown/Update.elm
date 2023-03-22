@@ -81,19 +81,15 @@ update sync globals msg section =
                 |> Return.mapEvents "effect" section.id
 
         UpdateCode childMsg ->
-            let
-                ( newSync, newVal ) =
-                    section.code_model
-                        |> Code.update
-                            (sync.data.code
-                                |> Dict.get section.id
-                                |> Maybe.withDefault Array.empty
-                            )
-                            (Just section.id)
-                            section.effect_model.javascript
-                            childMsg
-            in
-            newVal
+            section.code_model
+                |> Code.update
+                    (sync.data.code
+                        |> Dict.get section.id
+                        |> Maybe.withDefault Array.empty
+                    )
+                    (Just section.id)
+                    section.effect_model.javascript
+                    childMsg
                 |> Return.mapVal (\v -> { section | code_model = v })
                 |> Return.mapEvents "code" section.id
                 |> updateScript
@@ -194,7 +190,6 @@ subUpdate js msg section =
                 UpdateCode childMsg ->
                     subsection.code_model
                         |> Code.update Array.empty Nothing js childMsg
-                        |> Tuple.second
                         |> Return.mapValCmd (\v -> SubSection { subsection | code_model = v }) UpdateCode
                         |> Return.mapEvents "code" subsection.id
 
