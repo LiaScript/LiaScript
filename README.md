@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.32
+version:  0.10.33
 language: en
 narrator: UK English Male
 
@@ -296,28 +296,36 @@ This will apply the following four patches:
 
 ## Version-Changes
 
+**0.10.33** (22/03/2023)
+
+- improve: Style, textbook mode is now centered and spaced optimal
+- fix: Code terminal overwriting of `console.log` outputs
+- fix: Classroom merging conflicts of nested maps were fixed by using key-value-stores
+- fix: Multiple paints of diagrams
+- fix: Quiz `max-trials` triggered to fast
+
 **0.10.32** (14/03/2023)
 
-* improve: Better an fine granular handling of synchronous data structures.
-* fix: Cursor jumping in collaborative edit mode
-* feat: Show moving cursors and selections within the editor of foreign users in classroom mode.
-* improve: Styled terminals now have a highlighted resize-handler.
-* fix: Edrys can now also be used as a backend for classrooms.
+- improve: Better an fine granular handling of synchronous data structures.
+- fix: Cursor jumping in collaborative edit mode
+- feat: Show moving cursors and selections within the editor of foreign users in classroom mode.
+- improve: Styled terminals now have a highlighted resize-handler.
+- fix: Edrys can now also be used as a backend for classrooms.
 
 **0.10.31** (02/03/2023)
 
-* improve(Webcomponents): Web components to not have to be wrapped into `<lia-keep>` tags to preserve their inner structure.
+- improve(Webcomponents): Web components to not have to be wrapped into `<lia-keep>` tags to preserve their inner structure.
   The body of a Webcomponent is not parsed by the internal LiaScript parser and directly passed to the component.
-* feat(Quiz): `data-hint-button` can now also be defined to show the hint button after a certain amount of wrong trials.
-* improve(SCORM-Connector):
+- feat(Quiz): `data-hint-button` can now also be defined to show the hint button after a certain amount of wrong trials.
+- improve(SCORM-Connector):
 
   - Works now with the [SCORM-Cloud](https://app.cloud.scorm.com) by checking the compatibility setting:
-    
+
     "Wrap SCO Window with API"
 
   - User settings (color, font-size, etc.) are preserved within the SCORM LMS
 
-* feat(Settings): The global `window.LIA.settings` option can now be used to interactively change the user-settings from JavaScript.
+- feat(Settings): The global `window.LIA.settings` option can now be used to interactively change the user-settings from JavaScript.
 
 **0.10.30** (21/02/2023)
 
