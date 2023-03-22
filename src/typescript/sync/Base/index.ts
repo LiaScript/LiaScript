@@ -269,22 +269,6 @@ export class Sync {
     this.sync('connect', this.token)
   }
 
-  update() {
-    try {
-      // return the current state to LiaScript
-      const peers = this.db.getPeers()
-      this.sync('update', {
-        peers: peers,
-        data: this.db.toJSON(),
-        cursors: this.db.getCursors(peers),
-      })
-
-      //this.db.log()
-    } catch (e) {
-      console.warn('Sync Update ->', e)
-    }
-  }
-
   broadcast(data: Uint8Array) {
     console.warn('broadcast needs to be implemented')
   }

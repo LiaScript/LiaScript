@@ -1,6 +1,6 @@
 {
   "name": "liascript",
-  "version": "0.10.32",
+  "version": "0.10.33",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -92,6 +92,7 @@
     "uint8-to-base64": "^0.2.0",
     "util": "^0.12.5",
     "workbox-cli": "^6.5.4",
+    "y-utility": "^0.1.2",
     "yjs": "^13.5.39"
   },
   "browserslist": [

@@ -475,7 +475,7 @@ update_terminal msg project =
 
 eval : Array Sync -> Int -> Scripts a -> Project -> Return Project msg sub
 eval sync id scripts project =
-    { project | running = True }
+    { project | running = True, log = Log.empty }
         |> Return.val
         |> Return.batchEvent (Event.eval sync id scripts project)
 
@@ -584,7 +584,7 @@ set_result e project =
                             project.version
                     , running = False
                     , terminal = Nothing
-                    , log = Log.add_Eval e Log.empty
+                    , log = Log.add_Eval e project.log
                 }
 
             Nothing ->

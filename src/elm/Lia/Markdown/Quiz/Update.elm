@@ -273,7 +273,7 @@ isSolved solution state e =
             }
 
         ( Just maxTrials, Solution.Open ) ->
-            if e.trial + 1 < maxTrials then
+            if e.trial + 1 < maxTrials || state == Solution.Solved then
                 { e
                     | trial = e.trial + 1
                     , solved = state

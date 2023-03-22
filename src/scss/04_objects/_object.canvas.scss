@@ -114,6 +114,20 @@ $slide-margin-left-textbook: 19rem !default;
   &.lia-mode--textbook {
     .lia-slide__content {
       max-width: calc(71.1rem + #{$slide-margin-left-textbook} + 3rem);
+      padding-left: 3rem !important;
+
+      @include breakpoint("sm") {
+        margin: 1.25rem 0 2rem;
+      }
+
+      @include breakpoint("md") {
+        margin: 4.5rem 0 2rem;
+      }
+    }
+
+    .lia-slide__container {
+      display: flex;
+      justify-content: center;
     }
 
     @include breakpoint("md") {
