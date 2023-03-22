@@ -49,8 +49,8 @@ import Translations
         )
 
 
-view : Config sub -> Parameters -> Survey -> Vector -> Maybe (Container Sync) -> ( Maybe Int, Html (Msg sub) )
-view config attr survey model sync =
+view : Config sub -> Parameters -> Survey -> Vector -> ( Maybe Int, Html (Msg sub) )
+view config attr survey model =
     Tuple.pair
         (model
             |> Array.get survey.id
@@ -61,12 +61,12 @@ view config attr survey model sync =
             Text lines ->
                 view_text config (get_text_state model survey.id) lines survey.id
                     |> view_survey config attr "text" model survey.id
-                    |> viewTextSync config lines (Sync_.get config.sync survey.id sync)
+                    |> viewTextSync config lines (getSync config survey.id)
 
             Select inlines ->
                 view_select config inlines (get_select_state model survey.id) survey.id
                     |> view_survey config attr "select" model survey.id
-                    |> viewSelectSync config inlines (Sync_.get config.sync survey.id sync)
+                    |> viewSelectSync config inlines (getSync config survey.id)
 
             Vector button questions analysis ->
                 vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
@@ -81,19 +81,18 @@ view config attr survey model sync =
                         )
                         model
                         survey.id
-                    |> viewVectorSync config
-                        analysis
-                        questions
-                        (Sync_.get config.sync survey.id sync)
+                    |> viewVectorSync config analysis questions (getSync config survey.id)
 
             Matrix button header vars questions ->
                 matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
                     |> view_matrix config header questions
                     |> view_survey config attr "matrix" model survey.id
-                    |> viewMatrixSync config
-                        questions
-                        vars
-                        (Sync_.get config.sync survey.id sync)
+                    |> viewMatrixSync config questions vars (getSync config survey.id)
+
+
+getSync : Config sub -> Int -> Maybe (List Sync)
+getSync config =
+    Sync_.get config.sync .survey config.slide
 
 
 viewTextSync : Config sub -> Int -> Maybe (List Sync) -> Html msg -> Html msg

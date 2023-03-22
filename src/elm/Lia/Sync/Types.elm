@@ -22,6 +22,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as JD
 import Lia.Markdown.Code.Editor as Editor
+import Lia.Markdown.Quiz.Sync as Quiz
 import Lia.Markdown.Survey.Sync as Survey
 import Lia.Sync.Container as Container exposing (Container)
 import Lia.Sync.Via as Via exposing (Backend)
@@ -49,6 +50,7 @@ type alias Cursor =
 type alias Data =
     { cursor : List Cursor
     , survey : Dict Int (Container Survey.Sync)
+    , quiz : Dict Int (Container Quiz.Sync)
     }
 
 
@@ -107,6 +109,7 @@ init supportedBackends =
     , data =
         { cursor = []
         , survey = Dict.empty
+        , quiz = Dict.empty
         }
     }
 
@@ -194,16 +197,22 @@ filter settings container =
             Nothing
 
 
-get : Maybe Settings -> Int -> Maybe (Container sync) -> Maybe (List sync)
-get settings id_ container =
-    case ( settings, container ) of
-        ( Just s, Just local ) ->
-            local
-                |> Container.get id_
-                |> Maybe.andThen (filter s)
+get : Maybe Settings -> (Data -> Dict Int (Container sync)) -> Int -> Int -> Maybe (List sync)
+get settings selector id1 id2 =
+    settings
+        |> Maybe.andThen (.data >> selector >> Dict.get id1)
+        |> Maybe.andThen (Container.get id2 >> Maybe.map2 filter settings)
+        |> Maybe.withDefault Nothing
 
-        _ ->
-            Nothing
+
+
+-- case settings |> Maybe.map (.data >> selector ) of
+--     ( Just s, Just local ) ->
+--         local
+--             |> Container.get id_
+--             |> Maybe.andThen (filter s)
+--     _ ->
+--         Nothing
 
 
 filter_ : Set String -> String -> sync -> Bool

@@ -72,14 +72,14 @@ syncAttributes =
 
 {-| Main Quiz view function.
 -}
-view : Config sub -> Maybe String -> Quiz -> Vector -> Maybe (Container Sync) -> ( Maybe Int, List (Html (Msg sub)) )
-view config labeledBy quiz vector sync =
+view : Config sub -> Maybe String -> Quiz -> Vector -> ( Maybe Int, List (Html (Msg sub)) )
+view config labeledBy quiz vector =
     case Array.get quiz.id vector of
         Just elem ->
             ( elem.scriptID
             , viewState config elem quiz
                 |> viewQuiz config labeledBy elem quiz
-                |> viewSync config (Sync.get config.sync quiz.id sync)
+                |> viewSync config (Sync.get config.sync .quiz config.slide quiz.id)
             )
 
         _ ->

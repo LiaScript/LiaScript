@@ -64,7 +64,26 @@ export class CRDT {
       })
 
       this.surveys.on('change', (changes) => {
-        callback(this.getAllMaps(this.surveys), 'survey')
+        const ids: Set<number> = new Set()
+
+        for (const [id, data] of changes) {
+          if (data.action === 'update' || data.action === 'add') {
+            try {
+              const [key] = JSON.parse(id)
+              ids.add(key)
+            } catch (e) {}
+          }
+        }
+
+        const vector: { id: number; data: State.Data[][] }[] = []
+        for (const id of ids) {
+          vector.push({ id: id, data: this.getMaps(id, this.surveys) })
+        }
+
+        if (vector.length > 0) {
+          console.warn('SURVEY', JSON.stringify(vector, null, 2))
+          callback(vector, 'survey')
+        }
       })
 
       this.chat.on('change', (changes) => {
@@ -217,10 +236,10 @@ export class CRDT {
 
   id(id1: number, id2: number, id3?: number) {
     if (id3 === undefined) {
-      return id1 + ':' + id2
+      return JSON.stringify([id1, id2])
     }
 
-    return id1 + ':' + id2 + ',' + id3
+    return JSON.stringify([id1, id2, id3])
   }
 
   getMap(key: string, id: number, i: number): Y.Map<any> {
@@ -237,6 +256,18 @@ export class CRDT {
         sub.push(map.get(this.id(i, j)))
       }
       vector.push(sub)
+    }
+
+    return vector
+  }
+
+  getMaps(id: number, map: YKeyValue<State.Data>): State.Data[][] {
+    const vector: State.Data[][] = []
+
+    for (let i = 0; map.has(this.id(id, i)); i++) {
+      // @ts-ignore
+
+      vector.push(map.get(this.id(id, i)))
     }
 
     return vector
