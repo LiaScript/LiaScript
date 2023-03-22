@@ -15,13 +15,13 @@ const Service = {
 
   supported: [
     // beaker is only supported within the beaker-browser
-    //window.beaker && window.location.protocol === 'hyper:' ? 'beaker' : '',
+    window.beaker && window.location.protocol === 'hyper:' ? 'beaker' : '',
     // remove these strings if you want to enable or disable certain sync support
-    //'edrys',
-    //'gun',
-    //'jitsi',
+    'edrys',
+    'gun',
+    'jitsi',
     //'matrix',
-    //'pubnub',
+    'pubnub',
   ],
 
   init: function (elmSend_: Lia.Send) {
@@ -45,7 +45,6 @@ const Service = {
           }
 
           switch (event.message.param.backend) {
-            /*
             case 'beaker':
               if (!Beaker) {
                 import('../../sync/Beaker/index').then((e) => {
@@ -95,17 +94,17 @@ const Service = {
               sync = new Jitsi.Sync(cbConnection, elmSend)
               break
 
-            case 'matrix':
-              if (!Matrix) {
-                import('../../sync/Matrix/index').then((e) => {
-                  Matrix = e
-                  Service.handle(event)
-                })
-                return
-              }
+            // case 'matrix':
+            //   if (!Matrix) {
+            //     import('../../sync/Matrix/index').then((e) => {
+            //       Matrix = e
+            //       Service.handle(event)
+            //     })
+            //     return
+            //   }
 
-              sync = new Matrix.Sync(cbConnection, elmSend)
-              break
+            //   sync = new Matrix.Sync(cbConnection, elmSend)
+            //   break
 
             case 'pubnub':
               if (!PubNub) {
@@ -118,7 +117,7 @@ const Service = {
 
               sync = new PubNub.Sync(cbConnection, elmSend)
               break
-            */
+
             default:
               log.error('could not load =>', event.message)
           }
