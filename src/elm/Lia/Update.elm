@@ -478,10 +478,7 @@ generate model =
                     else
                         case parse_section model.search_index model.definition sec of
                             Ok new_sec ->
-                                { new_sec
-                                    | sync = sec.sync
-                                    , persistent = Maybe.map (.macro >> checkPersistency) new_sec.definition
-                                }
+                                { new_sec | persistent = Maybe.map (.macro >> checkPersistency) new_sec.definition }
 
                             Err msg ->
                                 { sec

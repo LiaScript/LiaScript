@@ -91,7 +91,22 @@ export class CRDT {
       })
 
       this.codes.observeDeep((events: Y.YEvent<Y.Text>[]) => {
-        callback(this.getCode(), 'code')
+        const ids: Set<number> = new Set()
+
+        for (const event of events) {
+          const keys = event.currentTarget.keys()
+
+          for (const key of keys) {
+            try {
+              const [id] = JSON.parse(key)
+              ids.add(id)
+            } catch (e) {}
+          }
+        }
+
+        if (ids.size > 0) {
+          callback(this.getCode(ids), 'code')
+        }
       })
     }
 
@@ -180,11 +195,13 @@ export class CRDT {
     return Y.encodeStateAsUpdate(this.doc, state)
   }
 
-  getCode(): string[][][] {
-    let vector: string[][][] = []
-    for (let i = 0; i < this.length; i++) {
-      vector.push(this.getAllTexts(i))
+  getCode(ids: Set<number>): { id: number; data: string[][] }[] {
+    let vector: { id: number; data: string[][] }[] = []
+
+    for (const id of ids) {
+      vector.push({ id: id, data: this.getAllTexts(id) })
     }
+
     return vector
   }
 

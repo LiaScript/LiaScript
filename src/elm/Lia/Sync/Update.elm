@@ -185,8 +185,13 @@ update session model msg =
                                 | state = Disconnected
                                 , peers = Set.empty
                                 , error = Nothing
+                                , data =
+                                    { cursor = []
+                                    , survey = Dict.empty
+                                    , quiz = Dict.empty
+                                    , code = Dict.empty
+                                    }
                             }
-                        , sections = Section.syncOff model.sections
                     }
                         |> Return.val
                         |> Return.cmd
@@ -396,24 +401,34 @@ synchronize model json =
                 |> Return.val
 
         Ok ( "code", param ) ->
-            { model
-                | sections =
-                    param
-                        |> JD.decodeValue
-                            (JD.list (JD.array Code.decoder)
-                                |> JD.andThen
-                                    (\list ->
-                                        if List.isEmpty list then
-                                            JD.fail "empty lists cannot be state vectors"
+            case
+                param
+                    |> dataDecoder (JD.array Code.decoder)
+                    |> Result.map (dataMerge model.sync.data.code)
+            of
+                Ok dataUpdate ->
+                    let
+                        sync =
+                            model.sync
 
-                                        else
-                                            JD.succeed list
-                                    )
-                            )
-                        |> Result.map (List.map2 Section.syncCode (Array.toList model.sections) >> Array.fromList)
-                        |> Result.withDefault model.sections
-            }
-                |> Return.val
+                        data =
+                            sync.data
+                    in
+                    { model
+                        | sync =
+                            { sync
+                                | data =
+                                    { data
+                                        | code = dataUpdate
+                                    }
+                            }
+                    }
+                        |> Return.val
+
+                Err info ->
+                    model
+                        |> Return.val
+                        |> warn "decoding code" (JD.errorToString info)
 
         Ok ( "quiz", param ) ->
             case

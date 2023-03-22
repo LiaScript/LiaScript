@@ -11,6 +11,7 @@ port module Lia.Markdown.Update exposing
     )
 
 import Array
+import Dict
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Update as Code
@@ -81,15 +82,19 @@ update sync globals msg section =
 
         UpdateCode childMsg ->
             let
-                oldSync =
-                    section.sync
-
                 ( newSync, newVal ) =
                     section.code_model
-                        |> Code.update section.sync.code (Just section.id) section.effect_model.javascript childMsg
+                        |> Code.update
+                            (sync.data.code
+                                |> Dict.get section.id
+                                |> Maybe.withDefault Array.empty
+                            )
+                            (Just section.id)
+                            section.effect_model.javascript
+                            childMsg
             in
             newVal
-                |> Return.mapVal (\v -> { section | code_model = v, sync = { oldSync | code = Maybe.withDefault oldSync.code newSync } })
+                |> Return.mapVal (\v -> { section | code_model = v })
                 |> Return.mapEvents "code" section.id
                 |> updateScript
 

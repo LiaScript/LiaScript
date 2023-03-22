@@ -15,6 +15,7 @@ module Lia.Sync.Types exposing
     , title
     )
 
+import Array exposing (Array)
 import Browser exposing (element)
 import Const
 import Dict exposing (Dict)
@@ -22,6 +23,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as JD
 import Lia.Markdown.Code.Editor as Editor
+import Lia.Markdown.Code.Sync as Code
 import Lia.Markdown.Quiz.Sync as Quiz
 import Lia.Markdown.Survey.Sync as Survey
 import Lia.Sync.Container as Container exposing (Container)
@@ -51,6 +53,7 @@ type alias Data =
     { cursor : List Cursor
     , survey : Dict Int (Container Survey.Sync)
     , quiz : Dict Int (Container Quiz.Sync)
+    , code : Dict Int (Array Code.Sync)
     }
 
 
@@ -110,6 +113,7 @@ init supportedBackends =
         { cursor = []
         , survey = Dict.empty
         , quiz = Dict.empty
+        , code = Dict.empty
         }
     }
 

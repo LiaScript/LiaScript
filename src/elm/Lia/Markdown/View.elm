@@ -6,7 +6,9 @@ module Lia.Markdown.View exposing
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
+import Array
 import Conditional.List as CList
+import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Lazy as Lazy
@@ -36,7 +38,6 @@ import Lia.Markdown.Types exposing (Block(..), Blocks)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Sync.Container as Container
 import Lia.Utils exposing (modal)
 import Lia.Voice as Voice
 import MD5
@@ -378,7 +379,10 @@ view_block config block =
             , theme = config.ace_theme
             , model = config.section.code_model
             , code = code
-            , sync = config.section.sync.code
+            , sync =
+                config.main.sync
+                    |> Maybe.andThen (.data >> .code >> Debug.log "WWWWWWWWWWWWWWW" >> Dict.get config.section.id)
+                    |> Maybe.withDefault Array.empty
             , cursors =
                 config.main.sync
                     |> Maybe.map
