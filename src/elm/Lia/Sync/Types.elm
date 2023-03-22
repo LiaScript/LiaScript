@@ -22,7 +22,8 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as JD
 import Lia.Markdown.Code.Editor as Editor
-import Lia.Sync.Container as Local
+import Lia.Markdown.Survey.Sync as Survey
+import Lia.Sync.Container as Container exposing (Container)
 import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
 import Set exposing (Set)
@@ -47,6 +48,7 @@ type alias Cursor =
 
 type alias Data =
     { cursor : List Cursor
+    , survey : Dict Int (Container Survey.Sync)
     }
 
 
@@ -104,6 +106,7 @@ init supportedBackends =
     , error = Nothing
     , data =
         { cursor = []
+        , survey = Dict.empty
         }
     }
 
@@ -191,12 +194,12 @@ filter settings container =
             Nothing
 
 
-get : Maybe Settings -> Int -> Maybe (Local.Container sync) -> Maybe (List sync)
+get : Maybe Settings -> Int -> Maybe (Container sync) -> Maybe (List sync)
 get settings id_ container =
     case ( settings, container ) of
         ( Just s, Just local ) ->
             local
-                |> Local.get id_
+                |> Container.get id_
                 |> Maybe.andThen (filter s)
 
         _ ->

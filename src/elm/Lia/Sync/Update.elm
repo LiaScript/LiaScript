@@ -7,12 +7,12 @@ module Lia.Sync.Update exposing
     )
 
 import Array
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Chat.Model as Chat
 import Lia.Chat.Sync as Chat
 import Lia.Definition.Types exposing (Definition)
-import Lia.Index.View exposing (search)
 import Lia.Markdown.Code.Sync as Code
 import Lia.Markdown.Quiz.Sync as Quiz
 import Lia.Markdown.Survey.Sync as Survey
@@ -426,21 +426,62 @@ synchronize model json =
                 |> Return.val
 
         Ok ( "survey", param ) ->
-            { model
-                | sections =
-                    param
-                        |> JD.decodeValue (JD.list (Container.decoder Survey.decoder))
-                        |> Result.map (List.map2 Section.syncSurvey (Array.toList model.sections) >> Array.fromList)
-                        |> Result.withDefault model.sections
-            }
-                |> Return.val
+            case
+                param
+                    |> dataDecoder (Container.decoder Survey.decoder)
+                    |> Result.map (dataMerge model.sync.data.survey)
+            of
+                Ok dataUpdate ->
+                    let
+                        sync =
+                            model.sync
+
+                        data =
+                            sync.data
+                    in
+                    { model
+                        | sync =
+                            { sync
+                                | data =
+                                    { data
+                                        | survey = dataUpdate
+                                    }
+                            }
+                    }
+                        |> Return.val
+
+                Err info ->
+                    model
+                        |> Return.val
+                        |> warn "decoding survey" (JD.errorToString info)
 
         Ok ( cmd, _ ) ->
             model
                 |> Return.val
-                |> Return.batchEvent (Console.warn ("Sync: unknown command -> " ++ cmd))
+                |> warn "unknown command" cmd
 
         Err info ->
             model
                 |> Return.val
-                |> Return.batchEvent (Console.warn ("Sync: decoding error -> " ++ JD.errorToString info))
+                |> warn "decoding error" (JD.errorToString info)
+
+
+warn : String -> String -> Return model msg sub -> Return model msg sub
+warn what info =
+    Return.batchEvent (Console.warn ("Sync: " ++ what ++ " -> " ++ info))
+
+
+dataDecoder : JD.Decoder data -> JD.Value -> Result JD.Error (List ( Int, data ))
+dataDecoder data =
+    JD.decodeValue
+        (JD.list
+            (JD.map2 Tuple.pair
+                (JD.field "id" JD.int)
+                (JD.field "data" data)
+            )
+        )
+
+
+dataMerge : Dict Int data -> List ( Int, data ) -> Dict Int data
+dataMerge data new =
+    List.foldl (\( key, value ) store -> Dict.insert key value store) data new
