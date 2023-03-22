@@ -91,8 +91,8 @@ view config attr survey model =
 
 
 getSync : Config sub -> Int -> Maybe (List Sync)
-getSync config =
-    Sync_.get config.sync .survey config.slide
+getSync config id =
+    Sync_.get config.sync .survey config.slide id
 
 
 viewTextSync : Config sub -> Int -> Maybe (List Sync) -> Html msg -> Html msg

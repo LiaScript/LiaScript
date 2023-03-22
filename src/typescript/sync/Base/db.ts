@@ -60,29 +60,18 @@ export class CRDT {
       })
 
       this.quizzes.on('change', (changes) => {
-        callback(this.getAllMaps(this.quizzes), 'quiz')
+        const updates = this.getUpdates(this.quizzes, changes)
+
+        if (updates) {
+          callback(updates, 'quiz')
+        }
       })
 
       this.surveys.on('change', (changes) => {
-        const ids: Set<number> = new Set()
+        const updates = this.getUpdates(this.surveys, changes)
 
-        for (const [id, data] of changes) {
-          if (data.action === 'update' || data.action === 'add') {
-            try {
-              const [key] = JSON.parse(id)
-              ids.add(key)
-            } catch (e) {}
-          }
-        }
-
-        const vector: { id: number; data: State.Data[][] }[] = []
-        for (const id of ids) {
-          vector.push({ id: id, data: this.getMaps(id, this.surveys) })
-        }
-
-        if (vector.length > 0) {
-          console.warn('SURVEY', JSON.stringify(vector, null, 2))
-          callback(vector, 'survey')
+        if (updates) {
+          callback(updates, 'survey')
         }
       })
 
@@ -403,5 +392,30 @@ export class CRDT {
 
   removeCursor() {
     this.cursors.delete(this.peerID)
+  }
+
+  getUpdates(maps, changes): { id: number; data: State.Data[][] }[] | null {
+    const ids: Set<number> = new Set()
+
+    for (const [id, data] of changes) {
+      if (data.action === 'update' || data.action === 'add') {
+        try {
+          const [key] = JSON.parse(id)
+          ids.add(key)
+        } catch (e) {}
+      }
+    }
+
+    const vector: { id: number; data: State.Data[][] }[] = []
+    for (const id of ids) {
+      vector.push({ id: id, data: this.getMaps(id, maps) })
+    }
+
+    if (vector.length > 0) {
+      console.warn('SURVEY', JSON.stringify(vector, null, 2))
+      return vector
+    }
+
+    return null
   }
 }

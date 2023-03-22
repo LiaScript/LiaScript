@@ -416,14 +416,34 @@ synchronize model json =
                 |> Return.val
 
         Ok ( "quiz", param ) ->
-            { model
-                | sections =
-                    param
-                        |> JD.decodeValue (JD.list (Container.decoder Quiz.decoder))
-                        |> Result.map (List.map2 Section.syncQuiz (Array.toList model.sections) >> Array.fromList)
-                        |> Result.withDefault model.sections
-            }
-                |> Return.val
+            case
+                param
+                    |> dataDecoder (Container.decoder Quiz.decoder)
+                    |> Result.map (dataMerge model.sync.data.quiz)
+            of
+                Ok dataUpdate ->
+                    let
+                        sync =
+                            model.sync
+
+                        data =
+                            sync.data
+                    in
+                    { model
+                        | sync =
+                            { sync
+                                | data =
+                                    { data
+                                        | quiz = dataUpdate
+                                    }
+                            }
+                    }
+                        |> Return.val
+
+                Err info ->
+                    model
+                        |> Return.val
+                        |> warn "decoding quiz" (JD.errorToString info)
 
         Ok ( "survey", param ) ->
             case

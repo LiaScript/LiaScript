@@ -32,6 +32,8 @@ const Service = {
 
     const param = event.message.param
 
+    if (param.id > 10000) return
+
     switch (event.message.cmd) {
       case 'load':
         event.message.param = await connector.load(param)

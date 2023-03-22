@@ -1,6 +1,7 @@
 module Lia.Markdown.Config exposing
     ( Config
     , init
+    , setID
     , setSubViewer
     )
 
@@ -59,6 +60,21 @@ init lang translations settings sync screen id media section =
             screen
         )
         config
+
+
+setID : Int -> Config sub -> Config sub
+setID id config =
+    let
+        section =
+            config.section
+
+        main =
+            config.main
+    in
+    { config
+        | section = { section | id = id }
+        , main = { main | slide = id }
+    }
 
 
 inline : Lang -> ( String, String ) -> Settings -> Screen -> Effect.Model SubSection -> Int -> Dict String ( Int, Int ) -> Sync.Settings -> Inline.Config sub

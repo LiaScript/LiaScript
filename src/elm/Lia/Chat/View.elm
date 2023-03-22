@@ -8,7 +8,7 @@ import Html.Keyed as Keyed
 import Lia.Chat.Model exposing (Model)
 import Lia.Chat.Update exposing (Msg(..))
 import Lia.Markdown.Code.Editor as Editor
-import Lia.Markdown.Config exposing (Config)
+import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Update as Markdown
 import Lia.Markdown.View as Markdown
 import Lia.Section exposing (Section)
@@ -62,8 +62,15 @@ view config model =
 
 viewMessage : (Section -> Config Markdown.Msg) -> ( String, Section ) -> ( String, Html Msg )
 viewMessage config ( id, section ) =
+    let
+        id_ =
+            id
+                |> String.toInt
+                |> Maybe.withDefault -1
+    in
     section
         |> config
+        |> Config.setID id_
         |> Markdown.viewContent
         |> Html.div
             [ Attr.style "padding" "1rem 1rem 0.1rem"
