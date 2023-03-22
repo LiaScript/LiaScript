@@ -41,7 +41,7 @@ customElements.define(
     private option_: { aria?: { show: boolean; decal?: boolean } }
     private geoJson: {
       url: string
-      data: null | object
+      data: null | any
     }
     private locale: string
     private mode: string
@@ -203,7 +203,7 @@ customElements.define(
 
       // this.chart.clear();
 
-      if (this.geoJson.data) {
+      if (this.geoJson.data !== null) {
         echarts.registerMap(this.geoJson.url, this.geoJson.data)
       }
 
@@ -220,11 +220,11 @@ customElements.define(
 
     set option(val) {
       if (val) {
+        val['aria'] = { show: true }
+        //, decal: { show: true }}
+
         if (JSON.stringify(val) !== JSON.stringify(this.option_)) {
           this.option_ = val
-          this.option_['aria'] = {
-            show: true,
-          } //, decal: { show: true }}
           this.updateChart()
         }
       }
