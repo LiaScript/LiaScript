@@ -381,7 +381,7 @@ view_block config block =
             , code = code
             , sync =
                 config.main.sync
-                    |> Maybe.andThen (.data >> .code >> Debug.log "WWWWWWWWWWWWWWW" >> Dict.get config.section.id)
+                    |> Maybe.andThen (.data >> .code >> Dict.get config.section.id)
                     |> Maybe.withDefault Array.empty
             , cursors =
                 config.main.sync

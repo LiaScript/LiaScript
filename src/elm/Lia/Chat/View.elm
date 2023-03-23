@@ -17,7 +17,7 @@ import Lia.Section exposing (Section)
 view : (Section -> Config Markdown.Msg) -> Model -> Html Msg
 view config model =
     Html.div
-        [ Attr.style "background-color" "red"
+        [ Attr.style "background-color" "#EEE"
         , Attr.style "width" "800px"
         , Attr.style "height" "100vh"
         , Attr.style "display" "flex"
@@ -73,9 +73,16 @@ viewMessage config ( id, section ) =
         |> Config.setID id_
         |> Markdown.viewContent
         |> Html.div
-            [ Attr.style "padding" "1rem 1rem 0.1rem"
-            , Attr.style "margin" "0.4rem 1rem"
-            , Attr.style "border" "black solid 1px"
+            [ Attr.style "margin" "0.45rem 1rem"
+            , Attr.style "box-shadow" "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)"
+            , Attr.style
+                "padding"
+              <|
+                if section.effect_model.effects == 0 then
+                    "1rem 1rem 0.1rem"
+
+                else
+                    "1rem 1rem 0.1rem 3rem"
             ]
         |> Html.map (UpdateMarkdown id)
         |> Tuple.pair id

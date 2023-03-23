@@ -228,7 +228,7 @@ update session msg model =
                                         |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
 
                                 ( False, Nothing ) ->
-                                    update session (UpdateChat (Chat.handle event)) model
+                                    update session (UpdateChat (Chat.handle e)) model
 
                                 _ ->
                                     Return.val model
@@ -319,11 +319,7 @@ update session msg model =
             }
                 |> Chat.update
                 |> Return.mapValCmd
-                    (\chat ->
-                        { model
-                            | chat = chat
-                        }
-                    )
+                    (\chat -> { model | chat = chat })
                     UpdateChat
 
         _ ->

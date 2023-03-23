@@ -373,14 +373,16 @@ synchronize model json =
                 |> Return.val
 
         Ok ( "chat", param ) ->
-            { model
-                | chat =
+            let
+                ( todo, chat ) =
                     param
                         |> JD.decodeValue Chat.decoder
                         |> Result.map (Chat.insert model.search_index model.definition model.chat)
-                        |> Result.withDefault model.chat
-            }
+                        |> Result.withDefault ( [], model.chat )
+            in
+            { model | chat = chat }
                 |> Return.val
+                |> Return.batchEvents todo
 
         Ok ( "peer", param ) ->
             let

@@ -15,7 +15,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (Section, SubSection(..))
-import Lia.Settings.Types exposing (Mode, Settings)
+import Lia.Settings.Types exposing (Mode(..), Settings)
 import Lia.Sync.Types as Sync
 import Session exposing (Screen)
 import Translations exposing (Lang)
@@ -74,6 +74,7 @@ setID id config =
     { config
         | section = { section | id = id }
         , main = { main | slide = id }
+        , mode = Textbook
     }
 
 

@@ -55,13 +55,7 @@ update { msg, definition, model, sync } =
                         Just section ->
                             section
                                 |> Markdown.handle sync definition topic e
-                                |> Return.mapValCmd
-                                    (\sec ->
-                                        { model
-                                            | messages = Dict.insert id_ sec model.messages
-                                        }
-                                    )
-                                    (UpdateMarkdown id_)
+                                |> Return.mapValCmd (\sec -> { model | messages = Dict.insert id_ sec model.messages }) (UpdateMarkdown id_)
 
                         _ ->
                             Return.val model
