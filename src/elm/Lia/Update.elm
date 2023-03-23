@@ -221,7 +221,7 @@ update session msg model =
                             update session (Load True id) model
 
                         Just ( topic, id, e_ ) ->
-                            case ( id < 1000000, Array.get id model.sections ) of
+                            case ( id < 10000, Array.get id model.sections ) of
                                 ( True, Just sec ) ->
                                     sec
                                         |> Markdown.handle model.sync model.definition topic e_

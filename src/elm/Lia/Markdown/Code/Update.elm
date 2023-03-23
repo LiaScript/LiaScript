@@ -144,7 +144,7 @@ update sync sectionID scripts msg model =
             load sectionID model projectID version
 
         Handle event ->
-            case PEvent.destructure event |> Debug.log "YYYYYYYYYYYYYYYYYYYYYYYYYY" of
+            case PEvent.destructure event of
                 ( Nothing, _, ( "load", param ) ) ->
                     restore sectionID param model
                         |> doSync sync sectionID
@@ -438,7 +438,12 @@ update_terminal msg project =
 
 eval : Array Sync -> Int -> Scripts a -> Project -> Return Project msg sub
 eval sync id scripts project =
-    { project | running = True, log = Log.empty }
+    (if project.syncMode then
+        { project | running = True, syncLog = Log.empty }
+
+     else
+        { project | running = True, log = Log.empty }
+    )
         |> Return.val
         |> Return.batchEvent (Event.eval sync id scripts project)
 
