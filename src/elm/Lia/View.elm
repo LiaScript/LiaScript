@@ -30,6 +30,7 @@ import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (modal)
 import Session exposing (Screen)
+import SplitPane
 import Translations as Trans exposing (Lang)
 
 
@@ -44,13 +45,9 @@ import Translations as Trans exposing (Lang)
 -}
 view : Screen -> Bool -> Model -> Html Msg
 view screen hasIndex model =
-    Html.div [ Attr.style "display" "flex" ]
-        [ Html.div
-            (Settings.design model.settings)
-            (viewIndex hasIndex model :: viewSlide screen model)
-        , Chat.view (initConfig screen model) model.chat
-            |> Html.map UpdateChat
-        ]
+    Html.div
+        (Settings.design model.settings)
+        (viewIndex hasIndex model :: viewSlide screen model)
 
 
 {-| **@private:** Display the side section that contains the document search,
@@ -136,10 +133,24 @@ viewSlide screen model =
                     model.settings
                     model.definition
                     model.sync
-                , model.sections
-                    |> Array.toIndexedList
-                    |> List.map (showSection model screen)
-                    |> Html.div [ Attr.class "lia-slide__container" ]
+                , Html.div
+                    [ Attr.class "lia-slide__container"
+                    , Attr.style "display" "flex"
+                    ]
+                    [ SplitPane.view viewConfig
+                        (model.sections
+                            |> Array.toIndexedList
+                            |> List.map (showSection model screen)
+                            |> Html.div
+                                [ Attr.style "width" "100%"
+                                , Attr.style "overflow-y" "auto"
+                                ]
+                        )
+                        (Chat.view (initConfig screen model) model.chat
+                            |> Html.map UpdateChat
+                        )
+                        model.pane
+                    ]
                 , slideBottom
                     model.translation
                     (screen.width < 400)
@@ -173,6 +184,14 @@ viewSlide screen model =
                 , Html.text "Ups, something went wrong"
                 ]
             ]
+
+
+viewConfig : SplitPane.ViewConfig Msg
+viewConfig =
+    SplitPane.createViewConfig
+        { toMsg = Pane
+        , customSplitter = Nothing
+        }
 
 
 initConfig : Screen -> Model -> Section -> Config sub

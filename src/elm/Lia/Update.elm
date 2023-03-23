@@ -50,8 +50,8 @@ subscriptions model =
 
             --, Sub.map UpdateSync Sync.subscriptions
             , media Media
+            , SplitPane.subscriptions model.pane |> Sub.map Pane
             ]
-                |> CList.addWhen (model.pane |> Maybe.map (SplitPane.subscriptions >> Sub.map Pane))
                 |> Sub.batch
 
         Nothing ->
@@ -304,12 +304,8 @@ update session msg model =
                         model
 
         Pane paneMsg ->
-            Return.val
-                { model
-                    | pane =
-                        model.pane
-                            |> Maybe.map (SplitPane.update paneMsg)
-                }
+            { model | pane = SplitPane.update paneMsg model.pane }
+                |> Return.val
 
         UpdateChat childMsg ->
             { msg = childMsg

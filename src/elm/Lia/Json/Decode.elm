@@ -12,6 +12,7 @@ import Lia.Parser.PatReplace exposing (repo)
 import Lia.Section as Section
 import Lia.Settings.Types as Settings
 import Lia.Sync.Types as Sync
+import SplitPane
 import Translations
 
 
@@ -19,9 +20,10 @@ import Translations
 screen `width` is only used to render the course with an opened or closed table
 of contents.
 -}
-decode : Int -> Sync.Settings -> JD.Value -> Result JD.Error Model
-decode seed sync =
-    JD.decodeValue (toModel seed sync)
+decode : Int -> SplitPane.State -> Sync.Settings -> JD.Value -> Result JD.Error Model
+decode seed pane sync =
+    toModel seed pane sync
+        |> JD.decodeValue
 
 
 andMap : String -> JD.Decoder a -> JD.Decoder (a -> value) -> JD.Decoder value
@@ -29,8 +31,8 @@ andMap key dec =
     JD.map2 (|>) (JD.field key dec)
 
 
-toModel : Int -> Sync.Settings -> JD.Decoder Model
-toModel seed sync =
+toModel : Int -> SplitPane.State -> Sync.Settings -> JD.Decoder Model
+toModel seed pane sync =
     JD.succeed Model
         |> andMap "url" JD.string
         |> andMap "readme" (JD.string |> JD.map repo)
@@ -58,7 +60,7 @@ toModel seed sync =
         |> JD.map2 (|>) (JD.succeed sync)
         |> JD.map2 (|>) (JD.succeed False)
         |> JD.map2 (|>) (JD.succeed seed)
-        |> JD.map2 (|>) (JD.succeed Nothing)
+        |> JD.map2 (|>) (JD.succeed pane)
         |> JD.map2 (|>) (JD.succeed Chat.init)
 
 

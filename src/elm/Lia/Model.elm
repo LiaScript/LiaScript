@@ -91,7 +91,7 @@ type alias Model =
     , sync : Sync.Settings
     , persistent : Bool
     , seed : Int
-    , pane : Maybe SplitPane.State
+    , pane : SplitPane.State
     , chat : Chat.Model
     }
 
@@ -155,7 +155,7 @@ init seed hasShareApi openTOC settings backends url readme origin anchor =
     , sync = Sync.init backends.support
     , persistent = False
     , seed = seed
-    , pane = Just <| SplitPane.init SplitPane.Horizontal
+    , pane = SplitPane.init SplitPane.Horizontal
     , chat = Chat.init
     }
 

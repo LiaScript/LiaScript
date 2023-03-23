@@ -18,8 +18,8 @@ view : (Section -> Config Markdown.Msg) -> Model -> Html Msg
 view config model =
     Html.div
         [ Attr.style "background-color" "#EEE"
-        , Attr.style "width" "800px"
-        , Attr.style "height" "100vh"
+        , Attr.style "width" "100%"
+        , Attr.style "height" "100%"
         , Attr.style "display" "flex"
         , Attr.style "flex-direction" "column"
         ]
