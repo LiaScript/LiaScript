@@ -3,6 +3,7 @@ module Lia.Settings.View exposing
     , btnSupport
     , design
     , header
+    , menuChat
     , menuInformation
     , menuMode
     , menuSettings
@@ -126,6 +127,20 @@ viewLightMode lang tabbable isLight =
                     Trans.cBright lang
             ]
         ]
+
+
+menuChat : Lang -> Bool -> Settings -> List (Html Msg)
+menuChat lang tabbable settings =
+    [ btnIcon
+        { title = "show chat"
+        , tabbable = True
+        , msg = Just (Toggle Chat)
+        , icon = "icon-close"
+        }
+        [ Attr.id "lia-btn-toc"
+        , Attr.class "lia-btn lia-btn--transparent"
+        ]
+    ]
 
 
 viewTheme : Lang -> Bool -> String -> Bool -> Html Msg

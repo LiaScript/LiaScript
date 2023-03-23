@@ -133,24 +133,30 @@ viewSlide screen model =
                     model.settings
                     model.definition
                     model.sync
-                , Html.div
-                    [ Attr.class "lia-slide__container"
-                    , Attr.style "display" "flex"
-                    ]
-                    [ SplitPane.view viewConfig
-                        (model.sections
-                            |> Array.toIndexedList
-                            |> List.map (showSection model screen)
-                            |> Html.div
-                                [ Attr.style "width" "100%"
-                                , Attr.style "overflow-y" "auto"
-                                ]
-                        )
-                        (Chat.view (initConfig screen model) model.chat
-                            |> Html.map UpdateChat
-                        )
-                        model.pane
-                    ]
+                , if model.settings.showChat then
+                    Html.div
+                        [ Attr.class "lia-slide__container"
+                        ]
+                        [ SplitPane.view viewConfig
+                            (model.sections
+                                |> Array.toIndexedList
+                                |> List.map (showSection model screen)
+                                |> Html.div
+                                    [ Attr.style "width" "100%"
+                                    , Attr.style "overflow-y" "auto"
+                                    ]
+                            )
+                            (Chat.view (initConfig screen model) model.chat
+                                |> Html.map UpdateChat
+                            )
+                            model.pane
+                        ]
+
+                  else
+                    model.sections
+                        |> Array.toIndexedList
+                        |> List.map (showSection model screen)
+                        |> Html.div [ Attr.class "lia-slide__container" ]
                 , slideBottom
                     model.translation
                     (screen.width < 400)
@@ -398,7 +404,8 @@ navButton title id class msg =
 -}
 slideTopBar : String -> Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> Sync_.Settings -> Html Msg
 slideTopBar languageCode lang screen url repositoryURL settings def sync =
-    [ ( Settings.menuMode, "mode" )
+    [ ( Settings.menuChat, "chat" )
+    , ( Settings.menuMode, "mode" )
     , ( Settings.menuSettings screen.width, "settings" )
     , ( Settings.menuTranslations languageCode def, "lang" )
     , ( Settings.menuShare url sync, "share" )

@@ -42,6 +42,7 @@ type Toggle
     | Sync
     | Action Action
     | SupportMenu
+    | Chat
     | TranslateWithGoogle
     | Tooltips
     | PreferBrowserTTS
@@ -132,6 +133,9 @@ update main msg model =
 
         Toggle QRCode ->
             no_log Nothing { model | showQRCode = not model.showQRCode }
+
+        Toggle Chat ->
+            no_log Nothing { model | showChat = not model.showChat }
 
         Toggle (Action action) ->
             no_log
