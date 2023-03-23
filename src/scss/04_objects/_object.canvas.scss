@@ -79,7 +79,7 @@ $slide-margin-left-textbook: 19rem !default;
   @include breakpoint("md") {
     &.lia-toc--visible.lia-mode--presentation .lia-slide__content,
     &.lia-toc--visible.lia-mode--textbook .lia-slide__content {
-      width: auto;
+      //width: auto;
     }
   }
 
