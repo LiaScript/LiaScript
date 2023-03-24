@@ -129,17 +129,18 @@ viewLightMode lang tabbable isLight =
         ]
 
 
-menuChat : Lang -> Bool -> Settings -> Html Msg
+menuChat : Lang -> Bool -> Settings -> List (Html Msg)
 menuChat lang tabbable settings =
-    btnIcon
+    [ btnIcon
         { title = "show chat"
-        , tabbable = True
+        , tabbable = tabbable
         , msg = Just (Toggle Chat)
-        , icon = "icon-close"
+        , icon = "icon-mail"
         }
         [ Attr.id "lia-btn-toc"
         , Attr.class "lia-btn lia-btn--transparent"
         ]
+    ]
 
 
 viewTheme : Lang -> Bool -> String -> Bool -> Html Msg
@@ -553,28 +554,19 @@ btnSupport lang open =
         ]
 
 
-btnChat : { lang : Lang, open : Bool, visible : Bool } -> Html Msg
-btnChat { lang, open, visible } =
+btnChat : { lang : Lang, open : Bool } -> Html Msg
+btnChat { lang, open } =
     btnIcon
         { title = Trans.confSettings lang
         , tabbable = True
         , msg = Just (Toggle Chat)
-        , icon =
-            if open then
-                "icon-close"
-
-            else
-                "icon-more"
+        , icon = "icon-mail"
         }
         [ Attr.class "lia-btn lia-btn--transparent"
         , A11y_Aria.controls "lia-chat"
         , A11y_Widget.hasMenuPopUp
         , A11y_Widget.expanded open
-        , if visible then
-            Attr.class ""
-
-          else
-            Attr.style "display" "none"
+        , Attr.style "margin-right" "1rem"
         ]
 
 
@@ -789,13 +781,14 @@ doAction =
 
 
 header :
-    Lang
+    Bool
+    -> Lang
     -> Screen
     -> Settings
     -> String
     -> List ( Lang -> Bool -> Settings -> List (Html Msg), String )
     -> Html Msg
-header lang screen settings logo buttons =
+header online lang screen settings logo buttons =
     let
         tabbable =
             screen.width >= Const.globalBreakpoints.md || settings.support_menu
@@ -820,10 +813,19 @@ header lang screen settings logo buttons =
                 else
                     "lia-support-menu--closed"
             ]
-            [ Html.div [ Attr.class "lia-support-menu__toggler" ]
-                [ btnChat { lang = lang, open = True, visible = not settings.support_menu }
-                , btnSupport lang settings.support_menu
-                ]
+            [ if online then
+                Html.div
+                    [ Attr.class "lia-support-menu__toggler"
+                    , Attr.style "left" "-5rem"
+                    ]
+                    [ btnChat { lang = lang, open = True }
+                    , btnSupport lang settings.support_menu
+                    ]
+
+              else
+                Html.div [ Attr.class "lia-support-menu__toggler" ]
+                    [ btnSupport lang settings.support_menu
+                    ]
             , Html.div
                 [ Attr.class "lia-support-menu__collapse"
                 ]

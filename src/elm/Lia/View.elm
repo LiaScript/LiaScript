@@ -29,9 +29,9 @@ import Lia.Sync.Types as Sync_
 import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (modal)
+import Library.SplitPane as SplitPane
 import Service.Database exposing (settings)
 import Session exposing (Screen)
-import SplitPane
 import Translations as Trans exposing (Lang)
 
 
@@ -134,7 +134,7 @@ viewSlide screen model =
                     model.settings
                     model.definition
                     model.sync
-                , if model.settings.showChat then
+                , if model.settings.showChat && Sync_.isConnected model.sync.state then
                     Html.div
                         [ Attr.class "lia-slide__container"
                         ]
@@ -411,10 +411,13 @@ slideTopBar languageCode lang screen url repositoryURL settings def sync =
     , ( Settings.menuShare url sync, "share" )
     , ( Settings.menuInformation repositoryURL def, "info" )
     ]
-        |> Settings.header lang screen settings (Definition.getIcon def)
-        |> List.singleton
-        |> (::) (Settings.menuChat lang True settings)
-        |> Html.div []
+        |> (if Sync_.isConnected sync.state then
+                (::) ( Settings.menuChat, "chat" )
+
+            else
+                identity
+           )
+        |> Settings.header (Sync_.isConnected sync.state) lang screen settings (Definition.getIcon def)
         |> Html.map UpdateSettings
 
 

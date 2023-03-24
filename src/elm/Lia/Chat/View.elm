@@ -22,10 +22,11 @@ view : (Section -> Config Markdown.Msg) -> Model -> Html Msg
 view config model =
     Html.div
         [ Attr.style "width" "100%"
-        , Attr.style "height" "100%"
+        , Attr.style "height" "calc(100% - 3rem)"
         , Attr.style "display" "flex"
         , Attr.style "flex-direction" "column"
         , Attr.style "position" "absolute"
+        , Attr.style "top" "3rem"
         ]
         [ model.messages
             |> Dict.toList

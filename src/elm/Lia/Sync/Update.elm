@@ -384,7 +384,7 @@ synchronize model json =
             { model | chat = chat }
                 |> Return.val
                 |> Return.batchEvents todo
-                |> Return.batchEvent (Service.Slide.scrollDown "lia-chat-messages" 500)
+                |> Return.batchEvent (Service.Slide.scrollDown "lia-chat-messages" 350)
 
         Ok ( "peer", param ) ->
             let

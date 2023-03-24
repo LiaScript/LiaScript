@@ -12,7 +12,7 @@ import Lia.Parser.PatReplace exposing (repo)
 import Lia.Section as Section
 import Lia.Settings.Types as Settings
 import Lia.Sync.Types as Sync
-import SplitPane
+import Library.SplitPane as SplitPane
 import Translations
 
 

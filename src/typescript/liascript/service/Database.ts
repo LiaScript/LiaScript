@@ -32,8 +32,6 @@ const Service = {
 
     const param = event.message.param
 
-    console.warn(JSON.stringify(event, null, 2))
-
     switch (event.message.cmd) {
       case 'load':
         event.message.param = await connector.load(param)

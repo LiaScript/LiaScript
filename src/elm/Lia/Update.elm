@@ -7,7 +7,6 @@ port module Lia.Update exposing
     )
 
 import Array exposing (Array)
-import Conditional.List as CList
 import Const
 import Dict
 import Html.Attributes exposing (width)
@@ -24,13 +23,13 @@ import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Lia.Utils exposing (checkPersistency)
+import Library.SplitPane as SplitPane
 import Return exposing (Return)
 import Service.Console
 import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Slide
 import Session exposing (Session)
-import SplitPane
 import Translations exposing (Lang(..))
 
 

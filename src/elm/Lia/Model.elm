@@ -15,9 +15,9 @@ import Lia.Section exposing (Sections)
 import Lia.Settings.Json
 import Lia.Settings.Types as Settings exposing (Settings)
 import Lia.Sync.Types as Sync
+import Library.SplitPane as SplitPane
 import Service.Event exposing (Event)
 import Service.Resource
-import SplitPane
 import Translations
 
 
