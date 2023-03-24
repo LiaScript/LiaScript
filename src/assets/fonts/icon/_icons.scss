@@ -510,72 +510,77 @@ $icon-search: "\EA3B";
   content: $icon-search
 }
 
-$icon-settings: "\EA3C";
+$icon-send: "\EA3C";
+.icon-send:before {
+  content: $icon-send
+}
+
+$icon-settings: "\EA3D";
 .icon-settings:before {
   content: $icon-settings
 }
 
-$icon-slides: "\EA3D";
+$icon-slides: "\EA3E";
 .icon-slides:before {
   content: $icon-slides
 }
 
-$icon-social: "\EA3E";
+$icon-social: "\EA3F";
 .icon-social:before {
   content: $icon-social
 }
 
-$icon-sort-asc: "\EA3F";
+$icon-sort-asc: "\EA40";
 .icon-sort-asc:before {
   content: $icon-sort-asc
 }
 
-$icon-sort-desc: "\EA40";
+$icon-sort-desc: "\EA41";
 .icon-sort-desc:before {
   content: $icon-sort-desc
 }
 
-$icon-sound-off: "\EA41";
+$icon-sound-off: "\EA42";
 .icon-sound-off:before {
   content: $icon-sound-off
 }
 
-$icon-sound-on: "\EA42";
+$icon-sound-on: "\EA43";
 .icon-sound-on:before {
   content: $icon-sound-on
 }
 
-$icon-stop-circle: "\EA43";
+$icon-stop-circle: "\EA44";
 .icon-stop-circle:before {
   content: $icon-stop-circle
 }
 
-$icon-sync: "\EA44";
+$icon-sync: "\EA45";
 .icon-sync:before {
   content: $icon-sync
 }
 
-$icon-table: "\EA45";
+$icon-table: "\EA46";
 .icon-table:before {
   content: $icon-table
 }
 
-$icon-trash: "\EA46";
+$icon-trash: "\EA47";
 .icon-trash:before {
   content: $icon-trash
 }
 
-$icon-warning: "\EA47";
+$icon-warning: "\EA48";
 .icon-warning:before {
   content: $icon-warning
 }
 
-$icon-zoom-out: "\EA48";
+$icon-zoom-out: "\EA49";
 .icon-zoom-out:before {
   content: $icon-zoom-out
 }
 
-$icon-zoom: "\EA49";
+$icon-zoom: "\EA4A";
 .icon-zoom:before {
   content: $icon-zoom
 }

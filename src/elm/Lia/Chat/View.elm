@@ -1,5 +1,6 @@
 module Lia.Chat.View exposing (view)
 
+import Accessibility.Key exposing (tabbable)
 import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -7,11 +8,13 @@ import Html.Events as Event
 import Html.Keyed as Keyed
 import Lia.Chat.Model exposing (Model)
 import Lia.Chat.Update exposing (Msg(..))
+import Lia.Index.View exposing (bottom)
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Update as Markdown
 import Lia.Markdown.View as Markdown
 import Lia.Section exposing (Section)
+import Lia.Utils exposing (btnIcon)
 import Url.Builder exposing (absolute)
 
 
@@ -41,10 +44,27 @@ view config model =
                 ]
         , Html.div
             [ Attr.style "padding" "1rem"
-            , Attr.style "height" "16rem"
-            , Attr.id "parent"
+            , Attr.style "height" "11.5rem"
             ]
-            [ Editor.editor
+            [ btnIcon
+                { title = "send"
+                , tabbable = True
+                , msg =
+                    case String.trim model.input of
+                        "" ->
+                            Nothing
+
+                        _ ->
+                            Just Send
+                , icon = "icon-send"
+                }
+                [ Attr.style "position" "absolute"
+                , Attr.style "bottom" "1rem"
+                , Attr.style "right" "2rem"
+                , Attr.style "z-index" "100"
+                , Attr.class "lia-btn--transparent"
+                ]
+            , Editor.editor
                 [ Editor.onChange Input
                 , Editor.value model.input
                 , Attr.style "min-height" "10rem"
@@ -55,10 +75,6 @@ view config model =
                 , Attr.class "lia-code__input"
                 ]
                 []
-            , Html.button
-                [ Event.onClick Send
-                ]
-                [ Html.text ">" ]
             ]
         ]
 

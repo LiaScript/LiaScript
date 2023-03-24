@@ -451,60 +451,64 @@
   content: "\EA3B"
 }
 
-.icon-settings:before {
+.icon-send:before {
   content: "\EA3C"
 }
 
-.icon-slides:before {
+.icon-settings:before {
   content: "\EA3D"
 }
 
-.icon-social:before {
+.icon-slides:before {
   content: "\EA3E"
 }
 
-.icon-sort-asc:before {
+.icon-social:before {
   content: "\EA3F"
 }
 
-.icon-sort-desc:before {
+.icon-sort-asc:before {
   content: "\EA40"
 }
 
-.icon-sound-off:before {
+.icon-sort-desc:before {
   content: "\EA41"
 }
 
-.icon-sound-on:before {
+.icon-sound-off:before {
   content: "\EA42"
 }
 
-.icon-stop-circle:before {
+.icon-sound-on:before {
   content: "\EA43"
 }
 
-.icon-sync:before {
+.icon-stop-circle:before {
   content: "\EA44"
 }
 
-.icon-table:before {
+.icon-sync:before {
   content: "\EA45"
 }
 
-.icon-trash:before {
+.icon-table:before {
   content: "\EA46"
 }
 
-.icon-warning:before {
+.icon-trash:before {
   content: "\EA47"
 }
 
-.icon-zoom-out:before {
+.icon-warning:before {
   content: "\EA48"
 }
 
-.icon-zoom:before {
+.icon-zoom-out:before {
   content: "\EA49"
+}
+
+.icon-zoom:before {
+  content: "\EA4A"
 }
 
 
