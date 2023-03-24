@@ -129,9 +129,9 @@ viewLightMode lang tabbable isLight =
         ]
 
 
-menuChat : Lang -> Bool -> Settings -> List (Html Msg)
+menuChat : Lang -> Bool -> Settings -> Html Msg
 menuChat lang tabbable settings =
-    [ btnIcon
+    btnIcon
         { title = "show chat"
         , tabbable = True
         , msg = Just (Toggle Chat)
@@ -140,7 +140,6 @@ menuChat lang tabbable settings =
         [ Attr.id "lia-btn-toc"
         , Attr.class "lia-btn lia-btn--transparent"
         ]
-    ]
 
 
 viewTheme : Lang -> Bool -> String -> Bool -> Html Msg
@@ -546,11 +545,36 @@ btnSupport lang open =
             else
                 "icon-more"
         }
-        [ Attr.class "lia-btn lia-btn--transparent lia-support-menu__toggler"
+        [ Attr.class "lia-btn lia-btn--transparent"
         , A11y_Aria.controls "lia-support-menu"
         , Attr.id "lia-btn-support"
         , A11y_Widget.hasMenuPopUp
         , A11y_Widget.expanded open
+        ]
+
+
+btnChat : { lang : Lang, open : Bool, visible : Bool } -> Html Msg
+btnChat { lang, open, visible } =
+    btnIcon
+        { title = Trans.confSettings lang
+        , tabbable = True
+        , msg = Just (Toggle Chat)
+        , icon =
+            if open then
+                "icon-close"
+
+            else
+                "icon-more"
+        }
+        [ Attr.class "lia-btn lia-btn--transparent"
+        , A11y_Aria.controls "lia-chat"
+        , A11y_Widget.hasMenuPopUp
+        , A11y_Widget.expanded open
+        , if visible then
+            Attr.class ""
+
+          else
+            Attr.style "display" "none"
         ]
 
 
@@ -796,7 +820,10 @@ header lang screen settings logo buttons =
                 else
                     "lia-support-menu--closed"
             ]
-            [ btnSupport lang settings.support_menu
+            [ Html.div [ Attr.class "lia-support-menu__toggler" ]
+                [ btnChat { lang = lang, open = True, visible = not settings.support_menu }
+                , btnSupport lang settings.support_menu
+                ]
             , Html.div
                 [ Attr.class "lia-support-menu__collapse"
                 ]

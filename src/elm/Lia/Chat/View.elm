@@ -12,16 +12,17 @@ import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Update as Markdown
 import Lia.Markdown.View as Markdown
 import Lia.Section exposing (Section)
+import Url.Builder exposing (absolute)
 
 
 view : (Section -> Config Markdown.Msg) -> Model -> Html Msg
 view config model =
     Html.div
-        [ Attr.style "background-color" "#EEE"
-        , Attr.style "width" "100%"
+        [ Attr.style "width" "100%"
         , Attr.style "height" "100%"
         , Attr.style "display" "flex"
         , Attr.style "flex-direction" "column"
+        , Attr.style "position" "absolute"
         ]
         [ model.messages
             |> Dict.toList
@@ -36,6 +37,7 @@ view config model =
             |> Html.div
                 [ Attr.style "height" "calc(100% - 10rem)"
                 , Attr.style "overflow" "auto"
+                , Attr.id "lia-chat-messages"
                 ]
         , Html.div
             [ Attr.style "padding" "1rem"
@@ -50,6 +52,7 @@ view config model =
                 , Editor.maxLines 4
                 , Editor.mode "markdown"
                 , Editor.showGutter False
+                , Attr.class "lia-code__input"
                 ]
                 []
             , Html.button

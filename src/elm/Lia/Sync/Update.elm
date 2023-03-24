@@ -31,6 +31,7 @@ import Random
 import Return exposing (Return)
 import Service.Console as Console
 import Service.Event as Event exposing (Event)
+import Service.Slide
 import Service.Sync
 import Session exposing (Session)
 import Set
@@ -383,6 +384,7 @@ synchronize model json =
             { model | chat = chat }
                 |> Return.val
                 |> Return.batchEvents todo
+                |> Return.batchEvent (Service.Slide.scrollDown "lia-chat-messages" 500)
 
         Ok ( "peer", param ) ->
             let

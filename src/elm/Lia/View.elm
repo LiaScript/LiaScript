@@ -29,6 +29,7 @@ import Lia.Sync.Types as Sync_
 import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (modal)
+import Service.Database exposing (settings)
 import Session exposing (Screen)
 import SplitPane
 import Translations as Trans exposing (Lang)
@@ -404,14 +405,16 @@ navButton title id class msg =
 -}
 slideTopBar : String -> Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> Sync_.Settings -> Html Msg
 slideTopBar languageCode lang screen url repositoryURL settings def sync =
-    [ ( Settings.menuChat, "chat" )
-    , ( Settings.menuMode, "mode" )
+    [ ( Settings.menuMode, "mode" )
     , ( Settings.menuSettings screen.width, "settings" )
     , ( Settings.menuTranslations languageCode def, "lang" )
     , ( Settings.menuShare url sync, "share" )
     , ( Settings.menuInformation repositoryURL def, "info" )
     ]
         |> Settings.header lang screen settings (Definition.getIcon def)
+        |> List.singleton
+        |> (::) (Settings.menuChat lang True settings)
+        |> Html.div []
         |> Html.map UpdateSettings
 
 
