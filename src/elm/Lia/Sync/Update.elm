@@ -148,7 +148,7 @@ update session model msg =
                                 | sync =
                                     { sync
                                         | state = Connected hashID
-                                        , peers = Set.empty
+                                        , peers = Set.singleton hashID
                                         , error = Nothing
                                     }
                             }
