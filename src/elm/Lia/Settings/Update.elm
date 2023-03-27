@@ -32,6 +32,7 @@ type Msg
     | Handle Event
     | ShareCourse String
     | Ignore
+    | FocusLoss (Maybe Action)
 
 
 type Toggle
@@ -146,6 +147,20 @@ update main msg model =
                     ShowSettings ->
                         Just "lia-btn-light-mode"
 
+                    ShowShare ->
+                        Just "lia-button-qr-code"
+
+                    ShowTranslations ->
+                        case model.translateWithGoogle of
+                            Just False ->
+                                Just "lia-checkbox-google_translate"
+
+                            Just True ->
+                                Just "google-te-combo"
+
+                            _ ->
+                                Nothing
+
                     _ ->
                         Nothing
                 )
@@ -225,6 +240,9 @@ update main msg model =
             }
                 |> Return.val
                 |> Return.batchEvent Service.Translate.google
+
+        FocusLoss _ ->
+            update main (Toggle (Action Close)) model
 
         Ignore ->
             Return.val model

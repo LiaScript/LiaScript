@@ -20,13 +20,21 @@ import Array
 import Conditional.List as CList
 import Const
 import Dict exposing (Dict)
-import Html exposing (Html)
+import Html exposing (Attribute, Html)
 import Html.Attributes as Attr exposing (width)
 import Html.Events exposing (onClick, onInput)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
-import Lia.Settings.Types exposing (Action(..), Mode(..), Settings, TTS)
+import Lia.Settings.Types
+    exposing
+        ( Action(..)
+        , Mode(..)
+        , Settings
+        , TTS
+        , fromGroup
+        , toGroup
+        )
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
 import Lia.Sync.Types as Sync
 import Lia.Utils
@@ -36,6 +44,7 @@ import Lia.Utils
         , btnIcon
         , noTranslate
         )
+import Library.Group as Group
 import QRCode
 import Service.Database exposing (settings)
 import Session exposing (Screen)
@@ -76,20 +85,29 @@ design model =
 
 viewSettings : Lang -> Bool -> Int -> Settings -> List (Html Msg)
 viewSettings lang tabbable width settings =
-    [ viewLightMode lang tabbable settings.light
+    let
+        grouping =
+            group ShowSettings
+    in
+    [ viewLightMode grouping lang tabbable settings.light
     , divider
     , settings.customTheme
         /= Nothing
-        |> viewTheme lang tabbable settings.theme
+        |> viewTheme grouping lang tabbable settings.theme
     , divider
-    , viewEditorTheme lang tabbable settings.editor
+    , viewEditorTheme grouping lang tabbable settings.editor
     , divider
-    , viewSizing lang tabbable settings.font_size
+    , viewSizing grouping lang tabbable settings.font_size
     , divider
-    , viewTooltips lang tabbable width settings.tooltips
+    , viewTooltips grouping lang tabbable width settings.tooltips
     , divider
-    , viewTTSSettings lang tabbable settings.tts
+    , viewTTSSettings grouping lang tabbable settings.tts
     ]
+
+
+group : Action -> List (Attribute Msg) -> List (Attribute Msg)
+group groupID =
+    (::) (Group.id (fromGroup groupID)) >> (::) (Group.blur (toGroup >> FocusLoss))
 
 
 divider : Html msg
@@ -97,16 +115,18 @@ divider =
     Html.hr [ Attr.class "nav__divider" ] []
 
 
-viewLightMode : Lang -> Bool -> Bool -> Html Msg
-viewLightMode lang tabbable isLight =
+viewLightMode : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Bool -> Html Msg
+viewLightMode grouping lang tabbable isLight =
     Html.button
-        [ Attr.class "lia-btn lia-btn--transparent"
-        , onClick (Toggle Light)
-        , A11y_Key.tabbable tabbable
-        , A11y_Widget.hidden (not tabbable)
-        , Attr.id "lia-btn-light-mode"
-        , Attr.style "width" "100%"
-        ]
+        (grouping
+            [ Attr.class "lia-btn lia-btn--transparent"
+            , onClick (Toggle Light)
+            , A11y_Key.tabbable tabbable
+            , A11y_Widget.hidden (not tabbable)
+            , Attr.id "lia-btn-light-mode"
+            , Attr.style "width" "100%"
+            ]
+        )
         [ Html.i
             [ A11y_Widget.hidden True
             , Attr.class "lia-btn__icon icon"
@@ -143,8 +163,8 @@ menuChat lang tabbable settings =
     ]
 
 
-viewTheme : Lang -> Bool -> String -> Bool -> Html Msg
-viewTheme lang tabbable theme hasCustom =
+viewTheme : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> String -> Bool -> Html Msg
+viewTheme grouping lang tabbable theme hasCustom =
     (if hasCustom then
         [ ( "yellow", Trans.cYellow lang, "is-yellow" )
         , ( "custom", Trans.cDefault lang, "is-custom" )
@@ -162,17 +182,19 @@ viewTheme lang tabbable theme hasCustom =
         |> List.map
             (\( color, name, styleClass ) ->
                 Html.input
-                    [ Attr.type_ "radio"
-                    , Attr.class <| "lia-radio " ++ styleClass
-                    , Attr.id <| "lia-theme-color-" ++ color
-                    , Attr.name "lia-theme-color"
-                    , Attr.checked (theme == color)
-                    , onClick (ChangeTheme color)
-                    , Attr.title name
-                    , A11y_Key.tabbable tabbable
-                    , A11y_Widget.hidden (not tabbable)
-                    , blockKeydown Ignore
-                    ]
+                    (grouping
+                        [ Attr.type_ "radio"
+                        , Attr.class <| "lia-radio " ++ styleClass
+                        , Attr.id <| "lia-theme-color-" ++ color
+                        , Attr.name "lia-theme-color"
+                        , Attr.checked (theme == color)
+                        , onClick (ChangeTheme color)
+                        , Attr.title name
+                        , A11y_Key.tabbable tabbable
+                        , A11y_Widget.hidden (not tabbable)
+                        , blockKeydown Ignore
+                        ]
+                    )
                     []
             )
         |> Html.div
@@ -184,26 +206,28 @@ viewTheme lang tabbable theme hasCustom =
             ]
 
 
-viewModes : Lang -> Bool -> Settings -> List (Html Msg)
-viewModes lang tabbable settings =
-    [ viewMode lang tabbable Textbook settings.mode "lia-mode-textbook" "icon-book" "mb-1"
-    , viewMode lang tabbable Presentation settings.mode "lia-mode-presentation" "icon-presentation" "mb-1"
-    , viewMode lang tabbable Slides settings.mode "lia-mode-slides" "icon-slides" ""
+viewModes : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Settings -> List (Html Msg)
+viewModes grouping lang tabbable settings =
+    [ viewMode grouping lang tabbable Textbook settings.mode "lia-mode-textbook" "icon-book" "mb-1"
+    , viewMode grouping lang tabbable Presentation settings.mode "lia-mode-presentation" "icon-presentation" "mb-1"
+    , viewMode grouping lang tabbable Slides settings.mode "lia-mode-slides" "icon-slides" ""
     ]
 
 
-viewMode : Lang -> Bool -> Mode -> Mode -> String -> String -> String -> Html Msg
-viewMode lang tabbable mode activeMode id iconName additionalCSSClass =
+viewMode : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Mode -> Mode -> String -> String -> String -> Html Msg
+viewMode grouping lang tabbable mode activeMode id iconName additionalCSSClass =
     Html.button
-        [ Attr.id id
-        , Attr.class <| "lia-btn lia-btn--transparent " ++ additionalCSSClass
-        , onClick (SwitchMode mode)
-        , A11y_Key.onKeyDown [ A11y_Key.enter (SwitchMode mode) ]
-        , A11y_Key.tabbable tabbable
-        , A11y_Widget.hidden (not tabbable)
-        , A11y_Role.menuItem
-        , A11y_Widget.checked <| Just (mode == activeMode)
-        ]
+        (grouping
+            [ Attr.id id
+            , Attr.class <| "lia-btn lia-btn--transparent " ++ additionalCSSClass
+            , onClick (SwitchMode mode)
+            , A11y_Key.onKeyDown [ A11y_Key.enter (SwitchMode mode) ]
+            , A11y_Key.tabbable tabbable
+            , A11y_Widget.hidden (not tabbable)
+            , A11y_Role.menuItem
+            , A11y_Widget.checked <| Just (mode == activeMode)
+            ]
+        )
         [ Html.i [ A11y_Widget.hidden True, Attr.class <| "lia-btn__icon icon " ++ iconName ] []
         , Html.span [ Attr.class "lia-btn__text" ] [ modeToString mode lang |> Html.text ]
         ]
@@ -222,32 +246,34 @@ modeToString show =
             Trans.modeTextbook
 
 
-viewSizing : Lang -> Bool -> Int -> Html Msg
-viewSizing lang tabbable size =
-    Html.div [ Attr.class "lia-fontscale" ]
+viewSizing : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Int -> Html Msg
+viewSizing grouping lang tabbable size =
+    Html.div (grouping [ Attr.class "lia-fontscale" ])
         [ Trans.baseFont lang (Trans.baseSize1 lang)
-            |> fontButton lang tabbable size 1
+            |> fontButton grouping lang tabbable size 1
         , Trans.baseFont lang (Trans.baseSize2 lang)
-            |> fontButton lang tabbable size 2
+            |> fontButton grouping lang tabbable size 2
         , Trans.baseFont lang (Trans.baseSize3 lang)
-            |> fontButton lang tabbable size 3
+            |> fontButton grouping lang tabbable size 3
         ]
 
 
-viewTooltips : Lang -> Bool -> Int -> Bool -> Html Msg
-viewTooltips lang tabbable width enabled =
+viewTooltips : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Int -> Bool -> Html Msg
+viewTooltips grouping lang tabbable width enabled =
     if width >= Const.tooltipBreakpoint then
         Html.label
             [ Attr.class "lia-label"
             , A11y_Widget.hidden (not tabbable)
             ]
             [ Html.input
-                [ Attr.class "lia-checkbox"
-                , Attr.type_ "checkbox"
-                , Attr.checked enabled
-                , onClick (Toggle Tooltips)
-                , A11y_Key.tabbable tabbable
-                ]
+                (grouping
+                    [ Attr.class "lia-checkbox"
+                    , Attr.type_ "checkbox"
+                    , Attr.checked enabled
+                    , onClick (Toggle Tooltips)
+                    , A11y_Key.tabbable tabbable
+                    ]
+                )
                 []
             , Html.text (Trans.confTooltip lang)
             ]
@@ -256,50 +282,54 @@ viewTooltips lang tabbable width enabled =
         Html.text ""
 
 
-viewTTSSettings : Lang -> Bool -> TTS -> Html Msg
-viewTTSSettings lang tabbable tts =
+viewTTSSettings : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> TTS -> Html Msg
+viewTTSSettings grouping lang tabbable tts =
     Html.label
         [ Attr.class "lia-label"
         , A11y_Widget.hidden (not tabbable)
         ]
         [ Html.input
-            [ Attr.class "lia-checkbox"
-            , Attr.type_ "checkbox"
-            , Attr.checked <|
-                case ( tts.isBrowserSupported, tts.isResponsiveVoiceSupported ) of
-                    ( True, False ) ->
-                        True
+            (grouping
+                [ Attr.class "lia-checkbox"
+                , Attr.type_ "checkbox"
+                , Attr.checked <|
+                    case ( tts.isBrowserSupported, tts.isResponsiveVoiceSupported ) of
+                        ( True, False ) ->
+                            True
 
-                    ( False, True ) ->
-                        False
+                        ( False, True ) ->
+                            False
 
-                    _ ->
-                        tts.preferBrowser
-            , onClick (Toggle PreferBrowserTTS)
-            , A11y_Key.tabbable tabbable
-            , Attr.disabled (not (tts.isBrowserSupported && tts.isResponsiveVoiceSupported))
-            ]
+                        _ ->
+                            tts.preferBrowser
+                , onClick (Toggle PreferBrowserTTS)
+                , A11y_Key.tabbable tabbable
+                , Attr.disabled (not (tts.isBrowserSupported && tts.isResponsiveVoiceSupported))
+                ]
+            )
             []
         , Html.text (Trans.ttsPreferBrowser lang)
         ]
 
 
-fontButton : Lang -> Bool -> Int -> Int -> String -> Html Msg
-fontButton lang tabbable size i title =
+fontButton : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Int -> Int -> String -> Html Msg
+fontButton grouping lang tabbable size i title =
     btn
         { title = title
         , tabbable = tabbable
         , msg = Just (ChangeFontSize i)
         }
-        [ Attr.class <| "lia-btn--transparent lia-fontscale__lvl-" ++ String.fromInt i
-        , Attr.class <|
-            if size == i then
-                "active"
+        (grouping
+            [ Attr.class <| "lia-btn--transparent lia-fontscale__lvl-" ++ String.fromInt i
+            , Attr.class <|
+                if size == i then
+                    "active"
 
-            else
-                ""
-        , A11y_Widget.checked (Just (size == i))
-        ]
+                else
+                    ""
+            , A11y_Widget.checked (Just (size == i))
+            ]
+        )
         [ Html.span (noTranslate []) [ Html.text (Trans.baseAbc lang) ] ]
 
 
@@ -382,7 +412,7 @@ thanks lang to =
 
 inlines : Lang -> Inlines -> Html Msg
 inlines lang =
-    List.map (view_inf Array.empty lang False False Nothing Nothing)
+    List.map (view_inf Array.empty lang False False Nothing Nothing Nothing)
         >> Html.div []
         >> Html.map (always Ignore)
 
@@ -408,38 +438,57 @@ viewTranslations lang tabbable =
             )
 
 
-submenu : Bool -> List (Html Msg) -> Html Msg
-submenu isActive =
-    Html.div
-        [ Attr.class "lia-support-menu__submenu"
-        , Attr.class <|
-            if isActive then
-                "active"
+submenu : (List (Attribute Msg) -> List (Attribute Msg)) -> Bool -> List (Html Msg) -> Html Msg
+submenu grouping isActive =
+    [ Attr.class "lia-support-menu__submenu"
+    , Attr.class <|
+        if isActive then
+            "active"
 
-            else
-                ""
-        , A11y_Widget.checked (Just isActive)
-        , A11y_Role.menu
-        ]
+        else
+            ""
+    , A11y_Widget.checked (Just isActive)
+    , A11y_Role.menu
+    ]
+        |> grouping
+        |> Html.div
 
 
-qrCodeView : Lang -> String -> Html Msg
-qrCodeView lang url =
+qrCodeView : Lang -> Bool -> Maybe (List (Attribute Msg) -> List (Attribute Msg)) -> String -> Html Msg
+qrCodeView lang tabbable grouping url =
     url
         |> QRCode.fromString
         |> Result.map
-            ([ Attr.style "background-color" "#FFF"
-             , Attr.style "padding" "0.4rem"
-             , Attr.alt (Trans.qrCode lang ++ ": " ++ url)
-             , onClick <| Toggle QRCode
-             ]
-                |> QRCode.toSvgWithoutQuietZone
+            (QRCode.toSvgWithoutQuietZone
+                [ Attr.style "background-color" "#FFF"
+                , Attr.style "padding" "0.4rem"
+                , Attr.alt (Trans.qrCode lang ++ ": " ++ url)
+                ]
+                >> List.singleton
+                >> btn
+                    { title = "enlarge qr-code"
+                    , tabbable = tabbable
+                    , msg = Just (Toggle QRCode)
+                    }
+                    ([ Attr.style "width" "inherit"
+                     , Attr.id "lia-button-qr-code"
+                     , Attr.class "lia-btn--transparent"
+                     , Attr.style "padding" "0  "
+                     ]
+                        |> (case grouping of
+                                Nothing ->
+                                    identity
+
+                                Just grouping_ ->
+                                    grouping_
+                           )
+                    )
             )
         |> Result.withDefault (Html.text <| Trans.qrErr lang)
 
 
-viewEditorTheme : Lang -> Bool -> String -> Html Msg
-viewEditorTheme lang tabbable theme =
+viewEditorTheme : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> String -> Html Msg
+viewEditorTheme grouping lang tabbable theme =
     let
         op =
             option theme
@@ -448,10 +497,12 @@ viewEditorTheme lang tabbable theme =
         [ Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
             [ Html.div [ Attr.style "margin-bottom" "0.4rem" ] [ Html.text <| Trans.baseEditor lang ++ ":" ]
             , Html.select
-                [ Attr.class "lia-select"
-                , onInput ChangeEditor
-                , A11y_Key.tabbable tabbable
-                ]
+                (grouping
+                    [ Attr.class "lia-select"
+                    , onInput ChangeEditor
+                    , A11y_Key.tabbable tabbable
+                    ]
+                )
                 [ [ ( "chrome", "Chrome" )
                   , ( "cloud9_day", "Cloud9 Day" )
                   , ( "clouds", "Clouds" )
@@ -572,9 +623,15 @@ btnChat { lang, open } =
 
 menuMode : Lang -> Bool -> Settings -> List (Html Msg)
 menuMode lang tabbable settings =
+    let
+        grouping =
+            group ShowModes
+    in
     [ lang
         |> Trans.modeMode
-        |> actionBtn ShowModes
+        |> actionBtn
+            grouping
+            ShowModes
             (settings.action == Just ShowModes)
             (case settings.mode of
                 Presentation ->
@@ -586,25 +643,35 @@ menuMode lang tabbable settings =
                 Textbook ->
                     "icon-book"
             )
-    , viewModes lang tabbable settings
-        |> submenu (settings.action == Just ShowModes)
+    , viewModes grouping lang tabbable settings
+        |> submenu grouping (settings.action == Just ShowModes)
     ]
 
 
 menuSettings : Int -> Lang -> Bool -> Settings -> List (Html Msg)
 menuSettings width lang tabbable settings =
+    let
+        grouping =
+            group ShowSettings
+    in
     [ lang
         |> Trans.confSettings
-        |> actionBtn ShowSettings
+        |> actionBtn
+            grouping
+            ShowSettings
             (settings.action == Just ShowSettings)
             "icon-settings"
     , viewSettings lang tabbable width settings
-        |> submenu (settings.action == Just ShowSettings)
+        |> submenu grouping (settings.action == Just ShowSettings)
     ]
 
 
 menuTranslations : String -> Definition -> Lang -> Bool -> Settings -> List (Html Msg)
 menuTranslations languageCode defintion lang tabbable settings =
+    let
+        grouping =
+            group ShowTranslations
+    in
     [ Html.button
         (action ShowTranslations
             (settings.action == Just ShowTranslations)
@@ -632,7 +699,7 @@ menuTranslations languageCode defintion lang tabbable settings =
                     |> translateWithGoogle lang tabbable
                     |> List.append l
            )
-        |> submenu (settings.action == Just ShowTranslations)
+        |> submenu grouping (settings.action == Just ShowTranslations)
     ]
 
 
@@ -641,19 +708,25 @@ translateWithGoogle lang tabbable bool =
     case bool of
         Just True ->
             [ divider
-            , Html.div [ Attr.id "google_translate_element" ] []
+            , Html.div (group ShowTranslations [ Attr.id "google_translate_element" ]) []
             ]
 
         Just False ->
             [ divider
-            , Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
+            , Html.label
+                [ Attr.class "lia-label"
+                , A11y_Widget.hidden (not tabbable)
+                ]
                 [ Html.input
-                    [ Attr.type_ "checkbox"
-                    , Attr.class "lia-checkbox"
-                    , Attr.checked False
-                    , onClick (Toggle TranslateWithGoogle)
-                    , A11y_Key.tabbable tabbable
-                    ]
+                    (group ShowTranslations
+                        [ Attr.type_ "checkbox"
+                        , Attr.class "lia-checkbox"
+                        , Attr.checked False
+                        , onClick (Toggle TranslateWithGoogle)
+                        , A11y_Key.tabbable tabbable
+                        , Attr.id "lia-checkbox-google_translate"
+                        ]
+                    )
                     []
                 , lang
                     |> Trans.translateWithGoogle
@@ -667,22 +740,28 @@ translateWithGoogle lang tabbable bool =
 
 menuShare : String -> Sync.Settings -> Lang -> Bool -> Settings -> List (Html Msg)
 menuShare url sync lang tabbable settings =
+    let
+        grouping =
+            group ShowShare
+    in
     [ case ( settings.sync, settings.hasShareApi ) of
         ( Nothing, Nothing ) ->
-            btnIcon
-                { title = Trans.confShare lang
-                , icon = "icon-social"
-                , tabbable = False
-                , msg = Nothing
-                }
-                [ Attr.class "lia-btn--transparent hide-md-down"
-                ]
+            [ Attr.class "lia-btn--transparent hide-md-down" ]
+                |> grouping
+                |> btnIcon
+                    { title = Trans.confShare lang
+                    , icon = "icon-social"
+                    , tabbable = False
+                    , msg = Nothing
+                    }
 
         _ ->
             lang
                 |> Trans.confShare
-                |> actionBtn Share
-                    (settings.action == Just Share)
+                |> actionBtn
+                    grouping
+                    ShowShare
+                    (settings.action == Just ShowShare)
                     "icon-social"
     , Html.i
         [ Attr.class "icon icon-social hide-md-up"
@@ -692,7 +771,7 @@ menuShare url sync lang tabbable settings =
         ]
         []
     , [ if settings.hasShareApi /= Nothing then
-            qrCodeView lang url
+            qrCodeView lang tabbable (Just grouping) url
 
         else
             Html.text ""
@@ -716,63 +795,72 @@ menuShare url sync lang tabbable settings =
                 , tabbable = tabbable
                 , msg = Just (Toggle Sync)
                 }
-                []
+                (grouping [])
                 [ Sync.title sync ]
 
         else
             Html.text ""
       ]
-        |> submenu (settings.action == Just Share)
+        |> submenu grouping (settings.action == Just ShowShare)
     ]
 
 
 menuInformation : Maybe String -> Definition -> Lang -> Bool -> Settings -> List (Html Msg)
 menuInformation repositoryURL definition lang tabbable settings =
+    let
+        grouping =
+            group ShowInformation
+    in
     [ Html.i
-        [ Attr.class "icon icon-info hide-md-up"
-        , lang
-            |> Trans.confInformation
-            |> Attr.title
-        ]
+        (grouping
+            [ Attr.class "icon icon-info hide-md-up"
+            , lang
+                |> Trans.confInformation
+                |> Attr.title
+            ]
+        )
         []
     , lang
         |> Trans.confInformation
         |> actionBtn
+            grouping
             ShowInformation
             (settings.action == Just ShowInformation)
             "icon-info"
     , viewInformation lang tabbable repositoryURL definition
-        |> submenu (settings.action == Just ShowInformation)
+        |> submenu grouping (settings.action == Just ShowInformation)
     ]
 
 
-actionBtn : Action -> Bool -> String -> String -> Html Msg
-actionBtn msg open iconName title =
-    btnIcon
-        { title = title
-        , icon = iconName
-        , tabbable = True
-        , msg = Just <| doAction msg
-        }
-        [ A11y_Widget.hasMenuPopUp
-        , A11y_Widget.expanded open
-        , A11y_Key.onKeyDown [ A11y_Key.escape (doAction Close) ]
-        , Attr.class "lia-btn--transparent hide-md-down"
-        ]
+actionBtn : (List (Attribute Msg) -> List (Attribute Msg)) -> Action -> Bool -> String -> String -> Html Msg
+actionBtn grouping msg open iconName title =
+    [ A11y_Widget.hasMenuPopUp
+    , A11y_Widget.expanded open
+    , A11y_Key.onKeyDown [ A11y_Key.escape (doAction Close) ]
+    , Attr.class "lia-btn--transparent hide-md-down"
+    ]
+        |> grouping
+        |> btnIcon
+            { title = title
+            , icon = iconName
+            , tabbable = True
+            , msg = Just <| doAction msg
+            }
 
 
 action : Action -> Bool -> (List (Html.Attribute Msg) -> List (Html.Attribute Msg))
 action msg open =
-    List.append
-        [ onClick (doAction msg)
-        , A11y_Key.onKeyDown
-            [ A11y_Key.escape (doAction Close)
-            , A11y_Key.down (doAction msg)
-            ]
-        , Attr.class "lia-btn lia-btn--transparent hide-md-down"
-        , A11y_Widget.hasMenuPopUp
-        , A11y_Widget.expanded open
+    [ onClick (doAction msg)
+    , A11y_Key.onKeyDown
+        [ A11y_Key.escape (doAction Close)
+        , A11y_Key.down (doAction msg)
         ]
+    , Attr.class "lia-btn lia-btn--transparent hide-md-down"
+    , A11y_Widget.hasMenuPopUp
+    , A11y_Widget.expanded open
+    ]
+        |> group msg
+        |> List.append
 
 
 doAction : Action -> Msg

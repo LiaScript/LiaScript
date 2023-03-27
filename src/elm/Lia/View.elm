@@ -173,6 +173,7 @@ viewSlide screen model =
                 (model.settings.tooltips && (screen.width >= Const.tooltipBreakpoint))
                 ( model.langCodeOriginal, model.langCode )
                 model.settings.mode
+                model.definition.formulas
                 model.media
                 section.effect_model
                 model.section_active
@@ -212,6 +213,7 @@ initConfig screen model =
         model.sync
         screen
         model.section_active
+        (Just model.definition.formulas)
         model.media
 
 
@@ -305,8 +307,8 @@ btnStop lang settings =
         [ Attr.id "lia-btn-sound", Attr.class "lia-btn--transparent" ]
 
 
-slideA11y : Lang -> Bool -> Bool -> ( String, String ) -> Mode -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
-slideA11y lang light tooltips translations mode media effect id =
+slideA11y : Lang -> Bool -> Bool -> ( String, String ) -> Mode -> Dict String String -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
+slideA11y lang light tooltips translations mode formulas media effect id =
     case mode of
         Slides ->
             effect
@@ -319,7 +321,15 @@ slideA11y lang light tooltips translations mode media effect id =
                                     List.map
                                         (\c ->
                                             c.content
-                                                |> List.map (view_inf effect.javascript lang light tooltips (Just translations) (Just media))
+                                                |> List.map
+                                                    (view_inf effect.javascript
+                                                        lang
+                                                        light
+                                                        tooltips
+                                                        (Just translations)
+                                                        (Just formulas)
+                                                        (Just media)
+                                                    )
                                                 |> Html.p
                                                     (narrator
                                                         |> Markdown.addTranslation False (Just translations) counter
@@ -585,7 +595,7 @@ showModal model =
                     , Attr.style "margin-top" "calc(100vh * 0.08)"
                     ]
                     [ model.url
-                        |> Settings.qrCodeView model.translation
+                        |> Settings.qrCodeView model.translation True Nothing
                         |> Html.map UpdateSettings
                     ]
                 ]

@@ -1,5 +1,6 @@
 module Lia.Definition.Json.Decode exposing (decode)
 
+import Dict
 import Json.Decode as JD
 import Lia.Definition.Types exposing (Definition, Resource(..))
 import Lia.Markdown.Inline.Json.Decode as Inline
@@ -19,6 +20,11 @@ decode =
         |> andMap "resources" (JD.list decResource)
         |> andMap "base" JD.string
         |> andMap "translation" (JD.dict JD.string)
+        |> JD.map2 (|>)
+            (JD.field "formulas" (JD.dict JD.string)
+                |> JD.maybe
+                |> JD.map (Maybe.withDefault Dict.empty)
+            )
         |> andMap "macro" (JD.dict JD.string)
         |> JD.map2 (|>) (JD.succeed [])
         |> andMap "attributes" (JD.list Inline.decode)
