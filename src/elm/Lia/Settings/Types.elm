@@ -3,7 +3,9 @@ module Lia.Settings.Types exposing
     , Mode(..)
     , Settings
     , TTS
+    , fromGroup
     , init
+    , toGroup
     )
 
 import Translations exposing (Lang(..))
@@ -44,7 +46,7 @@ type Action
     | ShowTranslations
     | ShowSettings
     | ShowModes
-    | Share
+    | ShowShare
     | Close
 
 
@@ -80,3 +82,47 @@ init hasShareApi mode =
         , isResponsiveVoiceSupported = False
         }
     }
+
+
+toGroup : String -> Maybe Action
+toGroup str =
+    case str of
+        "information" ->
+            Just ShowInformation
+
+        "mode" ->
+            Just ShowModes
+
+        "setting" ->
+            Just ShowSettings
+
+        "translation" ->
+            Just ShowTranslations
+
+        "share" ->
+            Just ShowShare
+
+        _ ->
+            Nothing
+
+
+fromGroup : Action -> String
+fromGroup grp =
+    case grp of
+        ShowSettings ->
+            "setting"
+
+        ShowTranslations ->
+            "translation"
+
+        ShowInformation ->
+            "information"
+
+        ShowModes ->
+            "mode"
+
+        ShowShare ->
+            "share"
+
+        Close ->
+            "close"
