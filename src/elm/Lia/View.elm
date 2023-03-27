@@ -145,6 +145,8 @@ viewSlide screen model =
                                 |> Html.div
                                     [ Attr.style "width" "100%"
                                     , Attr.style "overflow-y" "auto"
+                                    , Attr.style "display" "flex"
+                                    , Attr.style "justify-content" "center"
                                     ]
                             )
                             (Chat.view (initConfig screen model) model.chat

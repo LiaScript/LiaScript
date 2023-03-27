@@ -47,7 +47,7 @@ parse searchIndex definition change ( todo, chat ) =
     case
         change.message
             ++ "\n\n"
-            |> Section.Base 5 []
+            |> Section.Base 2 []
             |> Section.init 0 change.id
             |> parse_section searchIndex definition
     of
