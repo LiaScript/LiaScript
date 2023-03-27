@@ -5,6 +5,7 @@ module Library.SplitPane exposing
     , percentage, px
     , Msg, Orientation(..), SizeUnit(..), ViewConfig, UpdateConfig, CustomSplitter, HtmlDetails
     , customUpdate, createUpdateConfig, createCustomSplitter
+    , Visible(..)
     )
 
 {-| This is a split pane view library. Can be used to split views into multiple parts with a splitter between them.
@@ -77,6 +78,12 @@ type SizeUnit
 type Orientation
     = Horizontal
     | Vertical
+
+
+type Visible
+    = Both
+    | OnlyFirst
+    | OnlySecond
 
 
 {-| Keeps dimensions of pane.
@@ -379,18 +386,16 @@ type CustomSplitter msg
     = CustomSplitter (Html msg)
 
 
-createDefaultSplitterDetails : Orientation -> DragState -> HtmlDetails msg
-createDefaultSplitterDetails ori dragState =
+createDefaultSplitterDetails : Visible -> Orientation -> DragState -> HtmlDetails msg
+createDefaultSplitterDetails visible ori dragState =
     case ori of
         Horizontal ->
-            { attributes =
-                defaultHorizontalSplitterStyle dragState
+            { attributes = defaultHorizontalSplitterStyle visible dragState
             , children = []
             }
 
         Vertical ->
-            { attributes =
-                defaultVerticalSplitterStyle dragState
+            { attributes = defaultVerticalSplitterStyle visible dragState
             , children = []
             }
 
@@ -469,42 +474,43 @@ createViewConfig { toMsg, customSplitter } =
             img [ src "http://2.bp.blogspot.com/-pATX0YgNSFs/VP-82AQKcuI/AAAAAAAALSU/Vet9e7Qsjjw/s1600/Cat-hd-wallpapers.jpg" ] []
 
 -}
-view : ViewConfig msg -> Html msg -> Html msg -> State -> Html msg
-view (ViewConfig viewConfig) firstView secondView (State state) =
-    let
-        splitter =
-            getConcreteSplitter viewConfig state.orientation state.dragState
-    in
+view : Visible -> ViewConfig msg -> Html msg -> Html msg -> State -> Html msg
+view visible (ViewConfig viewConfig) firstView secondView (State state) =
     div
-        (class "pane-container" :: paneContainerStyle state.orientation)
+        (class "pane-container" :: paneContainerStyle visible state.orientation)
         [ div
             (class "pane-first-view"
-                :: firstChildViewStyle (State state)
+                :: firstChildViewStyle visible (State state)
             )
             [ firstView ]
-        , splitter
+        , getConcreteSplitter visible viewConfig state.orientation state.dragState
         , div
             (class "pane-second-view"
-                :: secondChildViewStyle (State state)
+                :: secondChildViewStyle visible (State state)
             )
             [ secondView ]
         ]
 
 
 getConcreteSplitter :
-    { toMsg : Msg -> msg
-    , splitter : Maybe (CustomSplitter msg)
-    }
+    Visible
+    ->
+        { toMsg : Msg -> msg
+        , splitter : Maybe (CustomSplitter msg)
+        }
     -> Orientation
     -> DragState
     -> Html msg
-getConcreteSplitter viewConfig ori dragState =
+getConcreteSplitter visible viewConfig ori dragState =
     case viewConfig.splitter of
         Just (CustomSplitter splitter) ->
             splitter
 
         Nothing ->
-            case createCustomSplitter viewConfig.toMsg <| createDefaultSplitterDetails ori dragState of
+            case
+                createDefaultSplitterDetails visible ori dragState
+                    |> createCustomSplitter viewConfig.toMsg
+            of
                 CustomSplitter defaultSplitter ->
                     defaultSplitter
 
@@ -513,10 +519,15 @@ getConcreteSplitter viewConfig ori dragState =
 -- STYLES
 
 
-paneContainerStyle : Orientation -> List (Attribute a)
-paneContainerStyle ori =
+paneContainerStyle : Visible -> Orientation -> List (Attribute a)
+paneContainerStyle display ori =
     [ style "overflow" "hidden"
-    , style "display" "flex"
+    , style "display" <|
+        if display == Both then
+            "flex"
+
+        else
+            "blocknone"
     , style "flexDirection" <|
         case ori of
             Horizontal ->
@@ -532,8 +543,8 @@ paneContainerStyle ori =
     ]
 
 
-firstChildViewStyle : State -> List (Attribute a)
-firstChildViewStyle (State state) =
+firstChildViewStyle : Visible -> State -> List (Attribute a)
+firstChildViewStyle display (State state) =
     case state.splitterPosition of
         Px p ->
             let
@@ -542,8 +553,18 @@ firstChildViewStyle (State state) =
             in
             case state.orientation of
                 Horizontal ->
-                    [ style "display" "flex"
-                    , style "width" v
+                    [ style "display" <|
+                        if display == Both || display == OnlyFirst then
+                            "flex"
+
+                        else
+                            "none"
+                    , style "width" <|
+                        if display == Both || display == OnlyFirst then
+                            v
+
+                        else
+                            "0"
                     , style "height" "100%"
                     , style "overflow" "hidden"
                     , style "boxSizing" "border-box"
@@ -551,7 +572,12 @@ firstChildViewStyle (State state) =
                     ]
 
                 Vertical ->
-                    [ style "display" "flex"
+                    [ style "display" <|
+                        if display /= OnlySecond then
+                            "flex"
+
+                        else
+                            "none"
                     , style "width" "100%"
                     , style "height" v
                     , style "overflow" "hidden"
@@ -564,8 +590,18 @@ firstChildViewStyle (State state) =
                 v =
                     encode 0 <| float <| getValue p
             in
-            [ style "display" "flex"
-            , style "flex" v
+            [ style "display" <|
+                if display == OnlySecond then
+                    "none"
+
+                else
+                    "flex"
+            , style "flex" <|
+                if display == Both then
+                    v
+
+                else
+                    "1 1 0%"
             , style "width" "100%"
             , style "height" "100%"
             , style "overflow" "hidden"
@@ -574,11 +610,16 @@ firstChildViewStyle (State state) =
             ]
 
 
-secondChildViewStyle : State -> List (Attribute a)
-secondChildViewStyle (State state) =
+secondChildViewStyle : Visible -> State -> List (Attribute a)
+secondChildViewStyle display (State state) =
     case state.splitterPosition of
         Px _ ->
-            [ style "display" "flex"
+            [ style "display" <|
+                if display == OnlyFirst then
+                    "none"
+
+                else
+                    "flex"
             , style "flex" "1"
             , style "width" "100%"
             , style "height" "100%"
@@ -592,7 +633,12 @@ secondChildViewStyle (State state) =
                 v =
                     encode 0 <| float <| 1 - getValue p
             in
-            [ style "display" "flex"
+            [ style "display" <|
+                if display == OnlyFirst then
+                    "none"
+
+                else
+                    "flex"
             , style "flex" v
             , style "width" "100%"
             , style "height" "100%"
@@ -602,8 +648,8 @@ secondChildViewStyle (State state) =
             ]
 
 
-defaultVerticalSplitterStyle : DragState -> List (Attribute a)
-defaultVerticalSplitterStyle dragState =
+defaultVerticalSplitterStyle : Visible -> DragState -> List (Attribute a)
+defaultVerticalSplitterStyle visible dragState =
     baseDefaultSplitterStyles
         ++ [ style "height" "11px"
            , style "width" "100%"
@@ -611,17 +657,17 @@ defaultVerticalSplitterStyle dragState =
            , style "borderTop" "5px solid rgba(255, 255, 255, 0)"
            , style "borderBottom" "5px solid rgba(255, 255, 255, 0)"
            ]
-        ++ (case dragState of
-                Draggable _ ->
+        ++ (case ( visible, dragState ) of
+                ( Both, Draggable _ ) ->
                     [ style "cursor" "row-resize" ]
 
-                NotDraggable ->
+                _ ->
                     []
            )
 
 
-defaultHorizontalSplitterStyle : DragState -> List (Attribute a)
-defaultHorizontalSplitterStyle dragState =
+defaultHorizontalSplitterStyle : Visible -> DragState -> List (Attribute a)
+defaultHorizontalSplitterStyle visible dragState =
     baseDefaultSplitterStyles
         ++ [ style "width" "11px"
            , style "height" "100%"
@@ -629,11 +675,11 @@ defaultHorizontalSplitterStyle dragState =
            , style "borderLeft" "5px solid rgba(255, 255, 255, 0)"
            , style "borderRight" "5px solid rgba(255, 255, 255, 0)"
            ]
-        ++ (case dragState of
-                Draggable _ ->
+        ++ (case ( visible, dragState ) of
+                ( Both, Draggable _ ) ->
                     [ style "cursor" "col-resize" ]
 
-                NotDraggable ->
+                _ ->
                     []
            )
 
@@ -658,27 +704,80 @@ baseDefaultSplitterStyles =
 
 onMouseDown : (Msg -> msg) -> Attribute msg
 onMouseDown toMsg =
-    Html.Events.custom "mousedown" <| D.map (\d -> { message = toMsg <| SplitterClick d, preventDefault = True, stopPropagation = False }) domInfo
+    Html.Events.custom "mousedown" <|
+        D.map
+            (\d ->
+                { message =
+                    toMsg <|
+                        SplitterClick d
+                , preventDefault = True
+                , stopPropagation = False
+                }
+            )
+            domInfo
 
 
 onTouchStart : (Msg -> msg) -> Attribute msg
 onTouchStart toMsg =
-    Html.Events.custom "touchstart" <| D.map (\d -> { message = toMsg <| SplitterClick d, preventDefault = True, stopPropagation = True }) domInfo
+    Html.Events.custom "touchstart" <|
+        D.map
+            (\d ->
+                { message =
+                    SplitterClick d
+                        |> toMsg
+                , preventDefault = True
+                , stopPropagation = True
+                }
+            )
+            domInfo
 
 
 onTouchEnd : (Msg -> msg) -> Attribute msg
 onTouchEnd toMsg =
-    Html.Events.custom "touchend" <| D.map (\d -> { message = toMsg <| SplitterLeftAlone <| domInfoToPosition d, preventDefault = True, stopPropagation = True }) domInfo
+    Html.Events.custom "touchend" <|
+        D.map
+            (\d ->
+                { message =
+                    domInfoToPosition d
+                        |> SplitterLeftAlone
+                        |> toMsg
+                , preventDefault = True
+                , stopPropagation = True
+                }
+            )
+            domInfo
 
 
 onTouchCancel : (Msg -> msg) -> Attribute msg
 onTouchCancel toMsg =
-    Html.Events.custom "touchcancel" <| D.map (\d -> { message = toMsg <| SplitterLeftAlone <| domInfoToPosition d, preventDefault = True, stopPropagation = True }) domInfo
+    Html.Events.custom "touchcancel" <|
+        D.map
+            (\d ->
+                { message =
+                    domInfoToPosition d
+                        |> SplitterLeftAlone
+                        |> toMsg
+                , preventDefault = True
+                , stopPropagation = True
+                }
+            )
+            domInfo
 
 
 onTouchMove : (Msg -> msg) -> Attribute msg
 onTouchMove toMsg =
-    Html.Events.custom "touchmove" <| D.map (\d -> { message = toMsg <| SplitterMove <| domInfoToPosition d, preventDefault = True, stopPropagation = True }) domInfo
+    Html.Events.custom "touchmove" <|
+        D.map
+            (\d ->
+                { message =
+                    domInfoToPosition d
+                        |> SplitterMove
+                        |> toMsg
+                , preventDefault = True
+                , stopPropagation = True
+                }
+            )
+            domInfo
 
 
 {-| The position of the touch relative to the whole document. So if you are

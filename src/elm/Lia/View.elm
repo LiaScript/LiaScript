@@ -134,32 +134,32 @@ viewSlide screen model =
                     model.settings
                     model.definition
                     model.sync
-                , if model.settings.showChat && Sync_.isConnected model.sync.state then
-                    Html.div
-                        [ Attr.class "lia-slide__container"
-                        ]
-                        [ SplitPane.view viewConfig
-                            (model.sections
-                                |> Array.toIndexedList
-                                |> List.map (showSection model screen)
-                                |> Html.div
-                                    [ Attr.style "width" "100%"
-                                    , Attr.style "overflow-y" "auto"
-                                    , Attr.style "display" "flex"
-                                    , Attr.style "justify-content" "center"
-                                    ]
-                            )
-                            (Chat.view (initConfig screen model) model.chat
-                                |> Html.map UpdateChat
-                            )
-                            model.pane
-                        ]
+                , Html.div
+                    [ Attr.class "lia-slide__container"
+                    ]
+                    [ SplitPane.view
+                        (if model.settings.showChat && Sync_.isConnected model.sync.state then
+                            SplitPane.Both
 
-                  else
-                    model.sections
-                        |> Array.toIndexedList
-                        |> List.map (showSection model screen)
-                        |> Html.div [ Attr.class "lia-slide__container" ]
+                         else
+                            SplitPane.OnlyFirst
+                        )
+                        viewConfig
+                        (model.sections
+                            |> Array.toIndexedList
+                            |> List.map (showSection model screen)
+                            |> Html.div
+                                [ Attr.style "width" "100%"
+                                , Attr.style "overflow-y" "auto"
+                                , Attr.style "display" "flex"
+                                , Attr.style "justify-content" "center"
+                                ]
+                        )
+                        (Chat.view (initConfig screen model) model.chat
+                            |> Html.map UpdateChat
+                        )
+                        model.pane
+                    ]
                 , slideBottom
                     model.translation
                     (screen.width < 400)
