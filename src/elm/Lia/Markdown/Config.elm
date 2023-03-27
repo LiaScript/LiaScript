@@ -39,12 +39,24 @@ init :
     -> Screen
     -> Section
     -> Int
+    -> Maybe (Dict String String)
     -> Dict String ( Int, Int )
     -> Config sub
-init lang translations settings sync screen section id media =
+init lang translations settings sync screen section id formula media =
     let
         config =
-            inline lang translations settings screen section.effect_model id media sync
+            inline lang
+                translations
+                settings
+                screen
+                section.effect_model
+                id
+                (section.definition
+                    |> Maybe.map .formulas
+                    |> mergeFormulas formula
+                )
+                media
+                sync
     in
     Config
         settings.mode
@@ -61,8 +73,34 @@ init lang translations settings sync screen section id media =
         config
 
 
-inline : Lang -> ( String, String ) -> Settings -> Screen -> Effect.Model SubSection -> Int -> Dict String ( Int, Int ) -> Sync.Settings -> Inline.Config sub
-inline lang translations settings screen effect id media sync =
+mergeFormulas : Maybe (Dict String String) -> Maybe (Dict String String) -> Maybe (Dict String String)
+mergeFormulas main sec =
+    case ( main, sec ) of
+        ( Just _, Nothing ) ->
+            main
+
+        ( Just m, Just s ) ->
+            Just <| Dict.union m s
+
+        ( Nothing, Just _ ) ->
+            sec
+
+        _ ->
+            Nothing
+
+
+inline :
+    Lang
+    -> ( String, String )
+    -> Settings
+    -> Screen
+    -> Effect.Model SubSection
+    -> Int
+    -> Maybe (Dict String String)
+    -> Dict String ( Int, Int )
+    -> Sync.Settings
+    -> Inline.Config sub
+inline lang translations settings screen effect id formulas media sync =
     Inline.init
         { mode = settings.mode
         , visible = Just effect.visible
@@ -76,6 +114,7 @@ inline lang translations settings screen effect id media sync =
         , scripts = effect.javascript
         , translations = Just translations
         , sync = Just sync
+        , formulas = formulas
         }
 
 

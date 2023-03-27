@@ -148,6 +148,7 @@ viewSlide screen model =
                 (model.settings.tooltips && (screen.width >= Const.tooltipBreakpoint))
                 ( model.langCodeOriginal, model.langCode )
                 model.settings.mode
+                model.definition.formulas
                 model.media
                 section.effect_model
                 model.section_active
@@ -179,6 +180,7 @@ showSection model screen ( id, section ) =
         screen
         section
         model.section_active
+        (Just model.definition.formulas)
         model.media
         |> Markdown.view (model.section_active /= id) (Maybe.withDefault model.persistent section.persistent)
         |> Html.map UpdateMarkdown
@@ -267,8 +269,8 @@ btnStop lang settings =
         [ Attr.id "lia-btn-sound", Attr.class "lia-btn--transparent" ]
 
 
-slideA11y : Lang -> Bool -> Bool -> ( String, String ) -> Mode -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
-slideA11y lang light tooltips translations mode media effect id =
+slideA11y : Lang -> Bool -> Bool -> ( String, String ) -> Mode -> Dict String String -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
+slideA11y lang light tooltips translations mode formulas media effect id =
     case mode of
         Slides ->
             effect
@@ -281,7 +283,15 @@ slideA11y lang light tooltips translations mode media effect id =
                                     List.map
                                         (\c ->
                                             c.content
-                                                |> List.map (view_inf effect.javascript lang light tooltips (Just translations) (Just media))
+                                                |> List.map
+                                                    (view_inf effect.javascript
+                                                        lang
+                                                        light
+                                                        tooltips
+                                                        (Just translations)
+                                                        (Just formulas)
+                                                        (Just media)
+                                                    )
                                                 |> Html.p
                                                     (narrator
                                                         |> Markdown.addTranslation False (Just translations) counter

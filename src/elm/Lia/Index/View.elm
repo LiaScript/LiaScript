@@ -114,7 +114,7 @@ bottom lang active msg =
 item : Lang -> Bool -> Int -> (( Int, Script.Msg sub ) -> msg) -> Section -> Html msg
 item lang active sectionId msg section =
     section.title
-        |> List.map (view_inf Array.empty lang False False Nothing Nothing)
+        |> List.map (view_inf Array.empty lang False False Nothing Nothing Nothing)
         |> itemLink active sectionId section
         |> Html.map (Tuple.pair section.id >> msg)
 
