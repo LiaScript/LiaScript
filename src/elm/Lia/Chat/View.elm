@@ -11,20 +11,22 @@ import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Update as Markdown
 import Lia.Markdown.View as Markdown
 import Lia.Section exposing (Section)
-import Lia.Utils exposing (btnIcon)
+import Lia.Utils exposing (btnIcon, noTranslate)
 import Translations as Trans exposing (Lang)
 
 
 view : Lang -> (Section -> Config Markdown.Msg) -> Model -> Html Msg
 view lang config model =
     Html.div
-        [ Attr.style "width" "100%"
-        , Attr.style "height" "calc(100% - 3rem)"
-        , Attr.style "display" "flex"
-        , Attr.style "flex-direction" "column"
-        , Attr.style "position" "absolute"
-        , Attr.style "top" "3rem"
-        ]
+        (noTranslate
+            [ Attr.style "width" "100%"
+            , Attr.style "height" "calc(100% - 3rem)"
+            , Attr.style "display" "flex"
+            , Attr.style "flex-direction" "column"
+            , Attr.style "position" "absolute"
+            , Attr.style "top" "3rem"
+            ]
+        )
         [ model.messages
             |> Dict.toList
             |> List.map (viewMessage config)
