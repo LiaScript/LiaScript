@@ -134,32 +134,7 @@ viewSlide screen model =
                     model.settings
                     model.definition
                     model.sync
-                , Html.div
-                    [ Attr.class "lia-slide__container"
-                    ]
-                    [ SplitPane.view
-                        (if model.settings.showChat && Sync_.isConnected model.sync.state then
-                            SplitPane.Both
-
-                         else
-                            SplitPane.OnlyFirst
-                        )
-                        viewConfig
-                        (model.sections
-                            |> Array.toIndexedList
-                            |> List.map (showSection model screen)
-                            |> Html.div
-                                [ Attr.style "width" "100%"
-                                , Attr.style "overflow-y" "auto"
-                                , Attr.style "display" "flex"
-                                , Attr.style "justify-content" "center"
-                                ]
-                        )
-                        (Chat.view (initConfig screen model) model.chat
-                            |> Html.map UpdateChat
-                        )
-                        model.pane
-                    ]
+                , viewPanes screen model
                 , slideBottom
                     model.translation
                     (screen.width < 400)
@@ -194,6 +169,45 @@ viewSlide screen model =
                 , Html.text "Ups, something went wrong"
                 ]
             ]
+
+
+viewPanes : Screen -> Model -> Html Msg
+viewPanes screen model =
+    Html.div
+        [ Attr.class "lia-slide__container"
+        ]
+        [ SplitPane.view
+            (case
+                ( model.settings.showChat
+                , Sync_.isConnected model.sync.state
+                , screen.width > Const.globalBreakpoints.sm
+                )
+             of
+                ( True, True, True ) ->
+                    SplitPane.Both
+
+                ( True, True, False ) ->
+                    SplitPane.OnlySecond
+
+                _ ->
+                    SplitPane.OnlyFirst
+            )
+            viewConfig
+            (model.sections
+                |> Array.toIndexedList
+                |> List.map (showSection model screen)
+                |> Html.div
+                    [ Attr.style "width" "100%"
+                    , Attr.style "overflow-y" "auto"
+                    , Attr.style "display" "flex"
+                    , Attr.style "justify-content" "center"
+                    ]
+            )
+            (Chat.view (initConfig screen model) model.chat
+                |> Html.map UpdateChat
+            )
+            model.pane
+        ]
 
 
 viewConfig : SplitPane.ViewConfig Msg

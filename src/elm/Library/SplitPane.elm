@@ -639,7 +639,12 @@ secondChildViewStyle display (State state) =
 
                 else
                     "flex"
-            , style "flex" v
+            , style "flex" <|
+                if display == OnlySecond then
+                    "1 1 0%"
+
+                else
+                    v
             , style "width" "100%"
             , style "height" "100%"
             , style "overflow" "hidden"
