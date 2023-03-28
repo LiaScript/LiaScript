@@ -141,7 +141,10 @@ update main msg model =
                 chat =
                     model.chat
             in
-            { model | chat = { chat | show = not chat.show, updates = not chat.show } }
+            { model
+                | support_menu = False
+                , chat = { chat | show = not chat.show, updates = not chat.show }
+            }
                 |> no_log Nothing
 
         Toggle (Action action) ->

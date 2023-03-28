@@ -391,7 +391,6 @@ export class Sync {
       }
 
       case 'codes': {
-        console.warn('WWWWWWWWWWWWWWWWWWWWWWW', event)
         if (event.track?.[0][0] === 'code' && event.track.length === 1) {
           for (let i = 0; i < event.message.param.length; i++) {
             for (let j = 0; j < event.message.param[i].length; j++) {

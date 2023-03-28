@@ -1,25 +1,22 @@
 module Lia.Chat.View exposing (view)
 
-import Accessibility.Key exposing (tabbable)
 import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events as Event
 import Html.Keyed as Keyed
 import Lia.Chat.Model exposing (Model)
 import Lia.Chat.Update exposing (Msg(..))
-import Lia.Index.View exposing (bottom)
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Update as Markdown
 import Lia.Markdown.View as Markdown
 import Lia.Section exposing (Section)
 import Lia.Utils exposing (btnIcon)
-import Url.Builder exposing (absolute)
+import Translations as Trans exposing (Lang)
 
 
-view : (Section -> Config Markdown.Msg) -> Model -> Html Msg
-view config model =
+view : Lang -> (Section -> Config Markdown.Msg) -> Model -> Html Msg
+view lang config model =
     Html.div
         [ Attr.style "width" "100%"
         , Attr.style "height" "calc(100% - 3rem)"
@@ -48,7 +45,7 @@ view config model =
             , Attr.style "height" "11.5rem"
             ]
             [ btnIcon
-                { title = "send"
+                { title = Trans.chatSend lang
                 , tabbable = True
                 , msg =
                     case String.trim model.input of

@@ -203,7 +203,7 @@ viewPanes screen model =
                     , Attr.style "justify-content" "center"
                     ]
             )
-            (Chat.view (initConfig screen model) model.chat
+            (Chat.view model.translation (initConfig screen model) model.chat
                 |> Html.map UpdateChat
             )
             model.pane
@@ -431,18 +431,13 @@ navButton title id class msg =
 -}
 slideTopBar : String -> Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> Sync_.Settings -> Html Msg
 slideTopBar languageCode lang screen url repositoryURL settings def sync =
-    [ ( Settings.menuMode, "mode" )
+    [ ( Settings.menuChat, "chat" )
+    , ( Settings.menuMode, "mode" )
     , ( Settings.menuSettings screen.width, "settings" )
     , ( Settings.menuTranslations languageCode def, "lang" )
     , ( Settings.menuShare url sync, "share" )
     , ( Settings.menuInformation repositoryURL def, "info" )
     ]
-        |> (if Sync_.isConnected sync.state then
-                (::) ( Settings.menuChat, "chat" )
-
-            else
-                identity
-           )
         |> Settings.header (Sync_.isConnected sync.state) lang screen settings (Definition.getIcon def)
         |> Html.map UpdateSettings
 
