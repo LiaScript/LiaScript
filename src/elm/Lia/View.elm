@@ -178,7 +178,7 @@ viewPanes screen model =
         ]
         [ SplitPane.view
             (case
-                ( model.settings.showChat
+                ( model.settings.chat.show
                 , Sync_.isConnected model.sync.state
                 , screen.width > Const.globalBreakpoints.sm
                 )

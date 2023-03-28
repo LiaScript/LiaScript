@@ -16,6 +16,8 @@ import Lia.Markdown.Code.Sync as Code
 import Lia.Markdown.Quiz.Sync as Quiz
 import Lia.Markdown.Survey.Sync as Survey
 import Lia.Section as Section exposing (Sections)
+import Lia.Settings.Types as Lia
+import Lia.Settings.Update exposing (updatedChatMessages)
 import Lia.Sync.Container as Container
 import Lia.Sync.Room as Room
 import Lia.Sync.Types
@@ -64,6 +66,7 @@ handle :
             , chat : Chat.Model
             , search_index : String -> String
             , definition : Definition
+            , settings : Lia.Settings
         }
     -> Event
     ->
@@ -75,6 +78,7 @@ handle :
                 , chat : Chat.Model
                 , search_index : String -> String
                 , definition : Definition
+                , settings : Lia.Settings
             }
             Msg
             sub
@@ -92,6 +96,7 @@ update :
             , chat : Chat.Model
             , search_index : String -> String
             , definition : Definition
+            , settings : Lia.Settings
         }
     -> Msg
     ->
@@ -103,6 +108,7 @@ update :
                 , chat : Chat.Model
                 , search_index : String -> String
                 , definition : Definition
+                , settings : Lia.Settings
             }
             Msg
             sub
@@ -329,6 +335,7 @@ synchronize :
         , chat : Chat.Model
         , search_index : String -> String
         , definition : Definition
+        , settings : Lia.Settings
     }
     -> JD.Value
     ->
@@ -339,6 +346,7 @@ synchronize :
                 , chat : Chat.Model
                 , search_index : String -> String
                 , definition : Definition
+                , settings : Lia.Settings
             }
             msg
             sub
@@ -381,7 +389,7 @@ synchronize model json =
                         |> Result.map (Chat.insert model.search_index model.definition model.chat)
                         |> Result.withDefault ( [], model.chat )
             in
-            { model | chat = chat }
+            { model | chat = chat, settings = updatedChatMessages model.settings }
                 |> Return.val
                 |> Return.batchEvents todo
                 |> Return.batchEvent (Service.Slide.scrollDown "lia-chat-messages" 350)

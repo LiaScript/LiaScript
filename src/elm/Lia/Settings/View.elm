@@ -155,7 +155,16 @@ menuChat lang tabbable settings =
         { title = "show chat"
         , tabbable = tabbable
         , msg = Just (Toggle Chat)
-        , icon = "icon-mail"
+        , icon =
+            case ( settings.chat.show, settings.chat.updates ) of
+                ( True, _ ) ->
+                    "icon-chat-open"
+
+                ( False, False ) ->
+                    "icon-chat-close"
+
+                _ ->
+                    "icon-chat-new"
         }
         [ Attr.id "lia-btn-toc"
         , Attr.class "lia-btn lia-btn--transparent"
