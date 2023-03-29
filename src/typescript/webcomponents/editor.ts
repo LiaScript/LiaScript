@@ -314,6 +314,16 @@ customElements.define(
         this._editor.on('change', runDispatch)
         this._editor.session.selection.on('changeCursor', cursorDispatch)
 
+        const self = this
+        this._editor.commands.addCommand({
+          name: 'Ctrl-Enter',
+          bindKey: { win: 'Ctrl-Enter', mac: 'Command-Enter' },
+          exec: function (editor) {
+            self.dispatchEvent(new CustomEvent('editorCtrlEnter'))
+          },
+          readOnly: false, // false if this command should not apply in readOnly mode
+        })
+
         input.setAttribute(
           'aria-label',
           'Code-editor in ' + this.model.mode + ' mode'

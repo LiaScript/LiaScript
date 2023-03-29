@@ -20,6 +20,7 @@ export class CRDT {
   protected codes: Y.Map<Y.Text>
   protected quizzes: YKeyValue<State.Data>
   protected surveys: YKeyValue<State.Data>
+  protected chat: YKeyValue<{ message: String; color: String; user: String }>
 
   protected length: number
   protected peerID: string
@@ -45,6 +46,7 @@ export class CRDT {
 
     this.quizzes = new YKeyValue(this.doc.getArray(QUIZ))
     this.surveys = new YKeyValue(this.doc.getArray(SURVEY))
+    this.chat = new YKeyValue(this.doc.getArray('chat'))
 
     if (callback) {
       this.peers.observe((event: Y.YMapEvent<boolean>) => {
@@ -58,15 +60,53 @@ export class CRDT {
       })
 
       this.quizzes.on('change', (changes) => {
-        callback(this.getAllMaps(this.quizzes), 'quiz')
+        const updates = this.getUpdates(this.quizzes, changes)
+
+        if (updates) {
+          callback(updates, 'quiz')
+        }
       })
 
       this.surveys.on('change', (changes) => {
-        callback(this.getAllMaps(this.surveys), 'survey')
+        const updates = this.getUpdates(this.surveys, changes)
+
+        if (updates) {
+          callback(updates, 'survey')
+        }
+      })
+
+      this.chat.on('change', (changes) => {
+        const vector = []
+
+        let obj
+        for (let [id, op] of changes) {
+          if (op.action === 'add') {
+            obj = op.newValue
+            obj['id'] = parseInt(id)
+            vector.push(obj)
+          }
+        }
+
+        if (vector.length > 0) callback(vector, 'chat')
       })
 
       this.codes.observeDeep((events: Y.YEvent<Y.Text>[]) => {
-        callback(this.getCode(), 'code')
+        const ids: Set<number> = new Set()
+
+        for (const event of events) {
+          const keys = event.currentTarget.keys()
+
+          for (const key of keys) {
+            try {
+              const [id] = JSON.parse(key)
+              ids.add(id)
+            } catch (e) {}
+          }
+        }
+
+        if (ids.size > 0) {
+          callback(this.getCode(ids), 'code')
+        }
       })
     }
 
@@ -155,11 +195,13 @@ export class CRDT {
     return Y.encodeStateAsUpdate(this.doc, state)
   }
 
-  getCode(): string[][][] {
-    let vector: string[][][] = []
-    for (let i = 0; i < this.length; i++) {
-      vector.push(this.getAllTexts(i))
+  getCode(ids: Set<number>): { id: number; data: string[][] }[] {
+    let vector: { id: number; data: string[][] }[] = []
+
+    for (const id of ids) {
+      vector.push({ id: id, data: this.getAllTexts(id) })
     }
+
     return vector
   }
 
@@ -200,10 +242,10 @@ export class CRDT {
 
   id(id1: number, id2: number, id3?: number) {
     if (id3 === undefined) {
-      return id1 + ':' + id2
+      return JSON.stringify([id1, id2])
     }
 
-    return id1 + ':' + id2 + ',' + id3
+    return JSON.stringify([id1, id2, id3])
   }
 
   getMap(key: string, id: number, i: number): Y.Map<any> {
@@ -220,6 +262,18 @@ export class CRDT {
         sub.push(map.get(this.id(i, j)))
       }
       vector.push(sub)
+    }
+
+    return vector
+  }
+
+  getMaps(id: number, map: YKeyValue<State.Data>): State.Data[][] {
+    const vector: State.Data[][] = []
+
+    for (let i = 0; map.has(this.id(id, i)); i++) {
+      // @ts-ignore
+
+      vector.push(map.get(this.id(id, i)))
     }
 
     return vector
@@ -259,9 +313,9 @@ export class CRDT {
       record = {}
     }
 
-    if (record[this.peerID] == undefined) {
-      record[this.peerID] = value
-    }
+    //if (record[this.peerID] == undefined) {
+    record[this.peerID] = value
+    //}
 
     map.set(this.id(id, i), record)
   }
@@ -278,6 +332,14 @@ export class CRDT {
 
       this.doc.clientID = backup
     }
+  }
+
+  addChatMessage(msg: string) {
+    this.chat.set('' + Date.now(), {
+      color: this.getColor(),
+      message: msg,
+      user: this.peerID,
+    })
   }
 
   updateCode(
@@ -347,5 +409,45 @@ export class CRDT {
 
   removeCursor() {
     this.cursors.delete(this.peerID)
+  }
+
+  getUpdates(maps, changes): { id: number; data: State.Data[][] }[] | null {
+    const ids: Set<number> = new Set()
+    const updates: [string, any][] = []
+
+    for (const [id, data] of changes) {
+      switch (data.action) {
+        case 'update': {
+          if (
+            JSON.stringify(Object.keys(data.oldValue).sort()) !==
+            JSON.stringify(Object.keys(data.newValue).sort())
+          ) {
+            updates.push([id, { ...data.oldValue, ...data.newValue }])
+            continue
+          }
+        }
+        case 'add': {
+          try {
+            const [key] = JSON.parse(id)
+            ids.add(key)
+          } catch (e) {}
+        }
+      }
+    }
+
+    const vector: { id: number; data: State.Data[][] }[] = []
+    for (const id of ids) {
+      vector.push({ id: id, data: this.getMaps(id, maps) })
+    }
+
+    for (const [id, value] of updates) {
+      maps.set(id, value)
+    }
+
+    if (vector.length > 0) {
+      return vector
+    }
+
+    return null
   }
 }

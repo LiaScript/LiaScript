@@ -16,6 +16,7 @@ const Service = {
    * * __init__: called on every new slide initialization
    * * __scroll_up__: move the slide to the top
    * * __scroll_into_view__: scroll an element with a particular id and after
+   * * __scroll_down__: scroll an element with a particular id down
    *   a particular delay into the viewport
    *
    * @param event - LiaScript event
@@ -46,6 +47,20 @@ const Service = {
 
       case 'scroll_into_view': {
         scrollIntoView(event.message.param.id, event.message.param.delay)
+        break
+      }
+
+      case 'scroll_down': {
+        setTimeout(function () {
+          const elem = document.getElementById(event.message.param.id)
+
+          if (elem) {
+            elem.scrollTo({
+              top: elem.scrollHeight,
+              behavior: 'smooth',
+            })
+          }
+        }, event.message.param.delay)
         break
       }
 

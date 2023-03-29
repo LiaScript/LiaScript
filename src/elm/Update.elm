@@ -156,7 +156,7 @@ update msg model =
                             )
 
                 ( Nothing, _, ( "index_restore", param ) ) ->
-                    case Lia.Json.Decode.decode model.lia.seed model.lia.sync param of
+                    case Lia.Json.Decode.decode model.lia.seed model.lia.pane model.lia.sync param of
                         Ok lia ->
                             start
                                 { model

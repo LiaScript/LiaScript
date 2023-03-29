@@ -2,12 +2,12 @@ module Lia.Definition.Types exposing
     ( Definition
     , Resource(..)
     , addToResources
+    , add_formula
     , add_imports
     , add_macros
     , add_translation
     , default
     , getIcon
-    , get_translations
     , setPersistent
     )
 
@@ -36,6 +36,7 @@ type alias Definition =
     , resources : List Resource
     , base : String
     , translation : Dict String String
+    , formulas : Dict String String
     , macro : Dict String String
     , imports : List String
     , attributes : List Inlines
@@ -61,6 +62,7 @@ default base =
     , resources = []
     , base = base
     , translation = Dict.empty
+    , formulas = Dict.empty
     , macro = Dict.empty
     , imports = []
     , attributes = []
@@ -86,9 +88,28 @@ add_translation str def =
             def
 
 
-get_translations : Definition -> List ( String, String )
-get_translations def =
-    Dict.toList def.translation
+add_formula : String -> Definition -> Definition
+add_formula str def =
+    case str |> String.trim |> String.split " " of
+        name :: formula ->
+            { def
+                | formulas =
+                    Dict.insert
+                        (if String.startsWith "\\" name then
+                            name
+
+                         else
+                            "\\" ++ name
+                        )
+                        (formula
+                            |> String.join " "
+                            |> String.trim
+                        )
+                        def.formulas
+            }
+
+        _ ->
+            def
 
 
 add_macros : Definition -> Definition -> Definition
@@ -107,6 +128,7 @@ add_macros orig temp =
                        )
                 )
         , resources = List.append orig.resources temp.resources
+        , formulas = Dict.union orig.formulas temp.formulas
     }
 
 
