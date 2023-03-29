@@ -201,6 +201,8 @@ viewPanes screen model =
                     , Attr.style "overflow-y" "auto"
                     , Attr.style "display" "flex"
                     , Attr.style "justify-content" "center"
+                    , Attr.class "lia-slide__container"
+                    , Attr.style "margin-top" "0px"
                     ]
             )
             (Chat.view model.translation (initConfig screen model) model.chat
