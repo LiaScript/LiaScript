@@ -507,19 +507,16 @@ reference config ref attr =
         Embed alt_ url title_ ->
             Html.figure [ Attr.class "lia-figure", Attr.style "height" "auto", Attr.style "width" "100%" ] <|
                 [ Html.div [ Attr.class "lia-figure__media" ] <|
-                    case title_ of
-                        Just sub ->
-                            [ printLink config alt_ title_ url
-                            , oembed config.oEmbed url
-                            , sub
-                                |> viewer config
-                                |> Html.figcaption [ Attr.class "lia-figure__caption" ]
-                            ]
+                    [ printLink config alt_ title_ url
+                    , oembed config.oEmbed url
+                    , Html.figcaption [ Attr.class "lia-figure__caption" ] <|
+                        case title_ of
+                            Just sub ->
+                                viewer config sub
 
-                        Nothing ->
-                            [ printLink config alt_ title_ url
-                            , oembed config.oEmbed url
-                            ]
+                            Nothing ->
+                                [ Html.a [ Attr.href url, Attr.target "blank_" ] [ Html.text url ] ]
+                    ]
                 ]
 
         Preview_Lia url ->
