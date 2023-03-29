@@ -80,6 +80,7 @@
     "parcel": "^2.8.3",
     "parcel-reporter-multiple-static-file-copier": "^1.0.5",
     "parcel-reporter-static-files-copy": "^1.5.0",
+    "pdfast": "^0.2.0",
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
     "sass": "^1.58.1",
@@ -93,7 +94,7 @@
     "yjs": "^13.5.39"
   },
   "browserslist": [
-    "cover 90.0%"
+    "cover 94.0%"
   ],
   "staticFiles": [
     {

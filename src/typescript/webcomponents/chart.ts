@@ -1,5 +1,7 @@
 import ResizeObserver from 'resize-observer-polyfill'
 
+import * as pdf from 'pdfast'
+
 // @ts-ignore
 import * as echarts from 'echarts'
 import 'echarts-wordcloud'
@@ -49,6 +51,7 @@ customElements.define(
     private resizeObserver: ResizeObserver
 
     private style_: string
+    private val: string = ''
 
     static get observedAttributes() {
       return ['style', 'mode', 'json', 'locale', 'aria-label']
@@ -220,10 +223,31 @@ customElements.define(
 
     set option(val) {
       if (val) {
-        val['aria'] = { show: true }
         //, decal: { show: true }}
 
-        if (JSON.stringify(val) !== JSON.stringify(this.option_)) {
+        const val_ = JSON.stringify(val)
+        if (val_ !== this.val) {
+          this.val = val_
+          val['aria'] = { show: true }
+          if (val['pdf']) {
+            const data = pdf.create(val['pdf']['data'], {
+              min: val['pdf']['min'],
+              max: val['pdf']['max'],
+              size: val['pdf']['size'],
+              width: val['pdf']['width'],
+            })
+
+            const x: number[] = []
+            const y: number[] = []
+
+            for (let i = 0; i < data.length; i++) {
+              x.push(data[i]['x'])
+              y.push(data[i]['y'])
+            }
+
+            val['xAxis'].data = x
+            val['series'][0].data = y
+          }
           this.option_ = val
           this.updateChart()
         }

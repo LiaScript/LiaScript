@@ -6,6 +6,7 @@ module Lia.Settings.Update exposing
     , handle
     , toggle_sound
     , update
+    , updatedChatMessages
     )
 
 import Json.Encode as JE
@@ -43,6 +44,7 @@ type Toggle
     | Sync
     | Action Action
     | SupportMenu
+    | Chat
     | TranslateWithGoogle
     | Tooltips
     | PreferBrowserTTS
@@ -133,6 +135,17 @@ update main msg model =
 
         Toggle QRCode ->
             no_log Nothing { model | showQRCode = not model.showQRCode }
+
+        Toggle Chat ->
+            let
+                chat =
+                    model.chat
+            in
+            { model
+                | support_menu = False
+                , chat = { chat | show = not chat.show, updates = not chat.show }
+            }
+                |> no_log Nothing
 
         Toggle (Action action) ->
             no_log
@@ -302,3 +315,16 @@ no_log elementID =
 maybeFocus : Maybe String -> Cmd Msg
 maybeFocus =
     Maybe.map (focus Ignore) >> Maybe.withDefault Cmd.none
+
+
+updatedChatMessages : Settings -> Settings
+updatedChatMessages settings =
+    if settings.chat.show then
+        settings
+
+    else
+        let
+            chat =
+                settings.chat
+        in
+        { settings | chat = { chat | updates = True } }

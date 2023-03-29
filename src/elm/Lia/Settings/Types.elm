@@ -31,6 +31,7 @@ type alias Settings =
     , sync : Maybe Bool
     , showQRCode : Bool
     , tts : TTS
+    , chat : { show : Bool, updates : Bool }
     }
 
 
@@ -80,6 +81,10 @@ init hasShareApi mode =
         { preferBrowser = False
         , isBrowserSupported = False
         , isResponsiveVoiceSupported = False
+        }
+    , chat =
+        { show = False
+        , updates = False
         }
     }
 

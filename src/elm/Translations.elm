@@ -37,7 +37,7 @@ Otherwise `Nothing` is returned.
 -}
 getLnFromCode : String -> Maybe Lang
 getLnFromCode code =
-    case String.toLower code of 
+    case String.toLower code of
         "am" ->
             Just Am
 
@@ -109,7 +109,7 @@ getLnFromCode code =
 -}
 getCodeFromLn : Lang -> String
 getCodeFromLn lang =
-    case lang of 
+    case lang of
         Am ->
             "am"
 
@@ -176,7 +176,7 @@ getCodeFromLn lang =
 
 home : Lang -> String
 home lang =
-    case lang of 
+    case lang of
         Am ->
             "ዋና ገጽ"
 
@@ -216,7 +216,7 @@ home lang =
 
 baseNext : Lang -> String
 baseNext lang =
-    case lang of 
+    case lang of
         Am ->
             "ቀጣይ"
 
@@ -283,7 +283,7 @@ baseNext lang =
 
 basePrev : Lang -> String
 basePrev lang =
-    case lang of 
+    case lang of
         Am ->
             "ተመለስ"
 
@@ -350,7 +350,7 @@ basePrev lang =
 
 basePlay : Lang -> String
 basePlay lang =
-    case lang of 
+    case lang of
         Am ->
             "ጨርሰን"
 
@@ -417,7 +417,7 @@ basePlay lang =
 
 baseStop : Lang -> String
 baseStop lang =
-    case lang of 
+    case lang of
         Am ->
             "አቆጣጠር"
 
@@ -484,7 +484,7 @@ baseStop lang =
 
 baseAbc : Lang -> String
 baseAbc lang =
-    case lang of 
+    case lang of
         Am ->
             "አማ"
 
@@ -512,7 +512,7 @@ baseAbc lang =
 
 baseFont : Lang -> String -> String
 baseFont lang str0 =
-    case lang of 
+    case lang of
         Am ->
             "ፎንት መጠን: " ++ str0 ++ ""
 
@@ -579,7 +579,7 @@ baseFont lang str0 =
 
 baseSize1 : Lang -> String
 baseSize1 lang =
-    case lang of 
+    case lang of
         Am ->
             "ትንሽ"
 
@@ -646,7 +646,7 @@ baseSize1 lang =
 
 baseSize2 : Lang -> String
 baseSize2 lang =
-    case lang of 
+    case lang of
         Am ->
             "መልካም"
 
@@ -713,7 +713,7 @@ baseSize2 lang =
 
 baseSize3 : Lang -> String
 baseSize3 lang =
-    case lang of 
+    case lang of
         Am ->
             "በጣም ስምንት"
 
@@ -780,7 +780,7 @@ baseSize3 lang =
 
 baseSearch : Lang -> String
 baseSearch lang =
-    case lang of 
+    case lang of
         Am ->
             "ፈልግ"
 
@@ -847,7 +847,7 @@ baseSearch lang =
 
 baseDelete : Lang -> String
 baseDelete lang =
-    case lang of 
+    case lang of
         Am ->
             "ፈልግ ያድገት"
 
@@ -914,7 +914,7 @@ baseDelete lang =
 
 baseResults : Lang -> String
 baseResults lang =
-    case lang of 
+    case lang of
         Am ->
             "ውጤቶች"
 
@@ -981,7 +981,7 @@ baseResults lang =
 
 baseOneResult : Lang -> String
 baseOneResult lang =
-    case lang of 
+    case lang of
         Am ->
             "አንድ ውጤት"
 
@@ -1048,7 +1048,7 @@ baseOneResult lang =
 
 baseNoResult : Lang -> String
 baseNoResult lang =
-    case lang of 
+    case lang of
         Am ->
             "ምንም ውጤት የሉም"
 
@@ -1115,7 +1115,7 @@ baseNoResult lang =
 
 baseToc : Lang -> String
 baseToc lang =
-    case lang of 
+    case lang of
         Am ->
             "የዋጋ ዓረብ"
 
@@ -1182,7 +1182,7 @@ baseToc lang =
 
 baseShow : Lang -> String
 baseShow lang =
-    case lang of 
+    case lang of
         Am ->
             "አሳይ"
 
@@ -1249,7 +1249,7 @@ baseShow lang =
 
 baseHide : Lang -> String
 baseHide lang =
-    case lang of 
+    case lang of
         Am ->
             "ደብቅ"
 
@@ -1316,7 +1316,7 @@ baseHide lang =
 
 baseEditor : Lang -> String
 baseEditor lang =
-    case lang of 
+    case lang of
         Am ->
             "ኤዲተር-ዘዴ"
 
@@ -1383,7 +1383,7 @@ baseEditor lang =
 
 baseLang : Lang -> String
 baseLang lang =
-    case lang of 
+    case lang of
         Am ->
             "አማርኛ"
 
@@ -1450,7 +1450,7 @@ baseLang lang =
 
 no_translation : Lang -> String
 no_translation lang =
-    case lang of 
+    case lang of
         Am ->
             "በመሆን ላይ ምንም ተስተካክል የለም"
 
@@ -1517,7 +1517,7 @@ no_translation lang =
 
 translateWithGoogle : Lang -> String
 translateWithGoogle lang =
-    case lang of 
+    case lang of
         Am ->
             "በ Google ትርጉም (ምርጥ) ተመርጧል"
 
@@ -1584,7 +1584,7 @@ translateWithGoogle lang =
 
 cColor : Lang -> String
 cColor lang =
-    case lang of 
+    case lang of
         Am ->
             "ቀለም"
 
@@ -1651,7 +1651,7 @@ cColor lang =
 
 cSchema : Lang -> String
 cSchema lang =
-    case lang of 
+    case lang of
         Am ->
             "ቀለም ሥነጽሑፍ"
 
@@ -1718,7 +1718,7 @@ cSchema lang =
 
 cDark : Lang -> String
 cDark lang =
-    case lang of 
+    case lang of
         Am ->
             "እንቅስቃሴ"
 
@@ -1785,7 +1785,7 @@ cDark lang =
 
 cBright : Lang -> String
 cBright lang =
-    case lang of 
+    case lang of
         Am ->
             "እንደዛሬ"
 
@@ -1852,7 +1852,7 @@ cBright lang =
 
 cDefault : Lang -> String
 cDefault lang =
-    case lang of 
+    case lang of
         Am ->
             "ነባሪ"
 
@@ -1919,7 +1919,7 @@ cDefault lang =
 
 cBlue : Lang -> String
 cBlue lang =
-    case lang of 
+    case lang of
         Am ->
             "ሰማያዊ"
 
@@ -1986,7 +1986,7 @@ cBlue lang =
 
 cRed : Lang -> String
 cRed lang =
-    case lang of 
+    case lang of
         Am ->
             "ቀይ"
 
@@ -2053,7 +2053,7 @@ cRed lang =
 
 cYellow : Lang -> String
 cYellow lang =
-    case lang of 
+    case lang of
         Am ->
             "ቢጫ"
 
@@ -2120,7 +2120,7 @@ cYellow lang =
 
 cTurquoise : Lang -> String
 cTurquoise lang =
-    case lang of 
+    case lang of
         Am ->
             "ዓሣደኝ"
 
@@ -2187,7 +2187,7 @@ cTurquoise lang =
 
 modeMode : Lang -> String
 modeMode lang =
-    case lang of 
+    case lang of
         Am ->
             "ዘመን ተዘጋጅ"
 
@@ -2254,7 +2254,7 @@ modeMode lang =
 
 modeTextbook : Lang -> String
 modeTextbook lang =
-    case lang of 
+    case lang of
         Am ->
             "ተማሪ መስመር"
 
@@ -2321,7 +2321,7 @@ modeTextbook lang =
 
 modePresentation : Lang -> String
 modePresentation lang =
-    case lang of 
+    case lang of
         Am ->
             "እንቅስቃሴ"
 
@@ -2388,7 +2388,7 @@ modePresentation lang =
 
 modeSlides : Lang -> String
 modeSlides lang =
-    case lang of 
+    case lang of
         Am ->
             "ስላይድስ"
 
@@ -2455,7 +2455,7 @@ modeSlides lang =
 
 soundOn : Lang -> String
 soundOn lang =
-    case lang of 
+    case lang of
         Am ->
             "ድምጽ አብራ"
 
@@ -2522,7 +2522,7 @@ soundOn lang =
 
 soundOff : Lang -> String
 soundOff lang =
-    case lang of 
+    case lang of
         Am ->
             "ድምጽ ያልተጫኑ"
 
@@ -2589,7 +2589,7 @@ soundOff lang =
 
 infoAuthor : Lang -> String
 infoAuthor lang =
-    case lang of 
+    case lang of
         Am ->
             "ሰላም ያለፈ: "
 
@@ -2656,7 +2656,7 @@ infoAuthor lang =
 
 infoDate : Lang -> String
 infoDate lang =
-    case lang of 
+    case lang of
         Am ->
             "ቀን: "
 
@@ -2723,7 +2723,7 @@ infoDate lang =
 
 infoEmail : Lang -> String
 infoEmail lang =
-    case lang of 
+    case lang of
         Am ->
             "ኢሜል: "
 
@@ -2790,7 +2790,7 @@ infoEmail lang =
 
 infoVersion : Lang -> String
 infoVersion lang =
-    case lang of 
+    case lang of
         Am ->
             "ቅድሚያ: "
 
@@ -2857,7 +2857,7 @@ infoVersion lang =
 
 confInformation : Lang -> String
 confInformation lang =
-    case lang of 
+    case lang of
         Am ->
             "መረጃ"
 
@@ -2924,7 +2924,7 @@ confInformation lang =
 
 confSettings : Lang -> String
 confSettings lang =
-    case lang of 
+    case lang of
         Am ->
             "ማስተካከያዎች"
 
@@ -2991,7 +2991,7 @@ confSettings lang =
 
 confShare : Lang -> String
 confShare lang =
-    case lang of 
+    case lang of
         Am ->
             "አገልግሎት"
 
@@ -3058,7 +3058,7 @@ confShare lang =
 
 confShareVia : Lang -> String
 confShareVia lang =
-    case lang of 
+    case lang of
         Am ->
             "ከተጨማሪ ያግኙ ..."
 
@@ -3125,7 +3125,7 @@ confShareVia lang =
 
 confTranslations : Lang -> String
 confTranslations lang =
-    case lang of 
+    case lang of
         Am ->
             "ትርጉም"
 
@@ -3192,7 +3192,7 @@ confTranslations lang =
 
 confTooltip : Lang -> String
 confTooltip lang =
-    case lang of 
+    case lang of
         Am ->
             "የማጣሪያ ጥቅል"
 
@@ -3232,7 +3232,7 @@ confTooltip lang =
 
 ttsPreferBrowser : Lang -> String
 ttsPreferBrowser lang =
-    case lang of 
+    case lang of
         Am ->
             "የብሮውን ቴክስት-ተምረው መቀመጥ"
 
@@ -3290,7 +3290,7 @@ ttsPreferBrowser lang =
 
 ttsUsingBrowser : Lang -> String
 ttsUsingBrowser lang =
-    case lang of 
+    case lang of
         Am ->
             "በብሮው ቴክስት-ተምረው መጫን ነው።"
 
@@ -3348,7 +3348,7 @@ ttsUsingBrowser lang =
 
 ttsUnsupported : Lang -> String
 ttsUnsupported lang =
-    case lang of 
+    case lang of
         Am ->
             "የምንጠቀመው ብሮዎች ሊያውቅ አይችልም፣ በሌላ ቦታ ያሳያል።"
 
@@ -3406,7 +3406,7 @@ ttsUnsupported lang =
 
 codeExecute : Lang -> String
 codeExecute lang =
-    case lang of 
+    case lang of
         Am ->
             "ተጠቃሚ ስጥ"
 
@@ -3473,7 +3473,7 @@ codeExecute lang =
 
 codeRunning : Lang -> String
 codeRunning lang =
-    case lang of 
+    case lang of
         Am ->
             "ተጠቃሚ ላይ ነው"
 
@@ -3540,7 +3540,7 @@ codeRunning lang =
 
 codePrev : Lang -> String
 codePrev lang =
-    case lang of 
+    case lang of
         Am ->
             "የመጀመሪያ ክፍሎች"
 
@@ -3607,7 +3607,7 @@ codePrev lang =
 
 codeNext : Lang -> String
 codeNext lang =
-    case lang of 
+    case lang of
         Am ->
             "የቀጣይ ክፍሎች"
 
@@ -3674,7 +3674,7 @@ codeNext lang =
 
 codeFirst : Lang -> String
 codeFirst lang =
-    case lang of 
+    case lang of
         Am ->
             "የመጀመሪያ ክፍል"
 
@@ -3741,7 +3741,7 @@ codeFirst lang =
 
 codeLast : Lang -> String
 codeLast lang =
-    case lang of 
+    case lang of
         Am ->
             "የመጨረሻ ክፍል"
 
@@ -3808,7 +3808,7 @@ codeLast lang =
 
 codeMinimize : Lang -> String
 codeMinimize lang =
-    case lang of 
+    case lang of
         Am ->
             "ማሳወቅ ያድርጉ"
 
@@ -3875,7 +3875,7 @@ codeMinimize lang =
 
 codeMaximize : Lang -> String
 codeMaximize lang =
-    case lang of 
+    case lang of
         Am ->
             "ማግኘት ያድርጉ"
 
@@ -3942,7 +3942,7 @@ codeMaximize lang =
 
 codeTerminal : Lang -> String
 codeTerminal lang =
-    case lang of 
+    case lang of
         Am ->
             "ቴርማው"
 
@@ -4003,7 +4003,7 @@ codeTerminal lang =
 
 quizCheck : Lang -> String
 quizCheck lang =
-    case lang of 
+    case lang of
         Am ->
             "መለየት"
 
@@ -4070,7 +4070,7 @@ quizCheck lang =
 
 quizSolution : Lang -> String
 quizSolution lang =
-    case lang of 
+    case lang of
         Am ->
             "አስገሳት አሳይ"
 
@@ -4137,7 +4137,7 @@ quizSolution lang =
 
 quizHint : Lang -> String
 quizHint lang =
-    case lang of 
+    case lang of
         Am ->
             "አስታዋሽ"
 
@@ -4204,7 +4204,7 @@ quizHint lang =
 
 quizSelection : Lang -> String
 quizSelection lang =
-    case lang of 
+    case lang of
         Am ->
             "ምረጡ"
 
@@ -4271,7 +4271,7 @@ quizSelection lang =
 
 quizLabelCheck : Lang -> String
 quizLabelCheck lang =
-    case lang of 
+    case lang of
         Am ->
             "መረጃው ተመርጧል ወይም ቆይተው ይቀጥሉ"
 
@@ -4338,7 +4338,7 @@ quizLabelCheck lang =
 
 quizLabelSolution : Lang -> String
 quizLabelSolution lang =
-    case lang of 
+    case lang of
         Am ->
             "የይለፍ መረጃ ይሰራል"
 
@@ -4405,7 +4405,7 @@ quizLabelSolution lang =
 
 quizAnswerSuccess : Lang -> String
 quizAnswerSuccess lang =
-    case lang of 
+    case lang of
         Am ->
             "እንኳን ደስ አለዎት! ይህ ማሳወቅ ተመልከቱ"
 
@@ -4472,7 +4472,7 @@ quizAnswerSuccess lang =
 
 quizAnswerError : Lang -> String
 quizAnswerError lang =
-    case lang of 
+    case lang of
         Am ->
             "የሚነካ መለያ መገለጫ በድጋሚ ነው"
 
@@ -4539,7 +4539,7 @@ quizAnswerError lang =
 
 quizAnswerResolved : Lang -> String
 quizAnswerResolved lang =
-    case lang of 
+    case lang of
         Am ->
             "ተመርጧል"
 
@@ -4606,7 +4606,7 @@ quizAnswerResolved lang =
 
 surveySubmit : Lang -> String
 surveySubmit lang =
-    case lang of 
+    case lang of
         Am ->
             "አመድ"
 
@@ -4673,7 +4673,7 @@ surveySubmit lang =
 
 surveySubmitted : Lang -> String
 surveySubmitted lang =
-    case lang of 
+    case lang of
         Am ->
             "እናመሰግናለን"
 
@@ -4740,7 +4740,7 @@ surveySubmitted lang =
 
 surveyText : Lang -> String
 surveyText lang =
-    case lang of 
+    case lang of
         Am ->
             "ግል ጽሑፍ ያስገቡ..."
 
@@ -4807,7 +4807,7 @@ surveyText lang =
 
 sortAsc : Lang -> String
 sortAsc lang =
-    case lang of 
+    case lang of
         Am ->
             "ቅደም አስቀድሞ"
 
@@ -4859,7 +4859,7 @@ sortAsc lang =
 
 sortDesc : Lang -> String
 sortDesc lang =
-    case lang of 
+    case lang of
         Am ->
             "ታሪክ አስቀድሞ"
 
@@ -4911,7 +4911,7 @@ sortDesc lang =
 
 sortNot : Lang -> String
 sortNot lang =
-    case lang of 
+    case lang of
         Am ->
             "ተመርጧል"
 
@@ -4963,7 +4963,7 @@ sortNot lang =
 
 chartPie : Lang -> String
 chartPie lang =
-    case lang of 
+    case lang of
         Am ->
             "ፒ ሾስትን ጫን ቦታ"
 
@@ -5009,7 +5009,7 @@ chartPie lang =
 
 chartBar : Lang -> String
 chartBar lang =
-    case lang of 
+    case lang of
         Am ->
             "ባር ሾስትን ጫን ቦታ"
 
@@ -5055,7 +5055,7 @@ chartBar lang =
 
 chartLine : Lang -> String
 chartLine lang =
-    case lang of 
+    case lang of
         Am ->
             "ስብስብ ሾስትን ጫን ቦታ"
 
@@ -5101,7 +5101,7 @@ chartLine lang =
 
 chartScatter : Lang -> String
 chartScatter lang =
-    case lang of 
+    case lang of
         Am ->
             "መስመር ግርግር ስቀር ቦታ"
 
@@ -5147,7 +5147,7 @@ chartScatter lang =
 
 chartRadar : Lang -> String
 chartRadar lang =
-    case lang of 
+    case lang of
         Am ->
             "ራዳር ሾስት"
 
@@ -5193,7 +5193,7 @@ chartRadar lang =
 
 chartBoxplot : Lang -> String
 chartBoxplot lang =
-    case lang of 
+    case lang of
         Am ->
             "ቦክስ ፕሎት"
 
@@ -5236,7 +5236,7 @@ chartBoxplot lang =
 
 chartHeatmap : Lang -> String
 chartHeatmap lang =
-    case lang of 
+    case lang of
         Am ->
             "ሜይፕ ሾስት"
 
@@ -5282,7 +5282,7 @@ chartHeatmap lang =
 
 chartMap : Lang -> String
 chartMap lang =
-    case lang of 
+    case lang of
         Am ->
             "ካርታ"
 
@@ -5328,7 +5328,7 @@ chartMap lang =
 
 chartParallel : Lang -> String
 chartParallel lang =
-    case lang of 
+    case lang of
         Am ->
             "ፓራለል ኮይላርድን ቦታ"
 
@@ -5336,7 +5336,7 @@ chartParallel lang =
             "متوازي"
 
         Bn ->
-            "প্যারালেল কো঑র্ডিনেট ম্যাপ"
+            "প্যারালেল কো\u{0991}র্ডিনেট ম্যাপ"
 
         De ->
             "Parallele Koordinatenkarte"
@@ -5371,7 +5371,7 @@ chartParallel lang =
 
 chartLines : Lang -> String
 chartLines lang =
-    case lang of 
+    case lang of
         Am ->
             "ስብስቦች ሾስት"
 
@@ -5414,7 +5414,7 @@ chartLines lang =
 
 chartGraph : Lang -> String
 chartGraph lang =
-    case lang of 
+    case lang of
         Am ->
             "ባህሪዎች ሾስት"
 
@@ -5457,7 +5457,7 @@ chartGraph lang =
 
 chartSankey : Lang -> String
 chartSankey lang =
-    case lang of 
+    case lang of
         Am ->
             "ሳንኪ ዲዚግም"
 
@@ -5500,7 +5500,7 @@ chartSankey lang =
 
 chartFunnel : Lang -> String
 chartFunnel lang =
-    case lang of 
+    case lang of
         Am ->
             "ፋንኤል ጫን ቦታ"
 
@@ -5543,7 +5543,7 @@ chartFunnel lang =
 
 qrCode : Lang -> String
 qrCode lang =
-    case lang of 
+    case lang of
         Am ->
             "QR ኮድ ለድረ ገጽ"
 
@@ -5610,7 +5610,7 @@ qrCode lang =
 
 qrErr : Lang -> String
 qrErr lang =
-    case lang of 
+    case lang of
         Am ->
             "ስህተት ያለባቸው በ QR ኮድ ወይም ትክክል አልተመለከተም"
 
@@ -5674,3 +5674,270 @@ qrErr lang =
         _ ->
             "Error while encoding to QR code"
 
+
+chatOpen : Lang -> String
+chatOpen lang =
+    case lang of
+        Am ->
+            "ቀዳሚ ማድረግ"
+
+        Ar ->
+            "فتح الدردشة"
+
+        Bg ->
+            "Отвори чат"
+
+        Bn ->
+            "চ্যাট খুলুন"
+
+        De ->
+            "Chat öffnen"
+
+        Es ->
+            "Abrir chat"
+
+        Fa ->
+            "باز کردن گفتگو"
+
+        Fr ->
+            "Ouvrir le chat"
+
+        Hi ->
+            "चैट खोलें"
+
+        Hy ->
+            "Բացել խոսակցություն"
+
+        Ja ->
+            "チャットを開く"
+
+        Ko ->
+            "채팅 열기"
+
+        Nl ->
+            "Chat openen"
+
+        Pa ->
+            "ਚੈਟ ਖੋਲ੍ਹੋ"
+
+        Pt ->
+            "Abrir chat"
+
+        Ru ->
+            "Открыть чат"
+
+        Sw ->
+            "Fungua gumzo"
+
+        Tw ->
+            "開啟聊天室"
+
+        Uk ->
+            "Відкрити чат"
+
+        Zh ->
+            "打开聊天"
+
+        _ ->
+            "Open chat"
+
+
+chatClose : Lang -> String
+chatClose lang =
+    case lang of
+        Am ->
+            "ዝጋት ያድርጉ"
+
+        Ar ->
+            "إغلاق الدردشة"
+
+        Bg ->
+            "Затвори чат"
+
+        Bn ->
+            "চ্যাট বন্ধ করুন"
+
+        De ->
+            "Chat schließen"
+
+        Es ->
+            "Cerrar chat"
+
+        Fa ->
+            "بستن گفتگو"
+
+        Fr ->
+            "Fermer le chat"
+
+        Hi ->
+            "चैट बंद करें"
+
+        Hy ->
+            "Փակել խոսակցություն"
+
+        Ja ->
+            "チャットを閉じる"
+
+        Ko ->
+            "채팅 닫기"
+
+        Nl ->
+            "Chat sluiten"
+
+        Pa ->
+            "ਚੈਟ ਬੰਦ ਕਰੋ"
+
+        Pt ->
+            "Fechar chat"
+
+        Ru ->
+            "Закрыть чат"
+
+        Sw ->
+            "Funga gumzo"
+
+        Tw ->
+            "關閉聊天室"
+
+        Uk ->
+            "Закрити чат"
+
+        Zh ->
+            "关闭聊天"
+
+        _ ->
+            "Close chat"
+
+
+chatNew : Lang -> String
+chatNew lang =
+    case lang of
+        Am ->
+            "የተከፈሉ የቀዳሚ መልዕክቶች አልተመለከተም"
+
+        Ar ->
+            "لديك رسائل دردشة غير مقروءة"
+
+        Bg ->
+            "Имате непрочетени чат съобщения"
+
+        Bn ->
+            "আপনার অপঠিত চ্যাট বার্তাগুলি আছে"
+
+        De ->
+            "Du hast ungelesene Chat-Nachrichten"
+
+        Es ->
+            "Tienes mensajes de chat no leídos"
+
+        Fa ->
+            "شما پیام\u{200C}های چت خوانده نشده دارید"
+
+        Fr ->
+            "Vous avez des messages de chat non lus"
+
+        Hi ->
+            "आपके पास अपठित चैट संदेश हैं"
+
+        Hy ->
+            "Դուք ունեք չկարդացված խոսածքներ խոսակցության մեջ"
+
+        Ja ->
+            "未読のチャットメッセージがあります"
+
+        Ko ->
+            "읽지 않은 채팅 메시지가 있습니다"
+
+        Nl ->
+            "Je hebt ongelezen chatberichten"
+
+        Pa ->
+            "ਤੁਸੀਂ ਨਾ-ਪੜ੍ਹੇ ਚੈਟ ਸੁਨੇਹੇ ਹਨ"
+
+        Pt ->
+            "Você tem mensagens de chat não lidas"
+
+        Ru ->
+            "У вас есть непрочитанные сообщения в чате"
+
+        Sw ->
+            "Una ujumbe wa gumzo usio soma"
+
+        Tw ->
+            "你有未讀的聊天訊息"
+
+        Uk ->
+            "У вас є непрочитані повідомлення в чаті"
+
+        Zh ->
+            "你有未读的聊天消息"
+
+        _ ->
+            "You have unread chat messages"
+
+
+chatSend : Lang -> String
+chatSend lang =
+    case lang of
+        Am ->
+            "መልእክት ላክ"
+
+        Ar ->
+            "إرسال الرسالة"
+
+        Bg ->
+            "Изпрати съобщение"
+
+        Bn ->
+            "বার্তা পাঠান"
+
+        De ->
+            "Nachricht senden"
+
+        Es ->
+            "Enviar mensaje"
+
+        Fa ->
+            "ارسال پیام"
+
+        Fr ->
+            "Envoyer le message"
+
+        Hi ->
+            "संदेश भेजें"
+
+        Hy ->
+            "Ուղարկել նամակ"
+
+        Ja ->
+            "メッセージを送信する"
+
+        Ko ->
+            "메시지 보내기"
+
+        Nl ->
+            "Bericht versturen"
+
+        Pa ->
+            "ਸੁਨੇਹਾ ਭੇਜੋ"
+
+        Pt ->
+            "Enviar mensagem"
+
+        Ru ->
+            "Отправить сообщение"
+
+        Sw ->
+            "Tuma ujumbe"
+
+        Tw ->
+            "發送訊息"
+
+        Uk ->
+            "Надіслати повідомлення"
+
+        Zh ->
+            "发送消息"
+
+        _ ->
+            "Send message"

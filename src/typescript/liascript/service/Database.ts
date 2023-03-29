@@ -39,14 +39,18 @@ const Service = {
         break
 
       case 'store':
-        connector.store(param)
+        if (param.id < 10000) {
+          connector.store(param)
+        }
         break
 
       case 'update':
-        connector.update(
-          { table: param.table, id: param.id },
-          transaction(param.data)
-        )
+        if (param.id < 10000) {
+          connector.update(
+            { table: param.table, id: param.id },
+            transaction(param.data)
+          )
+        }
         break
 
       case 'index_get':

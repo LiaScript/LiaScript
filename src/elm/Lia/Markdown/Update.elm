@@ -11,24 +11,20 @@ port module Lia.Markdown.Update exposing
     )
 
 import Array
-import Json.Decode as JD
+import Dict
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
-import Lia.Markdown.Code.Sync as Code_
 import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Gallery.Update as Gallery
-import Lia.Markdown.Quiz.Sync as Quiz_
 import Lia.Markdown.Quiz.Update as Quiz
-import Lia.Markdown.Survey.Sync as Survey_
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Markdown.Task.Update as Task
-import Lia.Section as Section exposing (Section, SubSection(..))
-import Lia.Sync.Container as Container
+import Lia.Section exposing (Section, SubSection(..))
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
 import Return exposing (Return)
@@ -63,7 +59,7 @@ subscriptions _ =
 update :
     { sync
         | state : Sync.State
-        , cursors : List Sync.Cursor
+        , data : Sync.Data
     }
     -> Definition
     -> Msg
@@ -85,16 +81,16 @@ update sync globals msg section =
                 |> Return.mapEvents "effect" section.id
 
         UpdateCode childMsg ->
-            let
-                oldSync =
-                    section.sync
-
-                ( newSync, newVal ) =
-                    section.code_model
-                        |> Code.update section.sync.code (Just section.id) section.effect_model.javascript childMsg
-            in
-            newVal
-                |> Return.mapVal (\v -> { section | code_model = v, sync = { oldSync | code = Maybe.withDefault oldSync.code newSync } })
+            section.code_model
+                |> Code.update
+                    (sync.data.code
+                        |> Dict.get section.id
+                        |> Maybe.withDefault Array.empty
+                    )
+                    (Just section.id)
+                    section.effect_model.javascript
+                    childMsg
+                |> Return.mapVal (\v -> { section | code_model = v })
                 |> Return.mapEvents "code" section.id
                 |> updateScript
 
@@ -194,7 +190,6 @@ subUpdate js msg section =
                 UpdateCode childMsg ->
                     subsection.code_model
                         |> Code.update Array.empty Nothing js childMsg
-                        |> Tuple.second
                         |> Return.mapValCmd (\v -> SubSection { subsection | code_model = v }) UpdateCode
                         |> Return.mapEvents "code" subsection.id
 
@@ -301,7 +296,7 @@ updateScript return =
 nextEffect :
     { sync
         | state : Sync.State
-        , cursors : List Sync.Cursor
+        , data : Sync.Data
     }
     -> Definition
     -> Bool
@@ -314,7 +309,7 @@ nextEffect sync globals sound =
 previousEffect :
     { sync
         | state : Sync.State
-        , cursors : List Sync.Cursor
+        , data : Sync.Data
     }
     -> Definition
     -> Bool
@@ -327,7 +322,7 @@ previousEffect sync globals sound =
 initEffect :
     { sync
         | state : Sync.State
-        , cursors : List Sync.Cursor
+        , data : Sync.Data
     }
     -> Definition
     -> Bool
@@ -373,7 +368,7 @@ subHandle js json section =
 handle :
     { sync
         | state : Sync.State
-        , cursors : List Sync.Cursor
+        , data : Sync.Data
     }
     -> Definition
     -> String

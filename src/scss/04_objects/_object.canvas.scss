@@ -149,7 +149,7 @@ $slide-margin-left-textbook: 19rem !default;
 
     @include breakpoint("lg") {
       .lia-slide__content {
-        margin-left: calc(#{$slide-margin-left-presentation} - 3rem);
+        // margin-left: calc(#{$slide-margin-left-presentation} - 3rem);
       }
     }
   }

@@ -3,6 +3,7 @@ module Lia.Settings.View exposing
     , btnSupport
     , design
     , header
+    , menuChat
     , menuInformation
     , menuMode
     , menuSettings
@@ -146,6 +147,11 @@ viewLightMode grouping lang tabbable isLight =
                     Trans.cBright lang
             ]
         ]
+
+
+menuChat : Lang -> Bool -> Settings -> List (Html Msg)
+menuChat lang tabbable settings =
+    [ btnChat { lang = lang, tabbable = tabbable, chat = settings.chat, hide = False } ]
 
 
 viewTheme : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> String -> Bool -> Html Msg
@@ -582,12 +588,63 @@ btnSupport lang open =
             else
                 "icon-more"
         }
-        [ Attr.class "lia-btn lia-btn--transparent lia-support-menu__toggler"
+        [ Attr.class "lia-btn lia-btn--transparent"
         , A11y_Aria.controls "lia-support-menu"
         , Attr.id "lia-btn-support"
         , A11y_Widget.hasMenuPopUp
         , A11y_Widget.expanded open
         ]
+
+
+btnChat : { lang : Lang, tabbable : Bool, hide : Bool, chat : { show : Bool, updates : Bool } } -> Html Msg
+btnChat { lang, tabbable, hide, chat } =
+    {- btnIcon
+       { title = Trans.confSettings lang
+       , tabbable = True
+       , msg = Just (Toggle Chat)
+       , icon = "icon-mail"
+       }
+       [ Attr.class "lia-btn lia-btn--transparent"
+       , A11y_Aria.controls "lia-chat"
+       , A11y_Widget.hasMenuPopUp
+       , A11y_Widget.expanded open
+       , Attr.style "margin-right" "1rem"
+       ]
+    -}
+    if hide then
+        Html.span [ Attr.style "margin-right" "4rem" ] []
+
+    else
+        btnIcon
+            { title =
+                case ( chat.show, chat.updates ) of
+                    ( True, _ ) ->
+                        Trans.chatClose lang
+
+                    ( False, False ) ->
+                        Trans.chatOpen lang
+
+                    _ ->
+                        Trans.chatNew lang
+            , tabbable = tabbable
+            , msg = Just (Toggle Chat)
+            , icon =
+                case ( chat.show, chat.updates ) of
+                    ( True, _ ) ->
+                        "icon-chat-open"
+
+                    ( False, False ) ->
+                        "icon-chat-close"
+
+                    _ ->
+                        "icon-chat-new"
+            }
+            [ Attr.id "lia-btn-chat"
+            , Attr.class "lia-btn lia-btn--transparent"
+            , A11y_Widget.hasMenuPopUp
+            , A11y_Widget.expanded chat.show
+            , Attr.style "margin-right" "1rem"
+            ]
 
 
 menuMode : Lang -> Bool -> Settings -> List (Html Msg)
@@ -838,13 +895,14 @@ doAction =
 
 
 header :
-    Lang
+    Bool
+    -> Lang
     -> Screen
     -> Settings
     -> String
     -> List ( Lang -> Bool -> Settings -> List (Html Msg), String )
     -> Html Msg
-header lang screen settings logo buttons =
+header online lang screen settings logo buttons =
     let
         tabbable =
             screen.width >= Const.globalBreakpoints.md || settings.support_menu
@@ -869,11 +927,29 @@ header lang screen settings logo buttons =
                 else
                     "lia-support-menu--closed"
             ]
-            [ btnSupport lang settings.support_menu
+            [ if online then
+                Html.div
+                    [ Attr.class "lia-support-menu__toggler"
+                    , Attr.style "left" "-4rem"
+                    ]
+                    [ btnChat { lang = lang, hide = settings.support_menu, tabbable = True, chat = settings.chat }
+                    , btnSupport lang settings.support_menu
+                    ]
+
+              else
+                Html.div [ Attr.class "lia-support-menu__toggler" ]
+                    [ btnSupport lang settings.support_menu
+                    ]
             , Html.div
                 [ Attr.class "lia-support-menu__collapse"
                 ]
                 [ buttons
+                    |> (if online then
+                            identity
+
+                        else
+                            List.tail >> Maybe.withDefault []
+                       )
                     |> List.map
                         (\( fn, class ) ->
                             Html.li

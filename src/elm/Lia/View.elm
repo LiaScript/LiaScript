@@ -10,17 +10,18 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
+import Lia.Chat.View as Chat
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
 import Lia.Markdown.Code.Editor exposing (mode)
-import Lia.Markdown.Config as Config
+import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.View exposing (state)
 import Lia.Markdown.HTML.Attributes exposing (toAttribute)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
-import Lia.Section exposing (SubSection)
+import Lia.Section exposing (Section, SubSection)
 import Lia.Settings.Types exposing (Mode(..), Settings, TTS)
 import Lia.Settings.Update as Settings_
 import Lia.Settings.View as Settings
@@ -28,6 +29,8 @@ import Lia.Sync.Types as Sync_
 import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (modal)
+import Library.SplitPane as SplitPane
+import Service.Database exposing (settings)
 import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
 
@@ -131,10 +134,7 @@ viewSlide screen model =
                     model.settings
                     model.definition
                     model.sync
-                , model.sections
-                    |> Array.toIndexedList
-                    |> List.map (showSection model screen)
-                    |> Html.div [ Attr.class "lia-slide__container" ]
+                , viewPanes screen model
                 , slideBottom
                     model.translation
                     (screen.width < 400)
@@ -171,17 +171,71 @@ viewSlide screen model =
             ]
 
 
-showSection model screen ( id, section ) =
+viewPanes : Screen -> Model -> Html Msg
+viewPanes screen model =
+    Html.div
+        [ Attr.class "lia-slide__container"
+        ]
+        [ SplitPane.view
+            (case
+                ( model.settings.chat.show
+                , Sync_.isConnected model.sync.state
+                , screen.width > Const.globalBreakpoints.sm
+                )
+             of
+                ( True, True, True ) ->
+                    SplitPane.Both
+
+                ( True, True, False ) ->
+                    SplitPane.OnlySecond
+
+                _ ->
+                    SplitPane.OnlyFirst
+            )
+            viewConfig
+            (model.sections
+                |> Array.toIndexedList
+                |> List.map (showSection model screen)
+                |> Html.div
+                    [ Attr.style "width" "100%"
+                    , Attr.style "overflow-y" "auto"
+                    , Attr.style "display" "flex"
+                    , Attr.style "justify-content" "center"
+                    , Attr.class "lia-slide__container"
+                    , Attr.style "margin-top" "0px"
+                    ]
+            )
+            (Chat.view model.translation (initConfig screen model) model.chat
+                |> Html.map UpdateChat
+            )
+            model.pane
+        ]
+
+
+viewConfig : SplitPane.ViewConfig Msg
+viewConfig =
+    SplitPane.createViewConfig
+        { toMsg = Pane
+        , customSplitter = Nothing
+        }
+
+
+initConfig : Screen -> Model -> Section -> Config sub
+initConfig screen model =
     Config.init
         model.translation
         ( model.langCodeOriginal, model.langCode )
         model.settings
         model.sync
         screen
-        section
         model.section_active
         (Just model.definition.formulas)
         model.media
+
+
+showSection : Model -> Screen -> ( Int, Section ) -> Html Msg
+showSection model screen ( id, section ) =
+    initConfig screen model section
         |> Markdown.view (model.section_active /= id) (Maybe.withDefault model.persistent section.persistent)
         |> Html.map UpdateMarkdown
 
@@ -379,13 +433,14 @@ navButton title id class msg =
 -}
 slideTopBar : String -> Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> Sync_.Settings -> Html Msg
 slideTopBar languageCode lang screen url repositoryURL settings def sync =
-    [ ( Settings.menuMode, "mode" )
+    [ ( Settings.menuChat, "chat" )
+    , ( Settings.menuMode, "mode" )
     , ( Settings.menuSettings screen.width, "settings" )
     , ( Settings.menuTranslations languageCode def, "lang" )
     , ( Settings.menuShare url sync, "share" )
     , ( Settings.menuInformation repositoryURL def, "info" )
     ]
-        |> Settings.header lang screen settings (Definition.getIcon def)
+        |> Settings.header (Sync_.isConnected sync.state) lang screen settings (Definition.getIcon def)
         |> Html.map UpdateSettings
 
 

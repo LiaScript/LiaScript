@@ -1,6 +1,7 @@
 module Lia.Markdown.Config exposing
     ( Config
     , init
+    , setID
     , setSubViewer
     )
 
@@ -14,7 +15,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (Section, SubSection(..))
-import Lia.Settings.Types exposing (Mode, Settings)
+import Lia.Settings.Types exposing (Mode(..), Settings)
 import Lia.Sync.Types as Sync
 import Session exposing (Screen)
 import Translations exposing (Lang)
@@ -37,12 +38,12 @@ init :
     -> Settings
     -> Sync.Settings
     -> Screen
-    -> Section
     -> Int
     -> Maybe (Dict String String)
     -> Dict String ( Int, Int )
+    -> Section
     -> Config sub
-init lang translations settings sync screen section id formula media =
+init lang translations settings sync screen id formula media section =
     let
         config =
             inline lang
@@ -71,6 +72,22 @@ init lang translations settings sync screen section id formula media =
             screen
         )
         config
+
+
+setID : Int -> Config sub -> Config sub
+setID id config =
+    let
+        section =
+            config.section
+
+        main =
+            config.main
+    in
+    { config
+        | section = { section | id = id }
+        , main = { main | slide = id }
+        , mode = Textbook
+    }
 
 
 mergeFormulas : Maybe (Dict String String) -> Maybe (Dict String String) -> Maybe (Dict String String)

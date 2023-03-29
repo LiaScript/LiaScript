@@ -158,6 +158,10 @@ export class Sync {
                   this.sync('update', { cmd: 'survey', param: event })
                   break
                 }
+                case 'chat': {
+                  this.sync('update', { cmd: 'chat', param: event })
+                  break
+                }
                 case 'exit': {
                   try {
                     origin = null
@@ -336,6 +340,11 @@ export class Sync {
       case 'join': {
         this.db.init(event.message.param)
         this.gossip()
+        break
+      }
+
+      case 'chat': {
+        this.db.addChatMessage(event.message.param)
         break
       }
 
