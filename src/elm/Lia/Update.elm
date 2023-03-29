@@ -11,6 +11,7 @@ import Const
 import Dict
 import Html.Attributes exposing (width)
 import Json.Decode as JD
+import Lia.Chat.Update as Chat
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Effect.Update as Effect
@@ -22,6 +23,7 @@ import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Lia.Utils exposing (checkPersistency)
+import Library.SplitPane as SplitPane
 import Return exposing (Return)
 import Service.Console
 import Service.Database
@@ -41,14 +43,15 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     case get_active_section model of
         Just section ->
-            Sub.batch
-                [ section
-                    |> Markdown.subscriptions
-                    |> Sub.map UpdateMarkdown
+            [ section
+                |> Markdown.subscriptions
+                |> Sub.map UpdateMarkdown
 
-                --, Sub.map UpdateSync Sync.subscriptions
-                , media Media
-                ]
+            --, Sub.map UpdateSync Sync.subscriptions
+            , media Media
+            , SplitPane.subscriptions model.pane |> Sub.map Pane
+            ]
+                |> Sub.batch
 
         Nothing ->
             media Media
@@ -84,11 +87,13 @@ type Msg
     | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
     | UpdateSync Sync.Msg
+    | UpdateChat Chat.Msg
     | Handle Event
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
     | TTSReplay Bool
     | Media ( String, Maybe Int, Maybe Int )
+    | Pane SplitPane.Msg
 
 
 update : Session -> Msg -> Model -> Return Model Msg Markdown.Msg
@@ -238,11 +243,14 @@ update session msg model =
                             update session (Load True id) model
 
                         Just ( topic, id, e_ ) ->
-                            case Array.get id model.sections of
-                                Just sec ->
+                            case ( id < 10000, Array.get id model.sections ) of
+                                ( True, Just sec ) ->
                                     sec
                                         |> Markdown.handle model.sync model.definition topic e_
                                         |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
+
+                                ( False, Nothing ) ->
+                                    update session (UpdateChat (Chat.handle e)) model
 
                                 _ ->
                                     Return.val model
@@ -275,6 +283,9 @@ update session msg model =
                             sec
                                 |> Markdown.handle model.sync model.definition topic e
                                 |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
+
+                        Just ( id, Nothing ) ->
+                            update session (UpdateChat (Chat.handle event)) model
 
                         _ ->
                             Return.val model
@@ -313,6 +324,21 @@ update session msg model =
 
                     _ ->
                         model
+
+        Pane paneMsg ->
+            { model | pane = SplitPane.update paneMsg model.pane }
+                |> Return.val
+
+        UpdateChat childMsg ->
+            { msg = childMsg
+            , definition = model.definition
+            , model = model.chat
+            , sync = model.sync
+            }
+                |> Chat.update
+                |> Return.mapValCmd
+                    (\chat -> { model | chat = chat })
+                    UpdateChat
 
         _ ->
             case ( msg, get_active_section model ) of
@@ -466,10 +492,7 @@ generate model =
                     else
                         case parse_section model.search_index model.definition sec of
                             Ok new_sec ->
-                                { new_sec
-                                    | sync = sec.sync
-                                    , persistent = Maybe.map (.macro >> checkPersistency) new_sec.definition
-                                }
+                                { new_sec | persistent = Maybe.map (.macro >> checkPersistency) new_sec.definition }
 
                             Err msg ->
                                 { sec

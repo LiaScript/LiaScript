@@ -5,14 +5,9 @@ module Lia.Section exposing
     , SubSection(..)
     , init
     , sync
-    , syncCode
     , syncDecoder
     , syncEncode
     , syncInit
-    , syncOff
-    , syncQuiz
-    , syncSurvey
-    , syncUpdate
     )
 
 import Array exposing (Array)
@@ -90,7 +85,6 @@ type alias Section =
     , footnotes : Footnote.Model
     , footnote2show : Maybe String
     , editor_line : Int
-    , sync : Sync
     , persistent : Maybe Bool
     , seed : Int
     }
@@ -181,11 +175,6 @@ init seed id base =
     , footnotes = Footnote.init
     , footnote2show = Nothing
     , editor_line = base.editor_line + 1
-    , sync =
-        { quiz = Container.empty
-        , survey = Container.empty
-        , code = Array.empty
-        }
     , persistent = Nothing
     , seed = seed + (10 * id)
     }
@@ -221,92 +210,3 @@ syncDecoder =
 sync : String -> Section -> JE.Value
 sync id =
     syncInit id >> syncEncode
-
-
-syncUpdate : Section -> Sync -> Section
-syncUpdate section update =
-    { section
-        | sync =
-            if Array.isEmpty section.sync.code then
-                update
-
-            else
-                { update
-                    | code =
-                        merge (Array.toList update.code)
-                            (Array.toList section.sync.code)
-                            |> Array.fromList
-                }
-    }
-
-
-merge : List Code_.Sync -> List Code_.Sync -> List Code_.Sync
-merge new old =
-    case ( new, old ) of
-        ( n :: ns, o :: os ) ->
-            { n | log = o.log } :: merge ns os
-
-        ( n :: ns, [] ) ->
-            n :: merge ns []
-
-        ( [], o :: os ) ->
-            o :: merge [] os
-
-        ( [], [] ) ->
-            []
-
-
-syncQuiz : Section -> Container Quiz_.Sync -> Section
-syncQuiz section state =
-    let
-        local =
-            section.sync
-    in
-    { section | sync = { local | quiz = state } }
-
-
-syncCode : Section -> Array Code_.Sync -> Section
-syncCode section state =
-    let
-        local =
-            section.sync
-    in
-    { section
-        | sync =
-            { local
-                | code =
-                    if Array.isEmpty section.sync.code then
-                        state
-
-                    else
-                        merge (Array.toList state)
-                            (Array.toList section.sync.code)
-                            |> Array.fromList
-            }
-    }
-
-
-syncSurvey : Section -> Container Survey_.Sync -> Section
-syncSurvey section state =
-    let
-        local =
-            section.sync
-    in
-    { section | sync = { local | survey = state } }
-
-
-syncOff : Sections -> Sections
-syncOff =
-    Array.map syncOff_
-
-
-syncOff_ : Section -> Section
-syncOff_ sec =
-    { sec
-        | sync =
-            { quiz = Container.empty
-            , survey = Container.empty
-            , code = Array.empty
-            }
-        , code_model = Code.syncOff sec.code_model
-    }

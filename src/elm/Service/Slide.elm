@@ -1,5 +1,6 @@
 module Service.Slide exposing
     ( initialize
+    , scrollDown
     , scrollIntoView
     , scrollUp
     )
@@ -37,6 +38,15 @@ scrollIntoView elementID delay =
     ]
         |> JE.object
         |> event "scroll_into_view"
+
+
+scrollDown : String -> Int -> Event
+scrollDown elementID delay =
+    [ ( "id", JE.string elementID )
+    , ( "delay", JE.int delay )
+    ]
+        |> JE.object
+        |> event "scroll_down"
 
 
 {-| **private:** Helper function to generate event - stubs that will be handled

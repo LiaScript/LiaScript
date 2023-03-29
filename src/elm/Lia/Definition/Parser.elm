@@ -25,6 +25,7 @@ import Lia.Definition.Types
         ( Definition
         , Resource(..)
         , addToResources
+        , add_formula
         , add_imports
         , add_translation
         )
@@ -153,6 +154,9 @@ store ( key_, value_ ) =
 
         "translation" ->
             set (add_translation value_)
+
+        "formula" ->
+            set (add_formula value_)
 
         "version" ->
             set (\c -> { c | version = value_ })

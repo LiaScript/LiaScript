@@ -105,6 +105,9 @@ view config element =
                 , e
                     |> JE.string
                     |> Attr.property "formula"
+                , config.formulas
+                    |> JE.dict identity JE.string
+                    |> Attr.property "macros"
                 ]
                 []
 
@@ -328,10 +331,11 @@ view_inf :
     -> Bool
     -> Bool
     -> Maybe ( String, String )
+    -> Maybe (Dict String String)
     -> Maybe (Dict String ( Int, Int ))
     -> Inline
     -> Html (Msg sub)
-view_inf scripts lang light tooltips translations media =
+view_inf scripts lang light tooltips translations formulas media =
     { mode = Textbook
     , visible = Nothing
     , slide = -1
@@ -344,6 +348,7 @@ view_inf scripts lang light tooltips translations media =
     , scripts = scripts
     , translations = translations
     , sync = Nothing
+    , formulas = formulas
     }
         |> Config.init
         |> view
@@ -518,19 +523,16 @@ reference config ref attr =
         Embed alt_ url title_ ->
             Html.figure [ Attr.class "lia-figure", Attr.style "height" "auto", Attr.style "width" "100%" ] <|
                 [ Html.div [ Attr.class "lia-figure__media" ] <|
-                    case title_ of
-                        Just sub ->
-                            [ printLink config alt_ title_ url
-                            , oembed config.oEmbed url
-                            , sub
-                                |> viewer config
-                                |> Html.figcaption [ Attr.class "lia-figure__caption" ]
-                            ]
+                    [ printLink config alt_ title_ url
+                    , oembed config.oEmbed url
+                    , Html.figcaption [ Attr.class "lia-figure__caption" ] <|
+                        case title_ of
+                            Just sub ->
+                                viewer config sub
 
-                        Nothing ->
-                            [ printLink config alt_ title_ url
-                            , oembed config.oEmbed url
-                            ]
+                            Nothing ->
+                                [ Html.a [ Attr.href url, Attr.target "blank_" ] [ Html.text url ] ]
+                    ]
                 ]
 
         Preview_Lia url ->

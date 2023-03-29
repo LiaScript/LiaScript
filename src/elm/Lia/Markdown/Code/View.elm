@@ -1,5 +1,6 @@
 module Lia.Markdown.Code.View exposing (view)
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
@@ -73,10 +74,7 @@ view { lang, theme, model, code, sync, cursors } =
                                     [ view_result (Highlight id_1)
                                         pro.logSize
                                         (if pro.syncMode then
-                                            sync
-                                                |> Array.get id_1
-                                                |> Maybe.map .log
-                                                |> Maybe.withDefault Log.empty
+                                            pro.syncLog
 
                                          else
                                             pro.log
@@ -94,10 +92,7 @@ view { lang, theme, model, code, sync, cursors } =
                         errors =
                             get_annotations <|
                                 if project.syncMode == True && not (Array.isEmpty sync) then
-                                    sync
-                                        |> Array.get id_1
-                                        |> Maybe.map .log
-                                        |> Maybe.withDefault Log.empty
+                                    project.syncLog
 
                                 else
                                     project.log
@@ -152,10 +147,7 @@ view { lang, theme, model, code, sync, cursors } =
                                 [ view_result (Evaluate id_1)
                                     project.logSize
                                     (if project.syncMode then
-                                        sync
-                                            |> Array.get id_1
-                                            |> Maybe.map .log
-                                            |> Maybe.withDefault Log.empty
+                                        project.syncLog
 
                                      else
                                         project.log
@@ -223,7 +215,7 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1, cursors } i
                 , id_2 = id_2
                 , file = file
                 , errors = errors id_2
-                , sync = Maybe.andThen (.file >> Array.get id_2) sync
+                , sync = Maybe.andThen (Array.get id_2) sync
                 , cursors = List.filter (\cursor -> cursor.project == id_1 && cursor.file == id_2) cursors
                 }
             ]
@@ -309,7 +301,7 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1, cursors } i
                             , id_2 = id_2
                             , file = file
                             , errors = errors id_2
-                            , sync = Maybe.andThen (.file >> Array.get id_2) sync
+                            , sync = Maybe.andThen (Array.get id_2) sync
                             , cursors = List.filter (\cursor -> cursor.project == id_1 && cursor.file == id_2) cursors
                             }
                         ]
@@ -499,6 +491,7 @@ evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync,
                 , Editor.enableLiveAutocompletion isExecutable
                 , Editor.enableSnippets isExecutable
                 , Editor.extensions [ "language_tools" ]
+                , Editor.onCtrlEnter (Eval id_1)
                 ]
         )
         []
@@ -584,7 +577,9 @@ view_control { lang, id, version_active, version_count, running, terminal, sync 
                         , tabbable = True
                         , icon = "icon-compile-circle"
                         }
-                        [ Attr.class "lia-btn--transparent" ]
+                        [ Attr.class "lia-btn--transparent"
+                        , A11y_Aria.keyShortcuts [ "Ctrl-Enter", "Command-Enter" ]
+                        ]
             , case sync of
                 Nothing ->
                     Html.text ""

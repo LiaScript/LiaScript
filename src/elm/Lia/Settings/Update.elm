@@ -6,6 +6,7 @@ module Lia.Settings.Update exposing
     , handle
     , toggle_sound
     , update
+    , updatedChatMessages
     )
 
 import Json.Encode as JE
@@ -32,6 +33,7 @@ type Msg
     | Handle Event
     | ShareCourse String
     | Ignore
+    | FocusLoss (Maybe Action)
 
 
 type Toggle
@@ -42,6 +44,7 @@ type Toggle
     | Sync
     | Action Action
     | SupportMenu
+    | Chat
     | TranslateWithGoogle
     | Tooltips
     | PreferBrowserTTS
@@ -133,6 +136,17 @@ update main msg model =
         Toggle QRCode ->
             no_log Nothing { model | showQRCode = not model.showQRCode }
 
+        Toggle Chat ->
+            let
+                chat =
+                    model.chat
+            in
+            { model
+                | support_menu = False
+                , chat = { chat | show = not chat.show, updates = not chat.show }
+            }
+                |> no_log Nothing
+
         Toggle (Action action) ->
             no_log
                 (case action of
@@ -141,6 +155,20 @@ update main msg model =
 
                     ShowSettings ->
                         Just "lia-btn-light-mode"
+
+                    ShowShare ->
+                        Just "lia-button-qr-code"
+
+                    ShowTranslations ->
+                        case model.translateWithGoogle of
+                            Just False ->
+                                Just "lia-checkbox-google_translate"
+
+                            Just True ->
+                                Just "google-te-combo"
+
+                            _ ->
+                                Nothing
 
                     _ ->
                         Nothing
@@ -222,6 +250,9 @@ update main msg model =
                 |> Return.val
                 |> Return.batchEvent Service.Translate.google
 
+        FocusLoss _ ->
+            update main (Toggle (Action Close)) model
+
         Ignore ->
             Return.val model
 
@@ -284,3 +315,16 @@ no_log elementID =
 maybeFocus : Maybe String -> Cmd Msg
 maybeFocus =
     Maybe.map (focus Ignore) >> Maybe.withDefault Cmd.none
+
+
+updatedChatMessages : Settings -> Settings
+updatedChatMessages settings =
+    if settings.chat.show then
+        settings
+
+    else
+        let
+            chat =
+                settings.chat
+        in
+        { settings | chat = { chat | updates = True } }

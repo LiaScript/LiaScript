@@ -8,34 +8,26 @@ module Lia.Markdown.Code.Sync exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Code.Log as Log exposing (Log)
 import Lia.Markdown.Code.Types as Code
 
 
 type alias Sync =
-    { file : Array String
-    , log : Log
-    }
+    Array String
 
 
 sync : Code.Project -> Sync
 sync project =
-    { file =
-        project
-            |> Code.loadVersion 0
-            |> .file
-            |> Array.map .code
-    , log = Log.empty
-    }
+    project
+        |> Code.loadVersion 0
+        |> .file
+        |> Array.map .code
 
 
 decoder : JD.Decoder Sync
 decoder =
-    JD.map2 Sync
-        (JD.array JD.string)
-        (JD.succeed Log.empty)
+    JD.array JD.string
 
 
 encoder : Sync -> JE.Value
 encoder =
-    .file >> JE.array JE.string
+    JE.array JE.string

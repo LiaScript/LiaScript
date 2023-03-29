@@ -72,23 +72,16 @@ restore sectionID json model =
                 |> Return.val
 
 
-noSyncUpdate : Return Model msg sub -> ( Maybe (Array Sync), Return Model msg sub )
-noSyncUpdate =
-    Tuple.pair Nothing
-
-
-update : Array Sync -> Maybe Int -> Scripts a -> Msg -> Model -> ( Maybe (Array Sync), Return Model msg sub )
+update : Array Sync -> Maybe Int -> Scripts a -> Msg -> Model -> Return Model msg sub
 update sync sectionID scripts msg model =
     case msg of
         Eval idx ->
             execute sync sectionID scripts model idx
-                |> noSyncUpdate
 
         --|> Return.sync (PEvent.initWithId "eval" idx JE.null)
         Update id_1 id_2 code_str ->
             if isSyncModeActive id_1 model then
                 Return.val model
-                    |> noSyncUpdate
 
             else
                 update_file
@@ -97,16 +90,13 @@ update sync sectionID scripts msg model =
                     model
                     (\f -> { f | code = code_str })
                     (\_ -> [])
-                    |> noSyncUpdate
 
         FlipView (Evaluate projectID) fileID ->
             flipEval sectionID model projectID fileID
-                |> noSyncUpdate
 
         --|> Return.sync (PEvent.initWithId "flip_eval" id_1 (JE.int id_2))
         FlipView (Highlight projectID) fileID ->
             flipHigh model projectID fileID
-                |> noSyncUpdate
 
         --|> Return.sync (PEvent.initWithId "flip_high" id_1 (JE.int id_2))
         FlipFullscreen (Highlight id_1) id_2 ->
@@ -126,7 +116,6 @@ update sync sectionID scripts msg model =
                         model.highlight
             }
                 |> Return.val
-                |> noSyncUpdate
 
         FlipFullscreen (Evaluate projectID) fileID ->
             update_file
@@ -135,16 +124,13 @@ update sync sectionID scripts msg model =
                 model
                 (\f -> { f | fullscreen = not f.fullscreen })
                 (Event.fullscreen sectionID projectID fileID)
-                |> noSyncUpdate
 
         Load idx version ->
             load sectionID model idx version
-                |> noSyncUpdate
 
         --|> Return.sync (PEvent.initWithId "load" idx (JE.int version))
         First idx ->
             load sectionID model idx 0
-                |> noSyncUpdate
 
         --|> Return.sync (PEvent.initWithId "load" idx (JE.int 0))
         Last projectID ->
@@ -156,14 +142,12 @@ update sync sectionID scripts msg model =
                         |> Maybe.withDefault 0
             in
             load sectionID model projectID version
-                |> noSyncUpdate
 
         Handle event ->
             case PEvent.destructure event of
                 ( Nothing, _, ( "load", param ) ) ->
                     restore sectionID param model
                         |> doSync sync sectionID
-                        |> noSyncUpdate
 
                 ( Just "project", id, ( "eval", param ) ) ->
                     let
@@ -173,15 +157,14 @@ update sync sectionID scripts msg model =
                     case e.result of
                         "LIA: wait" ->
                             if isSyncModeActive id model then
-                                ( updateSync id (\p -> { p | log = Log.empty }) sync
-                                , Return.val model
-                                )
+                                model
+                                    |> maybe_project id (\p -> { p | syncLog = Log.empty })
+                                    |> maybe_update id model
 
                             else
                                 model
                                     |> maybe_project id (\p -> { p | log = Log.empty })
                                     |> maybe_update id model
-                                    |> noSyncUpdate
 
                         "LIA: stop" ->
                             model
@@ -194,76 +177,66 @@ update sync sectionID scripts msg model =
                                         Event.updateVersion id sectionID
                                     )
                                 |> maybe_update id model
-                                |> noSyncUpdate
 
                         "LIA: clear" ->
                             if isSyncModeActive id model then
-                                ( updateSync id (\p -> { p | log = Log.empty }) sync
-                                , Return.val model
-                                )
+                                model
+                                    |> maybe_project id (\p -> { p | syncLog = Log.empty })
+                                    |> maybe_update id model
 
                             else
                                 model
                                     |> maybe_project id clr
                                     |> maybe_update id model
-                                    |> noSyncUpdate
 
                         -- preserve previous logging by setting ok to false
                         "LIA: terminal" ->
                             model
                                 |> maybe_project id (\p -> { p | terminal = Just <| Terminal.init })
                                 |> maybe_update id model
-                                |> noSyncUpdate
 
                         _ ->
                             if isSyncModeActive id model then
-                                ( updateSync id (\p -> { p | log = Log.add_Eval e p.log }) sync
-                                , model
-                                    |> maybe_project id (set_result e)
+                                model
+                                    |> maybe_project id ((\p -> { p | syncLog = Log.add_Eval e p.syncLog }) >> set_result e)
                                     |> maybe_update id model
-                                )
 
                             else
                                 model
                                     |> maybe_project id (set_result e)
                                     |> Maybe.map (Event.updateVersion id sectionID)
                                     |> maybe_update id model
-                                    |> noSyncUpdate
 
                 ( Just "project", id, ( "log", param ) ) ->
                     case JD.decodeValue (JD.list JD.string) param of
                         Ok [ log, message ] ->
                             if isSyncModeActive id model then
-                                ( updateSync id
-                                    (\p ->
-                                        { p
-                                            | log =
-                                                Log.add
-                                                    (log
-                                                        |> Log.fromString
-                                                        |> Maybe.withDefault Log.Info
-                                                    )
-                                                    message
-                                                    p.log
-                                        }
-                                    )
-                                    sync
-                                , Return.val model
-                                )
+                                model
+                                    |> maybe_project id
+                                        (\p ->
+                                            { p
+                                                | syncLog =
+                                                    Log.add
+                                                        (log
+                                                            |> Log.fromString
+                                                            |> Maybe.withDefault Log.Info
+                                                        )
+                                                        message
+                                                        p.syncLog
+                                            }
+                                        )
+                                    |> maybe_update id model
 
                             else
                                 model
                                     |> maybe_project id (logger log message)
                                     |> maybe_update id model
-                                    |> noSyncUpdate
 
                         _ ->
                             Return.val model
-                                |> noSyncUpdate
 
                 _ ->
                     Return.val model
-                        |> noSyncUpdate
 
         -- TODO:
         -- case PEvent.destructure eval of
@@ -313,17 +286,15 @@ update sync sectionID scripts msg model =
                 |> maybe_project idx (\p -> { p | running = False, terminal = Nothing })
                 |> Maybe.map (Return.batchEvent (Event.stop idx))
                 |> maybe_update idx model
-                |> noSyncUpdate
 
         Resize code height ->
-            noSyncUpdate <|
-                Return.val <|
-                    case code of
-                        Evaluate id ->
-                            { model | evaluate = onResize id height model.evaluate }
+            Return.val <|
+                case code of
+                    Evaluate id ->
+                        { model | evaluate = onResize id height model.evaluate }
 
-                        Highlight id ->
-                            { model | highlight = onResize id height model.highlight }
+                    Highlight id ->
+                        { model | highlight = onResize id height model.highlight }
 
         UpdateTerminal idx childMsg ->
             case
@@ -333,13 +304,11 @@ update sync sectionID scripts msg model =
             of
                 Just ( project, Just str ) ->
                     if isSyncModeActive idx model then
-                        ( updateSync idx (\p -> { p | log = Log.add Log.Info str p.log }) sync
-                        , project
+                        { project | syncLog = Log.add Log.Info str project.syncLog }
                             |> Return.val
                             |> Return.batchEvent (Event.input idx str)
                             |> Just
                             |> maybe_update idx model
-                        )
 
                     else
                         { project | log = Log.add Log.Info str project.log }
@@ -347,18 +316,15 @@ update sync sectionID scripts msg model =
                             |> Return.batchEvent (Event.input idx str)
                             |> Just
                             |> maybe_update idx model
-                            |> noSyncUpdate
 
                 Just ( project, Nothing ) ->
                     project
                         |> Return.val
                         |> Just
                         |> maybe_update idx model
-                        |> noSyncUpdate
 
                 Nothing ->
                     Return.val model
-                        |> noSyncUpdate
 
         ToggleSync id ->
             { model
@@ -371,7 +337,6 @@ update sync sectionID scripts msg model =
                         model.evaluate
             }
                 |> Return.val
-                |> noSyncUpdate
 
         Synchronize id1 id2 event ->
             model
@@ -383,7 +348,6 @@ update sync sectionID scripts msg model =
                      else
                         PEvent.none
                     )
-                |> noSyncUpdate
 
         SynchronizeCursor id1 id2 position ->
             model
@@ -395,7 +359,6 @@ update sync sectionID scripts msg model =
                      else
                         PEvent.none
                     )
-                |> noSyncUpdate
 
 
 isSyncModeActive : Int -> Model -> Bool
@@ -414,7 +377,7 @@ doSync sync sectionID ret =
                 |> Return.batchEvent
                     (ret.value
                         |> .evaluate
-                        |> Array.map (Sync_.sync >> .file)
+                        |> Array.map Sync_.sync
                         |> Sync.codes
                     )
 
@@ -475,7 +438,12 @@ update_terminal msg project =
 
 eval : Array Sync -> Int -> Scripts a -> Project -> Return Project msg sub
 eval sync id scripts project =
-    { project | running = True, log = Log.empty }
+    (if project.syncMode then
+        { project | running = True, syncLog = Log.empty }
+
+     else
+        { project | running = True, log = Log.empty }
+    )
         |> Return.val
         |> Return.batchEvent (Event.eval sync id scripts project)
 
@@ -485,16 +453,6 @@ maybe_project idx f =
     .evaluate
         >> Array.get idx
         >> Maybe.map (f >> Return.val)
-
-
-updateSync : Int -> (Sync -> Sync) -> Array Sync -> Maybe (Array Sync)
-updateSync id f sync =
-    case Array.get id sync of
-        Just s ->
-            Just <| Array.set id (f s) sync
-
-        _ ->
-            Nothing
 
 
 maybe_update : Int -> Model -> Maybe (Return Project msg sub) -> Return Model msg sub

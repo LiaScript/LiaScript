@@ -79,7 +79,7 @@ $slide-margin-left-textbook: 19rem !default;
   @include breakpoint("md") {
     &.lia-toc--visible.lia-mode--presentation .lia-slide__content,
     &.lia-toc--visible.lia-mode--textbook .lia-slide__content {
-      width: auto;
+      //width: auto;
     }
   }
 
@@ -149,7 +149,7 @@ $slide-margin-left-textbook: 19rem !default;
 
     @include breakpoint("lg") {
       .lia-slide__content {
-        margin-left: calc(#{$slide-margin-left-presentation} - 3rem);
+        // margin-left: calc(#{$slide-margin-left-presentation} - 3rem);
       }
     }
   }
