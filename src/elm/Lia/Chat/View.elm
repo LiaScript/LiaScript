@@ -59,7 +59,6 @@ view lang config model =
                 , icon = "icon-send"
                 }
                 [ Attr.style "position" "absolute"
-                , Attr.style "bottom" "1rem"
                 , Attr.style "right" "2rem"
                 , Attr.style "z-index" "100"
                 , Attr.class "lia-btn--transparent"
