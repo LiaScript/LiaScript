@@ -198,6 +198,7 @@ update session model msg =
                                     , code = Dict.empty
                                     }
                             }
+                        , chat = Chat.init
                     }
                         |> Return.val
                         |> Return.cmd
