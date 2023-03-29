@@ -147,7 +147,9 @@ viewVectorSync config analyze questions syncData survey =
                         vectorBlockCategory config data
 
                     Quantitative ->
-                        vectorBlockQuantity config data
+                        questions
+                            |> List.filterMap (Tuple.first >> String.split " " >> List.head >> Maybe.andThen String.toFloat)
+                            |> vectorBlockQuantity config data
                 ]
 
 
@@ -298,14 +300,14 @@ vectorBlockCategory config data =
             Nothing
 
 
-vectorBlockQuantity : Config sub -> List Sync.Data -> Html msg
-vectorBlockQuantity config data =
+vectorBlockQuantity : Config sub -> List Sync.Data -> List Float -> Html msg
+vectorBlockQuantity config data categories =
     let
         sample =
             data
                 |> List.filterMap
                     (\v ->
-                        case String.toFloat v.value of
+                        case v.value |> String.split " " |> List.head |> Maybe.andThen String.toFloat of
                             Just i ->
                                 Just (List.repeat v.absolute i)
 
@@ -313,10 +315,31 @@ vectorBlockQuantity config data =
                                 Nothing
                     )
                 |> List.concat
-                |> Sync.density { steps = Just 50, width = 10 }
+
+        size =
+            (2 * List.length categories) - 1
     in
     JE.object
-        [ ( "grid"
+        [ ( "pdf"
+          , [ ( "data", JE.list JE.float sample )
+            , ( "min"
+              , categories
+                    |> List.minimum
+                    |> Maybe.map JE.float
+                    |> Maybe.withDefault JE.null
+              )
+            , ( "max"
+              , categories
+                    |> List.maximum
+                    |> Maybe.map JE.float
+                    |> Maybe.withDefault JE.null
+              )
+            , ( "size", JE.int size )
+            , ( "width", JE.int 2 )
+            ]
+                |> JE.object
+          )
+        , ( "grid"
           , JE.object
                 [ ( "left", JE.int 50 )
                 , ( "top", JE.int 20 )
@@ -328,9 +351,8 @@ vectorBlockQuantity config data =
         , ( "xAxis"
           , JE.object
                 [ ( "type", JE.string "category" )
-                , ( "data"
-                  , JE.list JE.float sample.x
-                  )
+                , ( "data", JE.null )
+                , ( "boundaryGap", JE.bool False )
                 ]
           )
         , ( "yAxis"
@@ -343,7 +365,8 @@ vectorBlockQuantity config data =
           , [ [ ( "type", JE.string "line" )
               , ( "smooth", JE.bool True )
               , ( "areaStyle", JE.object [ ( "opacity", JE.float 0.8 ) ] )
-              , ( "data", JE.list JE.float sample.y )
+              , ( "data", JE.null )
+              , ( "symbol", JE.string "none" )
               ]
             ]
                 |> JE.list JE.object

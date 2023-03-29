@@ -313,15 +313,14 @@ export class CRDT {
       record = {}
     }
 
-    if (record[this.peerID] == undefined) {
-      record[this.peerID] = value
-    }
+    //if (record[this.peerID] == undefined) {
+    record[this.peerID] = value
+    //}
 
     map.set(this.id(id, i), record)
   }
 
   initCode(id: number, i: number, j: number, value: string) {
-    console.warn('SSSSSSSSSSSSSSSSSSSS', id, i, j, value)
     if (!this.codes.has(this.id(id, i, j))) {
       const backup = this.doc.clientID
 
@@ -414,13 +413,25 @@ export class CRDT {
 
   getUpdates(maps, changes): { id: number; data: State.Data[][] }[] | null {
     const ids: Set<number> = new Set()
+    const updates: [string, any][] = []
 
     for (const [id, data] of changes) {
-      if (data.action === 'update' || data.action === 'add') {
-        try {
-          const [key] = JSON.parse(id)
-          ids.add(key)
-        } catch (e) {}
+      switch (data.action) {
+        case 'update': {
+          if (
+            JSON.stringify(Object.keys(data.oldValue).sort()) !==
+            JSON.stringify(Object.keys(data.newValue).sort())
+          ) {
+            updates.push([id, { ...data.oldValue, ...data.newValue }])
+            continue
+          }
+        }
+        case 'add': {
+          try {
+            const [key] = JSON.parse(id)
+            ids.add(key)
+          } catch (e) {}
+        }
       }
     }
 
@@ -429,8 +440,11 @@ export class CRDT {
       vector.push({ id: id, data: this.getMaps(id, maps) })
     }
 
+    for (const [id, value] of updates) {
+      maps.set(id, value)
+    }
+
     if (vector.length > 0) {
-      console.warn('SURVEY', JSON.stringify(vector, null, 2))
       return vector
     }
 

@@ -66,7 +66,7 @@ import Translations
 
 syncAttributes : List ( String, String )
 syncAttributes =
-    [ ( "style", "height: 120px; width: 100%" ), ( "class", "lia-quiz__sync" ) ]
+    [ ( "style", "height: 150px; width: 100%" ), ( "class", "lia-quiz__sync" ) ]
 
 
 {-| Main Quiz view function.
