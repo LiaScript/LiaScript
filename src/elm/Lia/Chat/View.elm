@@ -1,5 +1,6 @@
 module Lia.Chat.View exposing (view)
 
+import Accessibility.Aria as A11y
 import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -62,6 +63,7 @@ view lang config model =
                 , Attr.style "right" "2rem"
                 , Attr.style "z-index" "100"
                 , Attr.class "lia-btn--transparent"
+                , A11y.keyShortcuts [ "Ctrl-Enter", "Command-Enter" ]
                 ]
             , Editor.editor
                 [ Editor.onChange Input
@@ -72,6 +74,7 @@ view lang config model =
                 , Editor.mode "markdown"
                 , Editor.showGutter False
                 , Attr.class "lia-code__input"
+                , Editor.onCtrlEnter Send
                 ]
                 []
             ]

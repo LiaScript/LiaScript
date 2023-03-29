@@ -24,6 +24,7 @@ module Lia.Markdown.Code.Editor exposing
     , onChangeCursor2
     , onChangeEvent
     , onChangeEvent2
+    , onCtrlEnter
     , onFocus
     , readOnly
     , setCursors
@@ -154,6 +155,17 @@ onChangeCursor2 msg =
         |> JD.at [ "detail" ]
         |> JD.map msg
         |> Html.Events.on "editorUpdateCursor"
+
+
+{-| Catch the updated of cursor movements, which for simplicity are not decoded.
+
+    `Cursor --> {row: Int, column: Int}
+
+-}
+onCtrlEnter : msg -> Html.Attribute msg
+onCtrlEnter msg =
+    JD.succeed msg
+        |> Html.Events.on "editorCtrlEnter"
 
 
 setCursors : List { cursor | id : String, color : String, state : Cursor } -> Html.Attribute msg

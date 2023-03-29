@@ -1,5 +1,6 @@
 module Lia.Markdown.Code.View exposing (view)
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
@@ -490,6 +491,7 @@ evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync,
                 , Editor.enableLiveAutocompletion isExecutable
                 , Editor.enableSnippets isExecutable
                 , Editor.extensions [ "language_tools" ]
+                , Editor.onCtrlEnter (Eval id_1)
                 ]
         )
         []
@@ -575,7 +577,9 @@ view_control { lang, id, version_active, version_count, running, terminal, sync 
                         , tabbable = True
                         , icon = "icon-compile-circle"
                         }
-                        [ Attr.class "lia-btn--transparent" ]
+                        [ Attr.class "lia-btn--transparent"
+                        , A11y_Aria.keyShortcuts [ "Ctrl-Enter", "Command-Enter" ]
+                        ]
             , case sync of
                 Nothing ->
                     Html.text ""
