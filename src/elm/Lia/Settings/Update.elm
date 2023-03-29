@@ -19,6 +19,7 @@ import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Share
+import Service.Slide
 import Service.TTS
 import Service.Translate
 
@@ -146,6 +147,13 @@ update main msg model =
                 , chat = { chat | show = not chat.show, updates = not chat.show }
             }
                 |> no_log Nothing
+                |> Return.batchEvent
+                    (if chat.show then
+                        Event.none
+
+                     else
+                        Service.Slide.scrollDown "lia-chat-messages" 350
+                    )
 
         Toggle (Action action) ->
             no_log
