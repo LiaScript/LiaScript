@@ -22,7 +22,7 @@ import Lia.Markdown.Survey.Model
         , get_text_state
         , get_vector_state
         )
-import Lia.Markdown.Survey.Sync as Sync exposing (Sync, sync)
+import Lia.Markdown.Survey.Sync as Sync exposing (Sync)
 import Lia.Markdown.Survey.Types
     exposing
         ( Analysis(..)
@@ -32,7 +32,6 @@ import Lia.Markdown.Survey.Types
         , Vector
         )
 import Lia.Markdown.Survey.Update exposing (Msg(..))
-import Lia.Sync.Container exposing (Container)
 import Lia.Sync.Types as Sync_
 import Lia.Utils
     exposing
@@ -49,8 +48,8 @@ import Translations
         )
 
 
-view : Config sub -> Parameters -> Survey -> Vector -> Maybe (Container Sync) -> ( Maybe Int, Html (Msg sub) )
-view config attr survey model sync =
+view : Config sub -> Parameters -> Survey -> Vector -> ( Maybe Int, Html (Msg sub) )
+view config attr survey model =
     Tuple.pair
         (model
             |> Array.get survey.id
@@ -61,12 +60,12 @@ view config attr survey model sync =
             Text lines ->
                 view_text config (get_text_state model survey.id) lines survey.id
                     |> view_survey config attr "text" model survey.id
-                    |> viewTextSync config lines (Sync_.get config.sync survey.id sync)
+                    |> viewTextSync config lines (getSync config survey.id)
 
             Select inlines ->
                 view_select config inlines (get_select_state model survey.id) survey.id
                     |> view_survey config attr "select" model survey.id
-                    |> viewSelectSync config inlines (Sync_.get config.sync survey.id sync)
+                    |> viewSelectSync config inlines (getSync config survey.id)
 
             Vector button questions analysis ->
                 vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
@@ -81,19 +80,18 @@ view config attr survey model sync =
                         )
                         model
                         survey.id
-                    |> viewVectorSync config
-                        analysis
-                        questions
-                        (Sync_.get config.sync survey.id sync)
+                    |> viewVectorSync config analysis questions (getSync config survey.id)
 
             Matrix button header vars questions ->
                 matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
                     |> view_matrix config header questions
                     |> view_survey config attr "matrix" model survey.id
-                    |> viewMatrixSync config
-                        questions
-                        vars
-                        (Sync_.get config.sync survey.id sync)
+                    |> viewMatrixSync config questions vars (getSync config survey.id)
+
+
+getSync : Config sub -> Int -> Maybe (List Sync)
+getSync config id =
+    Sync_.get config.sync .survey config.slide id
 
 
 viewTextSync : Config sub -> Int -> Maybe (List Sync) -> Html msg -> Html msg
@@ -149,7 +147,9 @@ viewVectorSync config analyze questions syncData survey =
                         vectorBlockCategory config data
 
                     Quantitative ->
-                        vectorBlockQuantity config data
+                        questions
+                            |> List.filterMap (Tuple.first >> String.split " " >> List.head >> Maybe.andThen String.toFloat)
+                            |> vectorBlockQuantity config data
                 ]
 
 
@@ -300,14 +300,14 @@ vectorBlockCategory config data =
             Nothing
 
 
-vectorBlockQuantity : Config sub -> List Sync.Data -> Html msg
-vectorBlockQuantity config data =
+vectorBlockQuantity : Config sub -> List Sync.Data -> List Float -> Html msg
+vectorBlockQuantity config data categories =
     let
         sample =
             data
                 |> List.filterMap
                     (\v ->
-                        case String.toFloat v.value of
+                        case v.value |> String.split " " |> List.head |> Maybe.andThen String.toFloat of
                             Just i ->
                                 Just (List.repeat v.absolute i)
 
@@ -315,10 +315,31 @@ vectorBlockQuantity config data =
                                 Nothing
                     )
                 |> List.concat
-                |> Sync.density { steps = Just 50, width = 10 }
+
+        size =
+            (2 * List.length categories) - 1
     in
     JE.object
-        [ ( "grid"
+        [ ( "pdf"
+          , [ ( "data", JE.list JE.float sample )
+            , ( "min"
+              , categories
+                    |> List.minimum
+                    |> Maybe.map JE.float
+                    |> Maybe.withDefault JE.null
+              )
+            , ( "max"
+              , categories
+                    |> List.maximum
+                    |> Maybe.map JE.float
+                    |> Maybe.withDefault JE.null
+              )
+            , ( "size", JE.int size )
+            , ( "width", JE.int 2 )
+            ]
+                |> JE.object
+          )
+        , ( "grid"
           , JE.object
                 [ ( "left", JE.int 50 )
                 , ( "top", JE.int 20 )
@@ -330,9 +351,8 @@ vectorBlockQuantity config data =
         , ( "xAxis"
           , JE.object
                 [ ( "type", JE.string "category" )
-                , ( "data"
-                  , JE.list JE.float sample.x
-                  )
+                , ( "data", JE.null )
+                , ( "boundaryGap", JE.bool False )
                 ]
           )
         , ( "yAxis"
@@ -345,7 +365,8 @@ vectorBlockQuantity config data =
           , [ [ ( "type", JE.string "line" )
               , ( "smooth", JE.bool True )
               , ( "areaStyle", JE.object [ ( "opacity", JE.float 0.8 ) ] )
-              , ( "data", JE.list JE.float sample.y )
+              , ( "data", JE.null )
+              , ( "symbol", JE.string "none" )
               ]
             ]
                 |> JE.list JE.object

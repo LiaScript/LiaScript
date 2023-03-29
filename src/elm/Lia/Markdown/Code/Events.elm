@@ -42,7 +42,6 @@ eval sync projectID scripts project =
             if project.syncMode then
                 sync
                     |> Array.get projectID
-                    |> Maybe.map .file
                     |> Maybe.withDefault Array.empty
 
             else

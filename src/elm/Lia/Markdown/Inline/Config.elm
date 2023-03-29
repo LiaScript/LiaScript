@@ -26,6 +26,7 @@ type alias Config sub =
     , media : Dict String ( Int, Int )
     , scripts : Scripts SubSection
     , translations : Maybe ( String, String )
+    , formulas : Dict String String
     , sync : Maybe Sync.Settings
     }
 
@@ -42,6 +43,7 @@ init :
     , media : Dict String ( Int, Int )
     , scripts : Scripts SubSection
     , translations : Maybe ( String, String )
+    , formulas : Maybe (Dict String String)
     , sync : Maybe Sync.Settings
     }
     -> Config sub
@@ -64,6 +66,9 @@ init config =
     , scripts = config.scripts
     , translations = config.translations
     , sync = config.sync
+    , formulas =
+        config.formulas
+            |> Maybe.withDefault Dict.empty
     }
 
 

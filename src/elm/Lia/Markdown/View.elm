@@ -1,11 +1,14 @@
 module Lia.Markdown.View exposing
     ( addTranslation
     , view
+    , viewContent
     )
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
+import Array
 import Conditional.List as CList
+import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Lazy as Lazy
@@ -35,7 +38,6 @@ import Lia.Markdown.Types exposing (Block(..), Blocks)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Sync.Container as Container
 import Lia.Utils exposing (modal)
 import Lia.Voice as Voice
 import MD5
@@ -133,6 +135,15 @@ view_body hidden ( config, footnote2show, footnotes ) =
                                 )
            )
         >> viewMain hidden
+
+
+viewContent : Config Msg -> List (Html Msg)
+viewContent config =
+    let
+        config_ =
+            Config.setSubViewer (subView config) config
+    in
+    fold config_ [] config_.section.body
 
 
 toHash : Block -> String
@@ -368,11 +379,15 @@ view_block config block =
             , theme = config.ace_theme
             , model = config.section.code_model
             , code = code
-            , sync = config.section.sync.code
+            , sync =
+                config.main.sync
+                    |> Maybe.andThen (.data >> .code >> Dict.get config.section.id)
+                    |> Maybe.withDefault Array.empty
             , cursors =
                 config.main.sync
                     |> Maybe.map
-                        (.cursors
+                        (.data
+                            >> .cursor
                             >> List.filter (\cursor -> cursor.section == config.section.id)
                         )
                     |> Maybe.withDefault []
@@ -384,9 +399,7 @@ view_block config block =
             viewQuiz config Nothing attr quiz solution
 
         Survey attr survey ->
-            config.section.sync.survey
-                |> Container.toMaybe
-                |> Surveys.view config.main attr survey config.section.survey_vector
+            Surveys.view config.main attr survey config.section.survey_vector
                 |> Tuple.mapSecond (Html.map UpdateSurvey)
                 |> scriptView config.view
 
@@ -550,17 +563,13 @@ viewQuiz config labeledBy attr quiz solution =
     scriptView config.view <|
         case solution of
             Nothing ->
-                config.section.sync.quiz
-                    |> Container.toMaybe
-                    |> Quizzes.view config.main labeledBy quiz config.section.quiz_vector
+                Quizzes.view config.main labeledBy quiz config.section.quiz_vector
                     |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
                     |> Tuple.mapSecond (Html.map UpdateQuiz)
 
             Just ( answer, hidden_effects ) ->
                 if Quizzes.showSolution quiz config.section.quiz_vector then
-                    config.section.sync.quiz
-                        |> Container.toMaybe
-                        |> Quizzes.view config.main labeledBy quiz config.section.quiz_vector
+                    Quizzes.view config.main labeledBy quiz config.section.quiz_vector
                         |> Tuple.mapSecond (List.map (Html.map UpdateQuiz))
                         |> Tuple.mapSecond
                             (\list ->
@@ -573,9 +582,7 @@ viewQuiz config labeledBy attr quiz solution =
                         |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
 
                 else
-                    config.section.sync.quiz
-                        |> Container.toMaybe
-                        |> Quizzes.view config.main labeledBy quiz config.section.quiz_vector
+                    Quizzes.view config.main labeledBy quiz config.section.quiz_vector
                         |> Tuple.mapSecond (List.map (Html.map UpdateQuiz))
                         |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
 

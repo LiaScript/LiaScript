@@ -1,5 +1,6 @@
 module Lia.Sync.Types exposing
     ( Cursor
+    , Data
     , Settings
     , State(..)
     , Sync
@@ -14,6 +15,7 @@ module Lia.Sync.Types exposing
     , title
     )
 
+import Array exposing (Array)
 import Browser exposing (element)
 import Const
 import Dict exposing (Dict)
@@ -21,7 +23,10 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as JD
 import Lia.Markdown.Code.Editor as Editor
-import Lia.Sync.Container as Local
+import Lia.Markdown.Code.Sync as Code
+import Lia.Markdown.Quiz.Sync as Quiz
+import Lia.Markdown.Survey.Sync as Survey
+import Lia.Sync.Container as Container exposing (Container)
 import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
 import Set exposing (Set)
@@ -44,6 +49,14 @@ type alias Cursor =
     }
 
 
+type alias Data =
+    { cursor : List Cursor
+    , survey : Dict Int (Container Survey.Sync)
+    , quiz : Dict Int (Container Quiz.Sync)
+    , code : Dict Int (Array Code.Sync)
+    }
+
+
 type alias Settings =
     { sync : Sync
     , state : State
@@ -51,7 +64,7 @@ type alias Settings =
     , password : String
     , peers : Set String
     , error : Maybe String
-    , cursors : List Cursor
+    , data : Data
     }
 
 
@@ -96,7 +109,12 @@ init supportedBackends =
     , password = ""
     , peers = Set.empty
     , error = Nothing
-    , cursors = []
+    , data =
+        { cursor = []
+        , survey = Dict.empty
+        , quiz = Dict.empty
+        , code = Dict.empty
+        }
     }
 
 
@@ -183,16 +201,22 @@ filter settings container =
             Nothing
 
 
-get : Maybe Settings -> Int -> Maybe (Local.Container sync) -> Maybe (List sync)
-get settings id_ container =
-    case ( settings, container ) of
-        ( Just s, Just local ) ->
-            local
-                |> Local.get id_
-                |> Maybe.andThen (filter s)
+get : Maybe Settings -> (Data -> Dict Int (Container sync)) -> Int -> Int -> Maybe (List sync)
+get settings selector id1 id2 =
+    settings
+        |> Maybe.andThen (.data >> selector >> Dict.get id1)
+        |> Maybe.andThen (Container.get id2 >> Maybe.map2 filter settings)
+        |> Maybe.withDefault Nothing
 
-        _ ->
-            Nothing
+
+
+-- case settings |> Maybe.map (.data >> selector ) of
+--     ( Just s, Just local ) ->
+--         local
+--             |> Container.get id_
+--             |> Maybe.andThen (filter s)
+--     _ ->
+--         Nothing
 
 
 filter_ : Set String -> String -> sync -> Bool

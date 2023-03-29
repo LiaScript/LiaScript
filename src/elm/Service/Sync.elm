@@ -119,3 +119,8 @@ cursor id1 id2 msg =
 codes : Array (Array String) -> Event
 codes =
     JE.array (JE.array JE.string) >> publish "codes"
+
+
+chat : String -> Event
+chat =
+    JE.string >> publish "chat"

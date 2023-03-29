@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.10.33
+version:  0.11.0
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,58 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.11.0** (29/03/2023)
+
+- __Add chat to classroom, which parses LiaScript-Code live__
+- refactor: Internal classroom data-structures
+- fix: multiple tiny errors in classroom Synchronization
+- ShortCut: Ctrl-Enter or Command-Enter can now be used to execute code or send a chat message
+- fix: Probability distribution visualization for surveys
+- update localization
+- improve: Menu options get closed when they loose their focus
+- feat: Add macros to formulas
+
+  Macros to formulas can no be defined globally with the formula macro
+  
+  ``` markdown
+  <!--
+  formula: Theta   \mathrm{\zeta}(#1)
+  formula: \beta   \Theta{B}
+  -->
+  ```
+
+  These macros are then passed to every formula. If formulas are defined
+  with `\def` or `\gdef`, etc. within a formula, then only these macros are
+  used an no external ones are passed.
+    
+  Additionally, formulas from other imports are imported and used as well.
+  This way it is possible to include reusable formula collections.
+
+**0.10.34** (27/03/2023)
+
+- feat: Add macros to formula
+
+  Macros to formulas can no be defined globally with the formula macro
+
+  ``` markdown
+  <!--
+  formula: Theta   \mathrm{\zeta}(#1)
+  formula: \beta   \Theta{B}
+  -->
+  ```
+
+  These macros are then passed to every formula. If formulas are defined
+  with \def or \gdef, etc. within a formula, then only these macros are
+  used an no external ones are passed.
+
+  Additionally, formulas from other imports are imported and used as well.
+  This way it is possible to include reusable formula collections.
+
+- improve: Menus get closed if they or one of their children loose their focus
+- fix: classroom, single user is displayed after successful creation
+- fix(CSS): too small textbook widths
+
 
 **0.10.33** (22/03/2023)
 

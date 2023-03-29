@@ -26,7 +26,7 @@ view session settings model =
     Html.div [ Attr.class "p-1" ]
         [ [ ( Settings.menuSettings session.screen.width, "settings" )
           ]
-            |> Settings.header En session.screen settings Const.icon
+            |> Settings.header False En session.screen settings Const.icon
             |> Html.map UpdateSettings
         , Html.main_ [ Attr.class "lia-slide__content" ]
             [ Html.h1 [] [ Html.text "Lia: Open-courSes" ]
@@ -352,7 +352,7 @@ get_active course =
 
 inlines : Inlines -> List (Html Msg)
 inlines =
-    List.map (Inline.view_inf Array.empty En False False Nothing Nothing >> Html.map (always NoOp))
+    List.map (Inline.view_inf Array.empty En False False Nothing Nothing Nothing >> Html.map (always NoOp))
 
 
 defaultBackground : String -> Attribute msg

@@ -134,7 +134,7 @@ const Service = {
         if (sync) {
           sync.disconnect()
 
-          sync = null
+          sync = undefined
 
           /*
           if (elmSend) {

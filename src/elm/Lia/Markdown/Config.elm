@@ -1,6 +1,7 @@
 module Lia.Markdown.Config exposing
     ( Config
     , init
+    , setID
     , setSubViewer
     )
 
@@ -14,7 +15,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (Section, SubSection(..))
-import Lia.Settings.Types exposing (Mode, Settings)
+import Lia.Settings.Types exposing (Mode(..), Settings)
 import Lia.Sync.Types as Sync
 import Session exposing (Screen)
 import Translations exposing (Lang)
@@ -37,14 +38,26 @@ init :
     -> Settings
     -> Sync.Settings
     -> Screen
-    -> Section
     -> Int
+    -> Maybe (Dict String String)
     -> Dict String ( Int, Int )
+    -> Section
     -> Config sub
-init lang translations settings sync screen section id media =
+init lang translations settings sync screen id formula media section =
     let
         config =
-            inline lang translations settings screen section.effect_model id media sync
+            inline lang
+                translations
+                settings
+                screen
+                section.effect_model
+                id
+                (section.definition
+                    |> Maybe.map .formulas
+                    |> mergeFormulas formula
+                )
+                media
+                sync
     in
     Config
         settings.mode
@@ -61,8 +74,50 @@ init lang translations settings sync screen section id media =
         config
 
 
-inline : Lang -> ( String, String ) -> Settings -> Screen -> Effect.Model SubSection -> Int -> Dict String ( Int, Int ) -> Sync.Settings -> Inline.Config sub
-inline lang translations settings screen effect id media sync =
+setID : Int -> Config sub -> Config sub
+setID id config =
+    let
+        section =
+            config.section
+
+        main =
+            config.main
+    in
+    { config
+        | section = { section | id = id }
+        , main = { main | slide = id }
+        , mode = Textbook
+    }
+
+
+mergeFormulas : Maybe (Dict String String) -> Maybe (Dict String String) -> Maybe (Dict String String)
+mergeFormulas main sec =
+    case ( main, sec ) of
+        ( Just _, Nothing ) ->
+            main
+
+        ( Just m, Just s ) ->
+            Just <| Dict.union m s
+
+        ( Nothing, Just _ ) ->
+            sec
+
+        _ ->
+            Nothing
+
+
+inline :
+    Lang
+    -> ( String, String )
+    -> Settings
+    -> Screen
+    -> Effect.Model SubSection
+    -> Int
+    -> Maybe (Dict String String)
+    -> Dict String ( Int, Int )
+    -> Sync.Settings
+    -> Inline.Config sub
+inline lang translations settings screen effect id formulas media sync =
     Inline.init
         { mode = settings.mode
         , visible = Just effect.visible
@@ -76,6 +131,7 @@ inline lang translations settings screen effect id media sync =
         , scripts = effect.javascript
         , translations = Just translations
         , sync = Just sync
+        , formulas = formulas
         }
 
 
