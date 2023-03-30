@@ -2,6 +2,20 @@ import { Gun } from './gun.d'
 import * as Base from '../Base/index'
 import { Crypto } from '../Crypto'
 
+// Working solution to deal with GunDB i.map(...).flat is not a function
+// https://stackoverflow.com/questions/50993498/flat-is-not-a-function-whats-wrong
+Object.defineProperty(Array.prototype, 'flat', {
+  value: function (depth = 1) {
+    return this.reduce(function (flat, toFlatten) {
+      return flat.concat(
+        Array.isArray(toFlatten) && depth > 1
+          ? toFlatten.flat(depth - 1)
+          : toFlatten
+      )
+    }, [])
+  },
+})
+
 export class Sync extends Base.Sync {
   private gun?: Gun
   private store: string = ''
