@@ -87,7 +87,15 @@ export class Sync extends Base.Sync {
       this.broadcast(null)
       this.sendConnect()
     } else {
-      console.warn('Could not load resource:', error)
+      let message = 'GunDB unknown error'
+
+      if (error) {
+        message = 'Could not load resource: ' + error
+      } else if (!window.Gun) {
+        message = 'Could not load GunDB interface'
+      }
+
+      this.sendDisconnectError(message)
     }
   }
 

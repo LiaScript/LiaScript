@@ -38,8 +38,8 @@ export class Sync extends Base.Sync {
     const id = this.uniqueID()
 
     if (ok && window['JitsiMeetJS'] && id) {
-      window['JitsiMeetJS'].init()
-      window['JitsiMeetJS'].setLogLevel(window['JitsiMeetJS'].logLevels.ERROR)
+      if (!window['LIA'].debug)
+        window['JitsiMeetJS'].setLogLevel(window['JitsiMeetJS'].logLevels.ERROR)
 
       // https://codepen.io/chadwallacehart/pen/bGLypLY?editors=1010
       this.connection = new window['JitsiMeetJS'].JitsiConnection(null, null, {
@@ -131,6 +131,16 @@ export class Sync extends Base.Sync {
       )
 
       this.connection.connect()
+    } else {
+      let message = 'Jitsi unknown error'
+
+      if (error) {
+        message = 'Could not load resource: ' + error
+      } else if (window['JitsiMeetJS'] === undefined) {
+        message = 'Could not load Jitsi interface'
+      }
+
+      this.sendDisconnectError(message)
     }
   }
 
