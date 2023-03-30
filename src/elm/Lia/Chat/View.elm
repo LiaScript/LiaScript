@@ -25,6 +25,7 @@ view lang config model =
             , Attr.style "display" "flex"
             , Attr.style "flex-direction" "column"
             , Attr.style "position" "absolute"
+            , Attr.style "padding" "1rem"
             ]
         )
         [ model.messages
@@ -38,12 +39,12 @@ view lang config model =
                 ]
             |> List.singleton
             |> Html.div
-                [ Attr.style "height" "calc(100% - 10rem)"
+                [ Attr.style "height" "100%"
                 , Attr.style "overflow" "auto"
                 , Attr.id "lia-chat-messages"
                 ]
         , Html.div
-            [ Attr.style "padding" "1rem"
+            [ Attr.style "padding" "0.5rem"
             , Attr.style "height" "11.5rem"
             ]
             [ btnIcon
@@ -93,7 +94,7 @@ viewMessage config ( id, section ) =
         |> Config.setID id_
         |> Markdown.viewContent
         |> Html.div
-            [ Attr.style "margin" "0.45rem 1rem"
+            [ Attr.style "margin" "0.45rem 0.5rem"
             , Attr.style "box-shadow" "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)"
             , Attr.style
                 "padding"
