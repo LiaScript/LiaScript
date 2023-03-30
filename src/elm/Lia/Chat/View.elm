@@ -21,11 +21,10 @@ view lang config model =
     Html.div
         (noTranslate
             [ Attr.style "width" "100%"
-            , Attr.style "height" "calc(100% - 3rem)"
+            , Attr.style "height" "100%"
             , Attr.style "display" "flex"
             , Attr.style "flex-direction" "column"
             , Attr.style "position" "absolute"
-            , Attr.style "top" "3rem"
             ]
         )
         [ model.messages
