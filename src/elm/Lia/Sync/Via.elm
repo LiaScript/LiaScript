@@ -181,6 +181,7 @@ info =
             [ Html.li [] [ Html.text "Global overview on quizzes" ]
             , Html.li [] [ Html.text "Global overview on surveys" ]
             , Html.li [] [ Html.text "Collaborative editing of executable code snippets (you have to switch to sync-mode, per editor)" ]
+            , Html.li [] [ Html.text "A chat that parses LiaScript, such that you can dynamically create quizzes, surveys, collaborative editors, but also to share videos, galleries, oEmbeds, etc..." ]
             ]
         , Html.text "To synchronize the state between users, we apply "
         , link "Conflict Free Replicated Datatypes (CRDTs)" "https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type"
