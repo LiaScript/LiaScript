@@ -2,17 +2,7 @@ import { CMIElement, SCORM } from './scorm'
 
 import * as Base from '../Base/index'
 import { Settings } from '../Base/settings'
-
-/**
- * A simple json-parser that does not trow an error, but returns null if it fails
- * @param string - a valid JSON representation
- */
-function jsonParse(json: string) {
-  try {
-    return JSON.parse(json)
-  } catch (e) {}
-  return null
-}
+import * as Utils from '../utils'
 
 /**
  * This is a very simplistic Connector, that does only store the current slide
@@ -24,9 +14,38 @@ function jsonParse(json: string) {
 class Connector extends Base.Connector {
   private scorm?: SCORM
   private location: number | null
+  private active: boolean
+
+  /**
+   * To simplify the handling of state data, these are preserved and loaded by
+   * this db, which is also replicated as a scorm interaction. The state is
+   * stored as the associated learner_response (type "long-fill-in")
+   */
+  private db: {
+    quiz: any[][]
+    survey: any[][]
+    task: any[][]
+  }
+
+  /**
+   * Data is stored linearly within the backend and requires a unique ID per
+   * element. This object is used to provide a simple lookup handler to get
+   * from a 2d position to a 1d Id ;-)
+   */
+  private id: {
+    quiz: number[][]
+    survey: number[][]
+    task: number[][]
+  }
 
   constructor() {
     super()
+
+    // by default no data will be stored
+    this.active = false
+
+    this.db = { quiz: [], survey: [], task: [] }
+    this.id = { quiz: [], survey: [], task: [] }
 
     console.warn(
       `Hello, this is LiaScript from within a SCORM 1.2 package. You should definitely try out the SCORM 2004 exporter, since this one cannot be used to store states or any kind of progress. The only thing that is stores, is currently the user location...
@@ -40,19 +59,184 @@ Hava fun ;-)`
     )
 
     if (window.top && window.top.API) {
+      LOG('successfully opened API')
       this.scorm = window.top.API
 
-      console.log('LMSInitialize', this.scorm.LMSInitialize(''))
+      LOG('LMSInitialize', this.scorm.LMSInitialize(''))
 
-      this.location = jsonParse(
+      LOG('loading quizzes ...')
+      try {
+        // @ts-ignore
+        this.db.quiz = window.config_.quiz || [[]]
+        LOG(' ... done')
+      } catch (e) {
+        WARN('... failed', e)
+      }
+
+      LOG('loading surveys ...')
+      try {
+        // @ts-ignore
+        this.db.survey = window.config_.survey || [[]]
+        LOG(' ... done')
+      } catch (e) {
+        WARN('... failed', e)
+      }
+
+      LOG('loading tasks ...')
+      try {
+        // @ts-ignore
+        this.db.task = window.config_.task || [[]]
+        LOG(' ... done')
+      } catch (e) {
+        WARN('... failed', e)
+      }
+
+      this.init()
+    }
+  }
+
+  init() {
+    if (this.scorm) {
+      LOG('Initialize ', this.scorm.LMSInitialize(''))
+
+      // store state information only in normal mode
+      let mode = this.scorm.LMSGetValue('cmi.core.lesson_mode')
+      this.active = mode === 'normal'
+
+      LOG(
+        'Running in',
+        mode,
+        'mode, results will ',
+        this.active ? '' : 'NOT',
+        'be stored!'
+      )
+
+      LOG('open location ...')
+      this.location = Utils.jsonParse(
         this.scorm.LMSGetValue('cmi.core.lesson_location')
       )
+      LOG('... ', this.location)
 
       // if no location has been stored so far, this is the first visit
       if (this.location === null) {
         this.slide(0)
+
+        // store all data as interactions with an sequential id
+        let id = 0
+        id = this.initFirst('quiz', id)
+        id = this.initFirst('survey', id)
+        id = this.initFirst('task', id)
+      } else {
+        // restore the current state from the interactions
+        let id = 0
+        id = this.initSecond('quiz', id)
+        id = this.initSecond('survey', id)
+        id = this.initSecond('task', id)
+      }
+
+      // calculate the new/old scoring value
+      window['SCORE'] = 0
+      this.score()
+    }
+  }
+
+  /**
+   * This is helper that populates any kind of states with sequential ids as
+   * interactions within the backend.
+   * @param key
+   * @param id
+   * @returns the last sequence id
+   */
+  initFirst(key: 'quiz' | 'survey' | 'task', id: number) {
+    for (let slide = 0; slide < this.db[key].length; slide++) {
+      this.id[key].push([])
+
+      for (let i = 0; i < this.db[key][slide].length; i++) {
+        this.setInteraction(id, `${key}:${slide}-${i}`)
+        this.id[key][slide].push(id)
+        id++
       }
     }
+    return id
+  }
+
+  /**
+   * If the data has already been stored it is loaded with this method and the
+   * sequential ids are restored to the `this.id` look-up table.
+   * @param key
+   * @param id
+   * @returns the last sequence id
+   */
+  initSecond(key: 'quiz' | 'survey' | 'task', id: number) {
+    for (let slide = 0; slide < this.db[key].length; slide++) {
+      this.id[key].push([])
+
+      for (let i = 0; i < this.db[key][slide].length; i++) {
+        let data = this.getInteraction(id)
+
+        if (data) {
+          this.db[key][slide][i] = data
+        }
+
+        this.id[key][slide].push(id)
+
+        id++
+      }
+    }
+
+    return id
+  }
+
+  /**
+   * This method currently only scores quizzes if a score was defined by the
+   * creator.
+   */
+  score(): void {
+    if (!this.active || !this.score) return
+
+    let total = 0
+    let solved = 0
+    let finished = 0
+    let count = 0
+
+    for (let i = 0; i < this.db.quiz.length; i++) {
+      for (let j = 0; j < this.db.quiz[i].length; j++) {
+        count = this.db.quiz[i][j].score
+
+        total += count
+
+        switch (this.db.quiz[i][j].solved) {
+          case 1: {
+            solved += count
+          }
+          case -1: {
+            finished += count
+          }
+        }
+      }
+    }
+
+    const score = solved === 0 ? 0 : solved / total
+
+    this.write('cmi.core.score.min', '0')
+    this.write('cmi.core.score.max', JSON.stringify(total))
+    this.write('cmi.core.score.raw', JSON.stringify(solved))
+
+    let masteryScore = Utils.jsonParse(
+      this.scorm?.LMSGetValue('cmi.student_data.mastery_score') || 'null'
+    )
+
+    if (typeof masteryScore === 'number') {
+      if (score >= masteryScore && score < 100) {
+        this.write('cmi.core.lesson_status', 'passed')
+      } else if (finished + solved === total) {
+        this.write('cmi.core.lesson_status', 'failed')
+      }
+    } else {
+      this.write('cmi.core.lesson_status', 'not attempted')
+    }
+
+    window['SCORE'] = score
   }
 
   /**
@@ -109,7 +293,7 @@ Hava fun ;-)`
     try {
       data = this.scorm?.LMSGetValue('cmi.suspend_data') || null
     } catch (e) {
-      console.warn('cannot write to localStorage')
+      WARN('cannot read settings from cmi.suspend_data')
     }
 
     let json: Lia.Settings | null = null
@@ -118,7 +302,7 @@ Hava fun ;-)`
       try {
         json = JSON.parse(data)
       } catch (e) {
-        console.warn('getSettings =>', e)
+        WARN('getSettings =>', e)
       }
 
       if (!json) {
@@ -138,9 +322,52 @@ Hava fun ;-)`
       this.scorm.LMSSetValue(uri, data)
       this.scorm.LMSCommit('')
     } else {
-      console.warn('SCORM: could not write')
+      WARN('could not write', uri, data)
     }
   }
+
+  /**
+   * Read out the state from the backend
+   * @param id
+   * @returns
+   */
+  getInteraction(id: number): any | null {
+    if (!this.active) return null
+
+    try {
+      if (this.scorm) {
+        return Utils.decodeJSON(
+          this.scorm.LMSGetValue(`cmi.objectives.${id}.id`)
+        )
+      }
+    } catch (e) {
+      WARN('getInteraction =>', e)
+    }
+
+    return null
+  }
+}
+
+/**
+ * Only for debugging purposes. Needs :
+ *
+ * `window.LIA.debug = true`
+ *
+ * @param args
+ */
+function LOG(...args) {
+  console.log('SCORM1.2: ', ...args)
+}
+
+/**
+ * Only for debugging purposes. Needs :
+ *
+ * `window.LIA.debug = true`
+ *
+ * @param args
+ */
+function WARN(...args) {
+  console.log('SCORM1.2: ', ...args)
 }
 
 export { Connector }
