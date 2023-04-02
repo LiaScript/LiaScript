@@ -104,7 +104,7 @@ class Connector extends Base.Connector {
 
       this.init()
     } else {
-      console.warn('SCORM2004: Could not find API')
+      WARN('Could not find API')
     }
   }
 
@@ -116,7 +116,7 @@ class Connector extends Base.Connector {
     if (this.active && this.scorm) {
       this.write('cmi.suspend_data', JSON.stringify(data))
     } else {
-      console.warn('cannot write to "cmi.suspend_data"')
+      WARN('cannot write to "cmi.suspend_data"')
     }
   }
 
@@ -126,7 +126,7 @@ class Connector extends Base.Connector {
     try {
       data = this.scorm?.GetValue('cmi.suspend_data') || null
     } catch (e) {
-      console.warn('cannot write to localStorage')
+      WARN('cannot write settings to cmi.suspend_data')
     }
 
     let json: Lia.Settings | null = null
@@ -135,7 +135,7 @@ class Connector extends Base.Connector {
       try {
         json = JSON.parse(data)
       } catch (e) {
-        console.warn('getSettings =>', e)
+        WARN('getSettings =>', e)
       }
 
       if (!json) {
@@ -158,8 +158,8 @@ class Connector extends Base.Connector {
       let mode = this.scorm.GetValue('cmi.mode')
       this.active = mode === 'normal'
 
-      console.warn(
-        'SCORM2004: Running in',
+      WARN(
+        'Running in',
         mode,
         'mode, results will ',
         this.active ? '' : 'NOT',
@@ -357,6 +357,8 @@ class Connector extends Base.Connector {
     } else if (finished + solved === total) {
       this.write('cmi.success_status', 'failed')
       this.write('cmi.completion_status', 'completed')
+    } else {
+      this.write('cmi.completion_status', 'incomplete')
     }
 
     window['SCORE'] = score
@@ -373,15 +375,15 @@ class Connector extends Base.Connector {
       LOG('write: ', uri, data)
 
       if (this.scorm.SetValue(uri, data) === 'false') {
-        console.warn('error occurred for', uri, data)
+        WARN('error occurred for', uri, data)
 
         let error = this.scorm.GetLastError()
-        console.warn('GetLastError:', error)
+        WARN('GetLastError:', error)
         if (error) {
-          console.warn('GetErrorString:', this.scorm.GetErrorString(error))
-          console.warn('GetDiagnostic:', this.scorm.GetDiagnostic(error))
+          WARN('GetErrorString:', this.scorm.GetErrorString(error))
+          WARN('GetDiagnostic:', this.scorm.GetDiagnostic(error))
         } else {
-          console.warn('GetDiagnostic:', this.scorm.GetDiagnostic(''))
+          WARN('GetDiagnostic:', this.scorm.GetDiagnostic(''))
         }
       }
 
@@ -463,7 +465,7 @@ class Connector extends Base.Connector {
         )
       }
     } catch (e) {
-      console.warn('SCORM2004: getInteraction => ', e)
+      WARN('getInteraction => ', e)
     }
 
     return null
