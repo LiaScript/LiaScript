@@ -3,46 +3,7 @@ import { CMIElement, SCORM } from './scorm.d'
 import log from '../../liascript/log'
 import { Settings } from '../Base/settings'
 
-const short = {
-  SingleChoice: 'sc',
-  MultipleChoice: 'mc',
-  Text: 'tx',
-  Select: 'st',
-  Matrix: 'mx',
-  Generic: 'gn',
-  error_msg: 'err',
-}
-
-// return the key value pair order, this way only short has to be defined once
-const long = Object.entries(short).reduce((acc, [key, value]) => {
-  acc[value] = key
-  return acc
-}, {})
-
-function renameJsonKeys(jsonObject: any, replacements: Object) {
-  if (typeof jsonObject !== 'object' || jsonObject === null) {
-    return jsonObject
-  }
-
-  if (Array.isArray(jsonObject)) {
-    return jsonObject.map((element) => renameJsonKeys(element, replacements))
-  }
-
-  const modifiedObject = {}
-  for (const [key, value] of Object.entries(jsonObject)) {
-    const newKey = replacements[key] || key
-    modifiedObject[newKey] = renameJsonKeys(value, replacements)
-  }
-  return modifiedObject
-}
-
-function encodeJSON(json: any) {
-  return JSON.stringify(renameJsonKeys(json, short))
-}
-
-function decodeJSON(json: string) {
-  return renameJsonKeys(JSON.parse(json), long)
-}
+import * as Utils from '../utils'
 
 /**
  * This implementation of a SCORM 2004 connector for LiaScript is mainly based
@@ -210,7 +171,7 @@ class Connector extends Base.Connector {
       )
 
       LOG('open location ...')
-      this.location = jsonParse(this.scorm.GetValue('cmi.location'))
+      this.location = Utils.jsonParse(this.scorm.GetValue('cmi.location'))
       LOG('... ', this.location)
 
       // if no location has been stored so far, this is the first visit
@@ -337,7 +298,7 @@ class Connector extends Base.Connector {
    */
   storeHelper(record: Base.Record) {
     for (let i = 0; i < this.db[record.table][record.id].length; i++) {
-      if (neq(record.data[i], this.db[record.table][record.id][i])) {
+      if (Utils.neq(record.data[i], this.db[record.table][record.id][i])) {
         this.updateInteraction(
           this.id[record.table][record.id][i],
           record.data[i]
@@ -481,7 +442,10 @@ class Connector extends Base.Connector {
    * @param state
    */
   updateInteraction(id: number, state: any): void {
-    this.write(`cmi.interactions.${id}.learner_response`, encodeJSON(state))
+    this.write(
+      `cmi.interactions.${id}.learner_response`,
+      Utils.encodeJSON(state)
+    )
   }
 
   /**
@@ -494,7 +458,7 @@ class Connector extends Base.Connector {
 
     try {
       if (this.scorm) {
-        return decodeJSON(
+        return Utils.decodeJSON(
           this.scorm.GetValue(`cmi.interactions.${id}.learner_response`)
         )
       }
@@ -504,27 +468,6 @@ class Connector extends Base.Connector {
 
     return null
   }
-}
-
-/**
- * A simple json-parser that does not trow an error, but returns null if it fails
- * @param string - a valid JSON representation
- */
-function jsonParse(json: string) {
-  try {
-    return JSON.parse(json)
-  } catch (e) {}
-  return null
-}
-
-/**
- * Compare Object state information for quizzes, surveys, and tasks
- * @param a
- * @param b
- * @returns true if not equal otherwise false
- */
-function neq(a: any, b: any) {
-  return JSON.stringify(a) != JSON.stringify(b)
 }
 
 /**
