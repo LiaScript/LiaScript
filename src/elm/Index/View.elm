@@ -24,7 +24,8 @@ import Translations exposing (Lang(..))
 view : Session -> Settings -> Model -> Html Msg
 view session settings model =
     Html.div [ Attr.class "p-1" ]
-        [ [ ( Settings.menuSettings session.screen.width, "settings" )
+        [ [ ( \_ _ _ -> [], "ignore" )
+          , ( Settings.menuSettings session.screen.width, "settings" )
           ]
             |> Settings.header False En session.screen settings Const.icon
             |> Html.map UpdateSettings
