@@ -28,50 +28,52 @@ view session settings model =
           ]
             |> Settings.header False En session.screen settings Const.icon
             |> Html.map UpdateSettings
-        , Html.main_ [ Attr.class "lia-slide__content" ]
-            [ Html.h1 [] [ Html.text "Lia: Open-courSes" ]
-            , searchBar model.input
-            , if List.isEmpty model.courses && model.initialized then
-                Html.section [] <|
-                    [ Html.br [] []
-                    , Html.p
-                        [ Attr.class "lia-paragraph" ]
-                        [ Html.text "If you cannot see any courses in this list, try out one of the following links, to get more information about this project and to visit some examples and free interactive books."
+        , Html.div [ Attr.class "lia-slide__container" ]
+            [ Html.main_ [ Attr.class "lia-slide__content" ]
+                [ Html.h1 [] [ Html.text "Lia: Open-courSes" ]
+                , searchBar model.input
+                , if List.isEmpty model.courses && model.initialized then
+                    Html.section [] <|
+                        [ Html.br [] []
+                        , Html.p
+                            [ Attr.class "lia-paragraph" ]
+                            [ Html.text "If you cannot see any courses in this list, try out one of the following links, to get more information about this project and to visit some examples and free interactive books."
+                            ]
+                        , Html.u
+                            []
+                            [ Html.li []
+                                [ Html.a
+                                    [ Attr.href Const.urlLiascript, Attr.target "_blank" ]
+                                    [ Html.text "Project-Website" ]
+                                ]
+                            , Html.li []
+                                [ Html.a
+                                    [ href "https://raw.githubusercontent.com/liaScript/docs/master/README.md", Attr.target "_blank" ]
+                                    [ Html.text "Project-Documentation" ]
+                                ]
+                            , Html.li []
+                                [ Html.a
+                                    [ href "https://raw.githubusercontent.com/liaScript/index/master/README.md", Attr.target "_blank" ]
+                                    [ Html.text "Index" ]
+                                ]
+                            ]
+                        , Html.br [] []
+                        , Html.p
+                            [ Attr.class "lia-paragraph" ]
+                            [ Html.text "At the end, we hope to learn from your courses." ]
+                        , Html.p
+                            [ Attr.class "lia-paragraph" ]
+                            [ Html.text "Have a nice one ;-) ..." ]
                         ]
-                    , Html.u
-                        []
-                        [ Html.li []
-                            [ Html.a
-                                [ Attr.href Const.urlLiascript, Attr.target "_blank" ]
-                                [ Html.text "Project-Website" ]
-                            ]
-                        , Html.li []
-                            [ Html.a
-                                [ href "https://raw.githubusercontent.com/liaScript/docs/master/README.md", Attr.target "_blank" ]
-                                [ Html.text "Project-Documentation" ]
-                            ]
-                        , Html.li []
-                            [ Html.a
-                                [ href "https://raw.githubusercontent.com/liaScript/index/master/README.md", Attr.target "_blank" ]
-                                [ Html.text "Index" ]
-                            ]
-                        ]
-                    , Html.br [] []
-                    , Html.p
-                        [ Attr.class "lia-paragraph" ]
-                        [ Html.text "At the end, we hope to learn from your courses." ]
-                    , Html.p
-                        [ Attr.class "lia-paragraph" ]
-                        [ Html.text "Have a nice one ;-) ..." ]
-                    ]
 
-              else if model.initialized then
-                model.courses
-                    |> List.map (card session.share)
-                    |> Html.div [ Attr.class "preview-grid" ]
+                  else if model.initialized then
+                    model.courses
+                        |> List.map (card session.share)
+                        |> Html.div [ Attr.class "preview-grid" ]
 
-              else
-                Html.text ""
+                  else
+                    Html.text ""
+                ]
             ]
         ]
 
