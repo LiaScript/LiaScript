@@ -147,6 +147,8 @@ export class Sync extends Base.Sync {
   broadcast(data: Uint8Array): void {
     try {
       this.conferenceRoom?.sendEndpointMessage('', Base.uint8_to_base64(data))
-    } catch (_) {}
+    } catch (e) {
+      console.warn('Jitsi: broadcast =>', e.message)
+    }
   }
 }
