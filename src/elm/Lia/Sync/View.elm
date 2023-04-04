@@ -41,7 +41,7 @@ view settings =
                     [ Backend.input
                         { active = open && support
                         , msg = Room
-                        , type_ = "input"
+                        , type_ = "text"
                         , value = settings.room
                         , placeholder = "Just any kind of typeable name"
                         , label =
