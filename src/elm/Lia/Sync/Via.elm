@@ -22,7 +22,7 @@ import Lia.Utils as Util
 type Backend
     = Beaker
     | Edrys
-    | GUN String
+    | GUN { urls : String, persistent : Bool }
     | Jitsi String
     | Matrix { baseURL : String, userId : String, accessToken : String }
     | PubNub { pubKey : String, subKey : String }
@@ -37,10 +37,17 @@ toString full via =
         Edrys ->
             "Edrys"
 
-        GUN urls ->
+        GUN { urls, persistent } ->
             "GUN"
                 ++ (if full then
-                        "|" ++ urls
+                        (if persistent then
+                            "|t"
+
+                         else
+                            "|f"
+                        )
+                            ++ "|"
+                            ++ urls
 
                     else
                         ""
@@ -111,10 +118,19 @@ fromString via =
             Just Edrys
 
         [ "gun" ] ->
-            Just (GUN "")
+            Just (GUN { urls = "", persistent = False })
 
-        [ "gun", urls ] ->
-            Just (GUN urls)
+        [ "gun", "f" ] ->
+            Just (GUN { urls = "", persistent = False })
+
+        [ "gun", "f", urls ] ->
+            Just (GUN { urls = urls, persistent = False })
+
+        [ "gun", "t" ] ->
+            Just (GUN { urls = "", persistent = True })
+
+        [ "gun", "t", urls ] ->
+            Just (GUN { urls = urls, persistent = True })
 
         [ "jitsi" ] ->
             Just (Jitsi "")
@@ -307,15 +323,18 @@ link title url =
 view : Bool -> Backend -> Html Msg
 view editable backend =
     case backend of
-        GUN urls ->
-            input
-                { active = editable
-                , type_ = "input"
-                , msg = InputGun
-                , value = urls
-                , placeholder = ""
-                , label = Html.text "relay server"
-                }
+        GUN { urls, persistent } ->
+            Html.div []
+                [ input
+                    { active = editable
+                    , type_ = "input"
+                    , msg = InputGun
+                    , value = urls
+                    , placeholder = ""
+                    , label = Html.text "relay server"
+                    }
+                , checkbox { active = editable, value = persistent, msg = CheckboxGun, label = Html.text "persistent storage" }
+                ]
 
         Jitsi domain ->
             input
@@ -388,31 +407,62 @@ input :
     , placeholder : String
     }
     -> Html msg
-input c =
+input { active, msg, label, type_, value, placeholder } =
     Html.label []
         [ Html.span
             [ Attr.class "lia-label"
             , Attr.style "margin-top" "2rem"
             ]
-            [ c.label ]
+            [ label ]
         , Html.input
-            [ if c.active then
-                Event.onInput c.msg
+            [ if active then
+                Event.onInput msg
 
               else
                 Attr.disabled True
-            , Attr.value c.value
+            , Attr.value value
             , Attr.style "color" "black"
-            , Attr.type_ c.type_
+            , Attr.type_ type_
             , Attr.style "width" "100%"
-            , Attr.placeholder c.placeholder
+            , Attr.placeholder placeholder
             ]
             []
         ]
 
 
+checkbox :
+    { active : Bool
+    , msg : msg
+    , label : Html msg
+    , value : Bool
+    }
+    -> Html msg
+checkbox { active, msg, label, value } =
+    Html.label [ Attr.style "margin-top" "2rem", Attr.class "lia-label" ]
+        [ Html.input
+            [ if active then
+                Event.onClick msg
+
+              else
+                Attr.disabled True
+            , Attr.style "color" "black"
+            , Attr.type_ "checkbox"
+            , Attr.checked value
+            , Attr.class "lia-checkbox"
+
+            --, Attr.style "display" "block"
+            ]
+            []
+        , Html.span
+            [ Attr.class "lia-label"
+            ]
+            [ label ]
+        ]
+
+
 type Msg
     = InputGun String
+    | CheckboxGun
     | InputPubNub String String
     | InputMatrix String String
     | InputJitsi String
@@ -421,8 +471,11 @@ type Msg
 update : Msg -> Backend -> Backend
 update msg backend =
     case ( msg, backend ) of
-        ( InputGun urls, GUN _ ) ->
-            GUN urls
+        ( InputGun urls, GUN data ) ->
+            GUN { data | urls = urls }
+
+        ( CheckboxGun, GUN data ) ->
+            GUN { data | persistent = not data.persistent }
 
         ( InputJitsi domain, Jitsi _ ) ->
             Jitsi domain

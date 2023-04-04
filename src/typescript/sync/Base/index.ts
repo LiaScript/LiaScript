@@ -244,6 +244,7 @@ export class Sync {
       return JSON.stringify({
         course: this.course,
         room: this.room,
+        pw: helper.getHashCode(this.password || ''), // prevent delete from wrong passwords
       })
     }
 
