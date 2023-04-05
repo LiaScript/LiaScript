@@ -12,6 +12,7 @@ module Lia.Sync.Via exposing
     , view
     )
 
+import Conditional.List as CList
 import Const
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -253,8 +254,8 @@ infoOn supported about =
                 , Html.text " protocol."
                 , Html.text " You should try to download the "
                 , link "Beaker Browser" "https://beakerbrowser.com"
-                , Html.text ". It uses a peer-to-peer network with which you can make and host websites from inside the browser."
-                , Html.text " In the same way you can also directly create and edit LiaScript courses within this browser and share them."
+                , Html.text ". It uses a peer-to-peer network, with which you can make and host websites from inside the browser."
+                , Html.text " In the same way, you can also directly create and edit LiaScript courses within this browser and share them."
                 ]
 
             ( Edrys, _ ) ->
@@ -263,14 +264,14 @@ infoOn supported about =
                 , Html.text "It is a great platform for building remote labs and share them by using only a browser locally. "
                 , Html.text "Thus, this synchronization will only work, if you are within an Edrys classroom, for more information try the following link: "
                 , link "https://edrys.org" "https://edrys.org"
-                , Html.text ". Additionally your course has to be loaded via the "
+                , Html.text ". Additionally, your course has to be loaded via the "
                 , link "module-liascript" "https://github.com/edrys-org/module-liascript"
                 , Html.text "."
                 ]
 
             ( GUN _, _ ) ->
                 [ link "GunDB" "https://gun.eco"
-                , Html.text " is a small, easy, and fast realtime database for syncing data across various users."
+                , Html.text " is a small, easy, and fast real-time database for syncing data across various users."
                 , Html.text " You can use the default relay server hosted at "
                 , link Const.gunDB_ServerURL Const.gunDB_ServerURL
                 , Html.text ". Or, if you don't trust us ;-) you can also use one of the free hosted relay servers listed "
@@ -279,7 +280,7 @@ infoOn supported about =
                 , Html.text " The implementation of this classroom can be found "
                 , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/Gun"
                 , Html.text ". By checking \"persistent storage\" you can ensure that the chat messages and the modified code will be accessible over a longer time period, otherwise the state is deleted."
-                , Html.text " However, since this is a free service, we cannot give guarantees that your messages will be stored for ever and that the GunDB server might be offline."
+                , Html.text " However, since this is a free service, we cannot give guarantees that your messages will be stored forever and that the GunDB server might be offline."
                 , Html.text " If you want to be certain, you can host your own instance of a GunDB server and change the URL appropriately."
                 ]
 
@@ -306,9 +307,9 @@ infoOn supported about =
 
             ( PubNub _, _ ) ->
                 [ link "PubNub" "https://www.pubnub.com"
-                , Html.text " is a realtime communication platform. "
+                , Html.text " is a real-time communication platform. "
                 , Html.text "To create a classroom that uses this service, you will only require an account, which is free for testing. "
-                , Html.text "After that you simply have to create a new App with a new Keyset within their dashboard. "
+                , Html.text "After that, you simply have to create a new App with a new Keyset within their dashboard. "
                 , Html.text "These are the keys you will have to provide for this room. "
                 , Html.text "After this, you can simply generate a new set of keys. "
                 , Html.text "The basic steps that are required, are described in more detail "
@@ -329,50 +330,60 @@ view editable backend =
             Html.div []
                 [ input
                     { active = editable
-                    , type_ = "input"
+                    , type_ = "text"
                     , msg = InputGun
                     , value = urls
-                    , placeholder = ""
+                    , placeholder = "https://gun1.server, https://gun2.server, ..."
                     , label = Html.text "relay server"
+                    , autocomplete = Just "gun-server"
                     }
-                , checkbox { active = editable, value = persistent, msg = CheckboxGun, label = Html.text "persistent storage" }
+                , checkbox
+                    { active = editable
+                    , value = persistent
+                    , msg = CheckboxGun
+                    , label = Html.text "persistent storage"
+                    }
                 ]
 
         Jitsi domain ->
             input
                 { active = editable
-                , type_ = "input"
+                , type_ = "text"
                 , msg = InputJitsi
                 , value = domain
-                , placeholder = ""
+                , placeholder = "domain.jit.si"
                 , label = Html.text "domain"
+                , autocomplete = Just "jitsi-domain"
                 }
 
         Matrix { baseURL, userId, accessToken } ->
             Html.div []
                 [ input
                     { active = editable
-                    , type_ = "input"
+                    , type_ = "text"
                     , msg = InputMatrix "url"
                     , label = Html.text "base URL"
                     , value = baseURL
                     , placeholder = "https://matrix.org"
+                    , autocomplete = Just "matrix-url"
                     }
                 , input
                     { active = editable
-                    , type_ = "input"
+                    , type_ = "text"
                     , msg = InputMatrix "user"
                     , label = Html.text "user ID"
                     , value = userId
                     , placeholder = "@USERID:matrix.org"
+                    , autocomplete = Just "matrix-user"
                     }
                 , input
                     { active = editable
-                    , type_ = "input"
+                    , type_ = "text"
                     , msg = InputMatrix "token"
                     , label = Html.text "access token"
                     , value = accessToken
                     , placeholder = "....MDAxM2lkZW50aWZpZXIga2V5CjAwMTBjaWQgZ2Vu...."
+                    , autocomplete = Just "matrix-token"
                     }
                 ]
 
@@ -380,19 +391,21 @@ view editable backend =
             Html.div []
                 [ input
                     { active = editable
-                    , type_ = "input"
+                    , type_ = "text"
                     , msg = InputPubNub "pub"
                     , label = Html.text "publishKey"
                     , value = pubKey
                     , placeholder = "pub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+                    , autocomplete = Just "pubnup-publishKey"
                     }
                 , input
                     { active = editable
-                    , type_ = "input"
+                    , type_ = "text"
                     , msg = InputPubNub "sub"
                     , label = Html.text "subscribeKey"
                     , value = subKey
                     , placeholder = "sub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+                    , autocomplete = Just "pubnup-subscribeKey"
                     }
                 ]
 
@@ -407,9 +420,10 @@ input :
     , type_ : String
     , value : String
     , placeholder : String
+    , autocomplete : Maybe String
     }
     -> Html msg
-input { active, msg, label, type_, value, placeholder } =
+input { active, msg, label, type_, value, placeholder, autocomplete } =
     Html.label []
         [ Html.span
             [ Attr.class "lia-label"
@@ -417,17 +431,22 @@ input { active, msg, label, type_, value, placeholder } =
             ]
             [ label ]
         , Html.input
-            [ if active then
+            ([ if active then
                 Event.onInput msg
 
-              else
+               else
                 Attr.disabled True
-            , Attr.value value
-            , Attr.style "color" "black"
-            , Attr.type_ type_
-            , Attr.style "width" "100%"
-            , Attr.placeholder placeholder
-            ]
+             , Attr.value value
+             , Attr.style "color" "black"
+             , Attr.type_ type_
+             , Attr.style "width" "100%"
+             , Attr.placeholder placeholder
+             ]
+                |> CList.addWhen
+                    (autocomplete
+                        |> Maybe.map (Attr.attribute "autocomplete")
+                    )
+            )
             []
         ]
 

@@ -62,6 +62,7 @@ view settings =
                                     , Attr.style "padding" "0"
                                     ]
                                 ]
+                        , autocomplete = Nothing
                         }
                     , Backend.input
                         { active = open && support
@@ -70,6 +71,7 @@ view settings =
                         , type_ = "password"
                         , value = settings.password
                         , placeholder = ""
+                        , autocomplete = Nothing
                         }
                     , Backend.view (open && support) via
                         |> Html.map Config
