@@ -1,6 +1,8 @@
 module Lia.Chat.View exposing (view)
 
 import Accessibility.Aria as A11y
+import Accessibility.Live as A11y_Live
+import Accessibility.Role as A11y_Role
 import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -31,17 +33,20 @@ view lang config model =
         [ model.messages
             |> Dict.toList
             |> List.map (viewMessage config)
-            |> Keyed.node "div"
+            |> Keyed.node "article"
                 [ Attr.style "display" "flex"
                 , Attr.style "flex-direction" "column"
                 , Attr.style "justify-content" "flex-end"
                 , Attr.style "bottom" "0"
+                , A11y_Role.article
                 ]
             |> List.singleton
-            |> Html.div
+            |> Html.section
                 [ Attr.style "height" "100%"
                 , Attr.style "overflow" "auto"
                 , Attr.id "lia-chat-messages"
+                , A11y_Live.livePolite
+                , A11y_Live.atomic True
                 ]
         , Html.div
             [ Attr.style "padding" "0.5rem"
@@ -75,6 +80,7 @@ view lang config model =
                 , Editor.showGutter False
                 , Attr.class "lia-code__input"
                 , Editor.onCtrlEnter Send
+                , A11y_Role.textBox
                 ]
                 []
             ]
