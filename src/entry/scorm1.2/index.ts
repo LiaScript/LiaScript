@@ -19,7 +19,9 @@ import('../../typescript/connectors/SCORM1.2/index').then(function (Browser) {
     const app = new Lia.LiaScript(
       new Browser.Connector(),
       false, // allowSync
-      debug
+      debug,
+      null,
+      window['liascript_course'] || null
     )
   }
 })

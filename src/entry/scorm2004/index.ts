@@ -21,7 +21,9 @@ import('../../typescript/connectors/SCORM2004/index').then(function (
     const app = new Lia.LiaScript(
       new SCORM2004.Connector(),
       false, // allowSync
-      debug
+      debug,
+      null,
+      window['liascript_course'] || null
     )
   }
 })
