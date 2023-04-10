@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.11.0
+version:  0.11.1
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,19 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.11.1** (10/04/2023)
+
+- multiple CSS fixes and optimizations
+- improve: docs
+- chat:
+
+  - improve: shake animation and improved accessibility
+  - feat: Add gunDB persistent storage
+  - fix: Jitsi-backend works again
+  - improve: Error messages
+  - Add SCROM 1.2 export for moodle
+
 
 **0.11.0** (29/03/2023)
 
