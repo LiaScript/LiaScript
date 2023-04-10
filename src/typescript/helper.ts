@@ -87,7 +87,7 @@ export function allowedProtocol(url: string) {
   )
 }
 
-function getHashCode(str: string) {
+export function getHashCode(str: string) {
   let hash = 0
   if (str.length == 0) {
     return hash

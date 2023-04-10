@@ -38,8 +38,8 @@ export class Sync extends Base.Sync {
     const id = this.uniqueID()
 
     if (ok && window['JitsiMeetJS'] && id) {
-      window['JitsiMeetJS'].init()
-      window['JitsiMeetJS'].setLogLevel(window['JitsiMeetJS'].logLevels.ERROR)
+      if (!window['LIA'].debug)
+        window['JitsiMeetJS'].setLogLevel(window['JitsiMeetJS'].logLevels.ERROR)
 
       // https://codepen.io/chadwallacehart/pen/bGLypLY?editors=1010
       this.connection = new window['JitsiMeetJS'].JitsiConnection(null, null, {
@@ -48,7 +48,7 @@ export class Sync extends Base.Sync {
           muc: `conference.${this.domain}`,
           focus: `focus.${this.domain}`,
         },
-        configOverwrite: { openBridgeChannel: true },
+        configOverwrite: { openBridgeChannel: false },
         serviceUrl: `https://${this.domain}/http-bind?room=${btoa(id)}`, // Note: wss not avail on meet.jit.si
         clientNode: 'http://jitsi.org/jitsimeet',
       })
@@ -58,10 +58,10 @@ export class Sync extends Base.Sync {
         window['JitsiMeetJS'].events.connection.CONNECTION_ESTABLISHED,
         function () {
           const confOptions = {
-            configOverwrite: { openBridgeChannel: true },
+            configOverwrite: { openBridgeChannel: false },
             enableLayerSuspension: true,
             p2p: {
-              enabled: false,
+              enabled: true,
             },
           }
 
@@ -89,9 +89,12 @@ export class Sync extends Base.Sync {
           self.conferenceRoom.on(
             window['JitsiMeetJS'].events.conference.USER_JOINED,
             (id) => {
-              self.users[id] = null
+              if (!self.users[id]) {
+                self.users[id] = null
+              }
             }
           )
+
           self.conferenceRoom.on(
             window['JitsiMeetJS'].events.conference.USER_LEFT,
             (id) => {
@@ -106,9 +109,17 @@ export class Sync extends Base.Sync {
           )
 
           self.conferenceRoom.on(
-            window['JitsiMeetJS'].events.conference.ENDPOINT_MESSAGE_RECEIVED,
-            (participant, message) => {
-              self.users[participant.getId()] = participant.getDisplayName()
+            window['JitsiMeetJS'].events.conference.MESSAGE_RECEIVED,
+            (id, message) => {
+              const participant = self.conferenceRoom.getParticipants()
+
+              for (let i = 0; i < participant.length; i++) {
+                if (id === participant[i].getId()) {
+                  self.users[id] = participant[i].getDisplayName()
+                  break
+                }
+              }
+
               self.applyUpdate(Base.base64_to_unit8(message))
             }
           )
@@ -131,12 +142,24 @@ export class Sync extends Base.Sync {
       )
 
       this.connection.connect()
+    } else {
+      let message = 'Jitsi unknown error'
+
+      if (error) {
+        message = 'Could not load resource: ' + error
+      } else if (window['JitsiMeetJS'] === undefined) {
+        message = 'Could not load Jitsi interface'
+      }
+
+      this.sendDisconnectError(message)
     }
   }
 
   broadcast(data: Uint8Array): void {
     try {
-      this.conferenceRoom?.sendEndpointMessage('', Base.uint8_to_base64(data))
-    } catch (_) {}
+      this.conferenceRoom?.sendTextMessage(Base.uint8_to_base64(data))
+    } catch (e) {
+      console.warn('Jitsi: broadcast =>', e.message)
+    }
   }
 }

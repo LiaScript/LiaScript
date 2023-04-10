@@ -33,12 +33,17 @@ connect param =
               )
             , ( "config"
               , case param.backend of
-                    Via.GUN urls ->
-                        urls
-                            |> String.split ","
-                            |> List.map String.trim
-                            |> List.filter (String.isEmpty >> not)
-                            |> JE.list JE.string
+                    Via.GUN { urls, persistent } ->
+                        JE.object
+                            [ ( "persistent", JE.bool persistent )
+                            , ( "urls"
+                              , urls
+                                    |> String.split ","
+                                    |> List.map String.trim
+                                    |> List.filter (String.isEmpty >> not)
+                                    |> JE.list JE.string
+                              )
+                            ]
 
                     Via.Jitsi domain ->
                         domain

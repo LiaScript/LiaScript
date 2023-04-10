@@ -302,7 +302,7 @@ customUpdate (UpdateConfig updateConfig) msg (State state) =
                                     , height = pos.parentHeight
                                     }
                                 , anchor =
-                                    { x = Maybe.withDefault 0 pos.x
+                                    { x = Maybe.withDefault (pos.parentWidth // 2) pos.x
                                     , y = Maybe.withDefault 0 pos.y
                                     }
                                 }
@@ -682,10 +682,12 @@ defaultHorizontalSplitterStyle visible dragState =
            ]
         ++ (case ( visible, dragState ) of
                 ( Both, Draggable _ ) ->
-                    [ style "cursor" "col-resize" ]
+                    [ style "cursor" "col-resize"
+                    , style "display" ""
+                    ]
 
                 _ ->
-                    []
+                    [ style "display" "none" ]
            )
 
 

@@ -17,20 +17,20 @@ export const Crypto = {
         this.crypt = null
       }
     } catch (e) {
-      console.warn('cypher: ', e)
+      console.warn('Crypto: ', e)
       this.crypt = null
     }
   },
 
   encode: function (msg: any): string {
-    return this.cypher
-      ? this.cypher.encrypt(btoa(encodeURIComponent(JSON.stringify(msg))))
+    return this.crypt
+      ? this.crypt.encrypt(btoa(encodeURIComponent(JSON.stringify(msg))))
       : JSON.stringify(msg)
   },
 
   decode: function (msg: string): any {
-    return this.cypher
-      ? JSON.parse(decodeURIComponent(atob(this.cypher.decrypt(msg))))
+    return this.crypt
+      ? JSON.parse(decodeURIComponent(atob(this.crypt.decrypt(msg))))
       : JSON.parse(msg)
   },
 }

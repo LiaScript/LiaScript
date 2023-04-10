@@ -3,46 +3,7 @@ import { CMIElement, SCORM } from './scorm.d'
 import log from '../../liascript/log'
 import { Settings } from '../Base/settings'
 
-const short = {
-  SingleChoice: 'sc',
-  MultipleChoice: 'mc',
-  Text: 'tx',
-  Select: 'st',
-  Matrix: 'mx',
-  Generic: 'gn',
-  error_msg: 'err',
-}
-
-// return the key value pair order, this way only short has to be defined once
-const long = Object.entries(short).reduce((acc, [key, value]) => {
-  acc[value] = key
-  return acc
-}, {})
-
-function renameJsonKeys(jsonObject: any, replacements: Object) {
-  if (typeof jsonObject !== 'object' || jsonObject === null) {
-    return jsonObject
-  }
-
-  if (Array.isArray(jsonObject)) {
-    return jsonObject.map((element) => renameJsonKeys(element, replacements))
-  }
-
-  const modifiedObject = {}
-  for (const [key, value] of Object.entries(jsonObject)) {
-    const newKey = replacements[key] || key
-    modifiedObject[newKey] = renameJsonKeys(value, replacements)
-  }
-  return modifiedObject
-}
-
-function encodeJSON(json: any) {
-  return JSON.stringify(renameJsonKeys(json, short))
-}
-
-function decodeJSON(json: string) {
-  return renameJsonKeys(JSON.parse(json), long)
-}
+import * as Utils from '../utils'
 
 /**
  * This implementation of a SCORM 2004 connector for LiaScript is mainly based
@@ -143,7 +104,7 @@ class Connector extends Base.Connector {
 
       this.init()
     } else {
-      console.warn('SCORM2004: Could not find API')
+      WARN('Could not find API')
     }
   }
 
@@ -155,7 +116,7 @@ class Connector extends Base.Connector {
     if (this.active && this.scorm) {
       this.write('cmi.suspend_data', JSON.stringify(data))
     } else {
-      console.warn('cannot write to "cmi.suspend_data"')
+      WARN('cannot write to "cmi.suspend_data"')
     }
   }
 
@@ -165,7 +126,7 @@ class Connector extends Base.Connector {
     try {
       data = this.scorm?.GetValue('cmi.suspend_data') || null
     } catch (e) {
-      console.warn('cannot write to localStorage')
+      WARN('cannot write settings to cmi.suspend_data')
     }
 
     let json: Lia.Settings | null = null
@@ -174,7 +135,7 @@ class Connector extends Base.Connector {
       try {
         json = JSON.parse(data)
       } catch (e) {
-        console.warn('getSettings =>', e)
+        WARN('getSettings =>', e)
       }
 
       if (!json) {
@@ -197,8 +158,8 @@ class Connector extends Base.Connector {
       let mode = this.scorm.GetValue('cmi.mode')
       this.active = mode === 'normal'
 
-      console.warn(
-        'SCORM2004: Running in',
+      WARN(
+        'Running in',
         mode,
         'mode, results will ',
         this.active ? '' : 'NOT',
@@ -210,7 +171,7 @@ class Connector extends Base.Connector {
       )
 
       LOG('open location ...')
-      this.location = jsonParse(this.scorm.GetValue('cmi.location'))
+      this.location = Utils.jsonParse(this.scorm.GetValue('cmi.location'))
       LOG('... ', this.location)
 
       // if no location has been stored so far, this is the first visit
@@ -337,7 +298,7 @@ class Connector extends Base.Connector {
    */
   storeHelper(record: Base.Record) {
     for (let i = 0; i < this.db[record.table][record.id].length; i++) {
-      if (neq(record.data[i], this.db[record.table][record.id][i])) {
+      if (Utils.neq(record.data[i], this.db[record.table][record.id][i])) {
         this.updateInteraction(
           this.id[record.table][record.id][i],
           record.data[i]
@@ -396,6 +357,8 @@ class Connector extends Base.Connector {
     } else if (finished + solved === total) {
       this.write('cmi.success_status', 'failed')
       this.write('cmi.completion_status', 'completed')
+    } else {
+      this.write('cmi.completion_status', 'incomplete')
     }
 
     window['SCORE'] = score
@@ -412,15 +375,15 @@ class Connector extends Base.Connector {
       LOG('write: ', uri, data)
 
       if (this.scorm.SetValue(uri, data) === 'false') {
-        console.warn('error occurred for', uri, data)
+        WARN('error occurred for', uri, data)
 
         let error = this.scorm.GetLastError()
-        console.warn('GetLastError:', error)
+        WARN('GetLastError:', error)
         if (error) {
-          console.warn('GetErrorString:', this.scorm.GetErrorString(error))
-          console.warn('GetDiagnostic:', this.scorm.GetDiagnostic(error))
+          WARN('GetErrorString:', this.scorm.GetErrorString(error))
+          WARN('GetDiagnostic:', this.scorm.GetDiagnostic(error))
         } else {
-          console.warn('GetDiagnostic:', this.scorm.GetDiagnostic(''))
+          WARN('GetDiagnostic:', this.scorm.GetDiagnostic(''))
         }
       }
 
@@ -481,7 +444,10 @@ class Connector extends Base.Connector {
    * @param state
    */
   updateInteraction(id: number, state: any): void {
-    this.write(`cmi.interactions.${id}.learner_response`, encodeJSON(state))
+    this.write(
+      `cmi.interactions.${id}.learner_response`,
+      Utils.encodeJSON(state)
+    )
   }
 
   /**
@@ -494,37 +460,16 @@ class Connector extends Base.Connector {
 
     try {
       if (this.scorm) {
-        return decodeJSON(
+        return Utils.decodeJSON(
           this.scorm.GetValue(`cmi.interactions.${id}.learner_response`)
         )
       }
     } catch (e) {
-      console.warn('SCORM2004: getInteraction => ', e)
+      WARN('getInteraction => ', e)
     }
 
     return null
   }
-}
-
-/**
- * A simple json-parser that does not trow an error, but returns null if it fails
- * @param string - a valid JSON representation
- */
-function jsonParse(json: string) {
-  try {
-    return JSON.parse(json)
-  } catch (e) {}
-  return null
-}
-
-/**
- * Compare Object state information for quizzes, surveys, and tasks
- * @param a
- * @param b
- * @returns true if not equal otherwise false
- */
-function neq(a: any, b: any) {
-  return JSON.stringify(a) != JSON.stringify(b)
 }
 
 /**
