@@ -33,6 +33,7 @@ type Inline
     | Script Int Parameters
     | IHTML (Node Inline) Parameters
     | Container Inlines Parameters
+    | Quiz Int Parameters
 
 
 type Reference

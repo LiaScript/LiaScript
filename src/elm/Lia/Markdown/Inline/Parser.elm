@@ -16,6 +16,7 @@ import Combine
         , andMap
         , andThen
         , choice
+        , fail
         , ignore
         , keep
         , lazy
@@ -48,7 +49,15 @@ import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), combine)
 import Lia.Markdown.Macro.Parser as Macro
-import Lia.Parser.Context exposing (Context, searchIndex)
+import Lia.Markdown.Quiz.Block.Parser as Input
+import Lia.Markdown.Quiz.Block.Types as Input
+import Lia.Parser.Context
+    exposing
+        ( Context
+        , quiz_add
+        , quiz_getPermission
+        , searchIndex
+        )
 import Lia.Parser.Helper exposing (spaces)
 
 
@@ -180,12 +189,28 @@ inlines =
                      , inlines
                         |> Effect.inline
                         |> map EInline
+                     , input
                      , strings
                      ]
                         |> choice
                         |> andMap (Macro.macro |> keep annotations)
                         |> or (eScript [] |> map (\( attr, id ) -> Script id attr))
                     )
+
+
+input : Parser Context (Parameters -> Inline)
+input =
+    quiz_getPermission
+        |> andThen
+            (\isAllowed ->
+                if isAllowed then
+                    Input.pattern parse_inlines
+                        |> andThen quiz_add
+                        |> map Quiz
+
+                else
+                    fail "no inputs allowed"
+            )
 
 
 url : Parser Context String

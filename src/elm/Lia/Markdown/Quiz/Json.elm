@@ -9,6 +9,7 @@ import Json.Encode as JE
 import Lia.Markdown.Inline.Json.Encode as Inline
 import Lia.Markdown.Quiz.Block.Json as Block
 import Lia.Markdown.Quiz.Matrix.Json as Matrix
+import Lia.Markdown.Quiz.Multi.Json as Multi
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types exposing (Element, Quiz, State(..), Type(..), Vector)
 import Lia.Markdown.Quiz.Vector.Json as Vector
@@ -23,6 +24,9 @@ encode quiz =
 
             Block_Type block ->
                 Block.encode block
+
+            Multi_Type multi ->
+                Multi.encode multi
 
             Vector_Type vector ->
                 Vector.encode vector
@@ -75,6 +79,9 @@ fromState state =
 
         Block_State s ->
             Block.fromState s
+
+        Multi_State s ->
+            Multi.fromState s
 
         Vector_State s ->
             Vector.fromState s

@@ -34,6 +34,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Block.View as Block
 import Lia.Markdown.Quiz.Matrix.View as Matrix
+import Lia.Markdown.Quiz.Multi.View as Multi
 import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
 import Lia.Markdown.Quiz.Sync exposing (Sync)
 import Lia.Markdown.Quiz.Types
@@ -220,6 +221,20 @@ viewState config elem quiz =
             , s
                 |> Block.view config ( elem.solved, elem.trial ) q
                 |> List.map (Html.map (Block_Update quiz.id))
+            )
+
+        ( Multi_State s, Multi_Type q ) ->
+            ( []
+            , --s
+              --  |> Multi.view config ( elem.solved, elem.trial ) q
+              --|> List.map (Html.map (Multi_Update quiz.id))
+              [ q.elements
+                    |> List.map (viewer config)
+                    |> List.head
+                    |> Maybe.withDefault []
+                    |> Html.div []
+                    |> Html.map Script
+              ]
             )
 
         ( Vector_State s, Vector_Type q ) ->

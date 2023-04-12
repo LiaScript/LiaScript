@@ -18,6 +18,7 @@ import Array exposing (Array)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.Matrix.Types as Matrix
+import Lia.Markdown.Quiz.Multi.Types as Multi
 import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
 import Lia.Markdown.Quiz.Vector.Types as Vector
 
@@ -53,13 +54,15 @@ type alias Options =
 type State
     = Generic_State
     | Block_State Block.State
+    | Multi_State Multi.State
     | Vector_State Vector.State
     | Matrix_State Matrix.State
 
 
 type Type
     = Generic_Type
-    | Block_Type Block.Quiz
+    | Block_Type (Block.Quiz Inlines)
+    | Multi_Type (Multi.Quiz Inlines)
     | Vector_Type Vector.Quiz
     | Matrix_Type Matrix.Quiz
 
@@ -82,6 +85,11 @@ initState quiz =
                 |> Block.initState
                 |> Block_State
 
+        Multi_Type q ->
+            q.solution
+                |> Multi.initState
+                |> Multi_State
+
         Vector_Type q ->
             q.solution
                 |> Vector.initState
@@ -100,6 +108,11 @@ reset state =
             s
                 |> Block.initState
                 |> Block_State
+
+        Multi_State s ->
+            s
+                |> Multi.initState
+                |> Multi_State
 
         Vector_State s ->
             s
@@ -124,6 +137,9 @@ toState quiz =
         Block_Type q ->
             Block_State q.solution
 
+        Multi_Type q ->
+            Multi_State q.solution
+
         Vector_Type q ->
             Vector_State q.solution
 
@@ -137,6 +153,9 @@ comp quiz state =
         case ( quiz, state ) of
             ( Block_Type q, Block_State s ) ->
                 Block.comp q s
+
+            ( Multi_Type q, Multi_State s ) ->
+                Multi.comp q s
 
             ( Vector_Type q, Vector_State s ) ->
                 Vector.comp q s
@@ -165,6 +184,9 @@ getClass state =
     case state of
         Block_State s ->
             Block.getClass s
+
+        Multi_State s ->
+            Multi.getClass s
 
         Vector_State s ->
             Vector.getClass s

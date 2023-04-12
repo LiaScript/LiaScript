@@ -13,6 +13,7 @@ import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
+import Lia.Markdown.Quiz.Multi.Update as Multi
 import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
 import Lia.Markdown.Quiz.Sync as Sync
 import Lia.Markdown.Quiz.Types
@@ -36,6 +37,7 @@ import Translations exposing (Lang(..))
 
 type Msg sub
     = Block_Update Int (Block.Msg sub)
+    | Multi_Update Int (Multi.Msg sub)
     | Vector_Update Int (Vector.Msg sub)
     | Matrix_Update Int (Matrix.Msg sub)
     | Check Int Type
@@ -49,6 +51,9 @@ update : Bool -> Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector ms
 update sync sectionID scripts msg vector =
     case msg of
         Block_Update id _ ->
+            update_ id vector (state_ msg)
+
+        Multi_Update id _ ->
             update_ id vector (state_ msg)
 
         Vector_Update id _ ->

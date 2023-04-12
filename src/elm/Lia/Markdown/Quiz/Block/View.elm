@@ -15,7 +15,7 @@ import Lia.Utils exposing (blockKeydown, icon)
 import Translations
 
 
-view : Config sub -> Solution.State -> Quiz -> State -> List (Html (Msg sub))
+view : Config sub -> Solution.State -> Quiz Inlines -> State -> List (Html (Msg sub))
 view config solution quiz state =
     case state of
         Text str ->

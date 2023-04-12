@@ -1,5 +1,6 @@
 module Lia.Markdown.Quiz.Parser exposing
-    ( maybeJS
+    ( gapText
+    , maybeJS
     , parse
     )
 
@@ -24,7 +25,7 @@ import Combine
         , withState
         )
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
-import Lia.Markdown.Inline.Parser exposing (eScript)
+import Lia.Markdown.Inline.Parser exposing (eScript, parse_inlines)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Block.Parser as Block
@@ -39,7 +40,7 @@ import Lia.Markdown.Quiz.Types
         , initState
         )
 import Lia.Markdown.Quiz.Vector.Parser as Vector
-import Lia.Parser.Context as Context exposing (Context)
+import Lia.Parser.Context as Context exposing (Context, quiz_pop)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
 import Lia.Utils as Utils
@@ -51,9 +52,18 @@ parse attr =
     [ map Matrix_Type Matrix.parse
     , map Vector_Type Vector.parse
     , onsuccess Generic_Type generic
-    , map Block_Type Block.parse
+    , map Block_Type (Block.parse parse_inlines)
     ]
         |> choice
+        |> andThen adds
+        |> andThen (modify_State attr)
+
+
+gapText : Parameters -> Inlines -> Parser Context Quiz
+gapText attr text =
+    quiz_pop
+        |> map (\q -> { q | elements = [ text ] })
+        |> map Multi_Type
         |> andThen adds
         |> andThen (modify_State attr)
 

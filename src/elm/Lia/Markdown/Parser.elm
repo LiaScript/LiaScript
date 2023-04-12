@@ -48,7 +48,12 @@ import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Table.Parser as Table
 import Lia.Markdown.Task.Parser as Task
 import Lia.Markdown.Types as Markdown
-import Lia.Parser.Context exposing (Context)
+import Lia.Parser.Context
+    exposing
+        ( Context
+        , quiz_isIdentified
+        , quiz_setPermission
+        )
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
 import Lia.Parser.Indentation as Indent
 import Lia.Parser.Preprocessor exposing (title_tag)
@@ -89,7 +94,12 @@ elements =
             |> andMap (Effect.markdown blocks)
         , md_annotations
             |> map Tuple.pair
-            |> andMap (Effect.comment paragraph)
+            |> andMap
+                (Effect.comment
+                    (paragraph False
+                        |> map Tuple.first
+                    )
+                )
             |> andThen to_comment
         , md_annotations
             |> map Markdown.Chart
@@ -128,8 +138,19 @@ elements =
             |> map Markdown.Gallery
             |> andMap Gallery.parse
         , md_annotations
-            |> map checkForCitation
-            |> andMap paragraph
+            |> map Tuple.pair
+            |> andMap (paragraph True)
+            |> andThen
+                (\( attr, ( inlines, isQuiz ) ) ->
+                    if isQuiz then
+                        Quiz.gapText attr inlines
+                            |> map (Markdown.Quiz attr)
+                            |> andMap solution
+
+                    else
+                        checkForCitation attr inlines
+                            |> succeed
+                )
         , htmlComment
         ]
 
@@ -414,12 +435,16 @@ horizontal_line =
         |> map Markdown.HLine
 
 
-paragraph : Parser Context Inlines
-paragraph =
+paragraph : Bool -> Parser Context ( Inlines, Bool )
+paragraph enableQuizParsing =
     checkParagraph
         |> ignore Indent.skip
+        |> ignore (quiz_setPermission enableQuizParsing)
         |> keep (many1 (Indent.check |> keep line |> ignore newline))
         |> map (List.intersperse [ Chars " " [] ] >> List.concat >> combine)
+        |> map Tuple.pair
+        |> andMap quiz_isIdentified
+        |> ignore (quiz_setPermission False)
 
 
 {-| A paragraph cannot start with a marker for Comments `--{{1}}--` or Effects

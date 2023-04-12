@@ -2,6 +2,11 @@ module Lia.Parser.Context exposing
     ( Context
     , getSeed
     , init
+    , quiz_add
+    , quiz_getPermission
+    , quiz_isIdentified
+    , quiz_pop
+    , quiz_setPermission
     , searchIndex
     )
 
@@ -11,12 +16,23 @@ parsing. It is passed to all successively applied parser.
 -}
 
 import Array
-import Combine exposing (Parser, keep, modifyState, succeed, withState)
+import Combine
+    exposing
+        ( Parser
+        , ignore
+        , keep
+        , modifyState
+        , succeed
+        , withState
+        )
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
 import Lia.Markdown.Gallery.Types as Gallery
+import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Quiz.Block.Types as Block
+import Lia.Markdown.Quiz.Multi.Types as Multi
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
@@ -63,6 +79,10 @@ type alias Context =
     , effect_model : Effect.Model SubSection
     , effect_number : List Int
     , effect_id : Int
+    , quiz :
+        { isEnabled : Bool
+        , blocks : Multi.Quiz Inlines
+        }
     , defines : Definition
     , footnotes : Footnote.Model
     , defines_updated : Bool
@@ -87,6 +107,10 @@ init seed search_index global =
     , effect_model = Effect.init
     , effect_number = [ 0 ]
     , effect_id = 0
+    , quiz =
+        { isEnabled = False
+        , blocks = Multi.init
+        }
     , defines = global
     , footnotes = Footnote.init
     , defines_updated = False
@@ -115,3 +139,86 @@ getSeed =
             }
         )
         |> keep (withState (.seed >> succeed))
+
+
+quiz_setPermission : Bool -> Parser Context ()
+quiz_setPermission enable =
+    modifyState
+        (\state ->
+            let
+                quiz =
+                    state.quiz
+            in
+            { state
+                | quiz =
+                    { quiz
+                        | isEnabled = enable
+
+                        --, blocks = Multi.init
+                    }
+            }
+        )
+
+
+quiz_getPermission : Parser Context Bool
+quiz_getPermission =
+    withState (.quiz >> .isEnabled >> succeed)
+
+
+quiz_pop : Parser Context (Multi.Quiz Inlines)
+quiz_pop =
+    withState (.quiz >> .blocks >> Debug.log "SSSSSSSSSSSSSSSSSSSSSSSSSS" >> succeed)
+        |> ignore
+            (modifyState
+                (\state ->
+                    let
+                        quiz =
+                            state.quiz
+                    in
+                    { state | quiz = { quiz | blocks = Multi.init } }
+                )
+            )
+
+
+quiz_add : Block.Quiz Inlines -> Parser Context Int
+quiz_add input =
+    withState
+        (\state ->
+            succeed <|
+                if state.quiz.isEnabled then
+                    Array.length state.quiz.blocks.options
+
+                else
+                    -1
+        )
+        |> ignore
+            (modifyState
+                (\state ->
+                    let
+                        quiz =
+                            state.quiz
+                    in
+                    if quiz.isEnabled then
+                        { state
+                            | quiz =
+                                { quiz
+                                    | blocks =
+                                        Multi.push input quiz.blocks
+                                }
+                        }
+
+                    else
+                        state
+                )
+            )
+
+
+quiz_isIdentified : Parser Context Bool
+quiz_isIdentified =
+    withState
+        (.quiz
+            >> .blocks
+            >> Multi.isEmpty
+            >> not
+            >> succeed
+        )

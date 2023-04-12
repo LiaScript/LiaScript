@@ -10,7 +10,7 @@ module Lia.Markdown.Inline.View exposing
 import Accessibility.Widget as A11y_Widget
 import Conditional.List as CList
 import Dict exposing (Dict)
-import Html exposing (Attribute, Html)
+import Html exposing (Attribute, Html, input)
 import Html.Attributes as Attr exposing (width)
 import Html.Keyed
 import Json.Encode as JE
@@ -122,7 +122,7 @@ view config element =
         Container list attr ->
             list
                 |> viewer config
-                |> Html.span (Attr.style "left" "initial" :: toAttribute attr)
+                |> Html.span (Attr.style "left" "initial" :: Attr.style "text-decoration" "inherit" :: toAttribute attr)
 
         IHTML node attr ->
             htmlView config attr node
@@ -140,6 +140,32 @@ view config element =
 
         Formula mode_ e attr ->
             view config (Container [ Formula mode_ e [] ] attr)
+
+        Quiz input attr ->
+            viewQuiz config input attr
+
+
+viewQuiz : Config sub -> Int -> Parameters -> Html (Msg sub)
+viewQuiz config id attr =
+    --case input of
+    --Text solution ->
+    Html.input
+        [ Attr.type_ "input"
+        , Attr.style "border" "1px solid rgb(var(--color-highlight))"
+        , Attr.style "padding" "0 0.5rem"
+        , Attr.style "text-align" "center"
+        , Attr.placeholder "?"
+        , Attr.style "width" (String.fromInt 10 ++ "rem")
+        , Attr.style "font-weight" "inherit"
+        , Attr.style "text-decoration" "inherit"
+        , Attr.style "font-style" "inherit"
+        ]
+        []
+
+
+
+--Select ->
+--  Html.text "SELECT"
 
 
 htmlView : Config sub -> Parameters -> Node Inline -> Html (Msg sub)
