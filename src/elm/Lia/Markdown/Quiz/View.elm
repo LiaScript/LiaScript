@@ -229,15 +229,8 @@ viewState config elem quiz =
               --  |> Multi.view config ( elem.solved, elem.trial ) q
               --|> List.map (Html.map (Multi_Update quiz.id))
               [ s
-                    |> Multi.view config quiz.id q
+                    |> Multi.view config quiz.id (elem.solved == Solution.Open) q
                     |> Html.map (Multi_Update quiz.id)
-
-              --q.elements
-              --    |> List.map (viewer config)
-              --    |> List.head
-              --    |> Maybe.withDefault []
-              --    |> Html.div []
-              --    |> Html.map Script
               ]
             )
 

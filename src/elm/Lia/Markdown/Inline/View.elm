@@ -7,6 +7,7 @@ module Lia.Markdown.Inline.View exposing
     , viewer
     )
 
+import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
 import Array
 import Conditional.List as CList
@@ -151,12 +152,12 @@ viewQuiz : Config sub -> ( Int, Int ) -> Parameters -> Html (Msg sub)
 viewQuiz config ( length, id ) attr =
     --case input of
     --Text solution ->
-    case ( Array.get id config.input, config.onInput ) of
-        ( Just (Text text), Just onInput ) ->
+    case Array.get id config.input.state of
+        Just (Text text) ->
             Html.input
                 [ Attr.type_ "input"
-                , Attr.style "border" "1px solid rgb(var(--color-highlight))"
-                , Attr.style "padding" "0 0.5rem"
+                , Attr.class "lia-input lia-quiz__input"
+                , Attr.style "padding" "0.1rem 0.5rem"
                 , Attr.style "text-align" "center"
                 , Attr.placeholder "?"
                 , Attr.style "width" (String.fromInt length ++ "rem")
@@ -164,10 +165,80 @@ viewQuiz config ( length, id ) attr =
                 , Attr.style "text-decoration" "inherit"
                 , Attr.style "font-style" "inherit"
                 , Attr.value text
-                , Attr.attribute "oninput" (onInput "input" id "this.value") --"window.LIA.send({reply: true, track: [['quiz', 0],['input', 0]], service: 'input', message: { cmd: 'input', param: {id: 0, text: this.value} }})"
+                , if config.input.active then
+                    Attr.attribute "oninput" (config.input.on "input" id "this.value")
+
+                  else
+                    Attr.disabled True
                 , blockKeydown Msg.NoOp
+                , A11y_Widget.label "quiz answer"
+                , Attr.class <|
+                    if config.input.active then
+                        ""
+
+                    else
+                        "lia-input--disabled is-disabled"
+                , Attr.disabled (not <| config.input.active)
                 ]
                 []
+
+        Just (Select open [ element ]) ->
+            let
+                options =
+                    config.input.options
+                        |> Array.get id
+                        |> Maybe.withDefault []
+            in
+            Html.span
+                [ Attr.class "lia-dropdown"
+                , Attr.style "padding" "0 0.5rem"
+                , if config.input.active then
+                    Attr.attribute "onclick" (config.input.on "toggle" id "true")
+
+                  else
+                    Attr.disabled True
+                , Attr.class <|
+                    if config.input.active then
+                        ""
+
+                    else
+                        "is-disabled"
+                ]
+                [ Html.span
+                    [ Attr.class "lia-dropdown__selected"
+                    , A11y_Widget.hidden False
+                    , A11y_Role.button
+                    , A11y_Widget.expanded open
+                    , Attr.style "font-weight" "inherit"
+                    , Attr.style "text-decoration" "inherit"
+                    , Attr.style "font-style" "inherit"
+                    ]
+                    [ getOption config element options
+                    , Html.i
+                        [ Attr.class <|
+                            "icon"
+                                ++ (if open then
+                                        " icon-chevron-up"
+
+                                    else
+                                        " icon-chevron-down"
+                                   )
+                        , A11y_Role.button
+                        ]
+                        []
+                    ]
+                , options
+                    |> List.indexedMap (showOption config id)
+                    |> Html.div
+                        [ Attr.class "lia-dropdown__options"
+                        , Attr.class <|
+                            if open then
+                                "is-visible"
+
+                            else
+                                "is-hidden"
+                        ]
+                ]
 
         _ ->
             Html.text "todo"
@@ -702,3 +773,30 @@ link config alt_ url_ title_ attr =
         |> CList.addWhen (title config title_)
         |> Html.a
         |> (\a -> a (viewer config alt_))
+
+
+getOption : Config sub -> Int -> List Inlines -> Html (Msg sub)
+getOption config id list =
+    case ( id, list ) of
+        ( 0, x :: _ ) ->
+            x
+                |> viewer config
+                |> Html.span []
+
+        ( i, _ :: xs ) ->
+            getOption config (i - 1) xs
+
+        ( _, [] ) ->
+            Html.span [] [ Html.text <| Translations.quizSelection config.lang ]
+
+
+showOption : Config sub -> Int -> Int -> Inlines -> Html (Msg sub)
+showOption config id1 id2 =
+    viewer config
+        >> Html.div []
+        >> List.singleton
+        >> Html.div
+            [ Attr.class "lia-dropdown__option"
+            , Attr.attribute "onclick" (config.input.on "choose" id1 (String.fromInt id2))
+            , A11y_Role.listItem
+            ]

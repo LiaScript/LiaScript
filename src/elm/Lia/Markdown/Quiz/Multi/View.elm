@@ -2,7 +2,7 @@ module Lia.Markdown.Quiz.Multi.View exposing (view)
 
 --import Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..))
 
-import Html exposing (Html)
+import Html exposing (Html, option)
 import Html.Attributes as Attr
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -11,11 +11,18 @@ import Lia.Markdown.Quiz.Multi.Types exposing (Quiz, State)
 import Lia.Markdown.Quiz.Multi.Update exposing (Msg(..))
 
 
-view : Config sub -> Int -> Quiz Inlines -> State -> Html (Msg sub)
-view config id quiz state =
+view : Config sub -> Int -> Bool -> Quiz Inlines -> State -> Html (Msg sub)
+view config id active quiz state =
     let
         config_ =
-            { config | input = state, onInput = Just (onInput config.slide "quiz" id) }
+            { config
+                | input =
+                    { state = state
+                    , options = quiz.options
+                    , on = onInput config.slide "quiz" id
+                    , active = active
+                    }
+            }
     in
     quiz.elements
         |> List.map (viewer config_)

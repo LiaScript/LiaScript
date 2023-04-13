@@ -1,4 +1,9 @@
-module Lia.Markdown.Quiz.Multi.Update exposing (Msg(..), handle, update)
+module Lia.Markdown.Quiz.Multi.Update exposing
+    ( Msg(..)
+    , handle
+    , toString
+    , update
+    )
 
 import Array
 import Json.Decode as JD
@@ -24,12 +29,34 @@ update : Msg sub -> State -> Return State msg sub
 update msg state =
     case msg of
         Handle ( cmd, param ) ->
-            case ( cmd, decodeId param ) of
+            case ( cmd, decodeId param ) |> Debug.log "ssssssssssssss" of
                 ( "input", Ok id ) ->
-                    case ( Array.get id state, decodeInput param ) of
+                    case ( Array.get id state, decodeValue JD.string param ) of
                         ( Just (Block.Text _), Ok text ) ->
                             state
                                 |> Array.set id (Block.Text text)
+                                |> Return.val
+
+                        _ ->
+                            state
+                                |> Return.val
+
+                ( "choose", Ok id ) ->
+                    case ( Array.get id state, decodeValue JD.int param ) of
+                        ( Just (Block.Select open _), Ok option ) ->
+                            state
+                                |> Array.set id (Block.Select open [ option ])
+                                |> Return.val
+
+                        _ ->
+                            state
+                                |> Return.val
+
+                ( "toggle", Ok id ) ->
+                    case Array.get id state of
+                        Just (Block.Select open option) ->
+                            state
+                                |> Array.set id (Block.Select (not open) option)
                                 |> Return.val
 
                         _ ->
@@ -56,9 +83,9 @@ toString state =
         |> (\str -> "[" ++ str ++ "]")
 
 
-decodeInput : JD.Value -> Result JD.Error String
-decodeInput =
-    JD.decodeValue (JD.field "value" JD.string)
+decodeValue : JD.Decoder a -> JD.Value -> Result JD.Error a
+decodeValue type_ =
+    JD.decodeValue (JD.field "value" type_)
 
 
 decodeId : JD.Value -> Result JD.Error Int
