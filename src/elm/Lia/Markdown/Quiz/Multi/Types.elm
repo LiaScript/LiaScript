@@ -17,24 +17,24 @@ type alias State =
     Array Block.State
 
 
-type alias Quiz opt =
-    { elements : List opt
-    , options : Array (List opt)
+type alias Quiz block inline =
+    { elements : List block
+    , options : Array (List inline)
     , solution : State
     }
 
 
-init : Quiz opt
+init : Quiz block inline
 init =
     Quiz [] Array.empty Array.empty
 
 
-isEmpty : Quiz opt -> Bool
+isEmpty : Quiz block inline -> Bool
 isEmpty quiz =
     Array.isEmpty quiz.options
 
 
-push : Block.Quiz opt -> Quiz opt -> Quiz opt
+push : Block.Quiz inline -> Quiz block inline -> Quiz block inline
 push { options, solution } quiz =
     { quiz
         | options = Array.push options quiz.options
@@ -47,7 +47,7 @@ initState =
     Array.map Block.initState
 
 
-comp : Quiz opt -> State -> Bool
+comp : Quiz block inline -> State -> Bool
 comp quiz state =
     let
         list1 =

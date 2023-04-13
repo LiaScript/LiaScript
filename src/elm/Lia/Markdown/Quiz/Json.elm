@@ -15,7 +15,7 @@ import Lia.Markdown.Quiz.Types exposing (Element, Quiz, State(..), Type(..), Vec
 import Lia.Markdown.Quiz.Vector.Json as Vector
 
 
-encode : Quiz -> JE.Value
+encode : Quiz x -> JE.Value
 encode quiz =
     JE.object
         [ case quiz.quiz of

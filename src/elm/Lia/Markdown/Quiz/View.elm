@@ -1,5 +1,6 @@
 module Lia.Markdown.Quiz.View exposing
     ( class
+    , maybeConfig
     , showSolution
     , syncAttributes
     , view
@@ -49,6 +50,7 @@ import Lia.Markdown.Quiz.Types
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
+import Lia.Markdown.Types as Markdown
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (btn, btnIcon, percentage)
 import List.Extra
@@ -72,7 +74,7 @@ syncAttributes =
 
 {-| Main Quiz view function.
 -}
-view : Config sub -> Maybe String -> Quiz -> Vector -> ( Maybe Int, List (Html (Msg sub)) )
+view : Config sub -> Maybe String -> Quiz Markdown.Block -> Vector -> ( Maybe Int, List (Html (Msg sub)) )
 view config labeledBy quiz vector =
     case Array.get quiz.id vector of
         Just elem ->
@@ -84,6 +86,26 @@ view config labeledBy quiz vector =
 
         _ ->
             ( Nothing, [] )
+
+
+maybeConfig : Config sub -> Quiz Markdown.Block -> Vector -> Maybe ( Config sub, Markdown.Block )
+maybeConfig config quiz vector =
+    case ( Array.get quiz.id vector, quiz.quiz ) of
+        ( Just elem, Multi_Type q ) ->
+            case elem.state of
+                Multi_State state ->
+                    case Multi.view config quiz.id (elem.solved == Solution.Open) q state of
+                        ( newConfig, Just block ) ->
+                            Just ( newConfig, block )
+
+                        _ ->
+                            Nothing
+
+                _ ->
+                    Nothing
+
+        _ ->
+            Nothing
 
 
 viewSync : Config sub -> Maybe (List Sync) -> List (Html msg) -> List (Html msg)
@@ -213,7 +235,11 @@ class id =
 {-| **private:** Simple router function that is used to match the current state
 of a quiz with its type.
 -}
-viewState : Config sub -> Element -> Quiz -> ( List (Attribute (Msg sub)), List (Html (Msg sub)) )
+viewState :
+    Config sub
+    -> Element
+    -> Quiz x
+    -> ( List (Attribute (Msg sub)), List (Html (Msg sub)) )
 viewState config elem quiz =
     case ( elem.state, quiz.quiz ) of
         ( Block_State s, Block_Type q ) ->
@@ -228,9 +254,9 @@ viewState config elem quiz =
             , --s
               --  |> Multi.view config ( elem.solved, elem.trial ) q
               --|> List.map (Html.map (Multi_Update quiz.id))
-              [ s
-                    |> Multi.view config quiz.id (elem.solved == Solution.Open) q
-                    |> Html.map (Multi_Update quiz.id)
+              [--s
+               --    |> Multi.view config quiz.id (elem.solved == Solution.Open) q
+               --    |> Html.map (Multi_Update quiz.id)
               ]
             )
 
@@ -285,7 +311,13 @@ shuffle randomize rows =
     button and a list of already revealed hints
 
 -}
-viewQuiz : Config sub -> Maybe String -> Element -> Quiz -> ( List (Attribute (Msg sub)), List (Html (Msg sub)) ) -> List (Html (Msg sub))
+viewQuiz :
+    Config sub
+    -> Maybe String
+    -> Element
+    -> Quiz Markdown.Block
+    -> ( List (Attribute (Msg sub)), List (Html (Msg sub)) )
+    -> List (Html (Msg sub))
 viewQuiz config labeledBy state quiz ( attr, body ) =
     [ Html.div
         (Attr.class "lia-quiz__answers"
@@ -476,7 +508,7 @@ Open -> False
 Solved -> True
 Resolved -> True
 -}
-showSolution : Quiz -> Vector -> Bool
+showSolution : Quiz x -> Vector -> Bool
 showSolution quiz =
     Array.get quiz.id
         >> Maybe.map isSolved

@@ -10,6 +10,7 @@ import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
+import Lia.Markdown.Quiz.Block.Types as Markdown
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
@@ -27,6 +28,7 @@ import Lia.Markdown.Quiz.Types
         , toState
         )
 import Lia.Markdown.Quiz.Vector.Update as Vector
+import Lia.Markdown.Types as Markdown
 import Return exposing (Return)
 import Service.Console
 import Service.Database
@@ -40,9 +42,9 @@ type Msg sub
     | Multi_Update Int (Multi.Msg sub)
     | Vector_Update Int (Vector.Msg sub)
     | Matrix_Update Int (Matrix.Msg sub)
-    | Check Int Type
+    | Check Int (Type Markdown.Block)
     | ShowHint Int
-    | ShowSolution Int Type
+    | ShowSolution Int (Type Markdown.Block)
     | Handle Event
     | Script (Script.Msg sub)
 
@@ -287,7 +289,7 @@ evalEventDecoder json =
         \e -> Return.val { e | error_msg = eval.result }
 
 
-isSolved : Maybe Type -> Solution -> Element -> Element
+isSolved : Maybe (Type Markdown.Block) -> Solution -> Element -> Element
 isSolved solution state e =
     case ( e.opt.maxTrials, e.solved ) of
         ( Nothing, Solution.Open ) ->
@@ -335,7 +337,7 @@ store sectionID return =
             return
 
 
-check : Type -> Element -> Return Element msg sub
+check : Type Markdown.Block -> Element -> Return Element msg sub
 check solution e =
     e
         |> isSolved (Just solution) (comp solution e.state)

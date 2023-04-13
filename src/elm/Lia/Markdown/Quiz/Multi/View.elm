@@ -1,35 +1,24 @@
 module Lia.Markdown.Quiz.Multi.View exposing (view)
 
---import Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..))
-
-import Html exposing (Html, option)
-import Html.Attributes as Attr
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Multi.Types exposing (Quiz, State)
 import Lia.Markdown.Quiz.Multi.Update exposing (Msg(..))
 
 
-view : Config sub -> Int -> Bool -> Quiz Inlines -> State -> Html (Msg sub)
+view : Config sub -> Int -> Bool -> Quiz x Inlines -> State -> ( Config sub, Maybe x )
 view config id active quiz state =
-    let
-        config_ =
-            { config
-                | input =
-                    { state = state
-                    , options = quiz.options
-                    , on = onInput config.slide "quiz" id
-                    , active = active
-                    }
+    ( { config
+        | input =
+            { state = state
+            , options = quiz.options
+            , on = onInput config.slide "quiz" id
+            , active = active
             }
-    in
-    quiz.elements
-        |> List.map (viewer config_)
+      }
+    , quiz.elements
         |> List.head
-        |> Maybe.withDefault []
-        |> Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-last-col-sticky" ]
-        |> Html.map Script
+    )
 
 
 onInput : Int -> String -> Int -> String -> Int -> String -> String

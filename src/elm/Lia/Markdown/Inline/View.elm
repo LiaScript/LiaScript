@@ -150,8 +150,6 @@ view config element =
 
 viewQuiz : Config sub -> ( Int, Int ) -> Parameters -> Html (Msg sub)
 viewQuiz config ( length, id ) attr =
-    --case input of
-    --Text solution ->
     case Array.get id config.input.state of
         Just (Text text) ->
             Html.input

@@ -396,7 +396,15 @@ view_block config block =
                 |> Html.map UpdateCode
 
         Quiz attr quiz solution ->
-            viewQuiz config Nothing attr quiz solution
+            case Quizzes.maybeConfig config.main quiz config.section.quiz_vector of
+                Just ( main, md ) ->
+                    Html.div []
+                        [ view_block (Config.setMain main config) md
+                        , viewQuiz config Nothing attr quiz solution
+                        ]
+
+                Nothing ->
+                    viewQuiz config Nothing attr quiz solution
 
         Survey attr survey ->
             Surveys.view config.main attr survey config.section.survey_vector
@@ -558,7 +566,7 @@ view_ascii config attr ( caption, image ) =
            )
 
 
-viewQuiz : Config Msg -> Maybe String -> Parameters -> Quiz.Quiz -> Maybe ( Blocks, Int ) -> Html Msg
+viewQuiz : Config Msg -> Maybe String -> Parameters -> Quiz.Quiz Block -> Maybe ( Blocks, Int ) -> Html Msg
 viewQuiz config labeledBy attr quiz solution =
     scriptView config.view <|
         case solution of

@@ -59,22 +59,22 @@ type State
     | Matrix_State Matrix.State
 
 
-type Type
+type Type x
     = Generic_Type
     | Block_Type (Block.Quiz Inlines)
-    | Multi_Type (Multi.Quiz Inlines)
+    | Multi_Type (Multi.Quiz x Inlines)
     | Vector_Type Vector.Quiz
     | Matrix_Type Matrix.Quiz
 
 
-type alias Quiz =
-    { quiz : Type
+type alias Quiz x =
+    { quiz : Type x
     , id : Int
     , hints : Hints
     }
 
 
-initState : Type -> State
+initState : Type x -> State
 initState quiz =
     case quiz of
         Generic_Type ->
@@ -128,7 +128,7 @@ reset state =
             state
 
 
-toState : Type -> State
+toState : Type x -> State
 toState quiz =
     case quiz of
         Generic_Type ->
@@ -147,7 +147,7 @@ toState quiz =
             Matrix_State q.solution
 
 
-comp : Type -> State -> Solution
+comp : Type x -> State -> Solution
 comp quiz state =
     if
         case ( quiz, state ) of

@@ -37,6 +37,7 @@ import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
+import Lia.Markdown.Types as Markdown
 import Lia.Section exposing (SubSection)
 import PseudoRandom as Random
 
@@ -81,7 +82,7 @@ type alias Context =
     , effect_id : Int
     , quiz :
         { isEnabled : Bool
-        , blocks : Multi.Quiz Inlines
+        , blocks : Multi.Quiz Markdown.Block Inlines
         }
     , defines : Definition
     , footnotes : Footnote.Model
@@ -165,7 +166,7 @@ quiz_getPermission =
     withState (.quiz >> .isEnabled >> succeed)
 
 
-quiz_pop : Parser Context (Multi.Quiz Inlines)
+quiz_pop : Parser Context (Multi.Quiz Markdown.Block Inlines)
 quiz_pop =
     withState (.quiz >> .blocks >> succeed)
         |> ignore

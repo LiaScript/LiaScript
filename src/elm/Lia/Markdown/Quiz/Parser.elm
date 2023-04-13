@@ -47,7 +47,7 @@ import Lia.Utils as Utils
 import PseudoRandom
 
 
-parse : Parameters -> Parser Context Quiz
+parse : Parameters -> Parser Context (Quiz x)
 parse attr =
     [ map Matrix_Type Matrix.parse
     , map Vector_Type Vector.parse
@@ -59,17 +59,20 @@ parse attr =
         |> andThen (modify_State attr)
 
 
-gapText : Parameters -> Inlines -> Parser Context Quiz
-gapText attr text =
+
+--gapText : Parameters -> block -> Parser Context (Quiz block)
+
+
+gapText attr block =
     quiz_pop
-        |> map (\q -> { q | elements = [ text ] })
+        |> map (\q -> { q | elements = [ block ] })
         |> map Multi_Type
         |> andThen adds
         |> andThen (modify_State attr)
 
 
 randomize :
-    Type
+    Type x
     -> Int
     -> Maybe (List Int)
 randomize typeOf seed =
@@ -92,7 +95,7 @@ randomize typeOf seed =
             Nothing
 
 
-adds : Type -> Parser Context Quiz
+adds : Type x -> Parser Context (Quiz x)
 adds type_ =
     map (Quiz type_) get_counter
         |> andMap hints
@@ -120,7 +123,7 @@ hints =
         |> optional []
 
 
-modify_State : Parameters -> Quiz -> Parser Context Quiz
+modify_State : Parameters -> Quiz x -> Parser Context (Quiz x)
 modify_State attr q =
     let
         add_state id seed s =
@@ -145,7 +148,7 @@ modify_State attr q =
         |> keep (succeed q)
 
 
-getOptions : Type -> Int -> Parameters -> Options
+getOptions : Type x -> Int -> Parameters -> Options
 getOptions quiz seed attr =
     { randomize =
         if Attributes.isSet "data-randomize" attr then

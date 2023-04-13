@@ -141,16 +141,19 @@ elements =
             |> map Tuple.pair
             |> andMap (paragraph True)
             |> andThen
-                (\( attr, ( inlines, isQuiz ) ) ->
+                (\( attr, ( block, isQuiz ) ) ->
                     if isQuiz then
-                        Quiz.gapText attr inlines
+                        checkForCitation [] block
+                            |> Quiz.gapText attr
                             |> map (Markdown.Quiz attr)
                             |> andMap solution
 
                     else
-                        checkForCitation attr inlines
+                        checkForCitation attr block
                             |> succeed
                 )
+
+        --|> map identity
         , htmlComment
         ]
 

@@ -12,13 +12,14 @@ import Lia.Markdown.Quiz.Block.Json as Block
 import Lia.Markdown.Quiz.Multi.Types exposing (Quiz, State)
 
 
-encode : Quiz Inlines -> ( String, JE.Value )
+encode : Quiz x Inlines -> ( String, JE.Value )
 encode quiz =
     ( uid
     , JE.object
         [ ( "elements"
-          , quiz.elements
-                |> JE.list Inline.encode
+          , --quiz.elements
+            --   |> JE.list Inline.encode
+            JE.null
           )
         , ( "options"
           , quiz.options
