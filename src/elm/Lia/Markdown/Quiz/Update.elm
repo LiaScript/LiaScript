@@ -133,6 +133,26 @@ update sync sectionID scripts msg vector =
                         |> init (\i s -> execute i s.state)
                         |> doSync sync sectionID Nothing
 
+                ( Just "input", id, xxx ) ->
+                    case
+                        vector
+                            |> Array.get id
+                            |> Maybe.map .state
+                    of
+                        Just (Multi_State state) ->
+                            state
+                                |> Multi.update (Multi.handle xxx)
+                                |> Return.mapVal
+                                    (\s ->
+                                        Array.get id vector
+                                            |> Maybe.map (\v -> Array.set id { v | state = Multi_State s } vector)
+                                            |> Maybe.withDefault vector
+                                    )
+
+                        _ ->
+                            vector
+                                |> Return.val
+
                 ( Just "eval", id, ( "eval", param ) ) ->
                     case
                         vector

@@ -17,7 +17,6 @@ module Lia.Markdown.Effect.Script.Types exposing
     )
 
 import Array exposing (Array)
-import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
 import Lia.Markdown.Effect.Script.Intl as Intl exposing (Intl)
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)

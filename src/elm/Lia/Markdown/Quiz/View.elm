@@ -228,12 +228,16 @@ viewState config elem quiz =
             , --s
               --  |> Multi.view config ( elem.solved, elem.trial ) q
               --|> List.map (Html.map (Multi_Update quiz.id))
-              [ q.elements
-                    |> List.map (viewer config)
-                    |> List.head
-                    |> Maybe.withDefault []
-                    |> Html.div []
-                    |> Html.map Script
+              [ s
+                    |> Multi.view config quiz.id q
+                    |> Html.map (Multi_Update quiz.id)
+
+              --q.elements
+              --    |> List.map (viewer config)
+              --    |> List.head
+              --    |> Maybe.withDefault []
+              --    |> Html.div []
+              --    |> Html.map Script
               ]
             )
 

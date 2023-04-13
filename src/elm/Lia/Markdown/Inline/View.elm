@@ -8,13 +8,14 @@ module Lia.Markdown.Inline.View exposing
     )
 
 import Accessibility.Widget as A11y_Widget
+import Array
 import Conditional.List as CList
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html, input)
 import Html.Attributes as Attr exposing (width)
 import Html.Keyed
 import Json.Encode as JE
-import Lia.Markdown.Effect.Script.Types exposing (Msg, Scripts)
+import Lia.Markdown.Effect.Script.Types as Msg exposing (Msg, Scripts)
 import Lia.Markdown.Effect.Script.View as JS
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
@@ -25,9 +26,10 @@ import Lia.Markdown.Inline.Config as Config exposing (Config)
 import Lia.Markdown.Inline.Multimedia exposing (website)
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), combine)
+import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (noTranslate)
+import Lia.Utils exposing (blockKeydown, noTranslate)
 import QRCode
 import Translations exposing (Lang)
 
@@ -145,22 +147,30 @@ view config element =
             viewQuiz config input attr
 
 
-viewQuiz : Config sub -> Int -> Parameters -> Html (Msg sub)
-viewQuiz config id attr =
+viewQuiz : Config sub -> ( Int, Int ) -> Parameters -> Html (Msg sub)
+viewQuiz config ( length, id ) attr =
     --case input of
     --Text solution ->
-    Html.input
-        [ Attr.type_ "input"
-        , Attr.style "border" "1px solid rgb(var(--color-highlight))"
-        , Attr.style "padding" "0 0.5rem"
-        , Attr.style "text-align" "center"
-        , Attr.placeholder "?"
-        , Attr.style "width" (String.fromInt 10 ++ "rem")
-        , Attr.style "font-weight" "inherit"
-        , Attr.style "text-decoration" "inherit"
-        , Attr.style "font-style" "inherit"
-        ]
-        []
+    case ( Array.get id config.input, config.onInput ) of
+        ( Just (Text text), Just onInput ) ->
+            Html.input
+                [ Attr.type_ "input"
+                , Attr.style "border" "1px solid rgb(var(--color-highlight))"
+                , Attr.style "padding" "0 0.5rem"
+                , Attr.style "text-align" "center"
+                , Attr.placeholder "?"
+                , Attr.style "width" (String.fromInt length ++ "rem")
+                , Attr.style "font-weight" "inherit"
+                , Attr.style "text-decoration" "inherit"
+                , Attr.style "font-style" "inherit"
+                , Attr.value text
+                , Attr.attribute "oninput" (onInput "input" id "this.value") --"window.LIA.send({reply: true, track: [['quiz', 0],['input', 0]], service: 'input', message: { cmd: 'input', param: {id: 0, text: this.value} }})"
+                , blockKeydown Msg.NoOp
+                ]
+                []
+
+        _ ->
+            Html.text "todo"
 
 
 

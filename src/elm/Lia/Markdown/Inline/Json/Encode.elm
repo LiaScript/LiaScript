@@ -90,7 +90,7 @@ encInline element =
                 , encParameters a
                 ]
 
-            Quiz input a ->
+            Quiz ( length, id ) a ->
                 [ ( "TODO", JE.null )
                 , encParameters a
                 ]

@@ -167,7 +167,7 @@ quiz_getPermission =
 
 quiz_pop : Parser Context (Multi.Quiz Inlines)
 quiz_pop =
-    withState (.quiz >> .blocks >> Debug.log "SSSSSSSSSSSSSSSSSSSSSSSSSS" >> succeed)
+    withState (.quiz >> .blocks >> succeed)
         |> ignore
             (modifyState
                 (\state ->
@@ -180,16 +180,18 @@ quiz_pop =
             )
 
 
-quiz_add : Block.Quiz Inlines -> Parser Context Int
-quiz_add input =
+quiz_add : ( Int, Block.Quiz Inlines ) -> Parser Context ( Int, Int )
+quiz_add ( length, input ) =
     withState
         (\state ->
             succeed <|
-                if state.quiz.isEnabled then
+                ( length
+                , if state.quiz.isEnabled then
                     Array.length state.quiz.blocks.options
 
-                else
+                  else
                     -1
+                )
         )
         |> ignore
             (modifyState
