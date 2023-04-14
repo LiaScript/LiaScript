@@ -54,11 +54,10 @@ import Lia.Markdown.Quiz.Block.Types as Input
 import Lia.Parser.Context
     exposing
         ( Context
-        , quiz_add
-        , quiz_getPermission
         , searchIndex
         )
 import Lia.Parser.Helper exposing (spaces)
+import Lia.Parser.Input as Context
 
 
 parse_inlines : Context -> String -> Inlines
@@ -200,12 +199,12 @@ inlines =
 
 input : Parser Context (Parameters -> Inline)
 input =
-    quiz_getPermission
+    Context.getPermission
         |> andThen
             (\isAllowed ->
                 if isAllowed then
                     Input.pattern parse_inlines
-                        |> andThen quiz_add
+                        |> andThen Context.add
                         |> map Quiz
 
                 else

@@ -48,15 +48,10 @@ import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Table.Parser as Table
 import Lia.Markdown.Task.Parser as Task
 import Lia.Markdown.Types as Markdown
-import Lia.Parser.Context
-    exposing
-        ( Context
-        , quiz_isIdentified
-        , quiz_setGroupPermission
-        , quiz_setPermission
-        )
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
 import Lia.Parser.Indentation as Indent
+import Lia.Parser.Input as Input
 import Lia.Parser.Preprocessor exposing (title_tag)
 import SvgBob
 
@@ -102,14 +97,14 @@ elements =
             |> andMap Chart.parse
         , md_annotations
             |> map (\attr tab -> Table.classify attr tab >> Markdown.Table attr)
-            |> ignore (quiz_setPermission True)
+            |> ignore (Input.setPermission True)
             |> andMap Table.parse
             |> andMap (withState (.effect_model >> .javascript >> succeed))
             |> checkQuiz
-        , quiz_setGroupPermission True
+        , Input.setGroupPermission True
             |> keep svgbob
-            |> ignore (quiz_setGroupPermission False)
-            |> ignore (quiz_setPermission True)
+            |> ignore (Input.setGroupPermission False)
+            |> ignore (Input.setPermission True)
             |> checkQuiz
         , map Markdown.Code (Code.parse md_annotations)
         , md_annotations
@@ -125,10 +120,10 @@ elements =
         , md_annotations
             |> map Markdown.Task
             |> andMap Task.parse
-        , quiz_setGroupPermission True
+        , Input.setGroupPermission True
             |> keep quote
-            |> ignore (quiz_setGroupPermission False)
-            |> ignore (quiz_setPermission True)
+            |> ignore (Input.setGroupPermission False)
+            |> ignore (Input.setPermission True)
             |> checkQuiz
         , md_annotations
             |> map Markdown.OrderedList
@@ -141,13 +136,13 @@ elements =
             |> andMap (HTML.parse blocks)
             |> ignore (regex "[ \t]*\n")
         , md_annotations
-            |> ignore (quiz_setPermission True)
+            |> ignore (Input.setPermission True)
             |> map Markdown.Gallery
             |> andMap Gallery.parse
             |> checkQuiz
         , md_annotations
             |> map checkForCitation
-            |> ignore (quiz_setPermission True)
+            |> ignore (Input.setPermission True)
             |> andMap paragraph
             |> checkQuiz
         , htmlComment
@@ -156,8 +151,8 @@ elements =
 
 checkQuiz =
     map Tuple.pair
-        >> andMap quiz_isIdentified
-        >> ignore (quiz_setPermission False)
+        >> andMap Input.isIdentified
+        >> ignore (Input.setPermission False)
         >> andThen toQuiz
 
 

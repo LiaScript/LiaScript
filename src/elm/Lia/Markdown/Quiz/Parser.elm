@@ -40,9 +40,10 @@ import Lia.Markdown.Quiz.Types
         , initState
         )
 import Lia.Markdown.Quiz.Vector.Parser as Vector
-import Lia.Parser.Context as Context exposing (Context, quiz_pop)
+import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
+import Lia.Parser.Input as Input
 import Lia.Utils as Utils
 import PseudoRandom
 
@@ -64,7 +65,7 @@ parse attr =
 
 
 gapText attr block =
-    quiz_pop
+    Input.pop
         |> map (\q -> { q | elements = [ block ] })
         |> map Multi_Type
         |> andThen adds
