@@ -148,7 +148,7 @@ view config element =
             viewQuiz config input attr
 
 
-viewQuiz : Config sub -> ( Int, Int ) -> Parameters -> Html (Msg sub)
+viewQuiz : Config sub -> ( String, Int ) -> Parameters -> Html (Msg sub)
 viewQuiz config ( length, id ) attr =
     case Array.get id config.input.state of
         Just (Text text) ->
@@ -158,7 +158,7 @@ viewQuiz config ( length, id ) attr =
                 , Attr.style "padding" "0.1rem 0.5rem"
                 , Attr.style "text-align" "center"
                 , Attr.placeholder "?"
-                , Attr.style "width" (String.fromInt (length + 1) ++ "rem")
+                , Attr.style "width" length
                 , Attr.style "font-weight" "inherit"
                 , Attr.style "text-decoration" "inherit"
                 , Attr.style "font-style" "inherit"

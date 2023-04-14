@@ -81,12 +81,12 @@ pop =
             )
 
 
-add : ( Int, Block.Quiz Inlines ) -> Parser Context ( Int, Int )
+add : ( Int, Block.Quiz Inlines ) -> Parser Context ( String, Int )
 add ( length, block ) =
     withState
         (\state ->
             succeed <|
-                ( length
+                ( String.fromInt (length + 1) ++ "rem"
                 , if state.input.isEnabled || state.input.grouping then
                     Array.length state.input.blocks.options
 
