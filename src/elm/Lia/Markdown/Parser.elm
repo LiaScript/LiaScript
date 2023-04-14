@@ -133,8 +133,12 @@ elements =
             |> andMap unordered_list
         , md_annotations
             |> map Markdown.HTML
+            |> ignore (Input.setGroupPermission True)
             |> andMap (HTML.parse blocks)
             |> ignore (regex "[ \t]*\n")
+            |> ignore (Input.setGroupPermission False)
+            |> ignore (Input.setPermission True)
+            |> checkQuiz
         , md_annotations
             |> ignore (Input.setPermission True)
             |> map Markdown.Gallery
@@ -176,6 +180,9 @@ toQuiz ( md, isQuiz ) =
                 toQuiz_ attr md
 
             Markdown.ASCII attr _ ->
+                toQuiz_ attr md
+
+            Markdown.HTML attr _ ->
                 toQuiz_ attr md
 
             _ ->

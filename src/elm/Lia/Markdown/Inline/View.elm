@@ -158,7 +158,7 @@ viewQuiz config ( length, id ) attr =
                 , Attr.style "padding" "0.1rem 0.5rem"
                 , Attr.style "text-align" "center"
                 , Attr.placeholder "?"
-                , Attr.style "width" (String.fromInt length ++ "rem")
+                , Attr.style "width" (String.fromInt (length + 1) ++ "rem")
                 , Attr.style "font-weight" "inherit"
                 , Attr.style "text-decoration" "inherit"
                 , Attr.style "font-style" "inherit"
