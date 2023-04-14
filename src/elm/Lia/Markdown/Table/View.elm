@@ -46,15 +46,6 @@ view config attr table =
             getState table.id config.section.table_vector
     in
     if diagramShow attr state.diagram then
-        -- Lazy.lazy8 viewDiagram
-        --     config.main.lang
-        --     table
-        --     state
-        --     config.main.scripts
-        --     config.main.visible
-        --     config.screen.width
-        --     config.light
-        --     attr
         viewDiagram
             config
             table

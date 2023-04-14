@@ -153,7 +153,7 @@ viewQuiz config ( length, id ) attr =
     case Array.get id config.input.state of
         Just (Text text) ->
             Html.input
-                [ Attr.type_ "input"
+                [ Attr.type_ "text"
                 , Attr.class "lia-input lia-quiz__input"
                 , Attr.style "padding" "0.1rem 0.5rem"
                 , Attr.style "text-align" "center"

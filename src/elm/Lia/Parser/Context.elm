@@ -6,6 +6,7 @@ module Lia.Parser.Context exposing
     , quiz_getPermission
     , quiz_isIdentified
     , quiz_pop
+    , quiz_setGroupPermission
     , quiz_setPermission
     , searchIndex
     )
@@ -82,6 +83,7 @@ type alias Context =
     , effect_id : Int
     , quiz :
         { isEnabled : Bool
+        , grouping : Bool
         , blocks : Multi.Quiz Markdown.Block Inlines
         }
     , defines : Definition
@@ -110,6 +112,7 @@ init seed search_index global =
     , effect_id = 0
     , quiz =
         { isEnabled = False
+        , grouping = False
         , blocks = Multi.init
         }
     , defines = global
@@ -153,9 +156,30 @@ quiz_setPermission enable =
             { state
                 | quiz =
                     { quiz
-                        | isEnabled = enable
+                        | isEnabled =
+                            if quiz.grouping then
+                                False
 
-                        --, blocks = Multi.init
+                            else
+                                enable
+                    }
+            }
+        )
+
+
+quiz_setGroupPermission : Bool -> Parser Context ()
+quiz_setGroupPermission enable =
+    modifyState
+        (\state ->
+            let
+                quiz =
+                    state.quiz
+            in
+            { state
+                | quiz =
+                    { quiz
+                        | isEnabled = False
+                        , grouping = enable
                     }
             }
         )
@@ -163,7 +187,12 @@ quiz_setPermission enable =
 
 quiz_getPermission : Parser Context Bool
 quiz_getPermission =
-    withState (.quiz >> .isEnabled >> succeed)
+    withState
+        (\state ->
+            state.quiz.isEnabled
+                || state.quiz.grouping
+                |> succeed
+        )
 
 
 quiz_pop : Parser Context (Multi.Quiz Markdown.Block Inlines)
@@ -187,7 +216,7 @@ quiz_add ( length, input ) =
         (\state ->
             succeed <|
                 ( length
-                , if state.quiz.isEnabled then
+                , if state.quiz.isEnabled || state.quiz.grouping then
                     Array.length state.quiz.blocks.options
 
                   else
@@ -201,7 +230,7 @@ quiz_add ( length, input ) =
                         quiz =
                             state.quiz
                     in
-                    if quiz.isEnabled then
+                    if quiz.isEnabled || quiz.grouping then
                         { state
                             | quiz =
                                 { quiz
@@ -219,9 +248,13 @@ quiz_add ( length, input ) =
 quiz_isIdentified : Parser Context Bool
 quiz_isIdentified =
     withState
-        (.quiz
-            >> .blocks
-            >> Multi.isEmpty
-            >> not
-            >> succeed
+        (\state ->
+            succeed <|
+                if state.quiz.isEnabled then
+                    state.quiz.blocks
+                        |> Multi.isEmpty
+                        |> not
+
+                else
+                    False
         )

@@ -533,37 +533,40 @@ viewQuote config attr elements =
 view_ascii : Config Msg -> Parameters -> ( Maybe Inlines, SvgBob.Configuration Blocks ) -> Html Msg
 view_ascii config attr ( caption, image ) =
     image
-        |> SvgBob.drawElements (toAttribute attr)
-            (\list ->
-                Html.div [] <|
-                    case list of
-                        [ Paragraph [] content ] ->
-                            config.view content
+        |> SvgBob.drawElements (toAttribute attr) (svgElement config)
+        |> svgFigure config caption
 
-                        _ ->
-                            List.map (view_block config) list
-            )
-        |> (\svg ->
-                Html.figure [ Attr.class "lia-figure" ]
-                    [ Html.div
-                        ([ Attr.class "lia-figure__media" ]
-                            |> CList.appendIf (not config.light)
-                                [ Attr.style "-webkit-filter" "invert(100%)"
-                                , Attr.style "filter" "invert(100%)"
-                                ]
-                        )
-                        [ svg
-                        ]
-                    , case caption of
-                        Nothing ->
-                            Html.text ""
 
-                        Just content ->
-                            content
-                                |> config.view
-                                |> Html.figcaption [ Attr.class "lia-figure__caption" ]
+svgElement config list =
+    Html.div [] <|
+        case list of
+            [ Paragraph [] content ] ->
+                config.view content
+
+            _ ->
+                List.map (view_block config) list
+
+
+svgFigure config caption svg =
+    Html.figure [ Attr.class "lia-figure" ]
+        [ Html.div
+            ([ Attr.class "lia-figure__media" ]
+                |> CList.appendIf (not config.light)
+                    [ Attr.style "-webkit-filter" "invert(100%)"
+                    , Attr.style "filter" "invert(100%)"
                     ]
-           )
+            )
+            [ svg
+            ]
+        , case caption of
+            Nothing ->
+                Html.text ""
+
+            Just content ->
+                content
+                    |> config.view
+                    |> Html.figcaption [ Attr.class "lia-figure__caption" ]
+        ]
 
 
 viewQuiz : Config Msg -> Maybe String -> Parameters -> Quiz.Quiz Block -> Maybe ( Blocks, Int ) -> Html Msg

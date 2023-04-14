@@ -52,6 +52,7 @@ import Lia.Parser.Context
     exposing
         ( Context
         , quiz_isIdentified
+        , quiz_setGroupPermission
         , quiz_setPermission
         )
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
@@ -105,7 +106,11 @@ elements =
             |> andMap Table.parse
             |> andMap (withState (.effect_model >> .javascript >> succeed))
             |> checkQuiz
-        , svgbob
+        , quiz_setGroupPermission True
+            |> keep svgbob
+            |> ignore (quiz_setGroupPermission False)
+            |> ignore (quiz_setPermission True)
+            |> checkQuiz
         , map Markdown.Code (Code.parse md_annotations)
         , md_annotations
             |> map Markdown.Header
@@ -120,7 +125,11 @@ elements =
         , md_annotations
             |> map Markdown.Task
             |> andMap Task.parse
-        , quote
+        , quiz_setGroupPermission True
+            |> keep quote
+            |> ignore (quiz_setGroupPermission False)
+            |> ignore (quiz_setPermission True)
+            |> checkQuiz
         , md_annotations
             |> map Markdown.OrderedList
             |> andMap ordered_list
