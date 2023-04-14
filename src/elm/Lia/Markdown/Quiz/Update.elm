@@ -204,7 +204,10 @@ toString : State -> String
 toString state =
     case state of
         Block_State b ->
-            Block.toString b
+            Block.toString False b
+
+        Multi_State b ->
+            Multi.toString b
 
         Vector_State s ->
             Vector.toString s
