@@ -56,7 +56,8 @@ type alias State =
 
 
 type alias Cell =
-    { attr : Parameters
+    { id : String
+    , attr : Parameters
     , inlines : Inlines
     , string : String
     , float : Maybe Float
@@ -76,7 +77,7 @@ toMatrix :
     -> Matrix ( Parameters, Inlines )
     -> Matrix Cell
 toMatrix config =
-    Matrix.map (toCell config)
+    Matrix.indexedMap (toCell config)
 
 
 toCell :
@@ -89,9 +90,11 @@ toCell :
                 , options : Array (List Inlines)
             }
     }
+    -> Int
+    -> Int
     -> ( Parameters, Inlines )
     -> Cell
-toCell config ( attr, data ) =
+toCell config x y ( attr, data ) =
     let
         str =
             data
@@ -100,7 +103,12 @@ toCell config ( attr, data ) =
     in
     str
         |> float
-        |> Cell attr data str
+        |> Cell (cellID x y) attr data str
+
+
+cellID : Int -> Int -> String
+cellID x y =
+    String.fromInt x ++ "," ++ String.fromInt y
 
 
 float : String -> Maybe Float

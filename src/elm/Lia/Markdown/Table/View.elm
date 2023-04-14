@@ -71,7 +71,7 @@ viewDiagram config table state attr =
         , table.body
             |> toMatrix config.main
             |> sort state
-            |> (::) (List.map (toCell config.main) table.head)
+            |> (::) (List.indexedMap (toCell config.main -1) table.head)
             |> diagramTranspose attr
             |> chart config.main.lang config.screen.width (table.format /= []) attr config.light table.class
         ]
@@ -678,7 +678,7 @@ formatted lang viewer head format rows id state =
             (List.indexedMap Tuple.pair
                 >> List.map2
                     (\f ( i, e ) ->
-                        ( e.string
+                        ( e.id
                         , Html.td
                             (e.attr
                                 |> Param.toAttribute

@@ -99,7 +99,7 @@ classify attr table js =
 
                              else
                                 matrix.head
-                                    |> List.map
+                                    |> List.indexedMap
                                         (toCell
                                             { scripts = js
                                             , visible = Nothing
@@ -108,6 +108,7 @@ classify attr table js =
                                                 , options = Array.empty
                                                 }
                                             }
+                                            -1
                                         )
                                     |> Just
                             )
