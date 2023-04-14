@@ -7,7 +7,6 @@ module Lia.Markdown.Inline.Config exposing
 import Array exposing (Array)
 import Dict exposing (Dict)
 import Html exposing (Html)
-import Lia.Markdown.Effect.Script.Input exposing (active)
 import Lia.Markdown.Effect.Script.Types exposing (Msg, Scripts)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Multi.Types as Input

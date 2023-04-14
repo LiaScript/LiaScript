@@ -3,44 +3,73 @@ module Lia.Markdown.Inline.Stringify exposing
     , stringify_
     )
 
-import Array
+import Array exposing (Array)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts, text)
 import Lia.Markdown.Effect.Types as Effect
 import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
+import Lia.Markdown.Quiz.Block.Types as Block
+import Lia.Markdown.Quiz.Multi.Types as Input
+import Lia.Utils as Utils
 
 
 stringify : Inlines -> String
 stringify =
-    stringify_ Array.empty Nothing
+    stringify_
+        { scripts = Array.empty
+        , visible = Nothing
+        , input = { state = Array.empty, options = Array.empty }
+        }
 
 
-stringify_ : Scripts a -> Maybe Int -> Inlines -> String
-stringify_ effects id =
-    List.map (inline2string effects id)
+stringify_ :
+    { config
+        | scripts : Scripts a
+        , visible : Maybe Int
+        , input :
+            { x
+                | state : Input.State
+                , options : Array (List Inlines)
+            }
+    }
+    -> Inlines
+    -> String
+stringify_ config =
+    List.map (inline2string config)
         >> String.concat
 
 
-inline2string : Scripts a -> Maybe Int -> Inline -> String
-inline2string effects id inline =
+inline2string :
+    { config
+        | scripts : Scripts a
+        , visible : Maybe Int
+        , input :
+            { x
+                | state : Input.State
+                , options : Array (List Inlines)
+            }
+    }
+    -> Inline
+    -> String
+inline2string config inline =
     case inline of
         Chars str _ ->
             str
 
         Bold x _ ->
-            inline2string effects id x
+            inline2string config x
 
         Italic x _ ->
-            inline2string effects id x
+            inline2string config x
 
         Strike x _ ->
-            inline2string effects id x
+            inline2string config x
 
         Underline x _ ->
-            inline2string effects id x
+            inline2string config x
 
         Superscript x _ ->
-            inline2string effects id x
+            inline2string config x
 
         Verbatim str _ ->
             str
@@ -49,52 +78,78 @@ inline2string effects id inline =
             str
 
         Ref ref _ ->
-            ref2string effects id ref
+            ref2string config ref
 
         IHTML (HTML.Node _ _ x) _ ->
-            stringify_ effects id x
+            stringify_ config x
 
         Container x _ ->
-            stringify_ effects id x
+            stringify_ config x
 
         EInline e _ ->
-            if Effect.isIn id e then
-                stringify_ effects id e.content
+            if Effect.isIn config.visible e then
+                stringify_ config e.content
 
             else
                 ""
 
         Script i _ ->
-            effects
+            config.scripts
                 |> Array.get i
                 |> Maybe.andThen .result
                 |> Maybe.andThen text
                 |> Maybe.withDefault ""
 
+        Quiz ( _, id ) _ ->
+            case Array.get id config.input.state of
+                Just (Block.Text str) ->
+                    str
+
+                Just (Block.Select _ [ id2 ]) ->
+                    config.input.options
+                        |> Array.get id
+                        |> Maybe.andThen (Utils.get id2)
+                        |> Maybe.map (stringify_ config)
+                        |> Maybe.withDefault ""
+
+                _ ->
+                    ""
+
         _ ->
             ""
 
 
-ref2string : Scripts a -> Maybe Int -> Reference -> String
-ref2string effects id ref =
+ref2string :
+    { config
+        | scripts : Scripts a
+        , visible : Maybe Int
+        , input :
+            { x
+                | state : Input.State
+                , options : Array (List Inlines)
+            }
+    }
+    -> Reference
+    -> String
+ref2string config ref =
     case ref of
         Movie alt _ _ ->
-            stringify_ effects id alt
+            stringify_ config alt
 
         Image alt _ _ ->
-            stringify_ effects id alt
+            stringify_ config alt
 
         Audio alt _ _ ->
-            stringify_ effects id alt
+            stringify_ config alt
 
         Link alt _ _ ->
-            stringify_ effects id alt
+            stringify_ config alt
 
         Mail alt _ _ ->
-            stringify_ effects id alt
+            stringify_ config alt
 
         Embed alt _ _ ->
-            stringify_ effects id alt
+            stringify_ config alt
 
         Preview_Lia _ ->
             "preview-lia"

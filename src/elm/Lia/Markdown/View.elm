@@ -518,7 +518,7 @@ viewQuote config attr elements =
                 |> Html.blockquote
                     (Attr.cite
                         (citation
-                            |> stringify_ config.main.scripts config.main.visible
+                            |> stringify_ config.main
                             |> String.trim
                         )
                         :: annotation "lia-quote" attr

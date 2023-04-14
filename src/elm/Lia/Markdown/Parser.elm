@@ -94,20 +94,17 @@ elements =
             |> andMap (Effect.markdown blocks)
         , md_annotations
             |> map Tuple.pair
-            |> andMap
-                (Effect.comment
-                    (paragraph False
-                        |> map Tuple.first
-                    )
-                )
+            |> andMap (Effect.comment paragraph)
             |> andThen to_comment
         , md_annotations
             |> map Markdown.Chart
             |> andMap Chart.parse
         , md_annotations
             |> map (\attr tab -> Table.classify attr tab >> Markdown.Table attr)
+            |> ignore (quiz_setPermission True)
             |> andMap Table.parse
             |> andMap (withState (.effect_model >> .javascript >> succeed))
+            |> checkQuiz
         , svgbob
         , map Markdown.Code (Code.parse md_annotations)
         , md_annotations
@@ -135,27 +132,59 @@ elements =
             |> andMap (HTML.parse blocks)
             |> ignore (regex "[ \t]*\n")
         , md_annotations
+            |> ignore (quiz_setPermission True)
             |> map Markdown.Gallery
             |> andMap Gallery.parse
+            |> checkQuiz
         , md_annotations
-            |> map Tuple.pair
-            |> andMap (paragraph True)
-            |> andThen
-                (\( attr, ( block, isQuiz ) ) ->
-                    if isQuiz then
-                        checkForCitation [] block
-                            |> Quiz.gapText attr
-                            |> map (Markdown.Quiz attr)
-                            |> andMap solution
-
-                    else
-                        checkForCitation attr block
-                            |> succeed
-                )
-
-        --|> map identity
+            |> map checkForCitation
+            |> ignore (quiz_setPermission True)
+            |> andMap paragraph
+            |> checkQuiz
         , htmlComment
         ]
+
+
+checkQuiz =
+    map Tuple.pair
+        >> andMap quiz_isIdentified
+        >> ignore (quiz_setPermission False)
+        >> andThen toQuiz
+
+
+toQuiz : ( Markdown.Block, Bool ) -> Parser Context Markdown.Block
+toQuiz ( md, isQuiz ) =
+    if isQuiz then
+        case md of
+            Markdown.Paragraph attr _ ->
+                toQuiz_ attr md
+
+            Markdown.Citation attr _ ->
+                toQuiz_ attr md
+
+            Markdown.Quote attr _ ->
+                toQuiz_ attr md
+
+            Markdown.Table attr _ ->
+                toQuiz_ attr md
+
+            Markdown.Gallery attr _ ->
+                toQuiz_ attr md
+
+            Markdown.ASCII attr _ ->
+                toQuiz_ attr md
+
+            _ ->
+                succeed md
+
+    else
+        succeed md
+
+
+toQuiz_ attr =
+    Quiz.gapText attr
+        >> map (Markdown.Quiz attr)
+        >> andMap solution
 
 
 to_comment : ( Parameters, ( Int, Int ) ) -> Parser Context Markdown.Block
@@ -438,16 +467,12 @@ horizontal_line =
         |> map Markdown.HLine
 
 
-paragraph : Bool -> Parser Context ( Inlines, Bool )
-paragraph enableQuizParsing =
+paragraph : Parser Context Inlines
+paragraph =
     checkParagraph
         |> ignore Indent.skip
-        |> ignore (quiz_setPermission enableQuizParsing)
         |> keep (many1 (Indent.check |> keep line |> ignore newline))
         |> map (List.intersperse [ Chars " " [] ] >> List.concat >> combine)
-        |> map Tuple.pair
-        |> andMap quiz_isIdentified
-        |> ignore (quiz_setPermission False)
 
 
 {-| A paragraph cannot start with a marker for Comments `--{{1}}--` or Effects

@@ -99,10 +99,28 @@ classify attr table js =
 
                              else
                                 matrix.head
-                                    |> List.map (toCell js Nothing)
+                                    |> List.map
+                                        (toCell
+                                            { scripts = js
+                                            , visible = Nothing
+                                            , input =
+                                                { state = Array.empty
+                                                , options = Array.empty
+                                                }
+                                            }
+                                        )
                                     |> Just
                             )
-                            (toMatrix js Nothing matrix.body)
+                            (toMatrix
+                                { scripts = js
+                                , visible = Nothing
+                                , input =
+                                    { state = Array.empty
+                                    , options = Array.empty
+                                    }
+                                }
+                                matrix.body
+                            )
     }
 
 

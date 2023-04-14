@@ -460,7 +460,10 @@ view_inf scripts lang light tooltips translations formulas media =
 
 stringFrom : Config sub -> Maybe Inlines -> Maybe String
 stringFrom config el =
-    case el |> Maybe.map (stringify_ config.scripts config.visible >> String.trim) of
+    case
+        el
+            |> Maybe.map (stringify_ config >> String.trim)
+    of
         Just "" ->
             Nothing
 

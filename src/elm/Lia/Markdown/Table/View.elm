@@ -46,38 +46,43 @@ view config attr table =
             getState table.id config.section.table_vector
     in
     if diagramShow attr state.diagram then
-        Lazy.lazy8 viewDiagram
-            config.main.lang
+        -- Lazy.lazy8 viewDiagram
+        --     config.main.lang
+        --     table
+        --     state
+        --     config.main.scripts
+        --     config.main.visible
+        --     config.screen.width
+        --     config.light
+        --     attr
+        viewDiagram
+            config
             table
             state
-            config.main.scripts
-            config.main.visible
-            config.screen.width
-            config.light
             attr
 
     else if table.head == [] && table.format == [] then
         state
-            |> unformatted config.main.lang config.view (toMatrix config.main.scripts config.main.visible table.body) table.id
+            |> unformatted config.main.lang config.view (toMatrix config.main table.body) table.id
             |> toTable config.main.lang table.id attr table.class
 
     else
         state
-            |> formatted config.main.lang config.view table.head table.format (toMatrix config.main.scripts config.main.visible table.body) table.id
+            |> formatted config.main.lang config.view table.head table.format (toMatrix config.main table.body) table.id
             |> toTable config.main.lang table.id attr table.class
 
 
-viewDiagram : Lang -> Table -> State -> Scripts a -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
-viewDiagram lang table state effects visible width light attr =
+viewDiagram : Config sub -> Table -> State -> Parameters -> Html Msg
+viewDiagram config table state attr =
     Html.div
         [ blockKeydown (UpdateTable Sub.NoOp) ]
         [ toggleBtn table.id ( "table", "Table" )
         , table.body
-            |> toMatrix effects visible
+            |> toMatrix config.main
             |> sort state
-            |> (::) (List.map (toCell effects visible) table.head)
+            |> (::) (List.map (toCell config.main) table.head)
             |> diagramTranspose attr
-            |> chart lang width (table.format /= []) attr light table.class
+            |> chart config.main.lang config.screen.width (table.format /= []) attr config.light table.class
         ]
 
 
