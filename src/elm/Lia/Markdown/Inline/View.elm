@@ -153,31 +153,35 @@ viewQuiz config ( length, id ) attr =
     case Array.get id config.input.state of
         Just (Text text) ->
             Html.input
-                [ Attr.type_ "text"
-                , Attr.class "lia-input lia-quiz__input"
-                , Attr.style "padding" "0.1rem 0.5rem"
-                , Attr.style "text-align" "center"
-                , Attr.placeholder "?"
-                , Attr.style "width" length
-                , Attr.style "font-weight" "inherit"
-                , Attr.style "text-decoration" "inherit"
-                , Attr.style "font-style" "inherit"
-                , Attr.value text
-                , if config.input.active then
-                    Attr.attribute "oninput" (config.input.on "input" id "this.value")
+                (attr
+                    |> toAttribute
+                    |> List.append
+                        [ Attr.type_ "text"
+                        , Attr.class "lia-input lia-quiz__input"
+                        , Attr.style "padding" "0.1rem 0.5rem"
+                        , Attr.style "text-align" "center"
+                        , Attr.placeholder "?"
+                        , Attr.style "width" length
+                        , Attr.style "font-weight" "inherit"
+                        , Attr.style "text-decoration" "inherit"
+                        , Attr.style "font-style" "inherit"
+                        , Attr.value text
+                        , if config.input.active then
+                            Attr.attribute "oninput" (config.input.on "input" id "this.value")
 
-                  else
-                    Attr.disabled True
-                , blockKeydown Msg.NoOp
-                , A11y_Widget.label "quiz answer"
-                , Attr.class <|
-                    if config.input.active then
-                        ""
+                          else
+                            Attr.disabled True
+                        , blockKeydown Msg.NoOp
+                        , A11y_Widget.label "quiz answer"
+                        , Attr.class <|
+                            if config.input.active then
+                                ""
 
-                    else
-                        "lia-input--disabled is-disabled"
-                , Attr.disabled (not <| config.input.active)
-                ]
+                            else
+                                "lia-input--disabled is-disabled"
+                        , Attr.disabled (not <| config.input.active)
+                        ]
+                )
                 []
 
         Just (Select open [ element ]) ->
@@ -188,20 +192,24 @@ viewQuiz config ( length, id ) attr =
                         |> Maybe.withDefault []
             in
             Html.span
-                [ Attr.class "lia-dropdown"
-                , Attr.style "padding" "0 0.5rem"
-                , if config.input.active then
-                    Attr.attribute "onclick" (config.input.on "toggle" id "true")
+                (attr
+                    |> toAttribute
+                    |> List.append
+                        [ Attr.class "lia-dropdown"
+                        , Attr.style "padding" "0 0.5rem"
+                        , if config.input.active then
+                            Attr.attribute "onclick" (config.input.on "toggle" id "true")
 
-                  else
-                    Attr.disabled True
-                , Attr.class <|
-                    if config.input.active then
-                        ""
+                          else
+                            Attr.disabled True
+                        , Attr.class <|
+                            if config.input.active then
+                                ""
 
-                    else
-                        "is-disabled"
-                ]
+                            else
+                                "is-disabled"
+                        ]
+                )
                 [ Html.span
                     [ Attr.class "lia-dropdown__selected"
                     , A11y_Widget.hidden False
