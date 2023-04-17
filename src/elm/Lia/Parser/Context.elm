@@ -14,7 +14,6 @@ import Array
 import Combine
     exposing
         ( Parser
-        , ignore
         , keep
         , modifyState
         , succeed
@@ -26,7 +25,6 @@ import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
 import Lia.Markdown.Gallery.Types as Gallery
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.Multi.Types as Multi
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey

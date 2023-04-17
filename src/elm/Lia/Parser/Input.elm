@@ -118,14 +118,15 @@ add ( length, block ) =
 
 isIdentified : Parser Context Bool
 isIdentified =
-    withState
-        (\state ->
-            succeed <|
-                if state.input.isEnabled then
-                    state.input.blocks
-                        |> Multi.isEmpty
-                        |> not
+    withState (.input >> isInput >> succeed)
 
-                else
-                    False
-        )
+
+isInput : { a | isEnabled : Bool, blocks : Multi.Quiz Markdown.Block Inlines } -> Bool
+isInput input =
+    if input.isEnabled then
+        input.blocks
+            |> Multi.isEmpty
+            |> not
+
+    else
+        False

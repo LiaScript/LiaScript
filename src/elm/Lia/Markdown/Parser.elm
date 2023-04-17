@@ -99,7 +99,19 @@ elements =
             |> map (\attr tab -> Table.classify attr tab >> Markdown.Table attr)
             |> ignore (Input.setPermission True)
             |> andMap Table.parse
-            |> andMap (withState (.effect_model >> .javascript >> succeed))
+            |> andMap
+                (withState
+                    (\state ->
+                        succeed
+                            ( state.effect_model.javascript
+                            , if Input.isInput state.input then
+                                Just state.input.blocks
+
+                              else
+                                Nothing
+                            )
+                    )
+                )
             |> checkQuiz
         , Input.setGroupPermission True
             |> keep svgbob

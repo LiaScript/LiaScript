@@ -3,7 +3,7 @@ module Lia.Markdown.Table.Parser exposing
     , parse
     )
 
-import Array
+import Array exposing (Array)
 import Combine
     exposing
         ( Parser
@@ -31,6 +31,7 @@ import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (annotations, line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
+import Lia.Markdown.Quiz.Multi.Types as Input
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
 import Lia.Markdown.Table.Types
     exposing
@@ -55,8 +56,8 @@ parse =
         |> modify_State
 
 
-classify : Parameters -> Table -> Scripts a -> Table
-classify attr table js =
+classify : Parameters -> Table -> ( Scripts a, Maybe { i | solution : Input.State, options : Array (List Inlines) } ) -> Table
+classify attr table config =
     { table
         | class =
             case diagramType attr of
@@ -99,29 +100,41 @@ classify attr table js =
 
                              else
                                 matrix.head
-                                    |> List.indexedMap
-                                        (toCell
-                                            { scripts = js
-                                            , visible = Nothing
-                                            , input =
-                                                { state = Array.empty
-                                                , options = Array.empty
-                                                }
-                                            }
-                                            -1
-                                        )
+                                    |> List.indexedMap (toCell (initConfig config) -1)
                                     |> Just
                             )
                             (toMatrix
-                                { scripts = js
-                                , visible = Nothing
-                                , input =
-                                    { state = Array.empty
-                                    , options = Array.empty
-                                    }
-                                }
+                                (initConfig config)
                                 matrix.body
                             )
+    }
+
+
+initConfig :
+    ( Scripts a
+    , Maybe { i | solution : Array x, options : Array y }
+    )
+    ->
+        { scripts : Scripts a
+        , visible : Maybe Int
+        , input :
+            { state : Array x
+            , options : Array y
+            }
+        }
+initConfig ( scripts, input ) =
+    { scripts = scripts
+    , visible = Nothing
+    , input =
+        { state =
+            input
+                |> Maybe.map .solution
+                |> Maybe.withDefault Array.empty
+        , options =
+            input
+                |> Maybe.map .options
+                |> Maybe.withDefault Array.empty
+        }
     }
 
 

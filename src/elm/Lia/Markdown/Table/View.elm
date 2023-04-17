@@ -12,11 +12,9 @@ import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Keyed as Keyed
-import Html.Lazy as Lazy
 import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Point)
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Config exposing (Config)
-import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix, Row)
