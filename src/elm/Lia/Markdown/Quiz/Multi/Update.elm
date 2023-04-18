@@ -29,7 +29,7 @@ update : Msg sub -> State -> Return State msg sub
 update msg state =
     case msg of
         Handle ( cmd, param ) ->
-            case ( cmd, decodeId param ) |> Debug.log "ssssssssssssss" of
+            case ( cmd, decodeId param ) of
                 ( "input", Ok id ) ->
                     case ( Array.get id state, decodeValue JD.string param ) of
                         ( Just (Block.Text _), Ok text ) ->

@@ -36,11 +36,6 @@ number i =
     "\u{200A}" ++ String.fromInt i ++ "\u{200A}"
 
 
-cleanUpNumber : String -> String
-cleanUpNumber str =
-    str ++ ".innerText.replace(/\\u200a\\d+\\u200a/g,'').trim()"
-
-
 block : Config sub -> Model a -> Parameters -> Effect Block -> List (Html Msg) -> Html Msg
 block config model attr e body =
     if config.visible == Nothing then
@@ -211,7 +206,7 @@ playBackAttr id voice lang section command =
         |> Event.pushWithId "effect" section
         |> Event.encode
         |> JE.encode 0
-        |> String.replace "\"XXX\"" (cleanUpNumber command)
+        |> String.replace "\"XXX\"" command
         |> (\event -> "window.LIA.playback(" ++ event ++ ")")
         |> Attr.attribute "onclick"
 
