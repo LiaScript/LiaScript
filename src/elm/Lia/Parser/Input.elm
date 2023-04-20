@@ -86,7 +86,7 @@ add ( length, block ) =
     withState
         (\state ->
             succeed <|
-                ( String.fromInt (length + 1) ++ "rem"
+                ( String.fromFloat (toFloat (length + 2) * 0.4) ++ "em"
                 , if state.input.isEnabled || state.input.grouping then
                     Array.length state.input.blocks.options
 
