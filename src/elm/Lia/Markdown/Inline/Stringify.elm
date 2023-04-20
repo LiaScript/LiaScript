@@ -106,11 +106,15 @@ inline2string config inline =
                     str
 
                 Just (Block.Select _ [ id2 ]) ->
-                    config.input.options
-                        |> Array.get id
-                        |> Maybe.andThen (Utils.get id2)
-                        |> Maybe.map (stringify_ config)
-                        |> Maybe.withDefault ""
+                    if id2 == -1 then
+                        ""
+
+                    else
+                        config.input.options
+                            |> Array.get id
+                            |> Maybe.andThen (Utils.get id2)
+                            |> Maybe.map (stringify_ config)
+                            |> Maybe.withDefault ""
 
                 _ ->
                     ""
