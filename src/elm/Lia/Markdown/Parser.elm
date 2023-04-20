@@ -27,6 +27,7 @@ import Combine
         , sepBy
         , sepBy1
         , skip
+        , string
         , succeed
         , whitespace
         , withState
@@ -145,12 +146,13 @@ elements =
             |> andMap unordered_list
         , md_annotations
             |> map Markdown.HTML
-            |> ignore (Input.setGroupPermission True)
+            --|> ignore (Input.setGroupPermission True)
             |> andMap (HTML.parse blocks)
             |> ignore (regex "[ \t]*\n")
-            |> ignore (Input.setGroupPermission False)
-            |> ignore (Input.setPermission True)
-            |> checkQuiz
+
+        --|> ignore (Input.setGroupPermission False)
+        --|> ignore (Input.setPermission True)
+        --|> checkQuiz
         , md_annotations
             |> ignore (Input.setPermission True)
             |> map Markdown.Gallery
@@ -165,6 +167,7 @@ elements =
         ]
 
 
+checkQuiz : Parser Context Markdown.Block -> Parser Context Markdown.Block
 checkQuiz =
     map Tuple.pair
         >> andMap Input.isIdentified
@@ -194,9 +197,8 @@ toQuiz ( md, isQuiz ) =
             Markdown.ASCII attr _ ->
                 toQuiz_ attr md
 
-            Markdown.HTML attr _ ->
-                toQuiz_ attr md
-
+            --Markdown.HTML attr _ ->
+            --    toQuiz_ attr md
             _ ->
                 succeed md
 
@@ -494,8 +496,29 @@ paragraph : Parser Context Inlines
 paragraph =
     checkParagraph
         |> ignore Indent.skip
-        |> keep (many1 (Indent.check |> keep line |> ignore newline))
+        |> keep (many1 (Indent.check |> ignore allowedLine |> keep line |> ignore newline))
         |> map (List.intersperse [ Chars " " [] ] >> List.concat >> combine)
+
+
+allowedLine : Parser Context ()
+allowedLine =
+    lookAhead
+        (maybe
+            (choice
+                [ regex "\\*\\*\\*+\n"
+                , string "[[?]]"
+                ]
+            )
+            |> andThen
+                (\e ->
+                    case e of
+                        Nothing ->
+                            succeed ()
+
+                        _ ->
+                            fail ""
+                )
+        )
 
 
 {-| A paragraph cannot start with a marker for Comments `--{{1}}--` or Effects

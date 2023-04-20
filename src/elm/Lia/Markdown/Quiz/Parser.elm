@@ -46,6 +46,7 @@ import Lia.Parser.Indentation as Indent
 import Lia.Parser.Input as Input
 import Lia.Utils as Utils
 import PseudoRandom
+import Translations exposing (Lang(..))
 
 
 parse : Parameters -> Parser Context (Quiz x)
@@ -58,10 +59,6 @@ parse attr =
         |> choice
         |> andThen adds
         |> andThen (modify_State attr)
-
-
-
---gapText : Parameters -> block -> Parser Context (Quiz block)
 
 
 gapText attr block =
