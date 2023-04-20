@@ -396,15 +396,7 @@ view_block config block =
                 |> Html.map UpdateCode
 
         Quiz attr quiz solution ->
-            case Quizzes.maybeConfig config.main quiz config.section.quiz_vector of
-                Just ( main, md ) ->
-                    Html.div []
-                        [ view_block (Config.setMain main config) md
-                        , viewQuiz config Nothing attr quiz solution
-                        ]
-
-                Nothing ->
-                    viewQuiz config Nothing attr quiz solution
+            viewQuiz config Nothing attr quiz solution
 
         Survey attr survey ->
             Surveys.view config.main attr survey config.section.survey_vector
@@ -571,6 +563,18 @@ svgFigure config caption svg =
 
 viewQuiz : Config Msg -> Maybe String -> Parameters -> Quiz.Quiz Block -> Maybe ( Blocks, Int ) -> Html Msg
 viewQuiz config labeledBy attr quiz solution =
+    case Quizzes.maybeConfig config.main quiz config.section.quiz_vector of
+        Just ( main, md ) ->
+            Html.div []
+                [ view_block (Config.setMain main config) md
+                , quizControl config labeledBy attr quiz solution
+                ]
+
+        Nothing ->
+            quizControl config labeledBy attr quiz solution
+
+
+quizControl config labeledBy attr quiz solution =
     scriptView config.view <|
         case solution of
             Nothing ->
