@@ -10,9 +10,11 @@ import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
+import Lia.Markdown.Quiz.Block.Types as Markdown
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
+import Lia.Markdown.Quiz.Multi.Update as Multi
 import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
 import Lia.Markdown.Quiz.Sync as Sync
 import Lia.Markdown.Quiz.Types
@@ -26,6 +28,7 @@ import Lia.Markdown.Quiz.Types
         , toState
         )
 import Lia.Markdown.Quiz.Vector.Update as Vector
+import Lia.Markdown.Types as Markdown
 import Return exposing (Return)
 import Service.Console
 import Service.Database
@@ -36,11 +39,12 @@ import Translations exposing (Lang(..))
 
 type Msg sub
     = Block_Update Int (Block.Msg sub)
+    | Multi_Update Int (Multi.Msg sub)
     | Vector_Update Int (Vector.Msg sub)
     | Matrix_Update Int (Matrix.Msg sub)
-    | Check Int Type
+    | Check Int (Type Markdown.Block)
     | ShowHint Int
-    | ShowSolution Int Type
+    | ShowSolution Int (Type Markdown.Block)
     | Handle Event
     | Script (Script.Msg sub)
 
@@ -49,6 +53,9 @@ update : Bool -> Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector ms
 update sync sectionID scripts msg vector =
     case msg of
         Block_Update id _ ->
+            update_ id vector (state_ msg)
+
+        Multi_Update id _ ->
             update_ id vector (state_ msg)
 
         Vector_Update id _ ->
@@ -128,6 +135,26 @@ update sync sectionID scripts msg vector =
                         |> init (\i s -> execute i s.state)
                         |> doSync sync sectionID Nothing
 
+                ( Just "input", id, xxx ) ->
+                    case
+                        vector
+                            |> Array.get id
+                            |> Maybe.map .state
+                    of
+                        Just (Multi_State state) ->
+                            state
+                                |> Multi.update (Multi.handle xxx)
+                                |> Return.mapVal
+                                    (\s ->
+                                        Array.get id vector
+                                            |> Maybe.map (\v -> Array.set id { v | state = Multi_State s } vector)
+                                            |> Maybe.withDefault vector
+                                    )
+
+                        _ ->
+                            vector
+                                |> Return.val
+
                 ( Just "eval", id, ( "eval", param ) ) ->
                     case
                         vector
@@ -177,7 +204,10 @@ toString : State -> String
 toString state =
     case state of
         Block_State b ->
-            Block.toString b
+            Block.toString False b
+
+        Multi_State b ->
+            Multi.toString b
 
         Vector_State s ->
             Vector.toString s
@@ -262,7 +292,7 @@ evalEventDecoder json =
         \e -> Return.val { e | error_msg = eval.result }
 
 
-isSolved : Maybe Type -> Solution -> Element -> Element
+isSolved : Maybe (Type Markdown.Block) -> Solution -> Element -> Element
 isSolved solution state e =
     case ( e.opt.maxTrials, e.solved ) of
         ( Nothing, Solution.Open ) ->
@@ -310,7 +340,7 @@ store sectionID return =
             return
 
 
-check : Type -> Element -> Return Element msg sub
+check : Type Markdown.Block -> Element -> Return Element msg sub
 check solution e =
     e
         |> isSolved (Just solution) (comp solution e.state)

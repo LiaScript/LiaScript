@@ -4,9 +4,12 @@ module Lia.Markdown.Inline.Config exposing
     , setViewer
     )
 
+import Array exposing (Array)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Lia.Markdown.Effect.Script.Types exposing (Msg, Scripts)
+import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Quiz.Multi.Types as Input
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Sync.Types as Sync
@@ -25,6 +28,12 @@ type alias Config sub =
     , tooltips : Bool
     , media : Dict String ( Int, Int )
     , scripts : Scripts SubSection
+    , input :
+        { state : Input.State
+        , options : Array (List Inlines)
+        , on : String -> Int -> String -> String
+        , active : Bool
+        }
     , translations : Maybe ( String, String )
     , formulas : Dict String String
     , sync : Maybe Sync.Settings
@@ -64,6 +73,12 @@ init config =
     , tooltips = config.tooltips
     , media = config.media
     , scripts = config.scripts
+    , input =
+        { state = Array.empty
+        , options = Array.empty
+        , on = \_ _ _ -> ""
+        , active = False
+        }
     , translations = config.translations
     , sync = config.sync
     , formulas =

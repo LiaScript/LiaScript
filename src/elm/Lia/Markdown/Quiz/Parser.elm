@@ -1,5 +1,6 @@
 module Lia.Markdown.Quiz.Parser exposing
-    ( maybeJS
+    ( gapText
+    , maybeJS
     , parse
     )
 
@@ -24,7 +25,7 @@ import Combine
         , withState
         )
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
-import Lia.Markdown.Inline.Parser exposing (eScript)
+import Lia.Markdown.Inline.Parser exposing (eScript, parse_inlines)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Block.Parser as Block
@@ -42,24 +43,34 @@ import Lia.Markdown.Quiz.Vector.Parser as Vector
 import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
+import Lia.Parser.Input as Input
 import Lia.Utils as Utils
 import PseudoRandom
+import Translations exposing (Lang(..))
 
 
-parse : Parameters -> Parser Context Quiz
+parse : Parameters -> Parser Context (Quiz x)
 parse attr =
     [ map Matrix_Type Matrix.parse
     , map Vector_Type Vector.parse
     , onsuccess Generic_Type generic
-    , map Block_Type Block.parse
+    , map Block_Type (Block.parse parse_inlines)
     ]
         |> choice
         |> andThen adds
         |> andThen (modify_State attr)
 
 
+gapText attr block =
+    Input.pop
+        |> map (\q -> { q | elements = [ block ] })
+        |> map Multi_Type
+        |> andThen adds
+        |> andThen (modify_State attr)
+
+
 randomize :
-    Type
+    Type x
     -> Int
     -> Maybe (List Int)
 randomize typeOf seed =
@@ -82,7 +93,7 @@ randomize typeOf seed =
             Nothing
 
 
-adds : Type -> Parser Context Quiz
+adds : Type x -> Parser Context (Quiz x)
 adds type_ =
     map (Quiz type_) get_counter
         |> andMap hints
@@ -110,7 +121,7 @@ hints =
         |> optional []
 
 
-modify_State : Parameters -> Quiz -> Parser Context Quiz
+modify_State : Parameters -> Quiz x -> Parser Context (Quiz x)
 modify_State attr q =
     let
         add_state id seed s =
@@ -135,7 +146,7 @@ modify_State attr q =
         |> keep (succeed q)
 
 
-getOptions : Type -> Int -> Parameters -> Options
+getOptions : Type x -> Int -> Parameters -> Options
 getOptions quiz seed attr =
     { randomize =
         if Attributes.isSet "data-randomize" attr then

@@ -16,6 +16,7 @@ import Combine
         , andMap
         , andThen
         , choice
+        , fail
         , ignore
         , keep
         , lazy
@@ -48,8 +49,16 @@ import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), combine)
 import Lia.Markdown.Macro.Parser as Macro
-import Lia.Parser.Context exposing (Context, getLine, searchIndex)
+import Lia.Markdown.Quiz.Block.Parser as Input
+import Lia.Markdown.Quiz.Block.Types as Input
+import Lia.Parser.Context
+    exposing
+        ( Context
+        , getLine
+        , searchIndex
+        )
 import Lia.Parser.Helper exposing (spaces)
+import Lia.Parser.Input as Context
 
 
 parse_inlines : Context -> String -> Inlines
@@ -184,6 +193,7 @@ inlines =
                      , inlines
                         |> Effect.inline
                         |> map EInline
+                     , input
                      , strings
                      ]
                         |> choice
@@ -241,9 +251,24 @@ doubleClick pos =
     (::) ( "ondblclick", "window.LIA.lineGoto(" ++ String.fromInt pos ++ ");" )
 
 
+input : Parser Context (Parameters -> Inline)
+input =
+    Context.getPermission
+        |> andThen
+            (\isAllowed ->
+                if isAllowed then
+                    Input.pattern parse_inlines
+                        |> andThen Context.add
+                        |> map Quiz
+
+                else
+                    fail "no inputs allowed"
+            )
+
+
 url : Parser Context String
 url =
-    regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})[^ \\]\\)\t\n]*"
+    regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})[^ \\]\\)\t\n\"]*"
         |> andThen baseURL
 
 

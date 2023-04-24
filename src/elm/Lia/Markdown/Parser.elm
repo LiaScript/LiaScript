@@ -27,6 +27,7 @@ import Combine
         , sepBy
         , sepBy1
         , skip
+        , string
         , succeed
         , whitespace
         , withState
@@ -51,6 +52,7 @@ import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
 import Lia.Parser.Indentation as Indent
+import Lia.Parser.Input as Input
 import Lia.Parser.Preprocessor exposing (title_tag)
 import SvgBob
 
@@ -96,9 +98,27 @@ elements =
             |> andMap Chart.parse
         , md_annotations
             |> map (\attr tab -> Table.classify attr tab >> Markdown.Table attr)
+            |> ignore (Input.setPermission True)
             |> andMap Table.parse
-            |> andMap (withState (.effect_model >> .javascript >> succeed))
-        , svgbob
+            |> andMap
+                (withState
+                    (\state ->
+                        succeed
+                            ( state.effect_model.javascript
+                            , if Input.isInput state.input then
+                                Just state.input.blocks
+
+                              else
+                                Nothing
+                            )
+                    )
+                )
+            |> checkQuiz
+        , Input.setGroupPermission True
+            |> keep svgbob
+            |> ignore (Input.setGroupPermission False)
+            |> ignore (Input.setPermission True)
+            |> checkQuiz
         , map Markdown.Code (Code.parse md_annotations)
         , md_annotations
             |> map Markdown.Header
@@ -113,7 +133,11 @@ elements =
         , md_annotations
             |> map Markdown.Task
             |> andMap Task.parse
-        , quote
+        , Input.setGroupPermission True
+            |> keep quote
+            |> ignore (Input.setGroupPermission False)
+            |> ignore (Input.setPermission True)
+            |> checkQuiz
         , md_annotations
             |> map Markdown.OrderedList
             |> andMap ordered_list
@@ -122,16 +146,70 @@ elements =
             |> andMap unordered_list
         , md_annotations
             |> map Markdown.HTML
+            --|> ignore (Input.setGroupPermission True)
             |> andMap (HTML.parse blocks)
             |> ignore (regex "[ \t]*\n")
+
+        --|> ignore (Input.setGroupPermission False)
+        --|> ignore (Input.setPermission True)
+        --|> checkQuiz
         , md_annotations
+            |> ignore (Input.setPermission True)
             |> map Markdown.Gallery
             |> andMap Gallery.parse
+            |> checkQuiz
         , md_annotations
             |> map checkForCitation
+            |> ignore (Input.setPermission True)
             |> andMap paragraph
+            |> checkQuiz
         , htmlComment
         ]
+
+
+checkQuiz : Parser Context Markdown.Block -> Parser Context Markdown.Block
+checkQuiz =
+    map Tuple.pair
+        >> andMap Input.isIdentified
+        >> ignore (Input.setPermission False)
+        >> andThen toQuiz
+
+
+toQuiz : ( Markdown.Block, Bool ) -> Parser Context Markdown.Block
+toQuiz ( md, isQuiz ) =
+    if isQuiz then
+        case md of
+            Markdown.Paragraph attr _ ->
+                toQuiz_ attr md
+
+            Markdown.Citation attr _ ->
+                toQuiz_ attr md
+
+            Markdown.Quote attr _ ->
+                toQuiz_ attr md
+
+            Markdown.Table attr _ ->
+                toQuiz_ attr md
+
+            Markdown.Gallery attr _ ->
+                toQuiz_ attr md
+
+            Markdown.ASCII attr _ ->
+                toQuiz_ attr md
+
+            --Markdown.HTML attr _ ->
+            --    toQuiz_ attr md
+            _ ->
+                succeed md
+
+    else
+        succeed md
+
+
+toQuiz_ attr =
+    Quiz.gapText attr
+        >> map (Markdown.Quiz attr)
+        >> andMap solution
 
 
 to_comment : ( Parameters, ( Int, Int ) ) -> Parser Context Markdown.Block
@@ -418,8 +496,29 @@ paragraph : Parser Context Inlines
 paragraph =
     checkParagraph
         |> ignore Indent.skip
-        |> keep (many1 (Indent.check |> keep line |> ignore newline))
+        |> keep (many1 (Indent.check |> ignore allowedLine |> keep line |> ignore newline))
         |> map (List.intersperse [ Chars " " [] ] >> List.concat >> combine)
+
+
+allowedLine : Parser Context ()
+allowedLine =
+    lookAhead
+        (maybe
+            (choice
+                [ regex "\\*\\*\\*+\n"
+                , string "[[?]]"
+                ]
+            )
+            |> andThen
+                (\e ->
+                    case e of
+                        Nothing ->
+                            succeed ()
+
+                        _ ->
+                            fail ""
+                )
+        )
 
 
 {-| A paragraph cannot start with a marker for Comments `--{{1}}--` or Effects

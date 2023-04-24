@@ -29,10 +29,13 @@ import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
 import Lia.Markdown.Gallery.Types as Gallery
+import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Quiz.Multi.Types as Multi
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
+import Lia.Markdown.Types as Markdown
 import Lia.Section exposing (SubSection)
 import PseudoRandom as Random
 
@@ -75,6 +78,11 @@ type alias Context =
     , effect_model : Effect.Model SubSection
     , effect_number : List Int
     , effect_id : Int
+    , input :
+        { isEnabled : Bool
+        , grouping : Bool
+        , blocks : Multi.Quiz Markdown.Block Inlines
+        }
     , defines : Definition
     , footnotes : Footnote.Model
     , defines_updated : Bool
@@ -101,6 +109,11 @@ init backup seed search_index editor_line global =
     , effect_model = Effect.init
     , effect_number = [ 0 ]
     , effect_id = 0
+    , input =
+        { isEnabled = False
+        , grouping = False
+        , blocks = Multi.init
+        }
     , defines = global
     , footnotes = Footnote.init
     , defines_updated = False

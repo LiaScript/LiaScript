@@ -12,11 +12,9 @@ import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Keyed as Keyed
-import Html.Lazy as Lazy
 import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Point)
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Config exposing (Config)
-import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix, Row)
@@ -46,38 +44,34 @@ view config attr table =
             getState table.id config.section.table_vector
     in
     if diagramShow attr state.diagram then
-        Lazy.lazy8 viewDiagram
-            config.main.lang
+        viewDiagram
+            config
             table
             state
-            config.main.scripts
-            config.main.visible
-            config.screen.width
-            config.light
             attr
 
     else if table.head == [] && table.format == [] then
         state
-            |> unformatted config.main.lang config.view (toMatrix config.main.scripts config.main.visible table.body) table.id
+            |> unformatted config.main.lang config.view (toMatrix config.main table.body) table.id
             |> toTable config.main.lang table.id attr table.class
 
     else
         state
-            |> formatted config.main.lang config.view table.head table.format (toMatrix config.main.scripts config.main.visible table.body) table.id
+            |> formatted config.main.lang config.view table.head table.format (toMatrix config.main table.body) table.id
             |> toTable config.main.lang table.id attr table.class
 
 
-viewDiagram : Lang -> Table -> State -> Scripts a -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
-viewDiagram lang table state effects visible width light attr =
+viewDiagram : Config sub -> Table -> State -> Parameters -> Html Msg
+viewDiagram config table state attr =
     Html.div
         [ blockKeydown (UpdateTable Sub.NoOp) ]
         [ toggleBtn table.id ( "table", "Table" )
         , table.body
-            |> toMatrix effects visible
+            |> toMatrix config.main
             |> sort state
-            |> (::) (List.map (toCell effects visible) table.head)
+            |> (::) (List.indexedMap (toCell config.main -1) table.head)
             |> diagramTranspose attr
-            |> chart lang width (table.format /= []) attr light table.class
+            |> chart config.main.lang config.screen.width (table.format /= []) attr config.light table.class
         ]
 
 
@@ -682,7 +676,7 @@ formatted lang viewer head format rows id state =
             (List.indexedMap Tuple.pair
                 >> List.map2
                     (\f ( i, e ) ->
-                        ( e.string
+                        ( e.id
                         , Html.td
                             (e.attr
                                 |> Param.toAttribute
