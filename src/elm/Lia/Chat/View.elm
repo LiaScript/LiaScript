@@ -1,6 +1,8 @@
 module Lia.Chat.View exposing (view)
 
 import Accessibility.Aria as A11y
+import Accessibility.Live as A11y_Live
+import Accessibility.Role as A11y_Role
 import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -21,30 +23,33 @@ view lang config model =
     Html.div
         (noTranslate
             [ Attr.style "width" "100%"
-            , Attr.style "height" "calc(100% - 3rem)"
+            , Attr.style "height" "100%"
             , Attr.style "display" "flex"
             , Attr.style "flex-direction" "column"
             , Attr.style "position" "absolute"
-            , Attr.style "top" "3rem"
+            , Attr.style "padding" "1rem"
             ]
         )
         [ model.messages
             |> Dict.toList
             |> List.map (viewMessage config)
-            |> Keyed.node "div"
+            |> Keyed.node "article"
                 [ Attr.style "display" "flex"
                 , Attr.style "flex-direction" "column"
                 , Attr.style "justify-content" "flex-end"
                 , Attr.style "bottom" "0"
+                , A11y_Role.article
                 ]
             |> List.singleton
-            |> Html.div
-                [ Attr.style "height" "calc(100% - 10rem)"
+            |> Html.section
+                [ Attr.style "height" "100%"
                 , Attr.style "overflow" "auto"
                 , Attr.id "lia-chat-messages"
+                , A11y_Live.livePolite
+                , A11y_Live.atomic True
                 ]
         , Html.div
-            [ Attr.style "padding" "1rem"
+            [ Attr.style "padding" "0.5rem"
             , Attr.style "height" "11.5rem"
             ]
             [ btnIcon
@@ -75,6 +80,7 @@ view lang config model =
                 , Editor.showGutter False
                 , Attr.class "lia-code__input"
                 , Editor.onCtrlEnter Send
+                , A11y_Role.textBox
                 ]
                 []
             ]
@@ -94,7 +100,7 @@ viewMessage config ( id, section ) =
         |> Config.setID id_
         |> Markdown.viewContent
         |> Html.div
-            [ Attr.style "margin" "0.45rem 1rem"
+            [ Attr.style "margin" "0.45rem 0.5rem"
             , Attr.style "box-shadow" "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)"
             , Attr.style
                 "padding"

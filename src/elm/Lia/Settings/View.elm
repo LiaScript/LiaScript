@@ -598,19 +598,6 @@ btnSupport lang open =
 
 btnChat : { lang : Lang, tabbable : Bool, hide : Bool, chat : { show : Bool, updates : Bool } } -> Html Msg
 btnChat { lang, tabbable, hide, chat } =
-    {- btnIcon
-       { title = Trans.confSettings lang
-       , tabbable = True
-       , msg = Just (Toggle Chat)
-       , icon = "icon-mail"
-       }
-       [ Attr.class "lia-btn lia-btn--transparent"
-       , A11y_Aria.controls "lia-chat"
-       , A11y_Widget.hasMenuPopUp
-       , A11y_Widget.expanded open
-       , Attr.style "margin-right" "1rem"
-       ]
-    -}
     if hide then
         Html.span [ Attr.style "margin-right" "4rem" ] []
 
@@ -644,6 +631,12 @@ btnChat { lang, tabbable, hide, chat } =
             , A11y_Widget.hasMenuPopUp
             , A11y_Widget.expanded chat.show
             , Attr.style "margin-right" "1rem"
+            , Attr.class <|
+                if chat.updates && not chat.show then
+                    "shake"
+
+                else
+                    ""
             ]
 
 

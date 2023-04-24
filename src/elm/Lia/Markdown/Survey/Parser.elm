@@ -23,7 +23,7 @@ import Combine
         , withState
         )
 import Dict
-import Lia.Markdown.Inline.Parser exposing (inlines, line)
+import Lia.Markdown.Inline.Parser exposing (inlines, line, parse_inlines)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Parser as Block
@@ -44,7 +44,7 @@ survey : Parser Context Survey
 survey =
     choice
         [ text_lines |> map Text
-        , Block.parse |> andThen toSelect
+        , Block.parse parse_inlines |> andThen toSelect
         , vector parens |> map (toVector False)
         , vector brackets |> map (toVector True)
         , header "(" ")" |> map (toMatrix False) |> andMap questions
@@ -81,7 +81,7 @@ text_lines =
         |> ignore newline
 
 
-toSelect : BlockTypes.Quiz -> Parser Context Type
+toSelect : BlockTypes.Quiz Inlines -> Parser Context Type
 toSelect quiz =
     case quiz.solution of
         BlockTypes.Select _ [] ->

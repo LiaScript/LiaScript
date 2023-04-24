@@ -41,11 +41,15 @@ update msg state =
                 |> Return.val
 
 
-toString : State -> String
-toString state =
+toString : Bool -> State -> String
+toString withQuotes state =
     case state of
         Text str ->
-            str
+            if withQuotes then
+                "\"" ++ str ++ "\""
+
+            else
+                str
 
         Select _ [ i ] ->
             String.fromInt i

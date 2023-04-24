@@ -24,7 +24,7 @@ type Block
     | BulletList Parameters (List Blocks)
     | OrderedList Parameters (List ( String, Blocks ))
     | Table Parameters Table
-    | Quiz Parameters Quiz (Maybe ( Blocks, Int ))
+    | Quiz Parameters (Quiz Block) (Maybe ( Blocks, Int ))
     | Effect Parameters (Effect Block)
     | Comment ( Int, Int )
     | Survey Parameters Survey

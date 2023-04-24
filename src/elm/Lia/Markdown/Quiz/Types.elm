@@ -18,6 +18,7 @@ import Array exposing (Array)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.Matrix.Types as Matrix
+import Lia.Markdown.Quiz.Multi.Types as Multi
 import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
 import Lia.Markdown.Quiz.Vector.Types as Vector
 
@@ -53,25 +54,27 @@ type alias Options =
 type State
     = Generic_State
     | Block_State Block.State
+    | Multi_State Multi.State
     | Vector_State Vector.State
     | Matrix_State Matrix.State
 
 
-type Type
+type Type x
     = Generic_Type
-    | Block_Type Block.Quiz
+    | Block_Type (Block.Quiz Inlines)
+    | Multi_Type (Multi.Quiz x Inlines)
     | Vector_Type Vector.Quiz
     | Matrix_Type Matrix.Quiz
 
 
-type alias Quiz =
-    { quiz : Type
+type alias Quiz x =
+    { quiz : Type x
     , id : Int
     , hints : Hints
     }
 
 
-initState : Type -> State
+initState : Type x -> State
 initState quiz =
     case quiz of
         Generic_Type ->
@@ -81,6 +84,11 @@ initState quiz =
             q.solution
                 |> Block.initState
                 |> Block_State
+
+        Multi_Type q ->
+            q.solution
+                |> Multi.initState
+                |> Multi_State
 
         Vector_Type q ->
             q.solution
@@ -101,6 +109,11 @@ reset state =
                 |> Block.initState
                 |> Block_State
 
+        Multi_State s ->
+            s
+                |> Multi.initState
+                |> Multi_State
+
         Vector_State s ->
             s
                 |> Vector.initState
@@ -115,7 +128,7 @@ reset state =
             state
 
 
-toState : Type -> State
+toState : Type x -> State
 toState quiz =
     case quiz of
         Generic_Type ->
@@ -124,6 +137,9 @@ toState quiz =
         Block_Type q ->
             Block_State q.solution
 
+        Multi_Type q ->
+            Multi_State q.solution
+
         Vector_Type q ->
             Vector_State q.solution
 
@@ -131,12 +147,15 @@ toState quiz =
             Matrix_State q.solution
 
 
-comp : Type -> State -> Solution
+comp : Type x -> State -> Solution
 comp quiz state =
     if
         case ( quiz, state ) of
             ( Block_Type q, Block_State s ) ->
                 Block.comp q s
+
+            ( Multi_Type q, Multi_State s ) ->
+                Multi.comp q s
 
             ( Vector_Type q, Vector_State s ) ->
                 Vector.comp q s
@@ -165,6 +184,9 @@ getClass state =
     case state of
         Block_State s ->
             Block.getClass s
+
+        Multi_State s ->
+            Multi.getClass s
 
         Vector_State s ->
             Vector.getClass s

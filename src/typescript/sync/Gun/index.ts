@@ -2,10 +2,25 @@ import { Gun } from './gun.d'
 import * as Base from '../Base/index'
 import { Crypto } from '../Crypto'
 
+// Working solution to deal with GunDB i.map(...).flat is not a function
+// https://stackoverflow.com/questions/50993498/flat-is-not-a-function-whats-wrong
+Object.defineProperty(Array.prototype, 'flat', {
+  value: function (depth = 1) {
+    return this.reduce(function (flat, toFlatten) {
+      return flat.concat(
+        Array.isArray(toFlatten) && depth > 1
+          ? toFlatten.flat(depth - 1)
+          : toFlatten
+      )
+    }, [])
+  },
+})
+
 export class Sync extends Base.Sync {
   private gun?: Gun
   private store: string = ''
   private gunServer: string[] = []
+  private persistent: boolean = false
 
   destroy() {
     this.gunServer = []
@@ -14,14 +29,25 @@ export class Sync extends Base.Sync {
     super.destroy()
   }
 
+  uniqueID(): string | null {
+    const id = super.uniqueID()
+
+    if (id) {
+      return btoa(id + (this.persistent ? 'p' : ''))
+    }
+
+    return null
+  }
+
   async connect(data: {
     course: string
     room: string
     password?: string
-    config?: any
+    config?: { urls: string[]; persistent: boolean }
   }) {
     super.connect(data)
-    this.gunServer = data.config
+    this.gunServer = data.config?.urls || []
+    this.persistent = data.config?.persistent || false
 
     if (window.Gun) {
       this.init(true)
@@ -51,11 +77,29 @@ export class Sync extends Base.Sync {
     if (ok && window.Gun && id) {
       this.gun = window.Gun({ peers: this.gunServer })
 
-      this.store = btoa(id)
+      this.store = id
 
       Crypto.init(this.password)
 
       let self = this
+      if (this.persistent) {
+        this.gun.get(this.store).once((data) => {
+          if (data && data.msg) {
+            try {
+              const [_, message] = Crypto.decode(data.msg)
+
+              setTimeout(function () {
+                self.gun?.get(self.store).put({
+                  msg: Crypto.encode(['', message]),
+                })
+              }, 1000)
+            } catch (e) {
+              console.warn('GunDB:', e.message)
+            }
+          }
+        })
+      }
+
       this.gun
         .get(this.store)
         .on(function (data: { msg: string }, key: string) {
@@ -70,10 +114,21 @@ export class Sync extends Base.Sync {
           }
         })
 
-      this.broadcast(null)
+      if (!this.persistent) {
+        this.broadcast(null)
+      }
+
       this.sendConnect()
     } else {
-      console.warn('Could not load resource:', error)
+      let message = 'GunDB unknown error'
+
+      if (error) {
+        message = 'Could not load resource: ' + error
+      } else if (!window.Gun) {
+        message = 'Could not load GunDB interface'
+      }
+
+      this.sendDisconnectError(message)
     }
   }
 

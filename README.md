@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.11.0
+version:  0.12.0
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,37 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.12.0** (24/04/2023)
+
+- feat: Add gap text quizzes and selections to inline-elements.
+  Tables, paragraph, galleries, etc. can now be turned into a quiz..
+
+  ``` markdown
+                      {{English Male |>}}
+  The film that I saw [[(that)|those|these|then]] night wasn’t very good.
+  It was all [[ about ]] a man [[ who ]] built a
+  time machine so he [[ could ]] travel back in time.
+  It took him ages and ages [[ to ]] build the machine.
+  ```
+
+- fix: Preprocessing of singleton HTML-tags does not chomp content anymore
+- improve: ASCII-art can now cope with complex and compound emojis.
+- fix: URL parsing will stop on \"
+
+
+**0.11.1** (10/04/2023)
+
+- multiple CSS fixes and optimizations
+- improve: docs
+- chat:
+
+  - improve: shake animation and improved accessibility
+  - feat: Add gunDB persistent storage
+  - fix: Jitsi-backend works again
+  - improve: Error messages
+  - Add SCROM 1.2 export for moodle
+
 
 **0.11.0** (29/03/2023)
 

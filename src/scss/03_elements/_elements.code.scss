@@ -38,7 +38,7 @@
   }
 
   &-terminal {
-    background-color: rgb(var(--lia-anthracite));
+    background-color: rgb(var(--lia-black));
     display: flex;
     flex-direction: column;
 
@@ -63,7 +63,7 @@
     }
 
     &__output {
-      background: linear-gradient(135deg, rgb(var(--lia-anthracite)), rgb(var(--lia-anthracite)) calc(100% - 1.25rem), rgb(var(--color-highlight-dark)) 0%);
+      background: linear-gradient(135deg, rgb(var(--lia-black)), rgb(var(--lia-black)) calc(100% - 1.25rem), rgb(var(--color-highlight-dark)) 0%);
       margin: 0;
       // when this value is changed, also the maxHeight value in
       //   src/typescript/webcomponents/terminal.ts
@@ -110,4 +110,8 @@
   ) !important;
 
   //height: auto !important;
+}
+
+.ace_mobile-menu {
+  display: none !important;
 }

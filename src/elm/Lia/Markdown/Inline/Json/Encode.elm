@@ -90,6 +90,11 @@ encInline element =
                 , encParameters a
                 ]
 
+            Quiz ( length, id ) a ->
+                [ ( "TODO", JE.null )
+                , encParameters a
+                ]
+
 
 baseEncoder : String -> Inline -> Parameters -> List ( String, JE.Value )
 baseEncoder name content attr =
