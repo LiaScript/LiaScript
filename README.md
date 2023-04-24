@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.12.1
+version:  0.12.2
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,10 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.12.2** (24/04/2023)
+
+- fix: Unicode detection in ascii-art
 
 **0.12.1** (24/04/2023)
 
