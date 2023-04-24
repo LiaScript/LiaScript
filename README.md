@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.12.0
+version:  0.12.1
 language: en
 narrator: UK English Male
 
@@ -296,7 +296,7 @@ This will apply the following four patches:
 
 ## Version-Changes
 
-**0.12.0** (24/04/2023)
+**0.12.1** (24/04/2023)
 
 - feat: Add gap text quizzes and selections to inline-elements.
   Tables, paragraph, galleries, etc. can now be turned into a quiz..
