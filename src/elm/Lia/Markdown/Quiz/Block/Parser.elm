@@ -1,4 +1,7 @@
-module Lia.Markdown.Quiz.Block.Parser exposing (parse)
+module Lia.Markdown.Quiz.Block.Parser exposing
+    ( parse
+    , pattern
+    )
 
 import Combine
     exposing
@@ -8,29 +11,37 @@ import Combine
         , ignore
         , keep
         , map
-        , regex
         , string
         , succeed
         , withState
         )
-import Lia.Markdown.Inline.Parser exposing (parse_inlines)
-import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (newline, stringTill)
+import Lia.Parser.Helper exposing (newline, spaces, stringTill)
 
 
-parse : Parser Context Quiz
-parse =
-    regex "[\t ]*\\[\\["
-        |> keep (stringTill (string "]]"))
+parse : (Context -> String -> opt) -> Parser Context (Quiz opt)
+parse parse_inlines =
+    spaces
+        |> keep (pattern parse_inlines)
         |> ignore newline
-        |> map split
+        |> map Tuple.second
+
+
+pattern : (Context -> String -> opt) -> Parser Context ( Int, Quiz opt )
+pattern parse_inlines =
+    string "[["
+        |> keep (stringTill (string "]]"))
+        |> map
+            (\s context ->
+                split parse_inlines s context
+                    |> map (Tuple.pair (String.length s))
+            )
         |> andThen withState
 
 
-split : String -> Context -> Parser Context Quiz
-split str state =
+split : (Context -> String -> opt) -> String -> Context -> Parser Context (Quiz opt)
+split parse_inlines str state =
     case String.split "|" str of
         [ solution ] ->
             let
@@ -44,18 +55,19 @@ split str state =
 
             else
                 solution
+                    |> String.trim
                     |> Text
                     |> Quiz []
                     |> succeed
 
         options ->
             options
-                |> List.indexedMap (check state)
+                |> List.indexedMap (check parse_inlines state)
                 |> toSelect
 
 
-check : Context -> Int -> String -> ( Int, Inlines )
-check state id str =
+check : (Context -> String -> opt) -> Context -> Int -> String -> ( Int, opt )
+check parse_inlines state id str =
     let
         inlines =
             parse_inlines state
@@ -75,7 +87,7 @@ check state id str =
         ( -1, inlines option )
 
 
-toSelect : List ( Int, Inlines ) -> Parser Context Quiz
+toSelect : List ( Int, opt ) -> Parser Context (Quiz opt)
 toSelect list =
     list
         |> List.filter (Tuple.first >> (<=) 0)

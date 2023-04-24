@@ -6,16 +6,14 @@ module Lia.Markdown.Quiz.Block.Types exposing
     , initState
     )
 
-import Lia.Markdown.Inline.Types exposing (Inlines)
-
 
 type State
     = Text String
     | Select Bool (List Int)
 
 
-type alias Quiz =
-    { options : List Inlines
+type alias Quiz opt =
+    { options : List opt
     , solution : State
     }
 
@@ -30,7 +28,7 @@ initState state =
             Select False [ -1 ]
 
 
-comp : Quiz -> State -> Bool
+comp : Quiz opt -> State -> Bool
 comp quiz state =
     case ( quiz.solution, state ) of
         ( Text str1, Text str2 ) ->

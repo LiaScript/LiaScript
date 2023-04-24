@@ -5,6 +5,7 @@ module Lia.Markdown.Table.Matrix exposing
     , any
     , column
     , head
+    , indexedMap
     , map
     , some
     , split
@@ -26,6 +27,11 @@ type alias Row cell =
 map : (a -> b) -> Matrix a -> Matrix b
 map fn =
     List.map (List.map fn)
+
+
+indexedMap : (Int -> Int -> a -> b) -> Matrix a -> Matrix b
+indexedMap fn =
+    List.indexedMap (\i row -> List.indexedMap (\j e -> fn i j e) row)
 
 
 column : Int -> Matrix cell -> Maybe (Row cell)

@@ -12,6 +12,7 @@ module Lia.Sync.Via exposing
     , view
     )
 
+import Conditional.List as CList
 import Const
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -22,7 +23,7 @@ import Lia.Utils as Util
 type Backend
     = Beaker
     | Edrys
-    | GUN String
+    | GUN { urls : String, persistent : Bool }
     | Jitsi String
     | Matrix { baseURL : String, userId : String, accessToken : String }
     | PubNub { pubKey : String, subKey : String }
@@ -37,10 +38,17 @@ toString full via =
         Edrys ->
             "Edrys"
 
-        GUN urls ->
+        GUN { urls, persistent } ->
             "GUN"
                 ++ (if full then
-                        "|" ++ urls
+                        (if persistent then
+                            "|t"
+
+                         else
+                            "|f"
+                        )
+                            ++ "|"
+                            ++ urls
 
                     else
                         ""
@@ -111,10 +119,19 @@ fromString via =
             Just Edrys
 
         [ "gun" ] ->
-            Just (GUN "")
+            Just (GUN { urls = "", persistent = False })
 
-        [ "gun", urls ] ->
-            Just (GUN urls)
+        [ "gun", "f" ] ->
+            Just (GUN { urls = "", persistent = False })
+
+        [ "gun", "f", urls ] ->
+            Just (GUN { urls = urls, persistent = False })
+
+        [ "gun", "t" ] ->
+            Just (GUN { urls = "", persistent = True })
+
+        [ "gun", "t", urls ] ->
+            Just (GUN { urls = urls, persistent = True })
 
         [ "jitsi" ] ->
             Just (Jitsi "")
@@ -181,6 +198,7 @@ info =
             [ Html.li [] [ Html.text "Global overview on quizzes" ]
             , Html.li [] [ Html.text "Global overview on surveys" ]
             , Html.li [] [ Html.text "Collaborative editing of executable code snippets (you have to switch to sync-mode, per editor)" ]
+            , Html.li [] [ Html.text "A chat that parses LiaScript, such that you can dynamically create quizzes, surveys, collaborative editors, but also to share videos, galleries, oEmbeds, etc..." ]
             ]
         , Html.text "To synchronize the state between users, we apply "
         , link "Conflict Free Replicated Datatypes (CRDTs)" "https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type"
@@ -236,8 +254,8 @@ infoOn supported about =
                 , Html.text " protocol."
                 , Html.text " You should try to download the "
                 , link "Beaker Browser" "https://beakerbrowser.com"
-                , Html.text ". It uses a peer-to-peer network with which you can make and host websites from inside the browser."
-                , Html.text " In the same way you can also directly create and edit LiaScript courses within this browser and share them."
+                , Html.text ". It uses a peer-to-peer network, with which you can make and host websites from inside the browser."
+                , Html.text " In the same way, you can also directly create and edit LiaScript courses within this browser and share them."
                 ]
 
             ( Edrys, _ ) ->
@@ -246,14 +264,14 @@ infoOn supported about =
                 , Html.text "It is a great platform for building remote labs and share them by using only a browser locally. "
                 , Html.text "Thus, this synchronization will only work, if you are within an Edrys classroom, for more information try the following link: "
                 , link "https://edrys.org" "https://edrys.org"
-                , Html.text ". Additionally your course has to be loaded via the "
+                , Html.text ". Additionally, your course has to be loaded via the "
                 , link "module-liascript" "https://github.com/edrys-org/module-liascript"
                 , Html.text "."
                 ]
 
             ( GUN _, _ ) ->
                 [ link "GunDB" "https://gun.eco"
-                , Html.text " is a small, easy, and fast protocol for syncing data across various users."
+                , Html.text " is a small, easy, and fast real-time database for syncing data across various users."
                 , Html.text " You can use the default relay server hosted at "
                 , link Const.gunDB_ServerURL Const.gunDB_ServerURL
                 , Html.text ". Or, if you don't trust us ;-) you can also use one of the free hosted relay servers listed "
@@ -261,7 +279,9 @@ infoOn supported about =
                 , Html.text ". Multiple peers have to be separated by commas."
                 , Html.text " The implementation of this classroom can be found "
                 , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/Gun"
-                , Html.text ". No data is stored or logged, it is just an easy method for transmitting information to all connected users."
+                , Html.text ". By checking \"persistent storage\" you can ensure that the chat messages and the modified code will be accessible over a longer time period, otherwise the state is deleted."
+                , Html.text " However, since this is a free service, we cannot give guarantees that your messages will be stored forever and that the GunDB server might be offline."
+                , Html.text " If you want to be certain, you can host your own instance of a GunDB server and change the URL appropriately."
                 ]
 
             ( Jitsi _, _ ) ->
@@ -287,9 +307,9 @@ infoOn supported about =
 
             ( PubNub _, _ ) ->
                 [ link "PubNub" "https://www.pubnub.com"
-                , Html.text " is a realtime communication platform. "
+                , Html.text " is a real-time communication platform. "
                 , Html.text "To create a classroom that uses this service, you will only require an account, which is free for testing. "
-                , Html.text "After that you simply have to create a new App with a new Keyset within their dashboard. "
+                , Html.text "After that, you simply have to create a new App with a new Keyset within their dashboard. "
                 , Html.text "These are the keys you will have to provide for this room. "
                 , Html.text "After this, you can simply generate a new set of keys. "
                 , Html.text "The basic steps that are required, are described in more detail "
@@ -306,51 +326,64 @@ link title url =
 view : Bool -> Backend -> Html Msg
 view editable backend =
     case backend of
-        GUN urls ->
-            input
-                { active = editable
-                , type_ = "input"
-                , msg = InputGun
-                , value = urls
-                , placeholder = ""
-                , label = Html.text "relay server"
-                }
+        GUN { urls, persistent } ->
+            Html.div []
+                [ input
+                    { active = editable
+                    , type_ = "text"
+                    , msg = InputGun
+                    , value = urls
+                    , placeholder = "https://gun1.server, https://gun2.server, ..."
+                    , label = Html.text "relay server"
+                    , autocomplete = Just "gun-server"
+                    }
+                , checkbox
+                    { active = editable
+                    , value = persistent
+                    , msg = CheckboxGun
+                    , label = Html.text "persistent storage"
+                    }
+                ]
 
         Jitsi domain ->
             input
                 { active = editable
-                , type_ = "input"
+                , type_ = "text"
                 , msg = InputJitsi
                 , value = domain
-                , placeholder = ""
+                , placeholder = "domain.jit.si"
                 , label = Html.text "domain"
+                , autocomplete = Just "jitsi-domain"
                 }
 
         Matrix { baseURL, userId, accessToken } ->
             Html.div []
                 [ input
                     { active = editable
-                    , type_ = "input"
+                    , type_ = "text"
                     , msg = InputMatrix "url"
                     , label = Html.text "base URL"
                     , value = baseURL
                     , placeholder = "https://matrix.org"
+                    , autocomplete = Just "matrix-url"
                     }
                 , input
                     { active = editable
-                    , type_ = "input"
+                    , type_ = "text"
                     , msg = InputMatrix "user"
                     , label = Html.text "user ID"
                     , value = userId
                     , placeholder = "@USERID:matrix.org"
+                    , autocomplete = Just "matrix-user"
                     }
                 , input
                     { active = editable
-                    , type_ = "input"
+                    , type_ = "text"
                     , msg = InputMatrix "token"
                     , label = Html.text "access token"
                     , value = accessToken
                     , placeholder = "....MDAxM2lkZW50aWZpZXIga2V5CjAwMTBjaWQgZ2Vu...."
+                    , autocomplete = Just "matrix-token"
                     }
                 ]
 
@@ -358,19 +391,21 @@ view editable backend =
             Html.div []
                 [ input
                     { active = editable
-                    , type_ = "input"
+                    , type_ = "text"
                     , msg = InputPubNub "pub"
                     , label = Html.text "publishKey"
                     , value = pubKey
                     , placeholder = "pub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+                    , autocomplete = Just "pubnup-publishKey"
                     }
                 , input
                     { active = editable
-                    , type_ = "input"
+                    , type_ = "text"
                     , msg = InputPubNub "sub"
                     , label = Html.text "subscribeKey"
                     , value = subKey
                     , placeholder = "sub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+                    , autocomplete = Just "pubnup-subscribeKey"
                     }
                 ]
 
@@ -385,33 +420,70 @@ input :
     , type_ : String
     , value : String
     , placeholder : String
+    , autocomplete : Maybe String
     }
     -> Html msg
-input c =
+input { active, msg, label, type_, value, placeholder, autocomplete } =
     Html.label []
         [ Html.span
             [ Attr.class "lia-label"
             , Attr.style "margin-top" "2rem"
             ]
-            [ c.label ]
+            [ label ]
         , Html.input
-            [ if c.active then
-                Event.onInput c.msg
+            ([ if active then
+                Event.onInput msg
+
+               else
+                Attr.disabled True
+             , Attr.value value
+             , Attr.style "color" "black"
+             , Attr.type_ type_
+             , Attr.style "width" "100%"
+             , Attr.placeholder placeholder
+             ]
+                |> CList.addWhen
+                    (autocomplete
+                        |> Maybe.map (Attr.attribute "autocomplete")
+                    )
+            )
+            []
+        ]
+
+
+checkbox :
+    { active : Bool
+    , msg : msg
+    , label : Html msg
+    , value : Bool
+    }
+    -> Html msg
+checkbox { active, msg, label, value } =
+    Html.label [ Attr.style "margin-top" "2rem", Attr.class "lia-label" ]
+        [ Html.input
+            [ if active then
+                Event.onClick msg
 
               else
                 Attr.disabled True
-            , Attr.value c.value
             , Attr.style "color" "black"
-            , Attr.type_ c.type_
-            , Attr.style "width" "100%"
-            , Attr.placeholder c.placeholder
+            , Attr.type_ "checkbox"
+            , Attr.checked value
+            , Attr.class "lia-checkbox"
+
+            --, Attr.style "display" "block"
             ]
             []
+        , Html.span
+            [ Attr.class "lia-label"
+            ]
+            [ label ]
         ]
 
 
 type Msg
     = InputGun String
+    | CheckboxGun
     | InputPubNub String String
     | InputMatrix String String
     | InputJitsi String
@@ -420,8 +492,11 @@ type Msg
 update : Msg -> Backend -> Backend
 update msg backend =
     case ( msg, backend ) of
-        ( InputGun urls, GUN _ ) ->
-            GUN urls
+        ( InputGun urls, GUN data ) ->
+            GUN { data | urls = urls }
+
+        ( CheckboxGun, GUN data ) ->
+            GUN { data | persistent = not data.persistent }
 
         ( InputJitsi domain, Jitsi _ ) ->
             Jitsi domain

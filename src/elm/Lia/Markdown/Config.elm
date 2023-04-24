@@ -2,6 +2,7 @@ module Lia.Markdown.Config exposing
     ( Config
     , init
     , setID
+    , setMain
     , setSubViewer
     )
 
@@ -45,7 +46,7 @@ init :
     -> Config sub
 init lang translations settings sync screen id formula media section =
     let
-        config =
+        main =
             inline lang
                 translations
                 settings
@@ -61,7 +62,7 @@ init lang translations settings sync screen id formula media section =
     in
     Config
         settings.mode
-        (viewer config >> List.map (Html.map Script))
+        (viewer main >> List.map (Html.map Script))
         section
         settings.editor
         settings.light
@@ -71,7 +72,18 @@ init lang translations settings sync screen id formula media section =
          else
             screen
         )
-        config
+        main
+
+
+
+--setMain : Inline.Config sub -> Config sub -> Config sub
+
+
+setMain main config =
+    { config
+        | main = main
+        , view = viewer main >> List.map (Html.map Script)
+    }
 
 
 setID : Int -> Config sub -> Config sub

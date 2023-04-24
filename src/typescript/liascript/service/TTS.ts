@@ -97,13 +97,46 @@ export const Service = {
 }
 
 function playback(event: Lia.Event) {
-  console.warn('playback', event)
-
-  const text = event.message.param.text
   const voice = event.message.param.voice
   const lang = event.message.param.lang
+  let text = event.message.param.text
+
+  if (typeof text !== 'string') {
+    text = innerText(text)
+  }
 
   speak(text, voice, lang, event)
+}
+
+function innerText(node) {
+  if (node.nodeType === Node.TEXT_NODE) {
+    // If the child node is a text node, append its text content
+    return node.textContent
+  } else if (node.tagName === 'INPUT') {
+    // If the child node is an input element, append its value
+    return node.value
+  } else if (
+    node.classList.contains('lia-effect__circle') ||
+    node.classList.contains('lia-quiz-multi')
+  ) {
+    return ''
+  } else if (node.classList.contains('lia-dropdown')) {
+    node = node.childNodes[0]
+  }
+
+  let text = ''
+
+  try {
+    if (window.getComputedStyle(node).display !== 'none') {
+      node.childNodes.forEach((n) => {
+        text += innerText(n)
+      })
+    }
+  } catch (e) {
+    console.warn('TTS: could not read innerText -->', e.message)
+  }
+
+  return text
 }
 
 function read(event: Lia.Event) {

@@ -20,16 +20,20 @@
 
 /* Text-Color */
 .text-debug {
-  color: rgb(var(--lia-blue));
+  color: #ADD8E6; // rgb(var(--lia-blue));
+  // font-weight: bold;
 }
 .text-info {
   color: rgb(var(--lia-white));
+  // font-weight: bold;
 }
 .text-warning {
-  color: rgb(var(--lia-yellow));
+  color: #FF0; // rgb(var(--lia-yellow));
+  // font-weight: bold;
 }
 .text-error {
-  color: rgb(var(--lia-red));
+  color: #F00; // rgb(var(--lia-red));
+  // font-weight: bold;
 }
 
 .text-disabled {

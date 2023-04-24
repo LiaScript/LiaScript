@@ -7,10 +7,11 @@ module Lia.Markdown.Quiz.Block.Json exposing
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Inline.Json.Encode as Inline
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 
 
-encode : Quiz -> ( String, JE.Value )
+encode : Quiz Inlines -> ( String, JE.Value )
 encode quiz =
     ( case quiz.solution of
         Text _ ->

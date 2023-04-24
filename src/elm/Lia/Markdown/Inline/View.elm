@@ -7,14 +7,16 @@ module Lia.Markdown.Inline.View exposing
     , viewer
     )
 
+import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
+import Array
 import Conditional.List as CList
 import Dict exposing (Dict)
-import Html exposing (Attribute, Html)
+import Html exposing (Attribute, Html, input)
 import Html.Attributes as Attr exposing (width)
 import Html.Keyed
 import Json.Encode as JE
-import Lia.Markdown.Effect.Script.Types exposing (Msg, Scripts)
+import Lia.Markdown.Effect.Script.Types as Msg exposing (Msg, Scripts)
 import Lia.Markdown.Effect.Script.View as JS
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
@@ -25,9 +27,10 @@ import Lia.Markdown.Inline.Config as Config exposing (Config)
 import Lia.Markdown.Inline.Multimedia exposing (website)
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), combine)
+import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (noTranslate)
+import Lia.Utils exposing (blockKeydown, noTranslate)
 import QRCode
 import Translations exposing (Lang)
 
@@ -122,7 +125,7 @@ view config element =
         Container list attr ->
             list
                 |> viewer config
-                |> Html.span (Attr.style "left" "initial" :: toAttribute attr)
+                |> Html.span (Attr.style "left" "initial" :: Attr.style "text-decoration" "inherit" :: toAttribute attr)
 
         IHTML node attr ->
             htmlView config attr node
@@ -140,6 +143,116 @@ view config element =
 
         Formula mode_ e attr ->
             view config (Container [ Formula mode_ e [] ] attr)
+
+        Quiz input attr ->
+            viewQuiz config input attr
+
+
+viewQuiz : Config sub -> ( String, Int ) -> Parameters -> Html (Msg sub)
+viewQuiz config ( length, id ) attr =
+    case Array.get id config.input.state of
+        Just (Text text) ->
+            Html.input
+                (attr
+                    |> toAttribute
+                    |> List.append
+                        [ Attr.type_ "text"
+                        , Attr.class "lia-input lia-quiz__input"
+                        , Attr.style "padding" "0.1rem 0.5rem"
+                        , Attr.style "text-align" "center"
+                        , Attr.placeholder "?"
+                        , Attr.style "width" length
+                        , Attr.style "font-weight" "inherit"
+                        , Attr.style "text-decoration" "inherit"
+                        , Attr.style "font-style" "inherit"
+                        , Attr.value text
+                        , if config.input.active then
+                            Attr.attribute "oninput" (config.input.on "input" id "this.value")
+
+                          else
+                            Attr.disabled True
+                        , blockKeydown Msg.NoOp
+                        , A11y_Widget.label "quiz answer"
+                        , Attr.class <|
+                            if config.input.active then
+                                ""
+
+                            else
+                                "lia-input--disabled is-disabled"
+                        , Attr.disabled (not <| config.input.active)
+                        ]
+                )
+                []
+
+        Just (Select open [ element ]) ->
+            let
+                options =
+                    config.input.options
+                        |> Array.get id
+                        |> Maybe.withDefault []
+            in
+            Html.span
+                (attr
+                    |> toAttribute
+                    |> List.append
+                        [ Attr.class "lia-dropdown"
+                        , Attr.style "padding" "0 0.5rem"
+                        , if config.input.active then
+                            Attr.attribute "onclick" (config.input.on "toggle" id "true")
+
+                          else
+                            Attr.disabled True
+                        , Attr.class <|
+                            if config.input.active then
+                                ""
+
+                            else
+                                "is-disabled"
+                        ]
+                )
+                [ Html.span
+                    [ Attr.class "lia-dropdown__selected"
+                    , A11y_Widget.hidden False
+                    , A11y_Role.button
+                    , A11y_Widget.expanded open
+                    , Attr.style "font-weight" "inherit"
+                    , Attr.style "text-decoration" "inherit"
+                    , Attr.style "font-style" "inherit"
+                    ]
+                    [ getOption config element options
+                    , Html.i
+                        [ Attr.class <|
+                            "icon"
+                                ++ (if open then
+                                        " icon-chevron-up"
+
+                                    else
+                                        " icon-chevron-down"
+                                   )
+                        , A11y_Role.button
+                        ]
+                        []
+                    ]
+                , options
+                    |> List.indexedMap (showOption config id)
+                    |> Html.div
+                        [ Attr.class "lia-dropdown__options"
+                        , Attr.class <|
+                            if open then
+                                "is-visible"
+
+                            else
+                                "is-hidden"
+                        ]
+                ]
+
+        _ ->
+            Html.text "todo"
+
+
+
+--Select ->
+--  Html.text "SELECT"
 
 
 htmlView : Config sub -> Parameters -> Node Inline -> Html (Msg sub)
@@ -355,7 +468,10 @@ view_inf scripts lang light tooltips translations formulas media =
 
 stringFrom : Config sub -> Maybe Inlines -> Maybe String
 stringFrom config el =
-    case el |> Maybe.map (stringify_ config.scripts config.visible >> String.trim) of
+    case
+        el
+            |> Maybe.map (stringify_ config >> String.trim)
+    of
         Just "" ->
             Nothing
 
@@ -666,3 +782,30 @@ link config alt_ url_ title_ attr =
         |> CList.addWhen (title config title_)
         |> Html.a
         |> (\a -> a (viewer config alt_))
+
+
+getOption : Config sub -> Int -> List Inlines -> Html (Msg sub)
+getOption config id list =
+    case ( id, list ) of
+        ( 0, x :: _ ) ->
+            x
+                |> viewer config
+                |> Html.span []
+
+        ( i, _ :: xs ) ->
+            getOption config (i - 1) xs
+
+        ( _, [] ) ->
+            Html.span [] [ Html.text <| Translations.quizSelection config.lang ]
+
+
+showOption : Config sub -> Int -> Int -> Inlines -> Html (Msg sub)
+showOption config id1 id2 =
+    viewer config
+        >> Html.div []
+        >> List.singleton
+        >> Html.div
+            [ Attr.class "lia-dropdown__option"
+            , Attr.attribute "onclick" (config.input.on "choose" id1 (String.fromInt id2))
+            , A11y_Role.listItem
+            ]
