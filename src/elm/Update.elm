@@ -24,6 +24,7 @@ import Lia.Definition.Types as Definition
 import Lia.Json.Decode
 import Lia.Markdown.Code.Log exposing (Level(..))
 import Lia.Script
+import Library.IPFS as IPFS
 import Model exposing (Model, State(..))
 import Process
 import Return exposing (Return)
@@ -346,9 +347,27 @@ update msg model =
                     |> event2js
                 )
 
+            else if IPFS.isIPFS url then
+                ( model
+                , case Session.getType model.session.url of
+                    Session.Class room _ ->
+                        Session.setClass
+                            { room | course = IPFS.toHTTPS (Const.urlProxy ++ url) url }
+                            model.session
+                            |> .url
+                            |> Session.load
+
+                    _ ->
+                        Session.setQuery
+                            (IPFS.toHTTPS (Const.urlProxy ++ url) url)
+                            model.session
+                            |> .url
+                            |> Session.load
+                )
+
             else
                 ( model
-                , Session.setQuery (Const.urlProxy ++ url) model.session
+                , Session.setQuery (IPFS.toHTTPS (Const.urlProxy ++ url) url) model.session
                     |> .url
                     |> Session.load
                 )
@@ -379,7 +398,7 @@ update msg model =
                     }
 
             else
-                ( model, download Load_Template_Result (Const.urlProxy ++ url) )
+                ( model, download Load_Template_Result (IPFS.toHTTPS (Const.urlProxy ++ url) url) )
 
 
 isOffline : Http.Error -> Bool
