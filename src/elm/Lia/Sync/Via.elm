@@ -21,8 +21,7 @@ import Lia.Utils as Util
 
 
 type Backend
-    = Beaker
-    | Edrys
+    = Edrys
     | GUN { urls : String, persistent : Bool }
     | Jitsi String
     | Matrix { baseURL : String, userId : String, accessToken : String }
@@ -32,9 +31,6 @@ type Backend
 toString : Bool -> Backend -> String
 toString full via =
     case via of
-        Beaker ->
-            "Beaker"
-
         Edrys ->
             "Edrys"
 
@@ -86,9 +82,6 @@ icon : Backend -> Html msg
 icon via =
     Util.icon
         (case via of
-            Beaker ->
-                "icon-beaker icon-xs"
-
             Edrys ->
                 "icon-edrys icon-xs"
 
@@ -112,9 +105,6 @@ icon via =
 fromString : String -> Maybe Backend
 fromString via =
     case via |> String.split "|" |> mapHead String.toLower of
-        [ "beaker" ] ->
-            Just Beaker
-
         [ "edrys" ] ->
             Just Edrys
 
@@ -238,26 +228,6 @@ infoOn : Bool -> Backend -> Html msg
 infoOn supported about =
     box <|
         case ( about, supported ) of
-            ( Beaker, True ) ->
-                [ Html.text "We are glad you are using the "
-                , link "Beaker Browser" "https://beakerbrowser.com"
-                , Html.text ". This allows you also to create and share content directly from within this Browser."
-                , Html.text "This classroom is implemented via the internal "
-                , link "beaker.peersockets" "https://docs.beakerbrowser.com/apis/beaker.peersockets"
-                , Html.text ", which can be found "
-                , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/Beaker"
-                ]
-
-            ( Beaker, False ) ->
-                [ Html.text "Your browser does not support classrooms via the "
-                , link "hyper://" "https://hypercore-protocol.org"
-                , Html.text " protocol."
-                , Html.text " You should try to download the "
-                , link "Beaker Browser" "https://beakerbrowser.com"
-                , Html.text ". It uses a peer-to-peer network, with which you can make and host websites from inside the browser."
-                , Html.text " In the same way, you can also directly create and edit LiaScript courses within this browser and share them."
-                ]
-
             ( Edrys, _ ) ->
                 [ link "Edrys" "https://edrys.org"
                 , Html.text " is an open and modular remote teaching platform (and the first live LMS). "
