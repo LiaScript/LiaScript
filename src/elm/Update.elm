@@ -9,6 +9,7 @@ port module Update exposing
 
 -- UPDATE
 
+import Base64
 import Browser
 import Browser.Events
 import Browser.Navigation as Navigation
@@ -25,6 +26,7 @@ import Lia.Json.Decode
 import Lia.Markdown.Code.Log exposing (Level(..))
 import Lia.Script
 import Library.IPFS as IPFS
+import List.Extra
 import Model exposing (Model, State(..))
 import Process
 import Return exposing (Return)
@@ -575,10 +577,44 @@ removeCR =
 -}
 download : (String -> Result Http.Error String -> Msg) -> String -> Cmd Msg
 download msg url =
-    Http.get
-        { url = url
-        , expect = Http.expectString (msg url)
-        }
+    if String.startsWith "data:text" url then
+        Task.perform
+            (url
+                |> loadFromData
+                |> msg url
+                |> always
+            )
+            (Task.succeed ())
+
+    else
+        Http.get
+            { url = url
+            , expect = Http.expectString (msg url)
+            }
+
+
+loadFromData : String -> Result Http.Error String
+loadFromData url =
+    case String.split "," url of
+        [ protocol, data ] ->
+            if String.endsWith "base64" protocol then
+                case Base64.decode data of
+                    Err info ->
+                        Err (Http.BadBody info)
+
+                    Ok string ->
+                        Ok string
+
+            else
+                case Url.percentDecode data of
+                    Just string ->
+                        Ok string
+
+                    _ ->
+                        Err (Http.BadBody "could not apply percent decode")
+
+        _ ->
+            Err (Http.BadBody "wrong data protocol")
 
 
 getIndex : String -> Model -> ( Model, Cmd Msg )
