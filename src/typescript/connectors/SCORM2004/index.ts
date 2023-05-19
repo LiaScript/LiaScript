@@ -71,9 +71,10 @@ class Connector extends Base.Connector {
     this.id = { quiz: [], survey: [], task: [] }
 
     // try if there is an SCORM 2004 api accessible
-    if (window.API_1484_11 || window.top?.API_1484_11) {
+    let scormAPI = this.getAPI(window)
+    if (scormAPI) {
       LOG('successfully opened API')
-      this.scorm = window.API_1484_11 || window.top?.API_1484_11
+      this.scorm = scormAPI
 
       LOG('loading quizzes ...')
       try {
@@ -107,6 +108,52 @@ class Connector extends Base.Connector {
       WARN('Could not find API')
     }
   }
+  
+  // From https://scorm.com/scorm-explained/technical-scorm/run-time/api-discovery-algorithms/
+
+  // The ScanForAPI() function searches for an object named API_1484_11
+  // in the window that is passed into the function. If the object is
+  // found a reference to the object is returned to the calling function.
+  // If the instance is found the SCO now has a handle to the LMS
+  // provided API Instance. The function searches a maximum number
+  // of parents of the current window. If no object is found the
+  // function returns a null reference. This function also reassigns a
+  // value to the win parameter passed in, based on the number of
+  // parents. At the end of the function call, the win variable will be
+  // set to the upper most parent in the chain of parents.
+  scanForAPI(win: any) {
+    let nFindAPITries = 0
+    let maxTries = 500
+    while ((win.API_1484_11 == null) && (win.parent != null) && (win.parent != win)) {
+      nFindAPITries++
+      if (nFindAPITries > maxTries) {
+         return null
+      }
+      win = win.parent
+    }
+   return win.API_1484_11
+  }
+
+  // The GetAPI() function begins the process of searching for the LMS
+  // provided API Instance. The function takes in a parameter that
+  // represents the current window. The function is built to search in a
+  // specific order and stop when the LMS provided API Instance is found.
+  // The function begins by searching the current window’s parent, if the
+  // current window has a parent. If the API Instance is not found, the
+  // function then checks to see if there are any opener windows. If
+  // the window has an opener, the function begins to look for the
+  // API Instance in the opener window.
+  getAPI(win: any) {
+    let API = null
+    if ((win.parent != null) && (win.parent != win)) {
+        API = ScanForAPI(win.parent)
+    }
+    if ((API == null) && (win.opener != null)) {
+        API = ScanForAPI(win.opener)
+    }
+    return API
+  }
+
 
   initSettings(data: Lia.Settings | null, local = false) {
     return Settings.init(data, false, this.setSettings)
