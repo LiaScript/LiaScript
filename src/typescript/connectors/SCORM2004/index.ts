@@ -108,7 +108,7 @@ class Connector extends Base.Connector {
       WARN('Could not find API')
     }
   }
-  
+
   // From https://scorm.com/scorm-explained/technical-scorm/run-time/api-discovery-algorithms/
 
   // The ScanForAPI() function searches for an object named API_1484_11
@@ -124,14 +124,14 @@ class Connector extends Base.Connector {
   scanForAPI(win: any) {
     let nFindAPITries = 0
     let maxTries = 500
-    while ((win.API_1484_11 == null) && (win.parent != null) && (win.parent != win)) {
+    while (win.API_1484_11 == null && win.parent != null && win.parent != win) {
       nFindAPITries++
       if (nFindAPITries > maxTries) {
-         return null
+        return null
       }
       win = win.parent
     }
-   return win.API_1484_11
+    return win.API_1484_11
   }
 
   // The GetAPI() function begins the process of searching for the LMS
@@ -145,15 +145,14 @@ class Connector extends Base.Connector {
   // API Instance in the opener window.
   getAPI(win: any) {
     let API = null
-    if ((win.parent != null) && (win.parent != win)) {
-        API = ScanForAPI(win.parent)
+    if (win.parent != null && win.parent != win) {
+      API = this.scanForAPI(win.parent)
     }
-    if ((API == null) && (win.opener != null)) {
-        API = ScanForAPI(win.opener)
+    if (API == null && win.opener != null) {
+      API = this.scanForAPI(win.opener)
     }
     return API
   }
-
 
   initSettings(data: Lia.Settings | null, local = false) {
     return Settings.init(data, false, this.setSettings)
@@ -507,9 +506,11 @@ class Connector extends Base.Connector {
 
     try {
       if (this.scorm) {
-        return Utils.decodeJSON(
-          this.scorm.GetValue(`cmi.interactions.${id}.learner_response`)
-        )
+        let val = this.scorm.GetValue(`cmi.interactions.${id}.learner_response`)
+
+        if (val !== '') {
+          return Utils.decodeJSON(val)
+        }
       }
     } catch (e) {
       WARN('getInteraction => ', e)
