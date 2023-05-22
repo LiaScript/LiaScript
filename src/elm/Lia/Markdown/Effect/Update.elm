@@ -208,6 +208,7 @@ execute main sound run_all delay model =
         (javascript
             |> List.map (Script.execute delay)
             --|> (::) (Event "persistent" -1 (JE.string "load"))
+            |> List.reverse
             |> Send
         )
         model
