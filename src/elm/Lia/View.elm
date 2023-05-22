@@ -606,7 +606,7 @@ showModal model =
                     , Attr.style "margin-top" "calc(100vh * 0.08)"
                     ]
                     [ model.url
-                        |> Settings.qrCodeView model.translation True Nothing
+                        |> Settings.qrCodeView model.translation True True Nothing
                         |> Html.map UpdateSettings
                     ]
                 ]
