@@ -110,5 +110,8 @@
   ],
   "directories": {
     "test": "tests"
+  },
+  "dependencies": {
+    "pako": "^2.1.0"
   }
 }
