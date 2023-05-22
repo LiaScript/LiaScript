@@ -21,6 +21,7 @@ import Swipe from './service/Swipe'
 import Sync from './service/Sync'
 import * as TTS from './service/TTS'
 import Translate from './service/Translate'
+import Zip from './service/Zip'
 
 // ----------------------------------------------------------------------------
 // GLOBAL INITIALIZATION
@@ -180,6 +181,7 @@ export class LiaScript {
     Swipe.init(elem, elmSend)
     Translate.init(elmSend)
     Sync.init(elmSend)
+    Zip.init(elmSend)
 
     let connector = this.connector
     jsSubscribe((event: Lia.Event) => {
@@ -229,6 +231,10 @@ export class LiaScript {
 
         case Translate.PORT:
           Translate.handle(event)
+          break
+
+        case Zip.PORT:
+          Zip.handle(event)
           break
 
         default:

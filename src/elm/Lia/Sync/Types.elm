@@ -93,8 +93,7 @@ init supportedBackends =
     in
     { sync =
         { support =
-            [ Via.Beaker
-            , Via.Edrys
+            [ Via.Edrys
             , Via.GUN { urls = Const.gunDB_ServerURL, persistent = False }
             , Via.Jitsi Const.jitsi_Domain
             , Via.Matrix { baseURL = "", userId = "", accessToken = "" }
