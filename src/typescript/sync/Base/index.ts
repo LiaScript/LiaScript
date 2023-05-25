@@ -33,7 +33,7 @@ function dynamicGossip(self: Sync) {
   let timerID: number | null = null
 
   function delay() {
-    return (self.db.getPeers().length + 1) * 2000
+    return (self.db.getPeers().length + 1) * 200 + 2000
   }
 
   function publish() {
