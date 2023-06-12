@@ -44,6 +44,7 @@ voices =
     , toVoice "Czech" "cz" True False
     , toVoice "Danish" "da" True False
     , toVoice "Deutsch" "de" True True
+    , toVoice "German" "de" True True
     , toVoice "Dutch" "nl" True True
     , toVoice "Esperanto" "eo" False True
     , toVoice "Estonian" "et" False True
