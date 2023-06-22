@@ -202,10 +202,12 @@ const Service = {
       'keydown',
       (e) => {
         switch (e.key) {
+          case 'PageDown':
           case 'ArrowRight': {
             sendReply(elmSend, Dir.left)
             break
           }
+          case 'PageUp':
           case 'ArrowLeft': {
             sendReply(elmSend, Dir.right)
 

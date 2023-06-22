@@ -6,7 +6,7 @@ import Accessibility.Widget as A11y_Widget
 import Array
 import Const
 import Dict exposing (Dict)
-import Html exposing (Html)
+import Html exposing (Html, section)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
@@ -132,7 +132,7 @@ viewSlide screen model =
                     model.url
                     model.repositoryUrl
                     model.settings
-                    model.definition
+                    (Definition.merge model.definition section.definition)
                     model.sync
                 , viewPanes screen model
                 , slideBottom
