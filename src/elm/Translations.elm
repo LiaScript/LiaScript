@@ -2654,6 +2654,73 @@ infoAuthor lang =
             "Author: "
 
 
+infoAuthors : Lang -> String
+infoAuthors lang =
+    case lang of
+        Am ->
+            "ሰላም ያለፈውን: "
+
+        Ar ->
+            "المؤلفون"
+
+        Bg ->
+            "Автори: "
+
+        Bn ->
+            "লেখকবৃন্দ: "
+
+        De ->
+            "Autoren: "
+
+        Es ->
+            "Autores"
+
+        Fa ->
+            "نویسندگان: "
+
+        Fr ->
+            "Auteurs : "
+
+        Hi ->
+            "लेखकों:"
+
+        Hy ->
+            "հեղինակներ: "
+
+        Ja ->
+            "著者："
+
+        Ko ->
+            "저자: "
+
+        Nl ->
+            "Auteurs: "
+
+        Pa ->
+            "ਲੇਖਕ: "
+
+        Pt ->
+            "Autores: "
+
+        Ru ->
+            "авторы: "
+
+        Sw ->
+            "Waandishi: "
+
+        Tw ->
+            "作者: "
+
+        Uk ->
+            "автори: "
+
+        Zh ->
+            "作者: "
+
+        _ ->
+            "Authors: "
+
+
 infoDate : Lang -> String
 infoDate lang =
     case lang of
@@ -2731,13 +2798,13 @@ infoEmail lang =
             "البريد الإلكتروني"
 
         Bg ->
-            "eMail: "
+            "Имейл: "
 
         Bn ->
-            "ইমেল: "
+            "ইমেইল: "
 
         De ->
-            "e-Mail: "
+            "E-Mail: "
 
         Es ->
             "email"
@@ -2746,34 +2813,34 @@ infoEmail lang =
             "ایمیل: "
 
         Fr ->
-            "E-mail : "
+            "Email : "
 
         Hi ->
             "ईमेल:"
 
         Hy ->
-            "էլ․ փոստ: "
+            "էլ. փոստ: "
 
         Ja ->
             "メール："
 
         Ko ->
-            "메일: "
+            "이메일: "
 
         Nl ->
-            "e-email: "
+            "E-mail: "
 
         Pa ->
             "ਈਮੇਲ: "
 
         Pt ->
-            "e-mail: "
+            "Email: "
 
         Ru ->
             "эл. почта: "
 
         Sw ->
-            "eMail: "
+            "Barua pepe: "
 
         Tw ->
             "電郵: "
@@ -2785,7 +2852,7 @@ infoEmail lang =
             "電郵: "
 
         _ ->
-            "eMail: "
+            "Email: "
 
 
 infoVersion : Lang -> String
