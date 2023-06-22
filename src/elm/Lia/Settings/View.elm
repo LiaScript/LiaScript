@@ -369,7 +369,12 @@ viewInformation lang tabbable repositoryURL definition =
                 [ Html.text definition.email ]
             ]
         |> CList.addIf (definition.author /= "")
-            [ bold <| Trans.infoAuthor lang
+            [ bold <|
+                if String.contains ";" definition.author then
+                    Trans.infoAuthors lang
+
+                else
+                    Trans.infoAuthor lang
             , Html.text definition.author
             ]
         |> CList.addIf (definition.comment /= [])
