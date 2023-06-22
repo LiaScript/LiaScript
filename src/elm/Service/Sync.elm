@@ -3,6 +3,7 @@ module Service.Sync exposing (..)
 import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Sync.Via as Via
+import Library.IPFS as IPFS
 import Service.Event as Event exposing (Event)
 
 
@@ -22,7 +23,12 @@ connect param =
       )
     , ( "config"
       , JE.object
-            [ ( "course", JE.string param.course )
+            [ ( "course"
+              , param.course
+                    |> IPFS.origin
+                    |> Maybe.withDefault param.course
+                    |> JE.string
+              )
             , ( "room", JE.string param.room )
             , ( "password"
               , if String.isEmpty param.password then

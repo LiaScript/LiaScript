@@ -8,6 +8,7 @@ module Lia.Definition.Types exposing
     , add_translation
     , default
     , getIcon
+    , merge
     , setPersistent
     )
 
@@ -170,3 +171,35 @@ setPersistent b def =
                 )
                 def.macro
     }
+
+
+{-| Merge the main and the section definition if the section definition is
+present.
+-}
+merge : Definition -> Maybe Definition -> Definition
+merge main sub =
+    case sub of
+        Nothing ->
+            main
+
+        Just def ->
+            { main
+                | author =
+                    if String.isEmpty def.author then
+                        main.author
+
+                    else
+                        def.author
+                , email =
+                    if String.isEmpty def.email then
+                        main.email
+
+                    else
+                        def.email
+                , date =
+                    if String.isEmpty def.date then
+                        main.date
+
+                    else
+                        def.date
+            }

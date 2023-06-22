@@ -239,6 +239,10 @@ function speak(text: string, voice: string, lang: string, event: Lia.Event) {
       }
     }
   } else if (window.responsiveVoice) {
+    // fix for responsiveVoice not working with German
+    if (voice.startsWith('German')) {
+      voice.replace('German', 'Deutsch')
+    }
     responsiveSpeak(text, voice, event)
   }
 }
@@ -307,6 +311,11 @@ function toKey(lang: string, voice: string) {
 }
 
 function getVoice(lang: string, voice: string) {
+  // fix for browserTTS not working with Deutsch
+  if (voice.startsWith('Deutsch')) {
+    voice.replace('Deutsch', 'German')
+  }
+
   const key = toKey(lang, voice)
 
   if (browserVoices[key]) {
