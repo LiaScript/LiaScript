@@ -3,7 +3,6 @@ import log from '../log'
 var sync: any
 var elmSend: Lia.Send | null
 
-var Beaker
 var Edrys
 var Jitsi
 var Matrix
@@ -14,8 +13,6 @@ const Service = {
   PORT: 'sync',
 
   supported: [
-    // beaker is only supported within the beaker-browser
-    window.beaker && window.location.protocol === 'hyper:' ? 'beaker' : '',
     // remove these strings if you want to enable or disable certain sync support
     'edrys',
     'gun',
@@ -45,18 +42,6 @@ const Service = {
           }
 
           switch (event.message.param.backend) {
-            case 'beaker':
-              if (!Beaker) {
-                import('../../sync/Beaker/index').then((e) => {
-                  Beaker = e
-                  Service.handle(event)
-                })
-                return
-              }
-
-              sync = new Beaker.Sync(cbConnection, elmSend)
-              break
-
             case 'edrys':
               if (!Edrys) {
                 import('../../sync/Edrys/index').then((e) => {

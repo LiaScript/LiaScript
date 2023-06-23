@@ -369,7 +369,12 @@ viewInformation lang tabbable repositoryURL definition =
                 [ Html.text definition.email ]
             ]
         |> CList.addIf (definition.author /= "")
-            [ bold <| Trans.infoAuthor lang
+            [ bold <|
+                if String.contains ";" definition.author then
+                    Trans.infoAuthors lang
+
+                else
+                    Trans.infoAuthor lang
             , Html.text definition.author
             ]
         |> CList.addIf (definition.comment /= [])
@@ -445,14 +450,19 @@ submenu grouping isActive =
         |> Html.div
 
 
-qrCodeView : Lang -> Bool -> Maybe (List (Attribute Msg) -> List (Attribute Msg)) -> String -> Html Msg
-qrCodeView lang tabbable grouping url =
+qrCodeView : Lang -> Bool -> Bool -> Maybe (List (Attribute Msg) -> List (Attribute Msg)) -> String -> Html Msg
+qrCodeView lang tabbable marginBig grouping url =
     url
         |> QRCode.fromString
         |> Result.map
             (QRCode.toSvgWithoutQuietZone
                 [ Attr.style "background-color" "#FFF"
-                , Attr.style "padding" "0.4rem"
+                , Attr.style "padding" <|
+                    if marginBig then
+                        "2.4rem"
+
+                    else
+                        "0.4rem"
                 , Attr.alt (Trans.qrCode lang ++ ": " ++ url)
                 ]
                 >> List.singleton
@@ -790,7 +800,7 @@ menuShare url sync lang tabbable settings =
         ]
         []
     , [ if settings.hasShareApi /= Nothing then
-            qrCodeView lang tabbable (Just grouping) url
+            qrCodeView lang tabbable False (Just grouping) url
 
         else
             Html.text ""

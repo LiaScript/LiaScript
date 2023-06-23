@@ -9,6 +9,7 @@ port module Update exposing
 
 -- UPDATE
 
+import Base64
 import Browser
 import Browser.Events
 import Browser.Navigation as Navigation
@@ -24,11 +25,13 @@ import Lia.Definition.Types as Definition
 import Lia.Json.Decode
 import Lia.Markdown.Code.Log exposing (Level(..))
 import Lia.Script
+import Library.IPFS as IPFS
 import Model exposing (Model, State(..))
 import Process
 import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
+import Service.Zip
 import Session exposing (Screen)
 import Task
 import Translations
@@ -146,12 +149,12 @@ update msg model =
                     case Index.decodeGet param of
                         Ok ( url, course ) ->
                             ( { model | preload = course }
-                            , download Load_ReadMe_Result url
+                            , download False url
                             )
 
                         Err _ ->
                             ( { model | preload = Nothing }
-                            , download Load_ReadMe_Result model.lia.readme
+                            , download False model.lia.readme
                             )
 
                 ( Nothing, _, ( "index_restore", param ) ) ->
@@ -166,7 +169,7 @@ update msg model =
 
                         Err _ ->
                             ( { model | preload = Nothing }
-                            , download Load_ReadMe_Result model.lia.readme
+                            , download False model.lia.readme
                             )
 
                 ( Nothing, _, ( "lang", param ) ) ->
@@ -191,6 +194,17 @@ update msg model =
 
                         _ ->
                             ( model, Cmd.none )
+
+                ( Nothing, _, ( "unzip", param ) ) ->
+                    update
+                        (case Service.Zip.decode param of
+                            ( False, id, result ) ->
+                                Load_ReadMe_Result id result
+
+                            ( True, id, result ) ->
+                                Load_Template_Result id result
+                        )
+                        model
 
                 _ ->
                     update
@@ -346,9 +360,27 @@ update msg model =
                     |> event2js
                 )
 
+            else if IPFS.isIPFS url then
+                ( model
+                , case Session.getType model.session.url of
+                    Session.Class room _ ->
+                        Session.setClass
+                            { room | course = IPFS.toHTTPS (Const.urlProxy ++ url) url }
+                            model.session
+                            |> .url
+                            |> Session.load
+
+                    _ ->
+                        Session.setQuery
+                            (IPFS.toHTTPS (Const.urlProxy ++ url) url)
+                            model.session
+                            |> .url
+                            |> Session.load
+                )
+
             else
                 ( model
-                , Session.setQuery (Const.urlProxy ++ url) model.session
+                , Session.setQuery (IPFS.toHTTPS (Const.urlProxy ++ url) url) model.session
                     |> .url
                     |> Session.load
                 )
@@ -379,7 +411,7 @@ update msg model =
                     }
 
             else
-                ( model, download Load_Template_Result (Const.urlProxy ++ url) )
+                ( model, download True (IPFS.toHTTPS (Const.urlProxy ++ url) url) )
 
 
 isOffline : Http.Error -> Bool
@@ -526,7 +558,7 @@ load model lia code templates =
                 , size = String.length code_ |> toFloat
               }
             , templates
-                |> List.map (download Load_Template_Result)
+                |> List.map (download True)
                 |> (::) (message LiaParse)
                 |> Cmd.batch
             )
@@ -554,12 +586,72 @@ removeCR =
 
 {-| **@private:** Used by multiple times to connect a download with a message.
 -}
-download : (String -> Result Http.Error String -> Msg) -> String -> Cmd Msg
-download msg url =
-    Http.get
-        { url = url
-        , expect = Http.expectString (msg url)
-        }
+download : Bool -> String -> Cmd Msg
+download template url =
+    if String.startsWith "data:text" url then
+        loadFromData template url
+
+    else
+        Http.get
+            { url = url
+            , expect =
+                Http.expectString
+                    (if template then
+                        Load_Template_Result url
+
+                     else
+                        Load_ReadMe_Result url
+                    )
+            }
+
+
+toCmd msg result =
+    Task.perform
+        (result |> msg |> always)
+        (Task.succeed ())
+
+
+loadFromData : Bool -> String -> Cmd Msg
+loadFromData template url =
+    let
+        msg =
+            if template then
+                Load_Template_Result url
+
+            else
+                Load_ReadMe_Result url
+    in
+    case String.split "," url of
+        [ protocol, data ] ->
+            if String.endsWith "gzip;base64" protocol then
+                { template = template
+                , id = url
+                , data = data
+                }
+                    |> Service.Zip.decompress
+                    |> event2js
+
+            else
+                toCmd msg <|
+                    if String.endsWith "base64" protocol then
+                        case Base64.decode data of
+                            Err info ->
+                                Err (Http.BadBody info)
+
+                            Ok string ->
+                                Ok string
+
+                    else
+                        case Url.percentDecode data of
+                            Just string ->
+                                Ok string
+
+                            _ ->
+                                Err (Http.BadBody "could not apply percent decode")
+
+        _ ->
+            toCmd msg <|
+                Err (Http.BadBody "wrong data protocol")
 
 
 getIndex : String -> Model -> ( Model, Cmd Msg )
