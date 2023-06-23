@@ -1,6 +1,6 @@
 {
   "name": "liascript",
-  "version": "0.12.2",
+  "version": "0.12.3",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -112,5 +112,8 @@
   ],
   "directories": {
     "test": "tests"
+  },
+  "dependencies": {
+    "pako": "^2.1.0"
   }
 }
