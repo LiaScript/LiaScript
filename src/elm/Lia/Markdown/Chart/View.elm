@@ -1357,8 +1357,7 @@ encode withColor chart =
     let
         ( min, max ) =
             chart.diagrams
-                |> Dict.toList
-                |> List.map Tuple.second
+                |> Dict.values
                 |> List.concatMap
                     (\diagram ->
                         List.map .x <|
