@@ -1,7 +1,7 @@
 import { LiaScript } from '../../typescript/liascript/index'
 import { Connector } from '../../typescript/connectors/Base/index'
 
-import customCSS from 'bundle-text:../../scss/main.scss'
+require('../../scss/main.scss')
 
 import '../../typescript/webcomponents/editor'
 import '../../typescript/webcomponents/formula'
@@ -37,18 +37,15 @@ customElements.define(
       this.course = this.course.trim()
 
       this.courseURL = this.getAttribute('src')
-      //this.innerHTML = ''
-
-      const source = this.courseURL ? `src="${this.courseURL}"` : null
-
-      const course = source ? undefined : this.course
 
       this.embed = this.getAttribute('embed') !== 'false'
+
+      console.warn('embed', this.embed)
+
       this.responsiveVoiceKey = this.getAttribute('responsiveVoiceKey')
       this.scriptUrl = document.currentScript?.src
 
-      // shadowRoot.appendChild(this.container)
-      if (this.embed) {
+      if (this.embed && document.location.href.match('LiaScript=') === null) {
         const shadowRoot = this.attachShadow({
           mode: 'closed',
         })
@@ -72,36 +69,32 @@ customElements.define(
 
         this.style.display = 'block'
 
-        iframe.src = 'http://localhost:1234/?README.md#1'
+        iframe.src += '?LiaScript=' + this.courseURL
         iframe.name = 'liascript'
 
         shadowRoot.append(iframe)
-
-        iframe.contentDocument?.write(`<!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-          <style>
-            ${customCSS}
-          </style>
-          <script type="module" src="${this.scriptUrl}"></script>
-        <body>
-          <lia-script ${source} embed="false">${course}</lia-script>
-        </body>
-        </html>`)
-
-        iframe.contentDocument?.close()
       } else {
-        const self = this
-        setTimeout(function () {
-          self.initLia()
-        }, 1)
+        let course = ''
+
+        if (document.location.href.match('LiaScript=') !== null) {
+          course = document.location.href.split('LiaScript=')[1]
+        }
+
+        if (course && this.courseURL === course) {
+          const self = this
+          setTimeout(function () {
+            self.initLia()
+          }, 1)
+        }
       }
     }
 
     initLia() {
       this.courseURL = this.getAttribute('src')
+
+      if (document.location.href.match('LiaScript=') !== null) {
+        this.courseURL = document.location.href.split('LiaScript=')[1]
+      }
 
       // Load the Markdown document defined by the src attribute
       if (typeof this.courseURL === 'string') {
