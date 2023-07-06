@@ -11,6 +11,8 @@ import '../../typescript/webcomponents/preview-lia'
 import '../../typescript/webcomponents/tooltip/index'
 import '../../typescript/webcomponents/format'
 
+import { allowedProtocol } from '../../typescript/helper'
+
 customElements.define(
   'lia-script',
 
@@ -31,16 +33,30 @@ customElements.define(
       }
     }
 
+    getCourseURL(): string | null {
+      let url: string | null = null
+
+      if (this.embed && document.location.href.match('LiaScript=') !== null) {
+        url = document.location.href.split('LiaScript=')[1]
+      } else {
+        url = this.getAttribute('src')
+      }
+
+      if (typeof url === 'string' && !allowedProtocol(url)) {
+        url = new URL(url, document.location.href).href
+      }
+
+      return url
+    }
+
     connectedCallback() {
       this.course = this.innerHTML || ''
 
       this.course = this.course.trim()
 
-      this.courseURL = this.getAttribute('src')
+      this.courseURL = this.getCourseURL()
 
       this.embed = this.getAttribute('embed') !== 'false'
-
-      console.warn('embed', this.embed)
 
       this.responsiveVoiceKey = this.getAttribute('responsiveVoiceKey')
       this.scriptUrl = document.currentScript?.src
@@ -80,7 +96,10 @@ customElements.define(
           course = document.location.href.split('LiaScript=')[1]
         }
 
-        if (course && this.courseURL === course) {
+        if (
+          (course && this.courseURL === course) ||
+          (!this.embed && this.courseURL)
+        ) {
           const self = this
           setTimeout(function () {
             self.initLia()
@@ -90,9 +109,9 @@ customElements.define(
     }
 
     initLia() {
-      this.courseURL = this.getAttribute('src')
+      this.courseURL = this.getCourseURL()
 
-      if (document.location.href.match('LiaScript=') !== null) {
+      if (this.embed && document.location.href.match('LiaScript=') !== null) {
         this.courseURL = document.location.href.split('LiaScript=')[1]
       }
 
