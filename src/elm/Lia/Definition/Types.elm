@@ -202,4 +202,5 @@ merge main sub =
 
                     else
                         def.date
+                , macro = Dict.union def.macro main.macro
             }
