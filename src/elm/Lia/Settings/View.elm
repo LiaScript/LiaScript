@@ -80,6 +80,12 @@ design model =
 
             Slides ->
                 "lia-mode--slides"
+    , Attr.class <|
+        if model.navigation then
+            "lia-navigation--visible"
+
+        else
+            "lia-navigation--hidden"
     ]
 
 
@@ -201,8 +207,28 @@ viewModes : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Se
 viewModes grouping lang tabbable settings =
     [ viewMode grouping lang tabbable Textbook settings.mode "lia-mode-textbook" "icon-book" "mb-1"
     , viewMode grouping lang tabbable Presentation settings.mode "lia-mode-presentation" "icon-presentation" "mb-1"
-    , viewMode grouping lang tabbable Slides settings.mode "lia-mode-slides" "icon-slides" ""
+    , viewMode grouping lang tabbable Slides settings.mode "lia-mode-slides" "icon-slides" "mb-2"
+    , viewHideNavigation grouping lang tabbable settings
     ]
+
+
+viewHideNavigation grouping lang tabbable settings =
+    Html.label
+        [ Attr.class "lia-label"
+        , A11y_Widget.hidden (not tabbable)
+        ]
+        [ Html.input
+            (grouping
+                [ Attr.class "lia-checkbox"
+                , Attr.type_ "checkbox"
+                , Attr.checked (not settings.navigation)
+                , onClick (Toggle Navigation)
+                , A11y_Key.tabbable tabbable
+                ]
+            )
+            []
+        , Html.text "Hide Navigation"
+        ]
 
 
 viewMode : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Mode -> Mode -> String -> String -> String -> Html Msg

@@ -49,6 +49,7 @@ type Toggle
     | TranslateWithGoogle
     | Tooltips
     | PreferBrowserTTS
+    | Navigation
 
 
 update :
@@ -244,6 +245,10 @@ update main msg model =
             { model | tts = { tts | preferBrowser = newPreference } }
                 |> Return.val
                 |> Return.batchEvent (Service.TTS.preferBrowser newPreference)
+
+        Toggle Navigation ->
+            { model | navigation = not model.navigation }
+                |> log Nothing
 
         Toggle TranslateWithGoogle ->
             { model

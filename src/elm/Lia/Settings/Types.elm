@@ -32,6 +32,7 @@ type alias Settings =
     , showQRCode : Bool
     , tts : TTS
     , chat : { show : Bool, updates : Bool }
+    , navigation : Bool
     }
 
 
@@ -86,6 +87,7 @@ init hasShareApi mode =
         { show = False
         , updates = False
         }
+    , navigation = True
     }
 
 
