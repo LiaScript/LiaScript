@@ -155,6 +155,10 @@ $slide-margin-left-textbook: 19rem !default;
   }
 
   &.lia-navigation--hidden {
+    .lia-slide__content {
+      margin: 0 2rem;
+    }
+
     .lia-slide {
       height: calc(100vh - 14.2rem + 7rem);
     }
@@ -164,8 +168,8 @@ $slide-margin-left-textbook: 19rem !default;
     }
   
     .lia-header {
-      height: 4px;
-      padding: 0px;
+      max-height: 4px;
+      padding: unset;
   
       .lia-header__left, .lia-header__middle, .lia-header__right {
         display: none;
@@ -173,17 +177,19 @@ $slide-margin-left-textbook: 19rem !default;
     }
   
     .lia-header:hover {
-      height: 7.8rem;
+      max-height: unset;
       padding: 1rem 0;
   
       .lia-header__left, .lia-header__middle, .lia-header__right {
         display: block;
       }
     }
+
+
   
     .lia-slide__footer {
-      position: absolute;
-    max-height: 8px;
+      position: sticky;
+      max-height: 8px;
      // padding: 0px;
       bottom: 0px;
   
@@ -191,8 +197,8 @@ $slide-margin-left-textbook: 19rem !default;
     }
   
     .lia-slide__footer:hover {
-      position: absolute;
-    max-height: 400px;
+      position: sticky;
+      max-height: 400px;
     //  height: 8.5rem;
     //  padding: 1rem 0;
       bottom: 0px;
