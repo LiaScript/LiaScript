@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.12.3
+version:  0.12.4
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,12 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.12.4** (11/07/2023)
+
+fix: Loading external CSS on Chrome-based browsers
+improve: `icon: url` can now set per slide
+chore: Update npm packages (remove matrix-crdt)
 
 **0.12.3** (22/06/2023)
 
