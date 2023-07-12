@@ -196,21 +196,14 @@ $slide-margin-left-textbook: 19rem !default;
       bottom: unset;
     }
 
-
-    .lia-notes {
-      position: fixed;
-      max-height: 8px;
-      //padding: 0px;
-      bottom: 0px;
-      z-index: 100;
+    @include breakpoint("lg", "max") {
+      .lia-notes {
+        //position: fixed;
+        max-height: 4px;
+        //padding: 0px;
+        bottom: 0px;
+      }
     }
-
-    .lia-notes:hover {
-      position: unset;
-      max-height: unset;
-      //padding: 1rem 0;
-      bottom: unset;
-    }    
   
     .lia-slide__container {
       margin-top: 0px;
