@@ -247,7 +247,15 @@ update main msg model =
                 |> Return.batchEvent (Service.TTS.preferBrowser newPreference)
 
         Toggle Navigation ->
-            { model | navigation = not model.navigation }
+            { model
+                | navigation = not model.navigation
+                , support_menu =
+                    if model.navigation then
+                        False
+
+                    else
+                        model.support_menu
+            }
                 |> log Nothing
 
         Toggle TranslateWithGoogle ->
