@@ -1,5 +1,6 @@
 module Lia.Settings.View exposing
     ( btnIndex
+    , btnNavigation
     , btnSupport
     , design
     , header
@@ -208,25 +209,29 @@ viewModes grouping lang tabbable settings =
     [ viewMode grouping lang tabbable Textbook settings.mode "lia-mode-textbook" "icon-book" "mb-1"
     , viewMode grouping lang tabbable Presentation settings.mode "lia-mode-presentation" "icon-presentation" "mb-1"
     , viewMode grouping lang tabbable Slides settings.mode "lia-mode-slides" "icon-slides" "mb-2"
-    , viewHideNavigation grouping lang tabbable settings
+    , btnNavigation (Just grouping) lang tabbable
     ]
 
 
-viewHideNavigation grouping lang tabbable settings =
+btnNavigation : Maybe (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Html Msg
+btnNavigation grouping lang tabbable =
     Html.label
         [ Attr.class "lia-label"
         , A11y_Widget.hidden (not tabbable)
         ]
-        [ Html.input
-            (grouping
-                [ Attr.class "lia-checkbox"
-                , Attr.type_ "checkbox"
-                , Attr.checked (not settings.navigation)
-                , onClick (Toggle Navigation)
-                , A11y_Key.tabbable tabbable
-                ]
+        [ btnIcon
+            { title = "Hide Navigation"
+            , tabbable = tabbable
+            , icon = "icon-slides"
+            , msg = Just (Toggle Navigation)
+            }
+            (case grouping of
+                Just grp ->
+                    grp [ Attr.class "lia-btn--transparent" ]
+
+                _ ->
+                    [ Attr.id "lia-btn-nav", Attr.class "lia-btn--transparent" ]
             )
-            []
         , Html.text "Hide Navigation"
         ]
 
