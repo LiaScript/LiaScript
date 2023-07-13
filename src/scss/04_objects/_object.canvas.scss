@@ -162,38 +162,27 @@ $slide-margin-left-textbook: 19rem !default;
     .lia-slide {
       height: 100vh;
     }
-  
-    .lia-header {
-      max-height: 4px;
-      padding: unset;
-  
-      .lia-header__left, .lia-header__middle, .lia-header__right {
-        display: none;
-      }
+
+    #lia-btn-toc {
+      //transform: translate(2.2rem, -50%);
+      top: 0.8rem;
+      padding: 0;
     }
-  
-    .lia-header:hover {
-      max-height: unset;
-      padding: 1rem 0;
-  
-      .lia-header__left, .lia-header__middle, .lia-header__right {
-        display: block;
+
+    .lia-toc--closed {
+      & #lia-btn-toc {
+        transform: translate(2.5rem, -50%);
       }
     }
 
-    .lia-slide__footer {
-      position: fixed;
-      max-height: 8px;
-      //padding: 0px;
-      bottom: 0px;
-      z-index: 100;
+    .lia-toc--open {
+      & #lia-btn-toc {
+        transform: translate(0rem, -50%);
+      }
     }
-
-    .lia-slide__footer:hover {
-      position: unset;
-      max-height: unset;
-      //padding: 1rem 0;
-      bottom: unset;
+  
+    .lia-header, .lia-slide__footer {
+      display: none;
     }
 
     @include breakpoint("lg", "max") {
