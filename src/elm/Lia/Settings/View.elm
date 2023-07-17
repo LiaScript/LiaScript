@@ -1,6 +1,5 @@
 module Lia.Settings.View exposing
     ( btnIndex
-    , btnNavigation
     , btnSupport
     , design
     , header
@@ -209,30 +208,35 @@ viewModes grouping lang tabbable settings =
     [ viewMode grouping lang tabbable Textbook settings.mode "lia-mode-textbook" "icon-book" "mb-1"
     , viewMode grouping lang tabbable Presentation settings.mode "lia-mode-presentation" "icon-presentation" "mb-1"
     , viewMode grouping lang tabbable Slides settings.mode "lia-mode-slides" "icon-slides" "mb-2"
-    , btnNavigation (Just grouping) lang tabbable
+    , btnNavigation grouping lang tabbable settings.navigation
     ]
 
 
-btnNavigation : Maybe (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Html Msg
-btnNavigation grouping lang tabbable =
-    Html.label
-        [ Attr.class "lia-label"
-        , A11y_Widget.hidden (not tabbable)
-        ]
-        [ btnIcon
-            { title = "Hide Navigation"
-            , tabbable = tabbable
-            , icon = "icon-slides"
-            , msg = Just (Toggle Navigation)
-            }
-            (case grouping of
-                Just grp ->
-                    grp [ Attr.class "lia-btn--transparent" ]
+btnNavigation : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Bool -> Html Msg
+btnNavigation grouping lang tabbable navigation =
+    Html.button
+        (grouping
+            [ Attr.class <| "lia-btn lia-btn--transparent "
+            , onClick (Toggle Navigation)
+            , A11y_Key.onKeyDown [ A11y_Key.enter (Toggle Navigation) ]
+            , A11y_Key.tabbable tabbable
+            , A11y_Widget.hidden (not tabbable)
+            , A11y_Role.menuItem
+            ]
+        )
+        [ Html.i
+            [ A11y_Widget.hidden True
+            , Attr.class <|
+                "lia-btn__icon icon "
+                    ++ (if navigation then
+                            "icon-navigation-hide"
 
-                _ ->
-                    [ Attr.id "lia-btn-nav", Attr.class "lia-btn--transparent" ]
-            )
-        , Html.text "Hide Navigation"
+                        else
+                            "icon-navigation-show"
+                       )
+            ]
+            []
+        , Html.span [ Attr.class "lia-btn__text" ] [ Html.text "Navigation" ]
         ]
 
 
