@@ -165,10 +165,30 @@ $slide-margin-left-textbook: 19rem !default;
       &__content {
         margin: 0 2rem;
       }
+    }
 
-      &__footer {
-        display: none;
-      }
+    #lia-btn-prev,
+    #lia-btn-next {
+      position: absolute;
+      color: rgb(var(--color-highlight));
+      bottom: 0.25rem;
+    }
+
+    #lia-btn-prev {
+      left: 0;
+    }
+
+    #lia-btn-next {
+      right: 0.8rem;
+    }
+
+    .lia-pagination {
+      margin-bottom: 0px;
+    }
+
+    .lia-pagination__current,
+    .lia-responsive-voice {
+      display: none;
     }
 
     #lia-btn-toc {
