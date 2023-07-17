@@ -47,7 +47,7 @@ $slide-margin-left-textbook: 19rem !default;
     &.lia-toc--visible.lia-support--visible {
       #lia-btn-toc,
       #lia-btn-support {
-        transform: translate(-3rem, -50%);
+        transform: translate(-3rem, -50%) !important;
       }
     }
   }
@@ -176,6 +176,12 @@ $slide-margin-left-textbook: 19rem !default;
       padding: 0;
     }
 
+    &.lia-toc--hidden.lia-support--visible {
+      #lia-btn-toc {
+        display: none;
+      }
+    }
+
     .lia-toc--closed {
       & #lia-btn-toc {
         transform: translate(2.5rem, -50%);
@@ -198,11 +204,45 @@ $slide-margin-left-textbook: 19rem !default;
       z-index: 100;
       top: 0px;
       width: 2rem;
+      border-bottom: unset;
+
+      @include breakpoint('md', 'max') {
+        top: 2rem;
+      }
     }
 
     .lia-support-menu {
       &__nav {
         flex-direction: column;
+      }
+
+      &--open {
+        .lia-support-menu__toggler {
+          transform: translate(0.25rem, -50%);
+          z-index: 1000;
+        }
+
+        #lia-btn-toc {
+          transform: translate(0rem, -50%);
+        }
+      }
+
+      &--closed {
+        .lia-support-menu__toggler {
+          transform: translate(-4rem, -50%);
+        }
+      }
+
+      &__toggler {
+        top: 1.8rem;
+        right: 2rem;
+        padding: 0;
+
+        button {
+          // Styles for buttons within any level of sub-children
+          padding-right: 0px;
+          padding-left: 0px;
+        }
       }
 
       @include breakpoint('md', 'min') {
