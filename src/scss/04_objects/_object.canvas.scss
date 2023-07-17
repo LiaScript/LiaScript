@@ -156,14 +156,25 @@ $slide-margin-left-textbook: 19rem !default;
 
   &.lia-navigation--hidden {
     .lia-slide {
-      height: 100vh;
-
       &__container {
         margin-top: 0px;
       }
 
       &__content {
         margin: 0 2rem;
+      }
+    }
+
+    .lia-mode--slides {
+      .lia-slide {
+        height: 70vh !important;
+      }
+    }
+
+    .lia-canvas.lia-mode--textbook,
+    .lia-canvas.lia-mode--presentation {
+      .lia-slide {
+        height: 100vh;
       }
     }
 
@@ -280,15 +291,6 @@ $slide-margin-left-textbook: 19rem !default;
             padding-left: 0px;
           }
         }
-      }
-    }
-
-    @include breakpoint('lg', 'max') {
-      .lia-notes {
-        //position: fixed;
-        max-height: 4px;
-        //padding: 0px;
-        bottom: 0px;
       }
     }
   }
