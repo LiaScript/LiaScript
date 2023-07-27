@@ -276,6 +276,19 @@ $slide-margin-left-textbook: 19rem !default;
         }
       }
 
+      &__item {
+        > button {
+          // Styles for buttons within any level of sub-children
+          font-size: 1.4rem;
+          color: rgba(var(--color-highlight), 0.75);
+
+          &:hover {
+            font-size: 2.4rem;
+            color: unset;
+          }
+        }
+      }
+
       @include breakpoint('md', 'min') {
         &__submenu {
           right: 3rem;
