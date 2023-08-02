@@ -96,7 +96,7 @@ export class Connector {
 
             case 'getFromIndex': {
               try {
-                resolve(event, await conn.getFromIndex(param.uidDB))
+                resolve(event, (await conn.getFromIndex(param.uidDB)) || null)
               } catch (e) {
                 reject(event, e)
               }
