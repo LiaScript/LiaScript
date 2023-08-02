@@ -44,11 +44,11 @@ import Translations as Trans exposing (Lang)
 4.  `model`: the preprocessed LiaScript Model
 
 -}
-view : Screen -> Bool -> Model -> Html Msg
-view screen hasIndex model =
+view : Screen -> Bool -> Bool -> Model -> Html Msg
+view screen hasIndex hideIndex model =
     Html.div
         (Settings.design model.settings)
-        (viewIndex hasIndex model :: viewSlide screen model)
+        (viewIndex (hasIndex && not hideIndex) model :: viewSlide screen model)
 
 
 {-| **@private:** Display the side section that contains the document search,

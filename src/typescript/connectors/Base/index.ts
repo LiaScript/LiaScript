@@ -36,6 +36,10 @@ export class Connector {
     return false
   }
 
+  hideIndex() {
+    return false
+  }
+
   storage() {
     return new STORAGE.LiaStorage()
   }

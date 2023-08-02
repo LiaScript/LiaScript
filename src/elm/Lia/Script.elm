@@ -385,7 +385,7 @@ init =
 
 {-| Alias for global LiaScript view defined in `Lia.View.view`
 -}
-view : Screen -> Bool -> Model -> Html Msg
+view : Screen -> Bool -> Bool -> Model -> Html Msg
 view =
     Lia.View.view
 

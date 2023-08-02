@@ -9,6 +9,10 @@ export class Connector {
     return true
   }
 
+  hideIndex() {
+    return true
+  }
+
   async initSettings(
     data: Promise<Lia.Settings> | Lia.Settings | null,
     local = false

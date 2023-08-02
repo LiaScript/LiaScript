@@ -26,6 +26,7 @@ view model =
                     |> Lia.Script.view
                         model.session.screen
                         model.hasIndex
+                        model.hideIndex
                     |> Html.map LiaScript
                 ]
 
@@ -64,6 +65,7 @@ view model =
                     |> Lia.Script.view
                         model.session.screen
                         model.hasIndex
+                        model.hideIndex
                     |> Html.map LiaScript
                 ]
     }
