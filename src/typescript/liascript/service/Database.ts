@@ -12,7 +12,7 @@ var elmSend: Lia.Send | null
 const Service = {
   PORT: 'db',
 
-  init: function (elmSend_: Lia.Send, connector_: Connector) {
+  init: async function (elmSend_: Lia.Send, connector_: Connector) {
     connector = connector_
     elmSend = elmSend_
 
@@ -22,7 +22,7 @@ const Service = {
       service: this.PORT,
       message: {
         cmd: 'init',
-        param: connector.initSettings(connector.getSettings(), false),
+        param: await connector.initSettings(connector.getSettings(), false),
       },
     })
   },

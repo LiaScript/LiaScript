@@ -1,5 +1,6 @@
 import { LiaScript } from '../../typescript/liascript/index'
-import { Connector } from '../../typescript/connectors/Base/index'
+import * as Child from '../../typescript/connectors/IFrame/child'
+import * as Parent from '../../typescript/connectors/IFrame/parent'
 
 require('../../scss/main.scss')
 
@@ -25,6 +26,8 @@ customElements.define(
     private responsiveVoiceKey: string | null = null
     private scriptUrl?: string
     private course?: string
+
+    private connector?: Parent.Connector
 
     constructor() {
       super()
@@ -67,8 +70,9 @@ customElements.define(
         })
 
         const iframe = document.createElement('iframe')
-        iframe.sandbox = 'allow-scripts'
+        iframe.sandbox = 'allow-scripts allow-same-origin allow-popups'
 
+        this.connector = new Parent.Connector()
         //iframe.referrerPolicy = 'origin-when-cross-origin'
 
         const style = this.getAttribute('style')
@@ -118,7 +122,7 @@ customElements.define(
       // Load the Markdown document defined by the src attribute
       if (typeof this.courseURL === 'string') {
         this.app = new LiaScript(
-          new Connector(),
+          new Child.Connector(),
           false, // allowSync
           this.debug,
           this.courseURL,
@@ -127,7 +131,7 @@ customElements.define(
       } // Load the Content from within the web component
       else {
         this.app = new LiaScript(
-          new Connector(),
+          new Child.Connector(),
           false, // allowSync
           this.debug,
           null,
