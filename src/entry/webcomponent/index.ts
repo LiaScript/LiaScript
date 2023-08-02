@@ -66,7 +66,7 @@ customElements.define(
 
       if (this.embed && document.location.href.match('LiaScript=') === null) {
         const shadowRoot = this.attachShadow({
-          mode: 'closed',
+          mode: 'open',
         })
 
         const iframe = document.createElement('iframe')
@@ -75,17 +75,11 @@ customElements.define(
         this.connector = new Parent.Connector()
         //iframe.referrerPolicy = 'origin-when-cross-origin'
 
-        const style = this.getAttribute('style')
+        //const style = this.getAttribute('style')
 
-        if (style) {
-          iframe.style = style
-          iframe.style.border = 'none'
-          iframe.style.display = 'block'
-        } else {
-          iframe.style.width = '100%'
-          iframe.style.height = '600px'
-          iframe.style.border = 'none'
-        }
+        iframe.style.width = '100%'
+        iframe.style.height = '100%'
+        iframe.style.border = 'none'
 
         this.style.display = 'block'
 
