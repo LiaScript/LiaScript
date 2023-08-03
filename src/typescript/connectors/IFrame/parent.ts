@@ -1,22 +1,26 @@
 import * as Browser from '../Browser/index'
 
-function resolve(event: MessageEvent<any>, json: any) {
+export function resolve(event: MessageEvent<any>, json: any) {
   event.ports[0].postMessage({ resolve: JSON.stringify(json) })
 }
 
-function reject(event: MessageEvent<any>, e: any) {
+export function reject(event: MessageEvent<any>, e: any) {
   event.ports[0].postMessage({ reject: e.message })
 }
 
 export class Connector {
-  constructor() {
+  constructor(parentID: string) {
     const conn = new Browser.Connector()
 
     window.addEventListener(
       'message',
       async (event) => {
         try {
-          const { cmd, param } = JSON.parse(event.data)
+          const { cmd, param, id } = JSON.parse(event.data)
+
+          if (parentID !== id) {
+            return
+          }
 
           switch (cmd) {
             case 'initSettings': {

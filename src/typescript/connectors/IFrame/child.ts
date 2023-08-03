@@ -1,9 +1,36 @@
-import log from '../../liascript/log'
-
 import * as Base from '../Base/index'
 
+export function postAwait(cmd: string, param: any, id: string): Promise<any> {
+  return new Promise((res, rej) => {
+    const channel = new MessageChannel()
+
+    channel.port1.onmessage = ({ data }) => {
+      channel.port1.close()
+
+      if (data.reject) {
+        rej(data.reject)
+      } else {
+        res(JSON.parse(data.resolve))
+      }
+    }
+
+    window.parent.postMessage(
+      JSON.stringify({
+        cmd,
+        param,
+        id,
+      }),
+      '*',
+      [channel.port2]
+    )
+  })
+}
+
 export class Connector {
-  constructor() {}
+  private id: string
+  constructor(id: string) {
+    this.id = id
+  }
 
   hasIndex() {
     return true
@@ -22,6 +49,10 @@ export class Connector {
     } catch (e) {}
 
     return await this.postAwait('initSettings', { data, local })
+  }
+
+  postAwait(cmd: string, param: any) {
+    return postAwait(cmd, param, this.id)
   }
 
   setSettings(data: Lia.Settings) {
@@ -57,34 +88,10 @@ export class Connector {
       JSON.stringify({
         cmd,
         param,
+        id: this.id,
       }),
       '*'
     )
-  }
-
-  postAwait(cmd: string, param: any): Promise<any> {
-    return new Promise((res, rej) => {
-      const channel = new MessageChannel()
-
-      channel.port1.onmessage = ({ data }) => {
-        channel.port1.close()
-
-        if (data.reject) {
-          rej(data.reject)
-        } else {
-          res(JSON.parse(data.resolve))
-        }
-      }
-
-      window.parent.postMessage(
-        JSON.stringify({
-          cmd,
-          param,
-        }),
-        '*',
-        [channel.port2]
-      )
-    })
   }
 
   /****************************************** */

@@ -1,6 +1,7 @@
 import { LiaScript } from '../../typescript/liascript/index'
 import * as Child from '../../typescript/connectors/IFrame/child'
 import * as Parent from '../../typescript/connectors/IFrame/parent'
+import * as Browser from '../../typescript/connectors/Browser/index'
 
 require('../../scss/main.scss')
 
@@ -23,11 +24,11 @@ customElements.define(
     private embed: boolean = false
 
     private courseURL: string | null = null
-    private courseString: string | null = null
-    private responsiveVoiceKey: string | null = null
-    private scriptUrl?: string
+    private courseContent: string | null = null
 
     private connector?: Parent.Connector
+
+    private responsiveVoiceKey: string | null = null
 
     constructor() {
       super()
@@ -36,11 +37,21 @@ customElements.define(
       }
     }
 
-    getCourseURL(): string | null {
+    getCourseURL(): [string | null, string | null] {
       let url: string | null = null
+      let id: string | null = null
 
       if (this.embed && document.location.href.match('LiaScript=') !== null) {
-        url = document.location.href.split('LiaScript=')[1]
+        const reference = document.location.href
+          .split('LiaScript=')[1]
+          .split('|')
+
+        if (reference.length > 1) {
+          id = reference[0]
+          url = reference[1]
+        } else if (reference.length == 0) {
+          url = reference[0]
+        }
       } else {
         url = this.getAttribute('src')
       }
@@ -49,27 +60,60 @@ customElements.define(
         url = new URL(url, document.location.href).href
       }
 
-      return url
+      return [url, id]
     }
 
-    getCourseString(): string | null {
+    getCourseContent(): string | null {
       const course = this.innerHTML || ''
 
       return course.trim() || null
     }
 
     connectedCallback() {
-      this.courseString = this.getCourseString()
-
-      this.courseURL = this.getCourseURL()
-
       this.embed = this.getAttribute('embed') !== 'false'
 
+      this.courseContent = this.getCourseContent()
+      const [url, parentID] = this.getCourseURL()
+      this.courseURL = url
       this.responsiveVoiceKey = this.getAttribute('responsiveVoiceKey')
 
-      this.scriptUrl = document.currentScript?.src
+      // LiaScript will take over entirely
+      if (!this.embed) {
+        this.start(
+          this.embed,
+          this.courseURL,
+          this.courseContent,
+          this.debug,
+          false
+        )
+      }
+      // prepare for embedding the course into an iframe
+      else if (
+        this.embed &&
+        document.location.href.match('LiaScript=') === null
+      ) {
+        const id = Math.random().toString(36).substr(2, 9)
+        const self = this
 
-      if (this.embed && document.location.href.match('LiaScript=') === null) {
+        window.addEventListener('message', async (event) => {
+          try {
+            const { cmd, param } = JSON.parse(event.data)
+
+            switch (cmd) {
+              case 'get-content': {
+                if (param === id) {
+                  Parent.resolve(event, {
+                    url: self.courseURL,
+                    content: self.courseContent,
+                  })
+                }
+              }
+            }
+          } catch (e) {}
+        })
+
+        this.connector = new Parent.Connector(id)
+
         const shadowRoot = this.attachShadow({
           mode: 'closed',
         })
@@ -77,76 +121,64 @@ customElements.define(
         const iframe = document.createElement('iframe')
         iframe.sandbox = 'allow-scripts allow-same-origin allow-popups'
 
-        this.connector = new Parent.Connector()
-        //iframe.referrerPolicy = 'origin-when-cross-origin'
-
-        //const style = this.getAttribute('style')
-
         iframe.style.width = '100%'
         iframe.style.height = '100%'
         iframe.style.border = 'none'
 
         this.style.display = 'none'
 
-        iframe.src += '?LiaScript=' + this.courseURL
+        iframe.src += '?LiaScript=' + id + '|' + this.courseURL
         iframe.name = 'liascript'
 
         iframe.style.display = 'none'
-
-        const self = this
+        iframe.setAttribute('data-embed', 'true')
 
         iframe.onload = () => {
-          console.warn('XXXX   iframe loaded')
           iframe.style.display = 'block'
           self.style.display = 'block'
         }
 
         shadowRoot.append(iframe)
-      } else {
-        let course = ''
-
-        if (document.location.href.match('LiaScript=') !== null) {
-          course = document.location.href.split('LiaScript=')[1]
-        }
-
-        if (
-          (course && this.courseURL === course) ||
-          (!this.embed && this.courseURL)
-        ) {
-          const self = this
-          setTimeout(function () {
-            self.initLia()
-          }, 1)
-        } else if (this.courseString) {
-          this.initLia()
+      }
+      // start the embed
+      else {
+        if (parentID === null) {
+          console.warn('could not get parent id')
+        } else {
+          this.start(true, null, null, this.debug, false, parentID)
         }
       }
     }
 
-    initLia() {
-      this.courseURL = this.getCourseURL()
+    async start(
+      embed: boolean,
+      url: string | null,
+      content: string | null,
+      debug: boolean,
+      allowSync: boolean,
+      parentID?: string
+    ) {
+      if (embed) {
+        const course = await Child.postAwait('get-content', parentID)
 
-      if (this.embed && document.location.href.match('LiaScript=') !== null) {
-        this.courseURL = document.location.href.split('LiaScript=')[1]
-      }
+        if (course.url !== null && course.content !== null) {
+          course.content = null
+        }
 
-      // Load the Markdown document defined by the src attribute
-      if (!this.courseString && typeof this.courseURL === 'string') {
         this.app = new LiaScript(
-          new Child.Connector(),
-          false, // allowSync
-          this.debug,
-          this.courseURL,
-          null
+          new Child.Connector(parentID),
+          allowSync,
+          debug,
+          course.url,
+          course.content
         )
-      } // Load the Content from within the web component
-      else {
+      } else {
         this.app = new LiaScript(
-          new Child.Connector(),
-          false, // allowSync
-          this.debug,
-          null,
-          this.courseString
+          new Browser.Connector(),
+          allowSync,
+          debug,
+          url,
+          content
         )
       }
     }
