@@ -151,7 +151,7 @@ function init(event: Event) {
   }
 }
 
-customElements.define(
+helper.customElementsDefine(
   'lia-embed',
   class extends HTMLElement {
     private url_: string | null

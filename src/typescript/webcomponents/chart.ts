@@ -34,7 +34,7 @@ const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 // - Decals:
 //      https://echarts.apache.org/en/option.html#aria.decal.show
 
-customElements.define(
+helper.customElementsDefine(
   'lia-chart',
   class extends HTMLElement {
     private container: HTMLDivElement

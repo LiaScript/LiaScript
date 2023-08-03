@@ -1,3 +1,5 @@
+import { customElementsDefine } from '../helper'
+
 declare namespace Intl {
   class RelativeTimeFormat {
     constructor(locale: string | undefined, options: object)
@@ -17,7 +19,7 @@ enum Format {
   RelativeTime = 'relativetime',
 }
 
-customElements.define(
+customElementsDefine(
   'lia-format',
   class extends HTMLElement {
     private span: HTMLSpanElement

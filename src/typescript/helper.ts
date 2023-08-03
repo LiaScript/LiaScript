@@ -121,3 +121,8 @@ export function getColorFor(str: string) {
 }
 
 export const PROXY = 'https://api.allorigins.win/get?url='
+
+export function customElementsDefine(name: string, element: any) {
+  if (customElements.get(name) === undefined)
+    customElements.define(name, element)
+}

@@ -314,4 +314,4 @@ class PreviewLia extends HTMLElement {
   }
 }
 
-customElements.define('preview-lia', PreviewLia)
+helper.customElementsDefine('preview-lia', PreviewLia)

@@ -606,4 +606,4 @@ function proxy(url: string): boolean {
   return false
 }
 
-customElements.define('preview-link', PreviewLink)
+helper.customElementsDefine('preview-link', PreviewLink)

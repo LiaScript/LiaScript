@@ -5,6 +5,8 @@ import * as EDITOR from './editor-modes'
 import * as AceCollabExt from '@convergencelabs/ace-collab-ext'
 import '@convergencelabs/ace-collab-ext/dist/css/ace-collab-ext.min.css'
 
+import { customElementsDefine } from '../helper'
+
 type Update = {
   action: 'insert' | 'remove'
   index: number
@@ -124,7 +126,7 @@ function debounce(cb: (_: any) => void, delay: number = 1000) {
 }
 */
 
-customElements.define(
+customElementsDefine(
   'lia-editor',
   class extends HTMLElement {
     private _editor: any

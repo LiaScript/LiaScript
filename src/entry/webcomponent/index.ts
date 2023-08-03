@@ -23,9 +23,9 @@ customElements.define(
     private embed: boolean = false
 
     private courseURL: string | null = null
+    private courseString: string | null = null
     private responsiveVoiceKey: string | null = null
     private scriptUrl?: string
-    private course?: string
 
     private connector?: Parent.Connector
 
@@ -52,21 +52,26 @@ customElements.define(
       return url
     }
 
-    connectedCallback() {
-      this.course = this.innerHTML || ''
+    getCourseString(): string | null {
+      const course = this.innerHTML || ''
 
-      this.course = this.course.trim()
+      return course.trim() || null
+    }
+
+    connectedCallback() {
+      this.courseString = this.getCourseString()
 
       this.courseURL = this.getCourseURL()
 
       this.embed = this.getAttribute('embed') !== 'false'
 
       this.responsiveVoiceKey = this.getAttribute('responsiveVoiceKey')
+
       this.scriptUrl = document.currentScript?.src
 
       if (this.embed && document.location.href.match('LiaScript=') === null) {
         const shadowRoot = this.attachShadow({
-          mode: 'open',
+          mode: 'closed',
         })
 
         const iframe = document.createElement('iframe')
@@ -81,10 +86,20 @@ customElements.define(
         iframe.style.height = '100%'
         iframe.style.border = 'none'
 
-        this.style.display = 'block'
+        this.style.display = 'none'
 
         iframe.src += '?LiaScript=' + this.courseURL
         iframe.name = 'liascript'
+
+        iframe.style.display = 'none'
+
+        const self = this
+
+        iframe.onload = () => {
+          console.warn('XXXX   iframe loaded')
+          iframe.style.display = 'block'
+          self.style.display = 'block'
+        }
 
         shadowRoot.append(iframe)
       } else {
@@ -102,6 +117,8 @@ customElements.define(
           setTimeout(function () {
             self.initLia()
           }, 1)
+        } else if (this.courseString) {
+          this.initLia()
         }
       }
     }
@@ -114,7 +131,7 @@ customElements.define(
       }
 
       // Load the Markdown document defined by the src attribute
-      if (typeof this.courseURL === 'string') {
+      if (!this.courseString && typeof this.courseURL === 'string') {
         this.app = new LiaScript(
           new Child.Connector(),
           false, // allowSync
@@ -129,7 +146,7 @@ customElements.define(
           false, // allowSync
           this.debug,
           null,
-          this.innerHTML.trimStart()
+          this.courseString
         )
       }
     }

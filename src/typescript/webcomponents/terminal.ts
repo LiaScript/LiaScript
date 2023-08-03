@@ -1,4 +1,5 @@
 import ResizeObserver from 'resize-observer-polyfill'
+import { customElementsDefine } from '../helper'
 
 // currently the maximum height of 20rem is used, whenever this value is changed
 // within the style, then this max value has to changed accordingly in:
@@ -7,7 +8,7 @@ const maxHeight = Math.floor(
   20 * parseFloat(getComputedStyle(document.documentElement).fontSize)
 )
 
-customElements.define(
+customElementsDefine(
   'lia-terminal',
   class extends HTMLElement {
     private resizeObserver: ResizeObserver

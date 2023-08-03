@@ -1,8 +1,9 @@
 import 'katex/dist/katex.min.css'
 // @ts-ignore
 import katex from 'katex'
+import { customElementsDefine } from '../helper'
 
-customElements.define(
+customElementsDefine(
   'lia-formula',
   class extends HTMLElement {
     private span: HTMLSpanElement
