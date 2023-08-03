@@ -105,7 +105,7 @@ annotations =
 
 javascript : Parser s String
 javascript =
-    regexWith True False "<script>"
+    regexWith True False "<(script|eval)>"
         |> keep scriptBody
 
 
@@ -116,7 +116,7 @@ javascriptWithAttributes =
             withState (.defines >> .base >> succeed)
                 |> andThen Attributes.parse
     in
-    regexWith True False "<script"
+    regexWith True False "<(script|eval)"
         |> keep (many (whitespace |> keep attr))
         |> ignore (string ">")
         |> map Tuple.pair
@@ -523,7 +523,7 @@ code =
 
 scriptBody : Parser s String
 scriptBody =
-    regexWith True False "</script>"
+    regexWith True False "</(script|eval)>"
         |> manyTill
             ([ regex "[^@\"'`</]+" --" this is only a comment for syntax-highlighting ...
              , regex "[ \t\n]+"
