@@ -30,6 +30,17 @@ editor: base index responsivevoice
 
 editor2: optimize editor deoptimize minify
 
+webcomponent:
+	npm run build:webcomponent
+	sed -i "s/src:local(\"\")/src:local(\"\.\")/g" dist/index.css
+	sed -i "s/url(\//url(\.\//g" dist/index.css
+	make minify
+	mv dist/editor/* dist/
+	rm -rf dist/editor
+	
+
+webcomponent2: optimize webcomponent deoptimize
+
 base:
 	npm run build:base
 
