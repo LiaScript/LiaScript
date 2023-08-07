@@ -9,7 +9,7 @@ import Html.Attributes as Attr exposing (title)
 import Html.Events exposing (onInput)
 import Index.Model exposing (Course, Model, Release)
 import Index.Update exposing (Msg(..))
-import Lia.Definition.Types exposing (Definition)
+import Lia.Definition.Types exposing (Definition, getIcon)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
@@ -27,7 +27,7 @@ view session settings model =
         [ [ ( \_ _ _ -> [], "ignore" )
           , ( Settings.menuSettings session.screen.width, "settings" )
           ]
-            |> Settings.header False En session.screen settings Const.icon
+            |> Settings.header False En session.screen settings (Just Const.icon)
             |> Html.map UpdateSettings
         , Html.div [ Attr.class "lia-slide__container" ]
             [ Html.main_ [ Attr.class "lia-slide__content" ]
@@ -116,12 +116,6 @@ searchBar url =
                 [ Html.text "load course"
                 ]
         ]
-
-
-getIcon : Dict String String -> String
-getIcon =
-    Dict.get "icon"
-        >> Maybe.withDefault Const.icon
 
 
 card : Bool -> Course -> Html Msg
@@ -307,8 +301,9 @@ viewFooter definition =
     Html.footer [ Attr.class "lia-card__footer" ]
         [ Html.img
             [ Attr.class "lia-card__logo"
-            , definition.macro
+            , definition
                 |> getIcon
+                |> Maybe.withDefault Const.icon
                 |> Attr.src
             , Attr.alt "Logo"
             , Attr.height 50

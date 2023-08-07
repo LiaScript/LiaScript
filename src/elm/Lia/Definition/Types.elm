@@ -151,11 +151,9 @@ append to base urls list =
         |> List.append list
 
 
-getIcon : Definition -> String
+getIcon : Definition -> Maybe String
 getIcon =
-    .macro
-        >> Dict.get "icon"
-        >> Maybe.withDefault Const.icon
+    .macro >> Dict.get "icon"
 
 
 setPersistent : Bool -> Definition -> Definition

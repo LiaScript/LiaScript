@@ -66,13 +66,13 @@ async function start(
   link(src.href + '/index.css')
   link(src.href + '/katex.min.css')
 
-  console.warn('XXXXXXXXXX', src.href)
+  let base = document.createElement('base')
+  base.href = src.href + '/'
+  document.head.appendChild(base)
 
   if (embed) {
     if (parentID) {
       const course = await Child.postAwait('get-content', null, parentID)
-
-      console.warn('XXXXXXXXXXXXXX', course)
 
       if (course.url !== null && course.content !== null) {
         course.content = null

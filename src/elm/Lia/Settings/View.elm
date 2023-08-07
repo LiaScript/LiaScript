@@ -902,7 +902,7 @@ header :
     -> Lang
     -> Screen
     -> Settings
-    -> String
+    -> Maybe String
     -> List ( Lang -> Bool -> Settings -> List (Html Msg), String )
     -> Html Msg
 header online lang screen settings logo buttons =
@@ -913,7 +913,9 @@ header online lang screen settings logo buttons =
     [ Html.div [ Attr.class "lia-header__left" ] []
     , Html.div [ Attr.class "lia-header__middle" ]
         [ Html.img
-            [ Attr.src logo
+            [ logo
+                |> Maybe.withDefault Const.icon
+                |> Attr.src
             , Attr.class "lia_header__logo"
             , Attr.alt "logo"
             ]
