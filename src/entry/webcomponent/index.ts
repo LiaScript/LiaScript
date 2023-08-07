@@ -33,6 +33,19 @@ function getCourse(): [string | null, string | null] {
   return [url, id]
 }
 
+function link(url: string) {
+  let tag = document.createElement('link')
+  tag.href = url
+  tag.rel = 'stylesheet'
+  tag.type = 'text/css'
+
+  tag.onerror = (_event) => {
+    console.warn('could not load =>', url)
+  }
+
+  document.head.appendChild(tag)
+}
+
 async function start(
   embed: boolean,
   url: string | null,
@@ -41,6 +54,20 @@ async function start(
   allowSync: boolean,
   parentID?: string
 ) {
+  document.querySelector('style')?.remove()
+  document.querySelector('link')?.remove()
+
+  let src = new URL((document.currentScript as HTMLScriptElement)?.src)
+
+  let path = src.pathname.split('/')
+  path.pop()
+  src.pathname = path.join('/')
+
+  link(src.href + '/index.css')
+  link(src.href + '/katex.min.css')
+
+  console.warn('XXXXXXXXXX', src.href)
+
   if (embed) {
     if (parentID) {
       const course = await Child.postAwait('get-content', null, parentID)
@@ -79,6 +106,7 @@ class LiaScriptElement extends HTMLElement {
 
   constructor() {
     super()
+
     if (process.env.NODE_ENV === 'development') {
       this.debug = true
     }

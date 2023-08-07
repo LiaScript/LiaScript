@@ -1,5 +1,5 @@
 import 'katex/dist/katex.min.css'
-// @ts-ignore
+
 import katex from 'katex'
 import { customElementsDefine } from '../helper'
 
@@ -18,17 +18,6 @@ customElementsDefine(
     }
 
     connectedCallback() {
-      const shadowRoot = this.attachShadow({
-        mode: 'open',
-      })
-
-      let link = document.createElement('link')
-      link.rel = 'stylesheet'
-      link.href = 'katex.min.css'
-
-      shadowRoot.appendChild(link)
-      shadowRoot.appendChild(this.span)
-
       this.formula_ = this.getAttribute('formula') || ''
 
       const macros = this.getAttribute('macros')
@@ -41,6 +30,7 @@ customElementsDefine(
         }
       }
 
+      this.appendChild(this.span)
       this.render()
     }
 
