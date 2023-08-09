@@ -46,10 +46,7 @@ const Service = {
 
       case 'update':
         if (param.id < 10000) {
-          connector.update(
-            { table: param.table, id: param.id },
-            transaction(param.data)
-          )
+          connector.update(param.data, { table: param.table, id: param.id })
         }
         break
 
@@ -197,74 +194,6 @@ const Service = {
         log.warn('(Service ', this.PORT, ') unknown message =>', event.message)
     }
   },
-}
-
-/**
- * **private helper:** defines a couple of transaction only for the data stored
- * in the "code" table.
- *
- * @param def
- * @returns a function that modifies a certain sub-entry within the database
- */
-function transaction(def: {
-  cmd: string
-  id: number
-  data: any
-}): (project: any) => any {
-  switch (def.cmd) {
-    // update the current version and logs
-    case 'version':
-      return (project: any) => {
-        project[def.id].version_active = def.data.version_active
-        project[def.id].log = def.data.log
-        project[def.id].version[def.data.version_active] = def.data.version
-
-        return project
-      }
-
-    // append a new version of files and logs
-    case 'append':
-      return (project: any) => {
-        project[def.id].version_active = def.data.version_active
-        project[def.id].log = def.data.log
-        project[def.id].file = def.data.file
-        project[def.id].version.push(def.data.version)
-        project[def.id].repository = {
-          ...project[def.id].repository,
-          ...def.data.repository,
-        }
-
-        return project
-      }
-    // change the active version of the project
-    case 'active':
-      return (project: any) => {
-        project[def.id].version_active = def.data.version_active
-        project[def.id].log = def.data.log
-        project[def.id].file = def.data.file
-
-        return project
-      }
-
-    case 'flip_view':
-      return (project: any) => {
-        project[def.id].file[def.data.file_id].visible = def.data.value
-        return project
-      }
-
-    case 'flip_fullscreen':
-      return (project: any) => {
-        project[def.id].file[def.data.file_id].fullscreen = def.data.value
-        return project
-      }
-
-    default:
-      log.warn('unknown update cmd: ', def.cmd)
-
-      return (project: any) => {
-        return project
-      }
-  }
 }
 
 function meta(name: string, content: string) {

@@ -10,7 +10,7 @@ export function postAwait(cmd: string, param: any, id: string): Promise<any> {
       if (data.reject) {
         rej(data.reject)
       } else {
-        res(JSON.parse(data.resolve))
+        res(data.resolve === undefined ? null : JSON.parse(data.resolve))
       }
     }
 
@@ -71,12 +71,19 @@ export class Connector {
     return await this.postAwait('load', record)
   }
 
-  async store(record: Base.Record) {
-    return await this.postAwait('store', record)
+  store(record: Base.Record) {
+    return this.post('store', record)
   }
 
-  update(record: Base.Record, mapping: (project: any) => any) {
-    this.post('update', record)
+  update(
+    transaction: {
+      cmd: string
+      id: number
+      data: any
+    },
+    record: Base.Record
+  ) {
+    this.post('update', { transaction, record })
   }
 
   slide(id: number) {

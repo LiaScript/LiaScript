@@ -3,7 +3,7 @@ import Dexie from 'dexie'
 
 import log from '../../liascript/log'
 
-import { Record } from '../Base/index'
+import { Record, transform } from '../Base/index'
 
 if (process.env.NODE_ENV === 'development') {
   // @ts-ignore
@@ -169,7 +169,14 @@ class LiaDB {
    * @param record - information about the table and the id
    * @param modify - transformation function
    */
-  async transaction(record: Record, modify: (data: any) => any) {
+  async transaction(
+    transaction: {
+      cmd: string
+      id: number
+      data: any
+    },
+    record: Record
+  ) {
     if (!this.db || this.version === 0) return
 
     let db = this.db
@@ -180,8 +187,8 @@ class LiaDB {
         version: this.version,
       })
 
-      if (vector.data) {
-        vector.data = modify(vector.data)
+      if (vector?.data) {
+        vector.data = transform(transaction, vector.data)
         await db[record.table].put(vector)
       }
     })

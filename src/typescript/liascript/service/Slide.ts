@@ -125,7 +125,11 @@ function scrollIntoView(id: string, delay: number) {
     const elem = document.getElementById(id)
 
     if (elem) {
-      elem.scrollIntoView({ behavior: 'smooth' })
+      elem.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center',
+      })
     }
   }, delay)
 }

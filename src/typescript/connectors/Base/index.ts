@@ -2,6 +2,72 @@ import Lia from '../../liascript/types/lia.d'
 
 import * as STORAGE from './storage'
 import { Settings } from './settings'
+import log from '../../liascript/log'
+
+/**
+ * **private helper:** defines a couple of transaction only for the data stored
+ * in the "code" table.
+ *
+ * @param def
+ * @returns a function that modifies a certain sub-entry within the database
+ */
+export function transform(
+  transaction: {
+    cmd: string
+    id: number
+    data: any
+  },
+  project: any
+) {
+  switch (transaction.cmd) {
+    // update the current version and logs
+    case 'version':
+      project[transaction.id].version_active = transaction.data.version_active
+      project[transaction.id].log = transaction.data.log
+      project[transaction.id].version[transaction.data.version_active] =
+        transaction.data.version
+
+      break
+
+    // append a new version of files and logs
+    case 'append':
+      project[transaction.id].version_active = transaction.data.version_active
+      project[transaction.id].log = transaction.data.log
+      project[transaction.id].file = transaction.data.file
+      project[transaction.id].version.push(transaction.data.version)
+      project[transaction.id].repository = {
+        ...project[transaction.id].repository,
+        ...transaction.data.repository,
+      }
+
+      break
+
+    // change the active version of the project
+    case 'active':
+      project[transaction.id].version_active = transaction.data.version_active
+      project[transaction.id].log = transaction.data.log
+      project[transaction.id].file = transaction.data.file
+
+      break
+
+    case 'flip_view':
+      project[transaction.id].file[transaction.data.file_id].visible =
+        transaction.data.value
+
+      break
+
+    case 'flip_fullscreen':
+      project[transaction.id].file[transaction.data.file_id].fullscreen =
+        transaction.data.value
+
+      break
+
+    default:
+      log.warn('unknown update cmd: ', transaction.cmd)
+  }
+
+  return project
+}
 
 /** Internal abstraction to query the database. All entries are organized with
  * tables, which represent either `code`, `quiz`, `survey`, `task`, `offline`.
@@ -92,7 +158,14 @@ export class Connector {
 
   store(_record: Record) {}
 
-  update(_record: Record, _fn: (a: any) => any) {}
+  update(
+    _transaction: {
+      cmd: string
+      id: number
+      data: any
+    },
+    _record: Record
+  ) {}
 
   slide(_id: number) {}
 

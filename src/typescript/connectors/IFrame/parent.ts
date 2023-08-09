@@ -1,3 +1,4 @@
+import { connect } from 'echarts'
 import * as Browser from '../Browser/index'
 
 export function resolve(event: MessageEvent<any>, json: any) {
@@ -50,14 +51,10 @@ export class Connector {
 
             case 'open': {
               try {
-                const xxx = await conn.open(
-                  param.uidDB,
-                  param.versionDB,
-                  param.slide
+                resolve(
+                  event,
+                  await conn.open(param.uidDB, param.versionDB, param.slide)
                 )
-
-                console.warn('XXX sadfas', xxx)
-                resolve(event, xxx)
               } catch (e) {
                 reject(event, e)
               }
@@ -67,7 +64,7 @@ export class Connector {
 
             case 'load': {
               try {
-                resolve(event, conn.load(param))
+                resolve(event, await conn.load(param))
               } catch (e) {
                 reject(event, e)
               }
@@ -75,12 +72,14 @@ export class Connector {
               break
             }
 
+            case 'update': {
+              conn.update(param.transaction, param.record)
+              break
+            }
+
             case 'store': {
-              try {
-                resolve(event, conn.store(param))
-              } catch (e) {
-                reject(event, e)
-              }
+              conn.store(param)
+
               break
             }
 

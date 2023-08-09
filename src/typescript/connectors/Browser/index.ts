@@ -30,8 +30,15 @@ class Connector extends Base.Connector {
     return this.database.store(record)
   }
 
-  update(record: Base.Record, mapping: (project: any) => any) {
-    this.database.transaction(record, mapping)
+  update(
+    transaction: {
+      cmd: string
+      id: number
+      data: any
+    },
+    record: Base.Record
+  ) {
+    this.database.transaction(transaction, record)
   }
 
   slide(id: number) {
