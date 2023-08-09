@@ -167,8 +167,6 @@ class LiaScriptElement extends HTMLElement {
 
       window.addEventListener('message', async (event) => {
         try {
-          console.warn('XXXXXXXXXX', event.data)
-
           const { cmd, param, id } = JSON.parse(event.data)
 
           switch (cmd) {
@@ -222,8 +220,6 @@ class LiaScriptElement extends HTMLElement {
 customElementsDefine('lia-script', LiaScriptElement)
 
 const [url, parentID] = getCourse()
-
-console.warn('XXXXXX LiaScript: ' + url + ' ' + parentID)
 
 // load embedded immediately if identified
 if (parentID) {

@@ -50,10 +50,14 @@ export class Connector {
 
             case 'open': {
               try {
-                resolve(
-                  event,
-                  conn.open(param.uidDB, param.versionDB, param.slide)
+                const xxx = await conn.open(
+                  param.uidDB,
+                  param.versionDB,
+                  param.slide
                 )
+
+                console.warn('XXX sadfas', xxx)
+                resolve(event, xxx)
               } catch (e) {
                 reject(event, e)
               }
