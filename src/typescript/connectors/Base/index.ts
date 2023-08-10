@@ -106,7 +106,7 @@ export class Connector {
     return false
   }
 
-  storage() {
+  storage(): any {
     return new STORAGE.LiaStorage()
   }
 
