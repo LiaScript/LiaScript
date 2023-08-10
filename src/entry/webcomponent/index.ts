@@ -75,7 +75,7 @@ async function start(
       }
 
       app = new LiaScript(
-        new Child.Connector(parentID),
+        new Child.Connector(parentID) as Parent.Connector,
         allowSync,
         debug,
         course.url,
@@ -185,7 +185,10 @@ class LiaScriptElement extends HTMLElement {
       })
 
       const iframe = document.createElement('iframe')
-      iframe.sandbox = 'allow-scripts allow-same-origin allow-popups'
+      iframe.setAttribute(
+        'sandbox',
+        'allow-scripts allow-same-origin allow-popups'
+      )
 
       iframe.style.width = '100%'
       iframe.style.height = '100%'
