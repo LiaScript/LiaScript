@@ -103,6 +103,7 @@ var app: any
 class LiaScriptElement extends HTMLElement {
   private debug: boolean = false
   private embed: boolean = false
+  private singlePage: boolean = false
 
   private courseURL: string | null = null
   private courseContent: string | null = null
@@ -147,6 +148,7 @@ class LiaScriptElement extends HTMLElement {
     this.courseURL = course.url
 
     this.responsiveVoiceKey = this.getAttribute('responsiveVoiceKey')
+    this.singlePage = this.getAttribute('singlePage') === 'true'
 
     // LiaScript will take over entirely
     if (!this.embed) {
@@ -202,20 +204,26 @@ class LiaScriptElement extends HTMLElement {
 
       this.style.display = 'none'
 
-      iframe.src +=
+      iframe.src =
+        document.location.href +
         '?LiaScript=' +
         this.courseURL +
         '|' +
         id_ +
         (this.responsiveVoiceKey ? '|' + this.responsiveVoiceKey : '')
+
       iframe.name = 'liascript'
 
       iframe.style.display = 'none'
       iframe.setAttribute('data-embed', 'true')
 
       iframe.onload = () => {
-        iframe.style.display = 'block'
-        self.style.display = 'block'
+        setTimeout(() => {
+          iframe.style.display = 'block'
+          self.style.display = 'block'
+
+          console.log('XXXXXXXXXXXXXXXXXx iframe loaded', iframe.contentWindow)
+        }, 1000)
       }
 
       shadowRoot.append(iframe)
