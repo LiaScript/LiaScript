@@ -96,8 +96,6 @@ class LiaScriptElement extends HTMLElement {
   private courseURL: string | null = null
   private courseContent: string | null = null
 
-  private connector?: Parent.Connector
-
   private responsiveVoiceKey: string | null = null
 
   constructor() {
@@ -178,7 +176,7 @@ class LiaScriptElement extends HTMLElement {
         } catch (e) {}
       })
 
-      this.connector = new Parent.Connector(id_)
+      Parent.startListening(id_)
 
       const shadowRoot = this.attachShadow({
         mode: 'closed',
