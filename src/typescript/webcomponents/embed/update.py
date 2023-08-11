@@ -1,60 +1,78 @@
-import httplib2
+# type: ignore
 import json
 from datetime import date
+from typing import Union
+import httplib2
 from bs4 import BeautifulSoup
 
 
-def toHTTPS(url):
+def to_https(url: str) -> str:
+    """
+    Converts a url to https if it is not already https.
+    """
     url = url.replace("http:", "https:")
     return url
 
 
-def cleanProtocol(url):
-    url = toHTTPS(url)
+def clean_protocol(url: str) -> str:
+    """
+    Remove all protocols from a url
+    """
+    url = to_https(url)
     url = url.replace("https://", "")
     return url
 
 
-def getSoup(url):
+def get_soup(url: str) -> Union[str, BeautifulSoup]:
+    """
+    Return a BeautifulSoup object from a url or in case of an error a string message.
+    """
+
     problem = "unknown\n"
 
     try:
-        response, content = httplib2.Http(disable_ssl_certificate_validation=True, timeout=30).request(url)
+        resp, body = httplib2.Http(
+            disable_ssl_certificate_validation=True, timeout=30
+        ).request(url)
 
-        if response["status"] == "200" or len(content) > 250:
-            return (True, BeautifulSoup(content, "html5lib"))
+        if resp["status"] == "200" or len(body) > 250:
+            return BeautifulSoup(body, "html5lib")
 
-        else:
-            print("--->", response)
-            print("\n--->", content)
-            problem = str(response)+"\n\n"+str(content)+"\n"
-    except:
-        pass
+        print("--->", resp)
+        print("\n--->", body)
+        problem = str(resp)+"\n\n"+str(body)+"\n"
 
-    return (False, problem)
+    except Exception as err:  # pylint: disable=broad-except
+        problem = str(err)
+
+    return problem
 
 
-def metaDescription(soup):
+def meta_description(soup: BeautifulSoup) -> str:
+    """
+    Search for a content description in the meta tags of a html page.
+    """
+
     try:
-        description = soup.find("meta", attrs={"name": "description"})
-        if description != None and description["content"] != "":
-            return description["content"]
+        match = soup.find("meta", attrs={"name": "description"})
+        if match is not None and match["content"] != "":
+            return match["content"]
 
-        description = soup.find("meta", attrs={"name": "Description"})
-        if description != None and description["content"] != "":
-            return description["content"]
+        match = soup.find("meta", attrs={"name": "Description"})
+        if match is not None and match["content"] != "":
+            return match["content"]
 
-        description = soup.find("meta", {"property": "twitter:description"})
-        if description != None and description["content"] != "":
-            return description["content"]
+        match = soup.find("meta", {"property": "twitter:description"})
+        if match is not None and match["content"] != "":
+            return match["content"]
 
-        description = soup.find("meta", {"property": "og:description"})
-        if description != None and description["content"] != "":
-            return description["content"]
+        match = soup.find("meta", {"property": "og:description"})
+        if match is not None and match["content"] != "":
+            return match["content"]
 
-        description = soup.find("meta", {"property": "og:title"})
-        if description != None and description["content"] != "":
-            return description["content"]
+        match = soup.find("meta", {"property": "og:title"})
+        if match is not None and match["content"] != "":
+            return match["content"]
 
         print("--- Description: problem parsing meta -----------------------")
         for meta in soup.find_all('meta'):
@@ -62,29 +80,32 @@ def metaDescription(soup):
         print("-------------------------------------------------------------")
 
         # content of the first paragraph
-        description = soup.find("p")
-        if description != None and description.sting != "":
-            return description.string
+        match = soup.find("p")
+        if match is not None and match.sting != "":
+            return match.string
 
-        description = soup.find("title")
-        if description != None and description.sting != "":
-            return description.string
+        match = soup.find("title")
+        if match is not None and match.sting != "":
+            return match.string
 
-    except:
-        pass
+    except Exception as err:  # pylint: disable=broad-except
+        print(str(err))
 
     return ""
 
 
-def metaImage(soup, url):
+def meta_image(soup: BeautifulSoup, url: str) -> str:
+    """
+    Search for an image url in the meta tags of a html page.
+    """
     try:
-        description = soup.find("meta", {"property": "twitter:image"})
-        if description != None:
-            return description["content"]
+        match = soup.find("meta", {"property": "twitter:image"})
+        if match is not None:
+            return match["content"]
 
-        description = soup.find("meta", {"property": "og:image"})
-        if description != None:
-            return description["content"]
+        match = soup.find("meta", {"property": "og:image"})
+        if match is not None:
+            return match["content"]
 
         print("--- Image: problem parsing meta -----------------------------")
         for meta in soup.find_all('meta'):
@@ -94,94 +115,106 @@ def metaImage(soup, url):
         for meta in soup.find_all('img'):
             if meta["src"].startswith("http"):
                 return meta["src"]
-            elif not meta["src"].startswith("data:"):
+
+            if not meta["src"].startswith("data:"):
                 return url + meta["src"]
 
-    except:
-        pass
+    except Exception as err:  # pylint: disable=broad-except
+        print(str(err))
 
     return ""
 
 
-print("Start downloading ... ")
-_, content = httplib2.Http().request("https://oembed.com/providers.json")
-print("done")
+if __name__ == "__main__":
 
-collection = []
-provider = []
-brokenLinks = []
+    print("Start downloading ... ")
+    _, content = httplib2.Http().request("https://oembed.com/providers.json")
+    print("done")
 
-print("generating entdpoints.ts ...")
+    collection = []
+    provider = []
+    brokenLinks = []
 
-data = json.loads(content)
+    print("generating endpoints.ts ...")
 
-for d in data:
-    provider.append({"name": d["provider_name"], "url": toHTTPS(d["provider_url"])})
+    data = json.loads(content)
 
-print("done\nupdating README.md ... ")
-with open('./README.md', 'w') as outfile:
-    outfile.write("# oEmbed Service Providers\n\n")
+    for d in data:
+        provider.append({"name": d["provider_name"], "url": to_https(d["provider_url"])})
 
-    outfile.write("__date__: " + date.today().strftime("%d/%m/%Y") + "\n\n")
+    print("done\nupdating README.md ... ")
+    with open('./README.md', 'w', encoding='utf-8') as outfile:
+        outfile.write("# oEmbed Service Providers\n\n")
 
-    brokenProviders = ""
+        outfile.write("__date__: " + date.today().strftime("%d/%m/%Y") + "\n\n")
 
-    for (i, p) in enumerate(provider):
-        print("################################################################################")
-        print(i, p["name"], ":", p["url"])
+        brokenProviders = ""
 
-        (ok, soup) = getSoup(p["url"])
+        for (i, p) in enumerate(provider):
+            print("################################################################################")
+            print(i, p["name"], ":", p["url"])
 
-        description = ""
-        image = ""
+            response = get_soup(p["url"])
 
-        if ok:
-            outfile.write("__" + p["name"] + ":__ " + p["url"] + "\n\n")
+            description = ""
+            image = ""
 
-            description = metaDescription(soup)
+            if isinstance(response, str):
 
-            if description != None:
-                description = description.strip().replace("\n", " ")
-                description = (description[:300] + '..') if len(description) > 300 else description
+                brokenLinks += [p["url"]]
+                brokenProviders += (
+                    "__"
+                    + p["name"]
+                    + ":__ "
+                    + p["url"]
+                    + "\n\n```\n"
+                    + response
+                    + "```\n\n---\n\n"
+                )
+                print("--> BROKEN")
 
-            image = metaImage(soup, p["url"])
-
-            if description:
-                outfile.write(description + "\n\n")
-
-            if image:
-                outfile.write("![logo](" + image + ")\n\n")
-
-            print("\n--> [", image, "]")
-            print("\n   ", description, "\n")
-
-            outfile.write("---\n\n")
-        else:
-            brokenLinks += [p["url"]]
-            brokenProviders += "__" + p["name"] + ":__ " + p["url"] + "\n\n```\n" + soup + "```\n\n---\n\n"
-            print("--> BROKEN")
-
-    outfile.write("## Broken sites\n\n" + brokenProviders)
-
-
-for d in data:
-    if not (d["provider_url"] in brokenLinks):
-        for e in d["endpoints"]:
-            if "schemes" in e:
-                schemes = []
-                for scheme in e["schemes"]:
-                    if not scheme.__contains__("\""):
-                        schemes.append(cleanProtocol(scheme))
-
-                collection += [[cleanProtocol(e["url"]), schemes]]
             else:
-                collection += [[cleanProtocol(e["url"]), []]]
+                outfile.write("__" + p["name"] + ":__ " + p["url"] + "\n\n")
 
-collection = json.dumps(collection).replace(" ", "")
+                description = meta_description(response)
 
-print("writing down endpoints ... ")
-with open('./endpoints.ts', 'w') as outfile:
-    outfile.write("export const endpoints = JSON.parse(`" + collection + "`)\n")
-    outfile.close()
+                if description is not None:
+                    description = description.strip().replace("\n", " ")
+                    description = (description[:300] + '..') if len(description) > 300 else description
 
-print("done")
+                image = meta_image(response, p["url"])
+
+                if description:
+                    outfile.write(description + "\n\n")
+
+                if image:
+                    outfile.write("![logo](" + image + ")\n\n")
+
+                print("\n--> [", image, "]")
+                print("\n   ", description, "\n")
+
+                outfile.write("---\n\n")
+
+        outfile.write("## Broken sites\n\n" + brokenProviders)
+
+    for d in data:
+        if d["provider_url"] not in brokenLinks:
+            for e in d["endpoints"]:
+                if "schemes" in e:
+                    schemes = []
+                    for scheme in e["schemes"]:
+                        if not scheme.__contains__("\""):
+                            schemes.append(clean_protocol(scheme))
+
+                    collection += [[clean_protocol(e["url"]), schemes]]
+                else:
+                    collection += [[clean_protocol(e["url"]), []]]
+
+    collection = json.dumps(collection).replace(" ", "")
+
+    print("writing down endpoints ... ")
+    with open('./endpoints.ts', 'w', encoding='utf-8') as outfile:
+        outfile.write("export const endpoints = JSON.parse(`" + collection + "`)\n")
+        outfile.close()
+
+    print("done")
