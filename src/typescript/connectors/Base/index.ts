@@ -110,7 +110,7 @@ export class Connector {
     return new STORAGE.LiaStorage()
   }
 
-  initSettings(data: Lia.Settings | null, local = false) {
+  async initSettings(data: Lia.Settings | null, local = false) {
     return Settings.init(data, local, this.setSettings)
   }
 
@@ -122,7 +122,7 @@ export class Connector {
     }
   }
 
-  getSettings() {
+  async getSettings() {
     let data: string | null = ''
 
     try {

@@ -279,7 +279,7 @@ Hava fun ;-)`
     return false
   }
 
-  initSettings(data: Lia.Settings | null, local = false) {
+  async initSettings(data: Lia.Settings | null, local = false) {
     return Settings.init(data, false, this.setSettings)
   }
 
@@ -287,7 +287,7 @@ Hava fun ;-)`
     this.write(`cmi.suspend_data`, JSON.stringify(data))
   }
 
-  getSettings() {
+  async getSettings() {
     let data: string | null = ''
 
     try {

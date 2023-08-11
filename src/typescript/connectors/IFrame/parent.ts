@@ -26,7 +26,7 @@ export class Connector {
           switch (cmd) {
             case 'initSettings': {
               try {
-                resolve(event, conn.initSettings(param.data, param.local))
+                resolve(event, await conn.initSettings(param.data, param.local))
               } catch (e) {
                 reject(event, e)
               }
@@ -36,7 +36,7 @@ export class Connector {
 
             case 'getSettings': {
               try {
-                resolve(event, conn.getSettings())
+                resolve(event, await conn.getSettings())
               } catch (e) {
                 reject(event, e)
               }

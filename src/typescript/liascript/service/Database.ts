@@ -22,7 +22,10 @@ const Service = {
       service: this.PORT,
       message: {
         cmd: 'init',
-        param: await connector.initSettings(connector.getSettings(), false),
+        param: await connector.initSettings(
+          await connector.getSettings(),
+          false
+        ),
       },
     })
   },

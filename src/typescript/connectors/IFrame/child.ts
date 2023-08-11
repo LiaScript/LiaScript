@@ -26,9 +26,10 @@ export function postAwait(cmd: string, param: any, id: string): Promise<any> {
   })
 }
 
-export class Connector {
+export class Connector extends Base.Connector {
   private id: string
   constructor(id: string) {
+    super()
     this.id = id
   }
 
@@ -40,14 +41,7 @@ export class Connector {
     return true
   }
 
-  async initSettings(
-    data: Promise<Lia.Settings> | Lia.Settings | null,
-    local = false
-  ) {
-    try {
-      data = await data
-    } catch (e) {}
-
+  async initSettings(data: Lia.Settings | null, local = false) {
     return await this.postAwait('initSettings', { data, local })
   }
 
@@ -102,14 +96,6 @@ export class Connector {
   }
 
   /****************************************** */
-
-  storage() {
-    return null
-  }
-
-  getIndex() {}
-
-  deleteFromIndex(_uidDB: string) {}
 
   storeToIndex(json: any) {
     this.post('storeToIndex', json)

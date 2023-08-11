@@ -75,7 +75,7 @@ async function start(
       }
 
       app = new LiaScript(
-        new Child.Connector(parentID) as Parent.Connector,
+        new Child.Connector(parentID),
         allowSync,
         debug,
         course.url,

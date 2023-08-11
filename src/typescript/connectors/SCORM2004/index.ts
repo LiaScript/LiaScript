@@ -164,7 +164,7 @@ class Connector extends Base.Connector {
     return API
   }
 
-  initSettings(data: Lia.Settings | null, local = false) {
+  async initSettings(data: Lia.Settings | null, local = false) {
     return Settings.init(data, false, this.setSettings)
   }
 
@@ -176,7 +176,7 @@ class Connector extends Base.Connector {
     }
   }
 
-  getSettings() {
+  async getSettings() {
     let data: string | null = ''
 
     try {
