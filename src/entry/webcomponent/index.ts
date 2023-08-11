@@ -15,22 +15,28 @@ import '../../typescript/webcomponents/format'
 
 import { allowedProtocol, customElementsDefine } from '../../typescript/helper'
 
-function getCourse(): [string | null, string | null] {
-  let url: string | null = null
-  let id: string | null = null
+type Course = {
+  url: string | null
+  id: string | null
+  key: string | null
+}
+
+function getCourse(): Course {
+  let course: Course = {
+    url: null,
+    id: null,
+    key: null,
+  }
 
   if (document.location.href.match('LiaScript=') !== null) {
     const reference = document.location.href.split('LiaScript=')[1].split('|')
 
-    if (reference.length > 1) {
-      id = reference[0]
-      url = reference[1]
-    } else if (reference.length == 0) {
-      url = reference[0]
-    }
+    course.url = reference[0] || null
+    course.id = reference[1] || null
+    course.key = reference[2] || null
   }
 
-  return [url, id]
+  return course
 }
 
 function link(url: string) {
@@ -50,6 +56,7 @@ async function start(
   embed: boolean,
   url: string | null,
   content: string | null,
+  responsiveVoiceKey: string | null,
   debug: boolean,
   allowSync: boolean,
   parentID?: string
@@ -85,6 +92,10 @@ async function start(
   } else {
     app = new LiaScript(new Browser.Connector(), allowSync, debug, url, content)
   }
+
+  if (responsiveVoiceKey) {
+    window?.LIA?.injectResposivevoice(responsiveVoiceKey)
+  }
 }
 
 var app: any
@@ -106,28 +117,18 @@ class LiaScriptElement extends HTMLElement {
     }
   }
 
-  getCourseURL(): [string | null, string | null] {
-    let url: string | null = null
-    let id: string | null = null
+  getCourseURL(): Course {
+    let course = getCourse()
 
-    if (this.embed && document.location.href.match('LiaScript=') !== null) {
-      const reference = document.location.href.split('LiaScript=')[1].split('|')
-
-      if (reference.length > 1) {
-        id = reference[0]
-        url = reference[1]
-      } else if (reference.length == 0) {
-        url = reference[0]
-      }
-    } else {
-      url = this.getAttribute('src')
+    if (this.embed && !course.url) {
+      course.url = this.getAttribute('src')
     }
 
-    if (typeof url === 'string' && !allowedProtocol(url)) {
-      url = new URL(url, document.location.href).href
+    if (typeof course.url === 'string' && !allowedProtocol(course.url)) {
+      course.url = new URL(course.url, document.location.href).href
     }
 
-    return [url, id]
+    return course
   }
 
   getCourseContent(): string | null {
@@ -141,15 +142,22 @@ class LiaScriptElement extends HTMLElement {
 
     this.courseContent = this.getCourseContent()
 
-    const [url, parentID] = this.getCourseURL()
+    const course = this.getCourseURL()
 
-    this.courseURL = url
+    this.courseURL = course.url
 
     this.responsiveVoiceKey = this.getAttribute('responsiveVoiceKey')
 
     // LiaScript will take over entirely
     if (!this.embed) {
-      start(this.embed, this.courseURL, this.courseContent, this.debug, false)
+      start(
+        this.embed,
+        this.courseURL,
+        this.courseContent,
+        this.responsiveVoiceKey,
+        this.debug,
+        false
+      )
     }
     // prepare for embedding the course into an iframe
     else if (
@@ -194,7 +202,12 @@ class LiaScriptElement extends HTMLElement {
 
       this.style.display = 'none'
 
-      iframe.src += '?LiaScript=' + id_ + '|' + this.courseURL
+      iframe.src +=
+        '?LiaScript=' +
+        this.courseURL +
+        '|' +
+        id_ +
+        (this.responsiveVoiceKey ? '|' + this.responsiveVoiceKey : '')
       iframe.name = 'liascript'
 
       iframe.style.display = 'none'
@@ -216,16 +229,17 @@ class LiaScriptElement extends HTMLElement {
 
 customElementsDefine('lia-script', LiaScriptElement)
 
-const [url, parentID] = getCourse()
+const course = getCourse()
 
 // load embedded immediately if identified
-if (parentID) {
+if (course.id) {
   start(
     true,
     null,
     null,
+    course.key,
     process.env.NODE_ENV === 'development',
     false,
-    parentID
+    course.id
   )
 }
