@@ -72,6 +72,7 @@ class Connector extends Base.Connector {
 
     // try if there is an SCORM 2004 api accessible
     let scormAPI = this.getAPI(window)
+
     if (scormAPI) {
       LOG('successfully opened API')
       this.scorm = scormAPI
@@ -124,14 +125,23 @@ class Connector extends Base.Connector {
   scanForAPI(win: any) {
     let nFindAPITries = 0
     let maxTries = 500
-    while (win.API_1484_11 == null && win.parent != null && win.parent != win) {
-      nFindAPITries++
-      if (nFindAPITries > maxTries) {
-        return null
+    try {
+      while (
+        win.API_1484_11 == null &&
+        win.parent != null &&
+        win.parent != win
+      ) {
+        nFindAPITries++
+        if (nFindAPITries > maxTries) {
+          return null
+        }
+        win = win.parent
       }
-      win = win.parent
+      return win.API_1484_11
+    } catch (e) {
+      WARN('scanForAPI =>', e.message)
     }
-    return win.API_1484_11
+    return null
   }
 
   // The GetAPI() function begins the process of searching for the LMS
