@@ -222,7 +222,7 @@ class Connector extends Base.Connector {
         'be stored!'
       )
 
-      this.scaled_passing_score = JSON.parse(
+      this.scaled_passing_score = Utils.jsonParse(
         this.scorm.GetValue('cmi.scaled_passing_score')
       )
 
