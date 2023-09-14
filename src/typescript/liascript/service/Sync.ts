@@ -8,6 +8,7 @@ var Jitsi
 var Matrix
 var PubNub
 var Gun
+var P2PT
 
 const Service = {
   PORT: 'sync',
@@ -19,6 +20,7 @@ const Service = {
     'jitsi',
     //'matrix',
     'pubnub',
+    'p2pt',
   ],
 
   init: function (elmSend_: Lia.Send) {
@@ -103,6 +105,18 @@ const Service = {
               }
 
               sync = new PubNub.Sync(cbConnection, elmSend)
+              break
+
+            case 'p2pt':
+              if (!P2PT) {
+                import('../../sync/P2PT/index').then((e) => {
+                  P2PT = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new P2PT.Sync(cbConnection, elmSend)
               break
 
             default:
