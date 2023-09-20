@@ -411,120 +411,124 @@
   content: "\EA31"
 }
 
-.icon-parallel:before {
+.icon-p2pt:before {
   content: "\EA32"
 }
 
-.icon-pencil:before {
+.icon-parallel:before {
   content: "\EA33"
 }
 
-.icon-person:before {
+.icon-pencil:before {
   content: "\EA34"
 }
 
-.icon-piechart:before {
+.icon-person:before {
   content: "\EA35"
 }
 
-.icon-play-circle:before {
+.icon-piechart:before {
   content: "\EA36"
 }
 
-.icon-plus:before {
+.icon-play-circle:before {
   content: "\EA37"
 }
 
-.icon-presentation:before {
+.icon-plus:before {
   content: "\EA38"
 }
 
-.icon-pubnub:before {
+.icon-presentation:before {
   content: "\EA39"
 }
 
-.icon-radar:before {
+.icon-pubnub:before {
   content: "\EA3A"
 }
 
-.icon-refresh:before {
+.icon-radar:before {
   content: "\EA3B"
 }
 
-.icon-resolve:before {
+.icon-refresh:before {
   content: "\EA3C"
 }
 
-.icon-sankey:before {
+.icon-resolve:before {
   content: "\EA3D"
 }
 
-.icon-scatterplot:before {
+.icon-sankey:before {
   content: "\EA3E"
 }
 
-.icon-search:before {
+.icon-scatterplot:before {
   content: "\EA3F"
 }
 
-.icon-send:before {
+.icon-search:before {
   content: "\EA40"
 }
 
-.icon-settings:before {
+.icon-send:before {
   content: "\EA41"
 }
 
-.icon-slides:before {
+.icon-settings:before {
   content: "\EA42"
 }
 
-.icon-social:before {
+.icon-slides:before {
   content: "\EA43"
 }
 
-.icon-sort-asc:before {
+.icon-social:before {
   content: "\EA44"
 }
 
-.icon-sort-desc:before {
+.icon-sort-asc:before {
   content: "\EA45"
 }
 
-.icon-sound-off:before {
+.icon-sort-desc:before {
   content: "\EA46"
 }
 
-.icon-sound-on:before {
+.icon-sound-off:before {
   content: "\EA47"
 }
 
-.icon-stop-circle:before {
+.icon-sound-on:before {
   content: "\EA48"
 }
 
-.icon-sync:before {
+.icon-stop-circle:before {
   content: "\EA49"
 }
 
-.icon-table:before {
+.icon-sync:before {
   content: "\EA4A"
 }
 
-.icon-trash:before {
+.icon-table:before {
   content: "\EA4B"
 }
 
-.icon-warning:before {
+.icon-trash:before {
   content: "\EA4C"
 }
 
-.icon-zoom-out:before {
+.icon-warning:before {
   content: "\EA4D"
 }
 
-.icon-zoom:before {
+.icon-zoom-out:before {
   content: "\EA4E"
+}
+
+.icon-zoom:before {
+  content: "\EA4F"
 }
 
 
