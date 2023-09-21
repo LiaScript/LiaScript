@@ -487,8 +487,19 @@ start model =
         return =
             Lia.Script.load_first_slide session { lia | section_active = slide }
     in
-    ( { model | state = Running, lia = return.value, session = session }
-    , batch LiaScript return
+    ( { model
+        | state = Running
+        , lia = return.value
+        , session = session
+      }
+    , Cmd.batch
+        [ batch LiaScript return
+        , if session.url.fragment == Nothing then
+            Session.navToSlide session slide
+
+          else
+            Cmd.none
+        ]
     )
 
 

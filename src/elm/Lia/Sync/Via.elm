@@ -25,6 +25,7 @@ type Backend
     | GUN { urls : String, persistent : Bool }
     | Jitsi String
     | Matrix { baseURL : String, userId : String, accessToken : String }
+    | P2PT String
     | PubNub { pubKey : String, subKey : String }
 
 
@@ -77,6 +78,15 @@ toString full via =
                         ""
                    )
 
+        P2PT urls ->
+            "P2PT"
+                ++ (if full then
+                        "|" ++ urls
+
+                    else
+                        ""
+                   )
+
 
 icon : Backend -> Html msg
 icon via =
@@ -96,6 +106,9 @@ icon via =
 
             PubNub _ ->
                 "icon-pubnub icon-xs"
+
+            P2PT _ ->
+                "icon-p2pt icon-xs"
         )
         [ Attr.style "padding-right" "5px"
         , Attr.style "font-size" "inherit"
@@ -140,6 +153,12 @@ fromString via =
 
         [ "matrix", baseURL, userId, accessToken ] ->
             Just <| Matrix { baseURL = baseURL, userId = userId, accessToken = accessToken }
+
+        [ "p2pt" ] ->
+            Just (P2PT "")
+
+        [ "p2pt", urls ] ->
+            Just (P2PT urls)
 
         [ "pubnub" ] ->
             Just <| PubNub { pubKey = "", subKey = "" }
@@ -287,6 +306,20 @@ infoOn supported about =
                 , Html.text "."
                 ]
 
+            ( P2PT _, _ ) ->
+                [ Html.text "The "
+                , link "P2PT" "https://github.com/subins2000/p2pt"
+                , Html.text " project utilizes "
+                , link "WebTorrent" "https://webtorrent.io"
+                , Html.text " trackers as signaling servers for establishing peer-to-peer (P2P) connections via "
+                , link "WebRTC" "https://en.wikipedia.org/wiki/WebRTC"
+                , Html.text ". Therefor P2PT uses magnet-URIs as an app identifier to communicate with the WebTorrent trackers, which provide a list of web peers using the app."
+                , Html.text "With this information, P2PT enables an browser applications to share real-time data and send messages interaction between connected peers."
+                , Html.text "Thus, you have to provide WebSocket-URLs, which start with "
+                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://" ]
+                , Html.text "."
+                ]
+
 
 link : String -> String -> Html msg
 link title url =
@@ -379,6 +412,17 @@ view editable backend =
                     }
                 ]
 
+        P2PT urls ->
+            input
+                { active = editable
+                , type_ = "text"
+                , msg = InputP2PT
+                , value = urls
+                , placeholder = "wss://tracker.torrent"
+                , label = Html.text "WebTorrent tracker URLs"
+                , autocomplete = Just "websocket-urls"
+                }
+
         _ ->
             Html.text ""
 
@@ -457,6 +501,7 @@ type Msg
     | InputPubNub String String
     | InputMatrix String String
     | InputJitsi String
+    | InputP2PT String
 
 
 update : Msg -> Backend -> Backend
@@ -486,6 +531,9 @@ update msg backend =
         ( InputMatrix "token" new, Matrix data ) ->
             Matrix { data | accessToken = new }
 
+        ( InputP2PT urls, P2PT _ ) ->
+            P2PT urls
+
         _ ->
             backend
 
@@ -503,6 +551,9 @@ eq a b =
             True
 
         ( Jitsi _, Jitsi _ ) ->
+            True
+
+        ( P2PT _, P2PT _ ) ->
             True
 
         _ ->
