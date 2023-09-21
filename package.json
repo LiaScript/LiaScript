@@ -101,8 +101,7 @@
       "staticPath": "node_modules/katex/dist/katex.min.css"
     },
     {
-      "staticPath": "node_modules/ace-builds/src-min-noconflict",
-      "staticOutPath": "editor"
+      "staticPath": "node_modules/ace-builds/src-min-noconflict"
     }
   ],
   "directories": {

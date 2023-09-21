@@ -167,7 +167,7 @@ customElements.define(
     constructor() {
       super()
 
-      ace.config.set('basePath', 'editor/')
+      // ace.config.set('basePath', 'editor/')
 
       this._focus = false
       this._ariaLabel = 'editor'
