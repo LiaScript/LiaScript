@@ -20,7 +20,7 @@ const Service = {
     'jitsi',
     //'matrix',
     'pubnub',
-    'p2pt',
+    RTCPeerConnection !== undefined ? 'p2pt' : '',
   ],
 
   init: function (elmSend_: Lia.Send) {
