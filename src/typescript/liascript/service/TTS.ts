@@ -1,5 +1,5 @@
 import log from '../log'
-import EasySpeech from 'easy-speech'
+import EasySpeech from 'easy-speech/dist/EasySpeech'
 import '../types/responsiveVoice'
 
 enum Gender {
@@ -38,8 +38,9 @@ export const Service = {
     }, 2000)
 
     this.easySpeechSettings = EasySpeech.detect()
-    EasySpeech.init()
-      .then((e) => {
+
+    EasySpeech.init({ maxTimeout: 5000, interval: 250 })
+      .then(() => {
         useBrowserTTS = true
 
         sendEnabledTTS('browserTTS')
