@@ -1,6 +1,6 @@
 # oEmbed Service Providers
 
-__date__: 11/08/2023
+__date__: 21/09/2023
 
 __23HQ:__ https://www.23hq.com
 
@@ -218,7 +218,7 @@ __Bookingmood:__ https://www.bookingmood.com
 
 Manage and show rental unit availability and receive booking inquiries, directly from your website
 
-![logo](https://bookingmood.com/og-image.png)
+![logo](https://www.bookingmood.com/og-image.png)
 
 ---
 
@@ -356,7 +356,7 @@ __CodeSandbox:__ https://codesandbox.io
 
 CodeSandbox is a cloud development platform that empowers developers to code, collaborate and ship projects of any size from any device in record time.
 
-![logo](https://codesandbox.io/new/images/og.jpg)
+![logo](/new/images/og.jpg)
 
 ---
 
@@ -378,9 +378,7 @@ Coub is YouTube for video loops. You can take any video, trim the best part, com
 
 __Crowd Ranking:__ https://crowdranking.com
 
-View recently updated crowdrankings sorted by categories.
-
-![logo](https://crowdranking.com/media/bd7a6600-1630-0135-2802-005056b43389/32x32_clip.jpg)
+The issue has been logged for investigation. Please try again later.
 
 ---
 
@@ -402,15 +400,9 @@ Cueup is an online platform connecting DJs and event organizers - the easiest wa
 
 __Curated:__ https://curated.co/
 
+Curated is like a custom-tailored suit: so perfectly fitted to its task that you can never see any other option the same way again. Every part of the platform — from the article collection and management to the email template formatting — makes the creation and management process completely intuitiv..
+
 ![logo](https://assets.website-files.com/606c6d8c559a135bbe2a8b50/606c7143715c7bd46dbcd0e5_curated-a05f7683c39fa9689e68e028003638c5906155098f2bddee222b17ec84ed0073.png)
-
----
-
-__CustomerDB:__ https://customerdb.com/
-
-The domain name CustomerDB.com is for sale. Make an offer or buy it now at a set price.
-
-![logo](https://cdn2.dan.com/assets/public/meta_image-4d82981355bc90e79a8801ee2a706ede37e2473c6c9bd8a645158a371dbacfa5.png)
 
 ---
 
@@ -425,10 +417,6 @@ __Dailymotion:__ https://www.dailymotion.com
 Die neuesten News-, Sport-, Musik- und Unterhaltungsvideos auf Dailymotion
 
 ![logo](https://static1.dmcdn.net/images/dailymotion-logo-ogtag-new.png.va3e30462476a82772)
-
----
-
-__DALEXNI:__ https://dalexni.com/
 
 ---
 
@@ -528,7 +516,7 @@ __everviz:__ https://everviz.com
 
 everviz is a tool for data visualization and engaging storytelling. Sharing your data through attractive, interactive charts and maps is now simpler than ever.
 
-![logo](https://www.everviz.com/wp-content/uploads/2022/11/e-icon-01.png)
+![logo](https://www-dev.everviz.com/wp-content/uploads/2023/07/icon-general.svg)
 
 ---
 
@@ -544,7 +532,7 @@ __Facebook:__ https://www.facebook.com/
 
 Melde dich bei Facebook an, um dich mit deinen Freunden, deiner Familie und Personen, die du kennst, zu verbinden und Inhalte zu teilen.
 
-![logo](https://www.facebook.com/images/fb_icon_325x325.png)
+![logo](https://www.facebook.com/images/fb_logo/app-facebook-circle-bp.png)
 
 ---
 
@@ -566,7 +554,7 @@ Enjoy thousands of hours of Christian movies, shows, and biblical teaching on Fa
 
 __FITE:__ https://www.fite.tv/
 
-✓ 1,000+ live events per year ✓ 7M strong fan community ✓ Watch: AEW: All In 2023, Jake Paul vs Nate Diaz: Ready 4 War, BKFC 48 Albuquerque: John Dodson vs JR Ridge, AEW: All Out 2023, Lucha Libre AAA Worldwide: Triplemania XXXI Mexico City, Impact Wrestling & NJPW: Multiverse United 2 - For Whom th..
+✓ 1,000+ live events per year ✓ 7M strong fan community ✓ Watch: PBC: Canelo vs Charlo, Eric Clapton's Crossroads Guitar Festival, Bundle, BKFC 50 Denver: Lorenzo Hunt vs Chris Camozzi, AEW: WrestleDream, Lion Fight 75, RIZIN 44 & Landmark 6 Bundle, Impact Wrestling: Bound for Glory 2023 ✓ Statistic..
 
 ![logo](https://www.fite.tv/static/img/home_fite_tw_bg_03.jpg)
 
@@ -598,7 +586,7 @@ Beautiful, easy data visualization and storytelling
 
 __FOX SPORTS Australia:__ https://www.foxsports.com.au
 
-Reference #18.85851502.1691757567.1bcdcbdd
+Reference #18.85851502.1695272392.2666ced0
 
 ---
 
@@ -606,7 +594,7 @@ __Framer:__ https://www.framer.com
 
 Design and publish your dream site. Add animations, interactions, and optimize for every breakpoint. Then scale your site with an advanced CMS — no code needed and publish for free.
 
-![logo](https://framerusercontent.com/modules/XGlgWyQ08lVhjrk8BQH9/hkYBrOvk8VJ6TbZoJoeW/assets/2jcKVnNogkCVvxm6pdLJ37qk7w.jpg)
+![logo](https://framerusercontent.com/modules/XGlgWyQ08lVhjrk8BQH9/rm389wJa5qvvGpq9aOoF/assets/2jcKVnNogkCVvxm6pdLJ37qk7w.jpg)
 
 ---
 
@@ -614,7 +602,7 @@ __Geograph Britain and Ireland:__ https://www.geograph.org.uk/
 
 Geograph Britain and Ireland is a web-based project to collect and reference geographically representative images of every square kilometre of the British Isles.
 
-![logo](https://s0.geograph.org.uk/photos/90/91/909167_9bdc2653.jpg)
+![logo](https://s0.geograph.org.uk/photos/70/44/704415_688601e8.jpg)
 
 ---
 
@@ -636,15 +624,7 @@ Geograph is a web based project to collect and reference geographically represen
 
 __Getty Images:__ https://www.gettyimages.com/
 
-Find the perfect royalty-free image for your next project from the world’s best photo library of creative stock photos, vector art illustrations, and stock photography.
-
----
-
-__Gfycat:__ https://gfycat.com/
-
-Gfycat is the top destination for GIFs and videos. Create your own GIF or browse the best gaming GIFs, reactions GIFs, funny GIFs and more.
-
-![logo](https://assets.gfycat.com/gfycat_logo_blue_square.png)
+Discover Getty Images' unrivaled collection of royalty-free images to find the perfect stock photo, vector, or illustration that resonates with your customers.
 
 ---
 
@@ -736,7 +716,9 @@ PDF to flipbook converter. Free, no ads, no watermarks and highly customizable w
 
 __hihaho:__ https://www.hihaho.com
 
-This website use security service to prevent unauthorized access and online attack. Your action might trigger the security solution. Please contact the site administrator to resolve this issue.
+The easiest way to create advanced interactive videos. Create highly interactive video yourself, in an instant. Start for free.
+
+![logo](https://hihaho.com/wp-content/uploads/2022/09/IMG_9955-1-scaled.jpg)
 
 ---
 
@@ -768,6 +750,8 @@ __Hulu:__ https://www.hulu.com/
 
 Watch TV shows and movies online. Stream TV episodes of Grey's Anatomy, This Is Us, Bob's Burgers, Brooklyn Nine-Nine, Empire, SNL, and popular movies on your favorite devices. Start your free trial now. Cancel anytime.
 
+![logo](https://assetshuluimcom-a.akamaihd.net/h3o/facebook_share_thumb_default_hulu.jpg)
+
 ---
 
 __iFixit:__ https://www.iFixit.com
@@ -780,7 +764,9 @@ iFixit is a global community of people helping each other repair things. Let's f
 
 __IFTTT:__ https://www.ifttt.com/
 
-Please stand by, while we are checking your browser...
+Get started with IFTTT, the easiest way to automate your favorite apps and devices for free. Make your home more relaxing. Make your work more productive. We...
+
+![logo](//web-assets.ifttt.com/packs/media/shared/ifttt-banner-287889aa7d44e76a8d08.png)
 
 ---
 
@@ -842,7 +828,7 @@ __Instagram:__ https://instagram.com
 
 Create an account or log in to Instagram - A simple, fun & creative way to capture, edit & share photos, videos & messages with friends & family.
 
-![logo](https://static.cdninstagram.com/rsrc.php/v3/yt/r/30PrGfR3xhB.png)
+![logo](https://static.cdninstagram.com/rsrc.php/v3/yR/r/hexDR1NOpRC.png)
 
 ---
 
@@ -856,9 +842,9 @@ With Insticator you can turn comments into community by using the community enga
 
 __Issuu:__ https://issuu.com/
 
-Create interactive flipbooks, social media posts, GIFs, and more from a single piece of static content. Discover all of our digital publishing tools here!
+Issuu converts PDFs and documents into an interactive flipbook and marketing assets. Embed flipbooks onto your website and distribute online. Create yours with Issuu.
 
-![logo](https://mm.issuu.com/generic-share.jpg)
+![logo](https://issuu.com/generic-share.jpg)
 
 ---
 
@@ -870,9 +856,9 @@ itemis CREATE Web Player
 
 __Jovian:__ https://jovian.com/
 
-Learn practical skills from Silicon Valley engineers, build real-world portfolio projects, and earn a certification. Kick start your tech career!
+Learn practical skills, build real world projects, and advance your career
 
-![logo](/home-meta.png)
+![logo](https://i.imgur.com/bj1Yrev.png)
 
 ---
 
@@ -1034,7 +1020,7 @@ Build out documentation while you sleep. Easily editable, auto-generated workflo
 
 __Miro:__ https://miro.com/
 
-Scalable, secure, cross-device and enterprise-ready team collaboration whiteboard for distributed teams. Join 50M+ users from around the world.
+Miro is a visual workspace for innovation where teams manage projects, design products, and build the future together. Join 60M+ users from around the world.
 
 ![logo](https://images.ctfassets.net/w6r2i5d8q73s/OxZ08hm5k2id0kjQXmc0L/05bcc2743945b82009e59aa5d9c77c7d/miro.png)
 
@@ -1042,7 +1028,7 @@ Scalable, secure, cross-device and enterprise-ready team collaboration whiteboar
 
 __MixCloud:__ https://mixcloud.com/
 
-Mixcloud
+Listen to the best DJs and radio presenters in the world for free.
 
 ---
 
@@ -1128,7 +1114,7 @@ Watch quality Canadian documentary, animation and fiction films online
 
 __Observable:__ https://observablehq.com
 
-Push the limits of data visulization on the platform purpose-built to dive deep and turn your most complex data into actionable insights.
+Turn your most complex data into actionable insights faster with Observable. The future of data visualization, dashboards, and data apps starts here.
 
 ![logo](https://images.ctfassets.net/uklh5xrq1p2j/33pXuUDyLUvkrtYUy9dd3E/d9e80c797cdd893cd7d83dca374f74b0/Website_Share_Image.png)
 
@@ -1238,12 +1224,6 @@ Pastery is the sweetest pastebin in the world. Pastery is a secure website where
 
 ---
 
-__Picturelfy:__ https://www.picturelfy.com/
-
-Upload your images and videos
-
----
-
 __Piggy:__ https://piggy.to
 
 create awesome interactive content on your smartphone - no design skills or coding are needed
@@ -1280,9 +1260,9 @@ Discover recipes, home ideas, style inspiration and other ideas to try.
 
 __PitchHub:__ https://www.pitchhub.com/
 
-A web based platform allowing business people and teams to easily create professional marketing videos.
+A web based platform allowing business people and teams to easily create professional marketing videos. Teleprompter available for Zoom,  Webex, MS Teams.
 
-![logo](https://d1pnnwteuly8z3.cloudfront.net/images/d59de3f8-9327-487f-b1c8-83a30a8980d9/857e49b0-7957-42c6-bb42-ccb5ff2b1c5a.png)
+![logo](https://uploads-ssl.webflow.com/64c77171c04c9db7ccfbcf64/64e2a2956f9e84517ac9300b_PH_logo-text-white.svg)
 
 ---
 
@@ -1338,7 +1318,7 @@ __Prezi Video:__ https://prezi.com/
 
 Welcome to Prezi, the presentation software that uses motion, zoom, and spatial relationships to bring your ideas to life and make you a great presenter.
 
-![logo](https://assets.prezicdn.net/assets-versioned/coverservice-versioned/3890-d369086/common/img/prezi-logo-for-share.png)
+![logo](https://uploads-ssl.webflow.com/64be3ac6d7e811ba37809e1c/64be4739e5d4a152cf8542b5_Hero%2006%402x.png)
 
 ---
 
@@ -1394,7 +1374,7 @@ __Reddit:__ https://reddit.com/
 
 Reddit and its partners use cookies and similar technologies to provide you with a better experience.
 
-![logo](https://external-preview.redd.it/a-rocket-with-a-lunar-landing-craft-blasts-off-on-russias-v0-zDMocz6dxHppGG024XcFDUZ9pSCS1Rn911t7tyLdG58.jpg?width=320&crop=smart&auto=webp&s=c7c682150d35d05320cb671cd7eff0a042584211)
+![logo](https://external-preview.redd.it/bears-defensive-coordinator-alan-williams-resigns-says-he-v0-3g3adx19b1ocNMcO0WycEg7lpLBhsry-Gc0cNtajpws.jpg?width=320&crop=smart&auto=webp&s=48e72b4a2edf9f55b1984c41e77093c60185e7b2)
 
 ---
 
@@ -1418,7 +1398,7 @@ __ReverbNation:__ https://www.reverbnation.com/
 
 ReverbNation helps Artists grow lasting careers by introducing them to music industry partners, exposing them to fans, and building innovative tools to promote their success.
 
-![logo](https://gp1.wac.edgecastcdn.net/802892/production_static/20230803160402/images/main_page/open_graph/rn-logo_1200x630.png)
+![logo](https://gp1.wac.edgecastcdn.net/802892/production_static/20230912151203/images/main_page/open_graph/rn-logo_1200x630.png)
 
 ---
 
@@ -1432,9 +1412,9 @@ __Roomshare:__ https://roomshare.jp
 
 __RoosterTeeth:__ https://roosterteeth.com
 
-Season 8 Episode 1 - Missed the scoop? No worries, troop! Armando and BK bring you all the big news from RTX 2023.
+Season 1 Episode 7 - In today's very normal stream, BK, Blizz, and Griff play...oh, who are we kidding?? Buckle up gamers. This was the craziest, most chaotic stream Inside Gaming has had yet. When I say buckle up, I mean get READY. Do you like vibes? Twerking? LOTS OF TEA? This is the stream for yo..
 
-![logo](https://cdn.roosterteeth.com/image/upload/t_m/f_auto/production/euailpdlajjpr7yday059jbaxfo6.png)
+![logo](https://cdn.roosterteeth.com/image/upload/t_m/f_auto/production/hon8sgefvrmaxxnxbqbaes02epom.jpg)
 
 ---
 
@@ -1496,7 +1476,7 @@ __Scribd:__ https://www.scribd.com/
 
 Enjoy millions of ebooks, audiobooks and more with a free trial. Choose from best sellers and new releases. Read on the web, iPad, iPhone and Android.
 
-![logo](https://imgv2-1-f.scribdassets.com/img/word_document/582536596/108x144/9f4c1708a5/1691048418?v=1)
+![logo](https://imgv2-1-f.scribdassets.com/img/word_document/582536596/108x144/9f4c1708a5/1692346251?v=1)
 
 ---
 
@@ -1534,7 +1514,7 @@ __Simplecast:__ https://simplecast.com
 
 Say hello to the modern podcast hosting, distribution, and analytics platform. Simplecast remains the easiest way for podcasters to publish audio to the world—with one-click publishing to Apple Podcasts, Spotify, or wherever your audience listens.
 
-![logo](https://www.simplecast.com/hubfs/simplecast-logo.svg)
+![logo](https://www.simplecast.com/hubfs/simplecast-files/simplecast-logo.svg)
 
 ---
 
@@ -1556,7 +1536,7 @@ __SlideShare:__ https://www.slideshare.net/
 
 Discover, Share, and Present presentations and infographics with the world’s largest professional content sharing community.
 
-![logo](https://public.slidesharecdn.com/v2/images/meta_share_tile.png)
+![logo]([object Object])
 
 ---
 
@@ -1617,6 +1597,14 @@ Speaker Deck is the best way to share presentations online. Simply upload your s
 
 ---
 
+__Spotify:__ https://spotify.com/
+
+Spotify is a digital music service that gives you access to millions of songs.
+
+![logo](https://open.spotifycdn.com/cdn/images/og-image.548bc4b7.png)
+
+---
+
 __Spotlightr:__ https://spotlightr.com
 
 Upload, store, stream and protect your videos courses. Brand, protect and market your videos all in one hosting platform.
@@ -1653,7 +1641,7 @@ __Streamable:__ https://streamable.com/
 
 Upload your video in seconds on Streamable. We accept a variety of video formats including MP4, MOV, AVI, and more. It's free, try it now!
 
-![logo](https://statics.streamable.com/static/site-image.png)
+![logo](https://statics.streamable.com/static/site-image-v2.png)
 
 ---
 
@@ -1693,7 +1681,7 @@ __Sway:__ https://www.sway.com
 
 Create and share interactive reports, presentations, personal stories, and more. Sway is an easy-to-use digital storytelling app for creating interactive reports, presentations, personal stories and more. Its built-in design engine helps you create professional designs in minutes. With Sway, your im..
 
-![logo](https://weu-www.sway-cdn.com/161680440101_Content/SocialMedia_Logo_Sway_400x400x32.png)
+![logo](https://weu-www.sway-cdn.com/161690640100_Content/SocialMedia_Logo_Sway_400x400x32.png)
 
 ---
 
@@ -1701,7 +1689,7 @@ __Sway Office:__ https://sway.office.com
 
 Create and share interactive reports, presentations, personal stories, and more. Sway is an easy-to-use digital storytelling app for creating interactive reports, presentations, personal stories and more. Its built-in design engine helps you create professional designs in minutes. With Sway, your im..
 
-![logo](https://weu-www.sway-cdn.com/161680440101_Content/SocialMedia_Logo_Sway_400x400x32.png)
+![logo](https://weu-www.sway-cdn.com/161690640100_Content/SocialMedia_Logo_Sway_400x400x32.png)
 
 ---
 
@@ -1747,9 +1735,7 @@ Free online countdown timer to share with friends or embed in your website as a 
 
 __TikTok:__ https://www.tiktok.com/
 
-Discover the latest TikTok videos on our Explore page. Stay up-to-date on the latest trends and explore your interests here!
-
-![logo](https://p16-sign-useast2a.tiktokcdn.com/tos-useast2a-p-0037-aiso/ogRBBfDJADDNRKWKPkMBAUPbwBEEIl1SzewRhQ~tplv-f5insbecw7-1:480:480.jpeg?x-expires=1691776800&x-signature=JZWEPEGhXzOifO4jQWOTsPjh6iI%3D)
+TikTok - Make Your Day
 
 ---
 
@@ -1761,7 +1747,7 @@ __Toornament:__ https://www.toornament.com/
 
 Toornament is a suite of tools for gaming organizers and professionals to manage esports tournaments and competition websites.
 
-![logo](https://www.toornament.com/asset/logo/toornament/og_processor.png?1691681480)
+![logo](https://www.toornament.com/asset/logo/toornament/og_processor.png?1695137161)
 
 ---
 
@@ -1805,7 +1791,7 @@ Info for efficiency
 
 __tvcf:__ https://tvcf.co.kr
 
-WWF
+Guinness
 
 ![logo](https://tvcf.co.kr/images/RenewV1.1/logo.svg)
 
@@ -1830,6 +1816,14 @@ __Typlog:__ https://typlog.com
 Share your stories, either in text, images or audio. Focus on your creation and let Typlog take care of the rest.
 
 ![logo](https://typlog.com/_nuxt/img/metrics.df20628.png)
+
+---
+
+__UAPod:__ https://uapod.univ-antilles.fr/
+
+#contenthome{padding:5px;} #addvid{ background-color: #0086cb; border-radius: 6px; min-width: 300px; padding: 20px 10px; margin-right: 5px; text-ali…
+
+![logo](//uapod.univ-antilles.fr/static/custom/logo/logo_ua3_pod.png)
 
 ---
 
@@ -1943,9 +1937,9 @@ __VLIVE:__ https://www.vlive.tv
 
 __Vouch:__ https://www.vouchfor.com/
 
-Vouch empowers 1000s of teams to create, collaborate and communicate through short-form video.
+Vouch makes video testimonials, sales videos and team updates a breeze. Create impactful videos today. Try Vouch for Free.
 
-![logo](https://uploads-ssl.webflow.com/624a8047186ec7b0bd415684/64d34126f6c651a09a2dedd9_OG_3.png)
+![logo](https://uploads-ssl.webflow.com/64d0b299b39c58c5fc38eecb/64e5b6db808d5d4f81968d05_OG_3.png)
 
 ---
 
@@ -1999,7 +1993,7 @@ __Wokwi:__ https://wokwi.com
 
 IoT and Embedded System Simulator: ESP32, STM32, Arduino, Raspberry Pi Pico, displays, sensors, motors and WiFi simulation.
 
-![logo](https://wokwi.com/images/facebook-cover.png?v=4)
+![logo](https://wokwi.com/images/social-cover.png?v=5)
 
 ---
 
@@ -2013,9 +2007,9 @@ Cloud access to the Wolfram Language.
 
 __WordPress.com:__ https://wordpress.com/
 
-Create a free website or build a blog with ease on WordPress.com. Dozens of free, customizable, mobile-ready designs and themes. Free hosting and support.
+Build a site, sell online, earn with your content, and more
 
-![logo](https://s1.wp.com/home.logged-out/images/wpcom-og-image.jpg)
+![logo](https://s1.wp.com/i/featured/hp-2023-aug.jpg)
 
 ---
 
@@ -2097,10 +2091,27 @@ timed out```
 
 ---
 
+__CustomerDB:__ https://customerdb.com/
+
+```
+{'content-length': '91', 'content-type': 'text/plain', 'x-envoy-upstream-service-time': '10412', 'expires': 'Thu, 21 Sep 2023 04:59:00 GMT', 'cache-control': 'max-age=0, no-cache, no-store', 'pragma': 'no-cache', 'date': 'Thu, 21 Sep 2023 04:59:00 GMT', 'connection': 'keep-alive', 'set-cookie': 'fb_sessiontraffic=S_TOUCH=&pathway=4f13920c-855a-47d3-b4c8-05d5c4b95c18&V_DATE=&pc=0; Path=/; Domain=dan.com; Expires=Thu, 21 Sep 2023 05:18:59 GMT, pathway=4f13920c-855a-47d3-b4c8-05d5c4b95c18; Path=/; Domain=dan.com; Expires=Thu, 21 Sep 2023 05:18:59 GMT, visitor=vid=4f13920c-855a-47d3-b4c8-05d5c4b95c18; Path=/; Domain=dan.com; Expires=Thu, 19 Sep 2024 04:58:59 GMT, _policy={"restricted_market":true,"tracking_market":"explicit"}; Path=/; Domain=dan.com; Expires=Fri, 20 Sep 2024 04:58:59 GMT', 'server-timing': 'cdn-cache; desc=MISS, edge; dur=29, origin; dur=10415, ak_p; desc="1695272329536_35057884_523211094_1044452_7686_15_18_-";dur=1', 'strict-transport-security': 'max-age=86400 ; includeSubDomains ; preload', 'status': '503'}
+
+b'upstream connect error or disconnect/reset before headers. reset reason: connection failure'
+```
+
+---
+
+__DALEXNI:__ https://dalexni.com/
+
+```
+timed out```
+
+---
+
 __Docswell:__ https://docswell.com
 
 ```
-{'content-length': '134', 'content-type': 'text/html; charset=UTF-8', 'date': 'Fri, 11 Aug 2023 12:39:09 GMT', 'alt-svc': 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000', 'status': '403'}
+{'content-length': '134', 'content-type': 'text/html; charset=UTF-8', 'date': 'Thu, 21 Sep 2023 04:59:35 GMT', 'alt-svc': 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000', 'status': '403'}
 
 b'<!doctype html><meta charset="utf-8"><meta name=viewport content="width=device-width, initial-scale=1"><title>403</title>403 Forbidden'
 ```
@@ -2117,7 +2128,7 @@ __EgliseInfo:__ https://egliseinfo.catholique.fr/
 __Ex.Co:__ https://ex.co
 
 ```
-{'date': 'Fri, 11 Aug 2023 12:39:13 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'cf-cache-status': 'DYNAMIC', 'report-to': '{"endpoints":[{"url":"https:\\/\\/a.nel.cloudflare.com\\/report\\/v3?s=TqkfiyWHfWrR7M0MbL1%2Fl6d6T%2BPA0TDuGEHmk5lsYrYYcPIQdRL7j7ssIMoHd6xDInxgDrTc0K8c6OM%2BL2EiSnlwAeEjcCqQm989RqzbkunoVWjpCG8c"}],"group":"cf-nel","max_age":604800}', 'nel': '{"success_fraction":0,"report_to":"cf-nel","max_age":604800}', 'server': 'cloudflare', 'cf-ray': '7f508a44af89ac9e-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
+{'date': 'Thu, 21 Sep 2023 04:59:41 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'cf-cache-status': 'DYNAMIC', 'report-to': '{"endpoints":[{"url":"https:\\/\\/a.nel.cloudflare.com\\/report\\/v3?s=QeY5rJf6JTYREQW%2F9ImWJX3DRaJo%2BRwN3Uloi5xjDk36STn163F3LyciBNts7KdsnbWDUnswtjLPa00e32QCw2tBedzYOJoGU%2Bb23d8jYMmBogVa18Ec"}],"group":"cf-nel","max_age":604800}', 'nel': '{"success_fraction":0,"report_to":"cf-nel","max_age":604800}', 'server': 'cloudflare', 'cf-ray': '809fbd7c794c58f6-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
 
 b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n'
 ```
@@ -2127,7 +2138,7 @@ b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>4
 __Firework:__ https://fireworktv.com/
 
 ```
-{'date': 'Fri, 11 Aug 2023 12:39:23 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'cf-cache-status': 'DYNAMIC', 'report-to': '{"endpoints":[{"url":"https:\\/\\/a.nel.cloudflare.com\\/report\\/v3?s=TgXqc1tPmyThVvUbVNKjB1QPKTuFqRH3iC7DGFxvvbX368HG9PnaXbfkjI9BXh05DP%2FlIL5uuZ9TtQHoCfEVg74t5r50dl06sH2awdeJDhgC30FG7O2HX%2FeXKt4A5g%3D%3D"}],"group":"cf-nel","max_age":604800}', 'nel': '{"success_fraction":0,"report_to":"cf-nel","max_age":604800}', 'server': 'cloudflare', 'cf-ray': '7f508a822a014534-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
+{'date': 'Thu, 21 Sep 2023 04:59:50 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'cf-cache-status': 'DYNAMIC', 'report-to': '{"endpoints":[{"url":"https:\\/\\/a.nel.cloudflare.com\\/report\\/v3?s=mwk3Qbha5z1GXF7s4fzhnWJ998lsr8mRu2LCkx3%2BVnH9jOHlxISPybcVgYefxWVQOCQFUhvXnDK3aJYh4bpZtdF0M%2BY%2FE0O1aVbiWtJ3dz2dtBALxAPc20eTD0Xe4Q%3D%3D"}],"group":"cf-nel","max_age":604800}', 'nel': '{"success_fraction":0,"report_to":"cf-nel","max_age":604800}', 'server': 'cloudflare', 'cf-ray': '809fbdb2ed3358d8-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
 
 b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n'
 ```
@@ -2141,6 +2152,13 @@ timed out```
 
 ---
 
+__Gfycat:__ https://gfycat.com/
+
+```
+Unable to find the server at gfycat.com```
+
+---
+
 __Gifnote:__ https://www.gifnote.com/
 
 ```
@@ -2151,7 +2169,7 @@ timed out```
 __Idomoo:__ https://idomoo.com/
 
 ```
-{'server': 'nginx', 'date': 'Fri, 11 Aug 2023 12:40:41 GMT', 'content-type': 'text/html', 'content-length': '146', 'connection': 'keep-alive', 'keep-alive': 'timeout=20', 'vary': 'Accept-Encoding', 'status': '403'}
+{'server': 'nginx', 'date': 'Thu, 21 Sep 2023 05:01:09 GMT', 'content-type': 'text/html', 'content-length': '146', 'connection': 'keep-alive', 'keep-alive': 'timeout=20', 'vary': 'Accept-Encoding', 'referrer-policy': 'origin', 'status': '403'}
 
 b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n'
 ```
@@ -2189,7 +2207,7 @@ Unable to find the server at www.kitchenbowl.com```
 __kmdr:__ https://kmdr.sh
 
 ```
-timed out```
+Unable to find the server at kmdr.sh```
 
 ---
 
@@ -2210,7 +2228,7 @@ timed out```
 __MathEmbed:__ https://mathembed.com
 
 ```
-timed out```
+Unable to find the server at mathembed.com```
 
 ---
 
@@ -2224,10 +2242,17 @@ Unable to find the server at nopaste.ml```
 __Official FM:__ https://official.fm
 
 ```
-{'server': 'nginx-rc', 'date': 'Fri, 11 Aug 2023 12:43:43 GMT', 'content-type': 'text/html; charset=iso-8859-1', 'content-length': '199', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'strict-transport-security': 'max-age=31536000', 'status': '403'}
+{'server': 'nginx-rc', 'date': 'Thu, 21 Sep 2023 05:03:29 GMT', 'content-type': 'text/html; charset=iso-8859-1', 'content-length': '199', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'strict-transport-security': 'max-age=31536000', 'status': '403'}
 
 b'<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">\n<html><head>\n<title>403 Forbidden</title>\n</head><body>\n<h1>Forbidden</h1>\n<p>You don\'t have permission to access this resource.</p>\n</body></html>\n'
 ```
+
+---
+
+__Picturelfy:__ https://www.picturelfy.com/
+
+```
+Unable to find the server at www.picturelfy.com```
 
 ---
 
@@ -2245,16 +2270,6 @@ Unable to find the server at www.shortnote.jp```
 
 ---
 
-__Spotify:__ https://spotify.com/
-
-```
-{'strict-transport-security': 'max-age=31536000', 'x-content-type-options': 'nosniff', 'content-type': 'text/plain', 'vary': 'Accept-Encoding', 'date': 'Fri, 11 Aug 2023 12:44:51 GMT', 'server': 'envoy', 'via': 'HTTP/2 edgeproxy, 1.1 google', 'alt-svc': 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000', 'transfer-encoding': 'chunked', 'status': '503', 'content-length': '91', '-content-encoding': 'gzip'}
-
-b'upstream connect error or disconnect/reset before headers. reset reason: connection timeout'
-```
-
----
-
 __Twitter:__ https://www.twitter.com/
 
 ```
@@ -2262,17 +2277,10 @@ Redirected more times than redirection_limit allows.```
 
 ---
 
-__UAPod:__ https://uapod.univ-antilles.fr/
-
-```
-[Errno 104] Connection reset by peer```
-
----
-
 __uStudio, Inc.:__ https://www.ustudio.com
 
 ```
-{'server': 'nginx', 'date': 'Fri, 11 Aug 2023 12:45:32 GMT', 'content-type': 'text/html', 'content-length': '146', 'connection': 'keep-alive', 'keep-alive': 'timeout=20', 'vary': 'Accept-Encoding', 'status': '403'}
+{'server': 'nginx', 'date': 'Thu, 21 Sep 2023 05:05:31 GMT', 'content-type': 'text/html', 'content-length': '146', 'connection': 'keep-alive', 'keep-alive': 'timeout=20', 'vary': 'Accept-Encoding', 'status': '403'}
 
 b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n'
 ```
