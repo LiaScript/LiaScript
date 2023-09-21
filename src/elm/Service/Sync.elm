@@ -68,6 +68,11 @@ connect param =
                             , ( "subscribeKey", JE.string subKey )
                             ]
 
+                    Via.P2PT urls ->
+                        urls
+                            |> String.split ","
+                            |> JE.list (String.trim >> JE.string)
+
                     _ ->
                         JE.null
               )

@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.12.4
+version:  0.12.5
 language: en
 narrator: UK English Male
 
@@ -296,11 +296,22 @@ This will apply the following four patches:
 
 ## Version-Changes
 
+**0.12.5** (21/09/2023)
+
+- chore: Npm update
+- improve: Add WebRTC-checks for classroom connections
+- update: oEmbed-list
+- fix: Terminal storage for code (only last line was persistently stored)
+- feat: Add P2PT to classroom connections
+- improve: SCORM support
+- improve: Enable Keyboard Accessibility for Ace-Editor
+- fix: Last slide of course will be restored on reload
+
 **0.12.4** (11/07/2023)
 
-fix: Loading external CSS on Chrome-based browsers
-improve: `icon: url` can now set per slide
-chore: Update npm packages (remove matrix-crdt)
+- fix: Loading external CSS on Chrome-based browsers
+- improve: `icon: url` can now set per slide
+- chore: Update npm packages (remove matrix-crdt)
 
 **0.12.3** (22/06/2023)
 
