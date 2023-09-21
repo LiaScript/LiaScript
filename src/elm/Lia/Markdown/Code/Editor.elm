@@ -7,6 +7,7 @@ module Lia.Markdown.Code.Editor exposing
     , decodeCursor
     , editor
     , enableBasicAutocompletion
+    , enableKeyboardAccessibility
     , enableLiveAutocompletion
     , enableSnippets
     , encode
@@ -270,6 +271,11 @@ showCursor =
 highlightActiveLine : Bool -> Html.Attribute msg
 highlightActiveLine =
     boolean "highlightActiveLine"
+
+
+enableKeyboardAccessibility : Bool -> Html.Attribute msg
+enableKeyboardAccessibility =
+    boolean "enableKeyboardAccessibility"
 
 
 showGutter : Bool -> Html.Attribute msg

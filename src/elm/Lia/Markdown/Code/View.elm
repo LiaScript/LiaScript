@@ -91,7 +91,7 @@ view { lang, theme, model, code, sync, cursors } =
                     let
                         errors =
                             get_annotations <|
-                                if project.syncMode == True && not (Array.isEmpty sync) then
+                                if project.syncMode && not (Array.isEmpty sync) then
                                     project.syncLog
 
                                 else
@@ -109,7 +109,7 @@ view { lang, theme, model, code, sync, cursors } =
                                         , isRunning = project.running
                                         , errors = errors
                                         , sync =
-                                            if project.syncMode == True && not (Array.isEmpty sync) then
+                                            if project.syncMode && not (Array.isEmpty sync) then
                                                 Array.get id_1 sync
 
                                             else

@@ -72,6 +72,7 @@ class Connector extends Base.Connector {
 
     // try if there is an SCORM 2004 api accessible
     let scormAPI = this.getAPI(window)
+
     if (scormAPI) {
       LOG('successfully opened API')
       this.scorm = scormAPI
@@ -124,14 +125,23 @@ class Connector extends Base.Connector {
   scanForAPI(win: any) {
     let nFindAPITries = 0
     let maxTries = 500
-    while (win.API_1484_11 == null && win.parent != null && win.parent != win) {
-      nFindAPITries++
-      if (nFindAPITries > maxTries) {
-        return null
+    try {
+      while (
+        win.API_1484_11 == null &&
+        win.parent != null &&
+        win.parent != win
+      ) {
+        nFindAPITries++
+        if (nFindAPITries > maxTries) {
+          return null
+        }
+        win = win.parent
       }
-      win = win.parent
+      return win.API_1484_11
+    } catch (e) {
+      WARN('scanForAPI =>', e.message)
     }
-    return win.API_1484_11
+    return null
   }
 
   // The GetAPI() function begins the process of searching for the LMS
@@ -202,19 +212,27 @@ class Connector extends Base.Connector {
 
       // store state information only in normal mode
       let mode = this.scorm.GetValue('cmi.mode')
-      this.active = mode === 'normal'
+      this.active = mode === 'normal' || !!window['ACTIVE']
 
       WARN(
-        'Running in',
-        mode,
-        'mode, results will ',
-        this.active ? '' : 'NOT',
-        'be stored!'
+        `Running in "${
+          mode || (window['ACTIVE'] ? 'always active' : 'unknown')
+        }" mode, results will${this.active ? ' ' : ' NOT '}be stored!`
       )
 
-      this.scaled_passing_score = JSON.parse(
+      this.scaled_passing_score = Utils.jsonParse(
         this.scorm.GetValue('cmi.scaled_passing_score')
       )
+
+      if (window['ACTIVE']) {
+        if (!this.scaled_passing_score) {
+          this.scaled_passing_score = window['MASTERY_SCORE'] || null
+        }
+
+        if (this.scorm.GetValue('cmi.completion_status') === null) {
+          this.scorm.SetValue('cmi.completion_status', 'incomplete')
+        }
+      }
 
       LOG('open location ...')
       this.location = Utils.jsonParse(this.scorm.GetValue('cmi.location'))

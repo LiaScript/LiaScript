@@ -161,12 +161,13 @@ customElements.define(
       annotations: string[]
       fontSize: string
       fontFamily: string
+      enableKeyboardAccessibility: boolean
     }
 
     constructor() {
       super()
 
-      ace.config.set('basePath', 'editor/')
+      // ace.config.set('basePath', 'editor/')
 
       this._focus = false
       this._ariaLabel = 'editor'
@@ -192,6 +193,7 @@ customElements.define(
         annotations: [],
         fontSize: '1.5rem',
         fontFamily: 'var(--global-font-mono,)',
+        enableKeyboardAccessibility: true,
       }
 
       let markers = {
@@ -231,6 +233,7 @@ customElements.define(
         fontSize: this.model.fontSize,
         fontFamily: this.model.fontFamily,
         highlightGutterLine: false,
+        enableKeyboardAccessibility: this.model.enableKeyboardAccessibility,
       })
 
       if (!this.model.showCursor) {
@@ -435,6 +438,17 @@ customElements.define(
       if (this.model.fontSize !== value) {
         this.model.fontSize = value
         this.setOption('fontSize', value)
+      }
+    }
+
+    get enableKeyboardAccessibility() {
+      return this.model.enableKeyboardAccessibility
+    }
+
+    set enableKeyboardAccessibility(value: boolean) {
+      if (this.model.enableKeyboardAccessibility !== value) {
+        this.model.enableKeyboardAccessibility = value
+        this.setOption('enableKeyboardAccessibility', value)
       }
     }
 

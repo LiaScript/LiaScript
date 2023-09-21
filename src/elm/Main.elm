@@ -120,7 +120,6 @@ init flags url key =
                 Nothing
                 |> model subURL Idle
                 |> load_readme script
-                |> navToFirstSlide
 
         -- Check if a URL was passed as a parameter
         ( _, Just query, _ ) ->
@@ -143,7 +142,6 @@ init flags url key =
                 url.fragment
                 |> model { courseUrl | query = Just query } Loading
                 |> getIndex query
-                |> navToFirstSlide
 
         -- Use the url query-parameter as the course-url
         ( Just query, _, _ ) ->
@@ -178,7 +176,6 @@ init flags url key =
                         fragment
                         |> model courseUrl Loading
                         |> getIndex query
-                        |> navToFirstSlide
 
                 Session.Class room fragment ->
                     Lia.Script.init
@@ -197,7 +194,6 @@ init flags url key =
                         |> model courseUrl Loading
                         |> openSync room
                         |> getIndex room.course
-                        |> navToFirstSlide
 
         _ ->
             Lia.Script.init
@@ -212,26 +208,6 @@ init flags url key =
                 url.fragment
                 |> model courseUrl Idle
                 |> Update.initIndex
-
-
-{-| **@private:** Make sure that the URL is modified accordingly.
--}
-navToFirstSlide : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-navToFirstSlide ( model, cmd ) =
-    let
-        session =
-            if model.session.url.fragment == Nothing then
-                Session.setFragment 1 model.session
-
-            else
-                model.session
-    in
-    ( { model | session = session }
-    , Cmd.batch
-        [ Session.update session
-        , cmd
-        ]
-    )
 
 
 get_base : Url.Url -> String
