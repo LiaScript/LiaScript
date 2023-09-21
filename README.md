@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.12.5
+version:  0.12.6
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,11 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.12.6** (21/09/2023)
+
+- fix: Npm build problems
+- update Easy-Speech for browser-based TTS output
 
 **0.12.5** (21/09/2023)
 
