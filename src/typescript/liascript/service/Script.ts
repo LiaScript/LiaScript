@@ -281,13 +281,7 @@ function liaEvalCode(code: string, send: Script.SendEval) {
       clear: () => send.lia('LIA: clear'),
     }
 
-    const perform = new Function(
-      'console',
-      'send',
-      code.replace('\\`', '`') + '\n'
-    )
-
-    send.lia(String(perform(console, send))) //, send, console)))
+    send.lia(String(eval(code.replace('\\`', '`') + '\n'))) //, send, console)))
   } catch (e: any) {
     if (e instanceof LiaError) {
       send.lia(e.message, e.details, false)
@@ -336,12 +330,7 @@ function liaExecCode(event: Lia.Event) {
     }
 
     try {
-      const perform = new Function(
-        'send',
-        event.message.param.code.replace('\\`', '`')
-      )
-
-      const result = perform(send)
+      const result = eval(event.message.param.code.replace('\\`', '`'))
 
       send.lia(result === undefined ? 'LIA: stop' : result)
     } catch (e: any) {
