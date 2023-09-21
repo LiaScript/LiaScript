@@ -174,6 +174,11 @@ function loadAsBlob(
  */
 function loadLink(url: string) {
   try {
+    // Chrome will CORB block this request, therefor it can only be loaded as blob
+    if (!!window.chrome && !url.startsWith('blob:')) {
+      throw new Error('Chrome does not support CORS for CSS files')
+    }
+
     let tag = document.createElement('link')
     tag.href = url
     tag.rel = 'stylesheet'

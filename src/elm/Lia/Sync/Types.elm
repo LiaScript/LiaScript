@@ -97,6 +97,7 @@ init supportedBackends =
             , Via.GUN { urls = Const.gunDB_ServerURL, persistent = False }
             , Via.Jitsi Const.jitsi_Domain
             , Via.Matrix { baseURL = "", userId = "", accessToken = "" }
+            , Via.P2PT Const.webTorrent_TrackerURLs
             , Via.PubNub { pubKey = "", subKey = "" }
             ]
                 |> List.map (isMember supported)
@@ -133,6 +134,9 @@ isMember list element =
             ( True, element )
 
         ( (Via.Jitsi _) :: _, Via.Jitsi _ ) ->
+            ( True, element )
+
+        ( (Via.P2PT _) :: _, Via.P2PT _ ) ->
             ( True, element )
 
         ( e :: es, _ ) ->

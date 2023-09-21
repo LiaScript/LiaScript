@@ -1,7 +1,7 @@
 import { LiaScript } from '../../typescript/liascript/index'
 import { Connector } from '../../typescript/connectors/Base/index'
 
-import customCSS from 'bundle-text:../../scss/main.scss'
+require('../../scss/main.scss')
 
 import '../../typescript/webcomponents/editor'
 import '../../typescript/webcomponents/formula'
@@ -10,6 +10,8 @@ import '../../typescript/webcomponents/chart'
 import '../../typescript/webcomponents/preview-lia'
 import '../../typescript/webcomponents/tooltip/index'
 import '../../typescript/webcomponents/format'
+
+import { allowedProtocol } from '../../typescript/helper'
 
 customElements.define(
   'lia-script',
@@ -31,24 +33,35 @@ customElements.define(
       }
     }
 
+    getCourseURL(): string | null {
+      let url: string | null = null
+
+      if (this.embed && document.location.href.match('LiaScript=') !== null) {
+        url = document.location.href.split('LiaScript=')[1]
+      } else {
+        url = this.getAttribute('src')
+      }
+
+      if (typeof url === 'string' && !allowedProtocol(url)) {
+        url = new URL(url, document.location.href).href
+      }
+
+      return url
+    }
+
     connectedCallback() {
       this.course = this.innerHTML || ''
 
       this.course = this.course.trim()
 
-      this.courseURL = this.getAttribute('src')
-      //this.innerHTML = ''
-
-      const source = this.courseURL ? `src="${this.courseURL}"` : null
-
-      const course = source ? undefined : this.course
+      this.courseURL = this.getCourseURL()
 
       this.embed = this.getAttribute('embed') !== 'false'
+
       this.responsiveVoiceKey = this.getAttribute('responsiveVoiceKey')
       this.scriptUrl = document.currentScript?.src
 
-      // shadowRoot.appendChild(this.container)
-      if (this.embed) {
+      if (this.embed && document.location.href.match('LiaScript=') === null) {
         const shadowRoot = this.attachShadow({
           mode: 'closed',
         })
@@ -72,36 +85,35 @@ customElements.define(
 
         this.style.display = 'block'
 
-        iframe.src = 'http://localhost:1234/?README.md#1'
+        iframe.src += '?LiaScript=' + this.courseURL
         iframe.name = 'liascript'
 
         shadowRoot.append(iframe)
-
-        iframe.contentDocument?.write(`<!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-          <style>
-            ${customCSS}
-          </style>
-          <script type="module" src="${this.scriptUrl}"></script>
-        <body>
-          <lia-script ${source} embed="false">${course}</lia-script>
-        </body>
-        </html>`)
-
-        iframe.contentDocument?.close()
       } else {
-        const self = this
-        setTimeout(function () {
-          self.initLia()
-        }, 1)
+        let course = ''
+
+        if (document.location.href.match('LiaScript=') !== null) {
+          course = document.location.href.split('LiaScript=')[1]
+        }
+
+        if (
+          (course && this.courseURL === course) ||
+          (!this.embed && this.courseURL)
+        ) {
+          const self = this
+          setTimeout(function () {
+            self.initLia()
+          }, 1)
+        }
       }
     }
 
     initLia() {
-      this.courseURL = this.getAttribute('src')
+      this.courseURL = this.getCourseURL()
+
+      if (this.embed && document.location.href.match('LiaScript=') !== null) {
+        this.courseURL = document.location.href.split('LiaScript=')[1]
+      }
 
       // Load the Markdown document defined by the src attribute
       if (typeof this.courseURL === 'string') {

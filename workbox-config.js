@@ -4,5 +4,6 @@ module.exports = {
     "**/*.{ico,jpg,png,html,js,svg,webmanifest}"
   ],
   swSrc: "./src/typescript/sw.js",
-  swDest: "./dist/sw.js"
+  swDest: "./dist/sw.js",
+  maximumFileSizeToCacheInBytes: 5000000, 
 };

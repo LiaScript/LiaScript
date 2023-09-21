@@ -177,6 +177,10 @@
   input { /* 1 */
     overflow: visible;
   }
+
+  optgroup {
+    background-color: rgb(var(--color-background));
+  }
   
   /**
    * Remove the inheritance of text transform in Edge, Firefox, and IE.
