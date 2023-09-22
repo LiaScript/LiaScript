@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.12.6
+version:  0.12.7
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,13 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.12.7** (22/09/2023)
+
+- feat: Add `@style` macro, which reduces the need for adding custom styles.
+  This macros will be loaded faster during the initialization phase than using
+  the `@link` method. In contrast to `@link` the `@style` will only be applied
+  onto the local course and will not be imported into others.
 
 **0.12.6** (21/09/2023)
 

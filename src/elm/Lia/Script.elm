@@ -40,6 +40,7 @@ import List.Extra
 import Return exposing (Return)
 import Service.Database
 import Service.Event exposing (Event)
+import Service.Resource
 import Session exposing (Screen, Session)
 import Translations
 import Url
@@ -232,7 +233,15 @@ thus one section at a time. After the model has been initialized the function
 `parse_section` should be called.
 
 -}
-init_script : Model -> String -> ( Model, Maybe String, List String )
+init_script :
+    Model
+    -> String
+    ->
+        { model : Model
+        , code : Maybe String
+        , templates : List String
+        , event : Maybe Event
+        }
 init_script model script =
     case Parser.parse_definition model.origin script of
         Ok ( definition, code ) ->
@@ -240,66 +249,75 @@ init_script model script =
                 settings =
                     model.settings
             in
-            ( { model
-                | definition = { definition | attributes = [] }
-                , translation =
-                    definition.language
-                        |> Translations.getLnFromCode
-                        |> Maybe.withDefault Translations.En
-                , langCode = definition.language
-                , langCodeOriginal = definition.language
-                , persistent = checkPersistency definition.macro
-                , settings =
-                    { settings
-                        | light =
-                            definition.lightMode
-                                |> Maybe.withDefault settings.light
-                        , mode =
-                            definition.mode
-                                |> Maybe.withDefault settings.mode
-                        , customTheme = Dict.get "custom" definition.macro
-                        , translateWithGoogle =
-                            case
-                                definition.macro
-                                    |> Dict.get "translateWithGoogle"
-                                    |> Maybe.map checkFalse
-                            of
-                                Just False ->
-                                    Nothing
+            { model =
+                { model
+                    | definition = { definition | attributes = [] }
+                    , translation =
+                        definition.language
+                            |> Translations.getLnFromCode
+                            |> Maybe.withDefault Translations.En
+                    , langCode = definition.language
+                    , langCodeOriginal = definition.language
+                    , persistent = checkPersistency definition.macro
+                    , settings =
+                        { settings
+                            | light =
+                                definition.lightMode
+                                    |> Maybe.withDefault settings.light
+                            , mode =
+                                definition.mode
+                                    |> Maybe.withDefault settings.mode
+                            , customTheme = Dict.get "custom" definition.macro
+                            , translateWithGoogle =
+                                case
+                                    definition.macro
+                                        |> Dict.get "translateWithGoogle"
+                                        |> Maybe.map checkFalse
+                                of
+                                    Just False ->
+                                        Nothing
 
-                                _ ->
-                                    settings.translateWithGoogle
-                        , hasShareApi =
-                            case
-                                definition.macro
-                                    |> Dict.get "sharing"
-                                    |> Maybe.map checkFalse
-                            of
-                                Just False ->
-                                    Nothing
+                                    _ ->
+                                        settings.translateWithGoogle
+                            , hasShareApi =
+                                case
+                                    definition.macro
+                                        |> Dict.get "sharing"
+                                        |> Maybe.map checkFalse
+                                of
+                                    Just False ->
+                                        Nothing
 
-                                _ ->
-                                    settings.hasShareApi
-                        , sync =
-                            case
-                                definition.macro
-                                    |> Dict.get "classroom"
-                                    |> Maybe.map checkFalse
-                            of
-                                Just False ->
-                                    Nothing
+                                    _ ->
+                                        settings.hasShareApi
+                            , sync =
+                                case
+                                    definition.macro
+                                        |> Dict.get "classroom"
+                                        |> Maybe.map checkFalse
+                                of
+                                    Just False ->
+                                        Nothing
 
-                                _ ->
-                                    settings.sync
-                    }
-              }
-                |> add_todos definition
-            , Just code
-            , definition.imports
-            )
+                                    _ ->
+                                        settings.sync
+                        }
+                }
+                    |> add_todos definition
+            , code = Just code
+            , templates = definition.imports
+            , event =
+                definition.macro
+                    |> Dict.get "style"
+                    |> Maybe.map Service.Resource.style
+            }
 
         Err msg ->
-            ( { model | error = Just msg }, Nothing, [] )
+            { model = { model | error = Just msg }
+            , code = Nothing
+            , templates = []
+            , event = Nothing
+            }
 
 
 {-| Successively parse section after section. Every time this function is
