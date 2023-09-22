@@ -29,6 +29,12 @@ export const Service = {
         loadLink(event.message.param)
         break
 
+      case 'style':
+        let tag = document.createElement('style')
+        tag.innerHTML = event.message.param
+        document.head.appendChild(tag)
+        break
+
       default:
         log.warn('(Service ', this.PORT, ') unknown message =>', event.message)
     }
@@ -177,7 +183,7 @@ function loadAsBlob(
 function loadLink(url: string) {
   try {
     // Chrome will CORB block this request, therefor it can only be loaded as blob
-    if (!!window.chrome && !url.startsWith('blob:')) {
+    if (!!window['chrome'] && !url.startsWith('blob:')) {
       throw new Error('Chrome does not support CORS for CSS files')
     }
 
