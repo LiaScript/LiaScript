@@ -257,12 +257,12 @@ parsing model =
 load_readme : String -> Model -> ( Model, Cmd Msg )
 load_readme readme model =
     let
-        ( lia, code, templates ) =
+        initial =
             readme
                 |> String.replace "\u{000D}" ""
                 |> Lia.Script.init_script model.lia
     in
-    load model lia code templates
+    load model initial.model initial.code initial.templates
 
 
 load : Model -> Lia.Script.Model -> Maybe String -> List String -> ( Model, Cmd Msg )
