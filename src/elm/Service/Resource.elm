@@ -1,6 +1,7 @@
 module Service.Resource exposing
     ( link
     , script
+    , style
     )
 
 import Json.Encode as JE
@@ -23,11 +24,19 @@ script url =
     event "script" url
 
 
+{-| Generate an event that will dynamically load (inject) a custom
+<style> - tag into the head of the document.
+-}
+style : String -> Event
+style body =
+    event "style" body
+
+
 {-| **private:** Helper function to generate event - stubs that will be handled
 by the service module `Resource.ts`.
 -}
 event : String -> String -> Event
-event type_ url =
-    { cmd = type_, param = JE.string url }
+event type_ param_ =
+    { cmd = type_, param = JE.string param_ }
         |> Event.init "resource"
         |> Event.withNoReply

@@ -13,6 +13,7 @@ import Base64
 import Browser
 import Browser.Events
 import Browser.Navigation as Navigation
+import Conditional.List as CList
 import Const
 import Dict
 import Error.Message
@@ -536,41 +537,48 @@ versions of both are compared.
 load_readme : String -> Model -> ( Model, Cmd Msg )
 load_readme readme model =
     let
-        ( lia, code, templates ) =
+        initial =
             readme
                 |> removeCR
                 |> Lia.Script.init_script model.lia
     in
     if
         model.preload
-            |> Maybe.map (Index.inCache lia.definition.version)
+            |> Maybe.map (Index.inCache initial.model.definition.version)
             |> Maybe.withDefault False
     then
         ( model
-        , { version = lia.definition.version, url = lia.readme }
+        , { version = initial.model.definition.version, url = initial.model.readme }
             |> Service.Database.index_restore
             |> event2js
         )
 
     else
-        load model lia code templates
+        load model initial
 
 
 {-| Start parsing and download external imports (templates).
 -}
-load : Model -> Lia.Script.Model -> Maybe String -> List String -> ( Model, Cmd Msg )
-load model lia code templates =
-    case code of
+load : Model -> { model : Lia.Script.Model, code : Maybe String, templates : List String, event : Maybe Event } -> ( Model, Cmd Msg )
+load model initial =
+    case initial.code of
         Just code_ ->
             ( { model
-                | lia = lia
-                , state = Parsing True <| List.length templates
-                , code = code
+                | lia = initial.model
+                , state =
+                    initial.templates
+                        |> List.length
+                        |> Parsing True
+                , code = initial.code
                 , size = String.length code_ |> toFloat
               }
-            , templates
+            , initial.templates
                 |> List.map (download True)
                 |> (::) (message LiaParse)
+                |> CList.addWhen
+                    (initial.event
+                        |> Maybe.map event2js
+                    )
                 |> Cmd.batch
             )
 
@@ -578,7 +586,7 @@ load model lia code templates =
             startWithError
                 { model
                     | state =
-                        lia.error
+                        initial.model.error
                             |> Maybe.withDefault ""
                             |> Error.Report.add model.state
                 }
