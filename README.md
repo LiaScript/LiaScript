@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.12.7
+version:  0.12.8
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,11 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.12.0** (26/09/2023)
+
+- improve: Add "skip-navigation" link to tabulator order, which will only appear
+  in keyboard navigation
 
 **0.12.7** (22/09/2023)
 
