@@ -48,7 +48,18 @@ view : Screen -> Bool -> Model -> Html Msg
 view screen hasIndex model =
     Html.div
         (Settings.design model.settings)
-        (viewIndex hasIndex model :: viewSlide screen model)
+        (Html.a
+            [ Attr.class "lia-skip-nav"
+            , model.section_active
+                |> (+) 1
+                |> String.fromInt
+                |> (++) "#"
+                |> Attr.href
+            ]
+            [ Html.text "skip navigation" ]
+            :: viewIndex hasIndex model
+            :: viewSlide screen model
+        )
 
 
 viewFullPage : Screen -> Model -> List (Html Msg)
@@ -117,7 +128,11 @@ viewIndex hasIndex model =
         --|> Html.map Script
         , if hasIndex then
             Html.div [ Attr.class "lia-toc__bottom" ]
-                [ Index.bottom model.translation model.settings.table_of_contents Home ]
+                [ Index.bottom
+                    model.translation
+                    model.settings.table_of_contents
+                    Home
+                ]
 
           else
             Html.text ""

@@ -95,11 +95,31 @@ type Msg
     | TTSReplay Bool
     | Media ( String, Maybe Int, Maybe Int )
     | Pane SplitPane.Msg
+    | Focus
 
 
 update : Session -> Msg -> Model -> Return Model Msg Markdown.Msg
 update session msg model =
     case msg of
+        Focus ->
+            let
+                settings =
+                    model.settings
+            in
+            { model
+                | settings =
+                    { settings
+                        | table_of_contents =
+                            if session.screen.width <= Const.globalBreakpoints.sm then
+                                False
+
+                            else
+                                settings.table_of_contents
+                    }
+            }
+                |> Return.val
+                |> Return.batchEvent (Service.Slide.initialize model.section_active)
+
         Load force idx ->
             let
                 settings =
