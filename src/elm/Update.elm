@@ -233,27 +233,42 @@ update msg model =
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model
-                    , case ( url.query, model.session.url.query ) of
+                    case ( url.query, model.session.url.query ) of
                         ( Just newCourseURL, Just oldCourseURL ) ->
-                            if newCourseURL /= oldCourseURL || url.fragment /= Just "" then
-                                url
+                            if newCourseURL == oldCourseURL && url.fragment == model.session.url.fragment then
+                                let
+                                    return =
+                                        Lia.Script.skip_to_main_content model.session model.lia
+                                in
+                                ( { model | lia = return.value }
+                                , batch LiaScript return
+                                )
+
+                            else if newCourseURL /= oldCourseURL || url.fragment /= Just "" then
+                                ( model
+                                , url
                                     |> Url.toString
                                     |> Navigation.load
+                                )
 
                             else
-                                Cmd.none
+                                ( model
+                                , Cmd.none
+                                )
 
                         ( Nothing, Just oldCourseURL ) ->
-                            { url | query = Just oldCourseURL }
+                            ( model
+                            , { url | query = Just oldCourseURL }
                                 |> Url.toString
                                 |> Navigation.load
+                            )
 
                         _ ->
-                            url
+                            ( model
+                            , url
                                 |> Url.toString
                                 |> Navigation.load
-                    )
+                            )
 
                 Browser.External href ->
                     ( model, Navigation.load href )

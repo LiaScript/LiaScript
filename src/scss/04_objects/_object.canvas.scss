@@ -29,7 +29,27 @@ $slide-margin-left-textbook: 19rem !default;
   width: 100vw;
   overflow-x: hidden;
 
-  @include breakpoint("sm", "max") {
+  .lia-skip-nav {
+    position: absolute;
+    z-index: 1000;
+
+    padding: 0.5rem 1.5rem;
+    background-color: rgb(var(--color-background));
+    border: 1px solid rgb(var(--color-border));
+    transition: transform 325ms ease-in;
+
+    left: 50%;
+    transform: translate(-50%, -120%);
+    top: 1rem;
+  }
+
+  .lia-skip-nav:focus {
+    left: 50%;
+    transform: translate(-50%, 0%);
+    top: 1rem;
+  }
+
+  @include breakpoint('sm', 'max') {
     /* push support-menu-toggler to the right if toc is open,
        prevent that buttons overlay each other */
     &.lia-toc--visible #lia-btn-support {
@@ -52,7 +72,7 @@ $slide-margin-left-textbook: 19rem !default;
     }
   }
 
-  @include breakpoint("sm") {
+  @include breakpoint('sm') {
     &.lia-toc--visible {
       left: $toc-width-desktop;
       width: calc(100% - #{$toc-width-desktop});
@@ -76,14 +96,14 @@ $slide-margin-left-textbook: 19rem !default;
     }
   }
 
-  @include breakpoint("md") {
+  @include breakpoint('md') {
     &.lia-toc--visible.lia-mode--presentation .lia-slide__content,
     &.lia-toc--visible.lia-mode--textbook .lia-slide__content {
       //width: auto;
     }
   }
 
-  @include breakpoint("lg") {
+  @include breakpoint('lg') {
     flex-direction: row;
 
     &.lia-support--visible {
@@ -98,7 +118,7 @@ $slide-margin-left-textbook: 19rem !default;
       height: calc(100vh - 14.2rem + 7rem);
     }
 
-    @include breakpoint("lg") {
+    @include breakpoint('lg') {
       .lia-header {
         right: $notes-width-desktop;
       }
@@ -116,11 +136,11 @@ $slide-margin-left-textbook: 19rem !default;
       max-width: calc(71.1rem + #{$slide-margin-left-textbook} + 3rem);
       padding-left: 3rem !important;
 
-      @include breakpoint("sm") {
+      @include breakpoint('sm') {
         margin: 1.25rem 0 2rem;
       }
 
-      @include breakpoint("md") {
+      @include breakpoint('md') {
         margin: 4.5rem 0 2rem;
       }
     }
@@ -130,7 +150,7 @@ $slide-margin-left-textbook: 19rem !default;
       justify-content: center;
     }
 
-    @include breakpoint("md") {
+    @include breakpoint('md') {
       .lia-slide__content {
         padding-left: $slide-margin-left-textbook;
       }
@@ -147,7 +167,7 @@ $slide-margin-left-textbook: 19rem !default;
       max-width: 124.6rem;
     }
 
-    @include breakpoint("lg") {
+    @include breakpoint('lg') {
       .lia-slide__content {
         // margin-left: calc(#{$slide-margin-left-presentation} - 3rem);
       }
