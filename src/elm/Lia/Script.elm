@@ -12,6 +12,7 @@ module Lia.Script exposing
     , load_slide
     , pages
     , parse_section
+    , skip_to_main_content
     , subscriptions
     , update
     , view
@@ -90,6 +91,11 @@ this is the first load, then some more initialization has to be done, so use
 load_slide : Session -> Bool -> Int -> Model -> Return Model Msg Markdown.Msg
 load_slide session force =
     Load force >> Lia.Update.update session
+
+
+skip_to_main_content : Session -> Model -> Return Model Msg Markdown.Msg
+skip_to_main_content session =
+    Lia.Update.update session Focus
 
 
 {-| To be called if the course is has been downloaded and preprocessed, and should
