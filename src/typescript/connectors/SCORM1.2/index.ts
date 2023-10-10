@@ -55,7 +55,7 @@ IF YOU ARE AN ELABORATE AND EXPERIENCED SCORM DEVELOPER?
 
 And you want to help us, to extend this service, please contact us via LiaScript@web.de
 
-Hava fun ;-)`
+Have fun ;-)`
     )
 
     if (window.top && window.top.API) {
@@ -97,18 +97,16 @@ Hava fun ;-)`
 
   init() {
     if (this.scorm) {
-      LOG('Initialize ', this.scorm.LMSInitialize(''))
-
       // store state information only in normal mode
-      let mode = this.scorm.LMSGetValue('cmi.core.lesson_mode')
-      this.active = mode === 'normal'
+      let mode = this.scorm.LMSGetValue('cmi.core.lesson_mode') || 'unknown'
+      this.active = mode === 'normal' || mode === 'unknown'
 
-      LOG(
-        'Running in',
-        mode,
-        'mode, results will ',
-        this.active ? '' : 'NOT',
-        'be stored!'
+      WARN(
+        'Running in "' +
+          mode +
+          '" mode, results will ' +
+          (this.active ? '' : 'NOT') +
+          ' be stored!'
       )
 
       LOG('open location ...')
@@ -120,44 +118,17 @@ Hava fun ;-)`
       // if no location has been stored so far, this is the first visit
       if (this.location === null) {
         this.slide(0)
-
-        // store all data as interactions with an sequential id
-        let id = 0
-        id = this.initFirst('quiz', id)
-        id = this.initFirst('survey', id)
-        id = this.initFirst('task', id)
-      } else {
-        // restore the current state from the interactions
-        let id = 0
-        id = this.initSecond('quiz', id)
-        id = this.initSecond('survey', id)
-        id = this.initSecond('task', id)
       }
+      // restore the current state from the interactions
+      let id = 0
+      id = this.initSecond('quiz', id)
+      id = this.initSecond('survey', id)
+      id = this.initSecond('task', id)
 
       // calculate the new/old scoring value
       window['SCORE'] = 0
       this.score()
     }
-  }
-
-  /**
-   * This is helper that populates any kind of states with sequential ids as
-   * interactions within the backend.
-   * @param key
-   * @param id
-   * @returns the last sequence id
-   */
-  initFirst(key: 'quiz' | 'survey' | 'task', id: number) {
-    for (let slide = 0; slide < this.db[key].length; slide++) {
-      this.id[key].push([])
-
-      for (let i = 0; i < this.db[key][slide].length; i++) {
-        //this.setInteraction(id, `${key}:${slide}-${i}`)
-        this.id[key][slide].push(id)
-        id++
-      }
-    }
-    return id
   }
 
   /**
@@ -246,13 +217,18 @@ Hava fun ;-)`
    * the course is now ready. If so, we will open the last visited slide.
    */
   open(_uri: string, _version: number, _slide: number) {
-    if (this.location !== null) window.LIA.goto(this.location)
+    if (this.location !== null) {
+      const location = this.location
+      setTimeout(function () {
+        window['LIA'].goto(location)
+      }, 500)
+    }
   }
 
   slide(id: number): void {
     this.location = id
 
-    if (this.scorm) {
+    if (this.scorm && this.active) {
       this.scorm.LMSSetValue('cmi.core.lesson_location', JSON.stringify(id))
       this.scorm.LMSCommit('')
     }

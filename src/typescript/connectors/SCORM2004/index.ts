@@ -211,38 +211,42 @@ class Connector extends Base.Connector {
       LOG('Initialize ', this.scorm.Initialize(''))
 
       // store state information only in normal mode
-      let mode = this.scorm.GetValue('cmi.mode')
-      this.active = mode === 'normal' || !!window['ACTIVE']
+      let mode = this.scorm.GetValue('cmi.mode') || 'undefined'
+      this.active = mode === 'normal' || mode === 'undefined'
 
       WARN(
-        `Running in "${
-          mode || (window['ACTIVE'] ? 'always active' : 'unknown')
-        }" mode, results will${this.active ? ' ' : ' NOT '}be stored!`
+        'Running in "' +
+          mode +
+          '" mode, results will ' +
+          (this.active ? '' : 'NOT') +
+          ' be stored!'
       )
 
-      this.scaled_passing_score = Utils.jsonParse(
-        this.scorm.GetValue('cmi.scaled_passing_score')
-      )
+      if (this.active) {
+        this.scaled_passing_score = Utils.jsonParse(
+          this.scorm.GetValue('cmi.scaled_passing_score')
+        )
 
-      if (window['ACTIVE']) {
         if (!this.scaled_passing_score) {
           this.scaled_passing_score = window['MASTERY_SCORE'] || null
         }
 
         if (this.scorm.GetValue('cmi.completion_status') === null) {
-          this.scorm.SetValue('cmi.completion_status', 'incomplete')
+          this.write('cmi.completion_status', 'incomplete')
         }
-      }
 
-      LOG('open location ...')
-      this.location = Utils.jsonParse(this.scorm.GetValue('cmi.location'))
-      LOG('... ', this.location)
+        LOG('open location ...')
+        this.location = Utils.jsonParse(this.scorm.GetValue('cmi.location'))
+        LOG('... ', this.location)
+      }
 
       // if no location has been stored so far, this is the first visit
       if (this.location === null) {
         this.slide(0)
+      }
 
-        // store all data as interactions with an sequential id
+      const interactionsStored = this.countInteractions()
+      if (interactionsStored === 0 || interactionsStored === null) {
         let id = 0
         id = this.initFirst('quiz', id)
         id = this.initFirst('survey', id)
@@ -281,6 +285,14 @@ class Connector extends Base.Connector {
     return id
   }
 
+  countInteractions(): number | null {
+    if (!this.scorm) return null
+
+    let value = parseInt(this.scorm.GetValue('cmi.interactions._count'))
+
+    return value ? value : null
+  }
+
   /**
    * If the data has already been stored it is loaded with this method and the
    * sequential ids are restored to the `this.id` look-up table.
@@ -313,7 +325,12 @@ class Connector extends Base.Connector {
    * the course is now ready. If so, we will open the last visited slide.
    */
   open(_uri: string, _version: number, _slide: number) {
-    if (this.location !== null) window.LIA.goto(this.location)
+    if (this.location !== null) {
+      const location = this.location
+      setTimeout(function () {
+        window['LIA'].goto(location)
+      }, 500)
+    }
   }
 
   /**
@@ -435,7 +452,7 @@ class Connector extends Base.Connector {
    * @param data
    */
   write(uri: CMIElement, data: string): void {
-    if (this.scorm) {
+    if (this.scorm && this.active) {
       LOG('write: ', uri, data)
 
       if (this.scorm.SetValue(uri, data) === 'false') {
