@@ -246,7 +246,10 @@ class Connector extends Base.Connector {
       }
 
       const interactionsStored = this.countInteractions()
-      if (interactionsStored === 0 || interactionsStored === null) {
+      if (
+        this.active &&
+        (interactionsStored === 0 || interactionsStored === null)
+      ) {
         let id = 0
         id = this.initFirst('quiz', id)
         id = this.initFirst('survey', id)
