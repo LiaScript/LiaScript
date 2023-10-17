@@ -39,7 +39,7 @@
     "build:dev": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/dev/index.html && npm run sw",
     "watch:dev": "npx parcel serve src/entry/dev/index.html --open",
     "build:preview": "npx parcel build --no-source-maps --public-url . src/typescript/webcomponents/preview-lia.ts",
-    "build:scorm1.2": "npm run clean && ./node_modules/parcel/lib/bin.js build --no-source-maps --public-url . src/entry/scorm1.2/index.html",
+    "build:scorm1.2": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/scorm1.2/index.html",
     "watch:scorm1.2": "npx parcel serve src/entry/scorm1.2/index.html",
     "build:scorm2004": "npm run clean && ./node_modules/parcel/lib/bin.js build --no-source-maps --public-url . src/entry/scorm2004/index.html",
     "watch:scorm2004": "npx parcel serve src/entry/scorm2004/index.html",
