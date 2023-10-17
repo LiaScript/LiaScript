@@ -344,13 +344,16 @@ class Connector extends Base.Connector {
    * @returns the loaded dataset or nothing (for code)
    */
   load(record: Base.Record) {
-    if (!this.active) return
-
     switch (record.table) {
       case 'quiz':
       case 'survey':
       case 'task':
-        LOG('loading ', record.table, record.id, this.db.task[record.id])
+        LOG(
+          'loading ',
+          record.table,
+          record.id,
+          this.db[record.table][record.id]
+        )
         return this.db[record.table][record.id]
     }
   }
@@ -540,8 +543,6 @@ class Connector extends Base.Connector {
    * @returns
    */
   getInteraction(id: number): any | null {
-    if (!this.active) return null
-
     try {
       if (this.scorm) {
         let val = this.scorm.GetValue(`cmi.interactions.${id}.learner_response`)

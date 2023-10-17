@@ -104,9 +104,9 @@ Have fun ;-)`
       WARN(
         'Running in "' +
           mode +
-          '" mode, results will ' +
-          (this.active ? '' : 'NOT') +
-          ' be stored!'
+          '" mode, results will' +
+          (this.active ? ' ' : ' NOT ') +
+          'be stored!'
       )
 
       LOG('open location ...')
@@ -325,9 +325,7 @@ Have fun ;-)`
    * @param id
    * @returns
    */
-  getObjective(id: number): any | null {
-    if (!this.active) return null
-
+  getObjective(id: number): any {
     let data: undefined | string
 
     try {
@@ -366,8 +364,6 @@ Have fun ;-)`
    * @returns the loaded dataset or nothing (for code)
    */
   load(record: Base.Record) {
-    if (!this.active) return
-
     switch (record.table) {
       case 'quiz':
       case 'survey':
