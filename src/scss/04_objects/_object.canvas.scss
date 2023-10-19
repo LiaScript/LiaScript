@@ -243,9 +243,12 @@ $slide-margin-left-textbook: 19rem !default;
       & #lia-btn-toc {
         transform: translate(-0.5rem, -50%);
 
-        @include breakpoint('sm', 'min') {
-          background-color: rgb(var(--color-background)) !important;
+        color: rgb(var(--color-background));
+
+        html.lia-theme-default & {
+          color: rgb(var(--color-highlight));
         }
+
         height: 2.2rem;
         display: inline;
         > i {
