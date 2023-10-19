@@ -23,6 +23,7 @@ type Type
     | HtmlNode String
     | HtmlVoidNode String
     | LiaKeep
+    | SVG
 
 
 getContent : Node content -> List content

@@ -71,16 +71,19 @@ tag parser ( tagType, attributes ) =
                 |> keep (stringTill (closingTag "lia-keep"))
                 |> map InnerHtml
 
+        Tag.SVG ->
+            whitespace
+                |> ignore (string ">")
+                |> keep (stringTill (closingTag "svg"))
+                |> map (toStringNode "svg" attributes >> InnerHtml)
+
 
 toStringNode : String -> Parameters -> String -> String
 toStringNode name attributes tagBody =
     "<"
         ++ name
         ++ " "
-        ++ (attributes
-                |> List.map (\( key, value ) -> key ++ "=\"" ++ value ++ "\"")
-                |> String.join " "
-           )
+        ++ Params.toString attributes
         ++ ">"
         ++ tagBody
         ++ "</"
@@ -106,10 +109,7 @@ toTag name =
             succeed Tag.LiaKeep
 
         "svg" ->
-            -- SVG and web-components are handled equally, since elm cannot directly
-            -- show SVGs at the moment ... later this might change if there is a tighter
-            -- integration between LiaScript and SVG
-            succeed (Tag.WebComponent name)
+            succeed Tag.SVG
 
         _ ->
             succeed
