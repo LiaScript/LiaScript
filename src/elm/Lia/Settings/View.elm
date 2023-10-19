@@ -675,7 +675,6 @@ btnChat { lang, tabbable, hide, chat } =
             , Attr.class "lia-btn lia-btn--transparent"
             , A11y_Widget.hasMenuPopUp
             , A11y_Widget.expanded chat.show
-            , Attr.style "margin-right" "1rem"
             , Attr.class <|
                 if chat.updates && not chat.show then
                     "shake"

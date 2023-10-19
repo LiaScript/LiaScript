@@ -29,6 +29,26 @@ $slide-margin-left-textbook: 19rem !default;
   width: 100vw;
   overflow-x: hidden;
 
+  .lia-skip-nav {
+    position: absolute;
+    z-index: 1000;
+
+    padding: 0.5rem 1.5rem;
+    background-color: rgb(var(--color-background));
+    border: 1px solid rgb(var(--color-border));
+    transition: transform 325ms ease-in;
+
+    left: 50%;
+    transform: translate(-50%, -120%);
+    top: 1rem;
+  }
+
+  .lia-skip-nav:focus {
+    left: 50%;
+    transform: translate(-50%, 0%);
+    top: 1rem;
+  }
+
   @include breakpoint('sm', 'max') {
     /* push support-menu-toggler to the right if toc is open,
        prevent that buttons overlay each other */

@@ -18,7 +18,7 @@ class Connector extends Base.Connector {
 
   /**
    * To simplify the handling of state data, these are preserved and loaded by
-   * this db, which is also replicated as a scorm interaction. The state is
+   * this db, which is also replicated as a scorm objective. The state is
    * stored as the associated learner_response (type "long-fill-in")
    */
   private db: {
@@ -55,7 +55,7 @@ IF YOU ARE AN ELABORATE AND EXPERIENCED SCORM DEVELOPER?
 
 And you want to help us, to extend this service, please contact us via LiaScript@web.de
 
-Hava fun ;-)`
+Have fun ;-)`
     )
 
     if (window.top && window.top.API) {
@@ -97,41 +97,44 @@ Hava fun ;-)`
 
   init() {
     if (this.scorm) {
-      LOG('Initialize ', this.scorm.LMSInitialize(''))
-
       // store state information only in normal mode
-      let mode = this.scorm.LMSGetValue('cmi.core.lesson_mode')
-      this.active = mode === 'normal'
+      let mode = this.scorm.LMSGetValue('cmi.core.lesson_mode') || 'unknown'
+      this.active = mode === 'normal' || mode === 'unknown'
 
-      LOG(
-        'Running in',
-        mode,
-        'mode, results will ',
-        this.active ? '' : 'NOT',
-        'be stored!'
+      WARN(
+        'Running in "' +
+          mode +
+          '" mode, results will' +
+          (this.active ? ' ' : ' NOT ') +
+          'be stored!'
       )
 
       LOG('open location ...')
       this.location = Utils.jsonParse(
         this.scorm.LMSGetValue('cmi.core.lesson_location')
       )
-      LOG('... ', this.location)
+      LOG('... ', this.location || 0)
 
       // if no location has been stored so far, this is the first visit
       if (this.location === null) {
         this.slide(0)
+      }
 
-        // store all data as interactions with an sequential id
-        let id = 0
+      let id = 0
+      if (this.countObjectives() === 0 && this.active) {
+        // store all data as objectives with an sequential id
+        LOG('seeding values ...')
         id = this.initFirst('quiz', id)
         id = this.initFirst('survey', id)
         id = this.initFirst('task', id)
+        LOG('... done')
       } else {
-        // restore the current state from the interactions
-        let id = 0
+        // restore the current state from the objective
+        LOG('restoring values ...')
         id = this.initSecond('quiz', id)
         id = this.initSecond('survey', id)
         id = this.initSecond('task', id)
+        LOG('... done')
       }
 
       // calculate the new/old scoring value
@@ -142,7 +145,7 @@ Hava fun ;-)`
 
   /**
    * This is helper that populates any kind of states with sequential ids as
-   * interactions within the backend.
+   * objectives within the backend.
    * @param key
    * @param id
    * @returns the last sequence id
@@ -150,9 +153,8 @@ Hava fun ;-)`
   initFirst(key: 'quiz' | 'survey' | 'task', id: number) {
     for (let slide = 0; slide < this.db[key].length; slide++) {
       this.id[key].push([])
-
       for (let i = 0; i < this.db[key][slide].length; i++) {
-        //this.setInteraction(id, `${key}:${slide}-${i}`)
+        this.setObjective(id, this.db[key][slide][i])
         this.id[key][slide].push(id)
         id++
       }
@@ -172,7 +174,7 @@ Hava fun ;-)`
       this.id[key].push([])
 
       for (let i = 0; i < this.db[key][slide].length; i++) {
-        let data = this.getInteraction(id)
+        let data = this.getObjective(id)
 
         if (data) {
           this.db[key][slide][i] = data
@@ -246,37 +248,29 @@ Hava fun ;-)`
    * the course is now ready. If so, we will open the last visited slide.
    */
   open(_uri: string, _version: number, _slide: number) {
-    if (this.location !== null) window.LIA.goto(this.location)
+    if (this.location !== null) {
+      const location = this.location
+      setTimeout(function () {
+        window['LIA'].goto(location)
+      }, 500)
+    }
   }
 
   slide(id: number): void {
     this.location = id
 
-    if (this.scorm) {
+    if (this.scorm && this.active) {
       this.scorm.LMSSetValue('cmi.core.lesson_location', JSON.stringify(id))
       this.scorm.LMSCommit('')
     }
   }
 
-  countInteractions(): number | null {
+  countObjectives(): number | null {
     if (!this.scorm) return null
 
     let value = parseInt(this.scorm.LMSGetValue('cmi.objectives._count'))
 
-    return value ? value : null
-  }
-
-  setInteraction(id: number, content: string) {
-    if (content.length <= 255) {
-      this.write(`cmi.objectives.${id}.id`, Utils.encodeJSON(content))
-      return true
-    }
-
-    this.write(
-      `cmi.objectives.${id}.id`,
-      'Objective could not be stored, content exceeds 256Bytes!'
-    )
-    return false
+    return value || 0
   }
 
   initSettings(data: Lia.Settings | null, local = false) {
@@ -331,9 +325,7 @@ Hava fun ;-)`
    * @param id
    * @returns
    */
-  getInteraction(id: number): any | null {
-    if (!this.active) return null
-
+  getObjective(id: number): any {
     let data: undefined | string
 
     try {
@@ -343,7 +335,7 @@ Hava fun ;-)`
         if (data) return Utils.decodeJSON(data)
       }
     } catch (e) {
-      WARN('getInteraction =>', e, `cmi.objectives.${id}.id`, data)
+      WARN('getObjective =>', e, `cmi.objectives.${id}.id`, data)
     }
 
     return null
@@ -354,8 +346,14 @@ Hava fun ;-)`
    * @param id
    * @param state
    */
-  updateInteraction(id: number, state: any): void {
-    this.write(`cmi.objectives.${id}.id`, Utils.encodeJSON(state))
+  setObjective(id: number, state: any): void {
+    const data = Utils.encodeJSON(state)
+
+    if (data.length > 255) {
+      WARN(`cmi.objectives.${id}.id`, 'Content exceeds 256Bytes!')
+    }
+
+    this.write(`cmi.objectives.${id}.id`, data)
   }
 
   /**
@@ -366,13 +364,16 @@ Hava fun ;-)`
    * @returns the loaded dataset or nothing (for code)
    */
   load(record: Base.Record) {
-    if (!this.active) return
-
     switch (record.table) {
       case 'quiz':
       case 'survey':
       case 'task':
-        LOG('loading ', record.table, record.id, this.db.task[record.id])
+        LOG(
+          'loading ',
+          record.table,
+          record.id,
+          this.db[record.table][record.id]
+        )
         return this.db[record.table][record.id]
     }
   }
@@ -407,10 +408,7 @@ Hava fun ;-)`
   storeHelper(record: Base.Record) {
     for (let i = 0; i < this.db[record.table][record.id].length; i++) {
       if (Utils.neq(record.data[i], this.db[record.table][record.id][i])) {
-        this.updateInteraction(
-          this.id[record.table][record.id][i],
-          record.data[i]
-        )
+        this.setObjective(this.id[record.table][record.id][i], record.data[i])
 
         // store the changed data in memory
         this.db[record.table][record.id][i] = record.data[i]
@@ -425,7 +423,7 @@ Hava fun ;-)`
 
   /**
    * Quizzes might be marked for some reason with additional labels.
-   * @param id - sequential interaction id
+   * @param id - sequential objective id
    * @param state - of the quit
    * @returns
    */
