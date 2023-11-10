@@ -106,7 +106,7 @@ const Service = {
 
         if (param.definition.onload !== '') {
           try {
-            Script.exec(param.definition.onload, 350)
+            Script.exec(param.definition.onload, 10)
           } catch (e) {
             console.warn('could not execute onload script', e)
           }
