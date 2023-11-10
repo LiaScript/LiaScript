@@ -15,7 +15,7 @@ module Service.Script exposing
 import Html exposing (details)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Utils exposing (toEscapeString, toJSstring)
+import Lia.Utils exposing (toEscapeString)
 import Service.Event as Event exposing (Event)
 
 
@@ -176,7 +176,6 @@ eval code scripts inputs =
             inputs
                 |> List.head
                 |> Maybe.withDefault ""
-                |> toJSstring
 
         -- this will replace all inputs, that are originally the
         -- results from other scripts, to which this script is
@@ -185,7 +184,7 @@ eval code scripts inputs =
             List.foldl replace_inputKey code scripts
     in
     inputs
-        |> List.indexedMap (\i r -> ( i, toJSstring r ))
+        |> List.indexedMap Tuple.pair
         |> List.foldl replace_inputID code_
         |> replace_input default
         |> JE.string
