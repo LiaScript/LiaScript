@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.12.8
+version:  0.12.9
 language: en
 narrator: UK English Male
 
@@ -296,7 +296,16 @@ This will apply the following four patches:
 
 ## Version-Changes
 
-**0.12.0** (26/09/2023)
+**0.12.9** (26/09/2023)
+
+- fix: string escape in JavaScript executables
+- changed icons
+- improved index
+- fix: onload macro precedence loading
+- improve: SVG images can now be directly embedded into the Markdown
+- improve: SCORM integration
+
+**0.12.8** (26/09/2023)
 
 - improve: Add "skip-navigation" link to tabulator order, which will only appear
   in keyboard navigation
