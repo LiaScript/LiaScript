@@ -31,7 +31,14 @@ view session settings model =
             |> Html.map UpdateSettings
         , Html.div [ Attr.class "lia-slide__container" ]
             [ Html.main_ [ Attr.class "lia-slide__content" ]
-                [ Html.h1 [] [ Html.text "Lia: Open-courSes" ]
+                [ Html.h1 [] [ Html.text "LiaScript: Open-courSe" ]
+                , Html.p []
+                    [ Html.text "( ... search a list of free LiaScript courses and related material on "
+                    , Html.a
+                        [ Attr.href "https://github.com/topics/liascript", Attr.target "_blank" ]
+                        [ Html.text "GitHub" ]
+                    , Html.text " )"
+                    ]
                 , searchBar model.input
                 , if List.isEmpty model.courses && model.initialized then
                     Html.section [] <|

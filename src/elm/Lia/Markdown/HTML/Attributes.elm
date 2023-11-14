@@ -8,6 +8,7 @@ module Lia.Markdown.HTML.Attributes exposing
     , isSetMaybe
     , parse
     , toAttribute
+    , toString
     , toURL
     )
 
@@ -172,6 +173,21 @@ annotation cls =
 toAttribute : Parameters -> List (Attribute msg)
 toAttribute =
     List.map (\( key, value ) -> Attr.attribute key value)
+
+
+toString : Parameters -> String
+toString =
+    List.map
+        (\( key, value ) ->
+            key
+                ++ (if String.isEmpty value then
+                        ""
+
+                    else
+                        "=\"" ++ value ++ "\""
+                   )
+        )
+        >> String.join " "
 
 
 {-| Parameters of type:
