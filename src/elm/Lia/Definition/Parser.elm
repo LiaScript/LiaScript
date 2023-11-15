@@ -226,7 +226,7 @@ value : Parser Context String
 value =
     or
         (regex "[\\t ]*:" |> keep lines)
-        (regex "[\t ]*\\n" |> keep multiline)
+        (regex "[\\t ]*\\n" |> keep multiline)
 
 
 lines : Parser Context String
@@ -243,14 +243,6 @@ reduce =
 multiline : Parser Context String
 multiline =
     stringTill (string "\n@end")
-        |> map
-            (\x ->
-                if String.startsWith "\n" x then
-                    " " ++ x
-
-                else
-                    x
-            )
 
 
 set : (Definition -> Definition) -> Parser Context ()
