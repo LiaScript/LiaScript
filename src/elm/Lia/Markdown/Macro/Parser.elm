@@ -322,8 +322,14 @@ macro_parse defines str =
             defines
             str
     of
-        Ok ( state, _, s ) ->
-            ( state, s )
+        Ok ( state, stream, s ) ->
+            if stream.input == "" then
+                ( state, s )
+
+            else
+                stream.input
+                    |> macro_parse state
+                    |> Tuple.mapSecond ((++) s)
 
         _ ->
             ( defines, str )
