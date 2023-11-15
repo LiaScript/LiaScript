@@ -79,6 +79,7 @@ blocks =
         \() ->
             Indent.check
                 |> keep macro
+                |> ignore whitespace
                 |> keep elements
                 |> ignore (maybe (whitespace |> keep Effect.hidden_comment))
 

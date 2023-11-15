@@ -16,7 +16,6 @@ module Lia.Utils exposing
     , percentage
     , string2Color
     , toEscapeString
-    , toJSstring
     , urlBasePath
     )
 
@@ -34,16 +33,6 @@ import List.Extra
 import Task
 
 
-{-| Convert JavaScript string escapes for backspace to elm escaped strings:
-
-    toJSstring "javascript \\ escape" == "javascript \\\\ escape"
-
--}
-toJSstring : String -> String
-toJSstring =
-    String.split "\\" >> String.join "\\\\"
-
-
 {-| Convert common JavaScript string escapes elm escapes:
 
     toEscapeString "javascript \" \n" == "javascript \\\" \\n"
@@ -52,10 +41,12 @@ toJSstring =
 toEscapeString : String -> String
 toEscapeString str =
     str
+        |> String.replace "\\" "\\\\"
         |> String.replace "\"" "\\\""
         |> String.replace "'" "\\'"
         |> String.replace "`" "\\`"
         |> String.replace "\n" "\\n"
+        |> String.replace "\t" "\\t"
 
 
 onKeyDown : (Int -> msg) -> Html.Attribute msg
