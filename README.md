@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.12.10
+version:  0.12.11
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,10 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.12.11** (15/11/2023)
+
+- fix: recursive macro loading with not existing one
 
 **0.12.10** (15/11/2023)
 
