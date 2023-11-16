@@ -37,7 +37,7 @@ import Lia.Markdown.HTML.Attributes exposing (toURL)
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame)
 import Lia.Parser.Indentation as Indent
-import Lia.Utils exposing (toEscapeString, toJSstring)
+import Lia.Utils exposing (toEscapeString)
 import Regex
 
 
@@ -72,7 +72,6 @@ parameter =
     , regex "[^),]+"
     ]
         |> choice
-        |> map toJSstring
 
 
 parameter_list : Parser Context (List String)
@@ -323,8 +322,14 @@ macro_parse defines str =
             defines
             str
     of
-        Ok ( state, _, s ) ->
-            ( state, s )
+        Ok ( state, stream, s ) ->
+            if stream.input == "" then
+                ( state, s )
+
+            else
+                stream.input
+                    |> macro_parse state
+                    |> Tuple.mapSecond ((++) s)
 
         _ ->
             ( defines, str )

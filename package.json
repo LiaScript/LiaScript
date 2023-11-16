@@ -1,6 +1,6 @@
 {
   "name": "liascript",
-  "version": "0.12.8",
+  "version": "0.12.11",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -61,8 +61,8 @@
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "@webcomponents/webcomponentsjs": "^2.8.0",
-    "ace-builds": "^1.27.0",
-    "caniuse-lite": "^1.0.30001538",
+    "ace-builds": "^1.31.2",
+    "caniuse-lite": "^1.0.30001562",
     "crypto-browserify": "^3.12.0",
     "dexie": "^2.0.4",
     "easy-speech": "^2.1.1",
@@ -73,7 +73,7 @@
     "elm-review": "^2.10.2",
     "elm-test": "^0.19.1-revision6",
     "eslint": "^7.32.0",
-    "katex": "^0.16.8",
+    "katex": "^0.16.9",
     "logger.ts": "^1.0.5",
     "node-elm-compiler": "^5.0.6",
     "parcel": "^2.8.3",
@@ -81,14 +81,14 @@
     "pdfast": "^0.2.0",
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
-    "sass": "^1.68.0",
+    "sass": "^1.69.5",
     "tsc": "^2.0.4",
     "typescript": "^4.9.5",
     "uint8-to-base64": "^0.2.0",
     "util": "^0.12.5",
-    "workbox-cli": "^6.6.0",
+    "workbox-cli": "^7.0.0",
     "y-utility": "^0.1.3",
-    "yjs": "^13.6.6"
+    "yjs": "^13.6.8"
   },
   "browserslist": [
     "cover 95.0%"
