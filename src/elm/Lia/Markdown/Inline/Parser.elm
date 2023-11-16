@@ -56,7 +56,7 @@ import Lia.Parser.Context
         ( Context
         , searchIndex
         )
-import Lia.Parser.Helper exposing (spaces)
+import Lia.Parser.Helper exposing (inlineCode, spaces)
 import Lia.Parser.Input as Context
 
 
@@ -511,10 +511,7 @@ stringBase2 =
 
 code : Parser s (Parameters -> Inline)
 code =
-    string "`"
-        |> keep (regex "([^`\n\\\\]*|\\\\`|\\\\)+")
-        |> ignore (string "`")
-        |> map (String.replace "\\`" "`" >> Verbatim)
+    inlineCode |> map Verbatim
 
 
 

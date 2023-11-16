@@ -35,7 +35,7 @@ import Dict
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.HTML.Attributes exposing (toURL)
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (c_frame)
+import Lia.Parser.Helper exposing (c_frame, inlineCode)
 import Lia.Parser.Indentation as Indent
 import Lia.Utils exposing (toEscapeString)
 import Regex
@@ -66,9 +66,7 @@ parameter =
     [ c_frame
         |> keep (regex "(([^`]+|(`[^`]+)|(``[^`]+))|\\n)+")
         |> ignore c_frame
-    , string "`"
-        |> keep (regex "[^`\n]+")
-        |> ignore (string "`")
+    , inlineCode
     , regex "[^),]+"
     ]
         |> choice
