@@ -141,7 +141,12 @@ code_block =
         (maybe Indent.check
             |> keep c_frame
         )
-        |> map (String.concat >> List.singleton)
+        |> map
+            (String.concat
+                -- drop last \n
+                >> String.dropRight 1
+                >> List.singleton
+            )
 
 
 macro_listing : Parser Context ()
