@@ -7,6 +7,7 @@ module Lia.Parser.Helper exposing
     , newlines1
     , spaces
     , spaces1
+    , string1Till
     , stringTill
     )
 
@@ -15,6 +16,7 @@ import Combine
         ( Parser
         , ignore
         , keep
+        , many1Till
         , manyTill
         , map
         , regex
@@ -99,6 +101,11 @@ spaces1 =
 stringTill : Parser s p -> Parser s String
 stringTill p =
     manyTill anyChar p |> map String.fromList
+
+
+string1Till : Parser s p -> Parser s String
+string1Till p =
+    many1Till anyChar p |> map String.fromList
 
 
 {-| inline code parser for elements surrounded by backticks
