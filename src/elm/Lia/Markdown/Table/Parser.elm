@@ -28,7 +28,7 @@ import Combine
 import Const
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
-import Lia.Markdown.Inline.Parser exposing (annotations, line)
+import Lia.Markdown.Inline.Parser exposing (annotations, line2)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Multi.Types as Input
@@ -331,8 +331,7 @@ row =
                     |> ignore macro
                     |> keep annotations
                     |> map Tuple.pair
-                    -- maybe empty cell
-                    |> andMap (optional [] line)
+                    |> andMap (optional [] line2)
                 )
                 (regex "\\|[\t ]*\\n")
             )
