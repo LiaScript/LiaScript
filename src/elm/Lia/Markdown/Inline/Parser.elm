@@ -5,6 +5,7 @@ module Lia.Markdown.Inline.Parser exposing
     , inlines
     , javascript
     , line
+    , line2
     , lineWithProblems
     , mediaReference
     , parse_inlines
@@ -20,6 +21,7 @@ import Combine
         , ignore
         , keep
         , lazy
+        , lookAhead
         , many
         , many1
         , many1Till
@@ -57,8 +59,9 @@ import Lia.Parser.Context
         , getLine
         , searchIndex
         )
-import Lia.Parser.Helper exposing (spaces)
+import Lia.Parser.Helper exposing (inlineCode, spaces)
 import Lia.Parser.Input as Context
+import Translations exposing (Lang(..))
 
 
 parse_inlines : Context -> String -> Inlines
@@ -173,6 +176,11 @@ line =
         |> map combine
 
 
+line2 : Parser Context Inlines
+line2 =
+    inlines2 |> many1 |> map combine
+
+
 lineWithProblems : Parser Context Inlines
 lineWithProblems =
     or inlines (regex "." |> map (\x -> Chars x []))
@@ -249,6 +257,29 @@ goto i pos =
 
 doubleClick pos =
     (::) ( "ondblclick", "window.LIA.lineGoto(" ++ String.fromInt pos ++ ");" )
+
+
+inlines2 : Parser Context Inline
+inlines2 =
+    lazy <|
+        \() ->
+            Macro.macro
+                |> keep
+                    ([ code
+                     , Footnote.inline parse_inlines
+                     , input
+                     , reference
+                     , formula
+                     , inlines
+                        |> Effect.inline
+                        |> map EInline
+                     , stringExceptions
+                     , strings
+                     ]
+                        |> choice
+                        |> andMap (Macro.macro |> keep annotations)
+                        |> or (eScript [] |> map (\( attr, id ) -> Script id attr))
+                    )
 
 
 input : Parser Context (Parameters -> Inline)
@@ -504,7 +535,7 @@ strings =
 
 stringBase : Parser s (Parameters -> Inline)
 stringBase =
-    regex "[^\\[\\]\\(\\)@*+_~:;`\\^|{}\\\\\\n<>=$ \"\\-]+"
+    regex "[^\\[\\]\\(\\)@*+_~:;`\\^{}\\\\\\n<>=$ \"\\-|]+"
         |> map Chars
 
 
@@ -547,7 +578,7 @@ stringSuperscript =
 
 stringCharacters : Parser s (Parameters -> Inline)
 stringCharacters =
-    regex "[\\[\\]\\(\\)~:_;=${}\\-+\"*<>]"
+    regex "[\\[\\]\\(\\)~:_;=${}\\-+\"*<>|]"
         |> map Chars
 
 
@@ -559,16 +590,20 @@ stringSpaces =
 
 stringBase2 : Parser s (Parameters -> Inline)
 stringBase2 =
-    regex "[^\n*|+\\-]+"
+    regex "[^\n*+\\-]+"
         |> map Chars
+
+
+stringExceptions : Parser Context (Parameters -> Inline)
+stringExceptions =
+    string "|"
+        |> lookAhead
+        |> onsuccess (Chars "")
 
 
 code : Parser s (Parameters -> Inline)
 code =
-    string "`"
-        |> keep (regex "([^`\n\\\\]*|\\\\`|\\\\)+")
-        |> ignore (string "`")
-        |> map (String.replace "\\`" "`" >> Verbatim)
+    inlineCode |> map Verbatim
 
 
 

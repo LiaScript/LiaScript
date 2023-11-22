@@ -1,15 +1,31 @@
 module Lia.Parser.Helper exposing
     ( c_frame
     , debug
+    , inlineCode
     , newline
     , newlines
     , newlines1
     , spaces
     , spaces1
+    , string1Till
     , stringTill
     )
 
-import Combine exposing (Parser, manyTill, map, regex, string, withColumn, withLine, withSourceLine, withState)
+import Combine
+    exposing
+        ( Parser
+        , ignore
+        , keep
+        , many1Till
+        , manyTill
+        , map
+        , regex
+        , string
+        , withColumn
+        , withLine
+        , withSourceLine
+        , withState
+        )
 import Combine.Char exposing (anyChar)
 import Lia.Parser.Context exposing (Context)
 
@@ -85,3 +101,18 @@ spaces1 =
 stringTill : Parser s p -> Parser s String
 stringTill p =
     manyTill anyChar p |> map String.fromList
+
+
+string1Till : Parser s p -> Parser s String
+string1Till p =
+    many1Till anyChar p |> map String.fromList
+
+
+{-| inline code parser for elements surrounded by backticks
+-}
+inlineCode : Parser s String
+inlineCode =
+    string "`"
+        |> keep (regex "([^`\n\\\\]*|\\\\`|\\\\)+")
+        |> ignore (string "`")
+        |> map (String.replace "\\`" "`")
