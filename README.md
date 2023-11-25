@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.12.11
+version:  0.12.12
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,12 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.12.12** (22/11/2023)
+
+- fix: horizontal | parsing (also for tables)
+- fix: enable backtick-escape in macro parameters
+- fix: dropping last newline in macro-block parsing
 
 **0.12.11** (15/11/2023)
 
