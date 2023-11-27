@@ -131,6 +131,7 @@ export class Sync extends Base.Sync {
 
       if (!this.persistent) {
         this.broadcast(true, null)
+        this.broadcast(false, null)
       }
 
       this.sendConnect()

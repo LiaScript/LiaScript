@@ -179,6 +179,7 @@ type Subscription = {
 
 // Container for all subscriptions
 var SUBSCRIPTIONS: { [topic: string]: Subscription[] } = {}
+var BACKUP: { [topic: string]: any } = {}
 
 // Connection change callback container
 var CALLBACK: {
@@ -202,6 +203,10 @@ function subscribe(topic: string, callback: (message: any) => void): number {
     SUBSCRIPTIONS[topic] = []
   }
   SUBSCRIPTIONS[topic].push({ id, callback })
+
+  if (BACKUP[topic]) {
+    setTimeout(() => callback(BACKUP[topic]), 100)
+  }
 
   return id
 }
@@ -231,13 +236,14 @@ function on(event: 'connect' | 'disconnect', callback: () => void) {
 }
 
 function onReceive(topic: string, message: any) {
+  BACKUP[topic] = message
+
   if (SUBSCRIPTIONS[topic]) {
     SUBSCRIPTIONS[topic].forEach((sub) => sub.callback(message))
   }
 }
 
 function onConnect() {
-  console.warn('Classroom: connected')
   window.LIA.classroom.connected = true
 
   window.LIA.classroom.publish = function (topic: string, message: any) {
