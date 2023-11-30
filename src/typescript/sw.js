@@ -22,6 +22,15 @@ workbox.routing.registerRoute(
   new workbox.strategies.NetworkFirst()
 );
 
+workbox.routing.registerRoute(
+  ({url}) => url.search.startsWith('?data:'),
+  async ({event}) => {
+    const cache = await caches.open(workbox.core.cacheNames.precache);
+    const response = await cache.match('index.html');
+    return response || fetch(event.request);
+  }
+);
+
 //workbox.routing.registerRoute(/\/*/, new workbox.strategies.NetworkFirst())
 workbox.routing.registerRoute(/.*/, new workbox.strategies.NetworkFirst())
 
