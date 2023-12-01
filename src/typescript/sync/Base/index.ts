@@ -39,7 +39,7 @@ function dynamicGossip(self: Sync) {
   function publish() {
     if (!self.isConnected) return
     try {
-      self.broadcast(self.db.encode())
+      self.broadcast(true, self.db.encode())
 
       timerID = window.setTimeout(publish, delay())
     } catch (e) {
@@ -84,6 +84,8 @@ export class Sync {
 
   protected cbConnection: (topic: string, msg: string) => void
   protected cbRelay: (data: Lia.Event) => void
+  protected onConnect?: () => void
+  protected onReceive?: (topic: string, message: any) => void
 
   public db: CRDT
   public gossip: () => void
@@ -100,6 +102,8 @@ export class Sync {
   constructor(
     cbConnection: (topic: string, msg: string) => void,
     cbRelay: (data: Lia.Event) => void,
+    onConnect: () => void,
+    onReceive: (topic: string, message: any) => void,
     useInternalCallback: boolean = true
   ) {
     let token
@@ -122,13 +126,15 @@ export class Sync {
     this.urlCounter = 0
     this.cbConnection = cbConnection
     this.cbRelay = cbRelay
+    this.onConnect = onConnect
+    this.onReceive = onReceive
 
     const self = this
 
     const gossip = dynamicGossip(self)
     this.gossip = gossip
     const throttleBroadcast = helper.throttle(() => {
-      self.broadcast(self.db.encode())
+      self.broadcast(true, self.db.encode())
       gossip()
     }, 1000)
 
@@ -166,7 +172,7 @@ export class Sync {
                   try {
                     origin = null
 
-                    this.broadcast(event)
+                    this.broadcast(true, event)
                     this.destroy()
                   } catch (e) {}
                   break
@@ -272,9 +278,34 @@ export class Sync {
 
   sendConnect() {
     this.sync('connect', this.token)
+
+    if (this.onConnect) this.onConnect()
   }
 
-  broadcast(data: Uint8Array) {
+  pubsubSend(topic: string, message: any) {
+    const stringifiedObject = JSON.stringify({ topic, message })
+    const encoder = new TextEncoder()
+    this.broadcast(false, encoder.encode(stringifiedObject))
+
+    this.onReceive?.(topic, message)
+  }
+
+  pubsubReceive(data: Uint8Array) {
+    try {
+      const decoder = new TextDecoder()
+
+      const decodedString = decoder.decode(data)
+      const object = JSON.parse(decodedString)
+
+      console.warn('pubsubReceive', object)
+
+      this.onReceive?.(object.topic, object.message)
+    } catch (e) {
+      console.warn('Sync: pubsubReceive', e.message)
+    }
+  }
+
+  broadcast(state: boolean, data: Uint8Array) {
     console.warn('broadcast needs to be implemented')
   }
 
@@ -414,6 +445,10 @@ export class Sync {
           this.db.setCursor(event.track[0][1], event.message.param)
         }
         break
+      }
+
+      case 'broadcast': {
+        this.broadcast(true, event.message.param)
       }
 
       default: {

@@ -141,6 +141,16 @@ declare global {
       log?: (type: 'log' | 'warn' | 'error', ...args: any) => void
 
       settings: Lia.Settings
+
+      classroom: {
+        connected: boolean
+
+        subscribe: (topic: string, callback: (message: any) => void) => number
+        unsubscribe: (id: number) => void
+        publish: (topic: string, message: any) => void
+
+        on: (event: 'connect' | 'disconnect', callback: () => void) => void
+      }
     }
   }
 }

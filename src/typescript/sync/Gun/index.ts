@@ -114,8 +114,24 @@ export class Sync extends Base.Sync {
           }
         })
 
+      // store for realtime messages
+      this.gun
+        .get(this.store + 'pubsub')
+        .on(function (data: { msg: string }, key: string) {
+          try {
+            const [token, message] = Crypto.decode(data.msg)
+
+            if (token != self.token && message != null) {
+              self.pubsubReceive(Base.base64_to_unit8(message))
+            }
+          } catch (e) {
+            console.warn('GunDB', e.message)
+          }
+        })
+
       if (!this.persistent) {
-        this.broadcast(null)
+        this.broadcast(true, null)
+        this.broadcast(false, null)
       }
 
       this.sendConnect()
@@ -132,13 +148,13 @@ export class Sync extends Base.Sync {
     }
   }
 
-  broadcast(data: null | Uint8Array): void {
+  broadcast(state: boolean, data: null | Uint8Array): void {
     if (this.gun) {
       const message = data == null ? null : Base.uint8_to_base64(data)
 
-      this.gun.get(this.store).put({
-        msg: Crypto.encode([this.token, message]),
-      })
+      this.gun
+        .get(this.store + (state ? '' : 'pubsub'))
+        .put({ msg: Crypto.encode(['', message]) })
     }
   }
 }
