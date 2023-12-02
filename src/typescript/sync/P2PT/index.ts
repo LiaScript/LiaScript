@@ -29,13 +29,8 @@ export class Sync extends Base.Sync {
     if (window['P2PT']) {
       this.init(true)
     } else {
-      this.load(
-        [
-          'https://cdn.jsdelivr.net/gh/subins2000/p2pt/dist/p2pt.umd.min.js',
-          Crypto.url,
-        ],
-        this
-      )
+      window['P2PT'] = await import('p2pt')
+      this.load([Crypto.url], this)
     }
   }
 
@@ -60,6 +55,11 @@ export class Sync extends Base.Sync {
         console.log('Tracker stats : ' + JSON.stringify(stats))
 
         self.sendConnect()
+      })
+
+      this.p2pt.on('trackerwarning', (error, stats) => {
+        console.log('Connected to tracker : ', error)
+        console.log('Tracker stats : ' + JSON.stringify(stats))
       })
 
       this.p2pt.on('peerconnect', (peer) => {
