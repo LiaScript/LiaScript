@@ -85,7 +85,9 @@ export class Sync {
   protected cbConnection: (topic: string, msg: string) => void
   protected cbRelay: (data: Lia.Event) => void
   protected onConnect?: () => void
+
   protected onReceive?: (topic: string, message: any) => void
+  protected replyOnReceive: boolean = false
 
   public db: CRDT
   public gossip: () => void
@@ -104,6 +106,7 @@ export class Sync {
     cbRelay: (data: Lia.Event) => void,
     onConnect: () => void,
     onReceive: (topic: string, message: any) => void,
+    replyOnReceive: boolean = false,
     useInternalCallback: boolean = true
   ) {
     let token
@@ -128,6 +131,7 @@ export class Sync {
     this.cbRelay = cbRelay
     this.onConnect = onConnect
     this.onReceive = onReceive
+    this.replyOnReceive = replyOnReceive
 
     const self = this
 
@@ -287,7 +291,9 @@ export class Sync {
     const encoder = new TextEncoder()
     this.broadcast(false, encoder.encode(stringifiedObject))
 
-    this.onReceive?.(topic, message)
+    if (this.replyOnReceive) {
+      this.onReceive?.(topic, message)
+    }
   }
 
   pubsubReceive(data: Uint8Array) {
@@ -296,8 +302,6 @@ export class Sync {
 
       const decodedString = decoder.decode(data)
       const object = JSON.parse(decodedString)
-
-      console.warn('pubsubReceive', object)
 
       this.onReceive?.(object.topic, object.message)
     } catch (e) {

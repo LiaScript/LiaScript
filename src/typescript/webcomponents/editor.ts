@@ -167,14 +167,14 @@ customElements.define(
     constructor() {
       super()
 
-      // ace.config.set('basePath', 'editor/')
+      ace.config.set('basePath', '.')
 
       this._focus = false
       this._ariaLabel = 'editor'
 
       this.model = {
         value: '',
-        theme: '',
+        theme: 'dreamweaver',
         mode: 'text',
         shared: null,
         showPrintMargin: true,
@@ -612,7 +612,7 @@ customElements.define(
     }
 
     set theme(theme: string) {
-      if (this.model.theme === theme) return
+      if (this.model.theme === theme || theme === '') return
 
       this.model.theme = theme
 

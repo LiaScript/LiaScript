@@ -64,7 +64,13 @@ const Service = {
                 return
               }
 
-              sync = new Edrys.Sync(cbConnection, elmSend, onConnect, onReceive)
+              sync = new Edrys.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                true
+              )
 
               break
 
@@ -77,7 +83,13 @@ const Service = {
                 return
               }
 
-              sync = new Gun.Sync(cbConnection, elmSend, onConnect, onReceive)
+              sync = new Gun.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                false
+              )
               break
 
             case 'jitsi':
@@ -89,7 +101,13 @@ const Service = {
                 return
               }
 
-              sync = new Jitsi.Sync(cbConnection, elmSend, onConnect, onReceive)
+              sync = new Jitsi.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                true
+              )
               break
 
             // case 'matrix':
@@ -117,7 +135,8 @@ const Service = {
                 cbConnection,
                 elmSend,
                 onConnect,
-                onReceive
+                onReceive,
+                true
               )
               break
 
@@ -130,7 +149,13 @@ const Service = {
                 return
               }
 
-              sync = new P2PT.Sync(cbConnection, elmSend, onConnect, onReceive)
+              sync = new P2PT.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                true
+              )
               break
 
             default:
