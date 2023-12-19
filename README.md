@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.12.12
+version:  0.14.0
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,12 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.14.0** (19/12/2023)
+
+- feat: New pub-sub system for classroom
+- fix: DOM for SVG inputs
+- hotfix: P2PT for google chrome
 
 **0.12.12** (22/11/2023)
 
