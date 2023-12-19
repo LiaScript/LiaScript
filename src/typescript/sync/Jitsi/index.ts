@@ -120,7 +120,13 @@ export class Sync extends Base.Sync {
                 }
               }
 
-              self.applyUpdate(Base.base64_to_unit8(message))
+              const msg = Base.base64_to_unit8(message.slice(1))
+
+              if (message[0] === '1') {
+                self.applyUpdate(message)
+              } else if (message[0] === '0') {
+                self.pubsubReceive(msg)
+              }
             }
           )
 
@@ -155,9 +161,11 @@ export class Sync extends Base.Sync {
     }
   }
 
-  broadcast(data: Uint8Array): void {
+  broadcast(state: boolean, data: Uint8Array): void {
     try {
-      this.conferenceRoom?.sendTextMessage(Base.uint8_to_base64(data))
+      this.conferenceRoom?.sendTextMessage(
+        (state ? '1' : '0') + Base.uint8_to_base64(data)
+      )
     } catch (e) {
       console.warn('Jitsi: broadcast =>', e.message)
     }
