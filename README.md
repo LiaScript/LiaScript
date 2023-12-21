@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.14.0
+version:  0.14.1
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,11 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.14.1** (21/09/2021)
+
+- chore: update caniuse, ace and y-js
+- fix: add hits to ascii-art quizzes
 
 **0.14.0** (19/12/2023)
 

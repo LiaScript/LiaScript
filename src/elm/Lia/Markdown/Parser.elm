@@ -278,6 +278,8 @@ svgbob =
                 |> andThen svgbody
                 |> andThen svgbobSub
             )
+        |> ignore spaces
+        |> ignore newline
 
 
 svgbobSub : ( Maybe Inlines, String ) -> Parser Context ( Maybe Inlines, SvgBob.Configuration Markdown.Blocks )
