@@ -24,6 +24,7 @@ import Lia.Markdown.Quiz.Types
         , Type(..)
         , Vector
         , comp
+        , comp2
         , reset
         , toState
         )
@@ -294,12 +295,22 @@ evalEventDecoder json =
 
 isSolved : Maybe (Type Markdown.Block) -> Solution -> Element -> Element
 isSolved solution state e =
+    let
+        partiallySolved =
+            case solution of
+                Just quiz ->
+                    comp2 e.opt.showPartialSolution quiz e.state
+
+                _ ->
+                    Array.empty
+    in
     case ( e.opt.maxTrials, e.solved ) of
         ( Nothing, Solution.Open ) ->
             { e
                 | trial = e.trial + 1
                 , solved = state
                 , error_msg = ""
+                , partiallySolved = partiallySolved
             }
 
         ( Just maxTrials, Solution.Open ) ->
@@ -308,6 +319,7 @@ isSolved solution state e =
                     | trial = e.trial + 1
                     , solved = state
                     , error_msg = ""
+                    , partiallySolved = partiallySolved
                 }
 
             else
@@ -315,6 +327,7 @@ isSolved solution state e =
                     | trial = e.trial + 1
                     , solved = Solution.ReSolved
                     , error_msg = ""
+                    , partiallySolved = partiallySolved
                     , state =
                         solution
                             |> Maybe.map toState

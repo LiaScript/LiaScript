@@ -135,6 +135,7 @@ modify_State attr q =
                         , error_msg = ""
                         , scriptID = id
                         , opt = getOptions q.quiz seed attr
+                        , partiallySolved = Array.empty
                         }
                         s.quiz_vector
             }
@@ -172,6 +173,8 @@ getOptions quiz seed attr =
             |> Attributes.get "data-hint-button"
             |> Maybe.map revealAt
             |> Maybe.withDefault 0
+    , showPartialSolution =
+        Attributes.isSet "data-show-partials" attr
     }
 
 

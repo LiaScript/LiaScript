@@ -2,6 +2,7 @@ module Lia.Markdown.Quiz.Multi.Types exposing
     ( Quiz
     , State
     , comp
+    , comp2
     , getClass
     , init
     , initState
@@ -47,8 +48,8 @@ initState =
     Array.map Block.initState
 
 
-comp : Quiz block inline -> State -> Bool
-comp quiz state =
+comp2 : Quiz block inline -> State -> List Bool
+comp2 quiz state =
     let
         list1 =
             quiz.solution
@@ -59,7 +60,11 @@ comp quiz state =
             Array.toList state
     in
     List.map2 Block.comp list1 list2
-        |> List.all identity
+
+
+comp : Quiz block inline -> State -> Bool
+comp quiz =
+    comp2 quiz >> List.all identity
 
 
 getClass : State -> String
