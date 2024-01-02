@@ -3,6 +3,7 @@ import { CMIElement, SCORM } from './scorm'
 import * as Base from '../Base/index'
 import { Settings } from '../Base/settings'
 import * as Utils from '../utils'
+import { getAPI } from './discovery'
 
 /**
  * This is a very simplistic Connector, that does only store the current slide
@@ -15,6 +16,9 @@ class Connector extends Base.Connector {
   private scorm?: SCORM
   private location: number | null
   private active: boolean
+
+  // used to handle OPAL strings
+  private escape?: boolean
 
   /**
    * To simplify the handling of state data, these are preserved and loaded by
@@ -58,10 +62,17 @@ And you want to help us, to extend this service, please contact us via LiaScript
 Have fun ;-)`
     )
 
-    if (window.top && window.top.API) {
-      LOG('successfully opened API')
-      this.scorm = window.top.API
+    // Open the SCORM API in the traditional way
+    if (window.API || (window.top && window.top.API)) {
+      this.scorm = window.API || window.top?.API
+    }
+    // Use the discovery algorithm to find the SCORM API
+    else {
+      this.scorm = getAPI()
+    }
 
+    if (this.scorm) {
+      LOG('successfully opened API')
       LOG('LMSInitialize', this.scorm.LMSInitialize(''))
 
       LOG('loading quizzes ...')
@@ -313,8 +324,30 @@ Have fun ;-)`
 
   write(uri: CMIElement, data: string) {
     if (this.scorm) {
-      this.scorm.LMSSetValue(uri, data)
-      this.scorm.LMSCommit('')
+      // this is only necessary for OPAL strings, since it cannot handle strings with quotes
+      if (this.escape) {
+        data = data.replace(/"/g, '\\"')
+      }
+
+      try {
+        this.scorm.LMSSetValue(uri, data)
+        this.scorm.LMSCommit('')
+      } catch (e) {
+        WARN('Failed to write =>', uri, data)
+        WARN('Message:', e.message)
+
+        if (this.escape === undefined) {
+          data = data.replace(/"/g, '\\"')
+
+          try {
+            this.scorm.LMSSetValue(uri, data)
+            this.scorm.LMSCommit('')
+            this.escape = true
+          } catch (e) {
+            this.escape = false
+          }
+        }
+      }
     } else {
       WARN('could not write', uri, data)
     }
