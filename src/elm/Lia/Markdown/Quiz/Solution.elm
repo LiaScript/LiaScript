@@ -30,8 +30,8 @@ toString s =
             "open"
 
 
-toClass : Maybe Bool -> State -> String
-toClass partiallyCorrect ( solution, trials ) =
+toClass : State -> Maybe Bool -> String
+toClass ( solution, trials ) partiallyCorrect =
     case solution of
         Solved ->
             "is-success is-disabled"

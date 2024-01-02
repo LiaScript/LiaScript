@@ -260,12 +260,12 @@ highlightPartialSolution : List (Attribute msg) -> Maybe Bool -> List (Attribute
 highlightPartialSolution attr partiallyCorrect =
     case partiallyCorrect of
         Just True ->
-            Attr.style "background-color" "rgba(0, 255, 0, 0.1)"
+            Attr.class "is-success"
                 :: A11y_Widget.invalid False
                 :: attr
 
         Just False ->
-            Attr.style "background-color" "rgba(255, 0, 0, 0.1)"
+            Attr.class "is-failure"
                 :: A11y_Widget.invalid True
                 :: attr
 

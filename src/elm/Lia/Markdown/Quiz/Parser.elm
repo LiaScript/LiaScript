@@ -174,7 +174,8 @@ getOptions quiz seed attr =
             |> Maybe.map revealAt
             |> Maybe.withDefault 0
     , showPartialSolution =
-        Attributes.isSet "data-show-partials" attr
+        Attributes.isSet "data-show-partial-solution" attr
+            || Attributes.isSet "data-show-partials" attr
     }
 
 
