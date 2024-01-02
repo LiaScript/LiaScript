@@ -8,7 +8,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (highlightPartialSolution, viewer)
+import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Matrix.Types exposing (Quiz, State)
 import Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.Types as Vector
@@ -18,7 +18,7 @@ view :
     { config : Config sub
     , shuffle : List (Html (Msg sub)) -> List (Html (Msg sub))
     , open : Bool
-    , class : Int -> String
+    , class : Maybe Bool -> String
     , quiz : Quiz
     , state : State
     , partiallySolved : Array Bool
@@ -51,17 +51,21 @@ th config =
         >> Html.map Script
 
 
-tr : Bool -> (Int -> String) -> Array Bool -> Int -> Vector.State -> ( List (Html (Msg sub)), Maybe Bool )
+tr : Bool -> (Maybe Bool -> String) -> Array Bool -> Int -> Vector.State -> ( List (Html (Msg sub)), Maybe Bool )
 tr open class partiallySolved id state =
+    let
+        partialSolution =
+            Array.get id partiallySolved
+    in
     ( case state of
         Vector.SingleChoice list ->
             list
-                |> List.indexedMap (radio open (class id) id)
+                |> List.indexedMap (radio open (class partialSolution) id)
 
         Vector.MultipleChoice list ->
             list
-                |> List.indexedMap (check open (class id) id)
-    , partiallySolved |> Array.get id
+                |> List.indexedMap (check open (class partialSolution) id)
+    , partialSolution
     )
 
 
@@ -114,11 +118,15 @@ add_text config inline ( toRow, partiallySolved ) =
         |> List.singleton
         |> List.append toRow
         |> Html.tr
-            [ Attr.classList
-                [ ( "lia-table__row", True )
-                , ( "lia-survey-matrix__row", True )
-                , ( "green", partiallySolved == Just True )
-                , ( "red", partiallySolved == Just False )
-                ]
+            [ Attr.class "lia-table__row lia-survey-matrix__row"
+            , case partiallySolved of
+                Nothing ->
+                    Attr.class ""
+
+                Just True ->
+                    A11y_Widget.invalid False
+
+                Just False ->
+                    A11y_Widget.invalid True
             , A11y_Role.rowHeader
             ]

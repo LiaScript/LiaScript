@@ -262,7 +262,7 @@ viewState config elem quiz =
             s
                 |> Vector.view config
                     (elem.solved == Solution.Open)
-                    (Solution.toClass Nothing ( elem.solved, elem.trial ))
+                    (Solution.toClass ( elem.solved, elem.trial ) Nothing)
                     q
                 |> Tuple.mapSecond
                     (shuffle elem.opt.randomize
@@ -274,7 +274,7 @@ viewState config elem quiz =
             , [ { config = config
                 , shuffle = shuffle elem.opt.randomize
                 , open = elem.solved == Solution.Open
-                , class = \i -> Solution.toClass (Array.get i elem.partiallySolved) ( elem.solved, elem.trial )
+                , class = Solution.toClass ( elem.solved, elem.trial )
                 , quiz = q
                 , state = s
                 , partiallySolved = elem.partiallySolved
