@@ -18,7 +18,7 @@ view :
     { config : Config sub
     , shuffle : List (Html (Msg sub)) -> List (Html (Msg sub))
     , open : Bool
-    , class : String
+    , class : Int -> String
     , quiz : Quiz
     , state : State
     , partiallySolved : Array Bool
@@ -51,23 +51,23 @@ th config =
         >> Html.map Script
 
 
-tr : Bool -> String -> Array Bool -> Int -> Vector.State -> ( List (Html (Msg sub)), Maybe Bool )
+tr : Bool -> (Int -> String) -> Array Bool -> Int -> Vector.State -> ( List (Html (Msg sub)), Maybe Bool )
 tr open class partiallySolved id state =
     ( case state of
         Vector.SingleChoice list ->
             list
-                |> List.indexedMap (radio open class id (Array.get id partiallySolved))
+                |> List.indexedMap (radio open (class id) id)
 
         Vector.MultipleChoice list ->
             list
-                |> List.indexedMap (check open class id (Array.get id partiallySolved))
+                |> List.indexedMap (check open (class id) id)
     , partiallySolved |> Array.get id
     )
 
 
-radio : Bool -> String -> Int -> Maybe Bool -> Int -> Bool -> Html (Msg sub)
-radio open colorClass row_id partiallySolved column_id value =
-    Html.td (highlightPartialSolution [ Attr.class "lia-table__data lia-survey-matrix__data" ] partiallySolved)
+radio : Bool -> String -> Int -> Int -> Bool -> Html (Msg sub)
+radio open colorClass row_id column_id value =
+    Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
         [ Html.input
             [ Attr.class "lia-radio"
             , Attr.class colorClass
@@ -85,9 +85,9 @@ radio open colorClass row_id partiallySolved column_id value =
         ]
 
 
-check : Bool -> String -> Int -> Maybe Bool -> Int -> Bool -> Html (Msg sub)
-check open colorClass row_id partiallyCorrect column_id value =
-    Html.td (highlightPartialSolution [ Attr.class "lia-table__data lia-survey-matrix__data" ] partiallyCorrect)
+check : Bool -> String -> Int -> Int -> Bool -> Html (Msg sub)
+check open colorClass row_id column_id value =
+    Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
         [ Html.input
             [ Attr.class "lia-checkbox"
             , Attr.class colorClass
@@ -114,9 +114,11 @@ add_text config inline ( toRow, partiallySolved ) =
         |> List.singleton
         |> List.append toRow
         |> Html.tr
-            (highlightPartialSolution
-                [ Attr.class "lia-table__row lia-survey-matrix__row"
-                , A11y_Role.rowHeader
+            [ Attr.classList
+                [ ( "lia-table__row", True )
+                , ( "lia-survey-matrix__row", True )
+                , ( "green", partiallySolved == Just True )
+                , ( "red", partiallySolved == Just False )
                 ]
-                partiallySolved
-            )
+            , A11y_Role.rowHeader
+            ]

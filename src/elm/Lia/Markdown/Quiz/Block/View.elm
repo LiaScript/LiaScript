@@ -62,7 +62,7 @@ text solution state =
 
             else
                 "lia-input--disabled"
-        , Attr.class (Solution.toClass solution)
+        , Attr.class (Solution.toClass Nothing solution)
         , Attr.value state
         , Attr.disabled (not <| Solution.isOpen solution)
         , onInput Input
@@ -76,7 +76,7 @@ select : Config sub -> Solution.State -> Bool -> List Inlines -> Int -> Html (Ms
 select config solution open options i =
     Html.div
         [ Attr.class "lia-dropdown"
-        , Attr.class <| Solution.toClass solution
+        , Attr.class <| Solution.toClass Nothing solution
         , if Solution.isOpen solution then
             onClick Toggle
 

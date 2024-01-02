@@ -85,6 +85,7 @@ input[type="search"]::-webkit-search-results-decoration {
   }
 
   &.is-success,
+  &.is-success:checked,
   &.is-success[disabled]:checked {
     border-color: rgb(var(--lia-success));
   }
@@ -148,7 +149,7 @@ input[type="search"]::-webkit-search-results-decoration {
     }
   }
 
-  &.is-success[disabled]:checked {
+  &.is-success:checked {
     background-color: rgb(var(--lia-success));
   }
 
