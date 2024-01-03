@@ -1,5 +1,6 @@
 module Lia.Markdown.Inline.View exposing
-    ( reduce
+    ( highlightPartialSolution
+    , reduce
     , toScript
     , view
     , viewMedia
@@ -153,8 +154,9 @@ viewQuiz config ( length, id ) attr =
     case Array.get id config.input.state of
         Just (Text text) ->
             Html.input
-                (attr
-                    |> toAttribute
+                (config.input.partiallyCorrect
+                    |> Array.get id
+                    |> highlightPartialSolution (toAttribute attr)
                     |> List.append
                         [ Attr.type_ "text"
                         , Attr.class "lia-input lia-quiz__input"
@@ -211,14 +213,18 @@ viewQuiz config ( length, id ) attr =
                         ]
                 )
                 [ Html.span
-                    [ Attr.class "lia-dropdown__selected"
-                    , A11y_Widget.hidden False
-                    , A11y_Role.button
-                    , A11y_Widget.expanded open
-                    , Attr.style "font-weight" "inherit"
-                    , Attr.style "text-decoration" "inherit"
-                    , Attr.style "font-style" "inherit"
-                    ]
+                    (config.input.partiallyCorrect
+                        |> Array.get id
+                        |> highlightPartialSolution
+                            [ Attr.class "lia-dropdown__selected"
+                            , A11y_Widget.hidden False
+                            , A11y_Role.button
+                            , A11y_Widget.expanded open
+                            , Attr.style "font-weight" "inherit"
+                            , Attr.style "text-decoration" "inherit"
+                            , Attr.style "font-style" "inherit"
+                            ]
+                    )
                     [ getOption config element options
                     , Html.i
                         [ Attr.class <|
@@ -248,6 +254,23 @@ viewQuiz config ( length, id ) attr =
 
         _ ->
             Html.text "todo"
+
+
+highlightPartialSolution : List (Attribute msg) -> Maybe Bool -> List (Attribute msg)
+highlightPartialSolution attr partiallyCorrect =
+    case partiallyCorrect of
+        Just True ->
+            Attr.class "is-success"
+                :: A11y_Widget.invalid False
+                :: attr
+
+        Just False ->
+            Attr.class "is-failure"
+                :: A11y_Widget.invalid True
+                :: attr
+
+        Nothing ->
+            attr
 
 
 

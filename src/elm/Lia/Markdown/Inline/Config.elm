@@ -33,6 +33,7 @@ type alias Config sub =
         , options : Array (List Inlines)
         , on : String -> Int -> String -> String
         , active : Bool
+        , partiallyCorrect : Array Bool
         }
     , translations : Maybe ( String, String )
     , formulas : Dict String String
@@ -78,6 +79,7 @@ init config =
         , options = Array.empty
         , on = \_ _ _ -> ""
         , active = False
+        , partiallyCorrect = Array.empty
         }
     , translations = config.translations
     , sync = config.sync

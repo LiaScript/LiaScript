@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.14.1
+version:  0.14.3
 language: en
 narrator: UK English Male
 
@@ -296,7 +296,20 @@ This will apply the following four patches:
 
 ## Version-Changes
 
-**0.14.1** (21/09/2021)
+**0.14.3** (03/01/2024)
+
+- improve: Add `data-show-partial-solution` to quizzes, which only have an effect
+  on compound quizzes, such as Matrix-Quizzes and Gap-Texts, to reveal (as the 
+  name suggests) the partial solution of the quiz.
+- improve: Gap-Texts can now also be integrated into ASCII-Art by putting them into
+  quotations "
+- feat: The SCORM1.2 connector now can also be used in OPAL-LMS
+
+**0.14.2** (24/12/2023)
+
+- add italian translation
+
+**0.14.1** (21/12/2023)
 
 - chore: update caniuse, ace and y-js
 - fix: add hits to ascii-art quizzes
