@@ -4,6 +4,7 @@ module Lia.Markdown.Quiz.Json exposing
     , toVector
     )
 
+import Array
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Inline.Json.Encode as Inline
@@ -13,6 +14,7 @@ import Lia.Markdown.Quiz.Multi.Json as Multi
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types exposing (Element, Quiz, State(..), Type(..), Vector)
 import Lia.Markdown.Quiz.Vector.Json as Vector
+import Translations exposing (Lang(..))
 
 
 encode : Quiz x -> JE.Value
@@ -109,7 +111,7 @@ toElement =
                 _ ->
                     JD.succeed Solution.ReSolved
     in
-    JD.map7 Element
+    JD.map8 Element
         (JD.field "solved" JD.int |> JD.andThen solved_decoder)
         (JD.field "state" toState)
         (JD.field "trial" JD.int)
@@ -122,8 +124,10 @@ toElement =
             , score = Nothing
             , showResolveAt = 0
             , showHintsAt = 0
+            , showPartialSolution = False
             }
         )
+        (JD.succeed Array.empty)
 
 
 toState : JD.Decoder State

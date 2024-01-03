@@ -7,6 +7,7 @@ module Lia.Markdown.Quiz.Types exposing
     , Type(..)
     , Vector
     , comp
+    , comp2
     , getClass
     , initState
     , isSolved
@@ -39,6 +40,7 @@ type alias Element =
     , error_msg : String
     , scriptID : Maybe Int
     , opt : Options
+    , partiallySolved : Array Bool
     }
 
 
@@ -48,6 +50,7 @@ type alias Options =
     , score : Maybe Float
     , showResolveAt : Int
     , showHintsAt : Int
+    , showPartialSolution : Bool
     }
 
 
@@ -170,6 +173,24 @@ comp quiz state =
 
     else
         Solution.Open
+
+
+comp2 : Bool -> Type x -> State -> Array Bool
+comp2 perform quiz state =
+    if perform then
+        Array.fromList <|
+            case ( quiz, state ) of
+                ( Multi_Type q, Multi_State s ) ->
+                    Multi.comp2 q s
+
+                ( Matrix_Type q, Matrix_State s ) ->
+                    Matrix.comp2 q s
+
+                _ ->
+                    []
+
+    else
+        Array.empty
 
 
 {-| Returns `True` if the quiz is in solved or resolved state.
