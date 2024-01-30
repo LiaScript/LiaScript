@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.14.3
+version:  0.14.4
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,12 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.14.4** (14/10/2024)
+
+- feat: add "mailto:" and "tel:" to allowed protocols, which can be used in links.
+- hotfix: for testing webrtc connections
+- improve: ASCII-Art now fully supports emojis ...
 
 **0.14.3** (03/01/2024)
 

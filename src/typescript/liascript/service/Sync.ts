@@ -10,6 +10,14 @@ var PubNub
 var Gun
 var P2PT
 
+function hasRTCPeerConnection() {
+  return !!(
+    window.RTCPeerConnection ||
+    window.mozRTCPeerConnection ||
+    window.webkitRTCPeerConnection
+  )
+}
+
 const Service = {
   PORT: 'sync',
 
@@ -20,7 +28,7 @@ const Service = {
     'jitsi',
     //'matrix',
     'pubnub',
-    RTCPeerConnection !== undefined ? 'p2pt' : '',
+    hasRTCPeerConnection() ? 'p2pt' : '',
   ],
 
   init: function (elmSend_: Lia.Send) {
