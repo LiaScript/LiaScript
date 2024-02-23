@@ -151,12 +151,22 @@ view config element =
 
 viewQuiz : Config sub -> ( String, Int ) -> Parameters -> Html (Msg sub)
 viewQuiz config ( length, id ) attr =
+    let
+        highlight a =
+            if config.input.active then
+                config.input.partiallyCorrect
+                    |> Array.get id
+                    |> highlightPartialSolution a
+
+            else
+                a
+    in
     case Array.get id config.input.state of
         Just (Text text) ->
             Html.input
-                (config.input.partiallyCorrect
-                    |> Array.get id
-                    |> highlightPartialSolution (toAttribute attr)
+                (attr
+                    |> toAttribute
+                    |> highlight
                     |> List.append
                         [ Attr.type_ "text"
                         , Attr.class "lia-input lia-quiz__input"
@@ -211,20 +221,17 @@ viewQuiz config ( length, id ) attr =
                             else
                                 "is-disabled"
                         ]
+                    |> highlight
                 )
                 [ Html.span
-                    (config.input.partiallyCorrect
-                        |> Array.get id
-                        |> highlightPartialSolution
-                            [ Attr.class "lia-dropdown__selected"
-                            , A11y_Widget.hidden False
-                            , A11y_Role.button
-                            , A11y_Widget.expanded open
-                            , Attr.style "font-weight" "inherit"
-                            , Attr.style "text-decoration" "inherit"
-                            , Attr.style "font-style" "inherit"
-                            ]
-                    )
+                    [ Attr.class "lia-dropdown__selected"
+                    , A11y_Widget.hidden False
+                    , A11y_Role.button
+                    , A11y_Widget.expanded open
+                    , Attr.style "font-weight" "inherit"
+                    , Attr.style "text-decoration" "inherit"
+                    , Attr.style "font-style" "inherit"
+                    ]
                     [ getOption config element options
                     , Html.i
                         [ Attr.class <|

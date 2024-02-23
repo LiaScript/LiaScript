@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.14.4
+version:  0.14.5
 language: en
 narrator: UK English Male
 
@@ -296,7 +296,13 @@ This will apply the following four patches:
 
 ## Version-Changes
 
-**0.14.4** (14/10/2024)
+**0.14.5** (23/02/2024)
+
+- improve: ASCII-art images now with better emoji support and improved coloring and rendering
+- update: oEmbed endpoints
+- chore: update npm packages
+
+**0.14.4** (14/01/2024)
 
 - feat: add "mailto:" and "tel:" to allowed protocols, which can be used in links.
 - hotfix: for testing webrtc connections
