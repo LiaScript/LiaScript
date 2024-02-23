@@ -292,13 +292,17 @@ svgbobSub ( caption, str ) =
                 , textWidth = 8.0
                 , textHeight = 16.0
                 , arcRadius = 4.0
-                , strokeColor = "black"
-                , textColor = "black"
-                , backgroundColor = "white"
-                , verbatim = '"'
-                , multilineVerbatim = True
-                , heightVerbatim = Just "100%"
-                , widthVerbatim = Nothing
+                , color =
+                    { stroke = "#222"
+                    , text = "black"
+                    , background = "white"
+                    }
+                , verbatim =
+                    { string = "\""
+                    , multiline = True
+                    , height = Just "100%"
+                    , width = Nothing
+                    }
                 }
                 str
 

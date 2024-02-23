@@ -525,6 +525,19 @@ viewQuote config attr elements =
 view_ascii : Config Msg -> Parameters -> ( Maybe Inlines, SvgBob.Configuration Blocks ) -> Html Msg
 view_ascii config attr ( caption, image ) =
     image
+        |> (SvgBob.setColorsIn <|
+                if config.light then
+                    { text = "#4b4b4b"
+                    , background = "white"
+                    , stroke = "black"
+                    }
+
+                else
+                    { text = "white"
+                    , background = "#323232"
+                    , stroke = "#ddd"
+                    }
+           )
         |> SvgBob.drawElements (toAttribute attr) (svgElement config)
         |> svgFigure config caption
 
@@ -542,14 +555,8 @@ svgElement config list =
 svgFigure config caption svg =
     Html.figure [ Attr.class "lia-figure" ]
         [ Html.div
-            ([ Attr.class "lia-figure__media" ]
-                |> CList.appendIf (not config.light)
-                    [ Attr.style "-webkit-filter" "invert(100%)"
-                    , Attr.style "filter" "invert(100%)"
-                    ]
-            )
-            [ svg
-            ]
+            [ Attr.class "lia-figure__media" ]
+            [ svg ]
         , case caption of
             Nothing ->
                 Html.text ""
