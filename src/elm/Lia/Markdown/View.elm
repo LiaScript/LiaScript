@@ -538,7 +538,18 @@ view_ascii config attr ( caption, image ) =
                     , stroke = "#ddd"
                     }
            )
-        |> SvgBob.drawElements (toAttribute attr) (svgElement config)
+        |> SvgBob.drawElements
+            (( "color"
+             , if config.light then
+                "black"
+
+               else
+                "white"
+             )
+                :: attr
+                |> toAttribute
+            )
+            (svgElement config)
         |> svgFigure config caption
 
 
