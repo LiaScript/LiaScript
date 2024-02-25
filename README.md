@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.14.5
+version:  0.14.6
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,10 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.14.6** (25/02/2024)
+
+- hotfix: ASCII art now draws again empty circles
 
 **0.14.5** (23/02/2024)
 
