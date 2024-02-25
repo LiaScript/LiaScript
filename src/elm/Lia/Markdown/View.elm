@@ -539,16 +539,7 @@ view_ascii config attr ( caption, image ) =
                     }
            )
         |> SvgBob.drawElements
-            (( "color"
-             , if config.light then
-                "black"
-
-               else
-                "white"
-             )
-                :: attr
-                |> toAttribute
-            )
+            (toAttribute attr)
             (svgElement config)
         |> svgFigure config caption
 
