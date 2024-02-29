@@ -212,7 +212,7 @@ update main msg scripts =
                     let
                         ( publish, javascript ) =
                             scripts
-                                |> update_ main.globals section param
+                                |> update_ False main.globals section param
 
                         node =
                             javascript
@@ -261,7 +261,7 @@ update main msg scripts =
                     let
                         ( publish, javascript ) =
                             scripts
-                                |> update_ main.globals section param
+                                |> update_ True main.globals section param
 
                         node =
                             javascript
@@ -352,13 +352,13 @@ execute delay ( id, code ) =
         |> Event.pushWithId "script" id
 
 
-update_ : Maybe Definition -> Int -> JE.Value -> Scripts SubSection -> ( Bool, Scripts SubSection )
-update_ defintion id e scripts =
+update_ : Bool -> Maybe Definition -> Int -> JE.Value -> Scripts SubSection -> ( Bool, Scripts SubSection )
+update_ async defintion id e scripts =
     case Array.get id scripts of
         Just js ->
             let
                 new =
-                    eval_ defintion id (Service.Script.decode e) js
+                    eval_ async defintion id (Service.Script.decode e) js
             in
             ( new.result /= js.result
             , Array.set id new scripts
@@ -368,14 +368,19 @@ update_ defintion id e scripts =
             ( False, scripts )
 
 
-eval_ : Maybe Definition -> Int -> Eval -> Script SubSection -> Script SubSection
-eval_ defintion id e js =
+eval_ : Bool -> Maybe Definition -> Int -> Eval -> Script SubSection -> Script SubSection
+eval_ async defintion id e js =
     let
         waiting =
             e.result == "LIA: wait"
     in
     { js
-        | running = waiting
+        | running =
+            if async then
+                True
+
+            else
+                waiting
         , counter = js.counter + 1
         , result =
             if waiting then

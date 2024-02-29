@@ -84,6 +84,31 @@ customElements.define(
       this.style_ = style
     }
 
+    getOption() {
+      let option = this.getAttribute('option')
+
+      console.log(option)
+
+      if (option) {
+        try {
+          return JSON.parse(option)
+        } catch (e) {
+          console.warn(
+            'lia-chart: could not parse json, will evaluate =>',
+            e.message
+          )
+        }
+
+        try {
+          return eval('option=' + option)
+        } catch (e) {
+          console.warn('lia-chart: could not eval option => ', e.message)
+        }
+      }
+
+      return null
+    }
+
     connectedCallback() {
       if (!this.chart) {
         this.container.setAttribute('style', this.style_)
@@ -91,8 +116,9 @@ customElements.define(
           renderer: 'svg',
           locale: this.locale,
         })
-        this.option_ =
-          JSON.parse(this.getAttribute('option') || 'null') || this.option_
+
+        this.option_ = this.getOption() || this.option_
+
         this.option_['aria'] = {
           show: true,
         } //, decal: { show: true }}
