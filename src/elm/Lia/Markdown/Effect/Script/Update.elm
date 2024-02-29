@@ -453,7 +453,7 @@ getVisible visible javascript =
         |> getIdle identity
         |> List.filterMap
             (\( id, node ) ->
-                if node.effect_id == visible then
+                if node.effect_id == visible && node.input.type_ /= Just Input.Button_ then
                     Just ( id, node.script, Input.getValue node.input )
 
                 else
