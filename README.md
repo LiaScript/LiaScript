@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.14.6
+version:  0.14.7
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,12 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.14.7** (29/02/2024)
+
+- fix: script execution live-span
+- improve: lia-charts can now evaluate code
+- fix(Parser): Support for multiple hidden comments in sequence
 
 **0.14.6** (25/02/2024)
 
