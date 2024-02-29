@@ -310,7 +310,7 @@ export function liaExec(event: Lia.Event) {
 function liaExecCode(event: Lia.Event) {
   setTimeout(() => {
     const send = {
-      lia: execute_response(event),
+      lia: execute_response(event, 'exec'),
       output: execute_response(event, 'async'),
       wait: () => {
         execute_response(event)('LIA: wait')
