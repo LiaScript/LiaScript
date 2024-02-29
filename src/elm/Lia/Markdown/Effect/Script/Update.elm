@@ -376,8 +376,11 @@ eval_ async defintion id e js =
     in
     { js
         | running =
-            if async then
+            if async && e.result /= "LIA: stop" then
                 True
+
+            else if e.result == "LIA: stop" then
+                False
 
             else
                 waiting
