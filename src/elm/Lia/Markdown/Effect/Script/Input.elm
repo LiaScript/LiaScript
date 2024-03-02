@@ -41,6 +41,7 @@ type Type_
     | Time_
     | Url_
     | Week_
+    | Submit_
 
 
 type alias Input =
@@ -137,6 +138,9 @@ type_ t =
         Select_ _ ->
             "select"
 
+        Submit_ ->
+            "submit"
+
         Tel_ ->
             "tel"
 
@@ -208,7 +212,7 @@ parseType_ params input_ =
             Select_ (options params)
 
         "submit" ->
-            Button_
+            Submit_
 
         "tel" ->
             Tel_
