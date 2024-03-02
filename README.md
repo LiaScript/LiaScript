@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.14.8
+version:  0.14.9
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,10 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.14.9** (02/03/2024)
+
+- Script: Submit button waits for clicks, while button starts immediately
 
 **0.14.8** (29/02/2024)
 
