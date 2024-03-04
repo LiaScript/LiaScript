@@ -10,6 +10,14 @@ var PubNub
 var Gun
 var P2PT
 
+function hasRTCPeerConnection() {
+  return !!(
+    window.RTCPeerConnection ||
+    window.mozRTCPeerConnection ||
+    window.webkitRTCPeerConnection
+  )
+}
+
 const Service = {
   PORT: 'sync',
 
@@ -20,11 +28,22 @@ const Service = {
     'jitsi',
     //'matrix',
     'pubnub',
-    RTCPeerConnection !== undefined ? 'p2pt' : '',
+    hasRTCPeerConnection() ? 'p2pt' : '',
   ],
 
   init: function (elmSend_: Lia.Send) {
     elmSend = elmSend_
+
+    if (window['LIA']) {
+      window['LIA']['classroom'] = {
+        connected: false,
+
+        publish,
+        subscribe,
+        unsubscribe,
+        on,
+      }
+    }
   },
 
   handle: async function (event: Lia.Event) {
@@ -53,7 +72,13 @@ const Service = {
                 return
               }
 
-              sync = new Edrys.Sync(cbConnection, elmSend)
+              sync = new Edrys.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                true
+              )
 
               break
 
@@ -66,7 +91,13 @@ const Service = {
                 return
               }
 
-              sync = new Gun.Sync(cbConnection, elmSend)
+              sync = new Gun.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                false
+              )
               break
 
             case 'jitsi':
@@ -78,7 +109,13 @@ const Service = {
                 return
               }
 
-              sync = new Jitsi.Sync(cbConnection, elmSend)
+              sync = new Jitsi.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                true
+              )
               break
 
             /*
@@ -104,7 +141,13 @@ const Service = {
                 return
               }
 
-              sync = new PubNub.Sync(cbConnection, elmSend)
+              sync = new PubNub.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                true
+              )
               break
 
             case 'p2pt':
@@ -116,7 +159,13 @@ const Service = {
                 return
               }
 
-              sync = new P2PT.Sync(cbConnection, elmSend)
+              sync = new P2PT.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                true
+              )
               break
 
             default:
@@ -135,12 +184,9 @@ const Service = {
 
           sync = undefined
 
-          /*
-          if (elmSend) {
-            event.message.cmd = 'disconnect'
-            elmSend(event)
-          }
-          */
+          window.LIA.classroom.publish = publish
+          window.LIA.classroom.connected = false
+          CALLBACK.disconnect.forEach((cb) => cb())
         }
 
         break
@@ -156,3 +202,92 @@ const Service = {
 }
 
 export default Service
+
+//*************************************************************************
+
+type Subscription = {
+  id: number
+  callback: (message: any) => void
+}
+
+// Container for all subscriptions
+var SUBSCRIPTIONS: { [topic: string]: Subscription[] } = {}
+var BACKUP: { [topic: string]: any } = {}
+
+// Connection change callback container
+var CALLBACK: {
+  connect: (() => void)[]
+  disconnect: (() => void)[]
+} = {
+  connect: [],
+  disconnect: [],
+}
+
+function publish(topic: string, message: any) {
+  console.warn(
+    'Classroom: not connected, cannot publish topic => ' + { topic, message }
+  )
+}
+
+function subscribe(topic: string, callback: (message: any) => void): number {
+  const id = Math.round(Math.random() * 1000000000)
+
+  if (!SUBSCRIPTIONS[topic]) {
+    SUBSCRIPTIONS[topic] = []
+  }
+  SUBSCRIPTIONS[topic].push({ id, callback })
+
+  if (BACKUP[topic]) {
+    setTimeout(() => callback(BACKUP[topic]), 100)
+  }
+
+  return id
+}
+
+function unsubscribe(id: number) {
+  for (const topic in SUBSCRIPTIONS) {
+    SUBSCRIPTIONS[topic] = SUBSCRIPTIONS[topic].filter((sub) => sub.id !== id)
+  }
+}
+
+function on(event: 'connect' | 'disconnect', callback: () => void) {
+  switch (event) {
+    case 'connect': {
+      CALLBACK.connect.push(callback)
+      break
+    }
+
+    case 'disconnect': {
+      CALLBACK.disconnect.push(callback)
+      break
+    }
+
+    default: {
+      console.warn('Classroom: unknown event -> ' + event)
+    }
+  }
+}
+
+function onReceive(topic: string, message: any) {
+  BACKUP[topic] = message
+
+  if (SUBSCRIPTIONS[topic]) {
+    SUBSCRIPTIONS[topic].forEach((sub) => sub.callback(message))
+  }
+}
+
+function onConnect() {
+  window.LIA.classroom.connected = true
+
+  window.LIA.classroom.publish = function (topic: string, message: any) {
+    if (sync) {
+      if (window.LIA.classroom.connected) {
+        sync.pubsubSend(topic, message)
+      } else {
+        publish(topic, message)
+      }
+    }
+  }
+
+  CALLBACK.connect.forEach((cb) => cb())
+}

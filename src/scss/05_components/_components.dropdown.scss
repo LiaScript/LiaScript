@@ -46,4 +46,12 @@
   &.is-disabled {
     border-color: rgb(var(--lia-grey));
   }
+
+  &.is-failure {
+    border-color: rgb(var(--lia-red));
+  }
+
+  &.is-success {
+    border-color: rgb(var(--lia-success));
+  }
 }

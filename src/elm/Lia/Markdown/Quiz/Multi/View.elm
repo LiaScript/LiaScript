@@ -1,19 +1,21 @@
 module Lia.Markdown.Quiz.Multi.View exposing (view)
 
+import Array exposing (Array)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Multi.Types exposing (Quiz, State)
 import Lia.Markdown.Quiz.Multi.Update exposing (Msg(..))
 
 
-view : Config sub -> Int -> Bool -> Quiz x Inlines -> State -> ( Config sub, Maybe x )
-view config id active quiz state =
+view : { config : Config sub, id : Int, active : Bool, partiallyCorrect : Array Bool, quiz : Quiz x Inlines, state : State } -> ( Config sub, Maybe x )
+view { config, id, active, partiallyCorrect, quiz, state } =
     ( { config
         | input =
             { state = state
             , options = quiz.options
             , on = onInput config.slide "quiz" id
             , active = active
+            , partiallyCorrect = partiallyCorrect
             }
       }
     , quiz.elements

@@ -39,7 +39,12 @@ export class Sync extends Base.Sync {
                 self.connected = true
                 self.sendConnect()
               }
-
+              break
+            }
+            case 'publish': {
+              if (event.body) {
+                self.pubsubReceive(event.body)
+              }
               break
             }
             default: {
@@ -55,7 +60,7 @@ export class Sync extends Base.Sync {
 
       window.addEventListener('message', this.listener)
 
-      this.broadcast(null, 'init')
+      this.broadcast(true, null, 'init')
 
       setTimeout(function () {
         if (!self.connected) {
@@ -65,9 +70,11 @@ export class Sync extends Base.Sync {
     }
   }
 
-  broadcast(data: Uint8Array | null, topic?: string) {
+  broadcast(state: boolean, data: Uint8Array | null, topic?: string) {
+    let subject = state ? topic || this.subject : 'publish'
+
     window.parent.postMessage(
-      { subject: topic || this.subject, body: data ? encode(data) : null },
+      { subject, body: data ? encode(data) : null },
       '*'
     )
   }

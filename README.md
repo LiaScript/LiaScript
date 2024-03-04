@@ -2,11 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-<<<<<<< HEAD
-version:  0.12.9
-=======
-version:  0.12.11
->>>>>>> development
+version:  0.14.10
 language: en
 narrator: UK English Male
 
@@ -299,6 +295,66 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.14.10** (04/03/2024)
+
+- Script: Submit button waits for clicks, while button starts immediately
+
+**0.14.8** (29/02/2024)
+
+- hotfix: script allow for sending "LIA: stop"
+
+**0.14.7** (29/02/2024)
+
+- fix: script execution live-span
+- improve: lia-charts can now evaluate code
+- fix(Parser): Support for multiple hidden comments in sequence
+
+**0.14.6** (25/02/2024)
+
+- hotfix: ASCII art now draws again empty circles
+
+**0.14.5** (23/02/2024)
+
+- improve: ASCII-art images now with better emoji support and improved coloring and rendering
+- update: oEmbed endpoints
+- chore: update npm packages
+
+**0.14.4** (14/01/2024)
+
+- feat: add "mailto:" and "tel:" to allowed protocols, which can be used in links.
+- hotfix: for testing webrtc connections
+- improve: ASCII-Art now fully supports emojis ...
+
+**0.14.3** (03/01/2024)
+
+- improve: Add `data-show-partial-solution` to quizzes, which only have an effect
+  on compound quizzes, such as Matrix-Quizzes and Gap-Texts, to reveal (as the 
+  name suggests) the partial solution of the quiz.
+- improve: Gap-Texts can now also be integrated into ASCII-Art by putting them into
+  quotations "
+- feat: The SCORM1.2 connector now can also be used in OPAL-LMS
+
+**0.14.2** (24/12/2023)
+
+- add italian translation
+
+**0.14.1** (21/12/2023)
+
+- chore: update caniuse, ace and y-js
+- fix: add hits to ascii-art quizzes
+
+**0.14.0** (19/12/2023)
+
+- feat: New pub-sub system for classroom
+- fix: DOM for SVG inputs
+- hotfix: P2PT for google chrome
+
+**0.12.12** (22/11/2023)
+
+- fix: horizontal | parsing (also for tables)
+- fix: enable backtick-escape in macro parameters
+- fix: dropping last newline in macro-block parsing
 
 **0.12.11** (15/11/2023)
 

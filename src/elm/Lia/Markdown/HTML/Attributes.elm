@@ -279,6 +279,12 @@ allowedProtocol url =
         "blob" ->
             True
 
+        "mailto" ->
+            True
+
+        "tel" ->
+            True
+
         _ ->
             False
 
