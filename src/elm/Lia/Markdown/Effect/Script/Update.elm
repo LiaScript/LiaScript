@@ -432,7 +432,7 @@ getIdle : (Script a -> x) -> Scripts a -> List ( Int, x )
 getIdle =
     Script.filterMap
         (\js ->
-            not js.running && not js.block && not (js.runOnce && js.counter >= 1)
+            not js.running && not js.block && not (js.runOnce && js.counter >= 1) && (js.input.type_ /= Just (Input.Button_ True))
         )
 
 
@@ -453,7 +453,7 @@ getVisible visible javascript =
         |> getIdle identity
         |> List.filterMap
             (\( id, node ) ->
-                if node.effect_id == visible && node.input.type_ /= Just Input.Submit_ then
+                if node.effect_id == visible && node.input.type_ /= Just (Input.Button_ True) then
                     Just ( id, node.script, Input.getValue node.input )
 
                 else

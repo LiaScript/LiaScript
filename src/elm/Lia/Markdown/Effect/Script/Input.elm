@@ -18,7 +18,7 @@ import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
 
 
 type Type_
-    = Button_
+    = Button_ Bool
     | Checkbox_ (List String)
     | Color_
     | Date_
@@ -41,7 +41,6 @@ type Type_
     | Time_
     | Url_
     | Week_
-    | Submit_
 
 
 type alias Input =
@@ -90,8 +89,11 @@ from params =
 type_ : Type_ -> String
 type_ t =
     case t of
-        Button_ ->
+        Button_ False ->
             "button"
+
+        Button_ True ->
+            "submit"
 
         Checkbox_ _ ->
             "checkbox"
@@ -138,9 +140,6 @@ type_ t =
         Select_ _ ->
             "select"
 
-        Submit_ ->
-            "submit"
-
         Tel_ ->
             "tel"
 
@@ -164,7 +163,10 @@ parseType_ : Parameters -> String -> Type_
 parseType_ params input_ =
     case input_ of
         "button" ->
-            Button_
+            Button_ False
+
+        "submit" ->
+            Button_ True
 
         "checkbox" ->
             Checkbox_ (options params)
@@ -210,9 +212,6 @@ parseType_ params input_ =
 
         "select" ->
             Select_ (options params)
-
-        "submit" ->
-            Submit_
 
         "tel" ->
             Tel_
@@ -291,7 +290,7 @@ active bool i =
 
 getValue : Input -> Maybe String
 getValue i =
-    if i.type_ /= Nothing && i.type_ /= Just Button_ then
+    if i.type_ /= Nothing && i.type_ /= Just (Button_ True) then
         Just i.value
 
     else
