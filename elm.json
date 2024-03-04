@@ -7,7 +7,7 @@
     "dependencies": {
         "direct": {
             "andre-dietrich/elm-conditional": "1.0.0",
-            "andre-dietrich/elm-svgbob": "4.0.12",
+            "andre-dietrich/elm-svgbob": "5.0.1",
             "andre-dietrich/parser-combinators": "4.1.0",
             "elm/browser": "1.0.2",
             "elm/core": "1.0.5",
@@ -17,25 +17,26 @@
             "elm/random": "1.0.0",
             "elm/regex": "1.0.0",
             "elm/url": "1.0.0",
-            "elm-community/list-extra": "8.5.2",
+            "elm-community/list-extra": "8.7.0",
             "f0i/statistics": "2.0.0",
             "jxxcarlson/elm-pseudorandom": "1.0.3",
-            "pablohirafuji/elm-qrcode": "4.0.1",
+            "pablohirafuji/elm-qrcode": "4.0.2",
             "rtfeldman/elm-hex": "1.0.0",
             "tesk9/accessible-html": "4.1.1",
             "truqu/elm-base64": "2.0.4",
             "truqu/elm-md5": "1.1.0"
         },
         "indirect": {
+            "BrianHicks/elm-string-graphemes": "1.0.4",
             "avh4/elm-color": "1.0.0",
             "danfishgold/base64-bytes": "1.1.0",
             "elm/bytes": "1.0.8",
             "elm/file": "1.0.5",
             "elm/svg": "1.0.1",
             "elm/time": "1.0.0",
-            "elm/virtual-dom": "1.0.2",
+            "elm/virtual-dom": "1.0.3",
             "folkertdev/elm-flate": "2.0.5",
-            "justgook/elm-image": "4.0.0",
+            "justgook/elm-image": "5.0.0",
             "pilatch/flip": "1.0.0",
             "zwilias/elm-utf-tools": "2.0.1"
         }

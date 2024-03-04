@@ -44,6 +44,7 @@ type Lang =
   | 'fa'
   | 'fr'
   | 'hy'
+  | 'it'
   | 'ko'
   | 'nl'
   | 'ru'

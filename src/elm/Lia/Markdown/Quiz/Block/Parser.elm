@@ -17,7 +17,7 @@ import Combine
         )
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (newline, spaces, stringTill)
+import Lia.Parser.Helper exposing (newline, spaces, string1Till)
 
 
 parse : (Context -> String -> opt) -> Parser Context (Quiz opt)
@@ -31,7 +31,7 @@ parse parse_inlines =
 pattern : (Context -> String -> opt) -> Parser Context ( Int, Quiz opt )
 pattern parse_inlines =
     string "[["
-        |> keep (stringTill (string "]]"))
+        |> keep (string1Till (string "]]"))
         |> map
             (\s context ->
                 split parse_inlines s context

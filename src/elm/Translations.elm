@@ -19,6 +19,7 @@ type Lang
     | Fr
     | Hi
     | Hy
+    | It
     | Ja
     | Ko
     | Nl
@@ -37,7 +38,7 @@ Otherwise `Nothing` is returned.
 -}
 getLnFromCode : String -> Maybe Lang
 getLnFromCode code =
-    case String.toLower code of
+    case String.toLower code of 
         "am" ->
             Just Am
 
@@ -67,6 +68,9 @@ getLnFromCode code =
 
         "hy" ->
             Just Hy
+
+        "it" ->
+            Just It
 
         "ja" ->
             Just Ja
@@ -109,7 +113,7 @@ getLnFromCode code =
 -}
 getCodeFromLn : Lang -> String
 getCodeFromLn lang =
-    case lang of
+    case lang of 
         Am ->
             "am"
 
@@ -139,6 +143,9 @@ getCodeFromLn lang =
 
         Hy ->
             "hy"
+
+        It ->
+            "it"
 
         Ja ->
             "ja"
@@ -176,7 +183,7 @@ getCodeFromLn lang =
 
 home : Lang -> String
 home lang =
-    case lang of
+    case lang of 
         Am ->
             "ዋና ገጽ"
 
@@ -191,6 +198,9 @@ home lang =
 
         Hi ->
             "सिंहावलोकन"
+
+        It ->
+            "Home"
 
         Ja ->
             "ホーム"
@@ -216,7 +226,7 @@ home lang =
 
 baseNext : Lang -> String
 baseNext lang =
-    case lang of
+    case lang of 
         Am ->
             "ቀጣይ"
 
@@ -246,6 +256,9 @@ baseNext lang =
 
         Hy ->
             "հաջորդը"
+
+        It ->
+            "prossimo"
 
         Ja ->
             "次へ"
@@ -283,7 +296,7 @@ baseNext lang =
 
 basePrev : Lang -> String
 basePrev lang =
-    case lang of
+    case lang of 
         Am ->
             "ተመለስ"
 
@@ -313,6 +326,9 @@ basePrev lang =
 
         Hy ->
             "նախորդը"
+
+        It ->
+            "precedente"
 
         Ja ->
             "前へ"
@@ -350,7 +366,7 @@ basePrev lang =
 
 basePlay : Lang -> String
 basePlay lang =
-    case lang of
+    case lang of 
         Am ->
             "ጨርሰን"
 
@@ -380,6 +396,9 @@ basePlay lang =
 
         Hy ->
             "Խաղացեք"
+
+        It ->
+            "avvia"
 
         Ja ->
             "再生"
@@ -417,7 +436,7 @@ basePlay lang =
 
 baseStop : Lang -> String
 baseStop lang =
-    case lang of
+    case lang of 
         Am ->
             "አቆጣጠር"
 
@@ -447,6 +466,9 @@ baseStop lang =
 
         Hy ->
             "դադարեցրեք"
+
+        It ->
+            "ferma"
 
         Ja ->
             "停止"
@@ -484,12 +506,15 @@ baseStop lang =
 
 baseAbc : Lang -> String
 baseAbc lang =
-    case lang of
+    case lang of 
         Am ->
             "አማ"
 
         Bn ->
             "এবিসি"
+
+        It ->
+            "Aa"
 
         Ja ->
             "Aa"
@@ -512,7 +537,7 @@ baseAbc lang =
 
 baseFont : Lang -> String -> String
 baseFont lang str0 =
-    case lang of
+    case lang of 
         Am ->
             "ፎንት መጠን: " ++ str0 ++ ""
 
@@ -542,6 +567,9 @@ baseFont lang str0 =
 
         Hy ->
             "Տառատեսակի չափը ՝ " ++ str0 ++ ""
+
+        It ->
+            "Dimensione carattere: " ++ str0 ++ ""
 
         Ja ->
             "フォントサイズ: " ++ str0 ++ ""
@@ -579,7 +607,7 @@ baseFont lang str0 =
 
 baseSize1 : Lang -> String
 baseSize1 lang =
-    case lang of
+    case lang of 
         Am ->
             "ትንሽ"
 
@@ -609,6 +637,9 @@ baseSize1 lang =
 
         Hy ->
             "փոքր"
+
+        It ->
+            "piccolo"
 
         Ja ->
             "小"
@@ -646,7 +677,7 @@ baseSize1 lang =
 
 baseSize2 : Lang -> String
 baseSize2 lang =
-    case lang of
+    case lang of 
         Am ->
             "መልካም"
 
@@ -676,6 +707,9 @@ baseSize2 lang =
 
         Hy ->
             "միջին"
+
+        It ->
+            "medio"
 
         Ja ->
             "中"
@@ -713,7 +747,7 @@ baseSize2 lang =
 
 baseSize3 : Lang -> String
 baseSize3 lang =
-    case lang of
+    case lang of 
         Am ->
             "በጣም ስምንት"
 
@@ -743,6 +777,9 @@ baseSize3 lang =
 
         Hy ->
             "մեծ"
+
+        It ->
+            "grande"
 
         Ja ->
             "大"
@@ -780,7 +817,7 @@ baseSize3 lang =
 
 baseSearch : Lang -> String
 baseSearch lang =
-    case lang of
+    case lang of 
         Am ->
             "ፈልግ"
 
@@ -810,6 +847,9 @@ baseSearch lang =
 
         Hy ->
             "փնտրել"
+
+        It ->
+            "Cerca"
 
         Ja ->
             "検索"
@@ -847,7 +887,7 @@ baseSearch lang =
 
 baseDelete : Lang -> String
 baseDelete lang =
-    case lang of
+    case lang of 
         Am ->
             "ፈልግ ያድገት"
 
@@ -877,6 +917,9 @@ baseDelete lang =
 
         Hy ->
             "ջնջել որոնումը"
+
+        It ->
+            "cancella ricerca"
 
         Ja ->
             "検索をクリア"
@@ -914,7 +957,7 @@ baseDelete lang =
 
 baseResults : Lang -> String
 baseResults lang =
-    case lang of
+    case lang of 
         Am ->
             "ውጤቶች"
 
@@ -944,6 +987,9 @@ baseResults lang =
 
         Hy ->
             "արդյունքներ"
+
+        It ->
+            "risultati"
 
         Ja ->
             "結果"
@@ -981,7 +1027,7 @@ baseResults lang =
 
 baseOneResult : Lang -> String
 baseOneResult lang =
-    case lang of
+    case lang of 
         Am ->
             "አንድ ውጤት"
 
@@ -1011,6 +1057,9 @@ baseOneResult lang =
 
         Hy ->
             "մեկ արդյունք"
+
+        It ->
+            "un risultato"
 
         Ja ->
             "1件の結果"
@@ -1048,7 +1097,7 @@ baseOneResult lang =
 
 baseNoResult : Lang -> String
 baseNoResult lang =
-    case lang of
+    case lang of 
         Am ->
             "ምንም ውጤት የሉም"
 
@@ -1078,6 +1127,9 @@ baseNoResult lang =
 
         Hy ->
             "արդյունք չկա"
+
+        It ->
+            "non ci sono risultati"
 
         Ja ->
             "結果なし"
@@ -1115,7 +1167,7 @@ baseNoResult lang =
 
 baseToc : Lang -> String
 baseToc lang =
-    case lang of
+    case lang of 
         Am ->
             "የዋጋ ዓረብ"
 
@@ -1145,6 +1197,9 @@ baseToc lang =
 
         Hy ->
             "բովանդակություն"
+
+        It ->
+            "indice"
 
         Ja ->
             "目次"
@@ -1182,7 +1237,7 @@ baseToc lang =
 
 baseShow : Lang -> String
 baseShow lang =
-    case lang of
+    case lang of 
         Am ->
             "አሳይ"
 
@@ -1212,6 +1267,9 @@ baseShow lang =
 
         Hy ->
             "ցույց տալ"
+
+        It ->
+            "mostrare"
 
         Ja ->
             "表示"
@@ -1249,7 +1307,7 @@ baseShow lang =
 
 baseHide : Lang -> String
 baseHide lang =
-    case lang of
+    case lang of 
         Am ->
             "ደብቅ"
 
@@ -1279,6 +1337,9 @@ baseHide lang =
 
         Hy ->
             "թաքցնել"
+
+        It ->
+            "nascondere"
 
         Ja ->
             "非表示"
@@ -1316,7 +1377,7 @@ baseHide lang =
 
 baseEditor : Lang -> String
 baseEditor lang =
-    case lang of
+    case lang of 
         Am ->
             "ኤዲተር-ዘዴ"
 
@@ -1346,6 +1407,9 @@ baseEditor lang =
 
         Hy ->
             "խմբագիր ոճով"
+
+        It ->
+            "stile editor"
 
         Ja ->
             "エディター・スタイル"
@@ -1383,7 +1447,7 @@ baseEditor lang =
 
 baseLang : Lang -> String
 baseLang lang =
-    case lang of
+    case lang of 
         Am ->
             "አማርኛ"
 
@@ -1413,6 +1477,9 @@ baseLang lang =
 
         Hy ->
             "հայերեն"
+
+        It ->
+            "Italiano"
 
         Ja ->
             "日本語"
@@ -1450,7 +1517,7 @@ baseLang lang =
 
 no_translation : Lang -> String
 no_translation lang =
-    case lang of
+    case lang of 
         Am ->
             "በመሆን ላይ ምንም ተስተካክል የለም"
 
@@ -1480,6 +1547,9 @@ no_translation lang =
 
         Hy ->
             "դեռ թագմանություն չկա"
+
+        It ->
+            "ancora non tradotto"
 
         Ja ->
             "まだ翻訳されていません"
@@ -1517,7 +1587,7 @@ no_translation lang =
 
 translateWithGoogle : Lang -> String
 translateWithGoogle lang =
-    case lang of
+    case lang of 
         Am ->
             "በ Google ትርጉም (ምርጥ) ተመርጧል"
 
@@ -1547,6 +1617,9 @@ translateWithGoogle lang =
 
         Hy ->
             "Թարգմանեք Google- ի միջոցով (փորձնական)"
+
+        It ->
+            "Tradurre con Google (sperimentale)"
 
         Ja ->
             "Google翻訳で翻訳する（実験的）"
@@ -1584,7 +1657,7 @@ translateWithGoogle lang =
 
 cColor : Lang -> String
 cColor lang =
-    case lang of
+    case lang of 
         Am ->
             "ቀለም"
 
@@ -1614,6 +1687,9 @@ cColor lang =
 
         Hy ->
             "գույն"
+
+        It ->
+            "colore"
 
         Ja ->
             "色"
@@ -1651,7 +1727,7 @@ cColor lang =
 
 cSchema : Lang -> String
 cSchema lang =
-    case lang of
+    case lang of 
         Am ->
             "ቀለም ሥነጽሑፍ"
 
@@ -1681,6 +1757,9 @@ cSchema lang =
 
         Hy ->
             "Գունային սխեման"
+
+        It ->
+            "Schema di colori"
 
         Ja ->
             "カラースキーム"
@@ -1718,7 +1797,7 @@ cSchema lang =
 
 cDark : Lang -> String
 cDark lang =
-    case lang of
+    case lang of 
         Am ->
             "እንቅስቃሴ"
 
@@ -1748,6 +1827,9 @@ cDark lang =
 
         Hy ->
             "մութ ռեժիմ"
+
+        It ->
+            "modo scuro"
 
         Ja ->
             "ダークモード"
@@ -1785,7 +1867,7 @@ cDark lang =
 
 cBright : Lang -> String
 cBright lang =
-    case lang of
+    case lang of 
         Am ->
             "እንደዛሬ"
 
@@ -1815,6 +1897,9 @@ cBright lang =
 
         Hy ->
             "թեթև ռեժիմ"
+
+        It ->
+            "modo chiaro"
 
         Ja ->
             "ライトモード"
@@ -1852,7 +1937,7 @@ cBright lang =
 
 cDefault : Lang -> String
 cDefault lang =
-    case lang of
+    case lang of 
         Am ->
             "ነባሪ"
 
@@ -1882,6 +1967,9 @@ cDefault lang =
 
         Hy ->
             "կանխադրված"
+
+        It ->
+            "predefinito"
 
         Ja ->
             "デフォルト"
@@ -1919,7 +2007,7 @@ cDefault lang =
 
 cBlue : Lang -> String
 cBlue lang =
-    case lang of
+    case lang of 
         Am ->
             "ሰማያዊ"
 
@@ -1949,6 +2037,9 @@ cBlue lang =
 
         Hy ->
             "կապույտ"
+
+        It ->
+            "blu"
 
         Ja ->
             "青"
@@ -1986,7 +2077,7 @@ cBlue lang =
 
 cRed : Lang -> String
 cRed lang =
-    case lang of
+    case lang of 
         Am ->
             "ቀይ"
 
@@ -2016,6 +2107,9 @@ cRed lang =
 
         Hy ->
             "կարմիր"
+
+        It ->
+            "rosso"
 
         Ja ->
             "赤"
@@ -2053,7 +2147,7 @@ cRed lang =
 
 cYellow : Lang -> String
 cYellow lang =
-    case lang of
+    case lang of 
         Am ->
             "ቢጫ"
 
@@ -2083,6 +2177,9 @@ cYellow lang =
 
         Hy ->
             "դեղին"
+
+        It ->
+            "giallo"
 
         Ja ->
             "黄色"
@@ -2120,7 +2217,7 @@ cYellow lang =
 
 cTurquoise : Lang -> String
 cTurquoise lang =
-    case lang of
+    case lang of 
         Am ->
             "ዓሣደኝ"
 
@@ -2150,6 +2247,9 @@ cTurquoise lang =
 
         Hy ->
             "փիրուզագույն"
+
+        It ->
+            "turchese"
 
         Ja ->
             "ターコイズ"
@@ -2187,7 +2287,7 @@ cTurquoise lang =
 
 modeMode : Lang -> String
 modeMode lang =
-    case lang of
+    case lang of 
         Am ->
             "ዘመን ተዘጋጅ"
 
@@ -2217,6 +2317,9 @@ modeMode lang =
 
         Hy ->
             "Ներկայացման ռեժիմ"
+
+        It ->
+            "Modo presentazione"
 
         Ja ->
             "プレゼンテーションモード"
@@ -2254,7 +2357,7 @@ modeMode lang =
 
 modeTextbook : Lang -> String
 modeTextbook lang =
-    case lang of
+    case lang of 
         Am ->
             "ተማሪ መስመር"
 
@@ -2284,6 +2387,9 @@ modeTextbook lang =
 
         Hy ->
             "գիրք"
+
+        It ->
+            "Manuale"
 
         Ja ->
             "教科書"
@@ -2321,7 +2427,7 @@ modeTextbook lang =
 
 modePresentation : Lang -> String
 modePresentation lang =
-    case lang of
+    case lang of 
         Am ->
             "እንቅስቃሴ"
 
@@ -2351,6 +2457,9 @@ modePresentation lang =
 
         Hy ->
             "ներկայացում"
+
+        It ->
+            "Presentazione"
 
         Ja ->
             "プレゼンテーション"
@@ -2388,7 +2497,7 @@ modePresentation lang =
 
 modeSlides : Lang -> String
 modeSlides lang =
-    case lang of
+    case lang of 
         Am ->
             "ስላይድስ"
 
@@ -2418,6 +2527,9 @@ modeSlides lang =
 
         Hy ->
             "սլայդներ"
+
+        It ->
+            "Diapositive"
 
         Ja ->
             "スライド"
@@ -2455,7 +2567,7 @@ modeSlides lang =
 
 soundOn : Lang -> String
 soundOn lang =
-    case lang of
+    case lang of 
         Am ->
             "ድምጽ አብራ"
 
@@ -2485,6 +2597,9 @@ soundOn lang =
 
         Hy ->
             "ձայնով"
+
+        It ->
+            "Suono attivo"
 
         Ja ->
             "音声オン"
@@ -2522,7 +2637,7 @@ soundOn lang =
 
 soundOff : Lang -> String
 soundOff lang =
-    case lang of
+    case lang of 
         Am ->
             "ድምጽ ያልተጫኑ"
 
@@ -2552,6 +2667,9 @@ soundOff lang =
 
         Hy ->
             "առանց ձայն"
+
+        It ->
+            "Suono disattivato"
 
         Ja ->
             "音声オフ"
@@ -2589,7 +2707,7 @@ soundOff lang =
 
 infoAuthor : Lang -> String
 infoAuthor lang =
-    case lang of
+    case lang of 
         Am ->
             "ሰላም ያለፈ: "
 
@@ -2619,6 +2737,9 @@ infoAuthor lang =
 
         Hy ->
             "հեղինակ: "
+
+        It ->
+            "Autore: "
 
         Ja ->
             "著者："
@@ -2656,7 +2777,7 @@ infoAuthor lang =
 
 infoAuthors : Lang -> String
 infoAuthors lang =
-    case lang of
+    case lang of 
         Am ->
             "ሰላም ያለፈውን: "
 
@@ -2686,6 +2807,9 @@ infoAuthors lang =
 
         Hy ->
             "հեղինակներ: "
+
+        It ->
+            "Autori: "
 
         Ja ->
             "著者："
@@ -2723,7 +2847,7 @@ infoAuthors lang =
 
 infoDate : Lang -> String
 infoDate lang =
-    case lang of
+    case lang of 
         Am ->
             "ቀን: "
 
@@ -2753,6 +2877,9 @@ infoDate lang =
 
         Hy ->
             "ամսաթիվ: "
+
+        It ->
+            "Data: "
 
         Ja ->
             "日付："
@@ -2790,7 +2917,7 @@ infoDate lang =
 
 infoEmail : Lang -> String
 infoEmail lang =
-    case lang of
+    case lang of 
         Am ->
             "ኢሜል: "
 
@@ -2820,6 +2947,9 @@ infoEmail lang =
 
         Hy ->
             "էլ. փոստ: "
+
+        It ->
+            "Email: "
 
         Ja ->
             "メール："
@@ -2857,7 +2987,7 @@ infoEmail lang =
 
 infoVersion : Lang -> String
 infoVersion lang =
-    case lang of
+    case lang of 
         Am ->
             "ቅድሚያ: "
 
@@ -2887,6 +3017,9 @@ infoVersion lang =
 
         Hy ->
             "տարբերակ: "
+
+        It ->
+            "Versione:  "
 
         Ja ->
             "バージョン："
@@ -2924,7 +3057,7 @@ infoVersion lang =
 
 confInformation : Lang -> String
 confInformation lang =
-    case lang of
+    case lang of 
         Am ->
             "መረጃ"
 
@@ -2954,6 +3087,9 @@ confInformation lang =
 
         Hy ->
             "ինֆորմացիա"
+
+        It ->
+            "Informazioni"
 
         Ja ->
             "情報"
@@ -2991,7 +3127,7 @@ confInformation lang =
 
 confSettings : Lang -> String
 confSettings lang =
-    case lang of
+    case lang of 
         Am ->
             "ማስተካከያዎች"
 
@@ -3021,6 +3157,9 @@ confSettings lang =
 
         Hy ->
             "կարգավորումներ"
+
+        It ->
+            "Impostazioni"
 
         Ja ->
             "設定"
@@ -3058,7 +3197,7 @@ confSettings lang =
 
 confShare : Lang -> String
 confShare lang =
-    case lang of
+    case lang of 
         Am ->
             "አገልግሎት"
 
@@ -3088,6 +3227,9 @@ confShare lang =
 
         Hy ->
             "կիսվել"
+
+        It ->
+            "Condividi"
 
         Ja ->
             "共有"
@@ -3125,7 +3267,7 @@ confShare lang =
 
 confShareVia : Lang -> String
 confShareVia lang =
-    case lang of
+    case lang of 
         Am ->
             "ከተጨማሪ ያግኙ ..."
 
@@ -3155,6 +3297,9 @@ confShareVia lang =
 
         Hy ->
             "տարածել միջոցով ..."
+
+        It ->
+            "Condividi via ..."
 
         Ja ->
             "共有方法..."
@@ -3192,7 +3337,7 @@ confShareVia lang =
 
 confTranslations : Lang -> String
 confTranslations lang =
-    case lang of
+    case lang of 
         Am ->
             "ትርጉም"
 
@@ -3222,6 +3367,9 @@ confTranslations lang =
 
         Hy ->
             "թարգմանություններ"
+
+        It ->
+            "Traduzioni"
 
         Ja ->
             "翻訳"
@@ -3259,7 +3407,7 @@ confTranslations lang =
 
 confTooltip : Lang -> String
 confTooltip lang =
-    case lang of
+    case lang of 
         Am ->
             "የማጣሪያ ጥቅል"
 
@@ -3274,6 +3422,9 @@ confTooltip lang =
 
         Hi ->
             "टूलटिप्स"
+
+        It ->
+            "Tooltip"
 
         Ja ->
             "ツールチップ"
@@ -3299,7 +3450,7 @@ confTooltip lang =
 
 ttsPreferBrowser : Lang -> String
 ttsPreferBrowser lang =
-    case lang of
+    case lang of 
         Am ->
             "የብሮውን ቴክስት-ተምረው መቀመጥ"
 
@@ -3320,6 +3471,9 @@ ttsPreferBrowser lang =
 
         Hi ->
             "ब्राउज़र TTS को प्राथमिकता दें"
+
+        It ->
+            "Preferir TTS del navegador"
 
         Ja ->
             "ブラウザのTTSを優先する"
@@ -3357,7 +3511,7 @@ ttsPreferBrowser lang =
 
 ttsUsingBrowser : Lang -> String
 ttsUsingBrowser lang =
-    case lang of
+    case lang of 
         Am ->
             "በብሮው ቴክስት-ተምረው መጫን ነው።"
 
@@ -3378,6 +3532,9 @@ ttsUsingBrowser lang =
 
         Hi ->
             "ब्राउज़र के आंतरिक टेक्स्ट-टू-स्पीच इंजन का उपयोग करना।"
+
+        It ->
+            "Sto utilizzando il motore interno di conversione del testo a voce del browser."
 
         Ja ->
             "ブラウザの内蔵テキスト読み上げエンジンを使用中"
@@ -3415,7 +3572,7 @@ ttsUsingBrowser lang =
 
 ttsUnsupported : Lang -> String
 ttsUnsupported lang =
-    case lang of
+    case lang of 
         Am ->
             "የምንጠቀመው ብሮዎች ሊያውቅ አይችልም፣ በሌላ ቦታ ያሳያል።"
 
@@ -3436,6 +3593,9 @@ ttsUnsupported lang =
 
         Hi ->
             "आपका ब्राउज़र टेक्स्ट-टू-स्पीच का समर्थन नहीं करता है, एक अलग प्रयास करें।"
+
+        It ->
+            "Il tuo browser non è compatibile con Text-to-Speech, provane un altro."
 
         Ja ->
             "このブラウザはテキスト読み上げに対応していません。他のブラウザをお試しください。"
@@ -3473,7 +3633,7 @@ ttsUnsupported lang =
 
 codeExecute : Lang -> String
 codeExecute lang =
-    case lang of
+    case lang of 
         Am ->
             "ተጠቃሚ ስጥ"
 
@@ -3503,6 +3663,9 @@ codeExecute lang =
 
         Hy ->
             "իրականացնել"
+
+        It ->
+            "Esegui"
 
         Ja ->
             "実行"
@@ -3540,7 +3703,7 @@ codeExecute lang =
 
 codeRunning : Lang -> String
 codeRunning lang =
-    case lang of
+    case lang of 
         Am ->
             "ተጠቃሚ ላይ ነው"
 
@@ -3570,6 +3733,9 @@ codeRunning lang =
 
         Hy ->
             "ընթանում է"
+
+        It ->
+            "in funzione"
 
         Ja ->
             "実行中"
@@ -3607,7 +3773,7 @@ codeRunning lang =
 
 codePrev : Lang -> String
 codePrev lang =
-    case lang of
+    case lang of 
         Am ->
             "የመጀመሪያ ክፍሎች"
 
@@ -3637,6 +3803,9 @@ codePrev lang =
 
         Hy ->
             "նախորդ տարբերակը"
+
+        It ->
+            "versione precedente"
 
         Ja ->
             "前のバージョン"
@@ -3674,7 +3843,7 @@ codePrev lang =
 
 codeNext : Lang -> String
 codeNext lang =
-    case lang of
+    case lang of 
         Am ->
             "የቀጣይ ክፍሎች"
 
@@ -3704,6 +3873,9 @@ codeNext lang =
 
         Hy ->
             "հաջորդ տարբերակը"
+
+        It ->
+            "versione seguente"
 
         Ja ->
             "次のバージョン"
@@ -3741,7 +3913,7 @@ codeNext lang =
 
 codeFirst : Lang -> String
 codeFirst lang =
-    case lang of
+    case lang of 
         Am ->
             "የመጀመሪያ ክፍል"
 
@@ -3771,6 +3943,9 @@ codeFirst lang =
 
         Hy ->
             "առաջին տարբերակը"
+
+        It ->
+            "prima versione"
 
         Ja ->
             "最初のバージョン"
@@ -3808,7 +3983,7 @@ codeFirst lang =
 
 codeLast : Lang -> String
 codeLast lang =
-    case lang of
+    case lang of 
         Am ->
             "የመጨረሻ ክፍል"
 
@@ -3838,6 +4013,9 @@ codeLast lang =
 
         Hy ->
             "վերջին տարբերակը"
+
+        It ->
+            "ultima versione"
 
         Ja ->
             "最新のバージョン"
@@ -3875,7 +4053,7 @@ codeLast lang =
 
 codeMinimize : Lang -> String
 codeMinimize lang =
-    case lang of
+    case lang of 
         Am ->
             "ማሳወቅ ያድርጉ"
 
@@ -3905,6 +4083,9 @@ codeMinimize lang =
 
         Hy ->
             "նվազեցնել տեսքը"
+
+        It ->
+            "minimizare la vista"
 
         Ja ->
             "最小化"
@@ -3942,7 +4123,7 @@ codeMinimize lang =
 
 codeMaximize : Lang -> String
 codeMaximize lang =
-    case lang of
+    case lang of 
         Am ->
             "ማግኘት ያድርጉ"
 
@@ -3972,6 +4153,9 @@ codeMaximize lang =
 
         Hy ->
             "բարձրագունել տեսքը"
+
+        It ->
+            "massimizzare la vista"
 
         Ja ->
             "最大化"
@@ -4009,7 +4193,7 @@ codeMaximize lang =
 
 codeTerminal : Lang -> String
 codeTerminal lang =
-    case lang of
+    case lang of 
         Am ->
             "ቴርማው"
 
@@ -4070,7 +4254,7 @@ codeTerminal lang =
 
 quizCheck : Lang -> String
 quizCheck lang =
-    case lang of
+    case lang of 
         Am ->
             "መለየት"
 
@@ -4100,6 +4284,9 @@ quizCheck lang =
 
         Hy ->
             "ստուգել"
+
+        It ->
+            "verifica"
 
         Ja ->
             "確認"
@@ -4137,7 +4324,7 @@ quizCheck lang =
 
 quizSolution : Lang -> String
 quizSolution lang =
-    case lang of
+    case lang of 
         Am ->
             "አስገሳት አሳይ"
 
@@ -4167,6 +4354,9 @@ quizSolution lang =
 
         Hy ->
             "ցույց տալ լուծումը"
+
+        It ->
+            "mostra la soluzione"
 
         Ja ->
             "解答を表示"
@@ -4204,7 +4394,7 @@ quizSolution lang =
 
 quizHint : Lang -> String
 quizHint lang =
-    case lang of
+    case lang of 
         Am ->
             "አስታዋሽ"
 
@@ -4234,6 +4424,9 @@ quizHint lang =
 
         Hy ->
             "ցուցադրել ակնարկ"
+
+        It ->
+            "mosta un indizio"
 
         Ja ->
             "ヒントを表示"
@@ -4271,7 +4464,7 @@ quizHint lang =
 
 quizSelection : Lang -> String
 quizSelection lang =
-    case lang of
+    case lang of 
         Am ->
             "ምረጡ"
 
@@ -4301,6 +4494,9 @@ quizSelection lang =
 
         Hy ->
             "ընտրություն"
+
+        It ->
+            "seleziona"
 
         Ja ->
             "選択"
@@ -4338,7 +4534,7 @@ quizSelection lang =
 
 quizLabelCheck : Lang -> String
 quizLabelCheck lang =
-    case lang of
+    case lang of 
         Am ->
             "መረጃው ተመርጧል ወይም ቆይተው ይቀጥሉ"
 
@@ -4368,6 +4564,9 @@ quizLabelCheck lang =
 
         Hy ->
             "Ստուգեք պատասխանը: Պատասխանը նշվում է որպես ճիշտ կամ սխալ:"
+
+        It ->
+            "Controlla la risposta. La risposta è indicata come corretta o errata."
 
         Ja ->
             "答えを確認してください。回答は正解または不正解でマークされます。"
@@ -4405,7 +4604,7 @@ quizLabelCheck lang =
 
 quizLabelSolution : Lang -> String
 quizLabelSolution lang =
-    case lang of
+    case lang of 
         Am ->
             "የይለፍ መረጃ ይሰራል"
 
@@ -4435,6 +4634,9 @@ quizLabelSolution lang =
 
         Hy ->
             "Showույց տվեք լուծումը: Վիկտորինան նշվում է որպես լուծված:"
+
+        It ->
+            "Mostra la soluzione. Il questionario si registra come risolto."
 
         Ja ->
             "解答を表示します。クイズは解決済みとマークされます。"
@@ -4472,7 +4674,7 @@ quizLabelSolution lang =
 
 quizAnswerSuccess : Lang -> String
 quizAnswerSuccess lang =
-    case lang of
+    case lang of 
         Am ->
             "እንኳን ደስ አለዎት! ይህ ማሳወቅ ተመልከቱ"
 
@@ -4502,6 +4704,9 @@ quizAnswerSuccess lang =
 
         Hy ->
             "Շնորհավորում եմ, դա ճիշտ պատասխանն էր"
+
+        It ->
+            "Congratulazioni, questa era la risposta corretta"
 
         Ja ->
             "おめでとうございます、正解です"
@@ -4539,7 +4744,7 @@ quizAnswerSuccess lang =
 
 quizAnswerError : Lang -> String
 quizAnswerError lang =
-    case lang of
+    case lang of 
         Am ->
             "የሚነካ መለያ መገለጫ በድጋሚ ነው"
 
@@ -4569,6 +4774,9 @@ quizAnswerError lang =
 
         Hy ->
             "Ճիշտ պատասխանը դեռևս չի տրվել"
+
+        It ->
+            "La risposta corretta non è stata ancora fornita"
 
         Ja ->
             "正解がまだ与えられていません"
@@ -4606,7 +4814,7 @@ quizAnswerError lang =
 
 quizAnswerResolved : Lang -> String
 quizAnswerResolved lang =
-    case lang of
+    case lang of 
         Am ->
             "ተመርጧል"
 
@@ -4636,6 +4844,9 @@ quizAnswerResolved lang =
 
         Hy ->
             "Լուծված պատասխան"
+
+        It ->
+            "Risposta decisiva"
 
         Ja ->
             "解決済みの回答"
@@ -4673,7 +4884,7 @@ quizAnswerResolved lang =
 
 surveySubmit : Lang -> String
 surveySubmit lang =
-    case lang of
+    case lang of 
         Am ->
             "አመድ"
 
@@ -4703,6 +4914,9 @@ surveySubmit lang =
 
         Hy ->
             "ներկայացնել"
+
+        It ->
+            "Invia"
 
         Ja ->
             "送信"
@@ -4740,7 +4954,7 @@ surveySubmit lang =
 
 surveySubmitted : Lang -> String
 surveySubmitted lang =
-    case lang of
+    case lang of 
         Am ->
             "እናመሰግናለን"
 
@@ -4770,6 +4984,9 @@ surveySubmitted lang =
 
         Hy ->
             "շնորհակալություն"
+
+        It ->
+            "Inviato"
 
         Ja ->
             "ありがとうございます"
@@ -4807,7 +5024,7 @@ surveySubmitted lang =
 
 surveyText : Lang -> String
 surveyText lang =
-    case lang of
+    case lang of 
         Am ->
             "ግል ጽሑፍ ያስገቡ..."
 
@@ -4837,6 +5054,9 @@ surveyText lang =
 
         Hy ->
             "Մուտքագրեք որոշ տեքստ"
+
+        It ->
+            "Immetti del testo"
 
         Ja ->
             "テキストを入力してください..."
@@ -4874,7 +5094,7 @@ surveyText lang =
 
 sortAsc : Lang -> String
 sortAsc lang =
-    case lang of
+    case lang of 
         Am ->
             "ቅደም አስቀድሞ"
 
@@ -4895,6 +5115,9 @@ sortAsc lang =
 
         Hi ->
             "आरोही क्रमबद्ध करें"
+
+        It ->
+            "ordine crescente"
 
         Ja ->
             "昇順に並べ替え"
@@ -4926,7 +5149,7 @@ sortAsc lang =
 
 sortDesc : Lang -> String
 sortDesc lang =
-    case lang of
+    case lang of 
         Am ->
             "ታሪክ አስቀድሞ"
 
@@ -4947,6 +5170,9 @@ sortDesc lang =
 
         Hi ->
             "अवरोही क्रमबद्ध करें"
+
+        It ->
+            "ordine discendente"
 
         Ja ->
             "降順に並べ替え"
@@ -4978,7 +5204,7 @@ sortDesc lang =
 
 sortNot : Lang -> String
 sortNot lang =
-    case lang of
+    case lang of 
         Am ->
             "ተመርጧል"
 
@@ -4999,6 +5225,9 @@ sortNot lang =
 
         Hi ->
             "क्रमबद्ध नहीं"
+
+        It ->
+            "non ordinato"
 
         Ja ->
             "未並べ替え"
@@ -5030,7 +5259,7 @@ sortNot lang =
 
 chartPie : Lang -> String
 chartPie lang =
-    case lang of
+    case lang of 
         Am ->
             "ፒ ሾስትን ጫን ቦታ"
 
@@ -5048,6 +5277,9 @@ chartPie lang =
 
         Hi ->
             "पाई चार्ट"
+
+        It ->
+            "Diagramma a torta"
 
         Ja ->
             "円グラフ"
@@ -5076,7 +5308,7 @@ chartPie lang =
 
 chartBar : Lang -> String
 chartBar lang =
-    case lang of
+    case lang of 
         Am ->
             "ባር ሾስትን ጫን ቦታ"
 
@@ -5094,6 +5326,9 @@ chartBar lang =
 
         Hi ->
             "बार चार्ट"
+
+        It ->
+            "Diagramma a barre"
 
         Ja ->
             "棒グラフ"
@@ -5122,7 +5357,7 @@ chartBar lang =
 
 chartLine : Lang -> String
 chartLine lang =
-    case lang of
+    case lang of 
         Am ->
             "ስብስብ ሾስትን ጫን ቦታ"
 
@@ -5140,6 +5375,9 @@ chartLine lang =
 
         Hi ->
             "लाइन चार्ट"
+
+        It ->
+            "Diagramma a linee"
 
         Ja ->
             "折れ線グラフ"
@@ -5168,7 +5406,7 @@ chartLine lang =
 
 chartScatter : Lang -> String
 chartScatter lang =
-    case lang of
+    case lang of 
         Am ->
             "መስመር ግርግር ስቀር ቦታ"
 
@@ -5186,6 +5424,9 @@ chartScatter lang =
 
         Hi ->
             "स्कैटरप्लॉट"
+
+        It ->
+            "Diagramma a dispersione"
 
         Ja ->
             "散布図"
@@ -5214,7 +5455,7 @@ chartScatter lang =
 
 chartRadar : Lang -> String
 chartRadar lang =
-    case lang of
+    case lang of 
         Am ->
             "ራዳር ሾስት"
 
@@ -5232,6 +5473,9 @@ chartRadar lang =
 
         Hi ->
             "रडार मैप"
+
+        It ->
+            "Diagramma Radar"
 
         Ja ->
             "レーダーチャート"
@@ -5260,7 +5504,7 @@ chartRadar lang =
 
 chartBoxplot : Lang -> String
 chartBoxplot lang =
-    case lang of
+    case lang of 
         Am ->
             "ቦክስ ፕሎት"
 
@@ -5275,6 +5519,9 @@ chartBoxplot lang =
 
         Hi ->
             "बॉक्सप्लॉट"
+
+        It ->
+            "Boxplot"
 
         Ja ->
             "ボックスプロット"
@@ -5303,7 +5550,7 @@ chartBoxplot lang =
 
 chartHeatmap : Lang -> String
 chartHeatmap lang =
-    case lang of
+    case lang of 
         Am ->
             "ሜይፕ ሾስት"
 
@@ -5321,6 +5568,9 @@ chartHeatmap lang =
 
         Hi ->
             "हीटमैप"
+
+        It ->
+            "Heat map"
 
         Ja ->
             "ヒートマップ"
@@ -5349,7 +5599,7 @@ chartHeatmap lang =
 
 chartMap : Lang -> String
 chartMap lang =
-    case lang of
+    case lang of 
         Am ->
             "ካርታ"
 
@@ -5367,6 +5617,9 @@ chartMap lang =
 
         Hi ->
             "मैप"
+
+        It ->
+            "Map"
 
         Ja ->
             "地図"
@@ -5395,7 +5648,7 @@ chartMap lang =
 
 chartParallel : Lang -> String
 chartParallel lang =
-    case lang of
+    case lang of 
         Am ->
             "ፓራለል ኮይላርድን ቦታ"
 
@@ -5403,7 +5656,7 @@ chartParallel lang =
             "متوازي"
 
         Bn ->
-            "প্যারালেল কো\u{0991}র্ডিনেট ম্যাপ"
+            "প্যারালেল কো঑র্ডিনেট ম্যাপ"
 
         De ->
             "Parallele Koordinatenkarte"
@@ -5413,6 +5666,9 @@ chartParallel lang =
 
         Hi ->
             "समानांतर समन्वय मानचित्र"
+
+        It ->
+            "Parallel coordinate map"
 
         Ja ->
             "パラレル座標マップ"
@@ -5438,7 +5694,7 @@ chartParallel lang =
 
 chartLines : Lang -> String
 chartLines lang =
-    case lang of
+    case lang of 
         Am ->
             "ስብስቦች ሾስት"
 
@@ -5456,6 +5712,9 @@ chartLines lang =
 
         Hi ->
             "लाइन चार्ट"
+
+        It ->
+            "Line graph"
 
         Ja ->
             "折れ線グラフ"
@@ -5481,7 +5740,7 @@ chartLines lang =
 
 chartGraph : Lang -> String
 chartGraph lang =
-    case lang of
+    case lang of 
         Am ->
             "ባህሪዎች ሾስት"
 
@@ -5499,6 +5758,9 @@ chartGraph lang =
 
         Hi ->
             "रिलेशनशिप ग्राफ"
+
+        It ->
+            "Relationship graph"
 
         Ja ->
             "関係グラフ"
@@ -5524,7 +5786,7 @@ chartGraph lang =
 
 chartSankey : Lang -> String
 chartSankey lang =
-    case lang of
+    case lang of 
         Am ->
             "ሳንኪ ዲዚግም"
 
@@ -5542,6 +5804,9 @@ chartSankey lang =
 
         Hi ->
             "सैंके आरेख"
+
+        It ->
+            "Sankey diagram"
 
         Ja ->
             "サンキーダイアグラム"
@@ -5567,7 +5832,7 @@ chartSankey lang =
 
 chartFunnel : Lang -> String
 chartFunnel lang =
-    case lang of
+    case lang of 
         Am ->
             "ፋንኤል ጫን ቦታ"
 
@@ -5585,6 +5850,9 @@ chartFunnel lang =
 
         Hi ->
             "फ़नल चार्ट"
+
+        It ->
+            "Funnel chart"
 
         Ja ->
             "ファネルチャート"
@@ -5610,7 +5878,7 @@ chartFunnel lang =
 
 qrCode : Lang -> String
 qrCode lang =
-    case lang of
+    case lang of 
         Am ->
             "QR ኮድ ለድረ ገጽ"
 
@@ -5640,6 +5908,9 @@ qrCode lang =
 
         Hy ->
             "Վեբ կայքի QR կոդ"
+
+        It ->
+            "Codice QR del sito web"
 
         Ja ->
             "ウェブサイト用 QR コード"
@@ -5677,7 +5948,7 @@ qrCode lang =
 
 qrErr : Lang -> String
 qrErr lang =
-    case lang of
+    case lang of 
         Am ->
             "ስህተት ያለባቸው በ QR ኮድ ወይም ትክክል አልተመለከተም"
 
@@ -5707,6 +5978,9 @@ qrErr lang =
 
         Hy ->
             "Սխալ QR կոդի կոդավորման ժամանակ"
+
+        It ->
+            "Errore nel codificare come codice QR"
 
         Ja ->
             "QR コードのエンコード中にエラーが発生しました"
@@ -5744,7 +6018,7 @@ qrErr lang =
 
 chatOpen : Lang -> String
 chatOpen lang =
-    case lang of
+    case lang of 
         Am ->
             "ቀዳሚ ማድረግ"
 
@@ -5774,6 +6048,9 @@ chatOpen lang =
 
         Hy ->
             "Բացել խոսակցություն"
+
+        It ->
+            "Aprire la chat"
 
         Ja ->
             "チャットを開く"
@@ -5811,7 +6088,7 @@ chatOpen lang =
 
 chatClose : Lang -> String
 chatClose lang =
-    case lang of
+    case lang of 
         Am ->
             "ዝጋት ያድርጉ"
 
@@ -5841,6 +6118,9 @@ chatClose lang =
 
         Hy ->
             "Փակել խոսակցություն"
+
+        It ->
+            "Chiudere la chat"
 
         Ja ->
             "チャットを閉じる"
@@ -5878,7 +6158,7 @@ chatClose lang =
 
 chatNew : Lang -> String
 chatNew lang =
-    case lang of
+    case lang of 
         Am ->
             "የተከፈሉ የቀዳሚ መልዕክቶች አልተመለከተም"
 
@@ -5898,7 +6178,7 @@ chatNew lang =
             "Tienes mensajes de chat no leídos"
 
         Fa ->
-            "شما پیام\u{200C}های چت خوانده نشده دارید"
+            "شما پیام‌های چت خوانده نشده دارید"
 
         Fr ->
             "Vous avez des messages de chat non lus"
@@ -5908,6 +6188,9 @@ chatNew lang =
 
         Hy ->
             "Դուք ունեք չկարդացված խոսածքներ խոսակցության մեջ"
+
+        It ->
+            "Ci sono messaggi di chat non letti"
 
         Ja ->
             "未読のチャットメッセージがあります"
@@ -5945,7 +6228,7 @@ chatNew lang =
 
 chatSend : Lang -> String
 chatSend lang =
-    case lang of
+    case lang of 
         Am ->
             "መልእክት ላክ"
 
@@ -5975,6 +6258,9 @@ chatSend lang =
 
         Hy ->
             "Ուղարկել նամակ"
+
+        It ->
+            "Invia messaggio"
 
         Ja ->
             "メッセージを送信する"
@@ -6008,3 +6294,4 @@ chatSend lang =
 
         _ ->
             "Send message"
+

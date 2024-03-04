@@ -29,13 +29,8 @@ export class Sync extends Base.Sync {
     if (window['P2PT']) {
       this.init(true)
     } else {
-      this.load(
-        [
-          'https://cdn.jsdelivr.net/gh/subins2000/p2pt/dist/p2pt.umd.min.js',
-          Crypto.url,
-        ],
-        this
-      )
+      window['P2PT'] = await import('p2pt')
+      this.load([Crypto.url], this)
     }
   }
 
@@ -62,6 +57,11 @@ export class Sync extends Base.Sync {
         self.sendConnect()
       })
 
+      this.p2pt.on('trackerwarning', (error, stats) => {
+        console.log('Connected to tracker : ', error)
+        console.log('Tracker stats : ' + JSON.stringify(stats))
+      })
+
       this.p2pt.on('peerconnect', (peer) => {
         console.warn('Peer connected : ' + peer.id, peer)
         self.peers[peer.id] = peer
@@ -82,10 +82,14 @@ export class Sync extends Base.Sync {
 
         if (msg) {
           try {
-            const [token, message] = Crypto.decode(msg)
+            const [token, state, message] = Crypto.decode(msg)
 
             if (token != self.token && message != null) {
-              self.applyUpdate(Base.base64_to_unit8(message))
+              if (state) {
+                self.applyUpdate(Base.base64_to_unit8(message))
+              } else {
+                self.pubsubReceive(Base.base64_to_unit8(message))
+              }
 
               if (!self.tokens[peer.id]) {
                 self.tokens[peer.id] = token
@@ -111,13 +115,13 @@ export class Sync extends Base.Sync {
     }
   }
 
-  broadcast(data: null | Uint8Array): void {
+  broadcast(state: boolean, data: null | Uint8Array): void {
     if (!this.p2pt) {
       return
     }
 
     const message = data == null ? null : Base.uint8_to_base64(data)
-    const msg = Crypto.encode([this.token, message])
+    const msg = Crypto.encode([this.token, state, message])
 
     for (const id in this.peers) {
       this.p2pt.send(this.peers[id], msg)

@@ -81,7 +81,11 @@ blocks =
                 |> keep macro
                 |> ignore whitespace
                 |> keep elements
-                |> ignore (maybe (whitespace |> keep Effect.hidden_comment))
+                |> ignore
+                    (whitespace
+                        |> keep Effect.hidden_comment
+                        |> many
+                    )
 
 
 elements : Parser Context Markdown.Block
@@ -278,6 +282,8 @@ svgbob =
                 |> andThen svgbody
                 |> andThen svgbobSub
             )
+        |> ignore spaces
+        |> ignore newline
 
 
 svgbobSub : ( Maybe Inlines, String ) -> Parser Context ( Maybe Inlines, SvgBob.Configuration Markdown.Blocks )
@@ -290,13 +296,17 @@ svgbobSub ( caption, str ) =
                 , textWidth = 8.0
                 , textHeight = 16.0
                 , arcRadius = 4.0
-                , strokeColor = "black"
-                , textColor = "black"
-                , backgroundColor = "white"
-                , verbatim = '"'
-                , multilineVerbatim = True
-                , heightVerbatim = Just "100%"
-                , widthVerbatim = Nothing
+                , color =
+                    { stroke = "#222"
+                    , text = "black"
+                    , background = "white"
+                    }
+                , verbatim =
+                    { string = "\""
+                    , multiline = True
+                    , height = Just "100%"
+                    , width = Nothing
+                    }
                 }
                 str
 

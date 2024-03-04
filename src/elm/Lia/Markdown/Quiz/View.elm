@@ -94,7 +94,16 @@ maybeConfig config quiz vector =
         ( Just elem, Multi_Type q ) ->
             case elem.state of
                 Multi_State state ->
-                    case Multi.view config quiz.id (elem.solved == Solution.Open) q state of
+                    case
+                        Multi.view
+                            { config = config
+                            , id = quiz.id
+                            , active = elem.solved == Solution.Open
+                            , partiallyCorrect = elem.partiallySolved
+                            , quiz = q
+                            , state = state
+                            }
+                    of
                         ( newConfig, Just block ) ->
                             Just ( newConfig, block )
 
@@ -249,22 +258,11 @@ viewState config elem quiz =
                 |> List.map (Html.map (Block_Update quiz.id))
             )
 
-        ( Multi_State s, Multi_Type q ) ->
-            ( []
-            , --s
-              --  |> Multi.view config ( elem.solved, elem.trial ) q
-              --|> List.map (Html.map (Multi_Update quiz.id))
-              [--s
-               --    |> Multi.view config quiz.id (elem.solved == Solution.Open) q
-               --    |> Html.map (Multi_Update quiz.id)
-              ]
-            )
-
         ( Vector_State s, Vector_Type q ) ->
             s
                 |> Vector.view config
                     (elem.solved == Solution.Open)
-                    (Solution.toClass ( elem.solved, elem.trial ))
+                    (Solution.toClass ( elem.solved, elem.trial ) Nothing)
                     q
                 |> Tuple.mapSecond
                     (shuffle elem.opt.randomize
@@ -273,12 +271,15 @@ viewState config elem quiz =
 
         ( Matrix_State s, Matrix_Type q ) ->
             ( []
-            , [ s
-                    |> Matrix.view config
-                        (shuffle elem.opt.randomize)
-                        (elem.solved == Solution.Open)
-                        (Solution.toClass ( elem.solved, elem.trial ))
-                        q
+            , [ { config = config
+                , shuffle = shuffle elem.opt.randomize
+                , open = elem.solved == Solution.Open
+                , class = Solution.toClass ( elem.solved, elem.trial )
+                , quiz = q
+                , state = s
+                , partiallySolved = elem.partiallySolved
+                }
+                    |> Matrix.view
                     |> Html.map (Matrix_Update quiz.id)
               ]
             )

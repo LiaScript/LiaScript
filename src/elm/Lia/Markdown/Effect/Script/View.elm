@@ -82,9 +82,8 @@ script config withStyling attr id node =
                     --|> CList.addIf (not withStyling) (Attr.style "margin-" "1rem")
                     |> List.append
                         (case node.input.type_ of
-                            Just Input.Button_ ->
-                                [ Event.onClick (Click id)
-                                ]
+                            Just (Input.Button_ _) ->
+                                [ Event.onClick (Click id) ]
 
                             Just _ ->
                                 []
@@ -94,7 +93,18 @@ script config withStyling attr id node =
                         )
                     |> CList.addIf node.modify (onEdit True id)
                     |> CList.addIf (isError result) (Attr.style "color" "red")
-                    |> CList.addIf (node.input.type_ /= Just Input.Button_ && node.input.type_ /= Nothing) (onActivate True id)
+                    |> CList.addIf
+                        (case node.input.type_ of
+                            Nothing ->
+                                False
+
+                            Just (Input.Button_ _) ->
+                                False
+
+                            Just _ ->
+                                True
+                        )
+                        (onActivate True id)
                  --|> (::)
                  --    (Event.on "click"
                  --        (JD.maybe
@@ -137,7 +147,7 @@ script config withStyling attr id node =
 input : Config sub -> Parameters -> Int -> Script SubSection -> Html (Msg sub)
 input config attr id node =
     case node.input.type_ of
-        Just Input.Button_ ->
+        Just (Input.Button_ _) ->
             script config True attr id node
 
         Just (Input.Checkbox_ []) ->

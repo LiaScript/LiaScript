@@ -1,5 +1,6 @@
 module Lia.Markdown.Inline.View exposing
-    ( reduce
+    ( highlightPartialSolution
+    , reduce
     , toScript
     , view
     , viewMedia
@@ -150,11 +151,22 @@ view config element =
 
 viewQuiz : Config sub -> ( String, Int ) -> Parameters -> Html (Msg sub)
 viewQuiz config ( length, id ) attr =
+    let
+        highlight a =
+            if config.input.active then
+                config.input.partiallyCorrect
+                    |> Array.get id
+                    |> highlightPartialSolution a
+
+            else
+                a
+    in
     case Array.get id config.input.state of
         Just (Text text) ->
             Html.input
                 (attr
                     |> toAttribute
+                    |> highlight
                     |> List.append
                         [ Attr.type_ "text"
                         , Attr.class "lia-input lia-quiz__input"
@@ -209,6 +221,7 @@ viewQuiz config ( length, id ) attr =
                             else
                                 "is-disabled"
                         ]
+                    |> highlight
                 )
                 [ Html.span
                     [ Attr.class "lia-dropdown__selected"
@@ -248,6 +261,23 @@ viewQuiz config ( length, id ) attr =
 
         _ ->
             Html.text "todo"
+
+
+highlightPartialSolution : List (Attribute msg) -> Maybe Bool -> List (Attribute msg)
+highlightPartialSolution attr partiallyCorrect =
+    case partiallyCorrect of
+        Just True ->
+            Attr.class "is-success"
+                :: A11y_Widget.invalid False
+                :: attr
+
+        Just False ->
+            Attr.class "is-failure"
+                :: A11y_Widget.invalid True
+                :: attr
+
+        Nothing ->
+            attr
 
 
 

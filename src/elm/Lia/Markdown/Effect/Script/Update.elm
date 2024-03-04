@@ -212,7 +212,7 @@ update main msg scripts =
                     let
                         ( publish, javascript ) =
                             scripts
-                                |> update_ main.globals section param
+                                |> update_ False main.globals section param
 
                         node =
                             javascript
@@ -261,7 +261,7 @@ update main msg scripts =
                     let
                         ( publish, javascript ) =
                             scripts
-                                |> update_ main.globals section param
+                                |> update_ True main.globals section param
 
                         node =
                             javascript
@@ -352,13 +352,13 @@ execute delay ( id, code ) =
         |> Event.pushWithId "script" id
 
 
-update_ : Maybe Definition -> Int -> JE.Value -> Scripts SubSection -> ( Bool, Scripts SubSection )
-update_ defintion id e scripts =
+update_ : Bool -> Maybe Definition -> Int -> JE.Value -> Scripts SubSection -> ( Bool, Scripts SubSection )
+update_ async defintion id e scripts =
     case Array.get id scripts of
         Just js ->
             let
                 new =
-                    eval_ defintion id (Service.Script.decode e) js
+                    eval_ async defintion id (Service.Script.decode e) js
             in
             ( new.result /= js.result
             , Array.set id new scripts
@@ -368,14 +368,22 @@ update_ defintion id e scripts =
             ( False, scripts )
 
 
-eval_ : Maybe Definition -> Int -> Eval -> Script SubSection -> Script SubSection
-eval_ defintion id e js =
+eval_ : Bool -> Maybe Definition -> Int -> Eval -> Script SubSection -> Script SubSection
+eval_ async defintion id e js =
     let
         waiting =
             e.result == "LIA: wait"
     in
     { js
-        | running = waiting
+        | running =
+            if async && e.result /= "LIA: stop" then
+                True
+
+            else if e.result == "LIA: stop" then
+                False
+
+            else
+                waiting
         , counter = js.counter + 1
         , result =
             if waiting then
@@ -424,7 +432,7 @@ getIdle : (Script a -> x) -> Scripts a -> List ( Int, x )
 getIdle =
     Script.filterMap
         (\js ->
-            not js.running && not js.block && not (js.runOnce && js.counter >= 1)
+            not js.running && not js.block && not (js.runOnce && js.counter >= 1) && (js.input.type_ /= Just (Input.Button_ True))
         )
 
 
@@ -445,7 +453,7 @@ getVisible visible javascript =
         |> getIdle identity
         |> List.filterMap
             (\( id, node ) ->
-                if node.effect_id == visible then
+                if node.effect_id == visible && node.input.type_ /= Just (Input.Button_ True) then
                     Just ( id, node.script, Input.getValue node.input )
 
                 else
