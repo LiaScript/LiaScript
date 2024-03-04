@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.14.9
+version:  0.14.10
 language: en
 narrator: UK English Male
 
@@ -296,7 +296,7 @@ This will apply the following four patches:
 
 ## Version-Changes
 
-**0.14.9** (02/03/2024)
+**0.14.10** (04/03/2024)
 
 - Script: Submit button waits for clicks, while button starts immediately
 
