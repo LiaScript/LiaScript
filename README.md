@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.14.5
+version:  0.14.10
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,24 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.14.10** (04/03/2024)
+
+- Script: Submit button waits for clicks, while button starts immediately
+
+**0.14.8** (29/02/2024)
+
+- hotfix: script allow for sending "LIA: stop"
+
+**0.14.7** (29/02/2024)
+
+- fix: script execution live-span
+- improve: lia-charts can now evaluate code
+- fix(Parser): Support for multiple hidden comments in sequence
+
+**0.14.6** (25/02/2024)
+
+- hotfix: ASCII art now draws again empty circles
 
 **0.14.5** (23/02/2024)
 

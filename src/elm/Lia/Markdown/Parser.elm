@@ -81,7 +81,11 @@ blocks =
                 |> keep macro
                 |> ignore whitespace
                 |> keep elements
-                |> ignore (maybe (whitespace |> keep Effect.hidden_comment))
+                |> ignore
+                    (whitespace
+                        |> keep Effect.hidden_comment
+                        |> many
+                    )
 
 
 elements : Parser Context Markdown.Block
