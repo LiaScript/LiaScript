@@ -121,7 +121,7 @@ view_body hidden ( config, footnote2show, footnotes ) =
                     if config.main.visible == Nothing then
                         [ Footnote.block (view_block config) footnotes ]
 
-                    else
+                    else if config.mode == Presentation then
                         config.section.effect_model.comments
                             |> Comments.getHiddenComments
                             |> List.map
@@ -133,6 +133,9 @@ view_body hidden ( config, footnote2show, footnotes ) =
                                         )
                                         [ Html.text text ]
                                 )
+
+                    else
+                        []
            )
         >> viewMain hidden
 
