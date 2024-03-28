@@ -79,10 +79,17 @@ export class Sync extends Base.Sync {
           // prevent return of self send messages
           if (event.publisher !== self.token) {
             //console.log('SUB:', JSON.stringify(event.message))
-            const [state, message] = event.message
+            const [state, message, timestamp] = event.message
 
             if (state) {
-              self.applyUpdate(Base.base64_to_unit8(message))
+              if (timestamp == self.db.timestamp) {
+                self.applyUpdate(Base.base64_to_unit8(message))
+              } else if (timestamp > self.db.timestamp) {
+                self.broadcast(true, self.db.encode())
+              } else {
+                self.db.timestamp = timestamp
+                self.applyUpdate(Base.base64_to_unit8(message), true)
+              }
             } else {
               self.pubsubReceive(Base.base64_to_unit8(message))
             }
@@ -106,7 +113,7 @@ export class Sync extends Base.Sync {
       this.pubnub.publish(
         {
           channel: this.channel,
-          message: [state, Base.uint8_to_base64(data)],
+          message: [state, Base.uint8_to_base64(data), this.db.timestamp],
           storeInHistory: false,
         },
         function (status: any, response: any) {

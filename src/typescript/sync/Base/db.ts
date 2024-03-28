@@ -15,6 +15,8 @@ export class CRDT {
   protected callback: (event: any, origin: null | string) => void
   public doc: Y.Doc
 
+  public timestamp: number = Date.now()
+
   protected peers: Y.Map<boolean>
   protected cursors: Y.Map<State.Cursor>
   protected codes: Y.Map<Y.Text>
@@ -25,6 +27,9 @@ export class CRDT {
   protected length: number
   protected peerID: string
   protected color?: string
+
+  protected initState: any
+  public initialized: boolean = false
 
   constructor(
     peerID: string,
@@ -48,72 +53,15 @@ export class CRDT {
     this.surveys = new YKeyValue(this.doc.getArray(SURVEY))
     this.chat = new YKeyValue(this.doc.getArray('chat'))
 
-    if (callback) {
-      this.peers.observe((event: Y.YMapEvent<boolean>) => {
-        const peers = this.getPeers()
-        callback(peers, 'peer')
-      })
-
-      this.cursors.observe((event: Y.YMapEvent<State.Cursor>) => {
-        const peers = this.getPeers()
-        callback(this.getCursors(peers), 'cursor')
-      })
-
-      this.quizzes.on('change', (changes) => {
-        const updates = this.getUpdates(this.quizzes, changes)
-
-        if (updates) {
-          callback(updates, 'quiz')
-        }
-      })
-
-      this.surveys.on('change', (changes) => {
-        const updates = this.getUpdates(this.surveys, changes)
-
-        if (updates) {
-          callback(updates, 'survey')
-        }
-      })
-
-      this.chat.on('change', (changes) => {
-        const vector = []
-
-        let obj
-        for (let [id, op] of changes) {
-          if (op.action === 'add') {
-            obj = op.newValue
-            obj['id'] = parseInt(id)
-            vector.push(obj)
-          }
-        }
-
-        if (vector.length > 0) callback(vector, 'chat')
-      })
-
-      this.codes.observeDeep((events: Y.YEvent<Y.Text>[]) => {
-        const ids: Set<number> = new Set()
-
-        for (const event of events) {
-          const keys = event.currentTarget.keys()
-
-          for (const key of keys) {
-            try {
-              const [id] = JSON.parse(key)
-              ids.add(id)
-            } catch (e) {}
-          }
-        }
-
-        if (ids.size > 0) {
-          callback(this.getCode(ids), 'code')
-        }
-      })
-    }
-
-    this.peers.set(peerID, true)
+    const self = this
+    setTimeout(() => {
+      self.initialized = true
+    }, 5000)
   }
 
   init(data: State.Vector) {
+    this.initState = data
+
     this.length = Math.max(this.length, data.length)
 
     const self = this
@@ -124,7 +72,76 @@ export class CRDT {
         self.initMap(this.surveys, i, data[i][SURVEY])
         self.initText(i, data[i][CODE])
       }
+
+      self.peers.set(self.peerID, true)
     }, this.peerID)
+
+    this.registerCallbacks()
+  }
+
+  registerCallbacks() {
+    this.peers.observe((event: Y.YMapEvent<boolean>) => {
+      const peers = this.getPeers()
+      this.callback(peers, 'peer')
+    })
+
+    this.cursors.observe((event: Y.YMapEvent<State.Cursor>) => {
+      const peers = this.getPeers()
+      this.callback(this.getCursors(peers), 'cursor')
+    })
+
+    this.quizzes.on('change', (changes) => {
+      const updates = this.getUpdates(this.quizzes, changes)
+
+      if (updates) {
+        this.callback(updates, 'quiz')
+      }
+    })
+
+    this.surveys.on('change', (changes) => {
+      const updates = this.getUpdates(this.surveys, changes)
+
+      if (updates) {
+        this.callback(updates, 'survey')
+      }
+    })
+
+    this.chat.on('change', (changes) => {
+      const vector: any[] = []
+
+      let obj
+      for (let [id, op] of changes) {
+        if (op.action === 'add') {
+          obj = op.newValue
+          obj['id'] = parseInt(id)
+          vector.push(obj)
+        }
+      }
+
+      if (vector.length > 0) this.callback(vector, 'chat')
+    })
+
+    this.codes.observeDeep((events: Y.YEvent<Y.Text>[]) => {
+      const ids: Set<number> = new Set()
+
+      for (const event of events) {
+        // @ts-ignore
+        const keys = event.currentTarget.keys()
+
+        for (const key of keys) {
+          try {
+            const [id] = JSON.parse(key)
+            ids.add(id)
+          } catch (e) {}
+        }
+      }
+
+      if (ids.size > 0) {
+        this.callback(this.getCode(ids), 'code')
+      }
+    })
+
+    this.peers.set(this.peerID, true)
   }
 
   encode() {
@@ -135,15 +152,26 @@ export class CRDT {
     this.doc.destroy()
   }
 
-  applyUpdate(update: Uint8Array) {
+  applyUpdate(update: Uint8Array, force: boolean = false) {
     this.doc.transact(() => {
-      // this is required to update the online settings, if the user has been offline
-      // or if the system had determined that he is offline
-      if (this.peers.get(this.peerID) === false) {
-        this.peers.set(this.peerID, true)
-      }
+      if (force) {
+        this.doc.destroy()
+        this.doc = new Y.Doc()
 
-      Y.applyUpdate(this.doc, update)
+        Y.applyUpdate(this.doc, update)
+
+        this.peers = this.doc.getMap(PEERS)
+        this.cursors = this.doc.getMap(CURSORS)
+        this.codes = this.doc.getMap(CODE)
+
+        this.quizzes = new YKeyValue(this.doc.getArray(QUIZ))
+        this.surveys = new YKeyValue(this.doc.getArray(SURVEY))
+        this.chat = new YKeyValue(this.doc.getArray('chat'))
+
+        this.init(this.initState)
+      } else {
+        Y.applyUpdate(this.doc, update)
+      }
     })
   }
 
