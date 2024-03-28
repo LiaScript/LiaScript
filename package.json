@@ -61,7 +61,7 @@
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "@webcomponents/webcomponentsjs": "^2.8.0",
-    "ace-builds": "^1.32.6",
+    "ace-builds": "^1.32.8",
     "caniuse-lite": "^1.0.30001589",
     "crypto-browserify": "^3.12.0",
     "dexie": "^2.0.4",

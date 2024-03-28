@@ -53,6 +53,8 @@ const modes: {
   /* ------------------------------------- */
   aspectj: 'java',
   /* ------------------------------------- */
+  astro: 'astro',
+  /* ------------------------------------- */
   autohotkey: 'autohotkey',
   ahk: 'autohotkey',
   /* ------------------------------------- */
@@ -209,6 +211,8 @@ const modes: {
   f90: 'fortran',
   f95: 'fortran',
   f: 'fortran',
+  /* ------------------------------------- */
+  flix: 'flix',
   /* ------------------------------------- */
   fsharp: 'fsharp',
   fsi: 'fsharp',
@@ -419,6 +423,8 @@ const modes: {
   // ! N
   // !--------------------------------------
 
+  nasal: 'nasal',
+  /* ------------------------------------- */
   nginx: 'nginx',
   nginxconf: 'nginx',
   /* ------------------------------------- */
@@ -430,8 +436,8 @@ const modes: {
   nsis: 'nsis',
   nsh: 'nsis',
   /* ------------------------------------- */
-  nunjacks: 'nunjacks',
-  nunjs: 'nunjacks',
+  nunjucks: 'nunjucks',
+  nunjs: 'nunjucks',
   nj: 'nunjacks',
   njk: 'nunjacks',
 
@@ -486,6 +492,8 @@ const modes: {
   plain_text: 'plain_text',
   text: 'text',
   txt: 'text',
+  /* ------------------------------------- */
+  plsql: 'plsql',
   /* ------------------------------------- */
   powershell: 'powershell',
   pwsh: 'powershell',
@@ -668,6 +676,8 @@ const modes: {
   vfp: 'visualforce',
   component: 'visualforce',
   page: 'visualforce',
+  /* ------------------------------------- */
+  vue: 'vue',
 
   // !--------------------------------------
   // ! W
@@ -698,7 +708,7 @@ const modes: {
   xsd: 'xml',
   xsl: 'xml',
   htm: 'html',
-  vue: 'html',
+
   we: 'html',
   wpy: 'html',
   mathml: 'xml',
@@ -724,4 +734,6 @@ const modes: {
 
   zeek: 'zeek',
   bro: 'zeek',
+
+  zig: 'zig',
 }
