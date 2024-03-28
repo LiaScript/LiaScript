@@ -379,7 +379,7 @@ view editable backend =
             Html.div []
                 [ input
                     { active = editable
-                    , type_ = "text"
+                    , type_ = "password"
                     , msg = InputPubNub "pub"
                     , label = Html.text "publishKey"
                     , value = pubKey
@@ -388,7 +388,7 @@ view editable backend =
                     }
                 , input
                     { active = editable
-                    , type_ = "text"
+                    , type_ = "password"
                     , msg = InputPubNub "sub"
                     , label = Html.text "subscribeKey"
                     , value = subKey
