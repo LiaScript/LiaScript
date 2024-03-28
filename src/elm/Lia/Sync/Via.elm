@@ -27,6 +27,10 @@ type Backend
       --| Matrix { baseURL : String, userId : String, accessToken : String }
     | P2PT String
     | PubNub { pubKey : String, subKey : String }
+      -- Trystero
+    | NoStr
+    | MQTT
+    | Torrent
 
 
 toString : Bool -> Backend -> String
@@ -34,6 +38,15 @@ toString full via =
     case via of
         Edrys ->
             "Edrys"
+
+        NoStr ->
+            "NoStr"
+
+        MQTT ->
+            "MQTT"
+
+        Torrent ->
+            "Torrent"
 
         GUN { urls, persistent } ->
             "GUN"
@@ -94,6 +107,15 @@ icon via =
             GUN _ ->
                 "icon-gundb icon-xs"
 
+            NoStr ->
+                "icon-nostr icon-xs"
+
+            MQTT ->
+                "icon-mqtt icon-xs"
+
+            Torrent ->
+                "icon-torrent icon-xs"
+
             -- Jitsi _ ->
             --     "icon-jitsi icon-xs"
             -- Matrix _ ->
@@ -115,6 +137,15 @@ fromString via =
     case via |> String.split "|" |> mapHead String.toLower of
         [ "edrys" ] ->
             Just Edrys
+
+        [ "nostr" ] ->
+            Just NoStr
+
+        [ "mqtt" ] ->
+            Just MQTT
+
+        [ "torrent" ] ->
+            Just Torrent
 
         [ "gun" ] ->
             Just (GUN { urls = "", persistent = False })
@@ -260,6 +291,32 @@ infoOn supported about =
                 , Html.text ". By checking \"persistent storage\" you can ensure that the chat messages and the modified code will be accessible over a longer time period, otherwise the state is deleted."
                 , Html.text " However, since this is a free service, we cannot give guarantees that your messages will be stored forever and that the GunDB server might be offline."
                 , Html.text " If you want to be certain, you can host your own instance of a GunDB server and change the URL appropriately."
+                ]
+
+            ( NoStr, _ ) ->
+                [ link "NoStr" "https://nostr.com"
+                , Html.text " is a decentralized protocol designed for creating a censorship-resistant global social network."
+                , Html.text "The acronym stands for \"Notes and Other Stuff Transmitted by Relays\""
+                , Html.text "It operates through a network of clients and relays, where clients are interfaces for users to interact with the network, and relays act as databases storing and transmitting data. "
+                , Html.text "Users are identified by public keys, and all events (like messages or updates) are signed for verification. "
+                , Html.text "NoStr's decentralization ensures resilience against censorship and single points of failure, as data is distributed across multiple nodes. "
+                , Html.text "It's an open standard, allowing anyone to build upon it, and its design promotes freedom of speech and global accessibility."
+                ]
+
+            ( MQTT, _ ) ->
+                [ link "MQTT (Message Queuing Telemetry Transport)" "https://mqtt.org"
+                , Html.text " is a lightweight, publish-subscribe messaging protocol designed for machine-to-machine (M2M) communication, particularly in the Internet of Things (IoT) and industrial IoT (IIoT) contexts. "
+                , Html.text "It enables devices to efficiently publish and subscribe to data over the Internet, facilitating communication between embedded devices, sensors, and industrial PLCs. "
+                , Html.text "MQTT operates over a transport protocol like TCP/IP, ensuring ordered, lossless, bi-directional connections."
+                , Html.text "The protocol is event-driven, with a broker managing the distribution of messages between publishers and subscribers based on topics. "
+                , Html.text "This decoupling allows for scalable and reliable data exchange, making MQTT a standard for IoT data transmission."
+                ]
+
+            ( Torrent, _ ) ->
+                [ link "Torrent" "https://www.beautifulcode.co/blog/58-understanding-bittorrent-protocol"
+                , Html.text " is a peer-to-peer file-sharing protocol used for distributing large files across a network of computers. "
+                , Html.text "In the context of browser-based Pub/Sub (Publish/Subscribe) messaging, Torrent can facilitate the distribution of messages or data across a network of peers, enabling efficient, decentralized communication without a central server. "
+                , Html.text "This approach is particularly useful for real-time applications like chat or live streaming, ensuring data is quickly and reliably distributed to all interested peers."
                 ]
 
             -- ( Jitsi _, _ ) ->

@@ -98,8 +98,11 @@ init supportedBackends =
 
             --, Via.Jitsi Const.jitsi_Domain
             --, Via.Matrix { baseURL = "", userId = "", accessToken = "" }
+            , Via.MQTT
+            , Via.NoStr
             , Via.P2PT Const.webTorrent_TrackerURLs
             , Via.PubNub { pubKey = "", subKey = "" }
+            , Via.Torrent
             ]
                 |> List.map (isMember supported)
         , select = Nothing
