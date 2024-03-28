@@ -25,7 +25,7 @@ const Service = {
     // remove these strings if you want to enable or disable certain sync support
     'edrys',
     'gun',
-    'jitsi',
+    //'jitsi',
     //'matrix',
     'pubnub',
     hasRTCPeerConnection() ? 'p2pt' : '',

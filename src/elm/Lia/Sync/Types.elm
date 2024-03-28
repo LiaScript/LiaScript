@@ -95,8 +95,9 @@ init supportedBackends =
         { support =
             [ Via.Edrys
             , Via.GUN { urls = Const.gunDB_ServerURL, persistent = False }
-            , Via.Jitsi Const.jitsi_Domain
-            , Via.Matrix { baseURL = "", userId = "", accessToken = "" }
+
+            --, Via.Jitsi Const.jitsi_Domain
+            --, Via.Matrix { baseURL = "", userId = "", accessToken = "" }
             , Via.P2PT Const.webTorrent_TrackerURLs
             , Via.PubNub { pubKey = "", subKey = "" }
             ]
@@ -127,15 +128,13 @@ isMember list element =
         ( (Via.GUN _) :: _, Via.GUN _ ) ->
             ( True, element )
 
-        ( (Via.Matrix _) :: _, Via.Matrix _ ) ->
-            ( True, element )
-
+        -- ( (Via.Matrix _) :: _, Via.Matrix _ ) ->
+        --     ( True, element )
         ( (Via.PubNub _) :: _, Via.PubNub _ ) ->
             ( True, element )
 
-        ( (Via.Jitsi _) :: _, Via.Jitsi _ ) ->
-            ( True, element )
-
+        -- ( (Via.Jitsi _) :: _, Via.Jitsi _ ) ->
+        --     ( True, element )
         ( (Via.P2PT _) :: _, Via.P2PT _ ) ->
             ( True, element )
 
