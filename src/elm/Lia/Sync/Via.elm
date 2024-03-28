@@ -268,13 +268,13 @@ infoOn supported about =
     box <|
         case ( about, supported ) of
             ( Edrys, _ ) ->
-                [ link "Edrys" "https://edrys.org"
+                [ link "Edrys" "https://edrys-labs.github.io"
                 , Html.text " is an open and modular remote teaching platform (and the first live LMS). "
                 , Html.text "It is a great platform for building remote labs and share them by using only a browser locally. "
                 , Html.text "Thus, this synchronization will only work, if you are within an Edrys classroom, for more information try the following link: "
-                , link "https://edrys.org" "https://edrys.org"
+                , link "https://github.com/edrys-labsg" "https://github.com/edrys-labs"
                 , Html.text ". Additionally, your course has to be loaded via the "
-                , link "module-liascript" "https://github.com/edrys-org/module-liascript"
+                , link "module-liascript" "https://github.com/edrys-labs/module-liascript"
                 , Html.text "."
                 ]
 

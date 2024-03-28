@@ -93,8 +93,7 @@ init supportedBackends =
     in
     { sync =
         { support =
-            [ Via.Edrys
-            , Via.GUN { urls = Const.gunDB_ServerURL, persistent = False }
+            [ Via.GUN { urls = Const.gunDB_ServerURL, persistent = False }
 
             --, Via.Jitsi Const.jitsi_Domain
             --, Via.Matrix { baseURL = "", userId = "", accessToken = "" }
@@ -103,6 +102,7 @@ init supportedBackends =
             , Via.P2PT Const.webTorrent_TrackerURLs
             , Via.PubNub { pubKey = "", subKey = "" }
             , Via.Torrent
+            , Via.Edrys
             ]
                 |> List.map (isMember supported)
         , select = Nothing
