@@ -109,7 +109,7 @@ export class Sync extends Base.Sync {
         config['password'] = this.password
       }
 
-      const stun = JSON.parse(process.env.STUN || 'null')
+      const stun = JSON.parse(process.env.STUN_SERVER || 'null')
       if (stun) {
         config['rtcConfig'] = stun
       }
