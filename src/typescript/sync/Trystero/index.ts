@@ -96,6 +96,18 @@ export class Sync extends Base.Sync {
 
         break
       }
+
+      //       case 'ipfs': {
+      //         eval(`import('./trystero-ipfs.min.js')
+      // .then((e) => {
+      //   joinRoom.torrent = e.joinRoom
+      //   this.init(true)
+      // })
+      // .catch((e) => {
+      //   this.init(false, e.message)
+      // })`)
+      //         break
+      //       }
     }
   }
 
