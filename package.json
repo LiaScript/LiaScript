@@ -1,6 +1,6 @@
 {
-  "name": "liascript",
-  "version": "0.14.10",
+  "name": "@liascript/library",
+  "version": "1.0.0--0.14.10",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -12,7 +12,7 @@
     "url": "https://github.com/LiaScript/LiaScript/issues",
     "email": "LiaScript@web.de"
   },
-  "homepage": "https://github.com/LiaScript/LiaScript/tree/master/README.md",
+  "homepage": "https://github.com/LiaScript/LiaScript/blob/library/README.md",
   "keywords": [
     "LiaScript",
     "education",
