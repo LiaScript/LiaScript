@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Lia</title>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <script type="module" src="./index.ts"></script>
+  </head>
+  <body>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var app = new LiaScript({
+          allowBrowserStorage: true,
+          debug: false,
+          allowSync: false,
+          hideURL: true,
+        })
+        app.loadUrl('README.md')
+      })
+    </script>
+  </body>
+</html>
