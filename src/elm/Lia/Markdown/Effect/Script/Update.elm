@@ -225,7 +225,15 @@ update main msg scripts =
                                     |> Maybe.withDefault False
                             then
                                 node
-                                    |> Maybe.map (\n -> [ ( section, n.script, Input.getValue n.input ) ])
+                                    |> Maybe.map
+                                        (\n ->
+                                            [ { id = section
+                                              , worker = n.worker
+                                              , script = n.script
+                                              , input_ = Input.getValue n.input
+                                              }
+                                            ]
+                                        )
                                     |> Maybe.withDefault []
                                     |> Script.replaceInputs javascript
 
@@ -337,7 +345,12 @@ reRun fn cmd id scripts =
                         []
 
                      else
-                        [ ( id, node.script, Input.getValue node.input ) ]
+                        [ { id = id
+                          , worker = node.worker
+                          , script = node.script
+                          , input_ = Input.getValue node.input
+                          }
+                        ]
                             |> Script.replaceInputs scripts
                             |> List.map (execute 0)
                     )
@@ -346,9 +359,9 @@ reRun fn cmd id scripts =
             Return.val scripts_
 
 
-execute : Int -> ( Int, String ) -> Event
-execute delay ( id, code ) =
-    Service.Script.exec delay code
+execute : Int -> ( Int, Bool, String ) -> Event
+execute delay ( id, worker, code ) =
+    Service.Script.exec delay worker code
         |> Event.pushWithId "script" id
 
 
@@ -436,25 +449,34 @@ getIdle =
         )
 
 
-getAll : Scripts a -> List ( Int, String )
+getAll : Scripts a -> List ( Int, Bool, String )
 getAll javascript =
     javascript
         |> getIdle identity
         |> List.map
             (\( id, node ) ->
-                ( id, node.script, Input.getValue node.input )
+                { id = id
+                , worker = node.worker
+                , script = node.script
+                , input_ = Input.getValue node.input
+                }
             )
         |> Script.replaceInputs javascript
 
 
-getVisible : Int -> Scripts a -> List ( Int, String )
+getVisible : Int -> Scripts a -> List ( Int, Bool, String )
 getVisible visible javascript =
     javascript
         |> getIdle identity
         |> List.filterMap
             (\( id, node ) ->
                 if node.effect_id == visible && node.input.type_ /= Just (Input.Button_ True) then
-                    Just ( id, node.script, Input.getValue node.input )
+                    Just
+                        { id = id
+                        , worker = node.worker
+                        , script = node.script
+                        , input_ = Input.getValue node.input
+                        }
 
                 else
                     Nothing
