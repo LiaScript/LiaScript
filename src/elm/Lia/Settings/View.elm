@@ -329,8 +329,14 @@ bold =
     Html.text >> List.singleton >> Html.strong []
 
 
-viewInformation : Lang -> Bool -> Maybe String -> Definition -> List (Html Msg)
-viewInformation lang tabbable repositoryURL definition =
+viewInformation :
+    (List (Attribute Msg) -> List (Attribute Msg))
+    -> Lang
+    -> Bool
+    -> Maybe String
+    -> Definition
+    -> List (Html Msg)
+viewInformation grouping lang tabbable repositoryURL definition =
     [ case ( Dict.get "repository" definition.macro, repositoryURL ) of
         ( Just url, _ ) ->
             viewRepository url
@@ -361,10 +367,11 @@ viewInformation lang tabbable repositoryURL definition =
         |> CList.addIf (definition.email /= "")
             [ bold <| Trans.infoEmail lang
             , Html.a
-                [ Attr.href definition.email
+                [ Attr.href <| "mailto:" ++ definition.email
                 , Attr.class "lia-link"
                 , A11y_Key.tabbable tabbable
                 , A11y_Widget.hidden (not tabbable)
+                , Attr.attribute "data-group-id" "information"
                 ]
                 [ Html.text definition.email ]
             ]
@@ -385,13 +392,19 @@ viewInformation lang tabbable repositoryURL definition =
               else
                 Html.text ""
             ]
-        |> List.map (Html.span [])
+        |> List.map (Html.div (grouping [ Attr.tabindex -1, Attr.style "user-select" "text" ]))
 
 
 viewRepository : String -> List (Html msg)
 viewRepository url =
     [ bold "Repository: "
-    , Html.a [ Attr.href url, Attr.target "_blank" ] [ Html.text url ]
+    , Html.a
+        [ Attr.href url
+        , Attr.target "_blank"
+        , Attr.attribute "data-group-id" "information"
+        , Attr.tabindex 0
+        ]
+        [ Html.text url ]
     ]
 
 
@@ -742,7 +755,13 @@ translateWithGoogle lang tabbable bool =
     case bool of
         Just True ->
             [ divider
-            , Html.div (group ShowTranslations [ Attr.id "google_translate_element" ]) []
+            , Html.div
+                (group ShowTranslations
+                    [ Attr.id "google_translate_element"
+                    , Attr.tabindex -1
+                    ]
+                )
+                []
             ]
 
         Just False ->
@@ -861,7 +880,7 @@ menuInformation repositoryURL definition lang tabbable settings =
             ShowInformation
             (settings.action == Just ShowInformation)
             "icon-info"
-    , viewInformation lang tabbable repositoryURL definition
+    , viewInformation grouping lang tabbable repositoryURL definition
         |> submenu grouping (settings.action == Just ShowInformation)
     ]
 
