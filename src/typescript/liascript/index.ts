@@ -42,7 +42,8 @@ export class LiaScript {
     debug: boolean = false,
     fullPage: boolean = false,
     courseUrl: string | null = null,
-    script: string | null = null
+    script: string | null = null,
+    hideURL: boolean = false
   ) {
     window.LIA.debug = debug
 
@@ -64,6 +65,7 @@ export class LiaScript {
           support: Sync.supported,
           enabled: allowSync,
         },
+        hideURL: hideURL,
       },
     })
 

@@ -80,8 +80,15 @@ init lang translations settings sync screen id formula media section =
 
 
 setMain main config =
+    let
+        input =
+            main.input
+
+        path =
+            List.append config.main.input.path main.input.path
+    in
     { config
-        | main = main
+        | main = { main | input = { input | path = path } }
         , view = viewer main >> List.map (Html.map Script)
     }
 
@@ -147,10 +154,17 @@ inline lang translations settings screen effect id formulas media sync =
         }
 
 
-setSubViewer : (Int -> SubSection -> List (Html (Script.Msg Msg))) -> Config Msg -> Config Msg
+setSubViewer : (Int -> Int -> SubSection -> List (Html (Script.Msg Msg))) -> Config Msg -> Config Msg
 setSubViewer function config =
+    let
+        main =
+            config.main
+
+        input =
+            main.input
+    in
     { config
         | view =
-            viewer (Inline.setViewer function config.main)
+            viewer (Inline.setViewer function { main | input = { input | path = ( "effect", 0 ) :: ( "sub", 1 ) :: input.path } })
                 >> List.map (Html.map Script)
     }

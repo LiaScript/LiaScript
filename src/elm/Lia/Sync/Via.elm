@@ -23,10 +23,14 @@ import Lia.Utils as Util
 type Backend
     = Edrys
     | GUN { urls : String, persistent : Bool }
-    | Jitsi String
-    | Matrix { baseURL : String, userId : String, accessToken : String }
+      --| Jitsi String
+      --| Matrix { baseURL : String, userId : String, accessToken : String }
     | P2PT String
     | PubNub { pubKey : String, subKey : String }
+      -- Trystero
+    | NoStr
+    | MQTT
+    | Torrent
 
 
 toString : Bool -> Backend -> String
@@ -34,6 +38,15 @@ toString full via =
     case via of
         Edrys ->
             "Edrys"
+
+        NoStr ->
+            "NoStr"
+
+        MQTT ->
+            "MQTT"
+
+        Torrent ->
+            "Torrent"
 
         GUN { urls, persistent } ->
             "GUN"
@@ -51,24 +64,20 @@ toString full via =
                         ""
                    )
 
-        Jitsi domain ->
-            "JitSi"
-                ++ (if full then
-                        "|" ++ domain
-
-                    else
-                        ""
-                   )
-
-        Matrix { baseURL, userId, accessToken } ->
-            "Matrix"
-                ++ (if full then
-                        "|" ++ baseURL ++ "|" ++ userId ++ "|" ++ accessToken
-
-                    else
-                        ""
-                   )
-
+        -- Jitsi domain ->
+        --     "JitSi"
+        --         ++ (if full then
+        --                 "|" ++ domain
+        --             else
+        --                 ""
+        --            )
+        -- Matrix { baseURL, userId, accessToken } ->
+        --     "Matrix"
+        --         ++ (if full then
+        --                 "|" ++ baseURL ++ "|" ++ userId ++ "|" ++ accessToken
+        --             else
+        --                 ""
+        --            )
         PubNub { pubKey, subKey } ->
             "PubNub"
                 ++ (if full then
@@ -98,12 +107,19 @@ icon via =
             GUN _ ->
                 "icon-gundb icon-xs"
 
-            Jitsi _ ->
-                "icon-jitsi icon-xs"
+            NoStr ->
+                "icon-nostr icon-xs"
 
-            Matrix _ ->
-                "icon-matrix icon-xs"
+            MQTT ->
+                "icon-mqtt icon-xs"
 
+            Torrent ->
+                "icon-torrent icon-xs"
+
+            -- Jitsi _ ->
+            --     "icon-jitsi icon-xs"
+            -- Matrix _ ->
+            --     "icon-matrix icon-xs"
             PubNub _ ->
                 "icon-pubnub icon-xs"
 
@@ -111,6 +127,7 @@ icon via =
                 "icon-p2pt icon-xs"
         )
         [ Attr.style "padding-right" "5px"
+        , Attr.style "vertical-align" "middle"
         , Attr.style "font-size" "inherit"
         ]
 
@@ -120,6 +137,15 @@ fromString via =
     case via |> String.split "|" |> mapHead String.toLower of
         [ "edrys" ] ->
             Just Edrys
+
+        [ "nostr" ] ->
+            Just NoStr
+
+        [ "mqtt" ] ->
+            Just MQTT
+
+        [ "torrent" ] ->
+            Just Torrent
 
         [ "gun" ] ->
             Just (GUN { urls = "", persistent = False })
@@ -136,24 +162,18 @@ fromString via =
         [ "gun", "t", urls ] ->
             Just (GUN { urls = urls, persistent = True })
 
-        [ "jitsi" ] ->
-            Just (Jitsi "")
-
-        [ "jitsi", domain ] ->
-            Just (Jitsi domain)
-
-        [ "matrix" ] ->
-            Just <| Matrix { baseURL = "", userId = "", accessToken = "" }
-
-        [ "matrix", baseURL ] ->
-            Just <| Matrix { baseURL = baseURL, userId = "", accessToken = "" }
-
-        [ "matrix", baseURL, userId ] ->
-            Just <| Matrix { baseURL = baseURL, userId = userId, accessToken = "" }
-
-        [ "matrix", baseURL, userId, accessToken ] ->
-            Just <| Matrix { baseURL = baseURL, userId = userId, accessToken = accessToken }
-
+        -- [ "jitsi" ] ->
+        --     Just (Jitsi "")
+        -- [ "jitsi", domain ] ->
+        --     Just (Jitsi domain)
+        -- [ "matrix" ] ->
+        --     Just <| Matrix { baseURL = "", userId = "", accessToken = "" }
+        -- [ "matrix", baseURL ] ->
+        --     Just <| Matrix { baseURL = baseURL, userId = "", accessToken = "" }
+        -- [ "matrix", baseURL, userId ] ->
+        --     Just <| Matrix { baseURL = baseURL, userId = userId, accessToken = "" }
+        -- [ "matrix", baseURL, userId, accessToken ] ->
+        --     Just <| Matrix { baseURL = baseURL, userId = userId, accessToken = accessToken }
         [ "p2pt" ] ->
             Just (P2PT "")
 
@@ -248,13 +268,13 @@ infoOn supported about =
     box <|
         case ( about, supported ) of
             ( Edrys, _ ) ->
-                [ link "Edrys" "https://edrys.org"
+                [ link "Edrys" "https://edrys-labs.github.io"
                 , Html.text " is an open and modular remote teaching platform (and the first live LMS). "
                 , Html.text "It is a great platform for building remote labs and share them by using only a browser locally. "
                 , Html.text "Thus, this synchronization will only work, if you are within an Edrys classroom, for more information try the following link: "
-                , link "https://edrys.org" "https://edrys.org"
+                , link "https://github.com/edrys-labsg" "https://github.com/edrys-labs"
                 , Html.text ". Additionally, your course has to be loaded via the "
-                , link "module-liascript" "https://github.com/edrys-org/module-liascript"
+                , link "module-liascript" "https://github.com/edrys-labs/module-liascript"
                 , Html.text "."
                 ]
 
@@ -273,27 +293,51 @@ infoOn supported about =
                 , Html.text " If you want to be certain, you can host your own instance of a GunDB server and change the URL appropriately."
                 ]
 
-            ( Jitsi _, _ ) ->
-                [ link "Jitsi" "https://en.wikipedia.org/wiki/Jitsi"
-                , Html.text " is a free and open-source multiplatform for video conferencing, voice over IP, and instant messaging. "
-                , Html.text "It is probably best known for its public video conferencing server "
-                , link "https://meet.jit.si" "https://meet.jit.si"
-                , Html.text ", that we use a backend to establish classrooms via data-channels. "
-                , Html.text "However, you can use their default service or host a server by your own, then you will have to change the domain setting."
+            ( NoStr, _ ) ->
+                [ link "NoStr" "https://nostr.com"
+                , Html.text " is a decentralized protocol designed for creating a censorship-resistant global social network."
+                , Html.text "The acronym stands for \"Notes and Other Stuff Transmitted by Relays\""
+                , Html.text "It operates through a network of clients and relays, where clients are interfaces for users to interact with the network, and relays act as databases storing and transmitting data. "
+                , Html.text "Users are identified by public keys, and all events (like messages or updates) are signed for verification. "
+                , Html.text "NoStr's decentralization ensures resilience against censorship and single points of failure, as data is distributed across multiple nodes. "
+                , Html.text "It's an open standard, allowing anyone to build upon it, and its design promotes freedom of speech and global accessibility."
                 ]
 
-            ( Matrix _, _ ) ->
-                [ link "[Matrix]" "https://matrix.org"
-                , Html.text " is an open network/standard/project for secure and decentralized real-time communication. "
-                , Html.text " You can find more information about it "
-                , link "here on Wikipedia" "https://en.wikipedia.org/wiki/Matrix_(protocol)"
-                , Html.text ". Thus, if you have access to the following settings, you can establish a classroom that uses the "
-                , link "Matrix-CRDT" "https://github.com/yousefED/matrix-crdt"
-                , Html.text " provider for "
-                , yjsLink
-                , Html.text "."
+            ( MQTT, _ ) ->
+                [ link "MQTT (Message Queuing Telemetry Transport)" "https://mqtt.org"
+                , Html.text " is a lightweight, publish-subscribe messaging protocol designed for machine-to-machine (M2M) communication, particularly in the Internet of Things (IoT) and industrial IoT (IIoT) contexts. "
+                , Html.text "It enables devices to efficiently publish and subscribe to data over the Internet, facilitating communication between embedded devices, sensors, and industrial PLCs. "
+                , Html.text "MQTT operates over a transport protocol like TCP/IP, ensuring ordered, lossless, bi-directional connections."
+                , Html.text "The protocol is event-driven, with a broker managing the distribution of messages between publishers and subscribers based on topics. "
+                , Html.text "This decoupling allows for scalable and reliable data exchange, making MQTT a standard for IoT data transmission."
                 ]
 
+            ( Torrent, _ ) ->
+                [ link "Torrent" "https://www.beautifulcode.co/blog/58-understanding-bittorrent-protocol"
+                , Html.text " is a peer-to-peer file-sharing protocol used for distributing large files across a network of computers. "
+                , Html.text "In the context of browser-based Pub/Sub (Publish/Subscribe) messaging, Torrent can facilitate the distribution of messages or data across a network of peers, enabling efficient, decentralized communication without a central server. "
+                , Html.text "This approach is particularly useful for real-time applications like chat or live streaming, ensuring data is quickly and reliably distributed to all interested peers."
+                ]
+
+            -- ( Jitsi _, _ ) ->
+            --     [ link "Jitsi" "https://en.wikipedia.org/wiki/Jitsi"
+            --     , Html.text " is a free and open-source multiplatform for video conferencing, voice over IP, and instant messaging. "
+            --     , Html.text "It is probably best known for its public video conferencing server "
+            --     , link "https://meet.jit.si" "https://meet.jit.si"
+            --     , Html.text ", that we use a backend to establish classrooms via data-channels. "
+            --     , Html.text "However, you can use their default service or host a server by your own, then you will have to change the domain setting."
+            --     ]
+            -- ( Matrix _, _ ) ->
+            --     [ link "[Matrix]" "https://matrix.org"
+            --     , Html.text " is an open network/standard/project for secure and decentralized real-time communication. "
+            --     , Html.text " You can find more information about it "
+            --     , link "here on Wikipedia" "https://en.wikipedia.org/wiki/Matrix_(protocol)"
+            --     , Html.text ". Thus, if you have access to the following settings, you can establish a classroom that uses the "
+            --     , link "Matrix-CRDT" "https://github.com/yousefED/matrix-crdt"
+            --     , Html.text " provider for "
+            --     , yjsLink
+            --     , Html.text "."
+            --     ]
             ( PubNub _, _ ) ->
                 [ link "PubNub" "https://www.pubnub.com"
                 , Html.text " is a real-time communication platform. "
@@ -348,53 +392,51 @@ view editable backend =
                     }
                 ]
 
-        Jitsi domain ->
-            input
-                { active = editable
-                , type_ = "text"
-                , msg = InputJitsi
-                , value = domain
-                , placeholder = "domain.jit.si"
-                , label = Html.text "domain"
-                , autocomplete = Just "jitsi-domain"
-                }
-
-        Matrix { baseURL, userId, accessToken } ->
-            Html.div []
-                [ input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputMatrix "url"
-                    , label = Html.text "base URL"
-                    , value = baseURL
-                    , placeholder = "https://matrix.org"
-                    , autocomplete = Just "matrix-url"
-                    }
-                , input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputMatrix "user"
-                    , label = Html.text "user ID"
-                    , value = userId
-                    , placeholder = "@USERID:matrix.org"
-                    , autocomplete = Just "matrix-user"
-                    }
-                , input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputMatrix "token"
-                    , label = Html.text "access token"
-                    , value = accessToken
-                    , placeholder = "....MDAxM2lkZW50aWZpZXIga2V5CjAwMTBjaWQgZ2Vu...."
-                    , autocomplete = Just "matrix-token"
-                    }
-                ]
-
+        -- Jitsi domain ->
+        --     input
+        --         { active = editable
+        --         , type_ = "text"
+        --         , msg = InputJitsi
+        --         , value = domain
+        --         , placeholder = "domain.jit.si"
+        --         , label = Html.text "domain"
+        --         , autocomplete = Just "jitsi-domain"
+        --         }
+        -- Matrix { baseURL, userId, accessToken } ->
+        --     Html.div []
+        --         [ input
+        --             { active = editable
+        --             , type_ = "text"
+        --             , msg = InputMatrix "url"
+        --             , label = Html.text "base URL"
+        --             , value = baseURL
+        --             , placeholder = "https://matrix.org"
+        --             , autocomplete = Just "matrix-url"
+        --             }
+        --         , input
+        --             { active = editable
+        --             , type_ = "text"
+        --             , msg = InputMatrix "user"
+        --             , label = Html.text "user ID"
+        --             , value = userId
+        --             , placeholder = "@USERID:matrix.org"
+        --             , autocomplete = Just "matrix-user"
+        --             }
+        --         , input
+        --             { active = editable
+        --             , type_ = "text"
+        --             , msg = InputMatrix "token"
+        --             , label = Html.text "access token"
+        --             , value = accessToken
+        --             , placeholder = "....MDAxM2lkZW50aWZpZXIga2V5CjAwMTBjaWQgZ2Vu...."
+        --             , autocomplete = Just "matrix-token"
+        --             }
+        --         ]
         PubNub { pubKey, subKey } ->
             Html.div []
                 [ input
                     { active = editable
-                    , type_ = "text"
+                    , type_ = "password"
                     , msg = InputPubNub "pub"
                     , label = Html.text "publishKey"
                     , value = pubKey
@@ -403,7 +445,7 @@ view editable backend =
                     }
                 , input
                     { active = editable
-                    , type_ = "text"
+                    , type_ = "password"
                     , msg = InputPubNub "sub"
                     , label = Html.text "subscribeKey"
                     , value = subKey
@@ -499,8 +541,8 @@ type Msg
     = InputGun String
     | CheckboxGun
     | InputPubNub String String
-    | InputMatrix String String
-    | InputJitsi String
+      --| InputMatrix String String
+      --| InputJitsi String
     | InputP2PT String
 
 
@@ -513,24 +555,20 @@ update msg backend =
         ( CheckboxGun, GUN data ) ->
             GUN { data | persistent = not data.persistent }
 
-        ( InputJitsi domain, Jitsi _ ) ->
-            Jitsi domain
-
+        -- ( InputJitsi domain, Jitsi _ ) ->
+        --     Jitsi domain
         ( InputPubNub "pub" new, PubNub data ) ->
             PubNub { data | pubKey = new }
 
         ( InputPubNub "sub" new, PubNub data ) ->
             PubNub { data | subKey = new }
 
-        ( InputMatrix "url" new, Matrix data ) ->
-            Matrix { data | baseURL = new }
-
-        ( InputMatrix "user" new, Matrix data ) ->
-            Matrix { data | userId = new }
-
-        ( InputMatrix "token" new, Matrix data ) ->
-            Matrix { data | accessToken = new }
-
+        -- ( InputMatrix "url" new, Matrix data ) ->
+        --     Matrix { data | baseURL = new }
+        -- ( InputMatrix "user" new, Matrix data ) ->
+        --     Matrix { data | userId = new }
+        -- ( InputMatrix "token" new, Matrix data ) ->
+        --     Matrix { data | accessToken = new }
         ( InputP2PT urls, P2PT _ ) ->
             P2PT urls
 
@@ -544,15 +582,13 @@ eq a b =
         ( GUN _, GUN _ ) ->
             True
 
-        ( Matrix _, Matrix _ ) ->
-            True
-
+        -- ( Matrix _, Matrix _ ) ->
+        --     True
         ( PubNub _, PubNub _ ) ->
             True
 
-        ( Jitsi _, Jitsi _ ) ->
-            True
-
+        -- ( Jitsi _, Jitsi _ ) ->
+        --     True
         ( P2PT _, P2PT _ ) ->
             True
 

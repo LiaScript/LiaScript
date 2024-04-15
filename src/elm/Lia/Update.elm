@@ -388,6 +388,7 @@ update session msg model =
                                      else
                                         100
                                     )
+                                    False
                                 <|
                                     "window.LIA.goto("
                                         ++ String.fromInt (model.section_active + 1)

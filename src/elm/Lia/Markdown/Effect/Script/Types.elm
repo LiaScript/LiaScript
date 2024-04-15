@@ -88,6 +88,7 @@ type alias Script a =
     , counter : Int
     , input : Input
     , intl : Maybe Intl
+    , worker : Bool
     }
 
 
@@ -122,6 +123,7 @@ push lang id params script javascript =
         , counter = 0
         , input = Input.from params
         , intl = Intl.from lang params
+        , worker = Attr.isSet "worker" params
         }
         javascript
 
@@ -152,15 +154,16 @@ outputs =
             )
 
 
-replaceInputs : Scripts a -> List ( Int, String, Maybe String ) -> List ( Int, String )
+replaceInputs : Scripts a -> List { id : Int, worker : Bool, script : String, input_ : Maybe String } -> List ( Int, Bool, String )
 replaceInputs javascript =
     let
         inputs =
             outputs javascript
     in
     List.map
-        (\( id, script, input_ ) ->
+        (\{ id, worker, script, input_ } ->
             ( id
+            , worker
             , inputs
                 |> List.foldl Service.Script.replace_inputKey script
                 |> (\code ->
@@ -187,7 +190,7 @@ updateChildren output =
         )
 
 
-scriptChildren : String -> Scripts a -> List ( Int, String )
+scriptChildren : String -> Scripts a -> List ( Int, Bool, String )
 scriptChildren output javascript =
     javascript
         |> Array.toIndexedList
@@ -195,10 +198,11 @@ scriptChildren output javascript =
             (\( i, js ) ->
                 if not js.running && not js.block && List.member output js.inputs then
                     Just
-                        ( i
-                        , js.script
-                        , Input.getValue js.input
-                        )
+                        { id = i
+                        , worker = js.worker
+                        , script = js.script
+                        , input_ = Input.getValue js.input
+                        }
 
                 else
                     Nothing

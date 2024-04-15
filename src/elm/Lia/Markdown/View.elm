@@ -66,8 +66,8 @@ view hidden persistent config =
                 ]
 
 
-subView : Config Msg -> Int -> SubSection -> List (Html (Script.Msg Msg))
-subView config id sub =
+subView : Config Msg -> Int -> Int -> SubSection -> List (Html (Script.Msg Msg))
+subView config slide id sub =
     List.map (Html.map (Script.Sub id)) <|
         case sub of
             SubSection x ->
@@ -80,11 +80,14 @@ subView config id sub =
 
                     main =
                         config.main
+
+                    input =
+                        main.input
                 in
                 List.map
                     (view_block
                         { config
-                            | main = { main | scripts = x.effect_model.javascript }
+                            | main = { main | scripts = x.effect_model.javascript, input = { input | path = ( "effect", slide ) :: ( "sub", id ) :: input.path } }
                             , section =
                                 { section
                                     | table_vector = x.table_vector
@@ -121,7 +124,7 @@ view_body hidden ( config, footnote2show, footnotes ) =
                     if config.main.visible == Nothing then
                         [ Footnote.block (view_block config) footnotes ]
 
-                    else
+                    else if config.mode == Presentation then
                         config.section.effect_model.comments
                             |> Comments.getHiddenComments
                             |> List.map
@@ -133,6 +136,9 @@ view_body hidden ( config, footnote2show, footnotes ) =
                                         )
                                         [ Html.text text ]
                                 )
+
+                    else
+                        []
            )
         >> viewMain hidden
 

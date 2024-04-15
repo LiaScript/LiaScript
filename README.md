@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.14.10
+version:  0.14.11
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,16 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.14.11** (15/04/2024)
+
+- feat(Script): a `<script worker="true" ...` attribute can now be attached to script, which will
+  execute the script in a web-worker, if the browser supports it. This way, the main-thread
+  will not be blocked by the script and the user can still interact with the course.
+- fix(Settings): Translations and information are now clickable again ...
+- fix(Script): Not modifiable scripts are now correctly displayed without the background.
+- feat: Add LiaScript-Library support, which can now be used to show courses within different websites, similar to [docsify](https://docsify.js.org).
+- fix: Gap-Text can now also be created dynamically with JavaScript.
 
 **0.14.10** (04/03/2024)
 
