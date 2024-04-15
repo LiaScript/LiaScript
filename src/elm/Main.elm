@@ -70,6 +70,7 @@ type alias Flags =
         { support : List String
         , enabled : Bool
         }
+    , hideURL : Bool
     }
 
 
@@ -124,7 +125,12 @@ init flags url key =
                 flags.settings
                 flags.sync
                 (get_base subURL)
-                "README.md"
+                (if flags.hideURL then
+                    ""
+
+                 else
+                    "README.md"
+                )
                 ""
                 Nothing
                 |> model subURL Idle
@@ -143,7 +149,12 @@ init flags url key =
                     |> Maybe.withDefault { courseUrl | query = Just query }
                     |> get_base
                 )
-                query
+                (if flags.hideURL then
+                    ""
+
+                 else
+                    query
+                )
                 (query
                     |> Utils.urlBasePath
                     |> Maybe.withDefault ""
@@ -177,7 +188,12 @@ init flags url key =
                         flags.settings
                         flags.sync
                         (get_base courseUrl)
-                        query
+                        (if flags.hideURL then
+                            ""
+
+                         else
+                            query
+                        )
                         (courseUrl.query
                             |> Maybe.andThen Utils.urlBasePath
                             |> Maybe.withDefault ""

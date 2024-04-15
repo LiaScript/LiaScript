@@ -4,16 +4,19 @@ var sync: any
 var elmSend: Lia.Send | null
 
 var Edrys
-var Jitsi
-var Matrix
+// var Jitsi
+// var Matrix
 var PubNub
 var Gun
 var P2PT
+var Trystero
 
 function hasRTCPeerConnection() {
   return !!(
     window.RTCPeerConnection ||
+    // @ts-ignore
     window.mozRTCPeerConnection ||
+    // @ts-ignore
     window.webkitRTCPeerConnection
   )
 }
@@ -25,10 +28,13 @@ const Service = {
     // remove these strings if you want to enable or disable certain sync support
     'edrys',
     'gun',
-    'jitsi',
+    //'jitsi',
     //'matrix',
+    'mqtt',
+    'nostr',
     'pubnub',
     hasRTCPeerConnection() ? 'p2pt' : '',
+    'torrent',
   ],
 
   init: function (elmSend_: Lia.Send) {
@@ -62,7 +68,9 @@ const Service = {
             if (elmSend) elmSend(event_)
           }
 
-          switch (event.message.param.backend) {
+          const backend = event.message.param.backend
+
+          switch (backend) {
             case 'edrys':
               if (!Edrys) {
                 import('../../sync/Edrys/index').then((e) => {
@@ -100,23 +108,46 @@ const Service = {
               )
               break
 
-            case 'jitsi':
-              if (!Jitsi) {
-                import('../../sync/Jitsi/index').then((e) => {
-                  Jitsi = e
+            case 'mqtt':
+            case 'nostr':
+            case 'torrent': {
+              if (!Trystero) {
+                import('../../sync/Trystero/index').then((e) => {
+                  Trystero = e
                   Service.handle(event)
                 })
                 return
               }
 
-              sync = new Jitsi.Sync(
+              sync = new Trystero.Sync(
+                backend as 'mqtt' | 'nostr' | 'torrent',
                 cbConnection,
                 elmSend,
                 onConnect,
                 onReceive,
                 true
               )
+
               break
+            }
+
+            // case 'jitsi':
+            //   if (!Jitsi) {
+            //     import('../../sync/Jitsi/index').then((e) => {
+            //       Jitsi = e
+            //       Service.handle(event)
+            //     })
+            //     return
+            //   }
+
+            //   sync = new Jitsi.Sync(
+            //     cbConnection,
+            //     elmSend,
+            //     onConnect,
+            //     onReceive,
+            //     true
+            //   )
+            //   break
 
             // case 'matrix':
             //   if (!Matrix) {

@@ -12,7 +12,6 @@ module Service.Script exposing
     , stop
     )
 
-import Html exposing (details)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Utils exposing (toEscapeString)
@@ -198,18 +197,15 @@ evalDummy result =
         |> event "exec"
 
 
-exec : Int -> String -> Event
-exec delay code =
+exec : Int -> Bool -> String -> Event
+exec delay worker code =
     [ ( "delay"
       , JE.int delay
       )
     , ( "code"
-      , code
-            -- scripts
-            --|> List.foldl replace_inputKey code
-            --|> replace_input input0
-            |> JE.string
+      , JE.string code
       )
+    , ( "worker", JE.bool worker )
     ]
         |> JE.object
         |> event "exec"
