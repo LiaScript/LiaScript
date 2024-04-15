@@ -16,6 +16,14 @@ function changeGoogleStyles() {
     goog.style.visibility = 'hidden'
     document.body.style.top = ''
   }
+
+  // this has to be added in order to make the element not loosing the focus,
+  // caused by the elm-settings in translations, which will automatically
+  // close the menu, if the focus is lost
+  let select = document.getElementsByClassName('goog-te-combo')
+  if (select.length > 0) {
+    select[0].setAttribute('data-group-id', 'translation')
+  }
 }
 
 /**

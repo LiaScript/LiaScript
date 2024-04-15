@@ -33,7 +33,10 @@ function dynamicGossip(self: Sync) {
   let timerID: number | null = null
 
   function delay() {
-    return (self.db.getPeers().length + 1) * 200 + 2000
+    return (
+      (self.db.getPeers().length + 1) * 200 +
+      (self.db.initialized ? 5000 : 1000)
+    )
   }
 
   function publish() {
@@ -375,6 +378,7 @@ export class Sync {
       }
       case 'join': {
         this.db.init(event.message.param)
+
         this.gossip()
         break
       }
@@ -461,7 +465,7 @@ export class Sync {
     }
   }
 
-  applyUpdate(data: Uint8Array) {
-    this.db.applyUpdate(data)
+  applyUpdate(data: Uint8Array, force: boolean = false) {
+    this.db.applyUpdate(data, force)
   }
 }

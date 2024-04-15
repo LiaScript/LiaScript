@@ -8,6 +8,8 @@ help:
 	@echo "                            note that the target is different"
 	@echo "                            no indexeddb support"
 	@echo "make editor2              - same as above, but with elm-optimize2"
+	@echo "make lib                  - make the library"
+	@echo "make lib2                 - make the library with elm-optimize2"
 	@echo "make clean                - delete dist folder"
 	@echo "make ... KEY='adfia2'     - if you want to host this app by your own,"
 	@echo "                            you will have to get a responsivevoice-API key"
@@ -30,8 +32,16 @@ editor: base index responsivevoice
 
 editor2: optimize editor deoptimize minify
 
+library: lib index
+	rm dist/README.md
+
+library2: optimize lib deoptimize minify
+
 base:
 	npm run build:base
+
+lib:
+	npm run build:library
 
 app:
 	npm run build
