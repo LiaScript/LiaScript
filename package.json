@@ -22,7 +22,6 @@
   "man": [
     "https://github.com/LiaScript/docs/README.md"
   ],
-  "main": "dist/index.js",
   "scripts": {
     "clean": "rm -rf dist .parcel-cache",
     "sw": "npx workbox injectManifest workbox-config.js",
