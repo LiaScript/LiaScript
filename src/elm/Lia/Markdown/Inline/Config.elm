@@ -17,7 +17,7 @@ import Translations exposing (Lang)
 
 
 type alias Config sub =
-    { view : Maybe (Int -> SubSection -> List (Html (Msg sub)))
+    { view : Maybe (Int -> Int -> SubSection -> List (Html (Msg sub)))
     , oEmbed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool }
     , visible : Maybe Int
     , slide : Int
@@ -32,6 +32,7 @@ type alias Config sub =
         { state : Input.State
         , options : Array (List Inlines)
         , on : String -> Int -> String -> String
+        , path : List ( String, Int )
         , active : Bool
         , partiallyCorrect : Array Bool
         }
@@ -78,6 +79,7 @@ init config =
         { state = Array.empty
         , options = Array.empty
         , on = \_ _ _ -> ""
+        , path = []
         , active = False
         , partiallyCorrect = Array.empty
         }
@@ -89,6 +91,6 @@ init config =
     }
 
 
-setViewer : (Int -> SubSection -> List (Html (Msg sub))) -> Config sub -> Config sub
+setViewer : (Int -> Int -> SubSection -> List (Html (Msg sub))) -> Config sub -> Config sub
 setViewer fn config =
     { config | view = Just fn }

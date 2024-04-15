@@ -75,6 +75,10 @@ class LiaError extends Error {
   }
 }
 
+const worker = new Worker(new URL('Worker.js', import.meta.url), {
+  type: 'module',
+})
+
 export class LiaEvents {
   private event: { [key: string]: any }
   private input: { [track: string]: any }
@@ -136,6 +140,9 @@ const Service = {
 
   init: function (elmSend_: Lia.Send) {
     elmSend = elmSend_
+    worker.onmessage = (event) => {
+      sendReply(event.data)
+    }
   },
 
   /** This is a little helper, which allows to execute some code snippets,
@@ -308,6 +315,10 @@ export function liaExec(event: Lia.Event) {
 }
 
 function liaExecCode(event: Lia.Event) {
+  if (event.message.param.worker) {
+    worker.postMessage(event)
+    return
+  }
   setTimeout(() => {
     const send = {
       lia: execute_response(event, 'exec'),

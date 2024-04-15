@@ -10,10 +10,11 @@ export class Sync extends Base.Sync {
   private peers: { [id: string]: string } = {}
   private tokens: { [id: string]: string } = {}
 
+  private is_connected: boolean = false
+
   destroy() {
     this.trackersAnnounceURLs = []
     this.p2pt?.destroy()
-
     super.destroy()
   }
 
@@ -54,7 +55,10 @@ export class Sync extends Base.Sync {
         console.log('Connected to tracker : ' + tracker.announceUrl)
         console.log('Tracker stats : ' + JSON.stringify(stats))
 
-        self.sendConnect()
+        if (!self.is_connected) {
+          self.is_connected = true
+          self.sendConnect()
+        }
       })
 
       this.p2pt.on('trackerwarning', (error, stats) => {
@@ -78,15 +82,22 @@ export class Sync extends Base.Sync {
       })
 
       this.p2pt.on('msg', (peer, msg) => {
-        console.warn(`Got message from ${peer.id} : ${msg}`)
+        // console.warn(`Got message from ${peer.id} : ${msg}`)
 
         if (msg) {
           try {
-            const [token, state, message] = Crypto.decode(msg)
+            const [token, state, message, timestamp] = Crypto.decode(msg)
 
-            if (token != self.token && message != null) {
+            if (token != self.token) {
               if (state) {
-                self.applyUpdate(Base.base64_to_unit8(message))
+                if (timestamp == self.db.timestamp) {
+                  self.applyUpdate(Base.base64_to_unit8(message))
+                } else if (timestamp > self.db.timestamp) {
+                  self.broadcast(true, self.db.encode())
+                } else {
+                  self.db.timestamp = timestamp
+                  self.applyUpdate(Base.base64_to_unit8(message), true)
+                }
               } else {
                 self.pubsubReceive(Base.base64_to_unit8(message))
               }
@@ -121,7 +132,7 @@ export class Sync extends Base.Sync {
     }
 
     const message = data == null ? null : Base.uint8_to_base64(data)
-    const msg = Crypto.encode([this.token, state, message])
+    const msg = Crypto.encode([this.token, state, message, this.db.timestamp])
 
     for (const id in this.peers) {
       this.p2pt.send(this.peers[id], msg)

@@ -108,4 +108,4 @@ jitsi_Domain =
 
 webTorrent_TrackerURLs : String
 webTorrent_TrackerURLs =
-    "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, wss://tracker.files.fm:7073/announce, wss://tracker.btorrent.xyz/, wss://tracker.openwebtorrent.com:443/announce, wss://tracker.files.fm:7073/announce"
+    "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, wss://tracker.files.fm:7073/announce, wss://tracker.openwebtorrent.com:443/announce"

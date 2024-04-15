@@ -104,10 +104,17 @@ export class Sync extends Base.Sync {
         .get(this.store)
         .on(function (data: { msg: string }, key: string) {
           try {
-            const [token, message] = Crypto.decode(data.msg)
+            const [token, message, timestamp] = Crypto.decode(data.msg)
 
             if (token != self.token && message != null) {
-              self.applyUpdate(Base.base64_to_unit8(message))
+              if (timestamp == self.db.timestamp) {
+                self.applyUpdate(Base.base64_to_unit8(message))
+              } else if (timestamp > self.db.timestamp) {
+                self.broadcast(true, self.db.encode())
+              } else {
+                self.applyUpdate(Base.base64_to_unit8(message), true)
+                self.db.timestamp = timestamp
+              }
             }
           } catch (e) {
             console.warn('GunDB', e.message)
@@ -119,7 +126,7 @@ export class Sync extends Base.Sync {
         .get(this.store + 'pubsub')
         .on(function (data: { msg: string }, key: string) {
           try {
-            const [token, message] = Crypto.decode(data.msg)
+            const [token, message, timestamp] = Crypto.decode(data.msg)
 
             if (token != self.token && message != null) {
               self.pubsubReceive(Base.base64_to_unit8(message))

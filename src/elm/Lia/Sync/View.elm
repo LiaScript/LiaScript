@@ -30,7 +30,20 @@ view settings =
         , Attr.style "max-width" "600px"
         , Attr.style "overflow" "auto"
         ]
-        [ Html.h1 [] [ Html.text "Classroom" ]
+        [ Html.h1 [ Attr.style "text-align" "center" ]
+            [ Html.text "Classroom "
+            , settings.sync.select
+                |> Maybe.map
+                    (Tuple.second
+                        >> Backend.icon
+                        >> List.singleton
+                        >> Html.span
+                            [ Attr.style "font-size" "xxx-large"
+                            , Attr.style "vertical-align" "middle"
+                            ]
+                    )
+                |> Maybe.withDefault (Html.text "")
+            ]
         , select open settings.sync
         , case settings.sync.select of
             Nothing ->

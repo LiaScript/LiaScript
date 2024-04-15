@@ -136,7 +136,7 @@ script config withStyling attr id node =
                     IFrame lia ->
                         case config.view of
                             Just inline ->
-                                inline id lia
+                                inline config.slide id lia
                                     |> Html.span []
 
                             Nothing ->
