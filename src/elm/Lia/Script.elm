@@ -402,7 +402,18 @@ searchIndex index str =
 
 {-| Alias for model initialization defined by `Lia.Model.int`
 -}
-init : Int -> Bool -> Bool -> JE.Value -> { support : List String, enabled : Bool } -> String -> String -> String -> Maybe String -> Model
+init :
+    { seed : Int
+    , hasShareApi : Bool
+    , openTOC : Bool
+    , settings : JE.Value
+    , backends : { support : List String, enabled : Bool }
+    , url : String
+    , readme : String
+    , origin : String
+    , anchor : Maybe String
+    }
+    -> Model
 init =
     Lia.Model.init
 
