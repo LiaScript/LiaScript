@@ -8,7 +8,7 @@ import Lia.Parser.PatReplace exposing (replace, root)
 
 
 website =
-    { youtube = "https://www.youtube.com/embed/"
+    { youtube = "https://www.youtube-nocookie.com/embed/"
     }
 
 
