@@ -155,7 +155,11 @@ init flags url key =
 
         -- Use the url query-parameter as the course-url
         ( Just query, _, _ ) ->
-            case Session.getType courseUrl of
+            let
+                _ =
+                    Debug.log "XXXXXXXXXXXXXXXXXXXX" query
+            in
+            case Session.getType courseUrl |> Debug.log "XXXXXXXXXXXXXXXXX" of
                 Session.Index ->
                     Lia.Script.init
                         flags.seed
@@ -169,6 +173,25 @@ init flags url key =
                         url.fragment
                         |> model courseUrl Idle
                         |> Update.initIndex
+
+                Session.Course "vscode-coi=3" fragment ->
+                    Lia.Script.init
+                        flags.seed
+                        flags.hasShareAPI
+                        openTableOfContents
+                        flags.settings
+                        flags.sync
+                        ""
+                        (if flags.hideURL then
+                            ""
+
+                         else
+                            query
+                        )
+                        ""
+                        fragment
+                        |> model courseUrl Idle
+                        |> getIndex query
 
                 Session.Course _ fragment ->
                     Lia.Script.init
