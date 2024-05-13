@@ -170,6 +170,25 @@ init flags url key =
                         |> model courseUrl Idle
                         |> Update.initIndex
 
+                Session.Course "vscode-coi=3" fragment ->
+                    Lia.Script.init
+                        flags.seed
+                        flags.hasShareAPI
+                        openTableOfContents
+                        flags.settings
+                        flags.sync
+                        ""
+                        (if flags.hideURL then
+                            ""
+
+                         else
+                            query
+                        )
+                        ""
+                        fragment
+                        |> model courseUrl Idle
+                        |> getIndex query
+
                 Session.Course _ fragment ->
                     Lia.Script.init
                         flags.seed
