@@ -8,6 +8,7 @@ module Const exposing
     , urlLiascript
     , urlLiascriptCourse
     , urlProxy
+    , vscode
     , webTorrent_TrackerURLs
     )
 
@@ -97,6 +98,16 @@ urlLiascriptCourse =
 gunDB_ServerURL : String
 gunDB_ServerURL =
     "https://peer.wallie.io/gun"
+
+
+{-| Indicator for the Visual Studio Web extension.
+By using this param "?vscode-coi=3" the extension will be able to
+inject the necessary CSS and JS files into the iframe.
+Otherwise it will be rejected for CORS and CORB reasons.
+-}
+vscode : String
+vscode =
+    "vscode-coi=3"
 
 
 {-| Default Jitsi domain

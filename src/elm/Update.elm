@@ -385,7 +385,18 @@ update msg model =
             load_readme readme model
 
         Load_ReadMe_Result url (Err info) ->
-            if String.startsWith Const.urlProxy url then
+            -- prevent the course from being loaded with a proxy
+            -- This is the marking point for injecting the content
+            -- via the window.LIA.jit API
+            if String.endsWith Const.vscode url then
+                startWithError
+                    { model
+                        | state =
+                            ("# " ++ Const.vscode ++ "\n\nwaiting ...")
+                                |> Error.Report.add model.state
+                    }
+
+            else if String.startsWith Const.urlProxy url then
                 startWithError
                     { model
                         | state =

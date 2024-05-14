@@ -184,48 +184,47 @@ init flags url key =
                         |> model courseUrl Idle
                         |> Update.initIndex
 
-                Session.Course "vscode-coi=3" fragment ->
-                    Lia.Script.init
-                        { seed = flags.seed
-                        , hasShareApi = flags.hasShareAPI
-                        , openTOC = openTableOfContents
-                        , settings = flags.settings
-                        , backends = flags.sync
-                        , url = ""
-                        , readme =
-                            if flags.hideURL then
-                                ""
+                Session.Course readme fragment ->
+                    getIndex query <|
+                        -- special case for the vscode web extension
+                        if readme == Const.vscode then
+                            { seed = flags.seed
+                            , hasShareApi = flags.hasShareAPI
+                            , openTOC = openTableOfContents
+                            , settings = flags.settings
+                            , backends = flags.sync
+                            , url =
+                                courseUrl
+                                    |> get_base
+                                    |> String.replace Const.vscode ""
+                            , readme = Const.vscode
+                            , origin = "/"
+                            , anchor = fragment
+                            }
+                                |> Lia.Script.init
+                                |> model { courseUrl | query = Nothing } Loading
 
-                            else
-                                query
-                        , origin = ""
-                        , anchor = fragment
-                        }
-                        |> model { courseUrl | query = Nothing } Idle
-                        |> getIndex query
+                        else
+                            { seed = flags.seed
+                            , hasShareApi = flags.hasShareAPI
+                            , openTOC = openTableOfContents
+                            , settings = flags.settings
+                            , backends = flags.sync
+                            , url = get_base courseUrl
+                            , readme =
+                                if flags.hideURL then
+                                    ""
 
-                Session.Course _ fragment ->
-                    Lia.Script.init
-                        { seed = flags.seed
-                        , hasShareApi = flags.hasShareAPI
-                        , openTOC = openTableOfContents
-                        , settings = flags.settings
-                        , backends = flags.sync
-                        , url = get_base courseUrl
-                        , readme =
-                            if flags.hideURL then
-                                ""
-
-                            else
-                                query
-                        , origin =
-                            courseUrl.query
-                                |> Maybe.andThen Utils.urlBasePath
-                                |> Maybe.withDefault ""
-                        , anchor = fragment
-                        }
-                        |> model courseUrl Loading
-                        |> getIndex query
+                                else
+                                    query
+                            , origin =
+                                courseUrl.query
+                                    |> Maybe.andThen Utils.urlBasePath
+                                    |> Maybe.withDefault ""
+                            , anchor = fragment
+                            }
+                                |> Lia.Script.init
+                                |> model courseUrl Loading
 
                 Session.Class room fragment ->
                     Lia.Script.init
