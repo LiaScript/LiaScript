@@ -183,12 +183,9 @@ init flags url key =
                 Session.Course readme fragment ->
                     getIndex query <|
                         -- special case for the vscode web extension
-                        if readme == Const.vscode then
-                            { url =
-                                courseUrl
-                                    |> get_base
-                                    |> String.replace Const.vscode ""
-                            , readme = Const.vscode
+                        if String.contains Const.vscode readme then
+                            { url = Url.toString { url | fragment = Nothing, query = Nothing }
+                            , readme = query
                             , origin = "/"
                             , anchor = fragment
                             }
