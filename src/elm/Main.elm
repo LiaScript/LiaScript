@@ -14,6 +14,7 @@ import Lia.Sync.Types as Sync
 import Lia.Utils as Utils
 import Model exposing (Model, State(..))
 import Session exposing (Screen, Session)
+import Translations exposing (Lang(..))
 import Update
     exposing
         ( Msg(..)
@@ -91,9 +92,26 @@ type alias Flags =
 init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
-        model =
-            Session flags.hasShareAPI key flags.screen
-                >> Model 0 flags.hasIndex Nothing Index.init Nothing
+        model url_ state_ lia_ =
+            Model 0
+                flags.hasIndex
+                Nothing
+                Index.init
+                Nothing
+                (Session flags.hasShareAPI key flags.screen url_)
+                state_
+                (Lia.Script.init
+                    { seed = flags.seed
+                    , hasShareApi = flags.hasShareAPI
+                    , openTOC = openTableOfContents
+                    , settings = flags.settings
+                    , backends = flags.sync
+                    , url = lia_.url
+                    , readme = lia_.readme
+                    , origin = lia_.origin
+                    , anchor = lia_.anchor
+                    }
+                )
 
         courseUrl =
             { url | query = Maybe.map link url.query }
@@ -108,48 +126,38 @@ init flags url key =
                 subURL =
                     { courseUrl | query = Just "README.md" }
             in
-            Lia.Script.init
-                flags.seed
-                flags.hasShareAPI
-                openTableOfContents
-                flags.settings
-                flags.sync
-                (get_base subURL)
-                (if flags.hideURL then
+            { url = get_base subURL
+            , readme =
+                if flags.hideURL then
                     ""
 
-                 else
+                else
                     "README.md"
-                )
-                ""
-                Nothing
+            , origin = ""
+            , anchor = Nothing
+            }
                 |> model subURL Idle
                 |> load_readme script
 
         -- Check if a URL was passed as a parameter
         ( _, Just query, _ ) ->
-            Lia.Script.init
-                flags.seed
-                flags.hasShareAPI
-                openTableOfContents
-                flags.settings
-                flags.sync
-                (query
+            { url =
+                query
                     |> Url.fromString
                     |> Maybe.withDefault { courseUrl | query = Just query }
                     |> get_base
-                )
-                (if flags.hideURL then
+            , readme =
+                if flags.hideURL then
                     ""
 
-                 else
+                else
                     query
-                )
-                (query
+            , origin =
+                query
                     |> Utils.urlBasePath
                     |> Maybe.withDefault ""
-                )
-                url.fragment
+            , anchor = url.fragment
+            }
                 |> model { courseUrl | query = Just query } Loading
                 |> getIndex query
 
@@ -157,70 +165,50 @@ init flags url key =
         ( Just query, _, _ ) ->
             case Session.getType courseUrl of
                 Session.Index ->
-                    Lia.Script.init
-                        flags.seed
-                        flags.hasShareAPI
-                        openTableOfContents
-                        flags.settings
-                        flags.sync
-                        ""
-                        ""
-                        ""
-                        url.fragment
+                    { url = ""
+                    , readme = ""
+                    , origin = ""
+                    , anchor = url.fragment
+                    }
                         |> model courseUrl Idle
                         |> Update.initIndex
 
                 Session.Course _ fragment ->
-                    Lia.Script.init
-                        flags.seed
-                        flags.hasShareAPI
-                        openTableOfContents
-                        flags.settings
-                        flags.sync
-                        (get_base courseUrl)
-                        (if flags.hideURL then
+                    { url = get_base courseUrl
+                    , readme =
+                        if flags.hideURL then
                             ""
 
-                         else
+                        else
                             query
-                        )
-                        (courseUrl.query
+                    , origin =
+                        courseUrl.query
                             |> Maybe.andThen Utils.urlBasePath
                             |> Maybe.withDefault ""
-                        )
-                        fragment
+                    , anchor = fragment
+                    }
                         |> model courseUrl Loading
                         |> getIndex query
 
                 Session.Class room fragment ->
-                    Lia.Script.init
-                        flags.seed
-                        flags.hasShareAPI
-                        openTableOfContents
-                        flags.settings
-                        flags.sync
-                        (get_base courseUrl)
+                    { url = get_base courseUrl
+                    , readme = room.course
+                    , origin =
                         room.course
-                        (room.course
                             |> Utils.urlBasePath
                             |> Maybe.withDefault ""
-                        )
-                        fragment
+                    , anchor = fragment
+                    }
                         |> model courseUrl Loading
                         |> openSync room
                         |> getIndex room.course
 
         _ ->
-            Lia.Script.init
-                flags.seed
-                flags.hasShareAPI
-                openTableOfContents
-                flags.settings
-                flags.sync
-                ""
-                ""
-                ""
-                url.fragment
+            { url = ""
+            , readme = ""
+            , origin = ""
+            , anchor = url.fragment
+            }
                 |> model courseUrl Idle
                 |> Update.initIndex
 
