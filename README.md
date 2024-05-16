@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.14.11
+version:  0.14.12
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,11 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.14.12** (14/05/2024)
+
+- feat(YouTube): Embedding videos for YouTube will now always embed the no-cookie version
+- fix: Add elements to allow embedding the editor again within the github.dev editor
 
 **0.14.11** (15/04/2024)
 

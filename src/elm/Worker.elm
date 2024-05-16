@@ -59,7 +59,17 @@ main =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( Lia.Script.init 0 False True JE.null { support = [], enabled = False } "" "" "" Nothing
+    ( Lia.Script.init
+        { seed = 0
+        , hasShareApi = False
+        , openTOC = True
+        , settings = JE.null
+        , backends = { support = [], enabled = False }
+        , url = ""
+        , readme = ""
+        , origin = ""
+        , anchor = Nothing
+        }
         |> Model Idle "" Nothing
     , if flags.cmd == "" then
         Cmd.none
@@ -107,7 +117,17 @@ update msg model =
                 _ ->
                     let
                         lia =
-                            Lia.Script.init 0 False True JE.null { support = [], enabled = False } "" "" "" Nothing
+                            Lia.Script.init
+                                { seed = 0
+                                , hasShareApi = False
+                                , openTOC = True
+                                , settings = JE.null
+                                , backends = { support = [], enabled = False }
+                                , url = ""
+                                , readme = ""
+                                , origin = ""
+                                , anchor = Nothing
+                                }
                     in
                     ( { model
                         | cmd = cmd
