@@ -51,6 +51,11 @@ declare global {
         zoom: (_: MouseEvent) => void
       }
 
+      /**
+       * Error handler
+       */
+      fetchError: (tag: string, src: string) => void
+
       /** reference function to TTS functionality, this is mostly used, to
        * define `onclick` handlers so enable speech from inline elements from
        * within LiaScript

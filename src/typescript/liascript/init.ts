@@ -52,6 +52,7 @@ export function initGlobals() {
   init('gotoPrevious')
   init('gotoLine')
   init('lineGoto')
+  init('fetchError')
 
   init('injectResposivevoice')
 }
