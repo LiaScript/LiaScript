@@ -12,7 +12,9 @@
   }
 
   &__media {
-    //
+    @media (max-width: 360px) {
+      display: none;
+    }
   }
 
   &__logo {
@@ -89,6 +91,10 @@
     margin: auto 2.4rem 2rem;
     font-size: 1.8rem;
 
+    @media (max-width: 360px) {
+      margin: 0px 2rem;
+    }
+
     > *:not(:last-child) {
       margin-right: 1rem;
     }
@@ -106,6 +112,11 @@
   &__body {
     padding: 0 2.4rem;
     margin-bottom: 2rem;
+
+    @media (max-width: 360px) {
+      hyphens: auto;
+      overflow-wrap: break-word; /* Optional, depending on your needs */
+    }
   }
 
   &__copy {
@@ -118,6 +129,10 @@
     justify-content: space-between;
     padding: 0 2.4rem;
     max-height: 5rem;
+
+    @media (max-width: 360px) {
+      display: none;
+    }
   }
 
   &__contact {
