@@ -48,9 +48,9 @@ const Service = {
         if (data) {
           const files = toFileList(data)
 
-          client.seed(files, serve(event, true))
+          client.seed(files, serve(event, false))
         } else {
-          client.add(event.message.param.uri, serve(event, false))
+          client.add(event.message.param.uri, serve(event, true))
         }
         break
       }
