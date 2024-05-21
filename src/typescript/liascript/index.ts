@@ -169,7 +169,7 @@ export class LiaScript {
     Translate.init(elmSend)
     Sync.init(elmSend)
     Zip.init(elmSend)
-    Torrent.init(elmSend)
+    Torrent.init(elmSend, Database)
 
     let connector = this.connector
     jsSubscribe((event: Lia.Event) => {

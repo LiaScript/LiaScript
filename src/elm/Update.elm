@@ -136,7 +136,7 @@ update msg model =
             )
 
         Handle event ->
-            case Event.destructure event |> Debug.log "WWWWWWWWWWWWWWWWWWW" of
+            case Event.destructure event of
                 ( Just "index", _, _ ) ->
                     update
                         (event

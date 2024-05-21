@@ -2,12 +2,14 @@ import log from '../log'
 import { loadScript } from './Resource'
 
 var elmSend: Lia.Send | null
+var db = null
 
 const Service = {
   PORT: 'torrent',
 
-  init: function (elmSend_: Lia.Send) {
+  init: function (elmSend_: Lia.Send, db_: any) {
     elmSend = elmSend_
+    db = db_
   },
 
   handle: async function (event: Lia.Event) {
@@ -32,60 +34,15 @@ const Service = {
         // @ts-ignore
         const client = new WebTorrent()
 
-        client.add(event.message.param.uri, (torrent) => {
-          // Got torrent metadata!
+        const data = await db.getMisc(event.message.param.uri, null)
 
-          let readme = torrent.files.filter((file) =>
-            file.name.toLocaleLowerCase().endsWith('readme.md')
-          )
+        if (data) {
+          const files = toFileList(data)
 
-          if (readme.length === 0) {
-            readme = torrent.files.filter((file) => file.name.endsWith('.md'))
-          }
-
-          if (readme.length === 0) {
-            console.warn('No markdown files found')
-            return
-          }
-
-          readme = readme[0]
-
-          readme.getBlobURL(function callback(err, url) {
-            if (url) {
-              fetch(url)
-                .then((response) => {
-                  return response.text()
-                })
-                .then((data) => {
-                  event.message.param.data = { ok: true, body: data }
-                  if (elmSend) {
-                    elmSend(event)
-                  }
-                })
-            }
-          })
-
-          window.LIA.fetchError = (tag: string, src: string) => {
-            let file = torrent.files.filter((file) => file.path.endsWith(src))
-
-            if (file.length === 0) {
-              console.warn('file not found', src)
-              return
-            }
-
-            file[0].getBlobURL(function callback(err, url) {
-              if (url) {
-                inject(tag, window.location.origin + src, url)
-              }
-            })
-          }
-
-          for (let file of torrent.files) {
-            file.getBlobURL(function callback(err, url) {
-              console.log('file', file, url)
-            })
-          }
-        })
+          client.seed(files, serve(event, true))
+        } else {
+          client.add(event.message.param.uri, serve(event, false))
+        }
         break
       }
 
@@ -93,6 +50,89 @@ const Service = {
         console.warn('torrent: unknown event =>', event)
     }
   },
+}
+
+function serve(event, doStore: boolean) {
+  return (torrent) => {
+    let readme = torrent.files.filter((file) =>
+      file.name.toLocaleLowerCase().endsWith('readme.md')
+    )
+
+    if (readme.length === 0) {
+      readme = torrent.files.filter((file) => file.name.endsWith('.md'))
+    }
+
+    if (readme.length === 0) {
+      console.warn('No markdown files found')
+      return
+    }
+
+    readme = readme[0]
+
+    readme.getBlobURL(function callback(err, url) {
+      if (url) {
+        fetch(url)
+          .then((response) => {
+            return response.text()
+          })
+          .then((data) => {
+            event.message.param.data = { ok: true, body: data }
+            if (elmSend) {
+              elmSend(event)
+            }
+          })
+      }
+    })
+
+    window.LIA.fetchError = (tag: string, src: string) => {
+      let file = torrent.files.filter((file) => file.path.endsWith(src))
+
+      if (file.length === 0) {
+        console.warn('file not found', src)
+        return
+      }
+
+      file[0].getBlobURL(function callback(err, url) {
+        if (url) {
+          inject(tag, window.location.origin + src, url)
+        }
+      })
+    }
+
+    if (doStore) {
+      for (let i in torrent.files) {
+        let file = torrent.files[i]
+        file.getBlobURL(function callback(err, url) {
+          if (url) {
+            fetch(url)
+              .then((response) => response.arrayBuffer())
+              .then((data) => {
+                storeFile(event.message.param.uri, file.path, [
+                  file._getMimeType(),
+                  data,
+                  i,
+                ])
+              })
+          }
+        })
+      }
+    }
+  }
+}
+
+function toFileList(files: any) {
+  // sort the object by the index i
+  return Object.entries(files)
+    .sort((a, b) => a[1][2] - b[1][2])
+    .map(
+      ([filename, [type, buffer, i]]) => new File([buffer], filename, { type })
+    )
+}
+
+function storeFile(uri: string, name: string, data: any) {
+  if (db) {
+    db.addMisc(uri, null, name, data)
+  }
 }
 
 function inject(tag: string, src: string, url: string) {
