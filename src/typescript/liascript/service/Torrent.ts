@@ -1,4 +1,3 @@
-import log from '../log'
 import { loadScript } from './Resource'
 
 var elmSend: Lia.Send | null
@@ -12,7 +11,7 @@ const Service = {
     db = db_
   },
 
-  handle: async function (event: Lia.Event) {
+  handle: async function (event: Lia.Event, reload = false) {
     if (!window['WebTorrent']) {
       loadScript(
         'https://cdn.jsdelivr.net/webtorrent/latest/webtorrent.min.js',
@@ -43,14 +42,18 @@ const Service = {
           },
         })
 
-        const data = await db.getMisc(event.message.param.uri, null)
-
-        if (data) {
-          const files = toFileList(data)
-
-          client.seed(files, serve(event, false))
-        } else {
+        if (reload) {
           client.add(event.message.param.uri, serve(event, true))
+        } else {
+          // @ts-ignore
+          const data = await db.getMisc(event.message.param.uri, null)
+          const files = toFileList(data || {})
+
+          if (files.length > 0) {
+            client.seed(files, serve(event, false))
+          } else {
+            client.add(event.message.param.uri, serve(event, true))
+          }
         }
         break
       }
@@ -63,6 +66,12 @@ const Service = {
 
 function serve(event, doStore: boolean) {
   return (torrent) => {
+    if (!doStore && !event.message.param.uri.match(torrent.infoHash)) {
+      console.warn('torrent not fully loaded')
+      Service.handle(event, true)
+      return
+    }
+
     let readme = torrent.files.filter((file) =>
       file.name.toLocaleLowerCase().endsWith('readme.md')
     )
@@ -88,6 +97,11 @@ function serve(event, doStore: boolean) {
             event.message.param.data = { ok: true, body: data }
             if (elmSend) {
               elmSend(event)
+              if (doStore) {
+                setTimeout(() => {
+                  storeFiles(event.message.param.uri, torrent.files)
+                }, 1000)
+              }
             }
           })
       }
@@ -107,29 +121,10 @@ function serve(event, doStore: boolean) {
         }
       })
     }
-
-    if (doStore) {
-      for (let i in torrent.files) {
-        let file = torrent.files[i]
-        file.getBlobURL(function callback(err, url) {
-          if (url) {
-            fetch(url)
-              .then((response) => response.arrayBuffer())
-              .then((data) => {
-                storeFile(event.message.param.uri, file.path, [
-                  file._getMimeType(),
-                  data,
-                  i,
-                ])
-              })
-          }
-        })
-      }
-    }
   }
 }
-
-function toFileList(files: any) {
+// add a dictionary type to the files object
+function toFileList(files: { [key: string]: [string, ArrayBuffer, number] }) {
   // sort the object by the index i
   return Object.entries(files)
     .sort((a, b) => a[1][2] - b[1][2])
@@ -138,9 +133,22 @@ function toFileList(files: any) {
     )
 }
 
-function storeFile(uri: string, name: string, data: any) {
-  if (db) {
-    db.addMisc(uri, null, name, data)
+function storeFiles(uri: string, files: any) {
+  for (let i in files) {
+    let file = files[i]
+    file.getBlobURL(function callback(err, url) {
+      if (url) {
+        fetch(url)
+          .then((response) => response.arrayBuffer())
+          .then((data) => {
+            console.log('store file =>', i, file.path, file._getMimeType())
+
+            if (db)
+              // @ts-ignore
+              db.addMisc(uri, null, file.path, [file._getMimeType(), data, i])
+          })
+      }
+    })
   }
 }
 
