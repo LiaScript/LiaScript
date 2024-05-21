@@ -32,7 +32,16 @@ const Service = {
     switch (event.message.cmd) {
       case 'load': {
         // @ts-ignore
-        const client = new WebTorrent()
+        const client = new WebTorrent({
+          tracker: {
+            rtcConfig: {
+              iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }, // Google's public STUN server
+                { urls: 'stun:global.stun.twilio.com:3478' },
+              ],
+            },
+          },
+        })
 
         const data = await db.getMisc(event.message.param.uri, null)
 
