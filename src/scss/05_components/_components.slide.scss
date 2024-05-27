@@ -41,11 +41,6 @@
     padding: 0 3rem;
     width: 100%;
 
-    // add media query for sm, and modify the padding otherwise use the above
-    @media (max-width: 360px) {
-      padding: 0 0.1rem;
-    }
-
     @include breakpoint('md') {
       margin: calc(#{$header-height-desktop} - 7rem) 0 2rem;
     }

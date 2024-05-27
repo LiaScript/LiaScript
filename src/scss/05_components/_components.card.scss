@@ -5,6 +5,7 @@
   flex-direction: column;
   position: relative;
   color: rgb(var(--color-text));
+  margin-top: 10px;
 
   @include breakpoint-only('sm', 'md') {
     display: grid;
@@ -12,7 +13,7 @@
   }
 
   &__media {
-    @media (max-width: 360px) {
+    @media (max-width: 240px) {
       display: none;
     }
   }
@@ -64,6 +65,10 @@
     > *:not(:last-child) {
       margin-right: 1rem;
     }
+
+    @media (max-width: 360px) {
+      font-size: xx-small;
+    }
   }
 
   &__header {
@@ -91,7 +96,7 @@
     margin: auto 2.4rem 2rem;
     font-size: 1.8rem;
 
-    @media (max-width: 360px) {
+    @media (max-width: 240px) {
       margin: 0px 2rem;
     }
 
@@ -113,7 +118,7 @@
     padding: 0 2.4rem;
     margin-bottom: 2rem;
 
-    @media (max-width: 360px) {
+    @media (max-width: 240px) {
       hyphens: auto;
       overflow-wrap: break-word; /* Optional, depending on your needs */
     }
@@ -130,7 +135,7 @@
     padding: 0 2.4rem;
     max-height: 5rem;
 
-    @media (max-width: 360px) {
+    @media (max-width: 240px) {
       display: none;
     }
   }
