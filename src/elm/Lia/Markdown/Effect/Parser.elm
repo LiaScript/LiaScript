@@ -5,7 +5,7 @@ module Lia.Markdown.Effect.Parser exposing
     , markdown
     )
 
-import Array
+import Array exposing (Array)
 import Combine
     exposing
         ( Parser
@@ -33,7 +33,7 @@ import Combine.Num exposing (int)
 import Dict
 import Lia.Markdown.Effect.Model exposing (Content, Element)
 import Lia.Markdown.Effect.Types as Effect exposing (Effect)
-import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context exposing (Context)
@@ -234,6 +234,9 @@ add_comment visible ( idx, temp_narrator, par ) =
                     let
                         e =
                             s.effect_model
+
+                        ( audioFile, par2 ) =
+                            hasAudioContent True par
                     in
                     { e
                         | comments =
@@ -241,15 +244,16 @@ add_comment visible ( idx, temp_narrator, par ) =
                                 Just cmt ->
                                     Dict.insert idx
                                         { cmt
-                                            | content = Array.push (Content visible [] par) cmt.content
+                                            | content = Array.push (Content visible [] par2) cmt.content
+                                            , audio = addToAudio audioFile cmt.audio
                                         }
                                         e.comments
 
                                 _ ->
                                     Dict.insert idx
-                                        ([ Content visible [] par ]
+                                        ([ Content visible [] par2 ]
                                             |> Array.fromList
-                                            |> Element narrator
+                                            |> Element narrator (addToAudio audioFile Array.empty)
                                         )
                                         e.comments
                     }
@@ -261,6 +265,33 @@ add_comment visible ( idx, temp_narrator, par ) =
     modifyState mod
         |> keep (get_counter idx)
         |> andThen rslt
+
+
+addToAudio : Maybe String -> Array String -> Array String
+addToAudio file array =
+    case file of
+        Nothing ->
+            array
+
+        Just f ->
+            Array.push f array
+
+
+hasAudioContent : Bool -> Inlines -> ( Maybe String, Inlines )
+hasAudioContent start par =
+    case par of
+        (Ref (Audio _ ( False, audio ) _) _) :: par2 ->
+            ( Just audio, par2 )
+
+        _ ->
+            if start then
+                par
+                    |> List.reverse
+                    |> hasAudioContent False
+                    |> Tuple.mapSecond List.reverse
+
+            else
+                ( Nothing, par )
 
 
 get_counter : Int -> Parser Context Int

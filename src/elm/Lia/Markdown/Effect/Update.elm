@@ -11,6 +11,7 @@ module Lia.Markdown.Effect.Update exposing
     , updateSub
     )
 
+import Array exposing (Array)
 import Browser.Dom as Dom
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
@@ -102,9 +103,9 @@ update main sound msg model =
                     |> Return.val
                     |> Return.batchEvents
                         (case current_comment model of
-                            Just ( id, _ ) ->
+                            Just comment ->
                                 if sound then
-                                    Service.TTS.readFrom id :: events
+                                    Service.TTS.readFrom comment.id :: events
 
                                 else
                                     events
@@ -248,4 +249,13 @@ ttsReplay : Model SubSection -> Maybe Event
 ttsReplay model =
     model
         |> current_comment
-        |> Maybe.map (Tuple.first >> Service.TTS.readFrom)
+        |> Maybe.map toAudioEvent
+
+
+toAudioEvent : { id : Int, audio : Array String } -> Event
+toAudioEvent { id, audio } =
+    if Array.isEmpty audio then
+        Service.TTS.readFrom id
+
+    else
+        Service.TTS.playFrom audio

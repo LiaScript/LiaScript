@@ -31,6 +31,7 @@ type alias Model a =
 
 type alias Element =
     { narrator : String
+    , audio : Array String
     , content : Array Content
     }
 
@@ -130,11 +131,16 @@ current_paragraphs model =
             )
 
 
-current_comment : Model a -> Maybe ( Int, String )
+current_comment : Model a -> Maybe { id : Int, audio : Array String }
 current_comment model =
     model.comments
         |> Dict.get model.visible
-        |> Maybe.map (\e -> ( model.visible, e.narrator ))
+        |> Maybe.map
+            (\e ->
+                { id = model.visible
+                , audio = e.audio
+                }
+            )
 
 
 {-| This Function returns a list all hidden comments, that do not have a normal
