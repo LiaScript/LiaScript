@@ -432,7 +432,7 @@ viewTranslations lang tabbable =
         >> List.map
             (\( title, url ) ->
                 Html.a
-                    ([ Attr.href url
+                    ([ Attr.href <| "./?" ++ url
                      , Attr.class "lia-link"
                      , A11y_Key.tabbable tabbable
                      , A11y_Widget.hidden (not tabbable)
