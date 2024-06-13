@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.14.12
+version:  0.15.0
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,24 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.15.0** (14/06/2024)
+
+- feat: Add voice recordings to comments
+
+  ``` markdown
+      --{{1 UK English Female}}--
+  ?[|>](recording.mp3)
+  If a comment starts with a audio-link or ends with one, then this file will be played
+  when the comment should be read out loud. This will automatically trigger a replay.
+  If the course is translated with Google, then the audio will be played in if and only if
+  the languages is not the main, that was translated into. Otherwise the browser-based TTS
+  will be used. 
+  ```
+
+- improve: Add information about the where a course is stored to the index-view.
+- fix: loading Translation files by using `@translation: ...` macro.
+- fix: loading JavaScript from animations step, when mode switched to Textbook
 
 **0.14.12** (14/05/2024)
 
