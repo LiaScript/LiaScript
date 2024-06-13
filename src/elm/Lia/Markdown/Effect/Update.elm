@@ -103,9 +103,9 @@ update main sound msg model =
                     |> Return.val
                     |> Return.batchEvents
                         (case current_comment model of
-                            Just comment ->
+                            Just id ->
                                 if sound then
-                                    Service.TTS.readFrom comment.id :: events
+                                    Service.TTS.readFrom id :: events
 
                                 else
                                     events
@@ -249,13 +249,4 @@ ttsReplay : Model SubSection -> Maybe Event
 ttsReplay model =
     model
         |> current_comment
-        |> Maybe.map toAudioEvent
-
-
-toAudioEvent : { id : Int, audio : Array String } -> Event
-toAudioEvent { id, audio } =
-    if Array.isEmpty audio then
-        Service.TTS.readFrom id
-
-    else
-        Service.TTS.playFrom audio
+        |> Maybe.map Service.TTS.readFrom

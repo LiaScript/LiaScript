@@ -244,16 +244,15 @@ add_comment visible ( idx, temp_narrator, par ) =
                                 Just cmt ->
                                     Dict.insert idx
                                         { cmt
-                                            | content = Array.push (Content visible [] par2) cmt.content
-                                            , audio = addToAudio audioFile cmt.audio
+                                            | content = Array.push (Content visible [] par2 (addToAudio audioFile Array.empty)) cmt.content
                                         }
                                         e.comments
 
                                 _ ->
                                     Dict.insert idx
-                                        ([ Content visible [] par2 ]
+                                        ([ Content visible [] par2 (addToAudio audioFile Array.empty) ]
                                             |> Array.fromList
-                                            |> Element narrator (addToAudio audioFile Array.empty)
+                                            |> Element narrator
                                         )
                                         e.comments
                     }

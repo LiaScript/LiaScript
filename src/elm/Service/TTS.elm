@@ -3,13 +3,11 @@ module Service.TTS exposing
     , abort
     , cancel
     , decode
-    , playFrom
     , playback
     , preferBrowser
     , readFrom
     )
 
-import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Service.Event as Event exposing (Event)
@@ -54,13 +52,6 @@ readFrom id =
         ++ String.fromInt id
         |> JE.string
         |> event "read"
-
-
-playFrom : Array String -> Event
-playFrom audioFiles =
-    audioFiles
-        |> JE.array JE.string
-        |> event "play"
 
 
 {-| Used for inline playback, the text and the voice can be passed as

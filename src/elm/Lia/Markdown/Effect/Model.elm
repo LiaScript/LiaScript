@@ -18,6 +18,7 @@ import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Translations exposing (Lang(..))
 
 
 type alias Model a =
@@ -31,7 +32,6 @@ type alias Model a =
 
 type alias Element =
     { narrator : String
-    , audio : Array String
     , content : Array Content
     }
 
@@ -40,6 +40,7 @@ type alias Content =
     { visible : Bool
     , attr : Parameters
     , content : Inlines
+    , audio : Array String
     }
 
 
@@ -131,16 +132,14 @@ current_paragraphs model =
             )
 
 
-current_comment : Model a -> Maybe { id : Int, audio : Array String }
+current_comment : Model a -> Maybe Int
 current_comment model =
-    model.comments
-        |> Dict.get model.visible
-        |> Maybe.map
-            (\e ->
-                { id = model.visible
-                , audio = e.audio
-                }
-            )
+    case Dict.get model.visible model.comments of
+        Just _ ->
+            Just model.visible
+
+        _ ->
+            Nothing
 
 
 {-| This Function returns a list all hidden comments, that do not have a normal
