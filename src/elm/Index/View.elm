@@ -82,9 +82,14 @@ view session settings model =
                         ]
 
                   else if model.initialized then
-                    model.courses
-                        |> List.map (card session.share)
-                        |> Html.div [ Attr.class "preview-grid" ]
+                    Html.div []
+                        [ Html.p [ Attr.style "padding-top" "1rem" ]
+                            [ Html.text "These courses are stored locally in your browser and are only visible to you. You can access them offline and safely remove or reset any of them at any time."
+                            ]
+                        , model.courses
+                            |> List.map (card session.share)
+                            |> Html.div [ Attr.class "preview-grid" ]
+                        ]
 
                   else
                     Html.text ""
