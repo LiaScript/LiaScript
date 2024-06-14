@@ -261,6 +261,9 @@ allowedProtocol url =
         "http" ->
             True
 
+        "data" ->
+            True
+
         "file" ->
             True
 

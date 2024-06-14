@@ -6,7 +6,7 @@ module Lia.Markdown.View exposing
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
-import Array
+import Array exposing (Array)
 import Conditional.List as CList
 import Dict
 import Html exposing (Attribute, Html)
@@ -130,8 +130,13 @@ view_body hidden ( config, footnote2show, footnotes ) =
                             |> List.map
                                 (\( id, voice, text ) ->
                                     Html.span
-                                        (voice
-                                            |> addTranslation True config.main.translations id
+                                        ({ hidden = True
+                                         , translations = config.main.translations
+                                         , id = id
+                                         , narrator = voice
+                                         , audio = Array.empty
+                                         }
+                                            |> addTranslation
                                             |> toAttribute
                                         )
                                         [ Html.text text ]
@@ -195,8 +200,15 @@ fold config output blocks =
             fold config (view_block config b :: output) bs
 
 
-addTranslation : Bool -> Maybe ( String, String ) -> Int -> String -> List ( String, String )
-addTranslation hidden translations id narrator =
+addTranslation :
+    { hidden : Bool
+    , translations : Maybe ( String, String )
+    , id : Int
+    , narrator : String
+    , audio : Array String
+    }
+    -> List ( String, String )
+addTranslation { hidden, translations, id, narrator, audio } =
     case translations |> Maybe.andThen (Voice.getVoiceFor narrator) of
         Nothing ->
             []
@@ -228,6 +240,28 @@ addTranslation hidden translations id narrator =
               )
             ]
                 |> CList.addIf hidden ( "aria-hidden", "true" )
+                |> CList.addIf
+                    (checkTranslation translations
+                        && (audio
+                                |> Array.isEmpty
+                                |> not
+                           )
+                    )
+                    ( "data-file"
+                    , audio
+                        |> Array.toList
+                        |> String.join ","
+                    )
+
+
+checkTranslation : Maybe ( String, String ) -> Bool
+checkTranslation translations =
+    case translations of
+        Just ( original, translation ) ->
+            original == translation
+
+        Nothing ->
+            False
 
 
 viewMain : Bool -> List (Html msg) -> Html msg
@@ -427,8 +461,13 @@ view_block config block =
                     comment.content
                         |> Inline.reduce config.main
                         |> Html.div
-                            (narrator
-                                |> addTranslation True config.main.translations id1
+                            ({ hidden = True
+                             , translations = config.main.translations
+                             , id = id1
+                             , narrator = narrator
+                             , audio = comment.audio
+                             }
+                                |> addTranslation
                                 |> toAttribute
                             )
                         |> Html.map Script

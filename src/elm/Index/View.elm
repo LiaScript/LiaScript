@@ -23,14 +23,21 @@ import Translations exposing (Lang(..))
 
 view : Session -> Settings -> Model -> Html Msg
 view session settings model =
-    Html.div [ Attr.class "p-1" ]
+    Html.div []
         [ [ ( \_ _ _ -> [], "ignore" )
           , ( Settings.menuSettings session.screen.width, "settings" )
           ]
             |> Settings.header False En session.screen settings Const.icon
             |> Html.map UpdateSettings
         , Html.div [ Attr.class "lia-slide__container" ]
-            [ Html.main_ [ Attr.class "lia-slide__content" ]
+            [ Html.main_
+                [ Attr.class "lia-slide__content"
+                , if session.screen.width < 240 then
+                    Attr.style "padding" "0 1rem"
+
+                  else
+                    Attr.class ""
+                ]
                 [ Html.h1 [] [ Html.text "LiaScript: Open-courSe" ]
                 , Html.p []
                     [ Html.text "( ... search a list of free LiaScript courses and related material on "
@@ -75,9 +82,14 @@ view session settings model =
                         ]
 
                   else if model.initialized then
-                    model.courses
-                        |> List.map (card session.share)
-                        |> Html.div [ Attr.class "preview-grid" ]
+                    Html.div []
+                        [ Html.p [ Attr.style "padding-top" "1rem" ]
+                            [ Html.text "These courses are stored locally in your browser and are only visible to you. You can access them offline and safely remove or reset any of them at any time."
+                            ]
+                        , model.courses
+                            |> List.map (card session.share)
+                            |> Html.div [ Attr.class "preview-grid" ]
+                        ]
 
                   else
                     Html.text ""

@@ -526,8 +526,8 @@ img config attr alt_ url_ title_ width =
         (Attr.src url_
             :: Attr.attribute "loading" "lazy"
             :: onError "img" url_
-            :: (if isEmpty attr then
-                    Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") :: toAttribute attr
+            :: (if List.isEmpty attr then
+                    [ Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") ]
 
                 else
                     toAttribute attr

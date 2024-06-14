@@ -396,9 +396,7 @@ update session msg model =
                                     Markdown.initEffect model.sync model.definition False model.settings.sound sec
                     in
                     return
-                        |> Return.mapValCmd
-                            (set_active_section { model | to_do = [] })
-                            UpdateMarkdown
+                        |> Return.mapValCmd (set_active_section { model | to_do = [] }) UpdateMarkdown
                         |> Return.batchEvents (Service.Slide.initialize model.section_active :: model.to_do)
 
                 ( JumpToFragment id, Just sec ) ->
@@ -417,6 +415,10 @@ update session msg model =
                             |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( UpdateSettings childMsg, sec ) ->
+                    let
+                        mode =
+                            model.settings.mode
+                    in
                     Settings.update
                         (Just
                             { title = model.title
@@ -430,6 +432,7 @@ update session msg model =
                         childMsg
                         model.settings
                         |> Return.mapValCmd (\v -> { model | settings = v }) UpdateSettings
+                        |> maybeTextbookChange session mode
 
                 ( TTSReplay bool, sec ) ->
                     case Markdown.ttsReplay model.settings.sound bool sec of
@@ -445,7 +448,21 @@ update session msg model =
                     Return.val model
 
 
-{-| **@private:** shortcut for creating load events for quiz-, survey-, task-,
+{-| **@private:** This helper is only required if the mode changes to Textbook.
+It is required to load the JavaScript effects properly. Otherwise, switching from
+to Textbook mode would not trigger the execution of previously not shown effects,
+which are defined in an animation step that has not been revealed ...
+-}
+maybeTextbookChange : Session -> Mode -> Return Model Msg Markdown.Msg -> Return Model Msg Markdown.Msg
+maybeTextbookChange session mode ret =
+    if ret.value.settings.mode == Textbook && mode /= Textbook then
+        update session (Load False ret.value.section_active) ret.value
+
+    else
+        ret
+
+
+{-| **@private:** shortcut for creating load events for quz-, survey-, task-,
 and code-vectors and adding it to an existing event list. If the vector is empty
 no element is added.
 -}

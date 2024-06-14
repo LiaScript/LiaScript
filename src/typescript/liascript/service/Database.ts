@@ -11,6 +11,7 @@ var elmSend: Lia.Send | null
 
 const Service = {
   PORT: 'db',
+  conn: null,
 
   init: function (elmSend_: Lia.Send, connector_: Connector) {
     connector = connector_
@@ -195,6 +196,25 @@ const Service = {
 
       default:
         log.warn('(Service ', this.PORT, ') unknown message =>', event.message)
+    }
+  },
+
+  addMisc: async function (
+    uidDB: string,
+    versionDB: number | null,
+    key: string,
+    value: any
+  ) {
+    if (connector) {
+      connector.addMisc(uidDB, versionDB, key, value)
+    }
+  },
+
+  getMisc: async function (uidDB: string, versionDB: number | null) {
+    if (connector) {
+      return connector.getMisc(uidDB, versionDB)
+    } else {
+      console.warn('connector not initialized')
     }
   },
 }
