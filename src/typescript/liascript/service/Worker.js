@@ -2,7 +2,6 @@ onmessage = (e) => {
   liaExecCode(e.data)
 }
 
-
 function liaExecCode(event) {
   setTimeout(() => {
     const send = {
@@ -30,7 +29,7 @@ function liaExecCode(event) {
 
       send.lia(result === undefined ? 'LIA: stop' : result)
     } catch (e) {
-      log.error('exec => ', e.message)
+      console.warn('exec => ', e.message)
 
       send.lia(e.message, false, [])
     }
