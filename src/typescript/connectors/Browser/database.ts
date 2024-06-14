@@ -290,6 +290,7 @@ class LiaDB {
         version: data.version,
         data: data,
         created: date.getTime(),
+        misc: {},
       })
     } else if (item.data[data.version].version !== data.definition.version) {
       item.data[data.version] = data.definition
@@ -305,12 +306,47 @@ class LiaDB {
         version: data.version,
         data: data,
         created: date.getTime(),
+        misc: {},
       })
     }
 
     this.dbIndex['courses'].put(item).then(function (result: any) {
       log.info('DB: storeIndex', result)
     })
+  }
+
+  async addMisc(
+    uidDB: string,
+    versionDB: number | null,
+    key: string,
+    value: any
+  ) {
+    const db = this.open_(uidDB)
+    await db.open()
+
+    await db.transaction('rw', db['offline'], async () => {
+      let item = await db['offline'].get({
+        id: 0,
+        version: versionDB || this.version,
+      })
+
+      if (item) {
+        item.misc[key] = value
+        await db['offline'].put(item)
+      }
+    })
+  }
+
+  async getMisc(uidDB: string, versionDB: number | null) {
+    let db = this.open_(uidDB)
+    await db.open()
+
+    let item = await db['offline'].get({
+      id: 0,
+      version: versionDB || this.version,
+    })
+
+    return item?.misc
   }
 
   /** Delete all entries for all versions of a certain course defined by its

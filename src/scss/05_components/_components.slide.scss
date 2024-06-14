@@ -13,12 +13,12 @@
     width: 100%;
     z-index: 50;
 
-    @include breakpoint("md") {
+    @include breakpoint('md') {
       padding: 0 3rem;
       align-items: center;
     }
 
-    @include breakpoint("lg") {
+    @include breakpoint('lg') {
       align-items: flex-start;
       flex-direction: row;
     }
@@ -27,7 +27,7 @@
   &__container {
     margin-top: calc(#{$header-height-mobile});
 
-    @include breakpoint("md") {
+    @include breakpoint('md') {
       margin-top: calc(#{$header-height-desktop});
     }
 
@@ -43,7 +43,7 @@
     padding: 0 3rem;
     width: 100%;
 
-    @include breakpoint("md") {
+    @include breakpoint('md') {
       margin: calc(#{$header-height-desktop} - 7rem) 0 2rem;
     }
   }

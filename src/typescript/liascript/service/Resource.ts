@@ -61,7 +61,11 @@ function origin(url: string) {
  * @param url - A valid URL string
  * @param withSemaphore - indicates it the global semaphore should be applied.
  */
-export function loadScript(url: string, withSemaphore = false) {
+export function loadScript(
+  url: string,
+  withSemaphore = false,
+  callback?: (ok: boolean) => void
+) {
   // try to load all local scripts as blobs
   if (!url.startsWith('blob:') && origin(url) === window.location.origin) {
     loadScriptAsBlob(url, withSemaphore)
@@ -85,10 +89,12 @@ export function loadScript(url: string, withSemaphore = false) {
       tag.onload = function () {
         window.LIA.eventSemaphore--
         log.info('successfully loaded =>', url)
+        if (callback) callback(true)
       }
       tag.onerror = function (_e: any) {
         window.LIA.eventSemaphore--
         console.warn('could not load =>', url)
+        if (callback) callback(false)
       }
     }
 
