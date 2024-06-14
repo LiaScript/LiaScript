@@ -1,5 +1,5 @@
 // @ts-ignore
-import { Elm } from '../../elm/Main.elm'
+import { Elm } from '../../../elm.js'
 
 import log from './log'
 

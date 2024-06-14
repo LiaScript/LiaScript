@@ -346,10 +346,6 @@ refToEmbed : Reference -> Reference
 refToEmbed ref =
     case ref of
         Audio info ( extern, link ) title ->
-            let
-                _ =
-                    Debug.log "refToEmbed" ( extern, link, title )
-            in
             if
                 not extern
                     && (String.contains "soundcloud.com" link
