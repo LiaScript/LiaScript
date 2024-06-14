@@ -310,6 +310,13 @@ This will apply the following four patches:
   will be used. 
   ```
 
+- improve(Audio): Music can now be embedded with `?[alt](url)` from
+
+  - https://www.deezer.com
+  - https://open.spotify.com
+  - https://soundcloud.com/discover
+  - https://music.youtube.com
+
 - improve: Add information about the where a course is stored to the index-view.
 - fix: loading Translation files by using `@translation: ...` macro.
 - fix: loading JavaScript from animations step, when mode switched to Textbook

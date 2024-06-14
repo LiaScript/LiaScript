@@ -339,6 +339,30 @@ ref_audio =
         |> andMap (map Multimedia.audio ref_url_2)
         |> andMap ref_title
         |> ignore (string ")")
+        |> map refToEmbed
+
+
+refToEmbed : Reference -> Reference
+refToEmbed ref =
+    case ref of
+        Audio info ( extern, link ) title ->
+            let
+                _ =
+                    Debug.log "refToEmbed" ( extern, link, title )
+            in
+            if
+                not extern
+                    && (String.contains "soundcloud.com" link
+                            || String.contains "spotify.com" link
+                       )
+            then
+                Embed info link title
+
+            else
+                ref
+
+        _ ->
+            ref
 
 
 ref_video : Parser Context Reference

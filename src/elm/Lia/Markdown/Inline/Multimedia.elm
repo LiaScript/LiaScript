@@ -5,6 +5,7 @@ module Lia.Markdown.Inline.Multimedia exposing
     )
 
 import Lia.Parser.PatReplace exposing (replace, root)
+import Url exposing (percentEncode)
 
 
 website =
@@ -57,8 +58,18 @@ movie =
 
 audio : String -> ( Bool, String )
 audio =
-    [ { by = \_ w -> "https://w.soundcloud.com/player/?url=https://soundcloud.com/" ++ w
-      , pattern = "https?:\\/\\/(?:w\\.|www\\.|)(?:soundcloud\\.com\\/)(?:(?:player\\/\\?url=https\\%3A\\/\\/api.soundcloud.com\\/tracks\\/)|)(((\\w|-)[^A-z]{7})|([A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*(?!\\/sets(?:\\/|$))(?:\\/[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*){1,2}))"
+    [ { by =
+            \_ w ->
+                let
+                    link =
+                        "https://widget.deezer.com/widget/dark/" ++ w
+                in
+                if String.startsWith "artist" w then
+                    link ++ "/top_tracks"
+
+                else
+                    link
+      , pattern = "https://(?:www\\.|widget\\.)?deezer\\.com/(?:.*)/(.*/.*)\\??"
       }
     , { by =
             \url w ->
@@ -67,10 +78,6 @@ audio =
                     ++ preserve url youTubeRules
       , pattern = root "music\\.(?:youtu\\.be/|youtube\\.com/(?:(?:watch)?\\?(?:.*&)?v(?:i)?=|(?:v|vi|user)/))([^\\?&\"'<> #]+)"
       }
-
-    -- , { embed = \w -> "http://open.spotify.com/track/" ++ w
-    --   , pattern = regex "https?:\\/\\/(?:embed\\.|open\\.)(?:spotify\\.com\\/)(?:track\\/|\\?uri=spotify:track:)((\\w|-){22})\n"
-    --   }
     ]
         |> replace
 
