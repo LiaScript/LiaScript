@@ -109,4 +109,17 @@ export class Connector {
   async getFromIndex(_uidDB: string) {
     return null
   }
+
+  async addMisc(
+    _uidDB: string,
+    _versionDB: number | null,
+    _key: string,
+    _value: any
+  ) {
+    console.log('addMisc not implemented')
+  }
+
+  async getMisc(_uidDB: string, _versionDB: number | null) {
+    console.log('getMisc not implemented')
+  }
 }

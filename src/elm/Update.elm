@@ -32,6 +32,7 @@ import Process
 import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
+import Service.Torrent
 import Service.Zip
 import Session exposing (Screen)
 import Task
@@ -204,6 +205,17 @@ update msg model =
 
                             ( True, id, result ) ->
                                 Load_Template_Result id result
+                        )
+                        model
+
+                ( Nothing, _, ( "load", param ) ) ->
+                    update
+                        (case Service.Torrent.decode param of
+                            ( False, uri, result ) ->
+                                Load_ReadMe_Result uri result
+
+                            ( True, uri, result ) ->
+                                Load_Template_Result uri result
                         )
                         model
 
@@ -625,6 +637,9 @@ download template url =
     if String.startsWith "data:text" url then
         loadFromData template url
 
+    else if String.startsWith "magnet:" url then
+        loadFromTorrent template url
+
     else
         Http.get
             { url = url
@@ -686,6 +701,15 @@ loadFromData template url =
         _ ->
             toCmd msg <|
                 Err (Http.BadBody "wrong data protocol")
+
+
+loadFromTorrent : Bool -> String -> Cmd Msg
+loadFromTorrent template uri =
+    { template = template
+    , uri = uri
+    }
+        |> Service.Torrent.load
+        |> event2js
 
 
 getIndex : String -> Model -> ( Model, Cmd Msg )

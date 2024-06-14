@@ -362,8 +362,13 @@ slideA11y lang light tooltips translations mode formulas media effect id =
                                                         (Just media)
                                                     )
                                                 |> Html.p
-                                                    (narrator
-                                                        |> Markdown.addTranslation False (Just translations) counter
+                                                    ({ hidden = False
+                                                     , translations = Just translations
+                                                     , id = counter
+                                                     , narrator = narrator
+                                                     , audio = c.audio
+                                                     }
+                                                        |> Markdown.addTranslation
                                                         |> List.append c.attr
                                                         |> toAttribute
                                                     )

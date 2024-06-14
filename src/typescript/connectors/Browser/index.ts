@@ -65,6 +65,19 @@ class Connector extends Base.Connector {
   getFromIndex(uidDB: string) {
     return this.database.getIndex(uidDB)
   }
+
+  async addMisc(
+    uidDB: string,
+    versionDB: number | null,
+    key: string,
+    value: any
+  ) {
+    this.database.addMisc(uidDB, versionDB, key, value)
+  }
+
+  async getMisc(uidDB: string, versionDB: number | null) {
+    return this.database.getMisc(uidDB, versionDB)
+  }
 }
 
 export { Connector }
