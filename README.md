@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.15.0
+version:  0.15.1
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,10 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.15.1** (14/06/2024)
+
+- hotfix: return error message correctly in worker script.
 
 **0.15.0** (14/06/2024)
 
