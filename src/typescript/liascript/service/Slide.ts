@@ -121,9 +121,7 @@ function scrollIntoView(id: string, delay: number) {
     const elem = document.getElementById(id)
 
     if (elem) {
-      const scrollTop = parent.document.documentElement.scrollTop
       elem.scrollIntoView({ behavior: 'smooth' })
-      parent.document.documentElement.scrollTop = scrollTop
     }
   }, delay)
 }
