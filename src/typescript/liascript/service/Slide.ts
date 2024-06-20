@@ -30,12 +30,8 @@ const Service = {
         const link = document.getElementById('focusedToc')
 
         // if it exists and is not in the viewport it is moved into it
-        if (link) {
-          if (!isInViewport(link)) {
-            link.scrollIntoView({
-              behavior: 'smooth',
-            })
-          }
+        if (link && !link.getAttribute('aria-hidden') && !isInViewport(link)) {
+          scrollIntoView('focusedToc', 0)
         }
 
         break
@@ -125,7 +121,9 @@ function scrollIntoView(id: string, delay: number) {
     const elem = document.getElementById(id)
 
     if (elem) {
+      const scrollTop = parent.document.documentElement.scrollTop
       elem.scrollIntoView({ behavior: 'smooth' })
+      parent.document.documentElement.scrollTop = scrollTop
     }
   }, delay)
 }
