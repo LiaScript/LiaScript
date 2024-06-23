@@ -14,7 +14,6 @@ var useBrowserTTS = false
 var browserVoices = {}
 
 const audio = new Audio()
-var removeEndedListener: (() => void) | null = null
 
 var firstSpeak = true
 
@@ -172,22 +171,34 @@ function read(event: Lia.Event) {
       let currentIndex = 0
 
       // Function to play the next audio in the list
-      function playNext() {
+      async function playNext() {
         if (currentIndex < audioUrls.length) {
-          audio.src = audioUrls[currentIndex]
-          audio.play()
-          currentIndex++
+          const src = audioUrls[currentIndex]
+          audio.src = src
+          audio.play().catch(async (e) => {
+            if (window.LIA.fetchError) {
+              try {
+                audioUrls[currentIndex] = await window.LIA.fetchError(
+                  'get',
+                  src
+                )
+                playNext()
+                return
+              } catch (e) {}
+            }
+            console.warn('TTS failed to play', src, e.message)
+            currentIndex++
+            playNext()
+          })
+
+          audio.onended = (e) => {
+            currentIndex++
+            playNext()
+          }
         } else {
           sendResponse(event, 'stop')
-          if (removeEndedListener) removeEndedListener()
         }
       }
-
-      // Event listener for when the audio ends
-      removeEndedListener = () => {
-        audio.removeEventListener('ended', playNext)
-      }
-      audio.addEventListener('ended', playNext)
 
       // Start playing the first audio
       sendResponse(event, 'start')
@@ -240,7 +251,6 @@ function cancel() {
   try {
     audio.pause()
     audio.currentTime = 0
-    if (removeEndedListener) removeEndedListener()
   } catch (e) {}
 
   try {
