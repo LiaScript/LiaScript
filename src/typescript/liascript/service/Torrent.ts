@@ -108,17 +108,25 @@ function serve(event, doStore: boolean) {
     })
 
     window.LIA.fetchError = (tag: string, src: string) => {
-      let file = torrent.files.filter((file) => file.path.endsWith(src))
+      return new Promise((resolve, reject) => {
+        let file = torrent.files.filter((file) => file.path.endsWith(src))
 
-      if (file.length === 0) {
-        console.warn('file not found', src)
-        return
-      }
-
-      file[0].getBlobURL(function callback(err, url) {
-        if (url) {
-          inject(tag, window.location.origin + src, url)
+        if (file.length === 0) {
+          console.warn('file not found', src)
+          reject(new Error('file not found'))
+          return
         }
+
+        file[0].getBlobURL(function callback(err, url) {
+          if (err) {
+            reject(err)
+          } else if (url) {
+            inject(tag, window.location.origin + src, url)
+            resolve(url)
+          } else {
+            reject(new Error('URL not found'))
+          }
+        })
       })
     }
   }

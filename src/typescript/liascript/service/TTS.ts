@@ -175,14 +175,20 @@ function read(event: Lia.Event) {
         if (currentIndex < audioUrls.length) {
           const src = audioUrls[currentIndex]
           audio.src = src
-          audio.play().catch((e) => {
+          audio.play().catch(async (e) => {
             if (window.LIA.fetchError) {
-              window.LIA.fetchError('narrator', src)
-            } else {
-              console.warn('TTS failed to play', src, e.message)
-              currentIndex++
-              playNext()
+              try {
+                audioUrls[currentIndex] = await window.LIA.fetchError(
+                  'get',
+                  src
+                )
+                playNext()
+                return
+              } catch (e) {}
             }
+            console.warn('TTS failed to play', src, e.message)
+            currentIndex++
+            playNext()
           })
 
           audio.onended = (e) => {
