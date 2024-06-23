@@ -26,15 +26,15 @@ const Service = {
 
   supported: [
     // remove these strings if you want to enable or disable certain sync support
-    'edrys',
-    'gun',
+    //'edrys',
+    //'gun',
     //'jitsi',
     //'matrix',
-    'mqtt',
-    'nostr',
-    'pubnub',
-    hasRTCPeerConnection() ? 'p2pt' : '',
-    'torrent',
+    //'mqtt',
+    //'nostr',
+    //'pubnub',
+    //hasRTCPeerConnection() ? 'p2pt' : '',
+    //'torrent',
   ],
 
   init: function (elmSend_: Lia.Send) {
@@ -72,6 +72,7 @@ const Service = {
 
           switch (backend) {
             case 'edrys':
+            /*
               if (!Edrys) {
                 import('../../sync/Edrys/index').then((e) => {
                   Edrys = e
@@ -89,8 +90,9 @@ const Service = {
               )
 
               break
-
+            */
             case 'gun':
+            /*
               if (!Gun) {
                 import('../../sync/Gun/index').then((e) => {
                   Gun = e
@@ -107,10 +109,11 @@ const Service = {
                 false
               )
               break
-
+            */
             case 'mqtt':
             case 'nostr':
             case 'torrent': {
+              /*
               if (!Trystero) {
                 import('../../sync/Trystero/index').then((e) => {
                   Trystero = e
@@ -129,6 +132,7 @@ const Service = {
               )
 
               break
+            */
             }
 
             // case 'jitsi':
@@ -162,6 +166,7 @@ const Service = {
             //   break
 
             case 'pubnub':
+            /*
               if (!PubNub) {
                 import('../../sync/PubNub/index').then((e) => {
                   PubNub = e
@@ -178,8 +183,9 @@ const Service = {
                 true
               )
               break
-
+            */
             case 'p2pt':
+            /*
               if (!P2PT) {
                 import('../../sync/P2PT/index').then((e) => {
                   P2PT = e
@@ -196,7 +202,7 @@ const Service = {
                 true
               )
               break
-
+            */
             default:
               log.error('could not load =>', event.message)
           }
