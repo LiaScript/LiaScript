@@ -4,6 +4,7 @@ module Lia.Markdown.Effect.Model exposing
     , Model
     , current_comment
     , current_paragraphs
+    , getAudioRecordings
     , getHiddenComments
     , get_paragraph
     , hasComments
@@ -50,6 +51,19 @@ be spoken out loud.
 hasComments : Model a -> Bool
 hasComments model =
     not (Dict.isEmpty model.comments)
+
+
+getAudioRecordings : Model a -> List String
+getAudioRecordings model =
+    model.comments
+        |> Dict.get model.visible
+        |> Maybe.map
+            (.content
+                >> Array.map (.audio >> Array.toList)
+                >> Array.toList
+                >> List.concat
+            )
+        |> Maybe.withDefault []
 
 
 set_annotation : Int -> Int -> Dict Int Element -> Parameters -> Dict Int Element

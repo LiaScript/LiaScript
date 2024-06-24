@@ -3,7 +3,7 @@ module Lia.View exposing (view)
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Widget as A11y_Widget
-import Array
+import Array exposing (Array)
 import Const
 import Dict exposing (Dict)
 import Html exposing (Html, section)
@@ -151,11 +151,12 @@ viewSlide screen model =
                     model.sync
                 , viewPanes screen model
                 , slideBottom
-                    model.translation
-                    (screen.width < 400)
-                    model.settings
-                    model.section_active
-                    section.effect_model
+                    { lang = model.translation
+                    , tiny = screen.width < 400
+                    , settings = model.settings
+                    , slide = model.section_active
+                    , effects = section.effect_model
+                    }
                 ]
             , slideA11y
                 model.translation
@@ -258,8 +259,8 @@ showSection model screen ( id, section ) =
 {-| **@private:** used to display the text2speech output settings and spoken
 comments in text, depending on the currently applied rendering mode.
 -}
-slideBottom : Lang -> Bool -> Settings -> Int -> Effect.Model SubSection -> Html Msg
-slideBottom lang tiny settings slide effects =
+slideBottom : { lang : Lang, tiny : Bool, settings : Settings, slide : Int, effects : Effect.Model SubSection } -> Html Msg
+slideBottom { lang, tiny, settings, slide, effects } =
     let
         sound =
             settings.sound && Effect.hasComments effects
@@ -282,7 +283,13 @@ slideBottom lang tiny settings slide effects =
                     ]
                     [ Html.div [ Attr.class "lia-responsive-voice__control" ]
                         [ btnReplay lang sound settings
-                        , responsiveVoice { lang = lang, tiny = tiny, show = sound, tts = settings.tts }
+                        , responsiveVoice
+                            { lang = lang
+                            , tiny = tiny
+                            , show = sound
+                            , tts = settings.tts
+                            , audio = Effect.getAudioRecordings effects
+                            }
                         , btnStop lang settings
                         ]
                     ]
@@ -513,8 +520,8 @@ slideNavigation lang mode slide effect =
 -- ]
 
 
-responsiveVoice : { lang : Lang, tiny : Bool, show : Bool, tts : TTS } -> Html msg
-responsiveVoice { lang, tiny, show, tts } =
+responsiveVoice : { lang : Lang, tiny : Bool, show : Bool, tts : TTS, audio : List String } -> Html msg
+responsiveVoice { lang, tiny, show, tts, audio } =
     Html.small
         [ Attr.class "lia-responsive-voice__info notranslate"
         , Attr.attribute "translate" "no"
@@ -531,21 +538,33 @@ responsiveVoice { lang, tiny, show, tts } =
             else
                 "80%"
         ]
-        (case ( tts.isBrowserSupported, tts.isResponsiveVoiceSupported, tts.preferBrowser ) of
-            ( True, False, _ ) ->
-                [ browserTTSText lang ]
+        (if List.isEmpty audio then
+            case ( tts.isBrowserSupported, tts.isResponsiveVoiceSupported, tts.preferBrowser ) of
+                ( True, False, _ ) ->
+                    [ browserTTSText lang ]
 
-            ( False, True, _ ) ->
-                responsiveVoiceTTSText
+                ( False, True, _ ) ->
+                    responsiveVoiceTTSText
 
-            ( True, True, True ) ->
-                [ browserTTSText lang ]
+                ( True, True, True ) ->
+                    [ browserTTSText lang ]
 
-            ( True, True, False ) ->
-                responsiveVoiceTTSText
+                ( True, True, False ) ->
+                    responsiveVoiceTTSText
 
-            ( False, False, _ ) ->
-                [ noTTSText lang ]
+                ( False, False, _ ) ->
+                    [ noTTSText lang ]
+
+         else
+            audio
+                |> List.map
+                    (\src ->
+                        Html.audio
+                            [ Attr.controls True
+                            , Attr.class "lia-tts-recordings"
+                            ]
+                            [ Html.source [ Attr.src src ] [] ]
+                    )
         )
 
 
