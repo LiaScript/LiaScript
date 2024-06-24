@@ -13,8 +13,6 @@ enum Gender {
 var useBrowserTTS = false
 var browserVoices = {}
 
-const audio = new Audio()
-
 var firstSpeak = true
 
 var elmSend: Lia.Send | null
@@ -167,7 +165,7 @@ function read(event: Lia.Event) {
     text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
 
     if (audioUrls.length > 0) {
-      audioUrls = audioUrls.join(',').split(',')
+      /*audioUrls = audioUrls.join(',').split(',')
       let currentIndex = 0
 
       // Function to play the next audio in the list
@@ -176,16 +174,6 @@ function read(event: Lia.Event) {
           const src = audioUrls[currentIndex]
           audio.src = src
           audio.play().catch(async (e) => {
-            if (window.LIA.fetchError) {
-              try {
-                audioUrls[currentIndex] = await window.LIA.fetchError(
-                  'get',
-                  src
-                )
-                playNext()
-                return
-              } catch (e) {}
-            }
             console.warn('TTS failed to play', src, e.message)
             currentIndex++
             playNext()
@@ -201,6 +189,40 @@ function read(event: Lia.Event) {
       }
 
       // Start playing the first audio
+      sendResponse(event, 'start')
+      playNext()
+      */
+      let audioUrls: HTMLMediaElement[] = Array.from(
+        document.getElementsByClassName(
+          'lia-tts-recordings'
+        ) as HTMLCollectionOf<HTMLMediaElement>
+      )
+      let currentIndex = 0
+
+      function playNext() {
+        if (currentIndex < audioUrls.length) {
+          const audio = audioUrls[currentIndex]
+          audio.play().catch(async (e) => {
+            console.warn('TTS failed to play', e.message)
+            if (audio.src.startsWith === 'blob:') {
+              currentIndex++
+              playNext()
+            } else {
+              window.LIA.fetchError('audio', audio.src)
+            }
+          })
+
+          audio.onended = () => {
+            audio.pause()
+            audio.currentTime = 0
+            currentIndex++
+            playNext()
+          }
+        } else {
+          sendResponse(event, 'stop')
+        }
+      }
+
       sendResponse(event, 'start')
       playNext()
     } else if (text !== '' && element[0] !== undefined) {
@@ -248,10 +270,19 @@ export function inject(key: string) {
 }
 
 function cancel() {
+  console.log('CANCEL audioRecordings')
   try {
-    audio.pause()
-    audio.currentTime = 0
-  } catch (e) {}
+    const audioRecordings = document.getElementsByClassName(
+      'lia-tts-recordings'
+    ) as HTMLAllCollection<HTMLMediaElement>
+
+    for (let i = 0; i < audioRecordings.length; i++) {
+      audioRecordings[i].pause()
+      audioRecordings[i].currentTime = 0
+    }
+  } catch (e) {
+    console.warn('TTS failed to cancel audioRecordings', e.message)
+  }
 
   try {
     EasySpeech.cancel()
