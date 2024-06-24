@@ -29,7 +29,6 @@ export const Service = {
 
     setTimeout(function () {
       firstSpeak = false
-
       if (window.responsiveVoice) {
         sendEnabledTTS('responsiveVoiceTTS')
       }
@@ -72,8 +71,12 @@ export const Service = {
           event.track[0][0] = SETTINGS
         }
 
-        const timeout =
-          firstSpeak || event.message.param.endsWith('-0') ? 2000 : 500
+        if (firstSpeak) {
+          sendResponse(event, 'stop')
+          return
+        }
+
+        const timeout = event.message.param.endsWith('-0') ? 2000 : 500
 
         setTimeout(function () {
           read(event)
@@ -147,7 +150,7 @@ function read(event: Lia.Event) {
   if (element.length) {
     let voice = element[0].getAttribute('data-voice') || 'default'
     let lang = element[0].getAttribute('data-lang') || 'en'
-    let audioUrls: string[] = []
+    let hasAudioURLs: boolean = false
     let text = ''
 
     for (let i = 0; i < element.length; i++) {
@@ -156,7 +159,7 @@ function read(event: Lia.Event) {
       let audioUrl = element[i].getAttribute('data-file') || null
 
       if (audioUrl) {
-        audioUrls.push(audioUrl)
+        hasAudioURLs = true
       }
     }
 
@@ -164,34 +167,7 @@ function read(event: Lia.Event) {
     // \b(1.)\b is not visible to the user within the browser
     text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
 
-    if (audioUrls.length > 0) {
-      /*audioUrls = audioUrls.join(',').split(',')
-      let currentIndex = 0
-
-      // Function to play the next audio in the list
-      async function playNext() {
-        if (currentIndex < audioUrls.length) {
-          const src = audioUrls[currentIndex]
-          audio.src = src
-          audio.play().catch(async (e) => {
-            console.warn('TTS failed to play', src, e.message)
-            currentIndex++
-            playNext()
-          })
-
-          audio.onended = (e) => {
-            currentIndex++
-            playNext()
-          }
-        } else {
-          sendResponse(event, 'stop')
-        }
-      }
-
-      // Start playing the first audio
-      sendResponse(event, 'start')
-      playNext()
-      */
+    if (hasAudioURLs) {
       let audioUrls: HTMLMediaElement[] = Array.from(
         document.getElementsByClassName(
           'lia-tts-recordings'
@@ -199,27 +175,58 @@ function read(event: Lia.Event) {
       )
       let currentIndex = 0
 
-      function playNext() {
-        if (currentIndex < audioUrls.length) {
-          const audio = audioUrls[currentIndex]
-          audio.play().catch(async (e) => {
-            console.warn('TTS failed to play', e.message)
-            if (audio.src.startsWith === 'blob:') {
-              currentIndex++
-              playNext()
-            } else {
-              window.LIA.fetchError('audio', audio.src)
-            }
-          })
+      async function playNext() {
+        if (currentIndex >= audioUrls.length) {
+          sendResponse(event, 'stop')
+          return
+        }
 
-          audio.onended = () => {
-            audio.pause()
-            audio.currentTime = 0
+        const audio = audioUrls[currentIndex]
+        const error = (error: string) => {
+          console.warn(
+            'TTS failed to play ->',
+            '' + error,
+            audio?.firstChild?.src
+          )
+          if (audio?.firstChild?.src?.startsWith('blob:')) {
             currentIndex++
             playNext()
+          } else {
+            audio.pause()
+
+            window.LIA.fetchError(
+              'audio',
+              audio.firstChild.src.replace(window.location.origin, '')
+            )
           }
+        }
+
+        audio.onended = () => {
+          audio.currentTime = 0
+          currentIndex++
+          playNext()
+        }
+
+        // resource could not be loaded
+        if (audio.readyState === 0) {
+          // has previously failed
+          error("resource couldn't be loaded")
+          return
+        }
+
+        if (audio.currentTime > 0) {
+          error(
+            "resource couldn't be set to start, this commonly happens with .flac files, try to use another audio format"
+          )
+          return
+        }
+
+        const response = audio.play()
+
+        if (response !== undefined) {
+          response.catch((e) => error(e.message))
         } else {
-          sendResponse(event, 'stop')
+          error("resource couldn't be played")
         }
       }
 
