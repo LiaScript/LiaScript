@@ -54,7 +54,7 @@ declare global {
       /**
        * Error handler
        */
-      fetchError: (tag: string, src: string) => Promise<string>
+      fetchError: (tag: string, src: string) => void
 
       /** reference function to TTS functionality, this is mostly used, to
        * define `onclick` handlers so enable speech from inline elements from
