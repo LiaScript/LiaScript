@@ -560,7 +560,8 @@ responsiveVoice { lang, tiny, show, tts, audio } =
                 |> List.map
                     (\src ->
                         Html.audio
-                            [ Attr.controls True
+                            [ Attr.controls False
+                            , Attr.preload "auto"
                             , Attr.class "lia-tts-recordings"
                             ]
                             [ Html.source [ Attr.src src ] [] ]
