@@ -182,13 +182,10 @@ function read(event: Lia.Event) {
         }
 
         const audio = audioUrls[currentIndex]
+        const source = audio.firstChild as HTMLSourceElement
         const error = (error: string) => {
-          console.warn(
-            'TTS failed to play ->',
-            '' + error,
-            audio?.firstChild?.src
-          )
-          if (audio?.firstChild?.src?.startsWith('blob:')) {
+          console.warn('TTS failed to play ->', '' + error, source.src)
+          if (source.src.startsWith('blob:')) {
             currentIndex++
             playNext()
           } else {
@@ -196,7 +193,7 @@ function read(event: Lia.Event) {
 
             window.LIA.fetchError(
               'audio',
-              audio.firstChild.src.replace(window.location.origin, '')
+              source.src.replace(window.location.origin, '')
             )
           }
         }
@@ -214,11 +211,11 @@ function read(event: Lia.Event) {
           return
         }
 
+        // this might be the case for *.flac files or others,
+        // in Firefox they can be played only ones and not set
+        // to start, this will force the audio to be reloaded
         if (audio.currentTime > 0) {
-          error(
-            "resource couldn't be set to start, this commonly happens with .flac files, try to use another audio format"
-          )
-          return
+          audio.innerHTML = source.outerHTML
         }
 
         const response = audio.play()

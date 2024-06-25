@@ -3,7 +3,7 @@ module Lia.View exposing (view)
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Widget as A11y_Widget
-import Array exposing (Array)
+import Array
 import Const
 import Dict exposing (Dict)
 import Html exposing (Html, section)
@@ -538,7 +538,7 @@ responsiveVoice { lang, tiny, show, tts, audio } =
             else
                 "80%"
         ]
-        (if List.isEmpty audio then
+        (appendAudioFragments audio <|
             case ( tts.isBrowserSupported, tts.isResponsiveVoiceSupported, tts.preferBrowser ) of
                 ( True, False, _ ) ->
                     [ browserTTSText lang ]
@@ -554,19 +554,27 @@ responsiveVoice { lang, tiny, show, tts, audio } =
 
                 ( False, False, _ ) ->
                     [ noTTSText lang ]
-
-         else
-            audio
-                |> List.map
-                    (\src ->
-                        Html.audio
-                            [ Attr.controls False
-                            , Attr.preload "auto"
-                            , Attr.class "lia-tts-recordings"
-                            ]
-                            [ Html.source [ Attr.src src ] [] ]
-                    )
         )
+
+
+appendAudioFragments : List String -> List (Html msg) -> List (Html msg)
+appendAudioFragments audio info =
+    if List.isEmpty audio then
+        info
+
+    else
+        Html.span [ Attr.style "visibility" "hidden" ] info
+            :: List.map audioRecordings audio
+
+
+audioRecordings : String -> Html msg
+audioRecordings src =
+    Html.audio
+        [ Attr.controls False
+        , Attr.preload "auto"
+        , Attr.class "lia-tts-recordings"
+        ]
+        [ Html.source [ Attr.src src ] [] ]
 
 
 noTTSText : Lang -> Html msg
