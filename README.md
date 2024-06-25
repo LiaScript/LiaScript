@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.15.1
+version:  0.15.2
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,13 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.15.2** (26/06/2024)
+
+- improve Editor: Codes have now a copy button...
+- reduce scrollIntoView calls for better usage in embeddings
+- improve Comments: a custom audio-file can be added to a comment, which will be played
+  when the comment is read out loud. Loading of audio can now also be done in editor modes ...
 
 **0.15.1** (14/06/2024)
 
