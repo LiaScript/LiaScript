@@ -18,7 +18,7 @@ import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.View exposing (state)
 import Lia.Markdown.HTML.Attributes exposing (toAttribute)
-import Lia.Markdown.Inline.View exposing (view_inf)
+import Lia.Markdown.Inline.View exposing (audio, view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Section exposing (Section, SubSection)
@@ -569,12 +569,12 @@ appendAudioFragments audio info =
 
 audioRecordings : String -> Html msg
 audioRecordings src =
-    Html.audio
-        [ Attr.controls False
-        , Attr.preload "auto"
-        , Attr.class "lia-tts-recordings"
-        ]
-        [ Html.source [ Attr.src src ] [] ]
+    audio [ Attr.class "lia-tts-recordings" ]
+        { controls = False
+        , preload = "auto"
+        , url = src
+        , errorHandling = False
+        }
 
 
 noTTSText : Lang -> Html msg
