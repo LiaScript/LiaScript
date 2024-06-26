@@ -1,5 +1,6 @@
 module Lia.Markdown.Inline.View exposing
-    ( highlightPartialSolution
+    ( audio
+    , highlightPartialSolution
     , reduce
     , toScript
     , view
@@ -603,14 +604,17 @@ reference config ref attr =
                             []
 
                     else
-                        Html.audio
-                            (Attr.controls True
-                                :: Attr.attribute "preload" "none"
-                                :: annotation "lia-audio" attr
+                        audio
+                            (attr
+                                |> annotation "lia-audio"
                                 |> CList.addWhen (title config title_)
                                 |> CList.addWhen (alt config alt_)
                             )
-                            [ Html.source [ Attr.src url_, onError "audio" url_ ] [] ]
+                            { url = url_
+                            , controls = True
+                            , preload = "none"
+                            , errorHandling = True
+                            }
                 ]
 
         Movie alt_ ( tube, url_ ) title_ ->
@@ -698,6 +702,34 @@ reference config ref attr =
                 |> figure config title_ (Just 300) "image"
             ]
                 |> Html.a [ Attr.href url ]
+
+
+audio :
+    List (Html.Attribute msg)
+    ->
+        { url : String
+        , controls : Bool
+        , preload : String
+        , errorHandling : Bool
+        }
+    -> Html msg
+audio attr settings =
+    Html.Keyed.node "span"
+        []
+        [ ( settings.url
+          , Html.audio
+                (Attr.controls settings.controls
+                    :: Attr.preload settings.preload
+                    :: attr
+                )
+                [ Html.source
+                    ([ Attr.src settings.url ]
+                        |> CList.addIf settings.errorHandling (onError "audio" settings.url)
+                    )
+                    []
+                ]
+          )
+        ]
 
 
 addTranslation : Config sub -> String -> String

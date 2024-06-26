@@ -13,9 +13,6 @@ enum Gender {
 var useBrowserTTS = false
 var browserVoices = {}
 
-const audio = new Audio()
-var removeEndedListener: (() => void) | null = null
-
 var firstSpeak = true
 
 var elmSend: Lia.Send | null
@@ -32,7 +29,6 @@ export const Service = {
 
     setTimeout(function () {
       firstSpeak = false
-
       if (window.responsiveVoice) {
         sendEnabledTTS('responsiveVoiceTTS')
       }
@@ -75,8 +71,12 @@ export const Service = {
           event.track[0][0] = SETTINGS
         }
 
-        const timeout =
-          firstSpeak || event.message.param.endsWith('-0') ? 2000 : 500
+        if (firstSpeak) {
+          sendResponse(event, 'stop')
+          return
+        }
+
+        const timeout = event.message.param.endsWith('-0') ? 2000 : 500
 
         setTimeout(function () {
           read(event)
@@ -150,7 +150,7 @@ function read(event: Lia.Event) {
   if (element.length) {
     let voice = element[0].getAttribute('data-voice') || 'default'
     let lang = element[0].getAttribute('data-lang') || 'en'
-    let audioUrls: string[] = []
+    let hasAudioURLs: boolean = false
     let text = ''
 
     for (let i = 0; i < element.length; i++) {
@@ -159,7 +159,7 @@ function read(event: Lia.Event) {
       let audioUrl = element[i].getAttribute('data-file') || null
 
       if (audioUrl) {
-        audioUrls.push(audioUrl)
+        hasAudioURLs = true
       }
     }
 
@@ -167,29 +167,66 @@ function read(event: Lia.Event) {
     // \b(1.)\b is not visible to the user within the browser
     text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
 
-    if (audioUrls.length > 0) {
-      audioUrls = audioUrls.join(',').split(',')
+    if (hasAudioURLs) {
+      let audioUrls: HTMLMediaElement[] = Array.from(
+        document.getElementsByClassName(
+          'lia-tts-recordings'
+        ) as HTMLCollectionOf<HTMLMediaElement>
+      )
       let currentIndex = 0
 
-      // Function to play the next audio in the list
-      function playNext() {
-        if (currentIndex < audioUrls.length) {
-          audio.src = audioUrls[currentIndex]
-          audio.play()
-          currentIndex++
-        } else {
+      async function playNext() {
+        if (currentIndex >= audioUrls.length) {
           sendResponse(event, 'stop')
-          if (removeEndedListener) removeEndedListener()
+          return
+        }
+
+        const audio = audioUrls[currentIndex]
+        const source = audio.firstChild as HTMLSourceElement
+        const error = (error: string) => {
+          console.warn('TTS failed to play ->', '' + error, source.src)
+          if (source.src.startsWith('blob:')) {
+            currentIndex++
+            playNext()
+          } else {
+            audio.pause()
+
+            window.LIA.fetchError(
+              'audio',
+              source.src.replace(window.location.origin, '')
+            )
+          }
+        }
+
+        audio.onended = () => {
+          audio.currentTime = 0
+          currentIndex++
+          playNext()
+        }
+
+        // resource could not be loaded
+        if (audio.readyState === 0) {
+          // has previously failed
+          error("resource couldn't be loaded")
+          return
+        }
+
+        // this might be the case for *.flac files or others,
+        // in Firefox they can be played only ones and not set
+        // to start, this will force the audio to be reloaded
+        if (audio.currentTime > 0) {
+          audio.innerHTML = source.outerHTML
+        }
+
+        const response = audio.play()
+
+        if (response !== undefined) {
+          response.catch((e) => error(e.message))
+        } else {
+          error("resource couldn't be played")
         }
       }
 
-      // Event listener for when the audio ends
-      removeEndedListener = () => {
-        audio.removeEventListener('ended', playNext)
-      }
-      audio.addEventListener('ended', playNext)
-
-      // Start playing the first audio
       sendResponse(event, 'start')
       playNext()
     } else if (text !== '' && element[0] !== undefined) {
@@ -237,11 +274,19 @@ export function inject(key: string) {
 }
 
 function cancel() {
+  console.log('CANCEL audioRecordings')
   try {
-    audio.pause()
-    audio.currentTime = 0
-    if (removeEndedListener) removeEndedListener()
-  } catch (e) {}
+    const audioRecordings = document.getElementsByClassName(
+      'lia-tts-recordings'
+    ) as HTMLAllCollection<HTMLMediaElement>
+
+    for (let i = 0; i < audioRecordings.length; i++) {
+      audioRecordings[i].pause()
+      audioRecordings[i].currentTime = 0
+    }
+  } catch (e) {
+    console.warn('TTS failed to cancel audioRecordings', e.message)
+  }
 
   try {
     EasySpeech.cancel()

@@ -109,12 +109,10 @@ function serve(event, doStore: boolean) {
 
     window.LIA.fetchError = (tag: string, src: string) => {
       let file = torrent.files.filter((file) => file.path.endsWith(src))
-
       if (file.length === 0) {
         console.warn('file not found', src)
         return
       }
-
       file[0].getBlobURL(function callback(err, url) {
         if (url) {
           inject(tag, window.location.origin + src, url)

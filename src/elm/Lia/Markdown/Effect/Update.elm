@@ -11,7 +11,6 @@ module Lia.Markdown.Effect.Update exposing
     , updateSub
     )
 
-import Array exposing (Array)
 import Browser.Dom as Dom
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
