@@ -1,4 +1,4 @@
-module Lia.Markdown.Code.Update exposing
+port module Lia.Markdown.Code.Update exposing
     ( Msg(..)
     , handle
     , update
@@ -37,6 +37,10 @@ type Msg
     | Handle Event
     | Resize Code String
     | ToggleSync Int
+    | CopyToClipboard Code Int
+
+
+port copyToClipboard : String -> Cmd msg
 
 
 handle : Event -> Msg
@@ -359,6 +363,35 @@ update sync sectionID scripts msg model =
                      else
                         PEvent.none
                     )
+
+        CopyToClipboard project file ->
+            let
+                code =
+                    case project of
+                        Evaluate id ->
+                            sync
+                                |> Array.get id
+                                |> Maybe.andThen (Array.get file)
+                                |> Maybe.withDefault
+                                    (model.evaluate
+                                        |> Array.get id
+                                        |> Maybe.map .file
+                                        |> Maybe.andThen (Array.get file)
+                                        |> Maybe.map .code
+                                        |> Maybe.withDefault ""
+                                    )
+
+                        Highlight id ->
+                            model.highlight
+                                |> Array.get id
+                                |> Maybe.map .file
+                                |> Maybe.andThen (Array.get file)
+                                |> Maybe.map .code
+                                |> Maybe.withDefault ""
+            in
+            model
+                |> Return.val
+                |> Return.cmd (copyToClipboard code)
 
 
 isSyncModeActive : Int -> Model -> Bool

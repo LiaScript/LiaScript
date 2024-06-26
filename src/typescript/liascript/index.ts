@@ -68,6 +68,14 @@ export class LiaScript {
       },
     })
 
+    this.app.ports.copyToClipboard.subscribe((text: string) => {
+      try {
+        navigator.clipboard.writeText(text)
+      } catch (e) {
+        console.warn('Failed to copy: ', e.message)
+      }
+    })
+
     const sendTo = this.app.ports.event2elm.send
 
     const sender = function (msg: Lia.Event) {
