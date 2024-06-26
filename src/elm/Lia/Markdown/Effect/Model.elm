@@ -4,6 +4,7 @@ module Lia.Markdown.Effect.Model exposing
     , Model
     , current_comment
     , current_paragraphs
+    , getAudioRecordings
     , getHiddenComments
     , get_paragraph
     , hasComments
@@ -18,6 +19,7 @@ import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Translations exposing (Lang(..))
 
 
 type alias Model a =
@@ -39,6 +41,7 @@ type alias Content =
     { visible : Bool
     , attr : Parameters
     , content : Inlines
+    , audio : Array String
     }
 
 
@@ -48,6 +51,19 @@ be spoken out loud.
 hasComments : Model a -> Bool
 hasComments model =
     not (Dict.isEmpty model.comments)
+
+
+getAudioRecordings : Model a -> List String
+getAudioRecordings model =
+    model.comments
+        |> Dict.get model.visible
+        |> Maybe.map
+            (.content
+                >> Array.map (.audio >> Array.toList)
+                >> Array.toList
+                >> List.concat
+            )
+        |> Maybe.withDefault []
 
 
 set_annotation : Int -> Int -> Dict Int Element -> Parameters -> Dict Int Element
@@ -130,11 +146,14 @@ current_paragraphs model =
             )
 
 
-current_comment : Model a -> Maybe ( Int, String )
+current_comment : Model a -> Maybe Int
 current_comment model =
-    model.comments
-        |> Dict.get model.visible
-        |> Maybe.map (\e -> ( model.visible, e.narrator ))
+    case Dict.get model.visible model.comments of
+        Just _ ->
+            Just model.visible
+
+        _ ->
+            Nothing
 
 
 {-| This Function returns a list all hidden comments, that do not have a normal

@@ -62,7 +62,12 @@
     }
 
     &__output {
-      background: linear-gradient(135deg, rgb(var(--lia-black)), rgb(var(--lia-black)) calc(100% - 1.25rem), rgb(var(--color-highlight-dark)) 0%);
+      background: linear-gradient(
+        135deg,
+        rgb(var(--lia-black)),
+        rgb(var(--lia-black)) calc(100% - 1.25rem),
+        rgb(var(--color-highlight-dark)) 0%
+      );
       margin: 0;
       // when this value is changed, also the maxHeight value in
       //   src/typescript/webcomponents/terminal.ts
@@ -75,9 +80,14 @@
 
       // highlight the resize handler on chrome
       &::-webkit-resizer {
-        background: linear-gradient(135deg, rgb(var(--lia-anthracite)), rgb(var(--lia-anthracite)) 50%, rgb(var(--color-highlight-dark)) 0%);
+        background: linear-gradient(
+          135deg,
+          rgb(var(--lia-anthracite)),
+          rgb(var(--lia-anthracite)) 50%,
+          rgb(var(--color-highlight-dark)) 0%
+        );
       }
-    }    
+    }
   }
 
   &__input {
@@ -92,6 +102,33 @@
     position: absolute;
     right: 2rem;
     z-index: 10;
+  }
+
+  &__copy {
+    top: 0;
+    font-size: 2rem;
+    position: absolute;
+    right: 0rem;
+    z-index: 100;
+    padding: 0rem 0.5rem;
+    color: rgb(var(--color-highlight));
+
+    &:hover {
+      background-color: rgb(var(--color-background)) !important;
+    }
+  }
+
+  &__copy--inverted {
+    top: 0;
+    font-size: 2rem;
+    right: 0rem;
+    z-index: 100;
+    padding: 0rem 0.5rem;
+    color: rgb(var(--color-background));
+
+    &:hover {
+      background-color: rgb(var(--color-highlight-dark)) !important;
+    }
   }
 }
 

@@ -87,8 +87,6 @@ customElements.define(
     getOption() {
       let option = this.getAttribute('option')
 
-      console.log(option)
-
       if (option) {
         try {
           return JSON.parse(option)

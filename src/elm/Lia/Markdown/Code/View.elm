@@ -189,6 +189,24 @@ list_get idx list =
                 list_get (idx - 1) xs
 
 
+copyToClipboard : Bool -> Code -> Int -> Html Msg
+copyToClipboard inverted project fileID =
+    btnIcon
+        { title = "copy to clipboard"
+        , msg = Just <| CopyToClipboard project fileID
+        , icon = "icon-copy"
+        , tabbable = True
+        }
+        [ Attr.class "lia-btn--transparent"
+        , Attr.class <|
+            if inverted then
+                "lia-code__copy--inverted"
+
+            else
+                "lia-code__copy"
+        ]
+
+
 viewCode :
     { isExecutable : Bool
     , lang : Lang
@@ -218,6 +236,14 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1, cursors } i
                 , sync = Maybe.andThen (Array.get id_2) sync
                 , cursors = List.filter (\cursor -> cursor.project == id_1 && cursor.file == id_2) cursors
                 }
+            , copyToClipboard False
+                (if isExecutable then
+                    Evaluate id_1
+
+                 else
+                    Highlight id_1
+                )
+                id_2
             ]
 
     else
@@ -262,6 +288,14 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1, cursors } i
                         }
                         [ Attr.class "lia-accordion__toggle" ]
                     , Html.h3 [ Attr.class "lia-accordion__headline h4" ] [ Html.text file.name ]
+                    , copyToClipboard True
+                        (if isExecutable then
+                            Evaluate id_1
+
+                         else
+                            Highlight id_1
+                        )
+                        id_2
                     ]
                 , Html.div
                     [ Attr.classList

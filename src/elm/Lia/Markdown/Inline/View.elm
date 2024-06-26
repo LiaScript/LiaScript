@@ -1,5 +1,6 @@
 module Lia.Markdown.Inline.View exposing
-    ( highlightPartialSolution
+    ( audio
+    , highlightPartialSolution
     , reduce
     , toScript
     , view
@@ -445,6 +446,7 @@ viewMedia config inline =
                     ]
                     [ Html.img
                         (Attr.src url_
+                            :: onError "img" url_
                             :: toAttribute attr
                             |> CList.addIf
                                 (config.media
@@ -524,6 +526,7 @@ img config attr alt_ url_ title_ width =
     Html.img
         (Attr.src url_
             :: Attr.attribute "loading" "lazy"
+            :: onError "img" url_
             :: (if List.isEmpty attr then
                     [ Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") ]
 
@@ -540,6 +543,11 @@ img config attr alt_ url_ title_ width =
 load : String -> Attribute msg
 load url =
     Attr.attribute "onload" ("window.LIA.img.load('" ++ url ++ "',this.width,this.height)")
+
+
+onError : String -> String -> Attribute msg
+onError tag url =
+    Attr.attribute "onerror" ("window.LIA.fetchError('" ++ tag ++ "','" ++ url ++ "')")
 
 
 figure : Config sub -> Maybe Inlines -> Maybe Int -> String -> Html (Msg sub) -> Html (Msg sub)
@@ -597,14 +605,16 @@ reference config ref attr =
                             []
 
                       else
-                        Html.audio
-                            (Attr.controls True
-                                :: Attr.attribute "preload" "none"
-                                :: annotation "lia-audio" attr
+                        audio
+                            (toAttribute attr
                                 |> CList.addWhen (title config title_)
                                 |> CList.addWhen (alt config alt_)
                             )
-                            [ Html.source [ Attr.src url_ ] [] ]
+                            { url = url_
+                            , controls = True
+                            , preload = "none"
+                            , errorHandling = True
+                            }
                     ]
 
         Movie alt_ ( tube, url_ ) title_ ->
@@ -645,7 +655,7 @@ reference config ref attr =
                                         |> CList.addWhen (title config title_)
                                         |> CList.addWhen (alt config alt_)
                                     )
-                                    [ Html.source [ Attr.src url_ ] [] ]
+                                    [ Html.source [ Attr.src url_, onError "video" url_ ] [] ]
                               )
                             ]
                         ]
@@ -690,6 +700,34 @@ reference config ref attr =
                         |> CList.addWhen (title config title_)
                     )
                 |> figure config title_ (Just 300) "image"
+
+
+audio :
+    List (Html.Attribute msg)
+    ->
+        { url : String
+        , controls : Bool
+        , preload : String
+        , errorHandling : Bool
+        }
+    -> Html msg
+audio attr settings =
+    Html.Keyed.node "span"
+        []
+        [ ( settings.url
+          , Html.audio
+                (Attr.controls settings.controls
+                    :: Attr.preload settings.preload
+                    :: attr
+                )
+                [ Html.source
+                    ([ Attr.src settings.url ]
+                        |> CList.addIf settings.errorHandling (onError "audio" settings.url)
+                    )
+                    []
+                ]
+          )
+        ]
 
 
 addTranslation : Config sub -> String -> String

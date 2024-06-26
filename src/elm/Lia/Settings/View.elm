@@ -467,15 +467,17 @@ viewTranslations lang tabbable =
         >> List.map
             (\( title, url ) ->
                 Html.a
-                    [ Attr.href url
-                    , Attr.class "lia-link"
-                    , A11y_Key.tabbable tabbable
-                    , A11y_Widget.hidden (not tabbable)
-                    ]
+                    ([ Attr.href <| "./?" ++ url
+                     , Attr.class "lia-link"
+                     , A11y_Key.tabbable tabbable
+                     , A11y_Widget.hidden (not tabbable)
+                     ]
+                        |> group ShowTranslations
+                    )
                     [ Html.text title, Html.br [] [] ]
             )
         >> (::)
-            (Html.span [ Attr.class "lia-link active" ]
+            (Html.span (group ShowTranslations [ Attr.class "lia-link active" ])
                 [ Trans.baseLang lang
                     |> Html.text
                 ]
@@ -749,10 +751,6 @@ menuSettings width lang tabbable settings =
 
 menuTranslations : String -> Definition -> Lang -> Bool -> Settings -> List (Html Msg)
 menuTranslations languageCode defintion lang tabbable settings =
-    let
-        grouping =
-            group ShowTranslations
-    in
     [ Html.button
         (action ShowTranslations
             (settings.action == Just ShowTranslations)
@@ -775,12 +773,12 @@ menuTranslations languageCode defintion lang tabbable settings =
         ]
     , defintion.translation
         |> viewTranslations lang tabbable
-        |> (\l ->
-                settings.translateWithGoogle
-                    |> translateWithGoogle lang tabbable
-                    |> List.append l
+        |> (settings.translateWithGoogle
+                |> translateWithGoogle lang tabbable
+                >> List.append
            )
-        |> submenu grouping (settings.action == Just ShowTranslations)
+        |> submenu (group ShowTranslations)
+            (settings.action == Just ShowTranslations)
     ]
 
 
@@ -788,19 +786,18 @@ translateWithGoogle : Lang -> Bool -> Maybe Bool -> List (Html Msg)
 translateWithGoogle lang tabbable bool =
     case bool of
         Just True ->
-            [ divider
-            , Html.div
+            [ Html.div
                 (group ShowTranslations
                     [ Attr.id "google_translate_element"
                     , Attr.tabindex -1
                     ]
                 )
                 []
+            , divider
             ]
 
         Just False ->
-            [ divider
-            , Html.label
+            [ Html.label
                 [ Attr.class "lia-label"
                 , A11y_Widget.hidden (not tabbable)
                 ]
@@ -819,6 +816,7 @@ translateWithGoogle lang tabbable bool =
                     |> Trans.translateWithGoogle
                     |> Html.text
                 ]
+            , divider
             ]
 
         Nothing ->

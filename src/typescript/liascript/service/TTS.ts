@@ -1,6 +1,8 @@
 import log from '../log'
-import EasySpeech from 'easy-speech/dist/EasySpeech'
 import '../types/responsiveVoice'
+
+// @ts-ignore
+import EasySpeech from 'easy-speech/dist/EasySpeech'
 
 enum Gender {
   Female,
@@ -27,7 +29,6 @@ export const Service = {
 
     setTimeout(function () {
       firstSpeak = false
-
       if (window.responsiveVoice) {
         sendEnabledTTS('responsiveVoiceTTS')
       }
@@ -42,7 +43,6 @@ export const Service = {
     EasySpeech.init({ maxTimeout: 5000, interval: 250 })
       .then(() => {
         useBrowserTTS = true
-
         sendEnabledTTS('browserTTS')
       })
       .catch((e) => {
@@ -59,10 +59,8 @@ export const Service = {
       // stop talking but send a response to the sender
       case 'cancel': {
         cancel()
-        event.message.cmd = 'stop'
-        event.message.param = null
 
-        sendReply(event)
+        sendResponse(event, 'stop', null)
         break
       }
 
@@ -73,8 +71,12 @@ export const Service = {
           event.track[0][0] = SETTINGS
         }
 
-        const timeout =
-          firstSpeak || event.message.param.endsWith('0') ? 2000 : 500
+        if (firstSpeak) {
+          sendResponse(event, 'stop')
+          return
+        }
+
+        const timeout = event.message.param.endsWith('-0') ? 2000 : 500
 
         setTimeout(function () {
           read(event)
@@ -141,23 +143,93 @@ function innerText(node) {
 }
 
 function read(event: Lia.Event) {
+  cancel()
+
   let element = document.getElementsByClassName(event.message.param)
 
   if (element.length) {
     let voice = element[0].getAttribute('data-voice') || 'default'
     let lang = element[0].getAttribute('data-lang') || 'en'
-
+    let hasAudioURLs: boolean = false
     let text = ''
 
     for (let i = 0; i < element.length; i++) {
       text += (element[i] as HTMLElement).innerText || element[i].textContent
+
+      let audioUrl = element[i].getAttribute('data-file') || null
+
+      if (audioUrl) {
+        hasAudioURLs = true
+      }
     }
 
     // This is used to clean up effect numbers, which are marked by a \b
     // \b(1.)\b is not visible to the user within the browser
     text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
 
-    if (text !== '' && element[0]) {
+    if (hasAudioURLs) {
+      let audioUrls: HTMLMediaElement[] = Array.from(
+        document.getElementsByClassName(
+          'lia-tts-recordings'
+        ) as HTMLCollectionOf<HTMLMediaElement>
+      )
+      let currentIndex = 0
+
+      async function playNext() {
+        if (currentIndex >= audioUrls.length) {
+          sendResponse(event, 'stop')
+          return
+        }
+
+        const audio = audioUrls[currentIndex]
+        const source = audio.firstChild as HTMLSourceElement
+        const error = (error: string) => {
+          console.warn('TTS failed to play ->', '' + error, source.src)
+          if (source.src.startsWith('blob:')) {
+            currentIndex++
+            playNext()
+          } else {
+            audio.pause()
+
+            window.LIA.fetchError(
+              'audio',
+              source.src.replace(window.location.origin, '')
+            )
+          }
+        }
+
+        audio.onended = () => {
+          audio.currentTime = 0
+          currentIndex++
+          playNext()
+        }
+
+        // resource could not be loaded
+        if (audio.readyState === 0) {
+          // has previously failed
+          error("resource couldn't be loaded")
+          return
+        }
+
+        // this might be the case for *.flac files or others,
+        // in Firefox they can be played only ones and not set
+        // to start, this will force the audio to be reloaded
+        if (audio.currentTime > 0) {
+          audio.innerHTML = source.outerHTML
+        }
+
+        const response = audio.play()
+
+        if (response !== undefined) {
+          response.catch((e) => error(e.message))
+        } else {
+          error("resource couldn't be played")
+        }
+      }
+
+      sendResponse(event, 'start')
+      playNext()
+    } else if (text !== '' && element[0] !== undefined) {
       speak(text, voice, lang, event)
     }
   }
@@ -202,6 +274,20 @@ export function inject(key: string) {
 }
 
 function cancel() {
+  console.log('CANCEL audioRecordings')
+  try {
+    const audioRecordings = document.getElementsByClassName(
+      'lia-tts-recordings'
+    ) as HTMLAllCollection<HTMLMediaElement>
+
+    for (let i = 0; i < audioRecordings.length; i++) {
+      audioRecordings[i].pause()
+      audioRecordings[i].currentTime = 0
+    }
+  } catch (e) {
+    console.warn('TTS failed to cancel audioRecordings', e.message)
+  }
+
   try {
     EasySpeech.cancel()
   } catch (e) {}
@@ -234,9 +320,7 @@ function speak(text: string, voice: string, lang: string, event: Lia.Event) {
 
         easySpeak(text, defaultVoice, event)
       } else {
-        event.message.cmd = 'ERROR'
-        event.message.param = 'no TTS support'
-        sendReply(event)
+        sendResponse(event, 'ERROR', 'no TTS support')
       }
     }
   } else if (window.responsiveVoice) {
@@ -248,25 +332,18 @@ function speak(text: string, voice: string, lang: string, event: Lia.Event) {
   }
 }
 
-function easySpeak(text: string, syncVoice, event) {
+function easySpeak(text: string, syncVoice: string, event: Lia.Event) {
   EasySpeech.speak({
     text: text,
     voice: syncVoice,
     start: function () {
-      event.message.cmd = 'start'
-      event.message.param = 'browser'
-      sendReply(event)
+      sendResponse(event, 'start')
     },
     end: function () {
-      event.message.cmd = 'stop'
-      event.message.param = 'browser'
-      sendReply(event)
+      sendResponse(event, 'stop')
     },
     error: function (e: any) {
-      event.message.cmd = 'error'
-      event.message.param = e.toString()
-      sendReply(event)
-
+      sendResponse(event, 'error', e.toString())
       console.warn('TTS playback failed:', e.toString())
     },
   })
@@ -276,25 +353,28 @@ function responsiveSpeak(text: string, voice: string, event: Lia.Event) {
   if (window.responsiveVoice)
     window.responsiveVoice.speak(text, voice, {
       onstart: function () {
-        event.message.cmd = 'start'
-        event.message.param = 'browser'
-        sendReply(event)
+        sendResponse(event, 'start')
       },
 
       onend: function () {
-        event.message.cmd = 'stop'
-        event.message.param = 'browser'
-        sendReply(event)
+        sendResponse(event, 'stop')
       },
 
       onerror: function (e: any) {
-        event.message.cmd = 'error'
-        event.message.param = e.toString()
-        sendReply(event)
-
+        sendResponse(event, 'error', e.toString())
         console.warn('TTS playback failed:', e.toString())
       },
     })
+}
+
+function sendResponse(
+  event: Lia.Event,
+  cmd: string,
+  param: string | null = 'browser'
+) {
+  event.message.cmd = cmd
+  event.message.param = param
+  sendReply(event)
 }
 
 function getDefaultVoice() {
