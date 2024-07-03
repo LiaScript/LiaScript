@@ -527,7 +527,8 @@ img config attr alt_ url_ title_ width =
         (Attr.src url_
             :: Attr.attribute "loading" "lazy"
             :: onError "img" url_
-            :: (if List.isEmpty attr then
+            :: (-- double-click event is always added to the image
+                if List.length attr > 1 then
                     [ Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") ]
 
                 else
