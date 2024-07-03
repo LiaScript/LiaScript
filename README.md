@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.15.3
+version:  0.15.4
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,12 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.15.4** (03/07/2024)
+
+- chore: npm update katex, sass, echarts, ace-builds, caniuse-lite
+- fix: z-index on copy-buttons
+- fix: local script loading
 
 **0.15.3** (26/06/2024)
 
