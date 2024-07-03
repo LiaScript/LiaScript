@@ -95,7 +95,7 @@ export function loadScript(
         window.LIA.eventSemaphore--
         console.warn('could not load =>', url)
         window.LIA.fetchError('script', url)
-        if (callback) callback(false)
+        // if (callback) callback(false)
       }
     }
 
@@ -106,13 +106,17 @@ export function loadScript(
   }
 }
 
-function loadScriptAsBlob(url: string, withSemaphore: boolean) {
+function loadScriptAsBlob(
+  url: string,
+  withSemaphore: boolean,
+  callback?: (ok: boolean) => void
+) {
   if (!url.startsWith('blob:')) {
     loadAsBlob(
       'script',
       url,
       (blobUrl: string) => {
-        loadScript(blobUrl, withSemaphore)
+        loadScript(blobUrl, withSemaphore, callback)
       },
       withSemaphore
         ? (_url, _error) => {
