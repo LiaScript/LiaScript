@@ -456,7 +456,9 @@ which are defined in an animation step that has not been revealed ...
 maybeTextbookChange : Session -> Mode -> Return Model Msg Markdown.Msg -> Return Model Msg Markdown.Msg
 maybeTextbookChange session mode ret =
     if ret.value.settings.mode == Textbook && mode /= Textbook then
-        update session (Load False ret.value.section_active) ret.value
+        ret.value
+            |> update session (Load False ret.value.section_active)
+            |> Return.batchEvents ret.events
 
     else
         ret
