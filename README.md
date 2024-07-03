@@ -296,6 +296,12 @@ This will apply the following four patches:
 
 ## Version-Changes
 
+**0.15.4** (03/07/2024)
+
+- chore: npm update katex, sass, echarts, ace-builds, caniuse-lite
+- fix: z-index on copy-buttons
+- fix: local script loading
+
 **0.15.3** (26/06/2024)
 
 - improve Editor: Codes have now a copy button...
