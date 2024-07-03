@@ -105,29 +105,36 @@
   }
 
   &__copy {
-    top: 0;
+    top: 0.1rem;
     font-size: 2rem;
     position: absolute;
-    right: 0rem;
+    right: 1.5rem;
     z-index: 100;
-    padding: 0rem 0.5rem;
-    color: rgb(var(--color-highlight));
+    padding: 0rem 0.25rem;
+    color: rgb(var(--color-highlight), 0.4);
 
     &:hover {
-      background-color: rgb(var(--color-background)) !important;
+      top: 0;
+      color: rgb(var(--color-highlight));
+      font-size: 2.2rem;
+
+      // background-color: rgb(var(--color-background), 0.5) !important;
     }
   }
 
   &__copy--inverted {
-    top: 0;
+    top: 0.1rem;
     font-size: 2rem;
-    right: 0rem;
+    right: 1.5rem;
     z-index: 100;
-    padding: 0rem 0.5rem;
-    color: rgb(var(--color-background));
+    padding: 0rem 0.25rem;
+    color: rgb(var(--color-background), 0.4);
 
     &:hover {
-      background-color: rgb(var(--color-highlight-dark)) !important;
+      top: 0;
+      color: rgb(var(--color-highlight));
+      font-size: 2.2rem;
+      //background-color: rgb(var(--color-highlight-dark), 0.5) !important;
     }
   }
 }
