@@ -50,7 +50,9 @@ be spoken out loud.
 -}
 hasComments : Model a -> Bool
 hasComments model =
-    not (Dict.isEmpty model.comments)
+    model.comments
+        |> Dict.get model.visible
+        |> (/=) Nothing
 
 
 getAudioRecordings : Model a -> List String
