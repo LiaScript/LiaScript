@@ -52,9 +52,10 @@ customElements.define(
 
     private style_: string
     private val: string = ''
+    private renderer: 'canvas' | 'svg' = 'svg'
 
     static get observedAttributes() {
-      return ['style', 'mode', 'json', 'locale', 'aria-label']
+      return ['style', 'mode', 'json', 'locale', 'aria-label', 'renderer']
     }
 
     constructor() {
@@ -70,6 +71,7 @@ customElements.define(
         data: null,
       }
       this.locale = 'en'
+      this.setRenderer(this.getAttribute('renderer'))
       this.mode = ''
       this.container = document.createElement('div')
       shadowRoot.appendChild(this.container)
@@ -82,6 +84,12 @@ customElements.define(
       )
 
       this.style_ = style
+    }
+
+    setRenderer(renderer: any) {
+      if (renderer === 'canvas' || renderer === 'svg') {
+        this.renderer = renderer
+      }
     }
 
     getOption() {
@@ -111,7 +119,7 @@ customElements.define(
       if (!this.chart) {
         this.container.setAttribute('style', this.style_)
         this.chart = echarts.init(this.container, this.mode || '', {
-          renderer: 'svg',
+          renderer: this.renderer,
           locale: this.locale,
         })
 
@@ -171,7 +179,7 @@ customElements.define(
             this.locale = newValue
             echarts.dispose(this.chart)
             this.chart = echarts.init(this.container, this.mode, {
-              renderer: 'svg',
+              renderer: this.renderer,
               locale: this.locale,
             })
             this.updateChart()
@@ -185,7 +193,22 @@ customElements.define(
             this.mode = newValue
             echarts.dispose(this.chart)
             this.chart = echarts.init(this.container, this.mode, {
-              renderer: 'svg',
+              renderer: this.renderer,
+              locale: this.locale,
+            })
+            this.updateChart()
+          }
+          break
+        }
+
+        case 'renderer': {
+          newValue = newValue || 'svg'
+
+          if (this.chart && this.renderer !== newValue) {
+            this.setRenderer(newValue)
+            echarts.dispose(this.chart)
+            this.chart = echarts.init(this.container, this.mode, {
+              renderer: this.renderer,
               locale: this.locale,
             })
             this.updateChart()
