@@ -1,4 +1,4 @@
-module Lia.Markdown.Json.Encode exposing (..)
+module Lia.Markdown.Json.Encode exposing (encBlock, encode, htmlEncode, ol)
 
 import Json.Encode as JE
 import Lia.Markdown.HTML.Attributes exposing (Parameters)

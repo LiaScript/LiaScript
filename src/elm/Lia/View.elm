@@ -261,10 +261,6 @@ comments in text, depending on the currently applied rendering mode.
 -}
 slideBottom : { lang : Lang, tiny : Bool, settings : Settings, slide : Int, effects : Effect.Model SubSection } -> Html Msg
 slideBottom { lang, tiny, settings, slide, effects } =
-    let
-        sound =
-            settings.sound && Effect.hasComments effects
-    in
     Html.footer
         [ Attr.class "lia-slide__footer" ]
         [ slideNavigation lang settings.mode slide effects
@@ -273,6 +269,10 @@ slideBottom { lang, tiny, settings, slide, effects } =
                 Html.text ""
 
             _ ->
+                let
+                    sound =
+                        settings.sound && Effect.hasComments effects
+                in
                 Html.div
                     [ Attr.class "lia-responsive-voice"
                     , if tiny then
