@@ -48,8 +48,7 @@ toString state =
                 ++ (dict
                         |> Dict.toList
                         |> List.map key_value_string
-                        |> List.intersperse ", "
-                        |> String.concat
+                        |> String.join ", "
                    )
                 ++ "}"
 
@@ -58,8 +57,7 @@ toString state =
                 ++ (array
                         |> Array.toList
                         |> List.map (Vector_State False >> toString)
-                        |> List.intersperse ",\n"
-                        |> String.concat
+                        |> String.join ",\n"
                    )
                 ++ "]"
 

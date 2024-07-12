@@ -92,7 +92,7 @@ defines str =
 message : msg -> Cmd msg
 message msg =
     Process.sleep 0
-        |> Task.andThen (always <| Task.succeed msg)
+        |> Task.map (always <| msg)
         |> Task.perform identity
 
 
@@ -142,8 +142,7 @@ update msg model =
         Handle cmd ->
             ( model
             , cmd
-                |> List.intersperse ","
-                |> String.concat
+                |> String.join ","
                 |> error "Handle"
             )
 
