@@ -237,8 +237,7 @@ generateIndex id title =
         |> String.replace "-" " "
         |> String.split " "
         |> List.filter (String.isEmpty >> not)
-        |> List.intersperse "-"
-        |> String.concat
+        |> String.join "-"
         |> (++) "#"
     , "#" ++ String.fromInt (id + 1)
     )

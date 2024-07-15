@@ -741,7 +741,7 @@ menuTranslations languageCode defintion lang tabbable settings =
         |> viewTranslations lang tabbable
         |> (settings.translateWithGoogle
                 |> translateWithGoogle lang tabbable
-                >> List.append
+                |> List.append
            )
         |> submenu (group ShowTranslations)
             (settings.action == Just ShowTranslations)

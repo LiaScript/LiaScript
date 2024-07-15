@@ -237,7 +237,7 @@ lines =
 
 reduce : String -> String
 reduce =
-    String.words >> List.intersperse " " >> String.concat
+    String.words >> String.join " "
 
 
 multiline : Parser Context String

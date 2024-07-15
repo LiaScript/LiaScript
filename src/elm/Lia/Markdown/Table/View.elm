@@ -441,12 +441,6 @@ chart lang width isFormatted attr mode class matrix =
                         |> Matrix.column 0
                         |> Maybe.withDefault []
                         |> List.map .float
-
-                legend =
-                    head
-                        |> List.tail
-                        |> Maybe.withDefault []
-                        |> List.map .string
             in
             if
                 xs
@@ -455,6 +449,12 @@ chart lang width isFormatted attr mode class matrix =
                     |> (==) (List.length xs)
             then
                 let
+                    legend =
+                        head
+                            |> List.tail
+                            |> Maybe.withDefault []
+                            |> List.map .string
+
                     type_ name pts =
                         if class == LinePlot then
                             Lines pts (Just name)

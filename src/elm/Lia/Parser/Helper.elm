@@ -51,7 +51,7 @@ debug log p =
                                                 ++ "]"
                                                 ++ String.slice (x + 1) -1 s
                                                 ++ " -- ["
-                                                ++ (ss.indentation |> List.intersperse "," |> String.concat)
+                                                ++ (ss.indentation |> String.join ",")
                                                 ++ "]/"
                                                 ++ (if ss.indentation_skip then
                                                         "True"

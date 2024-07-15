@@ -185,17 +185,25 @@ function read(event: Lia.Event) {
         const source = audio.firstChild as HTMLSourceElement
         const error = (error: string) => {
           console.warn('TTS failed to play ->', '' + error, source.src)
+
           if (source.src.startsWith('blob:')) {
             currentIndex++
             playNext()
-          } else {
-            audio.pause()
+            return
+          }
 
+          audio.pause()
+
+          if (window.LIA.fetchError) {
             window.LIA.fetchError(
               'audio',
               source.src.replace(window.location.origin, '')
             )
+            return
           }
+
+          currentIndex++
+          playNext()
         }
 
         audio.onended = () => {

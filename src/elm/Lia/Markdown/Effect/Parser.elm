@@ -223,12 +223,6 @@ add_comment : Bool -> ( Int, Maybe String, Inlines ) -> Parser Context ( Int, In
 add_comment visible ( idx, temp_narrator, par ) =
     let
         mod s =
-            let
-                narrator =
-                    temp_narrator
-                        |> Maybe.map String.trim
-                        |> Maybe.withDefault s.defines.narrator
-            in
             { s
                 | effect_model =
                     let
@@ -249,6 +243,12 @@ add_comment visible ( idx, temp_narrator, par ) =
                                         e.comments
 
                                 _ ->
+                                    let
+                                        narrator =
+                                            temp_narrator
+                                                |> Maybe.map String.trim
+                                                |> Maybe.withDefault s.defines.narrator
+                                    in
                                     Dict.insert idx
                                         ([ Content visible [] par2 (addToAudio audioFile Array.empty) ]
                                             |> Array.fromList

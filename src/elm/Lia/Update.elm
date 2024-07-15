@@ -120,11 +120,11 @@ update session msg model =
                 |> Return.batchEvent (Service.Slide.initialize model.section_active)
 
         Load force idx ->
-            let
-                settings =
-                    model.settings
-            in
             if (-1 < idx) && (idx < Array.length model.sections) then
+                let
+                    settings =
+                        model.settings
+                in
                 if idx == model.section_active || force then
                     update session
                         InitSection
