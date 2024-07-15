@@ -296,6 +296,14 @@ This will apply the following four patches:
 
 ## Version-Changes
 
+**0.15.5** (15/07/2024)
+
+- chore(Classroom): Upgrade Trystero to 0.19
+- refac(Charts): optimized eCharts loading and added `renderer` option, which can be set to `svg` or `canvas`, svg is the default
+- chore(elm): Optimized with elm-review
+- fix: text-book switching
+- improve(TTS): only if there is a comment or an audio-file, the playbutton is enabled
+
 **0.15.4** (03/07/2024)
 
 - chore: npm update katex, sass, echarts, ace-builds, caniuse-lite
