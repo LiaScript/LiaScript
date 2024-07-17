@@ -583,13 +583,17 @@ appendVideoFragments video =
         [ Html.span
             [ Attr.style "visibility" "hidden"
             , Attr.class "lia-tts-videos"
-            , Attr.style "height" "100%"
             , video
                 |> String.join ","
                 |> Attr.attribute "data-urls"
             ]
             []
-        , Html.div [ Attr.id "lia-tts-video", Attr.style "height" "100%" ] []
+        , Html.div
+            [ Attr.id "lia-tts-video"
+            , Attr.style "height" "100%"
+            , Attr.style "width" "100%"
+            ]
+            []
         ]
 
 

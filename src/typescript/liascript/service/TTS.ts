@@ -178,30 +178,41 @@ function read(event: Lia.Event) {
     if (videoUrls) {
       console.log('TTS: videoUrls', videoUrls)
       const player = document.getElementById('lia-tts-video')
+      let video = player?.firstChild as HTMLVideoElement
 
-      // Create a new video element
-      const video = document.createElement('video')
+      if (!video) {
+        // Create a new video element
+        video = document.createElement('video')
+        // Set attributes for the video element
+        video.controls = false
+        video.style.width = '100%'
+        video.style.height = '100%'
+        video.style.objectFit = 'cover'
+        video.style.opacity = '1' // Start with the video invisible
+        video.style.transition = 'opacity 0.3s' // Smooth transition for opacity
+        video.src = videoUrls[0]
+        // Append the video element to the player node
+        player.appendChild(video)
 
-      // Set attributes for the video element
-      video.src = videoUrls[0] // Replace with your video URL
-      video.controls = false // Show video controls
-      video.autoplay = true // Enable autoplay
-      //video.width = 640 // Set width (adjust as needed)
-      //video.height = 360 // Set height (adjust as needed)
+        video.play()
+        return
+      }
 
-      video.style.width = '100%'
-      video.style.height = '100%'
-      video.style.objectFit = 'cover'
+      // Create a new video element for preloading
+      const nextVideo = video.cloneNode() as HTMLVideoElement
+      nextVideo.src = videoUrls[0]
+      player.appendChild(nextVideo)
 
-      // Append the video element to the player node
-      player.innerHTML = ''
-      player.appendChild(video)
+      // Preload the next video
+      nextVideo.load()
 
-      // Ensure the video starts playing
-      video.play().catch((error) => {
-        console.error('Autoplay was prevented:', error)
-        // You might want to show a play button or message to the user here
-      })
+      // When the new video is ready to play
+      nextVideo.oncanplay = () => {
+        nextVideo.play()
+
+        // Remove the preloading video element
+        player.removeChild(video)
+      }
     } else if (hasAudioURLs) {
       let audioUrls: HTMLMediaElement[] = Array.from(
         document.getElementsByClassName(

@@ -134,11 +134,9 @@ resizedSize : Model -> Position -> Size
 resizedSize model pos =
     case model.resize of
         Just { start } ->
-            let
-                newSize =
-                    Basics.max 100 (model.initialSize.width + pos.x - start.x)
-            in
-            Size newSize newSize
+            Size
+                (Basics.max 100 (model.initialSize.width + pos.x - start.x))
+                (Basics.max 100 (model.initialSize.height + pos.y - start.y))
 
         Nothing ->
             model.size
