@@ -152,7 +152,7 @@ view : Model -> Html parentMsg -> Html (Msg parentMsg)
 view model inside =
     div
         [ style "position" "absolute"
-        , style "z-index" "10000000000"
+        , style "z-index" "100000000"
         , style "left" (px model.position.x)
         , style "top" (px model.position.y)
         , style "width" (px model.size.width)
@@ -212,8 +212,7 @@ view model inside =
              -- This will be ignored in the update function
             )
         ]
-        [ inside
-            |> Html.map Foreign
+        [ Html.map Foreign inside
         , div
             [ style "position" "absolute"
             , style "width" "100%"
@@ -227,14 +226,14 @@ view model inside =
             ]
             []
         , div
-            [ style "width" "20px"
-            , style "height" "20px"
+            [ style "width" "8%"
+            , style "height" "8%"
             , style "background" "blue"
             , style "position" "absolute"
             , style "right" "10%"
             , style "bottom" "10%"
             , style "cursor" "se-resize"
-            , style "border-radius" "50%"
+            , style "border-radius" "30%"
             , onMouseDown ResizeStart
             , onTouchStart ResizeStart
             ]
