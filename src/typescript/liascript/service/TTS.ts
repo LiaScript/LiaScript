@@ -167,7 +167,42 @@ function read(event: Lia.Event) {
     // \b(1.)\b is not visible to the user within the browser
     text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
 
-    if (hasAudioURLs) {
+    let videoUrls: any = document.getElementsByClassName('lia-tts-videos')
+    if (videoUrls.length > 0) {
+      videoUrls = videoUrls[0].getAttribute('data-urls')
+      if (videoUrls) {
+        videoUrls = videoUrls.split(',')
+      }
+    }
+
+    if (videoUrls) {
+      console.log('TTS: videoUrls', videoUrls)
+      const player = document.getElementById('lia-tts-video')
+
+      // Create a new video element
+      const video = document.createElement('video')
+
+      // Set attributes for the video element
+      video.src = videoUrls[0] // Replace with your video URL
+      video.controls = false // Show video controls
+      video.autoplay = true // Enable autoplay
+      //video.width = 640 // Set width (adjust as needed)
+      //video.height = 360 // Set height (adjust as needed)
+
+      video.style.width = '100%'
+      video.style.height = '100%'
+      video.style.objectFit = 'cover'
+
+      // Append the video element to the player node
+      player.innerHTML = ''
+      player.appendChild(video)
+
+      // Ensure the video starts playing
+      video.play().catch((error) => {
+        console.error('Autoplay was prevented:', error)
+        // You might want to show a play button or message to the user here
+      })
+    } else if (hasAudioURLs) {
       let audioUrls: HTMLMediaElement[] = Array.from(
         document.getElementsByClassName(
           'lia-tts-recordings'

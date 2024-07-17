@@ -58,10 +58,6 @@ view screen hasIndex model =
                 |> Attr.href
             ]
             [ Html.text "skip navigation" ]
-            :: (model.overlayVideo
-                    |> Overlay.view
-                    |> Html.map UpdateOverlay
-               )
             :: viewIndex hasIndex model
             :: viewSlide screen model
         )
@@ -145,7 +141,13 @@ viewSlide screen model =
     case get_active_section model of
         Just section ->
             [ Html.div [ Attr.class "lia-slide" ]
-                [ slideTopBar
+                [ section.effect_model
+                    |> Effect.getVideoRecordings
+                    |> appendVideoFragments
+                    |> Html.div [ Attr.style "height" "100%" ]
+                    |> Overlay.view model.overlayVideo
+                    |> Html.map UpdateOverlay
+                , slideTopBar
                     model.langCode
                     model.translation
                     screen
@@ -570,6 +572,25 @@ appendAudioFragments audio info =
     else
         Html.span [ Attr.style "visibility" "hidden" ] info
             :: List.map audioRecordings audio
+
+
+appendVideoFragments : List String -> List (Html msg)
+appendVideoFragments video =
+    if List.isEmpty video then
+        []
+
+    else
+        [ Html.span
+            [ Attr.style "visibility" "hidden"
+            , Attr.class "lia-tts-videos"
+            , Attr.style "height" "100%"
+            , video
+                |> String.join ","
+                |> Attr.attribute "data-urls"
+            ]
+            []
+        , Html.div [ Attr.id "lia-tts-video", Attr.style "height" "100%" ] []
+        ]
 
 
 audioRecordings : String -> Html msg

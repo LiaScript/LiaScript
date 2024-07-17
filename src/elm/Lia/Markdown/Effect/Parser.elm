@@ -229,8 +229,8 @@ add_comment visible ( idx, temp_narrator, par ) =
                         e =
                             s.effect_model
 
-                        ( audioFile, par2 ) =
-                            hasAudioContent True par
+                        { audio, video, paragraph } =
+                            hasMediaContent True par
                     in
                     { e
                         | comments =
@@ -238,7 +238,15 @@ add_comment visible ( idx, temp_narrator, par ) =
                                 Just cmt ->
                                     Dict.insert idx
                                         { cmt
-                                            | content = Array.push (Content visible [] par2 (addToAudio audioFile Array.empty)) cmt.content
+                                            | content =
+                                                Array.push
+                                                    (Content visible
+                                                        []
+                                                        paragraph
+                                                        (addTo audio Array.empty)
+                                                        (addTo video Array.empty)
+                                                    )
+                                                    cmt.content
                                         }
                                         e.comments
 
@@ -250,7 +258,12 @@ add_comment visible ( idx, temp_narrator, par ) =
                                                 |> Maybe.withDefault s.defines.narrator
                                     in
                                     Dict.insert idx
-                                        ([ Content visible [] par2 (addToAudio audioFile Array.empty) ]
+                                        ([ Content visible
+                                            []
+                                            paragraph
+                                            (addTo audio Array.empty)
+                                            (addTo video Array.empty)
+                                         ]
                                             |> Array.fromList
                                             |> Element narrator
                                         )
@@ -266,8 +279,8 @@ add_comment visible ( idx, temp_narrator, par ) =
         |> andThen rslt
 
 
-addToAudio : Maybe String -> Array String -> Array String
-addToAudio file array =
+addTo : Maybe String -> Array String -> Array String
+addTo file array =
     case file of
         Nothing ->
             array
@@ -276,21 +289,24 @@ addToAudio file array =
             Array.push f array
 
 
-hasAudioContent : Bool -> Inlines -> ( Maybe String, Inlines )
-hasAudioContent start par =
+hasMediaContent : Bool -> Inlines -> { audio : Maybe String, video : Maybe String, paragraph : Inlines }
+hasMediaContent start par =
     case par of
         (Ref (Audio _ ( False, audio ) _) _) :: par2 ->
-            ( Just audio, par2 )
+            { audio = Just audio, video = Nothing, paragraph = par2 }
+
+        (Ref (Movie _ ( False, video ) _) _) :: par2 ->
+            { audio = Nothing, video = Just video, paragraph = par2 }
 
         _ ->
             if start then
                 par
                     |> List.reverse
-                    |> hasAudioContent False
-                    |> Tuple.mapSecond List.reverse
+                    |> hasMediaContent False
+                    |> (\result -> { result | paragraph = List.reverse result.paragraph })
 
             else
-                ( Nothing, par )
+                { audio = Nothing, video = Nothing, paragraph = par }
 
 
 get_counter : Int -> Parser Context Int
