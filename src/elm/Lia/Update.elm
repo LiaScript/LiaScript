@@ -23,6 +23,7 @@ import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Lia.Utils exposing (checkPersistency)
+import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 import Return exposing (Return)
 import Service.Console
@@ -88,6 +89,7 @@ type Msg
     | UpdateMarkdown Markdown.Msg
     | UpdateSync Sync.Msg
     | UpdateChat Chat.Msg
+    | UpdateOverlay Overlay.Msg
     | Handle Event
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
@@ -184,6 +186,15 @@ update session msg model =
             Sync.update session model childMsg
                 |> Return.mapCmd UpdateSync
                 |> Return.mapEvents "sync" -1
+
+        UpdateOverlay childMsg ->
+            let
+                ( overlay, cmd ) =
+                    Overlay.update childMsg model.overlayVideo
+            in
+            { model | overlayVideo = overlay }
+                |> Return.val
+                |> Return.cmd (Cmd.map UpdateOverlay cmd)
 
         Handle event ->
             case Event.pop event of

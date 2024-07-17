@@ -29,6 +29,7 @@ import Lia.Sync.Types as Sync_
 import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (modal)
+import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 import Service.Database exposing (settings)
 import Session exposing (Screen)
@@ -57,6 +58,10 @@ view screen hasIndex model =
                 |> Attr.href
             ]
             [ Html.text "skip navigation" ]
+            :: (model.overlayVideo
+                    |> Overlay.view
+                    |> Html.map UpdateOverlay
+               )
             :: viewIndex hasIndex model
             :: viewSlide screen model
         )
