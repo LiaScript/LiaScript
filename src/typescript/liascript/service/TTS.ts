@@ -19,6 +19,9 @@ var elmSend: Lia.Send | null
 
 const SETTINGS = 'settings'
 
+const AUDIO = 'lia-tts-recordings'
+const VIDEO = 'lia-tts-videos'
+
 export const Service = {
   PORT: 'tts',
 
@@ -59,6 +62,10 @@ export const Service = {
       // stop talking but send a response to the sender
       case 'cancel': {
         cancel()
+
+        if (event.track.length == 1 && event.track[0][0] === 'effect') {
+          event.track[0][0] = SETTINGS
+        }
 
         sendResponse(event, 'stop', null)
         break
@@ -167,38 +174,73 @@ function read(event: Lia.Event) {
     // \b(1.)\b is not visible to the user within the browser
     text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
 
-    let videoUrls: any = document.getElementsByClassName('lia-tts-videos')
-    if (videoUrls.length > 0) {
-      videoUrls = videoUrls[0].getAttribute('data-urls')
+    const player: any = document.getElementById(VIDEO)
+    let videoUrls: any = null
+
+    if (player) {
+      videoUrls = player.getAttribute('data-urls')
       if (videoUrls) {
         videoUrls = videoUrls.split(',')
       }
     }
 
-    if (videoUrls) {
+    if (videoUrls && player) {
       console.log('TTS: videoUrls', videoUrls)
-      const player = document.getElementById('lia-tts-video')
+
       let video = player?.firstChild as HTMLVideoElement
 
-      if (!video) {
-        // Create a new video element
-        video = document.createElement('video')
-        // Set attributes for the video element
-        video.controls = false
-        video.style.width = '100%'
-        video.style.height = '100%'
-        video.style.objectFit = 'cover'
-        video.style.opacity = '1' // Start with the video invisible
-        video.style.transition = 'opacity 0.3s' // Smooth transition for opacity
-        video.src = videoUrls[0]
-        // Append the video element to the player node
-        player.appendChild(video)
+      let currentIndex = 0
+      let isEnding = false
 
-        video.play()
-        return
+      async function playNext(video: any) {
+        if (currentIndex >= videoUrls.length) {
+          if (!isEnding) {
+            isEnding = true
+            sendResponse(event, 'stop')
+          }
+
+          return
+        }
+
+        video.onended = () => {
+          currentIndex++
+          playNext(video)
+        }
+
+        // In case the video has been played before
+        if (video.src === videoUrls[currentIndex]) {
+          if (video.currentTime !== 0) {
+            video.currentTime = 0
+          }
+          video.play()
+          return
+        }
+
+        // prevent video from being loaded multiple times
+        // Create a new video element for preloading
+        const nextVideo = video.cloneNode() as HTMLVideoElement
+        nextVideo.src = videoUrls[currentIndex]
+
+        player.appendChild(nextVideo)
+
+        // Preload the next video
+        nextVideo.load()
+
+        // When the new video is ready to play
+        nextVideo.oncanplay = () => {
+          // Remove the preloading video element
+          try {
+            player.removeChild(video)
+          } catch (e) {}
+
+          playNext(nextVideo)
+        }
       }
 
-      // Create a new video element for preloading
+      playNext(video)
+      sendResponse(event, 'start')
+
+      /*// Create a new video element for preloading
       const nextVideo = video.cloneNode() as HTMLVideoElement
       nextVideo.src = videoUrls[0]
       player.appendChild(nextVideo)
@@ -212,11 +254,11 @@ function read(event: Lia.Event) {
 
         // Remove the preloading video element
         player.removeChild(video)
-      }
+      }*/
     } else if (hasAudioURLs) {
       let audioUrls: HTMLMediaElement[] = Array.from(
         document.getElementsByClassName(
-          'lia-tts-recordings'
+          AUDIO
         ) as HTMLCollectionOf<HTMLMediaElement>
       )
       let currentIndex = 0
@@ -328,10 +370,9 @@ export function inject(key: string) {
 }
 
 function cancel() {
-  console.log('CANCEL audioRecordings')
   try {
     const audioRecordings = document.getElementsByClassName(
-      'lia-tts-recordings'
+      AUDIO
     ) as HTMLAllCollection<HTMLMediaElement>
 
     for (let i = 0; i < audioRecordings.length; i++) {
@@ -340,6 +381,18 @@ function cancel() {
     }
   } catch (e) {
     console.warn('TTS failed to cancel audioRecordings', e.message)
+  }
+
+  try {
+    const video = document.getElementById(
+      'lia-tts-video-element'
+    ) as HTMLVideoElement
+
+    if (video) {
+      video.pause()
+    }
+  } catch (e) {
+    console.warn('TTS failed to cancel videoRecordings', e.message)
   }
 
   try {

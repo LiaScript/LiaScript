@@ -4,6 +4,7 @@ import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Widget as A11y_Widget
 import Array
+import Conditional.List as CList
 import Const
 import Dict exposing (Dict)
 import Html exposing (Html, section)
@@ -573,29 +574,41 @@ appendAudioFragments audio info =
 
 viewVideoComment : Overlay.Model -> Effect.Model SubSection -> Html Msg
 viewVideoComment overlay effects =
-    case Effect.getVideoRecordings effects of
-        [] ->
-            Html.div [] []
+    let
+        videos =
+            effects
+                |> Effect.getVideoRecordings
+                |> String.join ","
 
-        videos ->
-            [ Html.span
-                [ Attr.style "visibility" "hidden"
-                , Attr.class "lia-tts-videos"
-                , videos
-                    |> String.join ","
-                    |> Attr.attribute "data-urls"
-                ]
-                []
-            , Html.div
-                [ Attr.id "lia-tts-video"
-                , Attr.style "height" "100%"
-                , Attr.style "width" "100%"
-                ]
-                []
+        hide =
+            String.isEmpty videos
+    in
+    Html.div
+        [ Attr.id "lia-tts-videos"
+        , Attr.style "width" "100%"
+        , Attr.style "height" "100%"
+        , Attr.attribute "data-urls" videos
+        ]
+        [ Html.video
+            [ Attr.controls False
+            , Attr.style "width" "100%"
+            , Attr.style "height" "100%"
+            , Attr.style "objectFit" "cover"
+            , Attr.style "opacity" "1" -- Start with the video invisible
+            , Attr.style "transition" "opacity 0.3s" -- Smooth transition for opacity
+            , Attr.id "lia-tts-video-element"
             ]
-                |> Html.div [ Attr.style "height" "100%" ]
-                |> Overlay.view [] overlay
-                |> Html.map UpdateOverlay
+            []
+        ]
+        |> Overlay.view
+            (if hide then
+                [ Attr.style "display" "none" ]
+
+             else
+                []
+            )
+            overlay
+        |> Html.map UpdateOverlay
 
 
 audioRecordings : String -> Html msg

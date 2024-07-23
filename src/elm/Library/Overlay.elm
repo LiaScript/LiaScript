@@ -155,7 +155,7 @@ resizedSize model pos =
 view : List (Attribute (Msg parentMsg)) -> Model -> Html parentMsg -> Html (Msg parentMsg)
 view attr model inside =
     div
-        (List.append attr
+        (List.append
             [ style "position" "absolute"
             , style "z-index" "100000000"
             , style "left" (px model.position.x)
@@ -217,6 +217,7 @@ view attr model inside =
                  -- This will be ignored in the update function
                 )
             ]
+            attr
         )
         [ Html.map Foreign inside
         , div
