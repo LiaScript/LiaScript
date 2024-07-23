@@ -38,5 +38,18 @@
 }
 
 .fade-in {
-  animation: fadein 2s;
+  animation: fade-in 2s;
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.fade-out {
+  animation: fade-out 2s;
 }
