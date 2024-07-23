@@ -1,6 +1,12 @@
-module Library.Overlay exposing (..)
+module Library.Overlay exposing
+    ( Model
+    , Msg(..)
+    , init
+    , update
+    , view
+    )
 
-import Html exposing (..)
+import Html exposing (Attribute, Html, div)
 import Html.Attributes exposing (style)
 import Html.Events exposing (on, preventDefaultOn)
 import Json.Decode as Decode exposing (Decoder)
@@ -146,70 +152,72 @@ resizedSize model pos =
 -- VIEW
 
 
-view : Model -> Html parentMsg -> Html (Msg parentMsg)
-view model inside =
+view : List (Attribute (Msg parentMsg)) -> Model -> Html parentMsg -> Html (Msg parentMsg)
+view attr model inside =
     div
-        [ style "position" "absolute"
-        , style "z-index" "100000000"
-        , style "left" (px model.position.x)
-        , style "top" (px model.position.y)
-        , style "width" (px model.size.width)
-        , style "height" (px model.size.height)
-        , style "border" "1px solid #d3d3d3"
-        , style "border-radius" "50%"
-        , style "display" "flex"
-        , style "flex-direction" "column"
-        , style "justify-content" "center"
-        , style "align-items" "center"
-        , style "overflow" "hidden"
-        , style "touch-action" "none"
-        , onMouseMove
-            (\pos ->
-                if model.drag /= Nothing then
-                    DragAt pos
+        (List.append attr
+            [ style "position" "absolute"
+            , style "z-index" "100000000"
+            , style "left" (px model.position.x)
+            , style "top" (px model.position.y)
+            , style "width" (px model.size.width)
+            , style "height" (px model.size.height)
+            , style "border" "1px solid #d3d3d3"
+            , style "border-radius" "50%"
+            , style "display" "flex"
+            , style "flex-direction" "column"
+            , style "justify-content" "center"
+            , style "align-items" "center"
+            , style "overflow" "hidden"
+            , style "touch-action" "none"
+            , onMouseMove
+                (\pos ->
+                    if model.drag /= Nothing then
+                        DragAt pos
 
-                else if model.resize /= Nothing then
-                    ResizeAt pos
+                    else if model.resize /= Nothing then
+                        ResizeAt pos
 
-                else
-                    DragAt pos
-             -- This will be ignored in the update function
-            )
-        , onMouseUp
-            (if model.drag /= Nothing then
-                DragEnd
+                    else
+                        DragAt pos
+                 -- This will be ignored in the update function
+                )
+            , onMouseUp
+                (if model.drag /= Nothing then
+                    DragEnd
 
-             else if model.resize /= Nothing then
-                ResizeEnd
+                 else if model.resize /= Nothing then
+                    ResizeEnd
 
-             else
-                DragEnd
-             -- This will be ignored in the update function
-            )
-        , onTouchMove
-            (\pos ->
-                if model.drag /= Nothing then
-                    DragAt pos
+                 else
+                    DragEnd
+                 -- This will be ignored in the update function
+                )
+            , onTouchMove
+                (\pos ->
+                    if model.drag /= Nothing then
+                        DragAt pos
 
-                else if model.resize /= Nothing then
-                    ResizeAt pos
+                    else if model.resize /= Nothing then
+                        ResizeAt pos
 
-                else
-                    DragAt pos
-             -- This will be ignored in the update function
-            )
-        , onTouchEnd
-            (if model.drag /= Nothing then
-                DragEnd
+                    else
+                        DragAt pos
+                 -- This will be ignored in the update function
+                )
+            , onTouchEnd
+                (if model.drag /= Nothing then
+                    DragEnd
 
-             else if model.resize /= Nothing then
-                ResizeEnd
+                 else if model.resize /= Nothing then
+                    ResizeEnd
 
-             else
-                DragEnd
-             -- This will be ignored in the update function
-            )
-        ]
+                 else
+                    DragEnd
+                 -- This will be ignored in the update function
+                )
+            ]
+        )
         [ Html.map Foreign inside
         , div
             [ style "position" "absolute"

@@ -141,12 +141,9 @@ viewSlide screen model =
     case get_active_section model of
         Just section ->
             [ Html.div [ Attr.class "lia-slide" ]
-                [ section.effect_model
-                    |> Effect.getVideoRecordings
-                    |> appendVideoFragments
-                    |> Html.div [ Attr.style "height" "100%" ]
-                    |> Overlay.view model.overlayVideo
-                    |> Html.map UpdateOverlay
+                [ viewVideoComment
+                    model.overlayVideo
+                    section.effect_model
                 , slideTopBar
                     model.langCode
                     model.translation
@@ -574,27 +571,31 @@ appendAudioFragments audio info =
             :: List.map audioRecordings audio
 
 
-appendVideoFragments : List String -> List (Html msg)
-appendVideoFragments video =
-    if List.isEmpty video then
-        []
+viewVideoComment : Overlay.Model -> Effect.Model SubSection -> Html Msg
+viewVideoComment overlay effects =
+    case Effect.getVideoRecordings effects of
+        [] ->
+            Html.div [] []
 
-    else
-        [ Html.span
-            [ Attr.style "visibility" "hidden"
-            , Attr.class "lia-tts-videos"
-            , video
-                |> String.join ","
-                |> Attr.attribute "data-urls"
+        videos ->
+            [ Html.span
+                [ Attr.style "visibility" "hidden"
+                , Attr.class "lia-tts-videos"
+                , videos
+                    |> String.join ","
+                    |> Attr.attribute "data-urls"
+                ]
+                []
+            , Html.div
+                [ Attr.id "lia-tts-video"
+                , Attr.style "height" "100%"
+                , Attr.style "width" "100%"
+                ]
+                []
             ]
-            []
-        , Html.div
-            [ Attr.id "lia-tts-video"
-            , Attr.style "height" "100%"
-            , Attr.style "width" "100%"
-            ]
-            []
-        ]
+                |> Html.div [ Attr.style "height" "100%" ]
+                |> Overlay.view [] overlay
+                |> Html.map UpdateOverlay
 
 
 audioRecordings : String -> Html msg
