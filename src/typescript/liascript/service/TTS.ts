@@ -185,8 +185,6 @@ function read(event: Lia.Event) {
     }
 
     if (videoUrls && player) {
-      console.log('TTS: videoUrls', videoUrls)
-
       let video = player?.firstChild as HTMLVideoElement
 
       let currentIndex = 0
@@ -212,7 +210,37 @@ function read(event: Lia.Event) {
           if (video.currentTime !== 0) {
             video.currentTime = 0
           }
-          video.play()
+          const error = (error: string) => {
+            console.warn('TTS failed to play ->', '' + error, video.src)
+
+            if (video.src.startsWith('blob:')) {
+              currentIndex++
+              playNext(video)
+              return
+            }
+
+            video.pause()
+
+            if (window.LIA.fetchError) {
+              window.LIA.fetchError(
+                'video',
+                video.src.replace(window.location.origin, '')
+              )
+              return
+            }
+
+            currentIndex++
+            playNext(video)
+          }
+
+          const response = video.play()
+
+          if (response !== undefined) {
+            response.catch((e) => error(e.message))
+          } else {
+            error("resource couldn't be played")
+          }
+
           return
         }
 
