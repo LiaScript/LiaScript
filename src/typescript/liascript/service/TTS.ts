@@ -175,23 +175,17 @@ function read(event: Lia.Event) {
     text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
 
     const player: any = document.getElementById(VIDEO)
-    let videoUrls: any = null
+    const videos: HTMLMediaElement[] =
+      (Array.from(player?.children as unknown[]) as HTMLMediaElement[]) || []
 
-    if (player) {
-      videoUrls = player.getAttribute('data-urls')
-      if (videoUrls) {
-        videoUrls = videoUrls.split(',')
-      }
-    }
+    console.warn('video', videos)
 
-    if (videoUrls && player) {
-      let video = player?.firstChild as HTMLVideoElement
-
+    if (videos.length > 0 && player) {
       let currentIndex = 0
       let isEnding = false
 
-      async function playNext(video: any) {
-        if (currentIndex >= videoUrls.length) {
+      async function playNext() {
+        if (currentIndex >= videos.length) {
           if (!isEnding) {
             isEnding = true
             sendResponse(event, 'stop')
@@ -200,72 +194,55 @@ function read(event: Lia.Event) {
           return
         }
 
+        const video = videos[currentIndex]
+
         video.onended = () => {
           currentIndex++
-          playNext(video)
+          playNext()
+        }
+
+        const error = (error: string) => {
+          console.warn('TTS failed to play ->', '' + error, video.src)
+
+          if (video.src.startsWith('blob:')) {
+            currentIndex++
+            playNext()
+            return
+          }
+
+          video.pause()
+
+          if (window.LIA.fetchError) {
+            window.LIA.fetchError(
+              'video',
+              video.src.replace(window.location.origin, '')
+            )
+            return
+          }
+
+          currentIndex++
+          playNext()
         }
 
         // In case the video has been played before
-        if (video.src === videoUrls[currentIndex]) {
-          if (video.currentTime !== 0) {
-            video.currentTime = 0
-          }
-          const error = (error: string) => {
-            console.warn('TTS failed to play ->', '' + error, video.src)
-
-            if (video.src.startsWith('blob:')) {
-              currentIndex++
-              playNext(video)
-              return
-            }
-
-            video.pause()
-
-            if (window.LIA.fetchError) {
-              window.LIA.fetchError(
-                'video',
-                video.src.replace(window.location.origin, '')
-              )
-              return
-            }
-
-            currentIndex++
-            playNext(video)
-          }
-
-          const response = video.play()
-
-          if (response !== undefined) {
-            response.catch((e) => error(e.message))
-          } else {
-            error("resource couldn't be played")
-          }
-
-          return
+        if (video.currentTime !== 0) {
+          video.currentTime = 0
         }
 
-        // prevent video from being loaded multiple times
-        // Create a new video element for preloading
-        const nextVideo = video.cloneNode() as HTMLVideoElement
-        nextVideo.src = videoUrls[currentIndex]
+        const response = video.play()
+        video.style.display = 'block'
+        if (currentIndex > 0) {
+          videos[currentIndex - 1].style.display = 'none'
+        }
 
-        player.appendChild(nextVideo)
-
-        // Preload the next video
-        nextVideo.load()
-
-        // When the new video is ready to play
-        nextVideo.oncanplay = () => {
-          // Remove the preloading video element
-          try {
-            player.removeChild(video)
-          } catch (e) {}
-
-          playNext(nextVideo)
+        if (response !== undefined) {
+          response.catch((e) => error(e.message))
+        } else {
+          error("resource couldn't be played")
         }
       }
 
-      playNext(video)
+      playNext()
       sendResponse(event, 'start')
 
       /*// Create a new video element for preloading
@@ -401,7 +378,7 @@ function cancel() {
   try {
     const audioRecordings = document.getElementsByClassName(
       AUDIO
-    ) as HTMLAllCollection<HTMLMediaElement>
+    ) as HTMLCollectionOf<HTMLMediaElement>
 
     for (let i = 0; i < audioRecordings.length; i++) {
       audioRecordings[i].pause()
@@ -412,12 +389,12 @@ function cancel() {
   }
 
   try {
-    const video = document.getElementById(
-      'lia-tts-video-element'
-    ) as HTMLVideoElement
+    const player: any = document.getElementById(VIDEO)
+    const videos: HTMLMediaElement[] =
+      (Array.from(player?.children as unknown[]) as HTMLMediaElement[]) || []
 
-    if (video) {
-      video.pause()
+    for (let i = 0; i < videos.length; i++) {
+      videos[i].pause()
     }
   } catch (e) {
     console.warn('TTS failed to cancel videoRecordings', e.message)

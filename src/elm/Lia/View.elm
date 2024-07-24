@@ -575,37 +575,52 @@ appendAudioFragments audio info =
 viewVideoComment : Overlay.Model -> Effect.Model SubSection -> Html Msg
 viewVideoComment overlay effects =
     let
+        urls =
+            Effect.getVideoRecordings effects
+
         videos =
-            effects
-                |> Effect.getVideoRecordings
-                |> String.join ","
+            String.join "," urls
 
         hide =
             String.isEmpty videos
     in
-    Html.div
-        [ Attr.id "lia-tts-videos"
-        , Attr.style "width" "100%"
-        , Attr.style "height" "100%"
-        , Attr.attribute "data-urls" videos
-        ]
-        [ Html.video
-            [ Attr.controls False
+    urls
+        |> List.map
+            (\url ->
+                Html.video
+                    [ Attr.controls False
+                    , Attr.style "width" "100%"
+                    , Attr.style "height" "100%"
+                    , Attr.style "objectFit" "cover"
+                    , Attr.style "opacity"
+                        (if hide then
+                            "0"
+
+                         else
+                            "1"
+                        )
+
+                    -- Control opacity based on `hide`
+                    , Attr.style "transition" "opacity 0.3s" -- Smooth transition for opacity
+                    , Attr.attribute "data-url" url
+                    , Attr.style "display" "none" -- Hide the video element
+                    , Attr.preload "auto"
+                    , Attr.src url
+                    ]
+                    []
+            )
+        |> Html.div
+            [ Attr.id "lia-tts-videos"
             , Attr.style "width" "100%"
             , Attr.style "height" "100%"
-            , Attr.style "objectFit" "cover"
-            , Attr.style "opacity" "1" -- Start with the video invisible
-            , Attr.style "transition" "opacity 0.3s" -- Smooth transition for opacity
-            , Attr.id "lia-tts-video-element"
+            , Attr.attribute "data-urls" videos
             ]
-            []
-        ]
         |> Overlay.view
             (if hide then
                 [ Attr.style "display" "none" ]
 
              else
-                []
+                [ Attr.class "fade-in" ]
             )
             overlay
         |> Html.map UpdateOverlay
