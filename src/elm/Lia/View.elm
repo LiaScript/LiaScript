@@ -606,6 +606,7 @@ viewVideoComment overlay effects =
                     , Attr.style "display" "none" -- Hide the video element
                     , Attr.preload "auto"
                     , Attr.src url
+                    , Attr.style "position" "absolute"
                     ]
                     []
             )

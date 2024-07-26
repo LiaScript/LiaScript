@@ -184,9 +184,6 @@ function read(event: Lia.Event) {
       let currentIndex = 0
       let isEnding = false
 
-      const canvas = document.createElement('canvas')
-      const context = canvas.getContext('2d', { willReadFrequently: true })
-
       async function playNext() {
         if (currentIndex >= videos.length) {
           if (!isEnding) {
@@ -200,23 +197,6 @@ function read(event: Lia.Event) {
         const video = videos[currentIndex]
 
         video.onended = () => {
-          try {
-            canvas.width = video.videoWidth
-            canvas.height = video.videoHeight
-
-            // Draw the last frame of the video onto the canvas
-            context.drawImage(video, 0, 0, canvas.width, canvas.height)
-
-            // Convert canvas content to a data URL
-            const dataURL = canvas.toDataURL('image/jpeg', 0.5)
-
-            player.style.backgroundImage = `url(${dataURL})`
-            player.style.backgroundSize = 'cover'
-            player.style.backgroundPosition = 'center'
-          } catch (e) {
-            console.warn('TTS failed to draw video frame ->', e.message)
-          }
-
           currentIndex++
           playNext()
         }
@@ -256,6 +236,7 @@ function read(event: Lia.Event) {
         }
 
         if (response !== undefined) {
+          storeBackgroundVideo(player, video)
           response.catch((e) => error(e.message))
         } else {
           error("resource couldn't be played")
@@ -580,6 +561,32 @@ function detectGender(voice: string) {
   }
 
   return Gender.Unknown
+}
+
+function storeBackgroundVideo(player: HTMLElement, video: HTMLVideoElement) {
+  try {
+    const background = video.cloneNode(true) as HTMLVideoElement
+
+    background.addEventListener('loadedmetadata', () => {
+      background.currentTime = background.duration
+    })
+
+    background.id = 'tts-video-preview'
+    background.preload = 'auto'
+    background.autoplay = false
+    background.muted = true
+
+    if (document.getElementById('tts-video-preview')) {
+      document.getElementById('tts-video-preview')?.replaceWith(background)
+    } else {
+      player.parentElement?.insertBefore(
+        background,
+        player.parentElement.firstChild
+      )
+    }
+  } catch (e) {
+    console.warn('TTS failed to draw video frame ->', e.message)
+  }
 }
 
 export default Service
