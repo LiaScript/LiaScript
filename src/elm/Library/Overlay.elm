@@ -162,7 +162,7 @@ view attr model inside =
             , style "top" (px model.position.y)
             , style "width" (px model.size.width)
             , style "height" (px model.size.height)
-            , style "border" "1px solid #d3d3d3"
+            , style "border" "5px solid #d3d3d3"
             , style "border-radius" "50%"
             , style "display" "flex"
             , style "flex-direction" "column"

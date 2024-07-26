@@ -175,14 +175,17 @@ function read(event: Lia.Event) {
     text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
 
     const player: any = document.getElementById(VIDEO)
-    const videos: HTMLMediaElement[] =
-      (Array.from(player?.children as unknown[]) as HTMLMediaElement[]) || []
+    const videos: HTMLVideoElement[] =
+      (Array.from(player?.children as unknown[]) as HTMLVideoElement[]) || []
 
     console.warn('video', videos)
 
     if (videos.length > 0 && player) {
       let currentIndex = 0
       let isEnding = false
+
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d', { willReadFrequently: true })
 
       async function playNext() {
         if (currentIndex >= videos.length) {
@@ -197,6 +200,23 @@ function read(event: Lia.Event) {
         const video = videos[currentIndex]
 
         video.onended = () => {
+          try {
+            canvas.width = video.videoWidth
+            canvas.height = video.videoHeight
+
+            // Draw the last frame of the video onto the canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+            // Convert canvas content to a data URL
+            const dataURL = canvas.toDataURL('image/jpeg', 0.5)
+
+            player.style.backgroundImage = `url(${dataURL})`
+            player.style.backgroundSize = 'cover'
+            player.style.backgroundPosition = 'center'
+          } catch (e) {
+            console.warn('TTS failed to draw video frame ->', e.message)
+          }
+
           currentIndex++
           playNext()
         }
