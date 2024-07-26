@@ -575,6 +575,9 @@ function storeBackgroundVideo(player: HTMLElement, video: HTMLVideoElement) {
     background.preload = 'auto'
     background.autoplay = false
     background.muted = true
+    background.onerror = null
+    background.onended = null
+    background.onplay = null
 
     if (document.getElementById('tts-video-preview')) {
       document.getElementById('tts-video-preview')?.replaceWith(background)
