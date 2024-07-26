@@ -7,7 +7,7 @@ module Library.Overlay exposing
     )
 
 import Html exposing (Attribute, Html, div)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (style, title)
 import Html.Events exposing (on, preventDefaultOn)
 import Json.Decode as Decode exposing (Decoder)
 
@@ -230,19 +230,21 @@ view attr model inside =
             , style "text-align" "center"
             , onMouseDown DragStart
             , onTouchStart DragStart
+            , title "drag video comment"
             ]
             []
         , div
             [ style "width" "8%"
             , style "height" "8%"
-            , style "background" "blue"
+            , style "background" "#d3d3d3"
             , style "position" "absolute"
             , style "right" "10%"
             , style "bottom" "10%"
             , style "cursor" "se-resize"
-            , style "border-radius" "30%"
+            , style "border-radius" "50%"
             , onMouseDown ResizeStart
             , onTouchStart ResizeStart
+            , title "resize video comment"
             ]
             []
         ]

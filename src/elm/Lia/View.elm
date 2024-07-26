@@ -143,6 +143,7 @@ viewSlide screen model =
         Just section ->
             [ Html.div [ Attr.class "lia-slide" ]
                 [ viewVideoComment
+                    model.settings.sound
                     model.overlayVideo
                     section.effect_model
                 , slideTopBar
@@ -572,8 +573,8 @@ appendAudioFragments audio info =
             :: List.map audioRecordings audio
 
 
-viewVideoComment : Overlay.Model -> Effect.Model SubSection -> Html Msg
-viewVideoComment overlay effects =
+viewVideoComment : Bool -> Overlay.Model -> Effect.Model SubSection -> Html Msg
+viewVideoComment active overlay effects =
     let
         urls =
             Effect.getVideoRecordings effects
@@ -617,7 +618,7 @@ viewVideoComment overlay effects =
             , Attr.attribute "data-urls" videos
             ]
         |> Overlay.view
-            (if hide then
+            (if hide || not active then
                 [ Attr.style "display" "none" ]
 
              else
