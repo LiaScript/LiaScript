@@ -1,4 +1,4 @@
-module Service.Sync exposing (..)
+module Service.Sync exposing (chat, code, codes, connect, cursor, disconnect, join, publish, quiz, survey)
 
 import Array exposing (Array)
 import Json.Encode as JE

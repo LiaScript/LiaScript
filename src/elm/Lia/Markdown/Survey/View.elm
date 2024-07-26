@@ -50,43 +50,41 @@ import Translations
 
 view : Config sub -> Parameters -> Survey -> Vector -> ( Maybe Int, Html (Msg sub) )
 view config attr survey model =
-    Tuple.pair
-        (model
-            |> Array.get survey.id
-            |> Maybe.andThen .scriptID
-        )
-    <|
-        case survey.survey of
-            Text lines ->
-                view_text config (get_text_state model survey.id) lines survey.id
-                    |> view_survey config attr "text" model survey.id
-                    |> viewTextSync config lines (getSync config survey.id)
+    ( model
+        |> Array.get survey.id
+        |> Maybe.andThen .scriptID
+    , case survey.survey of
+        Text lines ->
+            view_text config (get_text_state model survey.id) lines survey.id
+                |> view_survey config attr "text" model survey.id
+                |> viewTextSync config lines (getSync config survey.id)
 
-            Select inlines ->
-                view_select config inlines (get_select_state model survey.id) survey.id
-                    |> view_survey config attr "select" model survey.id
-                    |> viewSelectSync config inlines (getSync config survey.id)
+        Select inlines ->
+            view_select config inlines (get_select_state model survey.id) survey.id
+                |> view_survey config attr "select" model survey.id
+                |> viewSelectSync config inlines (getSync config survey.id)
 
-            Vector button questions analysis ->
-                vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
-                    |> view_vector questions
-                    |> view_survey config
-                        attr
-                        (if button then
-                            "single-choice"
+        Vector button questions analysis ->
+            vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
+                |> view_vector questions
+                |> view_survey config
+                    attr
+                    (if button then
+                        "single-choice"
 
-                         else
-                            "multiple-choice"
-                        )
-                        model
-                        survey.id
-                    |> viewVectorSync config analysis questions (getSync config survey.id)
+                     else
+                        "multiple-choice"
+                    )
+                    model
+                    survey.id
+                |> viewVectorSync config analysis questions (getSync config survey.id)
 
-            Matrix button header vars questions ->
-                matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
-                    |> view_matrix config header questions
-                    |> view_survey config attr "matrix" model survey.id
-                    |> viewMatrixSync config questions vars (getSync config survey.id)
+        Matrix button header vars questions ->
+            matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
+                |> view_matrix config header questions
+                |> view_survey config attr "matrix" model survey.id
+                |> viewMatrixSync config questions vars (getSync config survey.id)
+    )
 
 
 getSync : Config sub -> Int -> Maybe (List Sync)
@@ -604,7 +602,8 @@ view_select config options ( open, value ) id submitted =
 option : Config sub -> Int -> Int -> Inlines -> Html (Msg sub)
 option config id1 id2 opt =
     opt
-        |> (viewer config >> List.map (Html.map Script))
+        |> viewer config
+        |> List.map (Html.map Script)
         |> Html.div
             [ Attr.class "lia-dropdown__option"
             , SelectUpdate id1 id2 |> onClick
@@ -615,7 +614,7 @@ get_option : Config sub -> Int -> List Inlines -> Html (Msg sub)
 get_option config id list =
     case ( id, list ) of
         ( 0, x :: _ ) ->
-            x |> (viewer config >> List.map (Html.map Script)) |> Html.span []
+            x |> viewer config |> List.map (Html.map Script) |> Html.span []
 
         ( i, _ :: xs ) ->
             get_option config (i - 1) xs

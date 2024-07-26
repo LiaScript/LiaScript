@@ -39,6 +39,5 @@ toString state =
     state
         |> Array.toList
         |> List.map Vector.toString
-        |> List.intersperse ","
-        |> String.concat
+        |> String.join ","
         |> (\str -> "[" ++ str ++ "]")

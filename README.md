@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.15.4
+version:  0.15.6
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,25 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.15.6** (26/07/2024)
+
+- fix: SVG emoji sizing in ASCII-art images
+- feat: Add video-comments. Video snippets can be added to comments, which will be replayed if the comment is read out loud.
+
+  ``` markdown
+      --{{1}}--
+  !?[|>](video.mp4)
+  The upper video is replayed if this comment becomes active.
+  ```
+
+**0.15.5** (15/07/2024)
+
+- chore(Classroom): Upgrade Trystero to 0.19
+- refac(Charts): optimized eCharts loading and added `renderer` option, which can be set to `svg` or `canvas`, svg is the default
+- chore(elm): Optimized with elm-review
+- fix: text-book switching
+- improve(TTS): only if there is a comment or an audio-file, the playbutton is enabled
 
 **0.15.4** (03/07/2024)
 
