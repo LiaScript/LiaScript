@@ -6,6 +6,7 @@ module Lia.Markdown.Effect.Model exposing
     , current_paragraphs
     , getAudioRecordings
     , getHiddenComments
+    , getVideoRecordings
     , get_paragraph
     , hasComments
     , init
@@ -42,6 +43,7 @@ type alias Content =
     , attr : Parameters
     , content : Inlines
     , audio : Array String
+    , video : Array String
     }
 
 
@@ -56,12 +58,22 @@ hasComments model =
 
 
 getAudioRecordings : Model a -> List String
-getAudioRecordings model =
+getAudioRecordings =
+    getRecordings .audio
+
+
+getVideoRecordings : Model a -> List String
+getVideoRecordings =
+    getRecordings .video
+
+
+getRecordings : (Content -> Array String) -> Model a -> List String
+getRecordings fn model =
     model.comments
         |> Dict.get model.visible
         |> Maybe.map
             (.content
-                >> Array.map (.audio >> Array.toList)
+                >> Array.map (fn >> Array.toList)
                 >> Array.toList
                 >> List.concat
             )

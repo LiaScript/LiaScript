@@ -12,6 +12,7 @@ import Lia.Parser.PatReplace exposing (repo)
 import Lia.Section as Section
 import Lia.Settings.Types as Settings
 import Lia.Sync.Types as Sync
+import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 import Translations
 
@@ -63,6 +64,7 @@ toModel seed pane sync =
         |> JD.map2 (|>) (JD.succeed seed)
         |> JD.map2 (|>) (JD.succeed pane)
         |> JD.map2 (|>) (JD.succeed Chat.init)
+        |> JD.map2 (|>) (JD.succeed Overlay.init)
 
 
 toSectionBase : JD.Decoder Section.Base
