@@ -15,6 +15,7 @@ import Lia.Section exposing (Sections)
 import Lia.Settings.Json
 import Lia.Settings.Types as Settings exposing (Settings)
 import Lia.Sync.Types as Sync
+import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 import Service.Event exposing (Event)
 import Service.Resource
@@ -93,6 +94,7 @@ type alias Model =
     , seed : Int
     , pane : SplitPane.State
     , chat : Chat.Model
+    , overlayVideo : Overlay.Model
     }
 
 
@@ -168,6 +170,7 @@ init { seed, hasShareApi, openTOC, settings, backends, url, readme, origin, anch
     , seed = seed
     , pane = SplitPane.init SplitPane.Horizontal
     , chat = Chat.init
+    , overlayVideo = Overlay.init
     }
 
 

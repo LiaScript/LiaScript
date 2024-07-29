@@ -78,8 +78,7 @@ toString state =
     state
         |> Array.toList
         |> List.map (Block.toString True)
-        |> List.intersperse ","
-        |> String.concat
+        |> String.join ","
         |> (\str -> "[" ++ str ++ "]")
 
 

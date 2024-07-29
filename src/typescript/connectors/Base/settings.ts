@@ -12,6 +12,7 @@ const defaultSettings: Lia.Settings = {
 
   tooltips: false,
   preferBrowserTTS: true,
+  hideVideoComments: false,
 }
 
 export const Settings = {
@@ -84,7 +85,8 @@ export const Settings = {
       | 'font_size'
       | 'sound'
       | 'tooltip'
-      | 'preferBrowserTTS',
+      | 'preferBrowserTTS'
+      | 'hideVideoComments',
     value: any
   ) {
     if (value !== this.data[name]) {
@@ -168,5 +170,12 @@ export const Settings = {
   },
   set preferBrowserTTS(value: boolean) {
     this.setter('preferBrowserTTS', value)
+  },
+
+  get hideVideoComments(): boolean {
+    return this.data.hideVideoComments
+  },
+  set hideVideoComments(value: boolean) {
+    this.setter('hideVideoComments', value)
   },
 }

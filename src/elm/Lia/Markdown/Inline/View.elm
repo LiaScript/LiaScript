@@ -488,6 +488,7 @@ view_inf scripts lang light tooltips translations formulas media =
     , theme = Nothing
     , light = light
     , tooltips = tooltips
+    , hideVideoComments = True
     , media = media |> Maybe.withDefault Dict.empty
     , scripts = scripts
     , translations = translations

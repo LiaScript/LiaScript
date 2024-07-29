@@ -151,12 +151,12 @@ isMember list element =
 
 initRoom : { backend : String, course : String, room : String } -> Settings -> Settings
 initRoom config settings =
-    let
-        sync =
-            settings.sync
-    in
     case Via.fromString config.backend of
         Just backend ->
+            let
+                sync =
+                    settings.sync
+            in
             { settings
                 | sync =
                     { sync

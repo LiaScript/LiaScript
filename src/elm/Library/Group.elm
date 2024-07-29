@@ -30,7 +30,7 @@ decodeGroupIdChanged msg =
             (JD.at [ "target", "dataset", "groupId" ] JD.string)
             (JD.at [ "relatedTarget", "dataset", "groupId" ] JD.string)
         , JD.at [ "target", "dataset", "groupId" ] JD.string
-            |> JD.andThen (\a -> JD.succeed (Just a))
+            |> JD.map (\a -> Just a)
         ]
         |> JD.andThen (maybeGroupId msg)
 

@@ -52,9 +52,10 @@ customElements.define(
 
     private style_: string
     private val: string = ''
+    private renderer: 'canvas' | 'svg' = 'svg'
 
     static get observedAttributes() {
-      return ['style', 'mode', 'json', 'locale', 'aria-label']
+      return ['style', 'mode', 'json', 'locale', 'aria-label', 'renderer']
     }
 
     constructor() {
@@ -70,6 +71,7 @@ customElements.define(
         data: null,
       }
       this.locale = 'en'
+      this.setRenderer(this.getAttribute('renderer'))
       this.mode = ''
       this.container = document.createElement('div')
       shadowRoot.appendChild(this.container)
@@ -82,6 +84,12 @@ customElements.define(
       )
 
       this.style_ = style
+    }
+
+    setRenderer(renderer: any) {
+      if (renderer === 'canvas' || renderer === 'svg') {
+        this.renderer = renderer
+      }
     }
 
     getOption() {
@@ -110,10 +118,7 @@ customElements.define(
     connectedCallback() {
       if (!this.chart) {
         this.container.setAttribute('style', this.style_)
-        this.chart = echarts.init(this.container, this.mode || '', {
-          renderer: 'svg',
-          locale: this.locale,
-        })
+        this.initChart()
 
         this.option_ = this.getOption() || this.option_
 
@@ -169,11 +174,8 @@ customElements.define(
         case 'locale': {
           if (this.chart && this.locale !== newValue) {
             this.locale = newValue
-            echarts.dispose(this.chart)
-            this.chart = echarts.init(this.container, this.mode, {
-              renderer: 'svg',
-              locale: this.locale,
-            })
+
+            this.initChart()
             this.updateChart()
           }
         }
@@ -183,11 +185,20 @@ customElements.define(
 
           if (this.chart && this.mode !== newValue) {
             this.mode = newValue
-            echarts.dispose(this.chart)
-            this.chart = echarts.init(this.container, this.mode, {
-              renderer: 'svg',
-              locale: this.locale,
-            })
+
+            this.initChart()
+            this.updateChart()
+          }
+          break
+        }
+
+        case 'renderer': {
+          newValue = newValue || 'svg'
+
+          if (this.chart && this.renderer !== newValue) {
+            this.setRenderer(newValue)
+
+            this.initChart()
             this.updateChart()
           }
           break
@@ -235,6 +246,16 @@ customElements.define(
       }
 
       this.chart.setOption(this.option_, true)
+    }
+
+    initChart() {
+      if (this.chart) echarts.dispose(this.chart)
+
+      this.chart = echarts.init(this.container, this.mode || '', {
+        renderer: this.renderer,
+        locale: this.locale,
+        useDirtyRect: false,
+      })
     }
 
     resizeChart() {
