@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.15.6
+version:  0.15.7
 language: en
 narrator: UK English Male
 
@@ -295,6 +295,14 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.15.7** (26/07/2024)
+
+- improve(VideoComments):
+  
+  - Add accessibility features
+  - Add video-comments hide to settings, which will only replay the audio
+  - Improved z-index handling
 
 **0.15.6** (26/07/2024)
 
