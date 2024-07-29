@@ -232,27 +232,26 @@ decoder =
 decLevel : JD.Decoder Level
 decLevel =
     JD.int
-        |> JD.andThen
+        |> JD.map
             (\int ->
-                JD.succeed <|
-                    case int of
-                        0 ->
-                            Info
+                case int of
+                    0 ->
+                        Info
 
-                        1 ->
-                            Warn
+                    1 ->
+                        Warn
 
-                        2 ->
-                            Error
+                    2 ->
+                        Error
 
-                        3 ->
-                            HTML
+                    3 ->
+                        HTML
 
-                        4 ->
-                            Stream
+                    4 ->
+                        Stream
 
-                        _ ->
-                            Debug
+                    _ ->
+                        Debug
             )
 
 

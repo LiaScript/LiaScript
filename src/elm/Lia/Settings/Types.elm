@@ -28,6 +28,7 @@ type alias Settings =
     , translateWithGoogle : Maybe Bool
     , customTheme : Maybe String
     , tooltips : Bool
+    , hideVideoComments : Bool
     , sync : Maybe Bool
     , showQRCode : Bool
     , tts : TTS
@@ -75,6 +76,7 @@ init hasShareApi mode =
     , translateWithGoogle = Just False
     , customTheme = Nothing
     , tooltips = False
+    , hideVideoComments = False
     , sync = Just False
     , showQRCode = False
     , tts =

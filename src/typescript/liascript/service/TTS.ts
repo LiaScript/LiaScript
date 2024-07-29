@@ -19,6 +19,9 @@ var elmSend: Lia.Send | null
 
 const SETTINGS = 'settings'
 
+const AUDIO = 'lia-tts-recordings'
+const VIDEO = 'lia-tts-videos'
+
 export const Service = {
   PORT: 'tts',
 
@@ -59,6 +62,10 @@ export const Service = {
       // stop talking but send a response to the sender
       case 'cancel': {
         cancel()
+
+        if (event.track.length == 1 && event.track[0][0] === 'effect') {
+          event.track[0][0] = SETTINGS
+        }
 
         sendResponse(event, 'stop', null)
         break
@@ -167,10 +174,95 @@ function read(event: Lia.Event) {
     // \b(1.)\b is not visible to the user within the browser
     text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
 
-    if (hasAudioURLs) {
+    const player: any = document.getElementById(VIDEO)
+    const videos: HTMLVideoElement[] =
+      (Array.from(player?.children as unknown[]) as HTMLVideoElement[]) || []
+
+    if (videos.length > 0 && player) {
+      let currentIndex = 0
+      let isEnding = false
+
+      async function playNext() {
+        if (currentIndex >= videos.length) {
+          if (!isEnding) {
+            isEnding = true
+            sendResponse(event, 'stop')
+          }
+
+          return
+        }
+
+        const video = videos[currentIndex]
+
+        video.onended = () => {
+          currentIndex++
+          playNext()
+        }
+
+        const error = (error: string) => {
+          console.warn('TTS failed to play ->', '' + error, video.src)
+
+          if (video.src.startsWith('blob:')) {
+            currentIndex++
+            playNext()
+            return
+          }
+
+          video.pause()
+
+          if (window.LIA.fetchError) {
+            window.LIA.fetchError(
+              'video',
+              video.src.replace(window.location.origin, '')
+            )
+            return
+          }
+
+          currentIndex++
+          playNext()
+        }
+
+        // In case the video has been played before
+        if (video.currentTime !== 0) {
+          video.currentTime = 0
+        }
+
+        const response = video.play()
+        video.style.display = 'block'
+        if (currentIndex > 0) {
+          videos[currentIndex - 1].style.display = 'none'
+        }
+
+        if (response !== undefined) {
+          storeBackgroundVideo(player, video)
+          response.catch((e) => error(e.message))
+        } else {
+          error("resource couldn't be played")
+        }
+      }
+
+      playNext()
+      sendResponse(event, 'start')
+
+      /*// Create a new video element for preloading
+      const nextVideo = video.cloneNode() as HTMLVideoElement
+      nextVideo.src = videoUrls[0]
+      player.appendChild(nextVideo)
+
+      // Preload the next video
+      nextVideo.load()
+
+      // When the new video is ready to play
+      nextVideo.oncanplay = () => {
+        nextVideo.play()
+
+        // Remove the preloading video element
+        player.removeChild(video)
+      }*/
+    } else if (hasAudioURLs) {
       let audioUrls: HTMLMediaElement[] = Array.from(
         document.getElementsByClassName(
-          'lia-tts-recordings'
+          AUDIO
         ) as HTMLCollectionOf<HTMLMediaElement>
       )
       let currentIndex = 0
@@ -185,17 +277,25 @@ function read(event: Lia.Event) {
         const source = audio.firstChild as HTMLSourceElement
         const error = (error: string) => {
           console.warn('TTS failed to play ->', '' + error, source.src)
+
           if (source.src.startsWith('blob:')) {
             currentIndex++
             playNext()
-          } else {
-            audio.pause()
+            return
+          }
 
+          audio.pause()
+
+          if (window.LIA.fetchError) {
             window.LIA.fetchError(
               'audio',
               source.src.replace(window.location.origin, '')
             )
+            return
           }
+
+          currentIndex++
+          playNext()
         }
 
         audio.onended = () => {
@@ -274,11 +374,10 @@ export function inject(key: string) {
 }
 
 function cancel() {
-  console.log('CANCEL audioRecordings')
   try {
     const audioRecordings = document.getElementsByClassName(
-      'lia-tts-recordings'
-    ) as HTMLAllCollection<HTMLMediaElement>
+      AUDIO
+    ) as HTMLCollectionOf<HTMLMediaElement>
 
     for (let i = 0; i < audioRecordings.length; i++) {
       audioRecordings[i].pause()
@@ -286,6 +385,18 @@ function cancel() {
     }
   } catch (e) {
     console.warn('TTS failed to cancel audioRecordings', e.message)
+  }
+
+  try {
+    const player: any = document.getElementById(VIDEO)
+    const videos: HTMLMediaElement[] =
+      (Array.from(player?.children as unknown[]) as HTMLMediaElement[]) || []
+
+    for (let i = 0; i < videos.length; i++) {
+      videos[i].pause()
+    }
+  } catch (e) {
+    console.warn('TTS failed to cancel videoRecordings', e.message)
   }
 
   try {
@@ -448,6 +559,35 @@ function detectGender(voice: string) {
   }
 
   return Gender.Unknown
+}
+
+function storeBackgroundVideo(player: HTMLElement, video: HTMLVideoElement) {
+  try {
+    const background = video.cloneNode(true) as HTMLVideoElement
+
+    background.addEventListener('loadedmetadata', () => {
+      background.currentTime = background.duration
+    })
+
+    background.id = 'tts-video-preview'
+    background.preload = 'auto'
+    background.autoplay = false
+    background.muted = true
+    background.onerror = null
+    background.onended = null
+    background.onplay = null
+
+    if (document.getElementById('tts-video-preview')) {
+      document.getElementById('tts-video-preview')?.replaceWith(background)
+    } else {
+      player.parentElement?.insertBefore(
+        background,
+        player.parentElement.firstChild
+      )
+    }
+  } catch (e) {
+    console.warn('TTS failed to draw video frame ->', e.message)
+  }
 }
 
 export default Service

@@ -586,10 +586,6 @@ firstChildViewStyle display (State state) =
                     ]
 
         Percentage p ->
-            let
-                v =
-                    encode 0 <| float <| getValue p
-            in
             [ style "display" <|
                 if display == OnlySecond then
                     "none"
@@ -598,6 +594,10 @@ firstChildViewStyle display (State state) =
                     "flex"
             , style "flex" <|
                 if display == Both then
+                    let
+                        v =
+                            encode 0 <| float <| getValue p
+                    in
                     v
 
                 else
@@ -629,10 +629,6 @@ secondChildViewStyle display (State state) =
             ]
 
         Percentage p ->
-            let
-                v =
-                    encode 0 <| float <| 1 - getValue p
-            in
             [ style "display" <|
                 if display == OnlyFirst then
                     "none"
@@ -644,6 +640,10 @@ secondChildViewStyle display (State state) =
                     "1 1 0%"
 
                 else
+                    let
+                        v =
+                            encode 0 <| float <| 1 - getValue p
+                    in
                     v
             , style "width" "100%"
             , style "height" "100%"

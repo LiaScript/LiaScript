@@ -26,6 +26,7 @@ type alias Config sub =
     , theme : Maybe String
     , light : Bool
     , tooltips : Bool
+    , hideVideoComments : Bool
     , media : Dict String ( Int, Int )
     , scripts : Scripts SubSection
     , input :
@@ -51,6 +52,7 @@ init :
     , theme : Maybe String
     , light : Bool
     , tooltips : Bool
+    , hideVideoComments : Bool
     , media : Dict String ( Int, Int )
     , scripts : Scripts SubSection
     , translations : Maybe ( String, String )
@@ -73,6 +75,7 @@ init config =
     , theme = config.theme
     , light = config.light
     , tooltips = config.tooltips
+    , hideVideoComments = config.hideVideoComments
     , media = config.media
     , scripts = config.scripts
     , input =

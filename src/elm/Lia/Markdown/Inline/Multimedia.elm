@@ -104,8 +104,7 @@ preserve url =
                 p :: _ ->
                     Just p
         )
-        >> List.intersperse "&"
-        >> String.concat
+        >> String.join "&"
         >> (++) "?"
         >> fragment url
         >> (\parameters ->

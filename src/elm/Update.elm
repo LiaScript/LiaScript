@@ -109,7 +109,7 @@ pieces so that the view can update a progress-bar.
 message : msg -> Cmd msg
 message msg =
     Process.sleep 0
-        |> Task.andThen (always <| Task.succeed msg)
+        |> Task.map (always <| msg)
         |> Task.perform identity
 
 
