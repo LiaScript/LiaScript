@@ -101,6 +101,8 @@ viewSettings lang tabbable width settings =
     , divider
     , viewTooltips grouping lang tabbable width settings.tooltips
     , divider
+    , viewVideoComment grouping lang tabbable width settings.hideVideoComments
+    , divider
     , viewTTSSettings grouping lang tabbable settings.tts
     ]
 
@@ -271,6 +273,26 @@ viewTooltips grouping lang tabbable width enabled =
 
     else
         Html.text ""
+
+
+viewVideoComment : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Int -> Bool -> Html Msg
+viewVideoComment grouping lang tabbable width enabled =
+    Html.label
+        [ Attr.class "lia-label"
+        , A11y_Widget.hidden (not tabbable)
+        ]
+        [ Html.input
+            (grouping
+                [ Attr.class "lia-checkbox"
+                , Attr.type_ "checkbox"
+                , Attr.checked enabled
+                , onClick (Toggle VideoComments)
+                , A11y_Key.tabbable tabbable
+                ]
+            )
+            []
+        , Html.text "Hide video comments"
+        ]
 
 
 viewTTSSettings : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> TTS -> Html Msg

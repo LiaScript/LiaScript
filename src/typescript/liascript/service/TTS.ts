@@ -178,8 +178,6 @@ function read(event: Lia.Event) {
     const videos: HTMLVideoElement[] =
       (Array.from(player?.children as unknown[]) as HTMLVideoElement[]) || []
 
-    console.warn('video', videos)
-
     if (videos.length > 0 && player) {
       let currentIndex = 0
       let isEnding = false
