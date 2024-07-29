@@ -157,7 +157,7 @@ view attr model inside =
     div
         (List.append
             [ style "position" "absolute"
-            , style "z-index" "100000000"
+            , style "z-index" "50"
             , style "left" (px model.position.x)
             , style "top" (px model.position.y)
             , style "width" (px model.size.width)
