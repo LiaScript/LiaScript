@@ -49,6 +49,7 @@ type Toggle
     | TranslateWithGoogle
     | Tooltips
     | PreferBrowserTTS
+    | VideoComments
 
 
 update :
@@ -136,6 +137,9 @@ update main msg model =
 
         Toggle QRCode ->
             no_log Nothing { model | showQRCode = not model.showQRCode }
+
+        Toggle VideoComments ->
+            log Nothing { model | hideVideoComments = not model.hideVideoComments }
 
         Toggle Chat ->
             let

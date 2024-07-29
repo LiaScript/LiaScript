@@ -27,6 +27,7 @@ export type Settings = {
   lang: Lang
   tooltips: boolean
   preferBrowserTTS: boolean
+  hideVideoComments: boolean
 }
 
 export enum Mode {

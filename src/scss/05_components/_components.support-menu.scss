@@ -15,7 +15,7 @@
   -ms-user-select: none;
   user-select: none;
   width: $support-width-mobile;
-  z-index: 1;
+  z-index: 100;
 
   &--closed {
     transform: translateX(100%);
@@ -25,12 +25,12 @@
     }
   }
 
-  @include breakpoint("sm") {
+  @include breakpoint('sm') {
     width: $support-width-desktop;
     padding-top: 0rem;
   }
 
-  @include breakpoint("md") {
+  @include breakpoint('md') {
     border: none;
     height: 100%;
     position: relative;
@@ -58,17 +58,17 @@
         (2 * #{map-get($global-spacing, spacing-small)} - (#{$btn-height} / 4))
     );
 
-    @include breakpoint("sm", "max") {
+    @include breakpoint('sm', 'max') {
       transform: translate(2.1rem, -50%);
     }
 
-    @include breakpoint("md", "max") {
+    @include breakpoint('md', 'max') {
       &--closed {
         transform: translateX(100%);
       }
     }
 
-    @include breakpoint("md") {
+    @include breakpoint('md') {
       display: none;
       visibility: hidden;
     }
@@ -89,7 +89,7 @@
       box-shadow: none !important;
     }
 
-    @include breakpoint("md") {
+    @include breakpoint('md') {
       align-items: center;
       display: flex;
       flex-direction: row;
@@ -129,11 +129,11 @@
       width: max-content;
     }
 
-    @include breakpoint("sm") {
+    @include breakpoint('sm') {
       padding: 1.8rem 0.75rem;
     }
 
-    @include breakpoint("md") {
+    @include breakpoint('md') {
       padding: 0 0.75rem;
 
       &:not(:first-child) {
@@ -172,7 +172,7 @@
       }
     }
 
-    .lia-btn[aria-checked="true"] {
+    .lia-btn[aria-checked='true'] {
       color: rgb(var(--color-highlight));
     }
 
@@ -186,7 +186,7 @@
       align-items: flex-start;
     }
 
-    @include breakpoint("md") {
+    @include breakpoint('md') {
       border-radius: $global-radius;
       box-shadow: 0 0 1rem rgba(128, 128, 128, 0.2);
       display: none;
@@ -194,7 +194,7 @@
       padding: 1.4rem;
       position: absolute;
       top: 5.9rem;
-      z-index: 10;
+      z-index: 100;
 
       &.active {
         display: flex;
