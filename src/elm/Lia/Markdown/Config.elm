@@ -146,6 +146,7 @@ inline lang translations settings screen effect id formulas media sync =
         , theme = Just settings.editor
         , light = settings.light
         , tooltips = settings.tooltips && (screen.width >= Const.tooltipBreakpoint)
+        , hideVideoComments = settings.hideVideoComments
         , media = media
         , scripts = effect.javascript
         , translations = Just translations
