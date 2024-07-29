@@ -143,13 +143,7 @@ viewSlide screen model =
     case get_active_section model of
         Just section ->
             [ Html.div [ Attr.class "lia-slide" ]
-                [ viewVideoComment
-                    { active = model.settings.sound
-                    , hide = model.settings.hideVideoComments
-                    }
-                    model.overlayVideo
-                    section.effect_model
-                , slideTopBar
+                [ slideTopBar
                     model.langCode
                     model.translation
                     screen
@@ -177,6 +171,12 @@ viewSlide screen model =
                 model.media
                 section.effect_model
                 model.section_active
+            , viewVideoComment
+                { active = model.settings.sound
+                , hide = model.settings.hideVideoComments
+                }
+                model.overlayVideo
+                section.effect_model
             , showModal model
             ]
 
