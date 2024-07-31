@@ -67,8 +67,8 @@ type alias Model =
 
 init : Model
 init =
-    { position = Position 0 0
-    , initialPosition = Position 0 0
+    { position = Position 20 100
+    , initialPosition = Position 20 100
     , size = Size 200 200
     , initialSize = Size 200 200
     , drag = Nothing
@@ -224,7 +224,7 @@ draggedPosition model pos =
     case model.drag of
         Just { start } ->
             Position
-                (model.initialPosition.x + (pos.x - start.x))
+                (model.initialPosition.x + (start.x - pos.x))
                 (model.initialPosition.y + (pos.y - start.y))
 
         Nothing ->
@@ -257,7 +257,7 @@ view attr model inside =
             , onKeyDownPreventDefault model.mode
             , attribute "tabindex" "0"
             , attribute "aria-label" ("Video playback controls - Current mode: " ++ modeToString model.mode)
-            , style "left" (px model.position.x)
+            , style "right" (px model.position.x)
             , style "top" (px model.position.y)
             , style "width" (px model.size.width)
             , style "height" (px model.size.height)
