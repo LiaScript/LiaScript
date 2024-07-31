@@ -418,8 +418,8 @@ onTouchEnd msg =
 positionDecoder : Decoder Position
 positionDecoder =
     Decode.map2 Position
-        (Decode.field "pageX" Decode.int)
-        (Decode.field "pageY" Decode.int)
+        (Decode.field "pageX" Decode.float |> Decode.map Basics.round)
+        (Decode.field "pageY" Decode.float |> Decode.map Basics.round)
 
 
 touchPositionDecoder : Decoder Position
@@ -437,10 +437,7 @@ onKeyDownPreventDefault mode =
     Html.Events.custom "keydown" (keyDecoder mode)
 
 
-
---keyDecoder : Mode -> Decode.Decoder (Msg parentMsg)
-
-
+keyDecoder : Mode -> Decode.Decoder { message : Msg parentMsg, preventDefault : Bool, stopPropagation : Bool }
 keyDecoder mode =
     Decode.map
         (\keyCode ->
@@ -495,8 +492,3 @@ positionToString pos =
 sizeToString : Size -> String
 sizeToString size =
     "width: " ++ String.fromInt size.width ++ ", height: " ++ String.fromInt size.height
-
-
-onKeyDown : (Int -> ( Msg parentMsg, Bool )) -> Attribute (Msg parentMsg)
-onKeyDown tagger =
-    preventDefaultOn "keydown" (Decode.map tagger Html.Events.keyCode)
