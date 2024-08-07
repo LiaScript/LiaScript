@@ -1,0 +1,27 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: LiaScript
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Sebastian
+    family-names: Zug
+    affiliation: TU Bergakademie Freiberg
+  - given-names: Dietrich
+    family-names: André
+    affiliation: TU Bergakademie Freiberg
+repository-code: 'https://github.com/LiaScript/LiaScript'
+url: 'https://liascript.github.io/'
+abstract: >-
+  LiaScript is an extension to Markdown to support the
+  creation of free and open online courses, interactive
+  books and thus, Open Educational Resources (OER). Courses
+  are simple text-files, that can be hosted and created
+  freely by everyone similar to Open-Source project. This
+  project contains the just-in-time compiler that runs
+  directly within your browser.
+license: BSD-3-Clause

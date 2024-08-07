@@ -67,8 +67,8 @@ type alias Model =
 
 init : Model
 init =
-    { position = Position 0 0
-    , initialPosition = Position 0 0
+    { position = Position 20 100
+    , initialPosition = Position 20 100
     , size = Size 200 200
     , initialSize = Size 200 200
     , drag = Nothing
@@ -224,7 +224,7 @@ draggedPosition model pos =
     case model.drag of
         Just { start } ->
             Position
-                (model.initialPosition.x + (pos.x - start.x))
+                (model.initialPosition.x + (start.x - pos.x))
                 (model.initialPosition.y + (pos.y - start.y))
 
         Nothing ->
@@ -257,7 +257,7 @@ view attr model inside =
             , onKeyDownPreventDefault model.mode
             , attribute "tabindex" "0"
             , attribute "aria-label" ("Video playback controls - Current mode: " ++ modeToString model.mode)
-            , style "left" (px model.position.x)
+            , style "right" (px model.position.x)
             , style "top" (px model.position.y)
             , style "width" (px model.size.width)
             , style "height" (px model.size.height)
@@ -418,8 +418,8 @@ onTouchEnd msg =
 positionDecoder : Decoder Position
 positionDecoder =
     Decode.map2 Position
-        (Decode.field "pageX" Decode.int)
-        (Decode.field "pageY" Decode.int)
+        (Decode.field "pageX" Decode.float |> Decode.map Basics.round)
+        (Decode.field "pageY" Decode.float |> Decode.map Basics.round)
 
 
 touchPositionDecoder : Decoder Position
@@ -437,10 +437,7 @@ onKeyDownPreventDefault mode =
     Html.Events.custom "keydown" (keyDecoder mode)
 
 
-
---keyDecoder : Mode -> Decode.Decoder (Msg parentMsg)
-
-
+keyDecoder : Mode -> Decode.Decoder { message : Msg parentMsg, preventDefault : Bool, stopPropagation : Bool }
 keyDecoder mode =
     Decode.map
         (\keyCode ->
@@ -495,8 +492,3 @@ positionToString pos =
 sizeToString : Size -> String
 sizeToString size =
     "width: " ++ String.fromInt size.width ++ ", height: " ++ String.fromInt size.height
-
-
-onKeyDown : (Int -> ( Msg parentMsg, Bool )) -> Attribute (Msg parentMsg)
-onKeyDown tagger =
-    preventDefaultOn "keydown" (Decode.map tagger Html.Events.keyCode)
