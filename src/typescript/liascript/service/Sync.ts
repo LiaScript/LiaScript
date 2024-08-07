@@ -285,6 +285,12 @@ function on(event: 'connect' | 'disconnect', callback: () => void) {
   switch (event) {
     case 'connect': {
       CALLBACK.connect.push(callback)
+
+      // if the callback is added after the connection was established
+      if (window.LIA.classroom.connected) {
+        callback()
+      }
+
       break
     }
 
