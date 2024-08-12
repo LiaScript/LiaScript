@@ -4,7 +4,6 @@ import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Widget as A11y_Widget
 import Array
-import Conditional.List as CList
 import Const
 import Dict exposing (Dict)
 import Html exposing (Html, section)
@@ -162,15 +161,16 @@ viewSlide screen model =
                     }
                 ]
             , slideA11y
-                model.translation
-                model.settings.light
-                (model.settings.tooltips && (screen.width >= Const.tooltipBreakpoint))
-                ( model.langCodeOriginal, model.langCode )
-                model.settings.mode
-                model.definition.formulas
-                model.media
-                section.effect_model
-                model.section_active
+                { lang = model.translation
+                , light = model.settings.light
+                , tooltips = model.settings.tooltips && (screen.width >= Const.tooltipBreakpoint)
+                , translations = ( model.langCodeOriginal, model.langCode )
+                , mode = model.settings.mode
+                , formulas = model.definition.formulas
+                , media = model.media
+                , effect = section.effect_model
+                , id = model.section_active
+                }
             , viewVideoComment
                 { active = model.settings.sound
                 , hide = model.settings.hideVideoComments
@@ -354,8 +354,19 @@ btnStop lang settings =
         [ Attr.id "lia-btn-sound", Attr.class "lia-btn--transparent" ]
 
 
-slideA11y : Lang -> Bool -> Bool -> ( String, String ) -> Mode -> Dict String String -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
-slideA11y lang light tooltips translations mode formulas media effect id =
+slideA11y :
+    { lang : Lang
+    , light : Bool
+    , tooltips : Bool
+    , translations : ( String, String )
+    , mode : Mode
+    , formulas : Dict String String
+    , media : Dict String ( Int, Int )
+    , effect : Effect.Model SubSection
+    , id : Int
+    }
+    -> Html Msg
+slideA11y { lang, light, tooltips, translations, mode, formulas, media, effect, id } =
     case mode of
         Slides ->
             effect

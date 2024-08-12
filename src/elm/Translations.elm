@@ -1515,6 +1515,216 @@ baseLang lang =
             "English"
 
 
+commentRate : Lang -> String
+commentRate lang =
+    case lang of 
+        Am ->
+            "የድምጽ ፍጥነት ቀይር"
+
+        Ar ->
+            "تعديل سرعة التشغيل"
+
+        Bg ->
+            "Промяна на скоростта на възпроизвеждане"
+
+        Bn ->
+            "প্লেব্যাক গতি সংশোধন করুন"
+
+        De ->
+            "Anpassung der Abspielgeschwindigkeit"
+
+        Es ->
+            "ajustar velocidad de reproducción"
+
+        Fa ->
+            "تنظیم سرعت پخش"
+
+        Fr ->
+            "Ajuster la vitesse de lecture"
+
+        Hi ->
+            "प्लेबैक गति सेट करें"
+
+        Hy ->
+            "ձայնագիրը կարգավորել"
+
+        It ->
+            "Regola la velocità di riproduzione"
+
+        Ja ->
+            "再生速度を変更"
+
+        Ko ->
+            "재생 속도 조절"
+
+        Nl ->
+            "Afspeelsnelheid aanpassen"
+
+        Pa ->
+            "ਪਲੇਬੈਕ ਗਤੀ ਸੰਰਚਨਾ"
+
+        Pt ->
+            "Ajustar velocidade de reprodução"
+
+        Ru ->
+            "настройка скорости воспроизведения"
+
+        Sw ->
+            "Badilisha kasi ya kucheza"
+
+        Tw ->
+            "调整播放速度"
+
+        Uk ->
+            "налаштування швидкості відтворення"
+
+        Zh ->
+            "调整播放速度"
+
+        _ ->
+            "Adjust playback speed"
+
+
+commentPitch : Lang -> String
+commentPitch lang =
+    case lang of 
+        Am ->
+            "የድምጽ አንድ ቀይር"
+
+        Ar ->
+            "تعديل الارتفاع"
+
+        Bg ->
+            "Промяна на тон"
+
+        Bn ->
+            "টোন সংশোধন করুন"
+
+        De ->
+            "Anpassung der Tonhöhe"
+
+        Es ->
+            "ajustar tono"
+
+        Fa ->
+            "تنظیم تغییر صدا"
+
+        Fr ->
+            "Ajuster la hauteur du son"
+
+        Hi ->
+            "ध्वनि सेट करें"
+
+        Hy ->
+            "ձայնահատկությունը կարգավորել"
+
+        It ->
+            "Regola l'altezza del tono"
+
+        Ja ->
+            "音程を変更"
+
+        Ko ->
+            "음높이 조절"
+
+        Nl ->
+            "Toonhoogte aanpassen"
+
+        Pa ->
+            "ਧੁਨ ਸੰਰਚਨਾ"
+
+        Pt ->
+            "Ajustar tom"
+
+        Ru ->
+            "настройка высоты тона"
+
+        Sw ->
+            "Badilisha sauti"
+
+        Tw ->
+            "调整音高"
+
+        Uk ->
+            "налаштування висоти тону"
+
+        Zh ->
+            "调整音高"
+
+        _ ->
+            "Adjust pitch"
+
+
+commentHide : Lang -> String
+commentHide lang =
+    case lang of 
+        Am ->
+            "የቪዲዮ አስተካክል ደብቅ"
+
+        Ar ->
+            "إخفاء تعليقات الفيديو"
+
+        Bg ->
+            "Скриване на видео коментари"
+
+        Bn ->
+            "ভিডিও মন্তব্য লুকান"
+
+        De ->
+            "Videokommentare ausblenden"
+
+        Es ->
+            "Ocultar los comentarios del video"
+
+        Fa ->
+            "مخفی کردن نظرات ویدیو"
+
+        Fr ->
+            "Masquer les commentaires vidéo"
+
+        Hi ->
+            "वीडियो टिप्पणियाँ छुपाएं"
+
+        Hy ->
+            "թաքցնել տեսանյութի մեջ մեկնաբանությունները"
+
+        It ->
+            "Nascondi i commenti video"
+
+        Ja ->
+            "動画のコメントを非表示にする"
+
+        Ko ->
+            "비디오 댓글 숨기기"
+
+        Nl ->
+            "Hide video comments"
+
+        Pa ->
+            "ਵੀਡੀਓ ਟਿੱਪਣੀਆਂ ਛੁਪਾਓ"
+
+        Pt ->
+            "Ocultar comentários do vídeo"
+
+        Ru ->
+            "Скрыть комментарии к видео"
+
+        Sw ->
+            "Ficha maoni ya video"
+
+        Tw ->
+            "隱藏影片評論"
+
+        Uk ->
+            "Приховати коментарі до відео"
+
+        Zh ->
+            "隱藏影片評論"
+
+        _ ->
+            "Hide video comments"
+
+
 no_translation : Lang -> String
 no_translation lang =
     case lang of 

@@ -468,6 +468,7 @@ view_block config block =
                              , audio = comment.audio
                              }
                                 |> addTranslation
+                                |> List.append comment.attr
                                 |> toAttribute
                             )
                         |> Html.map Script
