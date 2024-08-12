@@ -13,6 +13,7 @@ const defaultSettings: Lia.Settings = {
   tooltips: false,
   preferBrowserTTS: true,
   hideVideoComments: false,
+  audio: { pitch: 1, rate: 1 },
 }
 
 export const Settings = {
@@ -33,21 +34,25 @@ export const Settings = {
 
     if (!data) {
       data = defaultSettings
-
-      if (local) {
-        localStorage.setItem(this.PORT, JSON.stringify(data))
-      }
-
-      this.updateClassName(data)
-    } else {
-      this.data = data
+      this.update(data, local)
     }
+
+    this.data = data
 
     if (window.LIA) {
       window.LIA.settings = this
     }
 
     return data
+  },
+
+  update: function (data: Lia.Settings, storeLocally: boolean = true) {
+    if (storeLocally) {
+      localStorage.setItem(this.PORT, JSON.stringify(data))
+    }
+
+    this.updateClassName(data)
+    this.data = data
   },
 
   updateClassName: function (data: Lia.Settings) {
@@ -86,10 +91,11 @@ export const Settings = {
       | 'sound'
       | 'tooltip'
       | 'preferBrowserTTS'
-      | 'hideVideoComments',
+      | 'hideVideoComments'
+      | 'audio',
     value: any
   ) {
-    if (value !== this.data[name]) {
+    if (JSON.stringify(value) !== JSON.stringify(this.data[name])) {
       this.data[name] = value
       this.storage(this.data)
 
@@ -177,5 +183,12 @@ export const Settings = {
   },
   set hideVideoComments(value: boolean) {
     this.setter('hideVideoComments', value)
+  },
+  set audio(value: { rate: number; pitch: number }) {
+    this.data.audio = value
+    this.setter('audio', value)
+  },
+  get audio() {
+    return this.data.audio
   },
 }

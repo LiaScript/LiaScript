@@ -7,6 +7,7 @@ import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
 import Lia.Markdown.Code.Editor exposing (editor)
+import Lia.Markdown.Inline.Multimedia exposing (audio)
 import Lia.Settings.Types exposing (Mode(..), Settings)
 
 
@@ -24,7 +25,18 @@ fromModel model =
         , ( "tooltips", JE.bool model.tooltips )
         , ( "PreferBrowserTTS", JE.bool model.tts.preferBrowser )
         , ( "hideVideoComments", JE.bool model.hideVideoComments )
+        , ( "audio"
+          , JE.object
+                [ ( "pitch", maybeFloat model.audio.pitch )
+                , ( "rate", maybeFloat model.audio.rate )
+                ]
+          )
         ]
+
+
+maybeFloat : String -> JE.Value
+maybeFloat =
+    String.toFloat >> Maybe.withDefault 1.0 >> JE.float
 
 
 fromMode : Mode -> JE.Value
@@ -56,8 +68,9 @@ settings :
     -> Bool
     -> Bool
     -> Bool
+    -> { pitch : String, rate : String }
     -> Settings
-settings model toc mode theme light editor font_size sound lang tooltips preferBrowserTTS hideVideoComments =
+settings model toc mode theme light editor font_size sound lang tooltips preferBrowserTTS hideVideoComments audio =
     let
         tts =
             model.tts
@@ -74,6 +87,7 @@ settings model toc mode theme light editor font_size sound lang tooltips preferB
         , tooltips = tooltips
         , tts = { tts | preferBrowser = preferBrowserTTS }
         , hideVideoComments = hideVideoComments
+        , audio = audio
     }
 
 
@@ -93,6 +107,13 @@ toModel model =
             |> JDP.optional "tooltips" JD.bool False
             |> JDP.optional "PreferBrowserTTS" JD.bool True
             |> JDP.optional "hideVideoComments" JD.bool False
+            |> JDP.optional "audio"
+                (JD.succeed
+                    (\pitch rate -> { pitch = pitch, rate = rate })
+                    |> JDP.required "pitch" (JD.float |> JD.map String.fromFloat)
+                    |> JDP.required "rate" (JD.float |> JD.map String.fromFloat)
+                )
+                { pitch = "1", rate = "1" }
         )
 
 

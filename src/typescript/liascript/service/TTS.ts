@@ -111,11 +111,13 @@ function playback(event: Lia.Event) {
   const lang = event.message.param.lang
   let text = event.message.param.text
 
+  const options = getAudioSettings(text)
+
   if (typeof text !== 'string') {
     text = innerText(text)
   }
 
-  speak(text, voice, lang, event)
+  speak(text, voice, lang, options, event)
 }
 
 function innerText(node) {
@@ -149,6 +151,24 @@ function innerText(node) {
   return text
 }
 
+function getAudioSettings(element: HTMLElement | Element) {
+  const options = Object.assign({}, window.LIA.settings.audio)
+  const rate = element.getAttribute('data-rate')
+  if (rate) {
+    try {
+      options.rate = parseFloat(rate)
+    } catch (e) {}
+  }
+  const pitch = element.getAttribute('data-pitch')
+  if (pitch) {
+    try {
+      options.pitch = parseFloat(pitch)
+    } catch (e) {}
+  }
+
+  return options
+}
+
 function read(event: Lia.Event) {
   cancel()
 
@@ -157,6 +177,9 @@ function read(event: Lia.Event) {
   if (element.length) {
     let voice = element[0].getAttribute('data-voice') || 'default'
     let lang = element[0].getAttribute('data-lang') || 'en'
+
+    const options = getAudioSettings(element[0])
+
     let hasAudioURLs: boolean = false
     let text = ''
 
@@ -226,6 +249,9 @@ function read(event: Lia.Event) {
         if (video.currentTime !== 0) {
           video.currentTime = 0
         }
+
+        video.preservesPitch = true
+        video.playbackRate = options.rate
 
         const response = video.play()
         video.style.display = 'block'
@@ -318,6 +344,8 @@ function read(event: Lia.Event) {
           audio.innerHTML = source.outerHTML
         }
 
+        audio.preservesPitch = true
+        audio.playbackRate = options.rate
         const response = audio.play()
 
         if (response !== undefined) {
@@ -330,7 +358,7 @@ function read(event: Lia.Event) {
       sendResponse(event, 'start')
       playNext()
     } else if (text !== '' && element[0] !== undefined) {
-      speak(text, voice, lang, event)
+      speak(text, voice, lang, options, event)
     }
   }
 }
@@ -408,17 +436,26 @@ function cancel() {
   }
 }
 
-function speak(text: string, voice: string, lang: string, event: Lia.Event) {
+function speak(
+  text: string,
+  voice: string,
+  lang: string,
+  options: {
+    rate: number
+    pitch: number
+  },
+  event: Lia.Event
+) {
   if (useBrowserTTS) {
     const syncVoice = getVoice(lang, voice)
 
     // there was a voice
     if (syncVoice) {
-      easySpeak(text, syncVoice, event)
+      easySpeak(text, syncVoice, options, event)
     }
     // try responsive-voice
     else if (window.responsiveVoice) {
-      responsiveSpeak(text, voice, event)
+      responsiveSpeak(text, voice, options, event)
     }
     // if everything fails get the first voice from the browser
     // and use it as the default voice
@@ -429,7 +466,7 @@ function speak(text: string, voice: string, lang: string, event: Lia.Event) {
         // store as default for the next run
         browserVoices[toKey(lang, voice)] = defaultVoice
 
-        easySpeak(text, defaultVoice, event)
+        easySpeak(text, defaultVoice, options, event)
       } else {
         sendResponse(event, 'ERROR', 'no TTS support')
       }
@@ -439,11 +476,19 @@ function speak(text: string, voice: string, lang: string, event: Lia.Event) {
     if (voice.startsWith('German')) {
       voice.replace('German', 'Deutsch')
     }
-    responsiveSpeak(text, voice, event)
+    responsiveSpeak(text, voice, options, event)
   }
 }
 
-function easySpeak(text: string, syncVoice: string, event: Lia.Event) {
+function easySpeak(
+  text: string,
+  syncVoice: string,
+  options: {
+    rate: number
+    pitch: number
+  },
+  event: Lia.Event
+) {
   EasySpeech.speak({
     text: text,
     voice: syncVoice,
@@ -457,10 +502,17 @@ function easySpeak(text: string, syncVoice: string, event: Lia.Event) {
       sendResponse(event, 'error', e.toString())
       console.warn('TTS playback failed:', e.toString())
     },
+    pitch: options.pitch, // a little bit higher
+    rate: options.rate, // a little bit faster
   })
 }
 
-function responsiveSpeak(text: string, voice: string, event: Lia.Event) {
+function responsiveSpeak(
+  text: string,
+  voice: string,
+  options: { pitch: number; rate: number },
+  event: Lia.Event
+) {
   if (window.responsiveVoice)
     window.responsiveVoice.speak(text, voice, {
       onstart: function () {
@@ -475,6 +527,9 @@ function responsiveSpeak(text: string, voice: string, event: Lia.Event) {
         sendResponse(event, 'error', e.toString())
         console.warn('TTS playback failed:', e.toString())
       },
+
+      pitch: options.pitch,
+      rate: options.rate,
     })
 }
 

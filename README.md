@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.15.8
+version:  0.15.9
 language: en
 narrator: UK English Male
 
@@ -292,6 +292,31 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.15.9** (12/08/2024)
+
+- feat: Add pitch and rate settings to TTS comments.
+  
+  - The pitch can be set between 0 and 2, the rate between 0.1 and 5.
+
+  - Rate is also added to video and audio comments, while keeping the pitch constant.
+
+  - Additionally, the pitch and rate can be modified within the script for the current comment or replayed element as well
+
+    ```markdown
+    <!-- data-rate="2.0" data-pitch="1.2" -->
+        --{{0}}--
+    This element will be read with a higher pitch and rate.
+
+    <!-- data-rate="1.3" -->
+        --{{0}}--
+    !?[video](/path/to/video.mp4)
+    This video will be played with a higher rate, but the pitch will stay the same.
+
+    <!-- data-rate="2.0" data-pitch="1.2" -->
+        {{|>}}
+    Also for this local playback, the custom data rate and pitch will be used to overwrite the default settings 
+    ```
 
 **0.15.8** (07/08/2024)
 
