@@ -1,5 +1,6 @@
 module Lia.Settings.Types exposing
     ( Action(..)
+    , Audio(..)
     , Mode(..)
     , Settings
     , TTS
@@ -33,6 +34,7 @@ type alias Settings =
     , showQRCode : Bool
     , tts : TTS
     , chat : { show : Bool, updates : Bool }
+    , audio : { pitch : String, rate : String }
     }
 
 
@@ -56,6 +58,11 @@ type Mode
     = Slides -- Underline Comments and Effects
     | Presentation -- Only effects
     | Textbook -- Render Comments and Effects at ones
+
+
+type Audio
+    = Pitch String
+    | Rate String
 
 
 init : Bool -> Mode -> Settings
@@ -88,6 +95,7 @@ init hasShareApi mode =
         { show = False
         , updates = False
         }
+    , audio = { pitch = "1", rate = "1" }
     }
 
 
