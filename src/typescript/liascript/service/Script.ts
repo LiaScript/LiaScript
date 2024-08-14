@@ -133,6 +133,8 @@ var delayID: any = null
 // delayed until all JavaScript resources have been loaded.
 var lia_queue: (Eval | Exec)[] = []
 
+var onload = false
+
 var elmSend: Lia.Send | null
 
 const Service = {
@@ -153,13 +155,23 @@ const Service = {
    */
   exec: function (code: string, delay: number = 0) {
     if (code) {
+      onload = true
+      code = `window.LIA.eventSemaphore++
+          try {
+            ${code}
+          } catch (e) {
+            console.warn('failed to execute onload =>', e.message)
+          }
+          window.LIA.eventSemaphore--
+          onload = false`
+
       liaExec({
         reply: false,
         track: [],
         service: this.PORT,
         message: {
           cmd: 'exec',
-          param: { code: code, delay: delay },
+          param: { code, delay },
         },
       })
     }
@@ -381,10 +393,20 @@ function delayExecution() {
     }, 250)
 
     console.warn(window.LIA.eventSemaphore, delayID)
+  } else if (onload && window.LIA.eventSemaphore === 0) {
+    const onloadEvent = lia_queue.shift()
+
+    if (onloadEvent?.type === JS.exec) {
+      liaExecCode(onloadEvent.event)
+    }
+
+    onload = false
+
+    setTimeout(delayExecution, 50)
   } else if (!delayID) {
     let event: Eval | Exec | undefined
 
-    while ((event = lia_queue.pop())) {
+    while ((event = lia_queue.shift())) {
       switch (event.type) {
         case JS.eval: {
           liaEvalCode(event.code, event.send)
