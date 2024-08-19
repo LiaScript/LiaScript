@@ -80,7 +80,7 @@
     "events": "^3.3.0",
     "katex": "^0.16.11",
     "logger.ts": "^1.0.5",
-    "minify": "^11.4.0",
+    "minify": "^9.2.0",
     "node-elm-compiler": "^5.0.6",
     "p2pt": "^1.5.1",
     "parcel": "^2.8.3",
