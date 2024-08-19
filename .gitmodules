@@ -1,9 +1,6 @@
 [submodule "lia-localization"]
 	path = lia-localization
 	url = https://github.com/liaScript/lia-localization.git
-[submodule "patches/elm-break-dom"]
-	path = patches/elm-break-dom
-	url = https://github.com/andre-dietrich/elm-break-dom
 [submodule "patches/elm-patch"]
 	path = patches/elm-patch
 	url = https://github.com/andre-dietrich/elm-patches
