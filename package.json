@@ -28,6 +28,7 @@
     "translate": "elm-i18n-gen lia-localization/locale src/elm/Translations.elm",
     "test": "npx elm-test",
     "analyze": "npm run clean && npx parcel build --no-source-maps --reporter @parcel/reporter-bundle-analyzer src/entry/app/index.html",
+    "prebuild": "npx parcel build --no-source-maps --no-optimize --public-url . src/entry/app/index.html",
     "watch": "npm run watch:dev",
     "build": "npm run build:app",
     "build:app": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/app/index.html && npm run sw",
