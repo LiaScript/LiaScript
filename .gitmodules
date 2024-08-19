@@ -1,0 +1,6 @@
+[submodule "lia-localization"]
+	path = lia-localization
+	url = https://github.com/LiaScript/lia-localization
+[submodule "patches/elm-patch"]
+	path = patches/elm-patch
+	url = https://github.com/andre-dietrich/elm-patch
