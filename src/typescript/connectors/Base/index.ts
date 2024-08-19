@@ -45,11 +45,7 @@ export class Connector {
   }
 
   setSettings(data: Lia.Settings) {
-    try {
-      localStorage.setItem(Settings.PORT, JSON.stringify(data))
-    } catch (e) {
-      console.warn('cannot write to localStorage')
-    }
+    Settings.update(data)
   }
 
   getSettings() {

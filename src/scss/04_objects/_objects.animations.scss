@@ -38,5 +38,25 @@
 }
 
 .fade-in {
-  animation: fadein 2s;
+  opacity: 1;
+  animation: fade-in 2s;
+  transition: opacity 0.3s ease-in-out;
+}
+
+#lia-tts-videos video {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.fade-out {
+  animation: fade-out 2s;
 }

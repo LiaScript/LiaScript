@@ -29,6 +29,7 @@ import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Types
     exposing
         ( Action(..)
+        , Audio(..)
         , Mode(..)
         , Settings
         , TTS
@@ -107,7 +108,9 @@ viewSettings lang tabbable width settings =
     , divider
     , viewTooltips grouping lang tabbable width settings.tooltips
     , divider
-    , viewTTSSettings grouping lang tabbable settings.tts
+    , viewVideoComment grouping lang tabbable width settings.hideVideoComments
+    , divider
+    , viewTTSSettings grouping lang tabbable settings.audio settings.tts
     ]
 
 
@@ -308,8 +311,8 @@ viewTooltips grouping lang tabbable width enabled =
         Html.text ""
 
 
-viewTTSSettings : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> TTS -> Html Msg
-viewTTSSettings grouping lang tabbable tts =
+viewVideoComment : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Int -> Bool -> Html Msg
+viewVideoComment grouping lang tabbable width enabled =
     Html.label
         [ Attr.class "lia-label"
         , A11y_Widget.hidden (not tabbable)
@@ -318,23 +321,106 @@ viewTTSSettings grouping lang tabbable tts =
             (grouping
                 [ Attr.class "lia-checkbox"
                 , Attr.type_ "checkbox"
-                , Attr.checked <|
-                    case ( tts.isBrowserSupported, tts.isResponsiveVoiceSupported ) of
-                        ( True, False ) ->
-                            True
-
-                        ( False, True ) ->
-                            False
-
-                        _ ->
-                            tts.preferBrowser
-                , onClick (Toggle PreferBrowserTTS)
+                , Attr.checked enabled
+                , onClick (Toggle VideoComments)
                 , A11y_Key.tabbable tabbable
-                , Attr.disabled (not (tts.isBrowserSupported && tts.isResponsiveVoiceSupported))
                 ]
             )
             []
-        , Html.text (Trans.ttsPreferBrowser lang)
+        , Html.text (Trans.commentHide lang)
+        ]
+
+
+viewTTSSettings :
+    (List (Attribute Msg) -> List (Attribute Msg))
+    -> Lang
+    -> Bool
+    ->
+        { pitch : String
+        , rate : String
+        }
+    -> TTS
+    -> Html Msg
+viewTTSSettings grouping lang tabbable audio tts =
+    Html.div []
+        [ Html.label
+            [ Attr.class "lia-label"
+            , A11y_Widget.hidden (not tabbable)
+            ]
+            [ Html.input
+                (grouping
+                    [ Attr.class "lia-checkbox"
+                    , Attr.type_ "checkbox"
+                    , Attr.checked <|
+                        case ( tts.isBrowserSupported, tts.isResponsiveVoiceSupported ) of
+                            ( True, False ) ->
+                                True
+
+                            ( False, True ) ->
+                                False
+
+                            _ ->
+                                tts.preferBrowser
+                    , onClick (Toggle PreferBrowserTTS)
+                    , A11y_Key.tabbable tabbable
+                    , Attr.disabled (not (tts.isBrowserSupported && tts.isResponsiveVoiceSupported))
+                    ]
+                )
+                []
+            , Html.text (Trans.ttsPreferBrowser lang)
+            ]
+        , Html.div
+            [ Attr.style "display" "flex"
+            , Attr.style "flex-direction" "column"
+            ]
+            [ slider "Rate" (Trans.commentRate lang) Rate "5" grouping tabbable audio.rate
+            , slider "Pitch" (Trans.commentPitch lang) Pitch "2" grouping tabbable audio.pitch
+            ]
+        ]
+
+
+slider :
+    String
+    -> String
+    -> (String -> Audio)
+    -> String
+    -> (List (Attribute Msg) -> List (Attribute Msg))
+    -> Bool
+    -> String
+    -> Html Msg
+slider name title message maximum grouping tabbable value =
+    Html.div
+        [ Attr.style "display" "flex"
+        , Attr.style "align-items" "center"
+        , Attr.style "margin-bottom" "10px"
+        , Attr.title title
+        ]
+        [ Html.label
+            [ Attr.class "lia-label"
+            , A11y_Widget.hidden (not tabbable)
+            , Attr.style "width" "50px"
+            , Attr.style "margin-right" "10px"
+            ]
+            [ Html.text name ]
+        , Html.input
+            (grouping
+                [ Attr.type_ "range"
+                , A11y_Widget.hidden (not tabbable)
+                , Attr.min "0"
+                , Attr.max maximum
+                , Attr.step "0.01"
+                , Attr.value value
+                , onInput (message >> Change)
+                , Attr.style "flex-grow" "1"
+                ]
+            )
+            []
+        , Html.span
+            [ Attr.style "margin-left" "10px"
+            , Attr.style "width" "40px"
+            , Attr.style "text-align" "right"
+            ]
+            [ Html.text value ]
         ]
 
 
@@ -775,7 +861,7 @@ menuTranslations languageCode defintion lang tabbable settings =
         |> viewTranslations lang tabbable
         |> (settings.translateWithGoogle
                 |> translateWithGoogle lang tabbable
-                >> List.append
+                |> List.append
            )
         |> submenu (group ShowTranslations)
             (settings.action == Just ShowTranslations)

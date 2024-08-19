@@ -468,6 +468,7 @@ view_block config block =
                              , audio = comment.audio
                              }
                                 |> addTranslation
+                                |> List.append comment.attr
                                 |> toAttribute
                             )
                         |> Html.map Script
@@ -544,8 +545,7 @@ viewQuote : Config Msg -> Parameters -> Blocks -> Html Msg
 viewQuote config attr elements =
     case elements of
         [ Paragraph pAttr pElement, Citation cAttr citation ] ->
-            [ [ Paragraph pAttr pElement ]
-                |> List.map (view_block config)
+            [ [ Paragraph pAttr pElement |> view_block config ]
                 |> Html.em [ Attr.class "lia-quote__text" ]
             , citation
                 |> config.view

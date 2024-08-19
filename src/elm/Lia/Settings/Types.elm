@@ -1,5 +1,6 @@
 module Lia.Settings.Types exposing
     ( Action(..)
+    , Audio(..)
     , Mode(..)
     , Settings
     , TTS
@@ -28,11 +29,13 @@ type alias Settings =
     , translateWithGoogle : Maybe Bool
     , customTheme : Maybe String
     , tooltips : Bool
+    , hideVideoComments : Bool
     , sync : Maybe Bool
     , showQRCode : Bool
     , tts : TTS
     , chat : { show : Bool, updates : Bool }
     , navigation : Bool
+    , audio : { pitch : String, rate : String }
     }
 
 
@@ -58,6 +61,11 @@ type Mode
     | Textbook -- Render Comments and Effects at ones
 
 
+type Audio
+    = Pitch String
+    | Rate String
+
+
 init : Bool -> Mode -> Settings
 init hasShareApi mode =
     { table_of_contents = True
@@ -76,6 +84,7 @@ init hasShareApi mode =
     , translateWithGoogle = Just False
     , customTheme = Nothing
     , tooltips = False
+    , hideVideoComments = False
     , sync = Just False
     , showQRCode = False
     , tts =
@@ -88,6 +97,7 @@ init hasShareApi mode =
         , updates = False
         }
     , navigation = True
+    , audio = { pitch = "1", rate = "1" }
     }
 
 

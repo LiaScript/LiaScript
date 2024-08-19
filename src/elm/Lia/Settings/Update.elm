@@ -13,7 +13,7 @@ import Json.Encode as JE
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Settings.Json as Json
-import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
+import Lia.Settings.Types exposing (Action(..), Audio(..), Mode(..), Settings)
 import Lia.Utils exposing (focus)
 import Return exposing (Return)
 import Service.Database
@@ -22,6 +22,7 @@ import Service.Share
 import Service.Slide
 import Service.TTS
 import Service.Translate
+import Translations exposing (Lang(..))
 
 
 type Msg
@@ -35,6 +36,7 @@ type Msg
     | ShareCourse String
     | Ignore
     | FocusLoss (Maybe Action)
+    | Change Audio
 
 
 type Toggle
@@ -50,6 +52,7 @@ type Toggle
     | Tooltips
     | PreferBrowserTTS
     | Navigation
+    | VideoComments
 
 
 update :
@@ -138,6 +141,9 @@ update main msg model =
         Toggle QRCode ->
             no_log Nothing { model | showQRCode = not model.showQRCode }
 
+        Toggle VideoComments ->
+            log Nothing { model | hideVideoComments = not model.hideVideoComments }
+
         Toggle Chat ->
             let
                 chat =
@@ -216,6 +222,22 @@ update main msg model =
 
         ChangeLang lang ->
             log Nothing { model | lang = lang }
+
+        Change audio_setting ->
+            let
+                audio =
+                    model.audio
+            in
+            log Nothing
+                { model
+                    | audio =
+                        case audio_setting of
+                            Pitch pitch ->
+                                { audio | pitch = pitch }
+
+                            Rate value ->
+                                { audio | rate = value }
+                }
 
         ShareCourse url ->
             model

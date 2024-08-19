@@ -6,8 +6,9 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
+            "NoRedInk/elm-json-decode-pipeline": "1.0.1",
             "andre-dietrich/elm-conditional": "1.0.0",
-            "andre-dietrich/elm-svgbob": "5.0.1",
+            "andre-dietrich/elm-svgbob": "5.0.2",
             "andre-dietrich/parser-combinators": "4.1.0",
             "elm/browser": "1.0.2",
             "elm/core": "1.0.5",

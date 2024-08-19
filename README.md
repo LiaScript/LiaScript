@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.15.4
+version:  0.15.10
 language: en
 narrator: UK English Male
 
@@ -79,17 +79,14 @@ LiaScript courses.
   start typing "lia" in your document you switch on a fuzzy search, that
   contains a lot of LiaScript help, examples, and snippets.
 
-
 Additionally it is also possible to use [VS-Code](https://code.visualstudio.com/Download)
 as an editor for creating LiaScript online courses. The packages work similar to the
 upper ones, but to enable the preview the Dev-Server is used for the previews in
 [VS-Code](https://code.visualstudio.com/Download):
 
-
 - [liascript-preview](https://marketplace.visualstudio.com/items?itemName=LiaScript.liascript-preview)
 - [liascript-snippets](https://marketplace.visualstudio.com/items?itemName=LiaScript.liascript-snippets)
 - [liascript-preview-web](https://marketplace.visualstudio.com/items?itemName=LiaScript.liascript-preview-web)
-
 
 ---
 
@@ -275,9 +272,9 @@ make
 
 cd .. # go back
 
-rm -rf elm-stuff .parcel-cache # remove all cached stuff 
+rm -rf elm-stuff .parcel-cache # remove all cached stuff
 
-npm run build # force an entire rebuild of the project 
+npm run build # force an entire rebuild of the project
 ```
 
 This will apply the following four patches:
@@ -295,6 +292,73 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.15.10** (14/09/2024)
+
+- improve: Translations for code, now also translations for code copy-buttons
+- improve: onload will block the execution of other scripts until it is finished
+
+**0.15.9** (12/08/2024)
+
+- feat: Add pitch and rate settings to TTS comments.
+  
+  - The pitch can be set between 0 and 2, the rate between 0.1 and 5.
+
+  - Rate is also added to video and audio comments, while keeping the pitch constant.
+
+  - Additionally, the pitch and rate can be modified within the script for the current comment or replayed element as well
+
+    ```markdown
+    <!-- data-rate="2.0" data-pitch="1.2" -->
+        --{{0}}--
+    This element will be read with a higher pitch and rate.
+
+    <!-- data-rate="1.3" -->
+        --{{0}}--
+    !?[video](/path/to/video.mp4)
+    This video will be played with a higher rate, but the pitch will stay the same.
+
+    <!-- data-rate="2.0" data-pitch="1.2" -->
+        {{|>}}
+    Also for this local playback, the custom data rate and pitch will be used to overwrite the default settings 
+    ```
+
+**0.15.8** (07/08/2024)
+
+- chore: Update npm packages
+- improve(Classroom): connect event will also fire if connection is already established
+- upgrade: oEmbed endpoints
+- feat: enable styling for oEmbeds ... everything link that starts with ??
+- fix: overlay video works on chrome mobile, better positioning on the right
+- Add Citation.cff for simple citation of the project
+
+**0.15.7** (26/07/2024)
+
+- improve(VideoComments):
+
+  - Add accessibility features
+  - Add video-comments hide to settings, which will only replay the audio
+  - Improved z-index handling
+
+**0.15.6** (26/07/2024)
+
+- fix: SVG emoji sizing in ASCII-art images
+- feat: Add video-comments. Video snippets can be added to comments, which will be replayed if the comment is read out loud.
+
+  ```markdown
+      --{{1}}--
+
+  !?[|>](video.mp4)
+  The upper video is replayed if this comment becomes active.
+  ```
+
+**0.15.5** (15/07/2024)
+
+- chore(Classroom): Upgrade Trystero to 0.19
+- refac(Charts): optimized eCharts loading and added `renderer` option, which can be set to `svg` or `canvas`, svg is the default
+- chore(elm): Optimized with elm-review
+- fix: text-book switching
+- improve(TTS): only if there is a comment or an audio-file, the playbutton is enabled
 
 **0.15.4** (03/07/2024)
 
@@ -318,14 +382,15 @@ This will apply the following four patches:
 
 - feat: Add voice recordings to comments
 
-  ``` markdown
+  ```markdown
       --{{1 UK English Female}}--
+
   ?[|>](recording.mp3)
   If a comment starts with a audio-link or ends with one, then this file will be played
   when the comment should be read out loud. This will automatically trigger a replay.
   If the course is translated with Google, then the audio will be played in if and only if
   the languages is not the main, that was translated into. Otherwise the browser-based TTS
-  will be used. 
+  will be used.
   ```
 
 - improve(Audio): Music can now be embedded with `?[alt](url)` from
@@ -387,7 +452,7 @@ This will apply the following four patches:
 **0.14.3** (03/01/2024)
 
 - improve: Add `data-show-partial-solution` to quizzes, which only have an effect
-  on compound quizzes, such as Matrix-Quizzes and Gap-Texts, to reveal (as the 
+  on compound quizzes, such as Matrix-Quizzes and Gap-Texts, to reveal (as the
   name suggests) the partial solution of the quiz.
 - improve: Gap-Texts can now also be integrated into ASCII-Art by putting them into
   quotations "
@@ -484,18 +549,18 @@ This will apply the following four patches:
 - feat: Add gap text quizzes and selections to inline-elements.
   Tables, paragraph, galleries, etc. can now be turned into a quiz..
 
-  ``` markdown
+  ```markdown
                       {{English Male |>}}
+
   The film that I saw [[(that)|those|these|then]] night wasn’t very good.
-  It was all [[ about ]] a man [[ who ]] built a
-  time machine so he [[ could ]] travel back in time.
-  It took him ages and ages [[ to ]] build the machine.
+  It was all [[about]] a man [[who]] built a
+  time machine so he [[could]] travel back in time.
+  It took him ages and ages [[to]] build the machine.
   ```
 
 - fix: Preprocessing of singleton HTML-tags does not chomp content anymore
 - improve: ASCII-art can now cope with complex and compound emojis.
 - fix: URL parsing will stop on \"
-
 
 **0.11.1** (10/04/2023)
 
@@ -509,10 +574,9 @@ This will apply the following four patches:
   - improve: Error messages
   - Add SCROM 1.2 export for moodle
 
-
 **0.11.0** (29/03/2023)
 
-- __Add chat to classroom, which parses LiaScript-Code live__
+- **Add chat to classroom, which parses LiaScript-Code live**
 - refactor: Internal classroom data-structures
 - fix: multiple tiny errors in classroom Synchronization
 - ShortCut: Ctrl-Enter or Command-Enter can now be used to execute code or send a chat message
@@ -522,8 +586,8 @@ This will apply the following four patches:
 - feat: Add macros to formulas
 
   Macros to formulas can no be defined globally with the formula macro
-  
-  ``` markdown
+
+  ```markdown
   <!--
   formula: Theta   \mathrm{\zeta}(#1)
   formula: \beta   \Theta{B}
@@ -533,7 +597,7 @@ This will apply the following four patches:
   These macros are then passed to every formula. If formulas are defined
   with `\def` or `\gdef`, etc. within a formula, then only these macros are
   used an no external ones are passed.
-    
+
   Additionally, formulas from other imports are imported and used as well.
   This way it is possible to include reusable formula collections.
 
@@ -543,7 +607,7 @@ This will apply the following four patches:
 
   Macros to formulas can no be defined globally with the formula macro
 
-  ``` markdown
+  ```markdown
   <!--
   formula: Theta   \mathrm{\zeta}(#1)
   formula: \beta   \Theta{B}
@@ -560,7 +624,6 @@ This will apply the following four patches:
 - improve: Menus get closed if they or one of their children loose their focus
 - fix: classroom, single user is displayed after successful creation
 - fix(CSS): too small textbook widths
-
 
 **0.10.33** (22/03/2023)
 
@@ -622,11 +685,12 @@ This will apply the following four patches:
 - fix: Service worker required a reload on updates, no should be fixed
 - feat: Quiz with randomize option for vector and matrix quizzes applied to shuffle rows:
 
-  ``` markdown
+  ```markdown
   <!-- data-randomize -->
+
   - [[X]] option 1
-  - [[ ]] option 2
-  - [[ ]] option 3
+  - [[]] option 2
+  - [[]] option 3
   ```
 
 - feat: Clickable QR-Code at the share options displays a larger image
@@ -669,8 +733,9 @@ This will apply the following four patches:
   - It is now also allowed to define only the preferred language without being explicit about the gender.
     LiaScript will select an existing voice.
 
-    ``` markdown
+    ```markdown
           --{{1 English}}--
+
     The first english voice will be selected for this comment.
     ```
 
@@ -682,7 +747,7 @@ This will apply the following four patches:
 
 - improve HTML:
 
-  - Add styling for `kdb` keyboard tags.  
+  - Add styling for `kdb` keyboard tags.
   - Add simple svg-parsing
   - Add : to allowed chars for HTML-parameters, this enables RDFa annotations
 
@@ -701,7 +766,7 @@ This will apply the following four patches:
 
 - fix: Corrected shortcode for Swahili
 - improve: Parsing of main comment is not ignored, if it does not start on the
-  first line. 
+  first line.
 
 **0.10.20** (30/08/2022)
 
@@ -716,7 +781,7 @@ This will apply the following four patches:
 **0.10.18** (18/07/2022)
 
 - improved Sync:
-  
+
   - Supported backends for syncing courses can now also be used in systems
     that do not support it by default. All sync-systems are now supported in
     all cases, it might be simply disabled ...
@@ -724,6 +789,7 @@ This will apply the following four patches:
     To enable, you can use the macro:
 
     `classroom: enable`
+
   - Add 'literal' "room-names"
 
     Currently a room-name and a course-URL are used to generate a unique ID
@@ -740,15 +806,14 @@ This will apply the following four patches:
   - fix: failing first load of geoJson data
   - refactor: internal charting
   - feat: Add axis-limit definitions
-    
-    ``` markdown
+
+    ```markdown
     <!-- data-xlim="0,5" data-ylim=",20.0">
     | x | y |
     |---|---|
     | 1 | 2 |
     | 3 | 4 |
     ```
-
 
 **0.10.16** (28/06/2022)
 
@@ -758,9 +823,9 @@ This will apply the following four patches:
   - add tooltips to quantitative outputs
   - relaxed rules for ids ...
 
-    ``` markdown
+    ```markdown
     Would yo please rate it?
-    
+
         [(5 ⭐)] ⭐ ⭐ ⭐ ⭐ ⭐
         [(4 ⭐)] ⭐ ⭐ ⭐ ⭐
         [(3 ⭐)] ⭐ ⭐ ⭐
@@ -771,18 +836,20 @@ This will apply the following four patches:
 **0.10.15** (27/06/2022)
 
 - feat: Add `font` macro to import external fonts such as egyptian hieroglyphs
-        or cuneiform:
+  or cuneiform:
 
-  ``` markdown
+  ```markdown
   <!--
   author: ...
   link:   https://fonts.googleapis.com/css2?family=Noto+Sans+Egyptian+Hieroglyphs&display=swap
   font:   Noto Sans Egyptian Hieroglyphs, ...
   -->
+
   # Course
 
-  > Some hieroglyphs: __𓈖𓆓 𓊽𓉐𓉐 𓈖𓏲𓇯𓂝𓏴𓃾 𓉐𓃾𓂝𓃻𓁶𓃾 𓌓𓁶𓌓𓆓𓂝𓃾 𓌅𓂧𓌅𓀠 𓀠𓇯𓈖__
+  > Some hieroglyphs: **𓈖𓆓 𓊽𓉐𓉐 𓈖𓏲𓇯𓂝𓏴𓃾 𓉐𓃾𓂝𓃻𓁶𓃾 𓌓𓁶𓌓𓆓𓂝𓃾 𓌅𓂧𓌅𓀠 𓀠𓇯𓈖**
   ```
+
 - chore: Update parcel, ace, sass, caniuse, ...
 
 **0.10.14** (18/06/2022)
@@ -815,7 +882,7 @@ This will apply the following four patches:
   However, by default the persistency of slides is disabled, it has to be enabled
   globally, but is can also be redefined per slide:
 
-  ``` markdown
+  ```markdown
   <!--
   persistent: on
   -->
@@ -825,12 +892,13 @@ This will apply the following four patches:
   ...
 
   ## Sub-Section
+
   <!--
   persistent: off
   -->
 
-
   ## Sub-Section 2
+
   <!--
   persistent: true
   -->
@@ -860,7 +928,7 @@ This will apply the following four patches:
 - improve: internal Links
 
   - integrated URL-percent-encoding to support for example parenthesis
-  - fix: target _blank removed for internal links 
+  - fix: target \_blank removed for internal links
 
 **0.10.7** (07/04/2022)
 
@@ -870,7 +938,7 @@ This will apply the following four patches:
 
 **0.10.6** (28/03/2022)
 
-- feat: __Synchronization via [Edrys](https://github.com/edrys-org/edrys)__
+- feat: **Synchronization via [Edrys](https://github.com/edrys-org/edrys)**
 
   If a course is loaded from within Edrys via the module:
 
@@ -878,11 +946,10 @@ This will apply the following four patches:
 
   States will be automatically synced within a room between all members.
 
-
 **0.10.5** (23/03/2022)
 
 - Add two helpers:
-  
+
   - `LIA.focusOnMain`: Prevent LiaScript from stealing the focus, when a slide
     gets loaded.
   - `LIA.scrollUpOnMain`: Prevent scrolling to top when a slide is loaded.
@@ -936,11 +1003,10 @@ This will apply the following four patches:
 
   You can use words like `false`, `disabled`, `0`, `OFF` ... LiaScript will recognize
   them as negative. All other words like `wouldLoveToSeeThisFeature` are treated
-  as positive. __But better stick with `false/true`, `on/of`, `disable/enable`__
+  as positive. **But better stick with `false/true`, `on/of`, `disable/enable`**
 
 - Improved CSS for printing. This allows to generate beautiful content of a slide,
   with preserved links, if media or iframes are added.
-
 
 **0.9.51** (26/01/2022)
 
@@ -949,7 +1015,7 @@ This will apply the following four patches:
 **0.9.50** (25/01/2022)
 
 - fix: Tooltip
-  
+
   - tabbing on touch devices works by long press
   - tooltips is deactivated on small screens
   - improved performance on parsing & links are preserved and clickable too
@@ -971,8 +1037,8 @@ This will apply the following four patches:
 
 - improve: Video resources via Multimedia links
 
-  - Add support for the TU Bergakademie Freiberg video platform 
-    
+  - Add support for the TU Bergakademie Freiberg video platform
+
     https://video.tu-freiberg.de
 
     Links like for YouTube can simply be copied into the URL part of a link and
@@ -1012,7 +1078,7 @@ This will apply the following four patches:
   adding information about the content of the data:
 
   ```markdown
-  @[Macro.Name](URL "some more information")
+  @[Macro.Name](URL 'some more information')
   ```
 
 **0.9.42** (12/12/2021)
@@ -1038,30 +1104,30 @@ This will apply the following four patches:
 
 **0.9.39** (04/10/2021)
 
-* improve: Attached scripts are now executed only if a change was triggered by the
+- improve: Attached scripts are now executed only if a change was triggered by the
   user and their default value gets loaded. The default or initial state for quizzes
   and surveys is undefined, for tasks it is defined by the initial state.
-* improve: Add `send.clear` command to scripts
+- improve: Add `send.clear` command to scripts
 
 **0.9.37** (01/10/2021)
 
-* hotfix: modal script-editor now prohibits translations
+- hotfix: modal script-editor now prohibits translations
 
 **0.9.36** (01/10/2021)
 
-* Attached scripts can now also publish their results
-* Updated korean translations
-* Export to (nearly) full Json, which can be used later as the basis to translate
+- Attached scripts can now also publish their results
+- Updated korean translations
+- Export to (nearly) full Json, which can be used later as the basis to translate
   documents into other formats
 
 **0.9.35** (26/09/2021)
 
 - chore: Npm update
 - fix: footnote
-  
-  * CSS table and background color
-  * styling of multimedia in modal
-  * inline footnote now with Markdown parser
+
+  - CSS table and background color
+  - styling of multimedia in modal
+  - inline footnote now with Markdown parser
 
 **0.9.34** (23/09/2021)
 
@@ -1116,13 +1182,13 @@ This will apply the following four patches:
 - Improved inline parsing speed.
 - Add support for sharing courses on other protocols than `http://` and
   `https://`.
-  
+
   - [`hyper:// & dat://`](https://en.wikipedia.org/wiki/Dat_%28software%29)
 
     This allows to use the
     [Beaker](https://en.wikipedia.org/wiki/Beaker_%28eb_browser%29) browser
     for creating, sharing, and editing courses directly within the browser,
-    _no further upload required!_ 
+    _no further upload required!_
 
   - [`ipfs:// & ipns://`](https://en.wikipedia.org/wiki/InterPlanetary_File_System)
 
@@ -1144,7 +1210,7 @@ This will apply the following four patches:
 - Additional headers are allowed, if they are within lists or block-quotes,
   etc.:
 
-  ``` markdown
+  ```markdown
   # Outer Header
 
   > ## Inner Header
@@ -1194,7 +1260,7 @@ This will apply the following four patches:
 **0.9.15** (17/05/2021)
 
 - improved TTS output:
-  
+
   - Google-translate can now also deal with long paragraphs.
   - better translation & delay (500ms) to support translated courses
 
@@ -1213,7 +1279,7 @@ This will apply the following four patches:
 - style(Cite): changed default font-style to normal
 - add missing icons to tables & improved parsing
 - improve ASCII-Art:
-  
+
   - better support of inline Code
   - enabled caseInsensitive detection of `AsCIi` or `Art`
   - additional header text can now be used to define figcaption
@@ -1281,13 +1347,14 @@ This will apply the following four patches:
 - Total redesign of UI/UX
 - Adds support for Tasks
 
-  ``` markdown
-  - [X] some task solved
+  ```markdown
+  - [x] some task solved
   - [ ] some task unsolved ...
   ```
+
 - Support for galleries as collections of images and videos:
 
-  ``` markdown
+  ```markdown
   ![some image](url1) ![some image](url2)
   !?[some video](url3)
   ![some image](url4)

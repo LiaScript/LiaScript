@@ -4,7 +4,10 @@ module Lia.Settings.Json exposing
     )
 
 import Json.Decode as JD
+import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
+import Lia.Markdown.Code.Editor exposing (editor)
+import Lia.Markdown.Inline.Multimedia exposing (audio)
 import Lia.Settings.Types exposing (Mode(..), Settings)
 
 
@@ -21,7 +24,19 @@ fromModel model =
         , ( "lang", JE.string model.lang )
         , ( "tooltips", JE.bool model.tooltips )
         , ( "PreferBrowserTTS", JE.bool model.tts.preferBrowser )
+        , ( "hideVideoComments", JE.bool model.hideVideoComments )
+        , ( "audio"
+          , JE.object
+                [ ( "pitch", maybeFloat model.audio.pitch )
+                , ( "rate", maybeFloat model.audio.rate )
+                ]
+          )
         ]
+
+
+maybeFloat : String -> JE.Value
+maybeFloat =
+    String.toFloat >> Maybe.withDefault 1.0 >> JE.float
 
 
 fromMode : Mode -> JE.Value
@@ -38,8 +53,22 @@ fromMode mode =
                 "Slides"
 
 
-settings : Settings -> Bool -> Mode -> String -> Bool -> String -> Int -> Bool -> String -> Bool -> Bool -> Settings
-settings model toc mode theme light editor font_size sound lang tooltips preferBrowserTTS =
+settings :
+    Settings
+    -> Bool
+    -> Mode
+    -> String
+    -> Bool
+    -> String
+    -> Int
+    -> Bool
+    -> String
+    -> Bool
+    -> Bool
+    -> Bool
+    -> { pitch : String, rate : String }
+    -> Settings
+settings model toc mode theme light editor font_size sound lang tooltips preferBrowserTTS hideVideoComments audio =
     let
         tts =
             model.tts
@@ -55,35 +84,34 @@ settings model toc mode theme light editor font_size sound lang tooltips preferB
         , lang = lang
         , tooltips = tooltips
         , tts = { tts | preferBrowser = preferBrowserTTS }
+        , hideVideoComments = hideVideoComments
+        , audio = audio
     }
 
 
 toModel : Settings -> JD.Value -> Result JD.Error Settings
 toModel model =
     JD.decodeValue
-        (JD.map8 (settings model)
-            (JD.field "table_of_contents" JD.bool)
-            (JD.field "mode" JD.string |> JD.andThen toMode)
-            (JD.field "theme" JD.string)
-            (JD.field "light" JD.bool)
-            (JD.field "editor" JD.string)
-            (JD.field "font_size" JD.int)
-            (JD.field "sound" JD.bool)
-            (JD.field "lang" JD.string)
-            -- these tooltips have been integrated later, that is
-            -- why they might not be stored within the settings
-            -- and treated differently
-            |> JD.map2 (|>)
-                (JD.field "tooltips" JD.bool
-                    |> JD.maybe
-                    |> JD.map (Maybe.withDefault False)
+        (JD.succeed
+            (\record -> settings model record)
+            |> JDP.required "table_of_contents" JD.bool
+            |> JDP.required "mode" (JD.string |> JD.andThen toMode)
+            |> JDP.required "theme" JD.string
+            |> JDP.required "light" JD.bool
+            |> JDP.required "editor" JD.string
+            |> JDP.required "font_size" JD.int
+            |> JDP.required "sound" JD.bool
+            |> JDP.required "lang" JD.string
+            |> JDP.optional "tooltips" JD.bool False
+            |> JDP.optional "PreferBrowserTTS" JD.bool True
+            |> JDP.optional "hideVideoComments" JD.bool False
+            |> JDP.optional "audio"
+                (JD.succeed
+                    (\pitch rate -> { pitch = pitch, rate = rate })
+                    |> JDP.required "pitch" (JD.float |> JD.map String.fromFloat)
+                    |> JDP.required "rate" (JD.float |> JD.map String.fromFloat)
                 )
-            -- additionally tts might be not set for the same reason
-            |> JD.map2 (|>)
-                (JD.field "browserTTS" JD.bool
-                    |> JD.maybe
-                    |> JD.map (Maybe.withDefault True)
-                )
+                { pitch = "1", rate = "1" }
         )
 
 

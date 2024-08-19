@@ -16,6 +16,7 @@ import Lia.Index.View as Index
 import Lia.Markdown.Code.Editor exposing (mode)
 import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Effect.Model as Effect
+import Lia.Markdown.Effect.Parser exposing (comment)
 import Lia.Markdown.Effect.View exposing (state)
 import Lia.Markdown.HTML.Attributes exposing (toAttribute)
 import Lia.Markdown.Inline.View exposing (audio, view_inf)
@@ -29,6 +30,7 @@ import Lia.Sync.Types as Sync_
 import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (modal)
+import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 import Service.Database exposing (settings)
 import Session exposing (Screen)
@@ -159,15 +161,22 @@ viewSlide screen model =
                     }
                 ]
             , slideA11y
-                model.translation
-                model.settings.light
-                (model.settings.tooltips && (screen.width >= Const.tooltipBreakpoint))
-                ( model.langCodeOriginal, model.langCode )
-                model.settings.mode
-                model.definition.formulas
-                model.media
+                { lang = model.translation
+                , light = model.settings.light
+                , tooltips = model.settings.tooltips && (screen.width >= Const.tooltipBreakpoint)
+                , translations = ( model.langCodeOriginal, model.langCode )
+                , mode = model.settings.mode
+                , formulas = model.definition.formulas
+                , media = model.media
+                , effect = section.effect_model
+                , id = model.section_active
+                }
+            , viewVideoComment
+                { active = model.settings.sound
+                , hide = model.settings.hideVideoComments
+                }
+                model.overlayVideo
                 section.effect_model
-                model.section_active
             , showModal model
             ]
 
@@ -261,10 +270,6 @@ comments in text, depending on the currently applied rendering mode.
 -}
 slideBottom : { lang : Lang, tiny : Bool, settings : Settings, slide : Int, effects : Effect.Model SubSection } -> Html Msg
 slideBottom { lang, tiny, settings, slide, effects } =
-    let
-        sound =
-            settings.sound && Effect.hasComments effects
-    in
     Html.footer
         [ Attr.class "lia-slide__footer" ]
         [ slideNavigation lang settings.mode slide effects
@@ -273,6 +278,10 @@ slideBottom { lang, tiny, settings, slide, effects } =
                 Html.text ""
 
             _ ->
+                let
+                    sound =
+                        settings.sound && Effect.hasComments effects
+                in
                 Html.div
                     [ Attr.class "lia-responsive-voice"
                     , if tiny then
@@ -345,8 +354,19 @@ btnStop lang settings =
         [ Attr.id "lia-btn-sound", Attr.class "lia-btn--transparent" ]
 
 
-slideA11y : Lang -> Bool -> Bool -> ( String, String ) -> Mode -> Dict String String -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
-slideA11y lang light tooltips translations mode formulas media effect id =
+slideA11y :
+    { lang : Lang
+    , light : Bool
+    , tooltips : Bool
+    , translations : ( String, String )
+    , mode : Mode
+    , formulas : Dict String String
+    , media : Dict String ( Int, Int )
+    , effect : Effect.Model SubSection
+    , id : Int
+    }
+    -> Html Msg
+slideA11y { lang, light, tooltips, translations, mode, formulas, media, effect, id } =
     case mode of
         Slides ->
             effect
@@ -565,6 +585,65 @@ appendAudioFragments audio info =
     else
         Html.span [ Attr.style "visibility" "hidden" ] info
             :: List.map audioRecordings audio
+
+
+viewVideoComment : { active : Bool, hide : Bool } -> Overlay.Model -> Effect.Model SubSection -> Html Msg
+viewVideoComment comments overlay effects =
+    let
+        urls =
+            if comments.active then
+                Effect.getVideoRecordings effects
+
+            else
+                []
+
+        videos =
+            String.join "," urls
+
+        hide =
+            String.isEmpty videos
+    in
+    urls
+        |> List.map
+            (\url ->
+                Html.video
+                    [ Attr.controls False
+                    , Attr.style "width" "100%"
+                    , Attr.style "height" "100%"
+                    , Attr.style "objectFit" "cover"
+                    , Attr.style "opacity"
+                        (if hide then
+                            "0"
+
+                         else
+                            "1"
+                        )
+
+                    -- Control opacity based on `hide`
+                    , Attr.style "transition" "opacity 0.3s" -- Smooth transition for opacity
+                    , Attr.attribute "data-url" url
+                    , Attr.style "display" "none" -- Hide the video element
+                    , Attr.preload "auto"
+                    , Attr.src url
+                    , Attr.style "position" "absolute"
+                    ]
+                    []
+            )
+        |> Html.div
+            [ Attr.id "lia-tts-videos"
+            , Attr.style "width" "100%"
+            , Attr.style "height" "100%"
+            , Attr.attribute "data-urls" videos
+            ]
+        |> Overlay.view
+            (if hide || not comments.active || comments.hide then
+                [ Attr.style "display" "none" ]
+
+             else
+                [ Attr.class "fade-in" ]
+            )
+            overlay
+        |> Html.map UpdateOverlay
 
 
 audioRecordings : String -> Html msg

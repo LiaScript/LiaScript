@@ -488,6 +488,7 @@ view_inf scripts lang light tooltips translations formulas media =
     , theme = Nothing
     , light = light
     , tooltips = tooltips
+    , hideVideoComments = True
     , media = media |> Maybe.withDefault Dict.empty
     , scripts = scripts
     , translations = translations
@@ -664,7 +665,7 @@ reference config ref attr =
             Html.figure [ Attr.class "lia-figure", Attr.style "height" "auto", Attr.style "width" "100%" ] <|
                 [ Html.div [ Attr.class "lia-figure__media" ] <|
                     [ printLink config alt_ title_ url
-                    , oembed config.oEmbed url
+                    , oembed config.oEmbed attr url
                     , Html.figcaption [ Attr.class "lia-figure__caption" ] <|
                         case title_ of
                             Just sub ->
@@ -764,8 +765,8 @@ printLink config alt_ title_ url_ =
         (viewer config alt_)
 
 
-oembed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool } -> String -> Html msg
-oembed option url =
+oembed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool } -> Parameters -> String -> Html msg
+oembed option attr url =
     Html.node "lia-embed"
         [ url
             |> JE.string
@@ -812,6 +813,11 @@ oembed option url =
         , option
             |> Maybe.map (.scale >> String.fromFloat >> Attr.attribute "scale")
             |> Maybe.withDefault (Attr.class "")
+        , attr
+            |> List.map (Tuple.mapSecond JE.string)
+            |> JE.object
+            |> JE.encode 0
+            |> Attr.attribute "data-attributes"
         ]
         []
 

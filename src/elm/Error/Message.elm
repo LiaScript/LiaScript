@@ -281,8 +281,7 @@ parseDefinition code message =
         ++ (code
                 |> String.lines
                 |> List.take 15
-                |> List.intersperse "\n"
-                |> String.concat
+                |> String.join "\n"
            )
         ++ """
 ...

@@ -137,5 +137,5 @@ toState =
         , Vector.toState |> JD.map Vector_State
         , Matrix.toState |> JD.map Matrix_State
         , Multi.toState |> JD.map Multi_State
-        , JD.field "Generic" JD.value |> JD.andThen (\_ -> JD.succeed Generic_State)
+        , JD.field "Generic" JD.value |> JD.map (\_ -> Generic_State)
         ]

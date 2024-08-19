@@ -160,6 +160,7 @@ customElements.define(
     private maxheight_: number | undefined
     private thumbnail_: boolean
     private paramCount: number
+    private dataAttributes: { [key: string]: string }
 
     constructor() {
       super()
@@ -174,6 +175,7 @@ customElements.define(
       this.thumbnail_ = false
 
       this.paramCount = 0
+      this.dataAttributes = {}
     }
 
     connectedCallback() {
@@ -186,6 +188,16 @@ customElements.define(
       const container = this.parentElement // document.getElementsByClassName("lia-slide__content")[0]
 
       let scale = parseFloat(this.getAttribute('scale') || '0.674')
+
+      try {
+        const attributes = this.getAttribute('data-attributes')
+
+        if (attributes) {
+          this.dataAttributes = JSON.parse(attributes)
+        }
+      } catch (e) {
+        console.warn("oembed: Couldn't parse data-attributes")
+      }
 
       if (container) {
         const paddingLeft = parseInt(
@@ -231,9 +243,11 @@ customElements.define(
                   div.innerHTML = `<img style="width: inherit; height: inherit; object-fit: cover" src="${json.thumbnail_url}"></img>`
                 } else {
                   div.innerHTML = json.html
+                  this.applyAttributesToIframe(div)
                 }
               } catch (e) {
                 div.innerHTML = iframe(url_)
+                this.applyAttributesToIframe(div)
               }
 
               const newChild = div.children[0]
@@ -258,8 +272,25 @@ customElements.define(
             .catch((err: any) => {
               div.innerHTML = `<iframe src="${url_}" style="width: 100%; height: ${
                 options.maxheight ? options.maxheight + 'px' : 'inherit'
-              };" allowfullscreen loading="lazy""></iframe>`
+              };" allowfullscreen loading="lazy"></iframe>`
+
+              this.applyAttributesToIframe(div)
             })
+        }
+      }
+    }
+
+    private applyAttributesToIframe(div: HTMLElement) {
+      const iframe = div.firstElementChild as HTMLIFrameElement
+      if (iframe) {
+        for (const key in this.dataAttributes) {
+          if (this.dataAttributes.hasOwnProperty(key)) {
+            if (key === 'style') {
+              iframe.style.cssText += this.dataAttributes[key]
+            } else {
+              iframe.setAttribute(key, this.dataAttributes[key])
+            }
+          }
         }
       }
     }

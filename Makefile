@@ -23,17 +23,17 @@ minify:
 	npm run minify:js
 
 all: clean app index manifest responsivevoice preview
-	rm dist/*.md
+	rm -f dist/*.md
 
 all2: optimize all deoptimize minify
 
 editor: base index responsivevoice
-	rm dist/README.md
+	-f dist/README.md
 
 editor2: optimize editor deoptimize minify
 
 library: lib index
-	rm dist/README.md
+	rm -f dist/README.md
 
 library2: optimize lib deoptimize minify
 
@@ -79,7 +79,7 @@ install:
 
 optimize:
 	sed -i "s/elm\/Main.elm/..\/elm.js/g" src/typescript/liascript/index.ts
-	elm-optimize-level-2 -O3 src/elm/Main.elm
+	npx elm-optimize-level-2 -O3 src/elm/Main.elm
 
 deoptimize:
 	sed -i "s/\.\.\/elm.js/elm\/Main\.elm/g" src/typescript/liascript/index.ts
