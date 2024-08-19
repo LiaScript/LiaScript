@@ -79,7 +79,7 @@ install:
 
 optimize:
 	sed -i "s/elm\/Main.elm/..\/elm.js/g" src/typescript/liascript/index.ts
-	elm-optimize-level-2 -O3 src/elm/Main.elm
+	npx elm-optimize-level-2 -O3 src/elm/Main.elm
 
 deoptimize:
 	sed -i "s/\.\.\/elm.js/elm\/Main\.elm/g" src/typescript/liascript/index.ts
