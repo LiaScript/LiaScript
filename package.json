@@ -1,6 +1,6 @@
 {
   "name": "@liascript/editor",
-  "version": "1.1.6--0.15.10",
+  "version": "1.1.6--0.15.11",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -28,6 +28,7 @@
     "translate": "elm-i18n-gen lia-localization/locale src/elm/Translations.elm",
     "test": "npx elm-test",
     "analyze": "npm run clean && npx parcel build --no-source-maps --reporter @parcel/reporter-bundle-analyzer src/entry/app/index.html",
+    "prebuild": "npx parcel build --no-source-maps --no-optimize --public-url . src/entry/app/index.html",
     "watch": "npm run watch:dev",
     "build": "npm run build:app",
     "build:app": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/app/index.html && npm run sw",
@@ -49,7 +50,7 @@
     "watch:webcomponent": "npx parcel serve src/entry/webcomponent/index.html --open",
     "build:webcomponent": "npm run clean && npx parcel build --no-source-maps src/entry/webcomponent/index.ts && rm dist/README.md",
     "build:webcomponentPublic": "npm run clean && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md",
-    "minify:js": "find dist -name \"*.js\" -print0 | xargs -0 -P 4 -I {} sh -c 'before=$(wc -c < {}); minify {} > {}.min && after=$(wc -c < {}.min); if [ ${after} -lt ${before} ]; then mv {}.min {}; reduction=$((${before}-${after})); percent=$(awk \"BEGIN {printf \\\"%.2f\\\", ${reduction}/${before}*100}\"); echo \"{} reduced from ${before} to ${after} bytes (${percent}% reduction)\"; else rm {}.min; echo \"{} no reduction achieved, file size unchanged\"; fi'"
+    "minify:js": "find dist -name \"*.js\" -print0 | xargs -0 -P 4 -I {} sh -c 'before=$(wc -c < {}); if npx minify {} > {}.min 2>/dev/null; then after=$(wc -c < {}.min); if [ ${after} -lt ${before} ]; then mv {}.min {}; reduction=$((${before}-${after})); percent=$(awk \"BEGIN {printf \\\"%.2f\\\", ${reduction}/${before}*100}\"); echo \"{} reduced from ${before} to ${after} bytes (${percent}% reduction)\"; else rm {}.min; echo \"{} no reduction achieved, file size unchanged\"; fi; else echo \"{} minification failed, skipping\"; fi'"
   },
   "devDependencies": {
     "@convergencelabs/ace-collab-ext": "^0.6.0",
@@ -72,12 +73,14 @@
     "echarts-wordcloud": "^2.1.0",
     "elm": "^0.19.1-5",
     "elm-hot": "^1.1.6",
+    "elm-optimize-level-2": "^0.3.5",
     "elm-review": "^2.12.0",
     "elm-test": "^0.19.1-revision6",
     "eslint": "^7.32.0",
     "events": "^3.3.0",
     "katex": "^0.16.11",
     "logger.ts": "^1.0.5",
+    "minify": "^9.2.0",
     "node-elm-compiler": "^5.0.6",
     "p2pt": "^1.5.1",
     "parcel": "^2.8.3",

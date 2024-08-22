@@ -365,10 +365,17 @@ view_block config block =
                         (Node name attributes [ inlines ])
 
                 Nothing ->
-                    if mediaBlock element && attr == [] then
-                        config.view [ element ]
-                            |> List.head
-                            |> Maybe.withDefault (Html.text "")
+                    if mediaBlock element then
+                        if attr == [] then
+                            [ element ]
+                                |> config.view
+                                |> List.head
+                                |> Maybe.withDefault (Html.text "")
+
+                        else
+                            [ element ]
+                                |> config.view
+                                |> Html.div (toAttribute attr)
 
                     else
                         Html.p (annotation "lia-paragraph" attr) (config.view [ element ])

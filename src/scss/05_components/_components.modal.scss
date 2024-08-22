@@ -55,7 +55,7 @@ $controlHeight: 4rem;
     width: 100%;
     z-index: 9001;
 
-    @include breakpoint("sm") {
+    @include breakpoint('sm') {
       margin: 0;
       position: absolute;
       right: 1rem;
@@ -72,7 +72,7 @@ $controlHeight: 4rem;
     width: 100%;
     z-index: 9001;
 
-    @include breakpoint("sm") {
+    @include breakpoint('sm') {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
@@ -82,7 +82,7 @@ $controlHeight: 4rem;
   &__ctrl-next {
     right: 0;
 
-    @include breakpoint("sm") {
+    @include breakpoint('sm') {
       right: 1rem;
     }
   }
@@ -90,7 +90,7 @@ $controlHeight: 4rem;
   &__ctrl-prev {
     left: 0rem;
 
-    @include breakpoint("sm") {
+    @include breakpoint('sm') {
       left: 1rem;
     }
   }
@@ -110,7 +110,7 @@ $controlHeight: 4rem;
       display: none;
     }
 
-    @include breakpoint("sm") {
+    @include breakpoint('sm') {
       margin: 1rem 6rem;
       max-width: 100vw;
       width: calc(100vw - (2 * 5rem));
@@ -134,18 +134,19 @@ $controlHeight: 4rem;
     justify-content: center;
 
     &__zoom {
+      background-position: 50% 50%;
+      position: relative;
+      width: 500px;
+      overflow: hidden;
+
       img {
-        transition: opacity .5s;
+        transition: opacity 0.5s;
         display: block;
         opacity: 1;
       }
       & img:hover {
         opacity: 0;
       }
-      background-position: 50% 50%;
-      position: relative;
-      width: 500px;
-      overflow: hidden;
     }
 
     &__media {
@@ -156,7 +157,7 @@ $controlHeight: 4rem;
       justify-content: center;
       width: 100%;
 
-      &[data-media-type="image"] {
+      &[data-media-type='image'] {
         height: auto;
 
         img {
@@ -164,7 +165,7 @@ $controlHeight: 4rem;
         }
       }
 
-      &[data-media-type="iframe"] {
+      &[data-media-type='iframe'] {
         height: 100%;
       }
     }
@@ -175,7 +176,7 @@ $controlHeight: 4rem;
       min-height: 0;
       padding: 0 1rem;
 
-      @include breakpoint("sm") {
+      @include breakpoint('sm') {
         padding: 0;
       }
     }
@@ -199,7 +200,7 @@ $controlHeight: 4rem;
     padding: 0;
     width: 100vw;
 
-    @include breakpoint("sm") {
+    @include breakpoint('sm') {
       width: calc(100vw - (2 * 6rem));
     }
   }
