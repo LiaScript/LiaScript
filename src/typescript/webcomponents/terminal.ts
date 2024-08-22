@@ -10,13 +10,16 @@ const maxHeight = Math.floor(
 customElements.define(
   'lia-terminal',
   class extends HTMLElement {
-    private resizeObserver: ResizeObserver
-    private mutationObserver: MutationObserver
+    private resizeObserver?: ResizeObserver
+    private mutationObserver?: MutationObserver
     private height_?: string
 
     constructor() {
       super()
+      this.initObservers()
+    }
 
+    private initObservers() {
       let self = this
       this.resizeObserver = new ResizeObserver(function (
         entries: ResizeObserverEntry[]
@@ -38,13 +41,23 @@ customElements.define(
     }
 
     connectedCallback() {
-      this.resizeObserver.observe(this)
-      this.mutationObserver.observe(this, { childList: true, subtree: false })
+      this.resizeObserver?.observe(this)
+      this.mutationObserver?.observe(this, { childList: true, subtree: true })
     }
 
     disconnectedCallback() {
-      this.resizeObserver.disconnect()
-      this.mutationObserver.disconnect()
+      this.cleanup()
+    }
+
+    private cleanup() {
+      if (this.resizeObserver) {
+        this.resizeObserver.disconnect()
+        this.resizeObserver = undefined
+      }
+      if (this.mutationObserver) {
+        this.mutationObserver.disconnect()
+        this.mutationObserver = undefined
+      }
     }
 
     update() {
