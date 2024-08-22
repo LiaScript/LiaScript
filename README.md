@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.15.10
+version:  0.15.11
 language: en
 narrator: UK English Male
 
@@ -292,6 +292,13 @@ This will apply the following four patches:
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
 ## Version-Changes
+
+**0.15.11** (22/09/2024)
+
+- improve: Code-Terminal, which scrolls to the bottom on every new output
+- feat: Add backslash followed by a newline in a paragraph, will result in a line-break
+- fix: Single images with a block-comment were interpreted as a paragraph with a starting
+  image and thus resulted in a shorted image, with half of the size
 
 **0.15.10** (14/09/2024)
 
