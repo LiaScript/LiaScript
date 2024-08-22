@@ -1,0 +1,49 @@
+name: Deploy LiaScript-Editor
+
+on:
+  push:
+    branches:
+      - editor
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ref: editor
+      - name: Set ELM_HOME
+        run: echo "ELM_HOME=${GITHUB_WORKSPACE}/.elm" >> $GITHUB_ENV
+      - name: Install Node.js dependencies
+        run: '[[ -f package-lock.json || -f npm-shrinkwrap.json ]] && npm ci || true'
+      - name: Pre-Build
+        run: npm run prebuild
+      - name: Apply Patches
+        run: |
+          cd patches
+          make
+          cd ..
+          rm -rf elm-stuff .parcel-cache
+      - name: Make
+        run: make editor2
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_PUBLISHING }}
