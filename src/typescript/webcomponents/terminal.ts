@@ -11,6 +11,7 @@ customElements.define(
   'lia-terminal',
   class extends HTMLElement {
     private resizeObserver: ResizeObserver
+    private mutationObserver: MutationObserver
     private height_?: string
 
     constructor() {
@@ -30,14 +31,20 @@ customElements.define(
           self.dispatchEvent(new CustomEvent('onchangeheight'))
         }
       })
+
+      this.mutationObserver = new MutationObserver(() => {
+        this.update()
+      })
     }
 
     connectedCallback() {
       this.resizeObserver.observe(this)
+      this.mutationObserver.observe(this, { childList: true, subtree: false })
     }
 
     disconnectedCallback() {
       this.resizeObserver.disconnect()
+      this.mutationObserver.disconnect()
     }
 
     update() {
@@ -45,6 +52,8 @@ customElements.define(
         this.style.maxHeight = 'none'
         this.style.height = this.height_
       }
+      // Scroll to the bottom
+      this.scrollTop = this.scrollHeight
     }
 
     get height() {
