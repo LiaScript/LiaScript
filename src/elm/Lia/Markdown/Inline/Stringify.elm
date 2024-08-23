@@ -83,6 +83,9 @@ inline2string config inline =
         IHTML (HTML.Node _ _ x) _ ->
             stringify_ config x
 
+        IHTML (HTML.InnerHtml "<br>") _ ->
+            " "
+
         Container x _ ->
             stringify_ config x
 
