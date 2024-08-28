@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.12] - 28/09/2024
+
+- chore: Update npm packages
+- improve(Macro): Parameter with more than 3 backticks
+
+  The macro parameters formats had the following format
+
+  - `single,line,parameter,with,commas`
+  - ``` multiline `parameters` ```
+
+  The 3 backticks were hard-coded, hence it was not possible to pass markdown-blocks with code-blocks. Now it is possible to define multiline parameters with more than 3 backticks, allowing for more complex parameters. Basically it works like an ordinary code-block now, which can contain other code-blocks with less backticks.
+
 ## [0.15.11] - 22/09/2024
 
 - improve: Code-Terminal, which scrolls to the bottom on every new output
