@@ -26,16 +26,14 @@
 
   &__container {
     margin-top: calc(#{$header-height-mobile});
+    height: 100%;
+    max-width: 144rem;
+    overflow: auto;
+    position: relative;
 
     @include breakpoint('md') {
       margin-top: calc(#{$header-height-desktop});
     }
-
-    height: 100%;
-    //margin-top: calc(#{$header-height-mobile});
-    max-width: 144rem;
-    overflow: auto;
-    position: relative;
   }
 
   &__content {

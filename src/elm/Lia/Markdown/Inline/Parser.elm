@@ -46,6 +46,7 @@ import Lia.Markdown.Effect.Script.Types as JS
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters, toURL)
 import Lia.Markdown.HTML.Parser as HTML
+import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.Inline.Multimedia as Multimedia
 import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
@@ -495,6 +496,7 @@ strings =
                 , stringSpaces
                 , HTML.parse inlines |> map IHTML
                 , stringCharacters
+                , lineBreak
                 , stringBase2
                 ]
 
@@ -565,6 +567,12 @@ stringExceptions =
     string "|"
         |> lookAhead
         |> onsuccess (Chars "")
+
+
+lineBreak : Parser s (Parameters -> Inline)
+lineBreak =
+    string "\\\n"
+        |> onsuccess (always (IHTML (InnerHtml "<br>") []))
 
 
 code : Parser s (Parameters -> Inline)
