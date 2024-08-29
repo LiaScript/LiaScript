@@ -106,11 +106,8 @@ const Service = {
         }
 
         if (param.definition.onload !== '') {
-          try {
-            Script.exec(param.definition.onload, 10)
-          } catch (e) {
-            console.warn('could not execute onload script', e)
-          }
+          // adding the semaphore to delay the execution of other scripts
+          Script.exec(param.definition.onload, 10)
         }
 
         document.documentElement.lang = param.definition.language

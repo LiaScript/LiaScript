@@ -4462,6 +4462,76 @@ codeTerminal lang =
             "terminal"
 
 
+codeCopy : Lang -> String
+codeCopy lang =
+    case lang of 
+        Am ->
+            "ወደ ቅንጥብ ሰሌዳ ቅዳ"
+
+        Ar ->
+            "نسخ إلى الحافظة"
+
+        Bg ->
+            "Копирай в клипборда"
+
+        Bn ->
+            "ক্লিপবোর্ডে কপি করুন"
+
+        De ->
+            "in die Zwischenablage kopieren"
+
+        Es ->
+            "copiar al portapapeles"
+
+        Fa ->
+            "کپی در کلیپ بورد"
+
+        Fr ->
+            "Copier dans le presse-papiers"
+
+        Hi ->
+            "क्लिपबोर्ड पर कॉपी करें"
+
+        Hy ->
+            "Պատճենել սեղմատախտակին"
+
+        It ->
+            "copia negli appunti"
+
+        Ja ->
+            "クリップボードにコピー"
+
+        Ko ->
+            "클립보드에 복사"
+
+        Nl ->
+            "kopiëren naar klembord"
+
+        Pa ->
+            "ਕਲਿੱਪਬੋਰਡ 'ਤੇ ਕਾਪੀ"
+
+        Pt ->
+            "copiar para a área de transferência"
+
+        Ru ->
+            "скопировать в буфер обмена"
+
+        Sw ->
+            "nakili kwenye ubao wa kunakili"
+
+        Tw ->
+            "复制到剪贴板"
+
+        Uk ->
+            "копіювати в буфер обміну"
+
+        Zh ->
+            "复制到剪贴板"
+
+        _ ->
+            "copy to clipboard"
+
+
 quizCheck : Lang -> String
 quizCheck lang =
     case lang of 

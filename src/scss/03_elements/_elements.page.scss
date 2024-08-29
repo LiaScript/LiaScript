@@ -55,6 +55,9 @@
   --global-font-size: 1.5rem;
   --font-size-multiplier: 1;
 
+  // Max Editor Line Count
+  --max-editor-line-count: 16;
+
   //font sizes scaling
   &.lia-font-scale-2 {
     --font-size-multiplier: 1.25;
@@ -63,9 +66,6 @@
   &.lia-font-scale-3 {
     --font-size-multiplier: 1.5;
   }
-
-  // Max Editor Line Count
-  --max-editor-line-count: 16;
 }
 
 html {
