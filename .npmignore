@@ -32,6 +32,7 @@ patches
 .parcel-cache
 .parcelrc
 .env
+.elm
 resources
 review
 parcel-bundle-reports
