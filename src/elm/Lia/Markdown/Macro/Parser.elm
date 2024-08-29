@@ -3,6 +3,7 @@ module Lia.Markdown.Macro.Parser exposing
     , macro
     )
 
+import Browser.Navigation exposing (back)
 import Combine
     exposing
         ( Parser
@@ -36,7 +37,7 @@ import Dict
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.HTML.Attributes exposing (toURL)
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (c_frame, inlineCode)
+import Lia.Parser.Helper exposing (c_frame, inlineCode, stringTill)
 import Lia.Parser.Indentation as Indent
 import Lia.Utils exposing (toEscapeString)
 import Regex
@@ -65,8 +66,10 @@ pattern =
 parameter : Parser Context String
 parameter =
     [ c_frame
-        |> keep (regex "(([^`]+|(`[^`]+)|(``[^`]+))|\\n)+")
-        |> ignore c_frame
+        |> andThen
+            (\startLength ->
+                stringTill (string (String.repeat startLength "`"))
+            )
     , inlineCode
     , regex "[^),]+"
     ]
@@ -131,18 +134,27 @@ reference_macro =
             )
 
 
-code_block : Parser Context (List String)
-code_block =
+code_block : Int -> Parser Context (List String)
+code_block backticks_count =
+    let
+        backticks =
+            String.repeat backticks_count "`"
+    in
     manyTill
         (maybe Indent.check
-            |> keep (regex "(.(?!```))*\\n?")
+            |> keep
+                (regex
+                    ("(.(?!"
+                        ++ backticks
+                        ++ "))*\\n?"
+                    )
+                )
         )
         (maybe Indent.check
-            |> keep c_frame
+            |> keep (string backticks)
         )
         |> map
             (String.concat
-                -- drop last \n
                 >> String.dropRight 1
                 >> List.singleton
             )
@@ -151,15 +163,16 @@ code_block =
 macro_listing : Parser Context ()
 macro_listing =
     (c_frame
-        |> keep (regex "[\t ]*[a-zA-Z0-9_]*[\t ]*")
-        |> keep pattern
+        |> ignore (regex "[\t ]*[a-zA-Z0-9_]*[\t ]*")
+        |> map Tuple.pair
+        |> andMap pattern
     )
         |> andThen
-            (\name ->
+            (\( backticks, name ) ->
                 (parameter_list |> ignore (regex "[\t ]*\\n"))
                     |> andThen
                         (\params ->
-                            map (List.append params) code_block
+                            map (List.append params) (code_block backticks)
                                 |> andThen (\p -> inject_macro ( name, p ))
                         )
             )
