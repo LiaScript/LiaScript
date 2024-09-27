@@ -8,7 +8,7 @@ module Index.Update exposing
 
 import Browser.Navigation as Nav
 import Dict
-import Index.Model exposing (Course, Model, Release)
+import Index.Model exposing (Course, Modal, Model, Release)
 import Index.Version as Version
 import Json.Decode as JD
 import Lia.Definition.Json.Decode as Definition
@@ -36,6 +36,7 @@ type Msg
     | NoOp
     | LoadCourse String
     | UpdateSettings Settings.Msg
+    | Modal (Maybe Modal)
 
 
 decodeGet : JD.Value -> Result JD.Error ( String, Maybe Course )
@@ -120,6 +121,21 @@ update msg settings model =
                             |> update (decode param) settings
                             |> Tuple.second
 
+                    ( "loading_error", param ) ->
+                        ( { model
+                            | error =
+                                Just <|
+                                    case JD.decodeValue JD.string param of
+                                        Ok error ->
+                                            error
+
+                                        Err info ->
+                                            JD.errorToString info
+                          }
+                        , Cmd.none
+                        , []
+                        )
+
                     ( unknown, _ ) ->
                         ( model
                         , Cmd.none
@@ -157,6 +173,21 @@ update msg settings model =
 
             LoadCourse url ->
                 ( model, Nav.load url, [] )
+
+            Modal modal ->
+                ( { model
+                    | modal = modal
+                    , error =
+                        case modal of
+                            Just _ ->
+                                model.error
+
+                            _ ->
+                                Nothing
+                  }
+                , Cmd.none
+                , []
+                )
 
             _ ->
                 ( model, Cmd.none, [] )

@@ -46,8 +46,8 @@ class Connector extends Base.Connector {
     this.database.deleteIndex(uidDB)
   }
 
-  storeToIndex(json: any) {
-    this.database.storeIndex(json)
+  async storeToIndex(json: any) {
+    return this.database.storeIndex(json)
   }
 
   restoreFromIndex(uidDB: string, versionDB?: number) {
@@ -75,8 +75,8 @@ class Connector extends Base.Connector {
     this.database.addMisc(uidDB, versionDB, key, value)
   }
 
-  async getMisc(uidDB: string, versionDB: number | null) {
-    return this.database.getMisc(uidDB, versionDB)
+  async getMisc(uidDB: string, versionDB: number | null, key?: string) {
+    return this.database.getMisc(uidDB, versionDB, key)
   }
 }
 

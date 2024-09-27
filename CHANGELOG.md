@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.15.12] - 28/09/2024
+## [0.16.0] - 27/09/2024
+
+- feat: Allow to upload LiaScript courses at the Index-page directly from the device as single files or as ZIP archives
+- improve: Hide skip navigation link
+- improve(Macro): Escaping of ${ as \${
+
+## [0.15.12] - 28/08/2024
 
 - chore: Update npm packages
 - improve(Macro): Parameter with more than 3 backticks
@@ -16,14 +22,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   The 3 backticks were hard-coded, hence it was not possible to pass markdown-blocks with code-blocks. Now it is possible to define multiline parameters with more than 3 backticks, allowing for more complex parameters. Basically it works like an ordinary code-block now, which can contain other code-blocks with less backticks.
 
-## [0.15.11] - 22/09/2024
+## [0.15.11] - 22/08/2024
 
 - improve: Code-Terminal, which scrolls to the bottom on every new output
 - feat: Add backslash followed by a newline in a paragraph, will result in a line-break
 - fix: Single images with a block-comment were interpreted as a paragraph with a starting
   image and thus resulted in a shorted image, with half of the size
 
-## [0.15.10] - 14/09/2024
+## [0.15.10] - 14/08/2024
 
 - improve: Translations for code, now also translations for code copy-buttons
 - improve: onload will block the execution of other scripts until it is finished
