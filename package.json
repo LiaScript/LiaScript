@@ -61,6 +61,7 @@
     "@parcel/transformer-inline-string": "^2.8.3",
     "@parcel/transformer-sass": "^2.8.3",
     "@parcel/transformer-webmanifest": "^2.8.3",
+    "@types/webtorrent": "^0.109.8",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "@webcomponents/webcomponentsjs": "^2.8.0",
@@ -78,6 +79,7 @@
     "elm-test": "^0.19.1-revision6",
     "eslint": "^7.32.0",
     "events": "^3.3.0",
+    "jszip": "^3.10.1",
     "katex": "^0.16.11",
     "logger.ts": "^1.0.5",
     "minify": "^9.2.0",
@@ -85,6 +87,7 @@
     "p2pt": "^1.5.1",
     "parcel": "^2.8.3",
     "parcel-reporter-static-files-copy": "^1.5.0",
+    "path-browserify": "^1.0.1",
     "pdfast": "^0.2.0",
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
@@ -115,6 +118,10 @@
     "test": "tests"
   },
   "dependencies": {
-    "pako": "^2.1.0"
+    "pako": "^2.1.0",
+    "webtorrent": "^2.5.0"
+  },
+  "alias": {
+    "webtorrent": "./node_modules/webtorrent/dist/webtorrent.min.js"
   }
 }

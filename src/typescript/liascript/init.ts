@@ -54,6 +54,8 @@ export function initGlobals() {
   init('lineGoto')
   init('fetchError')
 
+  init('fileUpload')
+
   init('injectResposivevoice')
 }
 
