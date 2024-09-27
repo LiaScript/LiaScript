@@ -1,3 +1,6 @@
+import '../types/lia.d'
+import log from '../log'
+
 interface ExtendedFile extends File {
   _path?: string
   path?: string
@@ -88,6 +91,10 @@ function getFileMimeType(fileName: string) {
   return mimeTypes[extension] || 'application/octet-stream' // Default to binary if unknown
 }
 
+function LOG(arg: any) {
+  log.info('local:', ...arg)
+}
+
 async function hash(readme: File) {
   // @ts-ignore
   const crypto = window.crypto || window.msCrypto
@@ -147,11 +154,13 @@ const Service = {
 
   init: function (elmSend_: Lia.Send, db_: any) {
     elmSend = elmSend_
+
     db = db_
     if (db) {
       // @ts-ignore
       db.onReady(() => {
         if (uri && Files) {
+          log.info('')
           storeFiles(Files)
         }
       })
@@ -161,11 +170,13 @@ const Service = {
       let files: Array<File> = Array.from(event.target.files)
 
       if (files.length === 1 && files[0].type === 'application/zip') {
+        LOG("ZIP file detected, let's extract it")
         // JSZip is only loaded if it is required
         if (!JSZip) {
           import('jszip').then((module) => {
             // @ts-ignore
             JSZip = module
+            LOG('JSZip loaded at first')
             window.LIA.fileUpload(event)
           })
           return
@@ -179,6 +190,20 @@ const Service = {
             // Iterate over the files inside the ZIP
             const extractedFiles: Array<ExtendedFile> = []
 
+            let base: string | null = null
+
+            let allInBase = true
+            for (const fileName in zip.files) {
+              if (base === null) {
+                base = fileName.split('/')[0]
+              } else if (!fileName.startsWith(base)) {
+                allInBase = false
+                break
+              }
+            }
+
+            let trim = allInBase && base ? base.length + 1 : 0
+
             // Loop through each file in the zip
             for (const fileName in zip.files) {
               const file = zip.files[fileName]
@@ -188,12 +213,20 @@ const Service = {
                 const content = await file.async('blob')
 
                 // Create a new File object for each extracted file
-                const extractedFile = new File([content], fileName, {
-                  type: getFileMimeType(fileName) || 'application/octet-stream',
-                })
+                const extractedFile = new File(
+                  [content],
+                  allInBase ? fileName.slice(trim) : fileName,
+                  {
+                    type:
+                      getFileMimeType(fileName) || 'application/octet-stream',
+                  }
+                )
 
-                extractedFile['_path'] = fileName
+                extractedFile['_path'] = allInBase
+                  ? fileName.slice(trim)
+                  : fileName
 
+                LOG(['Extracting file ->', extractedFile['_path']])
                 extractedFiles.push(extractedFile) // Add the file to an array
               }
             }
@@ -216,11 +249,14 @@ const Service = {
 
     if (uri.startsWith('local://')) {
       window.LIA.fetchError = (tag: string, src: string) => {
+        LOG(['trying to fetch', tag, src])
         if (db) {
           // @ts-ignore
           db.getMisc(uri, null, src).then((data: any) => {
             if (data) {
               inject(tag, src, URL.createObjectURL(data[1]))
+            } else if (!src.startsWith('/')) {
+              window.LIA.fetchError(tag, '/' + src)
             }
           })
         }
@@ -271,12 +307,14 @@ const Service = {
 
     window.LIA.fetchError = (tag: string, src: string) => {
       if (!Files) {
+        LOG(['no files found'])
         return
       }
+
       let file = Files.filter((file) => file._path?.endsWith(src))
 
       if (file.length === 0) {
-        console.warn('file not found', src)
+        LOG(['file not found', src])
 
         return
       }
@@ -334,8 +372,9 @@ function inject(tag: string, src: string, url: string) {
 
       for (let i = 0; i < images.length; i++) {
         let image: HTMLImageElement = images[i] as HTMLImageElement
+        let image_src = image.getAttribute('src') || image.src
 
-        if (sources.includes(image.src)) {
+        if (sources.includes(image_src)) {
           image.src = url
 
           if (image.onclick) {
@@ -356,7 +395,8 @@ function inject(tag: string, src: string, url: string) {
 
       for (let i = 0; i < nodes.length; i++) {
         let elem = nodes[i]
-        if (sources.includes(elem.src)) {
+        let elem_src = elem.getAttribute('src') || elem.src
+        if (sources.includes(elem_src)) {
           elem.src = url
           elem.removeAttribute('onerror')
 
@@ -376,8 +416,9 @@ function inject(tag: string, src: string, url: string) {
       const nodes = document.querySelectorAll('source')
       for (let i = 0; i < nodes.length; i++) {
         let elem = nodes[i]
+        let elem_src = elem.getAttribute('src') || elem.src
 
-        if (sources.includes(elem.src)) {
+        if (sources.includes(elem_src)) {
           const parent = elem.parentNode as HTMLMediaElement
           parent.src = url
           parent.load()
