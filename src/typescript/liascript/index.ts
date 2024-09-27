@@ -13,7 +13,7 @@ import * as TOOLTIP from '../webcomponents/tooltip/index'
 // Services
 import Console from './service/Console'
 import Database from './service/Database'
-import Local from './service/Local'
+// import Local from './service/Local'
 import { Service as Resource } from './service/Resource'
 import Script from './service/Script'
 import Share from './service/Share'
@@ -188,7 +188,7 @@ export class LiaScript {
     log.info('initEventSystem')
 
     Database.init(elmSend, this.connector)
-    Local.init(elmSend, Database)
+    // Local.init(elmSend, Database)
     TTS.Service.init(elmSend)
     Script.init(elmSend)
     Swipe.init(elem, elmSend)
@@ -247,9 +247,9 @@ export class LiaScript {
           Translate.handle(event)
           break
 
-        case Local.PORT:
-          Local.handle(event)
-          break
+        // case Local.PORT:
+        //   Local.handle(event)
+        //   break
 
         case Zip.PORT:
           Zip.handle(event)
