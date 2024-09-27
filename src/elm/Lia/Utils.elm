@@ -47,6 +47,7 @@ toEscapeString str =
         |> String.replace "`" "\\`"
         |> String.replace "\n" "\\n"
         |> String.replace "\t" "\\t"
+        |> String.replace "${" "\\${"
 
 
 onKeyDown : (Int -> msg) -> Html.Attribute msg

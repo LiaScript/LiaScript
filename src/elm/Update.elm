@@ -20,12 +20,14 @@ import Dict
 import Error.Message
 import Error.Report
 import Http
+import Index.Model as Index
 import Index.Update as Index
 import Index.Version
 import Json.Decode as JD
 import Lia.Definition.Types as Definition
 import Lia.Json.Decode
 import Lia.Markdown.Code.Log exposing (Level(..))
+import Lia.Model
 import Lia.Script
 import Library.IPFS as IPFS
 import Model exposing (Model, State(..))
@@ -33,6 +35,7 @@ import Process
 import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
+import Service.Local
 import Service.Torrent
 import Service.Zip
 import Session exposing (Screen)
@@ -246,15 +249,22 @@ update msg model =
                         model
 
                 ( Nothing, _, ( "load", param ) ) ->
-                    update
-                        (case Service.Torrent.decode param of
-                            ( False, uri, result ) ->
-                                Load_ReadMe_Result uri result
+                    case Service.Torrent.decode param of
+                        ( False, uri, result ) ->
+                            update (Load_ReadMe_Result uri result)
+                                (if String.isEmpty model.lia.readme then
+                                    let
+                                        lia =
+                                            model.lia
+                                    in
+                                    { model | lia = { lia | readme = uri, url = lia.url ++ "/?" ++ uri } }
 
-                            ( True, uri, result ) ->
-                                Load_Template_Result uri result
-                        )
-                        model
+                                 else
+                                    model
+                                )
+
+                        ( True, uri, result ) ->
+                            update (Load_Template_Result uri result) model
 
                 _ ->
                     update
@@ -380,6 +390,8 @@ update msg model =
                             { model
                                 | state = Idle
                                 , session = Session.setUrl url model.session
+                                , lia = Lia.Model.clear model.lia
+                                , index = Index.reset_modal model.index
                             }
 
             else
@@ -742,7 +754,10 @@ getIndex url model =
 initIndex : Model -> ( Model, Cmd Msg )
 initIndex model =
     ( model
-    , Service.Database.index_list
-        |> Event.push "index"
-        |> event2js
+    , [ Service.Database.index_list
+            |> Event.push "index"
+      , Service.Local.clear
+      ]
+        |> List.map event2js
+        |> Cmd.batch
     )

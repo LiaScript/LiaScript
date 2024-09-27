@@ -23,7 +23,7 @@ install via npm:
 `npm i @liascript/editor`
 
 > **Note:** The version information might look a bit different e.g.
-> `1.1.6--0.15.12`. The second version mirrors current version of LiaScript,
+> `1.1.7--0.16.0`. The second version mirrors current version of LiaScript,
 > while the first number is referring to the changes of the editor-branch.
 
 ## HowTo
