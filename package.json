@@ -61,7 +61,6 @@
     "@parcel/transformer-inline-string": "^2.8.3",
     "@parcel/transformer-sass": "^2.8.3",
     "@parcel/transformer-webmanifest": "^2.8.3",
-    "@types/webtorrent": "^0.109.8",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "@webcomponents/webcomponentsjs": "^2.8.0",
@@ -118,10 +117,6 @@
     "test": "tests"
   },
   "dependencies": {
-    "pako": "^2.1.0",
-    "webtorrent": "^2.5.0"
-  },
-  "alias": {
-    "webtorrent": "./node_modules/webtorrent/dist/webtorrent.min.js"
+    "pako": "^2.1.0"
   }
 }
