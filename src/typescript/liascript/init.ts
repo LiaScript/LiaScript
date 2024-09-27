@@ -7,7 +7,7 @@ export function initGlobals() {
   }
 
   if (!window.LIA.version) {
-    window.LIA.version = '0.15.12'
+    window.LIA.version = '0.16.0'
   }
 
   if (!window.LIA.eventSemaphore) {
@@ -53,6 +53,8 @@ export function initGlobals() {
   init('gotoLine')
   init('lineGoto')
   init('fetchError')
+
+  init('fileUpload')
 
   init('injectResposivevoice')
 }

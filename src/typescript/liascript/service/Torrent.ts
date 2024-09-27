@@ -1,4 +1,4 @@
-import { loadScript } from './Resource'
+import WebTorrent from 'webtorrent'
 
 var elmSend: Lia.Send | null
 var db = null
@@ -11,23 +11,73 @@ const Service = {
     db = db_
   },
 
-  handle: async function (event: Lia.Event, reload = false) {
-    if (!window['WebTorrent']) {
-      loadScript(
-        'https://cdn.jsdelivr.net/webtorrent/latest/webtorrent.min.js',
-        true,
-        (ok: boolean) => {
-          if (ok) {
-            this.handle(event)
-          } else {
-            console.error('webtorrent failed to load')
-          }
+  seed: async function (files: any) {
+    console.log('seed', files)
+
+    const client = new WebTorrent()
+
+    client.seed(
+      files,
+      {
+        name: 'lia',
+        announceList: [], // custom trackers (array of arrays of strings) (see [bep12](http://www.bittorrent.org/beps/bep_0012.html))
+        urlList: [],
+      },
+      async (torrent) => {
+        const files = torrent.files
+
+        for (let i in files) {
+          console.warn('file', files[i].name, files[i].path)
+          //files[i].path = 'img/' + files[i].name
         }
-      )
 
-      return
-    }
+        const readme = filterReadme(files)
 
+        console.log('seeded', files)
+
+        if (!readme) {
+          console.warn('No markdown files found')
+          return
+        }
+
+        let event = {
+          reply: true,
+          service: 'torrent',
+          track: [],
+          message: {
+            cmd: 'load',
+            param: {
+              template: false,
+              uri: torrent.magnetURI,
+              data: { ok: false, body: '' },
+            },
+          },
+        }
+
+        fetchReadme(event, true, files, readme)
+
+        window.LIA.fetchError = (tag: string, src: string) => {
+          const path = src.split('/')
+          const src2 = 'lia/' + path[path.length - 1]
+
+          let file = files.filter((file) => file.path.endsWith(src2))
+          if (file.length === 0) {
+            console.warn('file not found', src)
+            return
+          }
+          file[0].blob().then((blob) => {
+            const url = URL.createObjectURL(blob)
+
+            if (url) {
+              inject(tag, window.location.origin + src, url)
+            }
+          })
+        }
+      }
+    )
+  },
+
+  handle: async function (event: Lia.Event, reload = false) {
     switch (event.message.cmd) {
       case 'load': {
         // @ts-ignore
@@ -64,6 +114,45 @@ const Service = {
   },
 }
 
+function filterReadme(files: any) {
+  let readme = files.filter((file) =>
+    file.name.toLocaleLowerCase().endsWith('readme.md')
+  )
+
+  if (readme.length === 0) {
+    readme = files.filter((file) => file.name.endsWith('.md'))
+  }
+
+  if (readme.length === 0) {
+    return
+  }
+
+  return readme[0]
+}
+
+function fetchReadme(event: any, doStore: boolean, files: any, readme: any) {
+  readme.blob().then((blob) => {
+    const url = URL.createObjectURL(blob)
+
+    fetch(url)
+      .then((response) => {
+        return response.text()
+      })
+      .then((data) => {
+        event.message.param.data = { ok: true, body: data }
+
+        if (elmSend) {
+          elmSend(event)
+          if (doStore) {
+            setTimeout(() => {
+              storeFiles(event.message.param.uri, files)
+            }, 1000)
+          }
+        }
+      })
+  })
+}
+
 function serve(event, doStore: boolean) {
   return (torrent) => {
     if (!doStore && !event.message.param.uri.match(torrent.infoHash)) {
@@ -72,48 +161,28 @@ function serve(event, doStore: boolean) {
       return
     }
 
-    let readme = torrent.files.filter((file) =>
-      file.name.toLocaleLowerCase().endsWith('readme.md')
-    )
+    let readme = filterReadme(torrent.files)
 
-    if (readme.length === 0) {
-      readme = torrent.files.filter((file) => file.name.endsWith('.md'))
-    }
-
-    if (readme.length === 0) {
+    if (!readme) {
       console.warn('No markdown files found')
       return
     }
 
-    readme = readme[0]
-
-    readme.getBlobURL(function callback(err, url) {
-      if (url) {
-        fetch(url)
-          .then((response) => {
-            return response.text()
-          })
-          .then((data) => {
-            event.message.param.data = { ok: true, body: data }
-            if (elmSend) {
-              elmSend(event)
-              if (doStore) {
-                setTimeout(() => {
-                  storeFiles(event.message.param.uri, torrent.files)
-                }, 1000)
-              }
-            }
-          })
-      }
-    })
+    fetchReadme(event, doStore, torrent.files, readme)
 
     window.LIA.fetchError = (tag: string, src: string) => {
-      let file = torrent.files.filter((file) => file.path.endsWith(src))
+      const path = src.split('/')
+      const src2 = 'lia/' + path[path.length - 1]
+
+      let file = torrent.files.filter((f) => f.path.endsWith(src2))
+
       if (file.length === 0) {
         console.warn('file not found', src)
         return
       }
-      file[0].getBlobURL(function callback(err, url) {
+      file[0].blob().then((blob) => {
+        const url = URL.createObjectURL(blob)
+
         if (url) {
           inject(tag, window.location.origin + src, url)
         }
@@ -134,16 +203,17 @@ function toFileList(files: { [key: string]: [string, ArrayBuffer, number] }) {
 function storeFiles(uri: string, files: any) {
   for (let i in files) {
     let file = files[i]
-    file.getBlobURL(function callback(err, url) {
+    file.blob().then((blob) => {
+      const url = URL.createObjectURL(blob)
       if (url) {
         fetch(url)
           .then((response) => response.arrayBuffer())
           .then((data) => {
-            console.log('store file =>', i, file.path, file._getMimeType())
-
             if (db)
               // @ts-ignore
-              db.addMisc(uri, null, file.path, [file._getMimeType(), data, i])
+              db.addMisc(uri, null, file.path, [file.type, data, i])
+
+            console.log('stored', uri, file.path, [file.type, data, i])
           })
       }
     })
