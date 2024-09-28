@@ -1,6 +1,7 @@
 import 'katex/dist/katex.min.css'
-// @ts-ignore
 import katex from 'katex'
+
+var katexStyles: null | string = null
 
 customElements.define(
   'lia-formula',
@@ -25,7 +26,11 @@ customElements.define(
       link.rel = 'stylesheet'
       link.href = 'katex.min.css'
 
+      let style = document.createElement('style')
+      style.textContent = this.extractKatexStyles()
+
       shadowRoot.appendChild(link)
+      shadowRoot.appendChild(style)
       shadowRoot.appendChild(this.span)
 
       this.formula_ = this.getAttribute('formula') || ''
@@ -41,6 +46,35 @@ customElements.define(
       }
 
       this.render()
+    }
+
+    extractKatexStyles() {
+      if (katexStyles !== null) {
+        return katexStyles
+      }
+
+      katexStyles = ''
+      const styleSheets = document.styleSheets
+
+      for (let i = 0; i < styleSheets.length; i++) {
+        let sheet = styleSheets[i]
+        try {
+          let rules = sheet.cssRules || sheet.rules
+          for (let j = 0; j < rules.length; j++) {
+            let rule = rules[j]
+            if (
+              (rule as CSSStyleRule).selectorText &&
+              (rule as CSSStyleRule).selectorText.includes('.katex')
+            ) {
+              katexStyles += rule.cssText + '\n'
+            }
+          }
+        } catch (e) {
+          console.warn('formula: cannot access stylesheets ->', e.message)
+        }
+      }
+
+      return katexStyles
     }
 
     displayMode(): boolean {
