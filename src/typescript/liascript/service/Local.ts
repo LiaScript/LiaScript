@@ -166,7 +166,7 @@ const Service = {
       })
     }
 
-    window.LIA.fileUpload = (event: any) => {
+    window.LIA.fileUpload = (event: any, uri_?: string) => {
       let files: Array<File> = Array.from(event.target.files)
 
       if (files.length === 1 && files[0].type === 'application/zip') {
@@ -177,7 +177,7 @@ const Service = {
             // @ts-ignore
             JSZip = module
             LOG('JSZip loaded at first')
-            window.LIA.fileUpload(event)
+            window.LIA.fileUpload(event, uri_)
           })
           return
         }
@@ -231,7 +231,7 @@ const Service = {
               }
             }
 
-            self.store(extractedFiles) // Array of File objects
+            self.store(extractedFiles, uri_) // Array of File objects
           })
           .catch((error: any) => {
             logError(
@@ -242,7 +242,7 @@ const Service = {
         return
       }
 
-      this.store(cleanPathsIn(files))
+      this.store(cleanPathsIn(files), uri_)
     }
 
     uri = window.location.search.slice(1)
@@ -264,7 +264,7 @@ const Service = {
     }
   },
 
-  store: async function (files: Array<ExtendedFile>) {
+  store: async function (files: Array<ExtendedFile>, uri_?: string) {
     Files = files
 
     const readme = findReadme(files)
@@ -280,7 +280,7 @@ const Service = {
       return
     }
 
-    uri = 'local://' + (await hash(readme))
+    uri = uri_ || 'local://' + (await hash(readme))
 
     const decoder = new TextDecoder('utf-8')
 
@@ -332,6 +332,29 @@ const Service = {
         uri = ''
         Files = null
         break
+      }
+      case 'download': {
+        let url = event.message.param
+        uri = 'local://' + url
+
+        fetch(url)
+          .then((response) => {
+            return response.blob()
+          })
+          .then((blob) => {
+            window.LIA.fileUpload(
+              {
+                target: {
+                  files: [
+                    new File([blob], 'downloaded.zip', {
+                      type: 'application/zip',
+                    }),
+                  ],
+                },
+              },
+              'local://' + url
+            )
+          })
       }
       default:
         console.warn('local: unknown event =>', event)
