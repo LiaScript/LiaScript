@@ -378,7 +378,16 @@ update msg model =
             load_readme readme model
 
         Load_ReadMe_Result url (Err info) ->
-            if String.startsWith Const.urlProxy url then
+            if info == Http.NetworkError && String.startsWith "local://http" url then
+                let
+                    lia =
+                        model.lia
+                in
+                update (GotResponse (String.dropLeft 8 url) (Ok IsZip))
+                    { model | lia = { lia | origin = "" } }
+                -- Handle ZIP file URL
+
+            else if String.startsWith Const.urlProxy url then
                 startWithError
                     { model
                         | state =
