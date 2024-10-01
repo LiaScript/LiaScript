@@ -39,6 +39,9 @@ link =
                                 _ :: _ :: "tree" :: _ ->
                                     String.replace "/tree/" "/" w ++ "/README.md"
 
+                                _ :: _ :: "raw" :: "refs" :: "heads" :: _ ->
+                                    String.replace "/raw/refs/heads" "/refs/heads" w
+
                                 _ ->
                                     String.replace "/blob/" "/" w
                            )
@@ -85,6 +88,9 @@ repo =
                         ++ (case w |> String.split "/" of
                                 user :: repository :: "blob" :: hash :: _ ->
                                     user ++ "/" ++ repository ++ "/tree/" ++ hash
+
+                                user :: repository :: "refs" :: "heads" :: branch :: _ ->
+                                    user ++ "/" ++ repository ++ "/tree/" ++ branch
 
                                 -- user :: repo :: branch :: path ..
                                 user :: repository :: branch :: _ ->
