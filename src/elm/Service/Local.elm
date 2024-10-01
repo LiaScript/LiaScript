@@ -1,5 +1,6 @@
 module Service.Local exposing
     ( clear
+    , download
     , store
     )
 
@@ -15,6 +16,11 @@ store uri =
 clear : Event
 clear =
     event "clear" JE.null
+
+
+download : String -> Event
+download url =
+    event "download" (JE.string url)
 
 
 {-| **private:** Helper function to generate event - stubs that will be handled
