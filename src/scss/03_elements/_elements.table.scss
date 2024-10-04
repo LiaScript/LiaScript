@@ -106,7 +106,7 @@
 
           &:before,
           &:after {
-            content: "";
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
@@ -152,7 +152,7 @@
 
           &:before,
           &:after {
-            content: "";
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
@@ -240,8 +240,10 @@
       border-right: $global-border;
     }
 
-    &:nth-child(2) {
-      border-left: 0;
+    .has-first-col-sticky {
+      &:nth-child(2) {
+        border-left: 0;
+      }
     }
   }
 
