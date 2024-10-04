@@ -59,7 +59,11 @@ parse =
 classify : Parameters -> Table -> ( Scripts a, Maybe { i | solution : Input.State, options : Array (List Inlines) } ) -> Table
 classify attr table config =
     { table
-        | class =
+        | sortable =
+            attr
+                |> Param.isSetMaybe "data-sortable"
+                |> Maybe.withDefault True
+        , class =
             case diagramType attr of
                 Just class ->
                     class
@@ -341,13 +345,13 @@ simple : Parser Context (Int -> Table)
 simple =
     row
         |> many1
-        |> map (Table None [] [])
+        |> map (Table None True [] [])
 
 
 formatted : Parser Context (Int -> Table)
 formatted =
     row
-        |> map (Table None)
+        |> map (Table None True)
         |> andMap format
         |> andMap (many row)
 

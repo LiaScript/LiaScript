@@ -21,6 +21,7 @@ import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
 
 type alias Table =
     { class : Class
+    , sortable : Bool
     , head : List ( Parameters, Inlines )
     , format : List String
     , body : List (List ( Parameters, Inlines ))
