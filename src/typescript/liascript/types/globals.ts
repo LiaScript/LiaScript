@@ -116,7 +116,7 @@ declare global {
 
       /** This function is used to upload course contents from files.
        */
-      fileUpload: (event: any) => void
+      fileUpload: (event: any, uri?: string) => void
 
       /** This function can be used by external editors to make use of the
        * dynamic code-injection for responsivevoice. A key from the website

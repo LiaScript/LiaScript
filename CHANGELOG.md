@@ -4,6 +4,45 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.2] - 04/10/2024
+
+- feat(Zip): Courses can now be uploaded as ZIP files, which will be automatically extracted and loaded. Also courses can be hosted as Zip-files, which will be extracted on the fly.
+
+  Additionally, a URL translation for download links for Zip-files stored on the following services is now supported:
+
+  - [GitHub](https://github.com)
+  - [OneDrive](https://onedrive.live.com)
+  - [Dropbox](https://www.dropbox.com)
+
+- feat(Table): Add `data-sortable` to tables, which can be set to `true` or `false` to enable or disable sorting for a column.
+  By default every column is sortable, but this changed globally or on a per column basis. The defintion in the column header will overwrite the global setting.
+
+  ```markdown
+  <!-- data-sortable="false" -->
+  | Header 1 | <!-- data-sortable="true" --> Header 2 |
+  | :------- | :------------------------------------- |
+  | Item 1   | Item 2                                 |
+  | Item 5   | Item 6                                 |
+  | Item 9   | Item 10                                |
+  | Item 13  | Item 14                                |
+  ```
+
+- feat(Table): Tables of type `none` which are not displayed as an visualization have now a non sticky first column. Previously the first column was sticky, while the others could be moved.
+
+- improve(Quiz): Quiz definitions now allow for escaped strings, such that a text-inputs
+
+  `[[a\|b]]`
+
+  or selections allow
+
+  `[[\(a\) | (b) | \[c\]]]`
+
+- feat(Formula): Pass global `.katex` CSS to webcomponent
+
+  Somehow the global styles were not passed to the webcomponent, although
+  the shadow-DOM was open. This is now done explizitly by querying all
+  definitions for .katex and injecting them into the webcomponent.
+
 ## [0.16.1] - 27/09/2024
 
 - feat: Allow to upload LiaScript courses at the Index-page directly from the device as single files or as ZIP archives
