@@ -69,6 +69,9 @@ type alias Model =
 
   - `Loading`: Start to download the course if course url is defined
 
+  - `Loading_Zip`: Start to download the course if course url is defined, but
+    the course is a zip-file
+
   - `Parsing Bool Int`: Running the PreParser and loading the imports.
       - While the boolean value is true, the document has not been parsed
         entirely.
@@ -86,6 +89,7 @@ type alias Model =
 type State
     = Idle
     | Loading
+    | Loading_Zip
     | Parsing Bool Int
     | Running
     | Error (List String)

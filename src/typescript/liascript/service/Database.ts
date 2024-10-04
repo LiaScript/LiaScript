@@ -12,6 +12,7 @@ var elmSend: Lia.Send | null
 const Service = {
   PORT: 'db',
   conn: null,
+  callback: null,
 
   init: function (elmSend_: Lia.Send, connector_: Connector) {
     connector = connector_
@@ -26,6 +27,10 @@ const Service = {
         param: connector.initSettings(connector.getSettings(), false),
       },
     })
+  },
+
+  onReady: function (callback: any) {
+    this.callback = callback
   },
 
   handle: async function (event: Lia.Event) {
@@ -121,7 +126,9 @@ const Service = {
 
         // store the basic info in the offline-repositories
         if (isPersistent) {
-          connector.storeToIndex(param)
+          connector.storeToIndex(param).then(() => {
+            if (this.callback) this.callback()
+          })
         }
 
         if (window.LIA.onReady) {
@@ -207,9 +214,13 @@ const Service = {
     }
   },
 
-  getMisc: async function (uidDB: string, versionDB: number | null) {
+  getMisc: async function (
+    uidDB: string,
+    versionDB: number | null,
+    key?: string
+  ) {
     if (connector) {
-      return connector.getMisc(uidDB, versionDB)
+      return connector.getMisc(uidDB, versionDB, key)
     } else {
       console.warn('connector not initialized')
     }

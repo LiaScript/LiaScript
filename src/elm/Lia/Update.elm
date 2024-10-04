@@ -7,9 +7,9 @@ port module Lia.Update exposing
     )
 
 import Array exposing (Array)
+import Conditional.List as CList
 import Const
 import Dict
-import Html.Attributes exposing (width)
 import Json.Decode as JD
 import Lia.Chat.Update as Chat
 import Lia.Index.Update as Index
@@ -29,6 +29,7 @@ import Return exposing (Return)
 import Service.Console
 import Service.Database
 import Service.Event as Event exposing (Event)
+import Service.Local
 import Service.Script
 import Service.Slide
 import Session exposing (Session)

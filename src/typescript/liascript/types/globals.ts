@@ -110,6 +110,10 @@ declare global {
        */
       onReady: (params: any) => void
 
+      /** This function is used to upload course contents from files.
+       */
+      fileUpload: (event: any, uri?: string) => void
+
       /** This function can be used by external editors to make use of the
        * dynamic code-injection for responsivevoice. A key from the website
        * is require. If such a key is not present, responsivevoice will not

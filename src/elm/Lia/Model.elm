@@ -1,5 +1,6 @@
 module Lia.Model exposing
     ( Model
+    , clear
     , init
     , loadResource
     )
@@ -199,3 +200,31 @@ loadResource old new =
         )
         to_load
     )
+
+
+clear : Model -> Model
+clear model =
+    { model
+        | url = ""
+        , repositoryUrl = Nothing
+        , readme = ""
+        , origin = ""
+        , title = "Lia"
+        , error = Nothing
+        , sections = Array.empty
+        , section_active = 0
+        , anchor = Nothing
+        , definition = Definition.default ""
+        , index_model = Index.init
+        , resource = []
+        , to_do = []
+        , translation = Translations.En
+        , langCode = "en"
+        , langCodeOriginal = "en"
+        , search_index = identity
+        , media = Dict.empty
+        , modal = Nothing
+        , persistent = False
+        , seed = model.seed + 111
+        , chat = Chat.init
+    }
