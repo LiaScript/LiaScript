@@ -5,6 +5,7 @@ module Lia.Parser.PatReplace exposing
     , root
     )
 
+import Base64
 import Const
 import Regex
 
@@ -39,16 +40,53 @@ link =
                                 _ :: _ :: "tree" :: _ ->
                                     String.replace "/tree/" "/" w ++ "/README.md"
 
+                                _ :: _ :: "raw" :: "refs" :: "heads" :: _ ->
+                                    String.replace "/raw/refs/heads" "/refs/heads" w
+
                                 _ ->
                                     String.replace "/blob/" "/" w
                            )
           , pattern = root "github\\.com/(.*)"
           }
-        , { by = \_ w -> "https://dl.dropbox.com/s/" ++ w
-          , pattern = root "dropbox\\.com/s/(.*)"
+        , { by = \_ w -> "https://dl.dropbox.com/" ++ w
+          , pattern = root "dropbox\\.com/(.*)"
+          }
+        , { by = \_ w -> createOneDriveLink ("https://onedrive.live.com/" ++ w)
+          , pattern = root "onedrive\\.live\\.com/(.*)"
           }
         ]
         >> Tuple.second
+
+
+{-| **private:** creates a OneDrive link from a given URL
+
+this is based on the following script:
+
+<https://github.com/felixrieseberg/onedrive-link/blob/main/bin/onedrive-link>
+
+-}
+createOneDriveLink : String -> String
+createOneDriveLink url =
+    let
+        -- Step 1: Convert to base64
+        base64 =
+            Base64.encode url
+
+        -- Step 2: Replace '/' with '_' and '+' with '-'
+        modifiedBase64 =
+            base64
+                |> String.replace "/" "_"
+                |> String.replace "+" "-"
+
+        -- Step 3: Remove trailing '=' character if present
+        finalBase64 =
+            if String.endsWith "=" modifiedBase64 then
+                String.dropRight 1 modifiedBase64
+
+            else
+                modifiedBase64
+    in
+    "https://api.onedrive.com/v1.0/shares/u!" ++ finalBase64 ++ "/root/content"
 
 
 {-| **private:** translates the `Const.urlProxy` string into a regular
@@ -85,6 +123,9 @@ repo =
                         ++ (case w |> String.split "/" of
                                 user :: repository :: "blob" :: hash :: _ ->
                                     user ++ "/" ++ repository ++ "/tree/" ++ hash
+
+                                user :: repository :: "refs" :: "heads" :: branch :: _ ->
+                                    user ++ "/" ++ repository ++ "/tree/" ++ branch
 
                                 -- user :: repo :: branch :: path ..
                                 user :: repository :: branch :: _ ->

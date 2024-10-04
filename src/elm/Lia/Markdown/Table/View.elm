@@ -52,12 +52,12 @@ view config attr table =
 
     else if table.head == [] && table.format == [] then
         state
-            |> unformatted config.main.lang config.view (toMatrix config.main table.body) table.id
+            |> unformatted config.main.lang table.sortable config.view (toMatrix config.main table.body) table.id
             |> toTable config.main.lang table.id attr table.class
 
     else
         state
-            |> formatted config.main.lang config.view table.head table.format (toMatrix config.main table.body) table.id
+            |> formatted config.main.lang table.sortable config.view table.head table.format (toMatrix config.main table.body) table.id
             |> toTable config.main.lang table.id attr table.class
 
 
@@ -566,7 +566,7 @@ getState id =
 toTable : Lang -> Int -> Parameters -> Class -> List (Html Msg) -> Html Msg
 toTable lang id attr class body =
     if class == None then
-        viewTable attr body
+        viewTable False attr body
 
     else
         Html.div [ Attr.class "lia-plot" ]
@@ -610,13 +610,19 @@ toTable lang id attr class body =
 
                     None ->
                         ( "", "" )
-            , viewTable attr body
+            , viewTable True attr body
             ]
 
 
-viewTable : Parameters -> List (Html msg) -> Html msg
-viewTable attr body =
-    Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-first-col-sticky" ]
+viewTable : Bool -> Parameters -> List (Html msg) -> Html msg
+viewTable sticky attr body =
+    Html.div
+        [ Attr.classList
+            [ ( "lia-table-responsive", True )
+            , ( "has-thead-sticky", True )
+            , ( "has-first-col-sticky", sticky )
+            ]
+        ]
         [ Html.table
             (A11y_Role.grid :: A11y_Widget.readOnly True :: Param.annotation "lia-table" attr)
             body
@@ -644,8 +650,8 @@ toggleBtn id ( name, title ) =
         ]
 
 
-unformatted : Lang -> (Inlines -> List (Html Msg)) -> Matrix Cell -> Int -> State -> List (Html Msg)
-unformatted lang viewer rows id state =
+unformatted : Lang -> Bool -> (Inlines -> List (Html Msg)) -> Matrix Cell -> Int -> State -> List (Html Msg)
+unformatted lang sortable viewer rows id state =
     case sort state rows of
         head :: tail ->
             tail
@@ -655,7 +661,7 @@ unformatted lang viewer rows id state =
                     )
                 |> (::)
                     (head
-                        |> view_head1 lang viewer id state
+                        |> view_head1 lang sortable viewer id state
                         |> Html.tr [ Attr.class "lia-table__row", A11y_Role.row ]
                     )
 
@@ -663,10 +669,10 @@ unformatted lang viewer rows id state =
             []
 
 
-formatted : Lang -> (Inlines -> List (Html Msg)) -> List ( Parameters, Inlines ) -> List String -> Matrix Cell -> Int -> State -> List (Html Msg)
-formatted lang viewer head format rows id state =
+formatted : Lang -> Bool -> (Inlines -> List (Html Msg)) -> List ( Parameters, Inlines ) -> List String -> Matrix Cell -> Int -> State -> List (Html Msg)
+formatted lang sortable viewer head format rows id state =
     [ head
-        |> view_head2 lang viewer id format state
+        |> view_head2 lang sortable viewer id format state
         |> Html.tr [ A11y_Role.row ]
         |> List.singleton
         |> Html.thead [ Attr.class "lia-table__head" ]
@@ -740,21 +746,39 @@ sort state matrix =
         matrix
 
 
-view_head1 : Lang -> (Inlines -> List (Html Msg)) -> Int -> State -> Row Cell -> List (Html Msg)
-view_head1 lang viewer id state =
+view_head1 : Lang -> Bool -> (Inlines -> List (Html Msg)) -> Int -> State -> Row Cell -> List (Html Msg)
+view_head1 lang sortable viewer id state =
     List.indexedMap
         (\i r ->
-            header lang viewer id Const.align.default state i r.inlines
+            header
+                { lang = lang
+                , viewer = viewer
+                , id = id
+                , format = Const.align.default
+                , state = state
+                , column = i
+                , inline = r.inlines
+                , sortable = isSortable sortable r.attr
+                }
                 |> Html.td (Attr.class Const.align.default :: Param.toAttribute r.attr)
         )
 
 
-view_head2 : Lang -> (Inlines -> List (Html Msg)) -> Int -> List String -> State -> List ( Parameters, Inlines ) -> List (Html Msg)
-view_head2 lang viewer id format state =
+view_head2 : Lang -> Bool -> (Inlines -> List (Html Msg)) -> Int -> List String -> State -> List ( Parameters, Inlines ) -> List (Html Msg)
+view_head2 lang sortable viewer id format state =
     List.map2 Tuple.pair format
         >> List.indexedMap
             (\i ( f, ( a, r ) ) ->
-                header lang viewer id f state i r
+                header
+                    { lang = lang
+                    , viewer = viewer
+                    , id = id
+                    , format = f
+                    , state = state
+                    , column = i
+                    , inline = r
+                    , sortable = isSortable sortable a
+                    }
                     |> Html.th
                         (Attr.class "lia-table__header"
                             :: (if i == id then
@@ -775,38 +799,58 @@ view_head2 lang viewer id format state =
             )
 
 
-header : Lang -> (Inlines -> List (Html Msg)) -> Int -> String -> State -> Int -> Inlines -> List (Html Msg)
-header lang viewer id format state i r =
-    [ Html.span [ Attr.class format ] (viewer r)
-    , btnIcon
-        { title =
-            if state.column == i && state.dir then
-                sortDesc lang
+isSortable : Bool -> Parameters -> Bool
+isSortable default attr =
+    Param.isSetMaybe "data-sortable" attr
+        |> Maybe.withDefault default
 
-            else if state.column == i && not state.dir then
-                sortNot lang
 
-            else
-                sortAsc lang
-        , msg = Just <| UpdateTable <| Sub.Sort id i
-        , tabbable = True
-        , icon =
-            if state.column == i then
-                if state.dir then
-                    "icon-sort-asc"
+header :
+    { lang : Lang
+    , viewer : Inlines -> List (Html Msg)
+    , id : Int
+    , format : String
+    , state : State
+    , column : Int
+    , inline : Inlines
+    , sortable : Bool
+    }
+    -> List (Html Msg)
+header { lang, viewer, id, format, state, column, inline, sortable } =
+    [ Html.span [ Attr.class format ] (viewer inline)
+    , if sortable then
+        btnIcon
+            { title =
+                if state.column == column && state.dir then
+                    sortDesc lang
+
+                else if state.column == column && not state.dir then
+                    sortNot lang
+
+                else
+                    sortAsc lang
+            , msg = Just <| UpdateTable <| Sub.Sort id column
+            , tabbable = True
+            , icon =
+                if state.column == column then
+                    if state.dir then
+                        "icon-sort-asc"
+
+                    else
+                        "icon-sort-desc"
 
                 else
                     "icon-sort-desc"
+            }
+            [ Attr.class "lia-btn--transparent lia-table__sort"
+            , Attr.class <|
+                if state.column == column then
+                    "active"
 
-            else
-                "icon-sort-desc"
-        }
-        [ Attr.class "lia-btn--transparent lia-table__sort"
-        , Attr.class <|
-            if state.column == i then
-                "active"
+                else
+                    ""
+            ]
 
-            else
-                ""
-        ]
+      else
+        Html.text ""
     ]
