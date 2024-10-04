@@ -758,7 +758,7 @@ view_head1 lang sortable viewer id state =
                 , state = state
                 , column = i
                 , inline = r.inlines
-                , sortable = False
+                , sortable = isSortable sortable r.attr
                 }
                 |> Html.td (Attr.class Const.align.default :: Param.toAttribute r.attr)
         )
@@ -777,7 +777,7 @@ view_head2 lang sortable viewer id format state =
                     , state = state
                     , column = i
                     , inline = r
-                    , sortable = sortable
+                    , sortable = isSortable sortable a
                     }
                     |> Html.th
                         (Attr.class "lia-table__header"
@@ -797,6 +797,12 @@ view_head2 lang sortable viewer id format state =
                             :: Param.toAttribute a
                         )
             )
+
+
+isSortable : Bool -> Parameters -> Bool
+isSortable default attr =
+    Param.isSetMaybe "data-sortable" attr
+        |> Maybe.withDefault default
 
 
 header :
