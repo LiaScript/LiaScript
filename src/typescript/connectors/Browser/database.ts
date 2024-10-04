@@ -337,14 +337,18 @@ class LiaDB {
     })
   }
 
-  async getMisc(uidDB: string, versionDB: number | null) {
-    let db = this.open_(uidDB)
+  async getMisc(uidDB: string, versionDB: number | null, key?: string) {
+    const db = this.open_(uidDB)
     await db.open()
 
-    let item = await db['offline'].get({
+    const item = await db['offline'].get({
       id: 0,
       version: versionDB || this.version,
     })
+
+    if (key) {
+      return item?.misc[key]
+    }
 
     return item?.misc
   }

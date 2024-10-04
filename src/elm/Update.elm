@@ -19,12 +19,14 @@ import Dict
 import Error.Message
 import Error.Report
 import Http
+import Index.Model as Index
 import Index.Update as Index
 import Index.Version
 import Json.Decode as JD
 import Lia.Definition.Types as Definition
 import Lia.Json.Decode
 import Lia.Markdown.Code.Log exposing (Level(..))
+import Lia.Model
 import Lia.Script
 import Library.IPFS as IPFS
 import Model exposing (Model, State(..))
@@ -32,6 +34,7 @@ import Process
 import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
+import Service.Local
 import Service.Torrent
 import Service.Zip
 import Session exposing (Screen)
@@ -91,6 +94,12 @@ type Msg
     | UrlChanged Url.Url
     | Load_ReadMe_Result String (Result Http.Error String)
     | Load_Template_Result String (Result Http.Error String)
+    | GotResponse String (Result Http.Error ResponseData)
+
+
+type ResponseData
+    = IsZip
+    | IsMarkdown String
 
 
 subscriptions : Model -> Sub Msg
@@ -151,12 +160,12 @@ update msg model =
                     case Index.decodeGet param of
                         Ok ( url, course ) ->
                             ( { model | preload = course }
-                            , download False url
+                            , download_text_or_zip url
                             )
 
                         Err _ ->
                             ( { model | preload = Nothing }
-                            , download False model.lia.readme
+                            , download_text_or_zip model.lia.readme
                             )
 
                 ( Nothing, _, ( "index_restore", param ) ) ->
@@ -171,7 +180,7 @@ update msg model =
 
                         Err _ ->
                             ( { model | preload = Nothing }
-                            , download False model.lia.readme
+                            , download_text_or_zip model.lia.readme
                             )
 
                 ( Nothing, _, ( "lang", param ) ) ->
@@ -209,15 +218,22 @@ update msg model =
                         model
 
                 ( Nothing, _, ( "load", param ) ) ->
-                    update
-                        (case Service.Torrent.decode param of
-                            ( False, uri, result ) ->
-                                Load_ReadMe_Result uri result
+                    case Service.Torrent.decode param of
+                        ( False, uri, result ) ->
+                            update (Load_ReadMe_Result uri result)
+                                (if String.isEmpty model.lia.readme || model.lia.readme /= uri then
+                                    let
+                                        lia =
+                                            model.lia
+                                    in
+                                    { model | lia = { lia | readme = uri, url = lia.url ++ "/?" ++ uri, origin = "" } }
 
-                            ( True, uri, result ) ->
-                                Load_Template_Result uri result
-                        )
-                        model
+                                 else
+                                    model
+                                )
+
+                        ( True, uri, result ) ->
+                            update (Load_Template_Result uri result) model
 
                 _ ->
                     update
@@ -343,6 +359,8 @@ update msg model =
                             { model
                                 | state = Idle
                                 , session = Session.setUrl url model.session
+                                , lia = Lia.Model.clear model.lia
+                                , index = Index.reset_modal model.index
                             }
 
             else
@@ -360,7 +378,16 @@ update msg model =
             load_readme readme model
 
         Load_ReadMe_Result url (Err info) ->
-            if String.startsWith Const.urlProxy url then
+            if info == Http.NetworkError && String.startsWith "local://http" url then
+                let
+                    lia =
+                        model.lia
+                in
+                update (GotResponse (String.dropLeft 8 url) (Ok IsZip))
+                    { model | lia = { lia | origin = "" } }
+                -- Handle ZIP file URL
+
+            else if String.startsWith Const.urlProxy url then
                 startWithError
                     { model
                         | state =
@@ -369,24 +396,7 @@ update msg model =
                     }
 
             else if isOffline info && model.preload /= Nothing then
-                ( model
-                , { version =
-                        model.preload
-                            |> Maybe.andThen .active
-                            |> Maybe.withDefault
-                                (model.preload
-                                    |> Maybe.andThen
-                                        (.versions
-                                            >> Dict.keys
-                                            >> Index.Version.max
-                                        )
-                                    |> Maybe.withDefault "0"
-                                )
-                  , url = url
-                  }
-                    |> Service.Database.index_restore
-                    |> event2js
-                )
+                restore model
 
             else if IPFS.isIPFS url then
                 ( model
@@ -440,6 +450,50 @@ update msg model =
 
             else
                 ( model, download True (IPFS.toHTTPS (Const.urlProxy ++ url) url) )
+
+        GotResponse url (Ok responseData) ->
+            case responseData of
+                IsMarkdown content ->
+                    -- Handle Markdown content
+                    update (Load_ReadMe_Result url (Ok content)) model
+
+                IsZip ->
+                    let
+                        new_model =
+                            { model | state = Loading_Zip, session = Session.setQuery "" model.session }
+                    in
+                    -- Handle ZIP file URL
+                    ( new_model
+                    , Service.Local.download url
+                        |> event2js
+                    )
+
+        GotResponse url (Err info) ->
+            update (Load_ReadMe_Result url (Err info)) model
+
+
+restore : Model -> ( Model, Cmd Msg )
+restore model =
+    ( model
+    , { version =
+            model.preload
+                |> Maybe.andThen .active
+                |> Maybe.withDefault
+                    (model.preload
+                        |> Maybe.andThen
+                            (.versions
+                                >> Dict.keys
+                                >> Index.Version.max
+                            )
+                        |> Maybe.withDefault "0"
+                    )
+      , url =
+            model.session.url.query
+                |> Maybe.withDefault model.lia.readme
+      }
+        |> Service.Database.index_restore
+        |> event2js
+    )
 
 
 isOffline : Http.Error -> Bool
@@ -720,7 +774,61 @@ getIndex url model =
 initIndex : Model -> ( Model, Cmd Msg )
 initIndex model =
     ( model
-    , Service.Database.index_list
-        |> Event.push "index"
-        |> event2js
+    , [ Service.Database.index_list
+            |> Event.push "index"
+      , Service.Local.clear
+      ]
+        |> List.map event2js
+        |> Cmd.batch
     )
+
+
+download_text_or_zip : String -> Cmd Msg
+download_text_or_zip url =
+    Http.request
+        { method = "GET"
+        , url = url
+        , headers = []
+        , expect =
+            Http.expectStringResponse (GotResponse url) handleResponse
+        , timeout = Nothing
+        , tracker = Nothing
+        , body = Http.emptyBody
+        }
+
+
+handleResponse : Http.Response String -> Result Http.Error ResponseData
+handleResponse response =
+    case response of
+        Http.GoodStatus_ metadata body ->
+            case getContentType metadata of
+                Just ct ->
+                    if String.contains "application/zip" ct then
+                        Ok IsZip
+
+                    else
+                        Ok (IsMarkdown body)
+
+                Nothing ->
+                    Ok (IsMarkdown body)
+
+        Http.BadStatus_ metadata _ ->
+            Err (Http.BadStatus metadata.statusCode)
+
+        Http.Timeout_ ->
+            Err Http.Timeout
+
+        Http.NetworkError_ ->
+            Err Http.NetworkError
+
+        Http.BadUrl_ info ->
+            Err (Http.BadUrl info)
+
+
+getContentType : Http.Metadata -> Maybe String
+getContentType metadata =
+    metadata.headers
+        |> Dict.toList
+        |> List.filter (\( name, _ ) -> String.toLower name == "content-type")
+        |> List.head
+        |> Maybe.map Tuple.second

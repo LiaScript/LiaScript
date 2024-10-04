@@ -34,12 +34,10 @@ view model =
                 ]
 
             Loading ->
-                [ base_div
-                    [ Html.h1 [] [ Html.text "Loading" ]
-                    , Html.br [] []
-                    , Html.div [ Attr.class "lds-dual-ring" ] []
-                    ]
-                ]
+                loading
+
+            Loading_Zip ->
+                loading
 
             Parsing _ _ ->
                 let
@@ -77,3 +75,13 @@ base_div =
         , Attr.style "top" "25%"
         , Attr.style "position" "absolute"
         ]
+
+
+loading : List (Html msg)
+loading =
+    [ base_div
+        [ Html.h1 [] [ Html.text "Loading" ]
+        , Html.br [] []
+        , Html.div [ Attr.class "lds-dual-ring" ] []
+        ]
+    ]

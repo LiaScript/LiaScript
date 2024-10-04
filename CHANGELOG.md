@@ -4,7 +4,52 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.15.12] - 28/09/2024
+## [0.16.2] - 04/10/2024
+
+- feat(Zip): Courses can now be uploaded as ZIP files, which will be automatically extracted and loaded. Also courses can be hosted as Zip-files, which will be extracted on the fly.
+
+  Additionally, a URL translation for download links for Zip-files stored on the following services is now supported:
+
+  - [GitHub](https://github.com)
+  - [OneDrive](https://onedrive.live.com)
+  - [Dropbox](https://www.dropbox.com)
+
+- feat(Table): Add `data-sortable` to tables, which can be set to `true` or `false` to enable or disable sorting for a column.
+  By default every column is sortable, but this changed globally or on a per column basis. The defintion in the column header will overwrite the global setting.
+
+  ```markdown
+  <!-- data-sortable="false" -->
+  | Header 1 | <!-- data-sortable="true" --> Header 2 |
+  | :------- | :------------------------------------- |
+  | Item 1   | Item 2                                 |
+  | Item 5   | Item 6                                 |
+  | Item 9   | Item 10                                |
+  | Item 13  | Item 14                                |
+  ```
+
+- feat(Table): Tables of type `none` which are not displayed as an visualization have now a non sticky first column. Previously the first column was sticky, while the others could be moved.
+
+- improve(Quiz): Quiz definitions now allow for escaped strings, such that a text-inputs
+
+  `[[a\|b]]`
+
+  or selections allow
+
+  `[[\(a\) | (b) | \[c\]]]`
+
+- feat(Formula): Pass global `.katex` CSS to webcomponent
+
+  Somehow the global styles were not passed to the webcomponent, although
+  the shadow-DOM was open. This is now done explizitly by querying all
+  definitions for .katex and injecting them into the webcomponent.
+
+## [0.16.1] - 27/09/2024
+
+- feat: Allow to upload LiaScript courses at the Index-page directly from the device as single files or as ZIP archives
+- improve: Hide skip navigation link
+- improve(Macro): Escaping of `${` as `\${`
+
+## [0.15.12] - 28/08/2024
 
 - chore: Update npm packages
 - improve(Macro): Parameter with more than 3 backticks
@@ -16,14 +61,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   The 3 backticks were hard-coded, hence it was not possible to pass markdown-blocks with code-blocks. Now it is possible to define multiline parameters with more than 3 backticks, allowing for more complex parameters. Basically it works like an ordinary code-block now, which can contain other code-blocks with less backticks.
 
-## [0.15.11] - 22/09/2024
+## [0.15.11] - 22/08/2024
 
 - improve: Code-Terminal, which scrolls to the bottom on every new output
 - feat: Add backslash followed by a newline in a paragraph, will result in a line-break
 - fix: Single images with a block-comment were interpreted as a paragraph with a starting
   image and thus resulted in a shorted image, with half of the size
 
-## [0.15.10] - 14/09/2024
+## [0.15.10] - 14/08/2024
 
 - improve: Translations for code, now also translations for code copy-buttons
 - improve: onload will block the execution of other scripts until it is finished

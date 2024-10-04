@@ -94,7 +94,7 @@ export class Connector {
 
   deleteFromIndex(_uidDB: string) {}
 
-  storeToIndex(_json: any) {}
+  async storeToIndex(_json: any) {}
 
   restoreFromIndex(_uidDB: string, _versionDB?: number) {}
 
@@ -115,7 +115,7 @@ export class Connector {
     console.log('addMisc not implemented')
   }
 
-  async getMisc(_uidDB: string, _versionDB: number | null) {
+  async getMisc(_uidDB: string, _versionDB: number | null, _key?: string) {
     console.log('getMisc not implemented')
   }
 }
