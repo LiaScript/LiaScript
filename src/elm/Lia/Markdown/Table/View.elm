@@ -566,7 +566,7 @@ getState id =
 toTable : Lang -> Int -> Parameters -> Class -> List (Html Msg) -> Html Msg
 toTable lang id attr class body =
     if class == None then
-        viewTable attr body
+        viewTable False attr body
 
     else
         Html.div [ Attr.class "lia-plot" ]
@@ -610,13 +610,19 @@ toTable lang id attr class body =
 
                     None ->
                         ( "", "" )
-            , viewTable attr body
+            , viewTable True attr body
             ]
 
 
-viewTable : Parameters -> List (Html msg) -> Html msg
-viewTable attr body =
-    Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-first-col-sticky" ]
+viewTable : Bool -> Parameters -> List (Html msg) -> Html msg
+viewTable sticky attr body =
+    Html.div
+        [ Attr.classList
+            [ ( "lia-table-responsive", True )
+            , ( "has-thead-sticky", True )
+            , ( "has-first-col-sticky", sticky )
+            ]
+        ]
         [ Html.table
             (A11y_Role.grid :: A11y_Widget.readOnly True :: Param.annotation "lia-table" attr)
             body
