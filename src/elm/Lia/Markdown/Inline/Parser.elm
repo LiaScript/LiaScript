@@ -485,6 +485,7 @@ strings =
             choice
                 [ inline_url
                 , stringBase
+                , dashes
                 , arrows
                 , smileys
                 , stringEscape
@@ -530,6 +531,17 @@ stringStrike : Parser Context (Parameters -> Inline)
 stringStrike =
     between_ "~"
         |> map Strike
+
+
+dashes : Parser Context (Parameters -> Inline)
+dashes =
+    or
+        (string "---"
+            |> keep (succeed (Chars "—"))
+        )
+        (string "--"
+            |> keep (succeed (Chars "–"))
+        )
 
 
 stringUnderline : Parser Context (Parameters -> Inline)

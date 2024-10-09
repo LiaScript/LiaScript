@@ -499,7 +499,7 @@ checkForCitation attr p =
 horizontal_line : Parser Context Markdown.Block
 horizontal_line =
     md_annotations
-        |> ignore (regex "-{3,}")
+        |> ignore (regex "-{3,}[ \t]*\n")
         |> map Markdown.HLine
 
 
