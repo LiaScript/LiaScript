@@ -30,6 +30,10 @@ type alias Definition =
     , date : String
     , email : String
     , language : String
+    , typographic_quotation :
+        { single : ( String, String )
+        , double : ( String, String )
+        }
     , logo : String
     , narrator : String
     , version : String
@@ -56,6 +60,10 @@ default base =
     , date = ""
     , email = ""
     , language = "en"
+    , typographic_quotation =
+        { single = ( "‘", "’" )
+        , double = ( "“", "”" )
+        }
     , logo = ""
     , narrator = "US English Male"
     , version = "0.0.1"

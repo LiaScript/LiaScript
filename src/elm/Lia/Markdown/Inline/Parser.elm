@@ -494,6 +494,7 @@ strings =
                 , stringUnderline
                 , stringStrike
                 , stringSuperscript
+                , stringQuote
                 , stringSpaces
                 , HTML.parse inlines |> map IHTML
                 , stringCharacters
@@ -504,14 +505,14 @@ strings =
 
 stringBase : Parser s (Parameters -> Inline)
 stringBase =
-    regex "[^\\[\\]\\(\\)@*+_~:;`\\^{}\\\\\\n<>=$ \"\\-|]+"
+    regex "[^\\[\\]\\(\\)@*+_~:;`\\^{}\\\\\\n<>=$ \"\\-|']+"
         |> map Chars
 
 
 stringEscape : Parser s (Parameters -> Inline)
 stringEscape =
     string "\\"
-        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#\\-<>]")
+        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#\\-<>'\"]")
         |> map Chars
 
 
@@ -525,6 +526,19 @@ stringBold : Parser Context (Parameters -> Inline)
 stringBold =
     or (between_ "**") (between_ "__")
         |> map Bold
+
+
+stringQuote : Parser Context (Parameters -> Inline)
+stringQuote =
+    or
+        (between_ "\""
+            |> map (\text ( start, end ) -> [ Chars start [], text, Chars end [] ] |> Container)
+            |> andMap (withState (.defines >> .typographic_quotation >> .double >> succeed))
+        )
+        (between_ "'"
+            |> map (\text ( start, end ) -> [ Chars start [], text, Chars end [] ] |> Container)
+            |> andMap (withState (.defines >> .typographic_quotation >> .single >> succeed))
+        )
 
 
 stringStrike : Parser Context (Parameters -> Inline)

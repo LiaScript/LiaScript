@@ -20,6 +20,7 @@ import Combine
         , whitespace
         )
 import Dict
+import I18n.Quotation exposing (quotation)
 import Lia.Definition.Types
     exposing
         ( Definition
@@ -137,7 +138,7 @@ store ( key_, value_ ) =
             set (add_imports value_)
 
         "language" ->
-            set (\c -> { c | language = value_ })
+            set (\c -> { c | language = value_, typographic_quotation = quotation value_ })
 
         "link" ->
             set (addToResources Link value_)
