@@ -469,8 +469,8 @@ checkForCitation : Parameters -> Inlines -> Markdown.Block
 checkForCitation attr p =
     case p of
         (Chars chars cAttr) :: rest ->
-            if String.startsWith "--" chars then
-                Markdown.Citation attr (Chars (String.dropLeft 2 chars) cAttr :: rest)
+            if String.startsWith "–" chars then
+                Markdown.Citation attr (Chars (String.dropLeft 1 chars) cAttr :: rest)
 
             else
                 Markdown.Paragraph attr p
