@@ -1,6 +1,7 @@
 module Lia.Definition.Json.Decode exposing (decode)
 
 import Dict
+import I18n.Quotation exposing (quotation)
 import Json.Decode as JD
 import Lia.Definition.Types exposing (Definition, Resource(..))
 import Lia.Markdown.Inline.Json.Decode as Inline
@@ -13,6 +14,7 @@ decode =
         |> andMap "date" JD.string
         |> andMap "email" JD.string
         |> andMap "language" JD.string
+        |> andMap "language" (JD.string |> JD.map quotation)
         |> andMap "logo" JD.string
         |> andMap "narrator" JD.string
         |> andMap "version" JD.string

@@ -25,11 +25,11 @@ import Dict exposing (Dict)
 import FStatistics
 import Html exposing (Html)
 import Html.Attributes as Attr
+import I18n.Translations exposing (getCodeFromLn)
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Data, Diagram(..), Settings)
 import Lia.Markdown.HTML.Attributes exposing (annotation)
 import Maybe
-import Translations exposing (getCodeFromLn)
 
 
 view : Settings -> Chart -> Html msg

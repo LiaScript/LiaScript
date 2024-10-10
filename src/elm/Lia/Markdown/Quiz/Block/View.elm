@@ -5,6 +5,7 @@ import Accessibility.Widget as A11y_Widget
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import I18n.Translations as Translations
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
@@ -12,7 +13,6 @@ import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Utils exposing (blockKeydown, icon)
-import Translations
 
 
 view : Config sub -> Solution.State -> Quiz Inlines -> State -> List (Html (Msg sub))

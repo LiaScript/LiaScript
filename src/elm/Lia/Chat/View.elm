@@ -7,6 +7,7 @@ import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Keyed as Keyed
+import I18n.Translations as Trans exposing (Lang)
 import Lia.Chat.Model exposing (Model)
 import Lia.Chat.Update exposing (Msg(..))
 import Lia.Markdown.Code.Editor as Editor
@@ -15,7 +16,6 @@ import Lia.Markdown.Update as Markdown
 import Lia.Markdown.View as Markdown
 import Lia.Section exposing (Section)
 import Lia.Utils exposing (btnIcon, noTranslate)
-import Translations as Trans exposing (Lang)
 
 
 view : Lang -> (Section -> Config Markdown.Msg) -> Model -> Html Msg

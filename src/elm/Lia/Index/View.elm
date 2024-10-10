@@ -13,13 +13,13 @@ import Conditional.String as CString
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import I18n.Translations as Translations exposing (Lang, baseSearch)
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Section exposing (Section, Sections)
 import Lia.Utils exposing (blockKeydown, btn, icon)
-import Translations exposing (Lang, baseSearch)
 
 
 search : Lang -> Bool -> Array { x | visible : Bool } -> Model -> List (Html Msg)

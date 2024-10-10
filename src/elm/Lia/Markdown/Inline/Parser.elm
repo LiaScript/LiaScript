@@ -41,6 +41,7 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
+import I18n.Translations exposing (Lang(..))
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Effect.Script.Types as JS
 import Lia.Markdown.Footnote.Parser as Footnote
@@ -61,7 +62,6 @@ import Lia.Parser.Context
         )
 import Lia.Parser.Helper exposing (inlineCode, spaces)
 import Lia.Parser.Input as Context
-import Translations exposing (Lang(..))
 
 
 parse_inlines : Context -> String -> Inlines
@@ -494,6 +494,7 @@ strings =
                 , stringUnderline
                 , stringStrike
                 , stringSuperscript
+                , stringQuote
                 , stringSpaces
                 , HTML.parse inlines |> map IHTML
                 , stringCharacters
@@ -504,14 +505,14 @@ strings =
 
 stringBase : Parser s (Parameters -> Inline)
 stringBase =
-    regex "[^\\[\\]\\(\\)@*+_~:;`\\^{}\\\\\\n<>=$ \"\\-|]+"
+    regex "[^\\[\\]\\(\\)@*+_~:;`\\^{}\\\\\\n<>=$ \"\\-|']+"
         |> map Chars
 
 
 stringEscape : Parser s (Parameters -> Inline)
 stringEscape =
     string "\\"
-        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#\\-<>]")
+        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#\\-<>'\"]")
         |> map Chars
 
 
@@ -525,6 +526,19 @@ stringBold : Parser Context (Parameters -> Inline)
 stringBold =
     or (between_ "**") (between_ "__")
         |> map Bold
+
+
+stringQuote : Parser Context (Parameters -> Inline)
+stringQuote =
+    or
+        (between_ "\""
+            |> map (\text ( start, end ) -> [ Chars start [], text, Chars end [] ] |> Container)
+            |> andMap (withState (.defines >> .typographic_quotation >> .double >> succeed))
+        )
+        (between_ "'"
+            |> map (\text ( start, end ) -> [ Chars start [], text, Chars end [] ] |> Container)
+            |> andMap (withState (.defines >> .typographic_quotation >> .single >> succeed))
+        )
 
 
 stringStrike : Parser Context (Parameters -> Inline)

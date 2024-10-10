@@ -10,18 +10,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Html.Keyed as Keyed
-import Json.Decode as JD
-import Json.Encode as JE
-import Lia.Markdown.Code.Editor as Editor
-import Lia.Markdown.Code.Log as Log exposing (Log)
-import Lia.Markdown.Code.Sync exposing (Sync, sync)
-import Lia.Markdown.Code.Terminal as Terminal
-import Lia.Markdown.Code.Types exposing (Code(..), File, Model)
-import Lia.Markdown.Code.Update exposing (Msg(..))
-import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
-import Lia.Sync.Types as Sync
-import Lia.Utils exposing (btnIcon, noTranslate)
-import Translations
+import I18n.Translations as Translations
     exposing
         ( Lang
         , codeExecute
@@ -33,6 +22,17 @@ import Translations
         , codePrev
         , codeRunning
         )
+import Json.Decode as JD
+import Json.Encode as JE
+import Lia.Markdown.Code.Editor as Editor
+import Lia.Markdown.Code.Log as Log exposing (Log)
+import Lia.Markdown.Code.Sync exposing (Sync, sync)
+import Lia.Markdown.Code.Terminal as Terminal
+import Lia.Markdown.Code.Types exposing (Code(..), File, Model)
+import Lia.Markdown.Code.Update exposing (Msg(..))
+import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
+import Lia.Sync.Types as Sync
+import Lia.Utils exposing (btnIcon, noTranslate)
 
 
 view :
