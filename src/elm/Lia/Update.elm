@@ -10,6 +10,7 @@ import Array exposing (Array)
 import Conditional.List as CList
 import Const
 import Dict
+import I18n.Translations exposing (Lang(..))
 import Json.Decode as JD
 import Lia.Chat.Update as Chat
 import Lia.Index.Update as Index
@@ -32,7 +33,6 @@ import Service.Event as Event exposing (Event)
 import Service.Local
 import Service.Slide
 import Session exposing (Session)
-import Translations exposing (Lang(..))
 
 
 port media : (( String, Maybe Int, Maybe Int ) -> msg) -> Sub msg

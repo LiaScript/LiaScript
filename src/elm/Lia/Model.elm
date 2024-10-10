@@ -7,6 +7,7 @@ module Lia.Model exposing
 
 import Array
 import Dict exposing (Dict)
+import I18n.Translations as Translations
 import Json.Encode as JE
 import Lia.Chat.Model as Chat
 import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
@@ -20,7 +21,6 @@ import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 import Service.Event exposing (Event)
 import Service.Resource
-import Translations
 
 
 {-| The global LiaScript model for one course. It contains:

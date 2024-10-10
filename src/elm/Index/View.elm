@@ -7,6 +7,7 @@ import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onInput)
+import I18n.Translations exposing (Lang(..))
 import Index.Model exposing (Course, Modal(..), Model, Release)
 import Index.Update exposing (Msg(..))
 import Lia.Definition.Types exposing (Definition)
@@ -18,7 +19,6 @@ import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.View as Settings
 import Lia.Utils exposing (blockKeydown, btn, btnIcon, modal, string2Color)
 import Session exposing (Session)
-import Translations exposing (Lang(..))
 
 
 view : Session -> Settings -> Model -> Html Msg

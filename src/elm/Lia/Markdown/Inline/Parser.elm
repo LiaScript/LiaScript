@@ -41,6 +41,7 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
+import I18n.Translations exposing (Lang(..))
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Effect.Script.Types as JS
 import Lia.Markdown.Footnote.Parser as Footnote
@@ -61,7 +62,6 @@ import Lia.Parser.Context
         )
 import Lia.Parser.Helper exposing (inlineCode, spaces)
 import Lia.Parser.Input as Context
-import Translations exposing (Lang(..))
 
 
 parse_inlines : Context -> String -> Inlines

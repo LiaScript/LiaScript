@@ -19,6 +19,7 @@ import Dict
 import Error.Message
 import Error.Report
 import Http
+import I18n.Translations as Translations
 import Index.Model as Index
 import Index.Update as Index
 import Index.Version
@@ -39,7 +40,6 @@ import Service.Torrent
 import Service.Zip
 import Session exposing (Screen)
 import Task
-import Translations
 import Url
 
 

@@ -18,11 +18,11 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
+import I18n.Translations exposing (Lang(..))
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Regex
-import Translations exposing (Lang(..))
 
 
 parse : (Context -> String -> opt) -> Parser Context (Quiz opt)
