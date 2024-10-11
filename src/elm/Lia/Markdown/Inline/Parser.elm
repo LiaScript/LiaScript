@@ -468,6 +468,13 @@ between_ str =
         |> map (combine >> toContainer)
 
 
+between_2 : String -> String -> Parser Context Inline
+between_2 begin end =
+    string begin
+        |> keep (many1Till inlines (string end))
+        |> map (combine >> toContainer)
+
+
 toContainer : List Inline -> Inline
 toContainer inline_list =
     case combine inline_list of
@@ -535,8 +542,8 @@ stringQuote =
             |> map (\text ( start, end ) -> [ Chars start [], text, Chars end [] ] |> Container)
             |> andMap (withState (.defines >> .typographic_quotation >> .double >> succeed))
         )
-        (between_ "'"
-            |> map (\text ( start, end ) -> [ Chars start [], text, Chars end [] ] |> Container)
+        (between_2 " '" "'"
+            |> map (\text ( start, end ) -> [ Chars (" " ++ start) [], text, Chars end [] ] |> Container)
             |> andMap (withState (.defines >> .typographic_quotation >> .single >> succeed))
         )
 
@@ -573,7 +580,7 @@ stringSuperscript =
 
 stringCharacters : Parser s (Parameters -> Inline)
 stringCharacters =
-    regex "[\\[\\]\\(\\)~:_;=${}\\-+\"*<>|]"
+    regex "[\\[\\]\\(\\)~:_;=${}\\-+\"*<>|']"
         |> map Chars
 
 
