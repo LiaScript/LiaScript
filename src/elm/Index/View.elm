@@ -10,6 +10,7 @@ import Html.Events exposing (onInput)
 import I18n.Translations exposing (Lang(..))
 import Index.Model exposing (Course, Modal(..), Model, Release)
 import Index.Update exposing (Msg(..))
+import Index.View.Base as Base
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -48,38 +49,7 @@ view session settings model =
                     ]
                 , searchBar model.input
                 , if List.isEmpty model.courses && model.initialized then
-                    Html.section [] <|
-                        [ Html.br [] []
-                        , Html.p
-                            [ Attr.class "lia-paragraph" ]
-                            [ Html.text "If you cannot see any courses in this list, try out one of the following links, to get more information about this project and to visit some examples and free interactive books."
-                            ]
-                        , Html.u
-                            []
-                            [ Html.li []
-                                [ Html.a
-                                    [ Attr.href Const.urlLiascript, Attr.target "_blank" ]
-                                    [ Html.text "Project-Website" ]
-                                ]
-                            , Html.li []
-                                [ Html.a
-                                    [ href "https://raw.githubusercontent.com/liaScript/docs/master/README.md", Attr.target "_blank" ]
-                                    [ Html.text "Project-Documentation" ]
-                                ]
-                            , Html.li []
-                                [ Html.a
-                                    [ href "https://raw.githubusercontent.com/liaScript/index/master/README.md", Attr.target "_blank" ]
-                                    [ Html.text "Index" ]
-                                ]
-                            ]
-                        , Html.br [] []
-                        , Html.p
-                            [ Attr.class "lia-paragraph" ]
-                            [ Html.text "At the end, we hope to learn from your courses." ]
-                        , Html.p
-                            [ Attr.class "lia-paragraph" ]
-                            [ Html.text "Have a nice one ;-) ..." ]
-                        ]
+                    Base.view
 
                   else if model.initialized then
                     Html.div []
@@ -297,11 +267,6 @@ card share course =
             Html.text "something went wrong"
 
 
-href : String -> Attribute msg
-href =
-    link >> (++) "./?" >> Attr.href
-
-
 viewVersions : Course -> Html Msg
 viewVersions course =
     let
@@ -438,7 +403,7 @@ viewControls hasShareAPI title comment course =
         , case course.active of
             Nothing ->
                 Html.a
-                    [ href course.id
+                    [ Base.href course.id
                     , Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 border-turquoise"
                     , Attr.title "open"
                     ]
