@@ -77,7 +77,8 @@ blocks : Parser Context Markdown.Block
 blocks =
     lazy <|
         \() ->
-            Indent.check
+            HTML.checkClosingTag
+                |> ignore Indent.check
                 |> keep macro
                 |> ignore whitespace
                 |> keep elements

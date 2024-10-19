@@ -188,7 +188,8 @@ inlines : Parser Context Inline
 inlines =
     lazy <|
         \() ->
-            Macro.macro
+            HTML.checkClosingTag
+                |> keep Macro.macro
                 |> keep
                     ([ code
                      , Footnote.inline parse_inlines
@@ -489,25 +490,28 @@ strings : Parser Context (Parameters -> Inline)
 strings =
     lazy <|
         \() ->
-            choice
-                [ inline_url
-                , stringBase
-                , typography
-                , arrows
-                , smileys
-                , stringEscape
-                , stringBold
-                , stringItalic
-                , stringUnderline
-                , stringStrike
-                , stringSuperscript
-                , stringQuote
-                , stringSpaces
-                , HTML.parse inlines |> map IHTML
-                , stringCharacters
-                , lineBreak
-                , stringBase2
-                ]
+            HTML.checkClosingTag
+                |> keep
+                    (choice
+                        [ inline_url
+                        , stringBase
+                        , typography
+                        , arrows
+                        , smileys
+                        , stringEscape
+                        , stringBold
+                        , stringItalic
+                        , stringUnderline
+                        , stringStrike
+                        , stringSuperscript
+                        , stringQuote
+                        , stringSpaces
+                        , HTML.parse inlines |> map IHTML
+                        , stringCharacters
+                        , lineBreak
+                        , stringBase2
+                        ]
+                    )
 
 
 stringBase : Parser s (Parameters -> Inline)
