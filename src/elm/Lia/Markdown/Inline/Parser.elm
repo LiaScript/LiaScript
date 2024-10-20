@@ -627,7 +627,7 @@ scriptBody =
     regexWith True False "</script>"
         |> manyTill
             ([ regex "[^@\"'`</]+" --" this is only a comment for syntax-highlighting ...
-             , regex "[ \t\n]+"
+             , regex "\\s+"
              , string "@'"
              , string "@"
              , regex "\"([^\"]*|\\\\\"|\\\\)*\""

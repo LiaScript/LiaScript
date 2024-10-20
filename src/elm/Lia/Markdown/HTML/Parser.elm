@@ -144,7 +144,7 @@ closingTag name =
     in
     regex "\n*</[ \t]*"
         |> keep chompName
-        |> ignore (regex "[ \t\n]*>")
+        |> ignore (regex "\\s*>")
 
 
 isVoidElement : String -> Bool
