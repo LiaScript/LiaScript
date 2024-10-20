@@ -265,7 +265,7 @@ svgbody len =
         |> andMap
             (manyTill
                 (maybe Indent.check
-                    |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n"))
+                    |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\n"))
                 )
                 (Indent.check
                     |> keep (regex control_frame)
@@ -399,7 +399,7 @@ solution =
         rslt e1 blocks_ e2 =
             ( blocks_, e2 - e1 )
     in
-    regex "[\t ]*\\*{3,}[\t ]*\\n+"
+    regex "[\t ]*\\*{3,}[\t ]*\n+"
         |> keep (withState (\s -> succeed s.effect_model.effects))
         |> map rslt
         |> andMap
@@ -589,7 +589,7 @@ md_annotations =
         |> keep macro
         |> keep (comment attr)
         |> ignore
-            (regex "[\t ]*\\n"
+            (regex "[\t ]*\n"
                 |> ignore Indent.check
                 |> maybe
             )

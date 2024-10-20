@@ -66,7 +66,7 @@ tag parser ( tagType, attributes ) =
 
         Tag.WebComponent name ->
             succeed (OuterHtml name attributes)
-                |> ignore (regex "[ \\t]*>")
+                |> ignore (regex "[ \t]*>")
                 |> andMap (stringTill (closingTag name))
 
         Tag.LiaKeep ->

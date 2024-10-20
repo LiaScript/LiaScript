@@ -225,13 +225,13 @@ key =
 value : Parser Context String
 value =
     or
-        (regex "[\\t ]*:" |> keep lines)
-        (regex "[\\t ]*\\n" |> keep multiline)
+        (regex "[\t ]*:" |> keep lines)
+        (regex "[\t ]*\n" |> keep multiline)
 
 
 lines : Parser Context String
 lines =
-    regex "([ \\t].*|[ \\t]*\\n)+"
+    regex "([ \t].*|[ \t]*\n)+"
         |> map reduce
 
 
