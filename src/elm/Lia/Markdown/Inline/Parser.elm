@@ -499,12 +499,7 @@ strings =
                         , arrows
                         , smileys
                         , stringEscape
-                        , stringBold
-                        , stringItalic
-                        , stringUnderline
-                        , stringStrike
-                        , stringSuperscript
-                        , stringQuote
+                        , stringWithStyle
                         , stringSpaces
                         , HTML.parse inlines |> map IHTML
                         , stringCharacters
@@ -512,6 +507,24 @@ strings =
                         , stringBase2
                         ]
                     )
+
+
+
+-- Combined string style parsers
+
+
+stringWithStyle : Parser Context (Parameters -> Inline)
+stringWithStyle =
+    choice
+        [ between_ "**" |> map Bold
+        , between_ "__" |> map Bold
+        , between_ "*" |> map Italic
+        , between_ "_" |> map Italic
+        , between_ "~~" |> map Underline
+        , between_ "~" |> map Strike
+        , between_ "^" |> map Superscript
+        , stringQuote
+        ]
 
 
 stringBase : Parser s (Parameters -> Inline)
@@ -527,18 +540,6 @@ stringEscape =
         |> map Chars
 
 
-stringItalic : Parser Context (Parameters -> Inline)
-stringItalic =
-    or (between_ "*") (between_ "_")
-        |> map Italic
-
-
-stringBold : Parser Context (Parameters -> Inline)
-stringBold =
-    or (between_ "**") (between_ "__")
-        |> map Bold
-
-
 stringQuote : Parser Context (Parameters -> Inline)
 stringQuote =
     or
@@ -552,12 +553,6 @@ stringQuote =
         )
 
 
-stringStrike : Parser Context (Parameters -> Inline)
-stringStrike =
-    between_ "~"
-        |> map Strike
-
-
 typography : Parser Context (Parameters -> Inline)
 typography =
     choice
@@ -568,18 +563,6 @@ typography =
         , string "..."
             |> keep (succeed (Chars "…"))
         ]
-
-
-stringUnderline : Parser Context (Parameters -> Inline)
-stringUnderline =
-    between_ "~~"
-        |> map Underline
-
-
-stringSuperscript : Parser Context (Parameters -> Inline)
-stringSuperscript =
-    between_ "^"
-        |> map Superscript
 
 
 stringCharacters : Parser s (Parameters -> Inline)
