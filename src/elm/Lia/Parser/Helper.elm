@@ -80,12 +80,12 @@ newline =
 
 newlines : Parser s String
 newlines =
-    regex "\\n*"
+    regex "\n*"
 
 
 newlines1 : Parser s String
 newlines1 =
-    regex "\\n+"
+    regex "\n+"
 
 
 spaces : Parser s String

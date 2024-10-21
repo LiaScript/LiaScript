@@ -26,6 +26,7 @@ the Model, update and view functions.
 import Array
 import Dict
 import Html exposing (Html)
+import I18n.Translations as Translations
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition, add_macros)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
@@ -44,7 +45,6 @@ import Service.Database
 import Service.Event exposing (Event)
 import Service.Resource
 import Session exposing (Screen, Session)
-import Translations
 import Url
 
 

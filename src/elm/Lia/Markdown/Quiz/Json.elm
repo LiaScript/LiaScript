@@ -5,6 +5,7 @@ module Lia.Markdown.Quiz.Json exposing
     )
 
 import Array
+import I18n.Translations exposing (Lang(..))
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Inline.Json.Encode as Inline
@@ -14,7 +15,6 @@ import Lia.Markdown.Quiz.Multi.Json as Multi
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types exposing (Element, Quiz, State(..), Type(..), Vector)
 import Lia.Markdown.Quiz.Vector.Json as Vector
-import Translations exposing (Lang(..))
 
 
 encode : Quiz x -> JE.Value

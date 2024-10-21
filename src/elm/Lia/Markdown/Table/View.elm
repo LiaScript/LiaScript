@@ -12,6 +12,7 @@ import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Keyed as Keyed
+import I18n.Translations as Translations exposing (Lang, sortAsc, sortDesc, sortNot)
 import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Point)
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Config exposing (Config)
@@ -34,7 +35,6 @@ import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Utils exposing (blockKeydown, btn, btnIcon, get, icon)
 import Set
-import Translations exposing (Lang, sortAsc, sortDesc, sortNot)
 
 
 view : Config sub -> Parameters -> Table -> Html Msg

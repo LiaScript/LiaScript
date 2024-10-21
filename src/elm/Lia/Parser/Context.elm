@@ -68,6 +68,10 @@ control:
 -}
 type alias Context =
     { indentation : List String
+    , abort :
+        { stack : List String
+        , isTrue : Bool
+        }
     , indentation_skip : Bool
     , task_vector : Task.Vector
     , code_model : Code.Model
@@ -99,6 +103,10 @@ definitions.
 init : Dict String String -> Maybe Int -> Maybe (String -> String) -> Int -> Definition -> Context
 init backup seed search_index editor_line global =
     { indentation = []
+    , abort =
+        { stack = []
+        , isTrue = False
+        }
     , indentation_skip = False
     , task_vector = Array.empty
     , code_model = Code.init

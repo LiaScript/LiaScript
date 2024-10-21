@@ -4,6 +4,7 @@ module Lia.Json.Encode exposing
     )
 
 import Array
+import I18n.Translations exposing (Lang(..), getCodeFromLn)
 import Json.Encode as JE
 import Lia.Definition.Json.Encode as Definition
 import Lia.Markdown.Inline.Json.Encode as Inline
@@ -12,7 +13,6 @@ import Lia.Markdown.Inline.Types exposing (Inline(..))
 import Lia.Markdown.Json.Encode as Body
 import Lia.Model exposing (Model)
 import Lia.Section exposing (Section, Sections)
-import Translations exposing (Lang(..), getCodeFromLn)
 
 
 encode : Model -> JE.Value

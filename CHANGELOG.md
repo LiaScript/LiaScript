@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.3] - 21/10/2024
+
+- feat(Typography): It is now possible within a LiaScript Markdown to apply the following typographical elements:
+
+  - A sequence of dashes is now translated into:
+
+    1. - (single dash): Hyphen or minus sign
+    2. -- (double dash): En dash
+    3. --- (triple dash): Em dash
+
+  - Translate ... to unicode ellipsis
+
+  - Language base quotes single and double are translated into their typographical counterparts, based on the language of the course. Additionally these two types have been added to the escaped elements `\"` and `\'`.
+
+- improve(HTML-Parser): The parsing speed for HTML has been increased, due to a new abort mechanism, which will stop the parsing of a HTML end-tag has been detected. This will prevent the parser from running into an long loop.
+
+- improve(Parser): Some minor improvements for regular expressions have been applied after benchmarking the parser.
+
 ## [0.16.2] - 04/10/2024
 
 - feat(Zip): Courses can now be uploaded as ZIP files, which will be automatically extracted and loaded. Also courses can be hosted as Zip-files, which will be extracted on the fly.

@@ -24,6 +24,7 @@ import Combine
         , succeed
         , withState
         )
+import I18n.Translations exposing (Lang(..))
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (eScript, parse_inlines)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -46,7 +47,6 @@ import Lia.Parser.Indentation as Indent
 import Lia.Parser.Input as Input
 import Lia.Utils as Utils
 import PseudoRandom
-import Translations exposing (Lang(..))
 
 
 parse : Parameters -> Parser Context (Quiz x)

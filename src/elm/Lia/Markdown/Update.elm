@@ -12,6 +12,7 @@ port module Lia.Markdown.Update exposing
 
 import Array
 import Dict
+import I18n.Translations exposing (Lang(..))
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Update as Code
@@ -31,7 +32,6 @@ import Return exposing (Return)
 import Service.Console
 import Service.Event as Event exposing (Event)
 import Service.TTS
-import Translations exposing (Lang(..))
 
 
 port footnote : (String -> msg) -> Sub msg

@@ -7,6 +7,7 @@ import Browser
 import Browser.Navigation as Nav
 import Const
 import Dict
+import I18n.Translations exposing (Lang(..))
 import Index.Model as Index
 import Json.Encode as JE
 import Lia.Parser.PatReplace exposing (link)
@@ -15,7 +16,6 @@ import Lia.Sync.Types as Sync
 import Lia.Utils as Utils
 import Model exposing (Model, State(..))
 import Session exposing (Screen, Session)
-import Translations exposing (Lang(..))
 import Update
     exposing
         ( Msg(..)

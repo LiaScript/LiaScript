@@ -7,6 +7,7 @@ module Lia.Markdown.Survey.Update exposing
 import Array
 import Browser exposing (element)
 import Dict
+import I18n.Translations exposing (Lang(..))
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
@@ -18,7 +19,6 @@ import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Script
-import Translations exposing (Lang(..))
 
 
 type Msg sub

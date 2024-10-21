@@ -7,6 +7,7 @@ module Lia.Markdown.Quiz.Update exposing
     )
 
 import Array exposing (Array)
+import I18n.Translations exposing (Lang(..))
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
@@ -35,7 +36,6 @@ import Service.Console
 import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Script
-import Translations exposing (Lang(..))
 
 
 type Msg sub

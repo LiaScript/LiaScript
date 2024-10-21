@@ -32,7 +32,7 @@ parse_definition base code =
     case
         Combine.runParser
             -- used to prevent false outputs if the first line does not start with a comment
-            (regex "[\n\t ]*"
+            (regex "\\s*"
                 |> keep Lia.Definition.Parser.parse
                 |> ignore
                     (or (string "#")

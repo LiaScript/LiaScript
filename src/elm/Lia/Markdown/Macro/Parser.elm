@@ -146,7 +146,7 @@ code_block backticks_count =
                 (regex
                     ("(.(?!"
                         ++ backticks
-                        ++ "))*\\n?"
+                        ++ "))*\n?"
                     )
                 )
         )
@@ -169,7 +169,7 @@ macro_listing =
     )
         |> andThen
             (\( backticks, name ) ->
-                (parameter_list |> ignore (regex "[\t ]*\\n"))
+                (parameter_list |> ignore (regex "[\t ]*\n"))
                     |> andThen
                         (\params ->
                             map (List.append params) (code_block backticks)
