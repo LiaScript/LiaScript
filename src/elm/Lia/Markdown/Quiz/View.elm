@@ -28,6 +28,17 @@ import Accessibility.Widget as A11y_Widget
 import Array
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
+import I18n.Translations as Translations
+    exposing
+        ( Lang
+        , quizAnswerError
+        , quizAnswerResolved
+        , quizAnswerSuccess
+        , quizCheck
+        , quizLabelCheck
+        , quizLabelSolution
+        , quizSolution
+        )
 import Json.Encode as JE
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Inline.Config exposing (Config)
@@ -54,17 +65,6 @@ import Lia.Markdown.Types as Markdown
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (btn, btnIcon, percentage)
 import List.Extra
-import Translations
-    exposing
-        ( Lang
-        , quizAnswerError
-        , quizAnswerResolved
-        , quizAnswerSuccess
-        , quizCheck
-        , quizLabelCheck
-        , quizLabelSolution
-        , quizSolution
-        )
 
 
 syncAttributes : List ( String, String )

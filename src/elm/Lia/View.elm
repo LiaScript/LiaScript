@@ -10,6 +10,7 @@ import Html exposing (Html, section)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
+import I18n.Translations as Trans exposing (Lang)
 import Lia.Chat.View as Chat
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
@@ -34,7 +35,6 @@ import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 import Service.Database exposing (settings)
 import Session exposing (Screen)
-import Translations as Trans exposing (Lang)
 
 
 {-| Main view for the entire LiaScript model with the parameters:

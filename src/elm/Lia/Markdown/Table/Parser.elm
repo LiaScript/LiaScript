@@ -337,7 +337,7 @@ row =
                     |> map Tuple.pair
                     |> andMap (optional [] line2)
                 )
-                (regex "\\|[\t ]*\\n")
+                (regex "\\|[\t ]*\n")
             )
 
 
@@ -370,7 +370,7 @@ format =
                     ]
                 )
             )
-        |> ignore (regex "[\t ]*\\n")
+        |> ignore (regex "[\t ]*\n")
 
 
 modify_State : Parser Context (Int -> Table) -> Parser Context Table

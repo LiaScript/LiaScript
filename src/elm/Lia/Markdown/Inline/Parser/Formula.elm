@@ -14,7 +14,7 @@ formula =
 formula_inline : Parser s (Parameters -> Inline)
 formula_inline =
     string "$"
-        |> keep (regex "[^\\n$]+")
+        |> keep (regex "[^\n$]+")
         |> ignore (string "$")
         |> map (Formula "false")
 

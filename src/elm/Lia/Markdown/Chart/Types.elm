@@ -8,8 +8,8 @@ module Lia.Markdown.Chart.Types exposing
     )
 
 import Dict exposing (Dict)
+import I18n.Translations exposing (Lang)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
-import Translations exposing (Lang)
 
 
 type alias Point =

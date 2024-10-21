@@ -7,6 +7,7 @@ import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
+import I18n.Translations as Translations exposing (Lang)
 import Lia.Markdown.Gallery.Types exposing (Gallery, Vector)
 import Lia.Markdown.Gallery.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
@@ -15,7 +16,6 @@ import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Markdown.Types exposing (Block(..))
 import Lia.Utils exposing (btnIcon, get, icon, modal)
-import Translations exposing (Lang)
 
 
 view : Config sub -> Vector -> Parameters -> Gallery -> Html (Msg sub)

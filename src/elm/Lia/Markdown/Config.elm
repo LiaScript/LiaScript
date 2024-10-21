@@ -9,6 +9,7 @@ module Lia.Markdown.Config exposing
 import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
+import I18n.Translations exposing (Lang)
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Inline.Config as Inline
@@ -19,7 +20,6 @@ import Lia.Section exposing (Section, SubSection(..))
 import Lia.Settings.Types exposing (Mode(..), Settings)
 import Lia.Sync.Types as Sync
 import Session exposing (Screen)
-import Translations exposing (Lang)
 
 
 type alias Config sub =

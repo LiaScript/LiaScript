@@ -9,7 +9,7 @@ module Lia.Settings.Types exposing
     , toGroup
     )
 
-import Translations exposing (Lang(..))
+import I18n.Translations exposing (Lang(..))
 
 
 type alias Settings =

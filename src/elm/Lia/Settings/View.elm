@@ -23,6 +23,7 @@ import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr exposing (width)
 import Html.Events exposing (onClick, onInput)
+import I18n.Translations as Trans exposing (Lang)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
@@ -49,7 +50,6 @@ import Library.Group as Group
 import QRCode
 import Service.Database exposing (settings)
 import Session exposing (Screen)
-import Translations as Trans exposing (Lang)
 
 
 design : Settings -> List (Html.Attribute msg)
