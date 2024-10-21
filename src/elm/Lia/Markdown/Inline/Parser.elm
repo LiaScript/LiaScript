@@ -495,8 +495,8 @@ strings =
                     (choice
                         [ inline_url
                         , stringBase
-                        , typography
                         , arrows
+                        , typography
                         , smileys
                         , stringEscape
                         , stringWithStyle
