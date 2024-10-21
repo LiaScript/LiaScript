@@ -115,7 +115,14 @@ const Service = {
           Script.exec(param.definition.onload, 10)
         }
 
-        document.documentElement.lang = param.definition.language
+        if (document.documentElement.lang != param.definition.language) {
+          document.documentElement.lang = param.definition.language
+          // Force recalculation of styles in Firefox
+          let forceRecalc = window.getComputedStyle(document.body).direction
+          document.body.style.display = 'none'
+          document.body.offsetHeight // force a reflow
+          document.body.style.display = ''
+        }
 
         meta('author', param.definition.author)
         meta('og:description', param.comment)

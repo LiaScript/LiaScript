@@ -7,13 +7,13 @@ module Lia.Markdown.Inline.Config exposing
 import Array exposing (Array)
 import Dict exposing (Dict)
 import Html exposing (Html)
+import I18n.Translations exposing (Lang)
 import Lia.Markdown.Effect.Script.Types exposing (Msg, Scripts)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Multi.Types as Input
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Sync.Types as Sync
-import Translations exposing (Lang)
 
 
 type alias Config sub =

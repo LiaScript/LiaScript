@@ -4,8 +4,8 @@ module Lia.Voice exposing
     , getVoiceFor
     )
 
+import I18n.Translations exposing (Lang(..))
 import List.Extra
-import Translations exposing (Lang(..))
 
 
 type alias Voice =

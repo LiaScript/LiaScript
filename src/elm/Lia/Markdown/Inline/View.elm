@@ -17,6 +17,7 @@ import Dict exposing (Dict)
 import Html exposing (Attribute, Html, input)
 import Html.Attributes as Attr exposing (width)
 import Html.Keyed
+import I18n.Translations as Translations exposing (Lang)
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Msg exposing (Msg, Scripts)
 import Lia.Markdown.Effect.Script.View as JS
@@ -34,7 +35,6 @@ import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (blockKeydown, noTranslate)
 import QRCode
-import Translations exposing (Lang)
 
 
 toScript : Int -> Parameters -> Inline

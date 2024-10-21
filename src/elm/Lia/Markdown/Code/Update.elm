@@ -6,6 +6,7 @@ port module Lia.Markdown.Code.Update exposing
 
 import Array exposing (Array)
 import Conditional.Array as CArray
+import I18n.Translations exposing (Lang(..))
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Code.Events as Event
@@ -19,7 +20,6 @@ import Return exposing (Return)
 import Service.Event as PEvent exposing (Event)
 import Service.Script as Script exposing (Eval)
 import Service.Sync as Sync
-import Translations exposing (Lang(..))
 
 
 type Msg

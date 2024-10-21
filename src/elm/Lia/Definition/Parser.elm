@@ -20,6 +20,7 @@ import Combine
         , whitespace
         )
 import Dict
+import I18n.Quotation exposing (quotation)
 import Lia.Definition.Types
     exposing
         ( Definition
@@ -137,7 +138,7 @@ store ( key_, value_ ) =
             set (add_imports value_)
 
         "language" ->
-            set (\c -> { c | language = value_ })
+            set (\c -> { c | language = value_, typographic_quotation = quotation value_ })
 
         "link" ->
             set (addToResources Link value_)
@@ -224,13 +225,13 @@ key =
 value : Parser Context String
 value =
     or
-        (regex "[\\t ]*:" |> keep lines)
-        (regex "[\\t ]*\\n" |> keep multiline)
+        (regex "[\t ]*:" |> keep lines)
+        (regex "[\t ]*\n" |> keep multiline)
 
 
 lines : Parser Context String
 lines =
-    regex "([ \\t].*|[ \\t]*\\n)+"
+    regex "([ \t].*|[ \t]*\n)+"
         |> map reduce
 
 

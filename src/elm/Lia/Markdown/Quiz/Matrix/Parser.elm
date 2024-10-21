@@ -56,14 +56,14 @@ options =
 
 inParenthesis : Parser Context Inlines
 inParenthesis =
-    regex "[ \\t]*\\([ \\t]*"
-        |> keep (manyTill inlines (regex "[ \\t]*\\)[ \\t]*"))
+    regex "[ \t]*\\([ \t]*"
+        |> keep (manyTill inlines (regex "[ \t]*\\)[ \t]*"))
 
 
 inBrackets : Parser Context Inlines
 inBrackets =
-    regex "[ \\t]*\\[[ \\t]*"
-        |> keep (manyTill inlines (regex "[ \\t]*\\][ \\t]*"))
+    regex "[ \t]*\\[[ \t]*"
+        |> keep (manyTill inlines (regex "[ \t]*\\][ \t]*"))
 
 
 single : Parser Context State

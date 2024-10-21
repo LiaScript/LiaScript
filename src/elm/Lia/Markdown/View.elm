@@ -556,7 +556,7 @@ viewQuote config attr elements =
                 |> Html.em [ Attr.class "lia-quote__text" ]
             , citation
                 |> config.view
-                |> (::) (Html.text "—")
+                |> (::) (Html.text "―")
                 |> Html.cite (annotation "lia-quote__cite" cAttr)
             ]
                 |> Html.blockquote
