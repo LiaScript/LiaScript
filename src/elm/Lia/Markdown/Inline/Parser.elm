@@ -494,9 +494,10 @@ strings =
                 |> keep
                     (choice
                         [ inline_url
+                        , ellipsis
                         , stringBase
                         , arrows
-                        , typography
+                        , dashes
                         , smileys
                         , stringEscape
                         , stringWithStyle
@@ -553,16 +554,20 @@ stringQuote =
         )
 
 
-typography : Parser Context (Parameters -> Inline)
-typography =
+dashes : Parser Context (Parameters -> Inline)
+dashes =
     choice
         [ string "---"
             |> keep (succeed (Chars "—"))
         , string "--"
             |> keep (succeed (Chars "–"))
-        , string "..."
-            |> keep (succeed (Chars "…"))
         ]
+
+
+ellipsis : Parser Context (Parameters -> Inline)
+ellipsis =
+    string "..."
+        |> keep (succeed (Chars "…"))
 
 
 stringCharacters : Parser s (Parameters -> Inline)
