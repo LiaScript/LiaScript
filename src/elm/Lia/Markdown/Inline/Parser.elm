@@ -536,7 +536,7 @@ stringBase =
 stringEscape : Parser s (Parameters -> Inline)
 stringEscape =
     string "\\"
-        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#\\-<>'\"]")
+        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#\\-<>'\".]")
         |> map Chars
 
 
