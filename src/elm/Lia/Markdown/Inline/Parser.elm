@@ -109,7 +109,7 @@ annotations =
 
 javascript : Parser s String
 javascript =
-    regexWith True False "<script>"
+    regexWith { caseInsensitive = True, multiline = False } "<script>"
         |> keep scriptBody
 
 
@@ -120,7 +120,7 @@ javascriptWithAttributes =
             withState (.defines >> .base >> succeed)
                 |> andThen Attributes.parse
     in
-    regexWith True False "<script"
+    regexWith { caseInsensitive = True, multiline = False } "<script"
         |> keep (many (whitespace |> keep attr))
         |> ignore (string ">")
         |> map Tuple.pair
@@ -407,12 +407,12 @@ refMail =
 
 refPreview : Parser Context Reference
 refPreview =
-    regexWith True False "\\[\\w*preview-"
+    regexWith { caseInsensitive = True, multiline = False } "\\[\\w*preview-"
         |> keep
             (choice
-                [ regexWith True False "lia"
+                [ regexWith { caseInsensitive = True, multiline = False } "lia"
                     |> onsuccess Preview_Lia
-                , regexWith True False "link"
+                , regexWith { caseInsensitive = True, multiline = False } "link"
                     |> onsuccess Preview_Link
                 ]
             )
@@ -425,7 +425,7 @@ refPreview =
 
 refQr : Parser Context Reference
 refQr =
-    regexWith True False "\\[\\w*qr-code\\w*]"
+    regexWith { caseInsensitive = True, multiline = False } "\\[\\w*qr-code\\w*]"
         |> onsuccess QR_Link
         |> ignore (string "(")
         |> andMap ref_url_1
@@ -612,7 +612,7 @@ code =
 
 scriptBody : Parser s String
 scriptBody =
-    regexWith True False "</script>"
+    regexWith { caseInsensitive = True, multiline = False } "</script>"
         |> manyTill
             ([ regex "[^@\"'`</]+" --" this is only a comment for syntax-highlighting ...
              , regex "\\s+"
