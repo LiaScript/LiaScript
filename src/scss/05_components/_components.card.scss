@@ -1,3 +1,5 @@
+@use "../01_tools/tools.breakpoints";
+
 .lia-card {
   background-color: rgb(var(--color-background));
   border: 1px solid rgb(var(--color-highlight));
@@ -7,7 +9,7 @@
   color: rgb(var(--color-text));
   margin-top: 10px;
 
-  @include breakpoint-only('sm', 'md') {
+  @include tools.breakpoint-only('sm', 'md') {
     display: grid;
     grid-template-columns: 40% 1fr;
   }
@@ -28,7 +30,7 @@
     height: 100%;
     padding: 2rem 0;
 
-    @include breakpoint-only('sm', 'md') {
+    @include tools.breakpoint-only('sm', 'md') {
       margin-top: 4rem;
       height: auto;
       padding-top: 0;
@@ -36,7 +38,7 @@
   }
 
   &__aside {
-    @include breakpoint-only('sm', 'md') {
+    @include tools.breakpoint-only('sm', 'md') {
       height: 100%;
     }
   }
@@ -46,7 +48,7 @@
     height: 20rem;
     width: 100%;
 
-    @include breakpoint-only('sm', 'md') {
+    @include tools.breakpoint-only('sm', 'md') {
       height: 100%;
     }
   }

@@ -1,3 +1,6 @@
+@use "sass:map";
+@use "../00_settings/settings.global";
+
 @keyframes rotating {
   100% {
     -webkit-transform: rotate(360deg);
@@ -10,9 +13,9 @@
 }
 
 @keyframes show-comment {
-  $left: map-get($global-spacing, spacing-huge) +
-    map-get($global-spacing, toc-width);
-  $right: map-get($global-spacing, spacing-huge);
+  $left: map.get(settings.$global-spacing, spacing-huge) +
+    map.get(settings.$global-spacing, toc-width);
+  $right: map.get(settings.$global-spacing, spacing-huge);
 
   from {
     left: calc(100% + #{$left});

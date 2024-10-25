@@ -1,3 +1,5 @@
+@use "../00_settings/settings.global";
+
 $btn-min-width: 3.6rem;
 $btn-height: 3.6rem;
 
@@ -7,7 +9,7 @@ $btn-height: 3.6rem;
   border: none;
   color: rgb(var(--lia-white));
   display: inline-block;
-  line-height: $global-line-height;
+  line-height: settings.$global-line-height;
   padding: 0.5rem 0.6rem;
 
   &--warning {

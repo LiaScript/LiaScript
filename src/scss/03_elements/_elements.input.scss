@@ -1,3 +1,6 @@
+@use "sass:color";
+@use "../00_settings/settings.global";
+
 @use "sass:math";
 
 .lia-input {
@@ -100,7 +103,7 @@ input[type="search"]::-webkit-search-results-decoration {
    -------------------------------------------------- */
 
 .lia-checkbox[type="checkbox"] {
-  border-radius: $global-radius;
+  border-radius: settings.$global-radius;
 
   &:after {
     color: white;
@@ -306,7 +309,7 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
 
 @mixin shadow($shadow-size, $shadow-blur, $shadow-color) {
   box-shadow: $shadow-size $shadow-size $shadow-blur $shadow-color,
-    0 0 $shadow-size lighten($shadow-color, 5%);
+    0 0 $shadow-size color.adjust($shadow-color, $lightness: 5%);
 }
 
 @mixin track {
@@ -361,7 +364,7 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
   &::-webkit-slider-runnable-track {
     @include track;
     background: $track-color;
-    border-radius: $global-radius;
+    border-radius: settings.$global-radius;
   }
 
   &::-webkit-slider-thumb {
