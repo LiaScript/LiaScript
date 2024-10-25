@@ -67,7 +67,7 @@
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "ace-builds": "^1.36.3",
     "caniuse-lite": "^1.0.30001669",
-    "crypto-browserify": "^3.12.1",
+    "crypto-browserify": "^3.5.1",
     "dexie": "^4.0.9",
     "easy-speech": "^2.4.0",
     "echarts": "^5.5.1",
