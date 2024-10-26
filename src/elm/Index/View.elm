@@ -18,7 +18,7 @@ import Lia.Markdown.Inline.View as Inline
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.View as Settings
-import Lia.Utils exposing (blockKeydown, btn, btnIcon, modal, string2Color)
+import Lia.Utils exposing (blockKeydown, btn, btnIcon, modal)
 import Library.Masonry as Masonry
 import Session exposing (Session)
 
@@ -56,8 +56,8 @@ view session settings model =
                     let
                         config =
                             { toView = itemView session.share
-                            , columns = 3
-                            , attributes = [ Attr.style "gap" "1rem" ]
+                            , columns = (session.screen.width // 500) + 1
+                            , attributes = [ Attr.style "gap" "2rem", Attr.style "overflow" "hidden" ]
                             }
                     in
                     Html.div []
@@ -303,7 +303,7 @@ viewVersions course =
                     , tabbable = True
                     , title = "load version " ++ value
                     }
-                    [ Attr.class "lia-btn--tag"
+                    [ Attr.class "lia-btn--small-tag"
                     , Attr.class <|
                         case course.active of
                             Just id ->
@@ -328,21 +328,18 @@ viewVersions course =
 
 viewMedia : String -> String -> Html msg
 viewMedia courseUrl logoUrl =
-    Html.div [ Attr.class "lia-card__media" ]
-        [ Html.aside [ Attr.class "lia-card__aside" ]
-            [ Html.figure [ Attr.class "lia-card__figure" ]
-                [ Html.img
-                    [ Attr.class "lia-card__image"
-                    , logoUrl
-                        |> String.trim
-                        |> Attr.src
-                    , Attr.attribute "loading" "lazy"
-                    , defaultBackground courseUrl
-                    ]
-                    []
-                ]
+    if String.isEmpty logoUrl then
+        Html.text ""
+
+    else
+        Html.img
+            [ Attr.class "lia-card__image"
+            , logoUrl
+                |> String.trim
+                |> Attr.src
+            , Attr.attribute "loading" "lazy"
             ]
-        ]
+            []
 
 
 viewHeader : Inlines -> Dict String String -> Html Msg
@@ -350,7 +347,7 @@ viewHeader title macro =
     Html.header [ Attr.class "lia-card__header" ]
         [ title
             |> inlines
-            |> Html.h3 [ Attr.class "lia-card__title" ]
+            |> Html.h2 [ Attr.class "lia-card__title" ]
         , macro
             |> Dict.get "tags"
             |> Maybe.map
@@ -441,7 +438,6 @@ viewFooter definition =
                 |> getIcon
                 |> Attr.src
             , Attr.alt "Logo"
-            , Attr.height 50
             , Attr.attribute "loading" "lazy"
             ]
             []
@@ -486,8 +482,3 @@ get_active course =
 inlines : Inlines -> List (Html Msg)
 inlines =
     List.map (Inline.view_inf Array.empty En False False Nothing Nothing Nothing >> Html.map (always NoOp))
-
-
-defaultBackground : String -> Attribute msg
-defaultBackground url =
-    Attr.style "background-image" <| "radial-gradient(circle farthest-side at right bottom," ++ string2Color 255 url ++ " 30%,#ddd)"

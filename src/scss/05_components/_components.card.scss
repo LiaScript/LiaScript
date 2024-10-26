@@ -1,17 +1,16 @@
-@use "../01_tools/tools.breakpoints";
+@use '../01_tools/tools.breakpoints';
 
 .lia-card {
   background-color: rgb(var(--color-background));
-  border: 1px solid rgb(var(--color-highlight));
+  border: 3px solid rgb(var(--color-highlight));
   display: flex;
   flex-direction: column;
   position: relative;
   color: rgb(var(--color-text));
-  margin-top: 10px;
+  margin-top: 2rem;
 
-  @include tools.breakpoint-only('sm', 'md') {
-    display: grid;
-    grid-template-columns: 40% 1fr;
+  &:hover {
+    box-shadow: 0 0 2rem 0 rgba(0, 0, 0, 0.3);
   }
 
   &__media {
@@ -21,7 +20,10 @@
   }
 
   &__logo {
-    height: 100%;
+    height: 4rem;
+    object-fit: cover;
+    max-width: 5rem;
+    margin-right: 1rem;
   }
 
   &__content {
@@ -37,25 +39,8 @@
     }
   }
 
-  &__aside {
-    @include tools.breakpoint-only('sm', 'md') {
-      height: 100%;
-    }
-  }
-
-  &__figure {
-    margin: 0;
-    height: 20rem;
-    width: 100%;
-
-    @include tools.breakpoint-only('sm', 'md') {
-      height: 100%;
-    }
-  }
-
   &__image {
     height: 100%;
-    object-fit: cover;
     width: 100%;
   }
 
