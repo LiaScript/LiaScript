@@ -19,6 +19,7 @@ import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.View as Settings
 import Lia.Utils exposing (blockKeydown, btn, btnIcon, modal, string2Color)
+import Library.Masonry as Masonry
 import Session exposing (Session)
 
 
@@ -37,7 +38,7 @@ view session settings model =
                     Attr.style "padding" "0 1rem"
 
                   else
-                    Attr.class ""
+                    Attr.style "min-width" "100%"
                 ]
                 [ Html.h1 [] [ Html.text "LiaScript: Open-courSe" ]
                 , Html.p []
@@ -52,13 +53,18 @@ view session settings model =
                     Base.view
 
                   else if model.initialized then
+                    let
+                        config =
+                            { toView = itemView session.share
+                            , columns = 3
+                            , attributes = [ Attr.style "gap" "1rem" ]
+                            }
+                    in
                     Html.div []
                         [ Html.p [ Attr.style "padding-top" "1rem" ]
                             [ Html.text "These courses are stored locally in your browser and are only visible to you. You can access them offline and safely remove or reset any of them at any time."
                             ]
-                        , model.courses
-                            |> List.map (card session.share)
-                            |> Html.div [ Attr.class "preview-grid" ]
+                        , Masonry.view config model.masonry
                         ]
 
                   else
@@ -75,6 +81,11 @@ view session settings model =
             Just Directory ->
                 modal_directory model.error
         ]
+
+
+itemView : Bool -> Masonry.Id -> Course -> Html Msg
+itemView share _ course =
+    card share course
 
 
 modal_files : Maybe String -> Html Msg

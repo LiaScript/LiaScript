@@ -10,6 +10,7 @@ module Index.Model exposing
 import Dict exposing (Dict)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Library.Masonry as Masonry exposing (Masonry)
 
 
 type Modal
@@ -23,12 +24,19 @@ type alias Model =
     , initialized : Bool
     , modal : Maybe Modal
     , error : Maybe String
+    , masonry : Masonry Course
     }
 
 
 init : Model
 init =
-    Model "" [] False Nothing Nothing
+    { input = ""
+    , courses = []
+    , initialized = False
+    , modal = Nothing
+    , error = Nothing
+    , masonry = Masonry.empty (Just "example-id")
+    }
 
 
 reset_modal : Model -> Model

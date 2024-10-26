@@ -16,6 +16,7 @@ import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
+import Library.Masonry as Masonry exposing (Masonry)
 import List.Extra
 import Service.Console
 import Service.Database
@@ -37,6 +38,7 @@ type Msg
     | LoadCourse String
     | UpdateSettings Settings.Msg
     | Modal (Maybe Modal)
+    | MasonryMsg Masonry.Msg
 
 
 decodeGet : JD.Value -> Result JD.Error ( String, Maybe Course )
@@ -66,11 +68,16 @@ update msg settings model =
     updateSettings msg settings <|
         case msg of
             IndexList list ->
+                let
+                    ( masonry, cmd ) =
+                        Masonry.init (Just "card") (list ++ list ++ list ++ list ++ list ++ list ++ list ++ list ++ list ++ list)
+                in
                 ( { model
                     | courses = list
                     , initialized = True
+                    , masonry = masonry
                   }
-                , Cmd.none
+                , Cmd.map MasonryMsg cmd
                 , []
                 )
 
@@ -185,6 +192,12 @@ update msg settings model =
                             _ ->
                                 Nothing
                   }
+                , Cmd.none
+                , []
+                )
+
+            MasonryMsg masonryMsg ->
+                ( { model | masonry = Masonry.update masonryMsg model.masonry }
                 , Cmd.none
                 , []
                 )
