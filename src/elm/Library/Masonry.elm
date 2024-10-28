@@ -11,6 +11,7 @@ module Library.Masonry exposing
     , done
     , Id
     , getHeight
+    , map, replace
     )
 
 {-| Distribute elements over columns, ordered from left to right while taking
@@ -125,7 +126,7 @@ taking the height of each element into account.
 -}
 view : Config a msg -> Masonry a -> Html msg
 view { columns, toView, attributes } ((Masonry { id }) as masonry) =
-    viewColumns attributes toView id (toColumns columns masonry)
+    viewColumns columns attributes toView id (toColumns columns masonry)
 
 
 {-| Render a `List a` without all the fancy height calculations.
@@ -140,7 +141,7 @@ ordered from left to right regardless of their height.
 -}
 viewList : Config a msg -> List a -> Html msg
 viewList { columns, toView, attributes } =
-    viewColumns attributes toView Nothing << toColumns columns << Tuple.first << init Nothing
+    viewColumns columns attributes toView Nothing << toColumns columns << Tuple.first << init Nothing
 
 
 {-| Masonry has finished rearranging items.
@@ -223,6 +224,41 @@ append xs ((Masonry masonry_) as masonry) =
         -- Reverse list on purpose, this gets the height of the
         -- first element first instead of last
         List.foldl ((::) << getHeight << Tuple.first) [] addedItems
+    )
+
+
+map : (a -> a) -> Masonry a -> Masonry a
+map f (Masonry masonry) =
+    Masonry
+        { masonry
+            | items = List.map (\( id, x ) -> ( id, f x )) masonry.items
+        }
+
+
+replace : Int -> a -> Masonry a -> ( Masonry a, Cmd Msg )
+replace index x ((Masonry masonry_) as masonry) =
+    let
+        height =
+            averageHeight masonry
+
+        id =
+            Id (toStringId index)
+    in
+    ( Masonry
+        { masonry_
+            | items =
+                List.indexedMap
+                    (\i ( Id id_, _ ) ->
+                        if i == index then
+                            ( id, x )
+
+                        else
+                            ( Id id_, x )
+                    )
+                    masonry_.items
+            , heights = Dict.insert (toStringId index) (Average height) masonry_.heights
+        }
+    , getHeight id
     )
 
 
@@ -380,15 +416,21 @@ toStringId index =
 -- VIEW HELPERS
 
 
-viewColumns : List (Attribute msg) -> (Id -> a -> Html msg) -> Maybe String -> List (List (Item a)) -> Html msg
-viewColumns attributes toView id columns =
+viewColumns : Int -> List (Attribute msg) -> (Id -> a -> Html msg) -> Maybe String -> List (List (Item a)) -> Html msg
+viewColumns num attributes toView id columns =
+    let
+        maxColumnWidth =
+            String.fromFloat (100 / toFloat num)
+                ++ "%"
+                |> style "max-width"
+    in
     div (style "display" "flex" :: class "elm-masonry-columns" :: attributes) <|
-        List.map (viewColumn toView id) columns
+        List.map (viewColumn maxColumnWidth toView id) columns
 
 
-viewColumn : (Id -> a -> Html msg) -> Maybe String -> List (Item a) -> Html msg
-viewColumn toView id column =
-    Keyed.node "div" [ class "elm-masonry-column" ] <|
+viewColumn : Attribute msg -> (Id -> a -> Html msg) -> Maybe String -> List (Item a) -> Html msg
+viewColumn maxWidth toView id column =
+    Keyed.node "div" [ class "elm-masonry-column", maxWidth ] <|
         List.map (viewItem toView id) column
 
 

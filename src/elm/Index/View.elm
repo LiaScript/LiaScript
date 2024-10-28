@@ -12,6 +12,7 @@ import Index.Model exposing (Course, Modal(..), Model, Release)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
 import Lia.Definition.Types exposing (Definition)
+import Lia.Markdown.Code.Log exposing (Level(..))
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
@@ -20,7 +21,7 @@ import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.View as Settings
 import Lia.Utils exposing (blockKeydown, btn, btnIcon, modal)
 import Library.Masonry as Masonry
-import Session exposing (Session)
+import Session exposing (Screen, Session)
 
 
 view : Session -> Settings -> Model -> Html Msg
@@ -55,8 +56,8 @@ view session settings model =
                   else if model.initialized then
                     let
                         config =
-                            { toView = itemView session.share
-                            , columns = (session.screen.width // 500) + 1
+                            { toView = itemView session.screen
+                            , columns = (session.screen.width // 600) + 1
                             , attributes = [ Attr.style "gap" "2rem", Attr.style "overflow" "hidden" ]
                             }
                     in
@@ -83,9 +84,9 @@ view session settings model =
         ]
 
 
-itemView : Bool -> Masonry.Id -> Course -> Html Msg
-itemView share _ course =
-    card share course
+itemView : Screen -> Masonry.Id -> Course -> Html Msg
+itemView screen _ course =
+    card screen course
 
 
 modal_files : Maybe String -> Html Msg
@@ -259,17 +260,26 @@ getIcon =
         >> Maybe.withDefault Const.icon
 
 
-card : Bool -> Course -> Html Msg
-card share course =
+card : Screen -> Course -> Html Msg
+card screen course =
     case get_active course of
         Just { title, definition } ->
             Html.article [ Attr.class "lia-card" ]
                 [ viewVersions course
+                , Html.img
+                    [ Attr.class "lia-card__logo"
+                    , definition.macro
+                        |> getIcon
+                        |> Attr.src
+                    , Attr.alt "Logo"
+                    , Attr.attribute "loading" "lazy"
+                    ]
+                    []
                 , viewMedia course.id definition.logo
                 , Html.div [ Attr.class "lia-card__content" ]
                     [ viewHeader title definition.macro
                     , viewBody definition.comment
-                    , viewControls share title definition.comment course
+                    , viewControls screen title definition course
                     , viewFooter definition
                     ]
                 ]
@@ -291,19 +301,19 @@ viewVersions course =
         |> List.indexedMap
             (\i ( key, value ) ->
                 btn
-                    { msg =
-                        Just <|
-                            Activate course.id
-                                (if last == i then
-                                    Nothing
-
-                                 else
-                                    Just value
-                                )
-                    , tabbable = True
+                    { tabbable = True
                     , title = "load version " ++ value
+                    , msg =
+                        Activate course.id
+                            (if last == i then
+                                Nothing
+
+                             else
+                                Just value
+                            )
+                            |> Just
                     }
-                    [ Attr.class "lia-btn--small-tag"
+                    [ Attr.class "lia-btn lia-btn--small-tag"
                     , Attr.class <|
                         case course.active of
                             Just id ->
@@ -362,20 +372,13 @@ viewHeader title macro =
 
 viewBody : Inlines -> Html Msg
 viewBody comment =
-    Html.div [ Attr.class "lia-card__body" ] <|
-        case comment of
-            [] ->
-                []
-
-            _ ->
-                [ comment
-                    |> inlines
-                    |> Html.p [ Attr.class "lia-card__copy" ]
-                ]
+    comment
+        |> inlines
+        |> Html.p [ Attr.class "lia-card__body" ]
 
 
-viewControls : Bool -> Inlines -> Inlines -> Course -> Html Msg
-viewControls hasShareAPI title comment course =
+viewControls : Screen -> Inlines -> Definition -> Course -> Html Msg
+viewControls screen title definition course =
     Html.div [ Attr.class "lia-card__controls" ]
         [ btnIcon
             { msg = Just <| Delete course.id
@@ -391,14 +394,15 @@ viewControls hasShareAPI title comment course =
             , icon = "icon-refresh"
             }
             [ Attr.class "lia-btn--tag lia-btn--transparent text-yellow-dark border-yellow-dark px-1" ]
-        , if hasShareAPI then
+        , if screen.width > 310 then
             btnIcon
                 { msg =
                     Just <|
                         Share
                             { title = stringify title
-                            , text = stringify comment
+                            , text = stringify definition.comment
                             , url = Const.urlLiascriptCourse ++ course.id
+                            , image = Nothing
                             }
                 , title = "share"
                 , tabbable = True
@@ -408,12 +412,23 @@ viewControls hasShareAPI title comment course =
 
           else
             Html.text ""
+        , if String.isEmpty definition.email || screen.width < 360 then
+            Html.text ""
+
+          else
+            Html.a
+                [ Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise"
+                , Attr.href <| "mailto:" ++ definition.email
+                ]
+                [ Html.i [ Attr.class "icon icon-mail" ] []
+                ]
         , case course.active of
             Nothing ->
                 Html.a
                     [ Base.href course.id
                     , Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 border-turquoise"
                     , Attr.title "open"
+                    , Attr.style "border" "2.5px solid"
                     ]
                     [ Html.i [ Attr.class "icon icon-login text-turquoise" ] [] ]
 
@@ -422,9 +437,10 @@ viewControls hasShareAPI title comment course =
                     { msg = Just <| Restore course.id course.active
                     , title = "open"
                     , tabbable = True
-                    , icon = "icon-sign-in"
+                    , icon = "icon-login"
                     }
                     [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise"
+                    , Attr.style "border" "2.5px solid"
                     ]
         ]
 
@@ -432,36 +448,36 @@ viewControls hasShareAPI title comment course =
 viewFooter : Definition -> Html msg
 viewFooter definition =
     Html.footer [ Attr.class "lia-card__footer" ]
-        [ Html.img
-            [ Attr.class "lia-card__logo"
-            , definition.macro
-                |> getIcon
-                |> Attr.src
-            , Attr.alt "Logo"
-            , Attr.attribute "loading" "lazy"
-            ]
-            []
-        , case ( String.trim definition.author, String.trim definition.email ) of
-            ( "", "" ) ->
-                Html.text ""
+        [ viewAuthor definition.author
 
-            ( "", email ) ->
-                contact email email
-
-            ( author, "" ) ->
-                Html.span [ Attr.class "lia-card__contact" ] [ Html.text author ]
-
-            ( author, email ) ->
-                contact author email
+        --Html.img
+        --  [ Attr.class "lia-card__logo"
+        --  , definition.macro
+        --      |> getIcon
+        --      |> Attr.src
+        --  , Attr.alt "Logo"
+        --  , Attr.attribute "loading" "lazy"
+        --  ]
+        --  []
+        --case ( String.trim definition.author, String.trim definition.email ) of
+        --  ( "", "" ) ->
+        --      Html.text ""
+        --  ( "", email ) ->
+        --      contact email email
+        --  ( author, "" ) ->
+        --      Html.span [ Attr.class "lia-card__contact" ] [ Html.text author ]
+        --  ( author, email ) ->
+        --      contact author email
         ]
 
 
-contact : String -> String -> Html msg
-contact title mail =
-    Html.a [ Attr.class "lia-card__contact", Attr.href <| "mailto:" ++ mail ]
-        [ Html.text title
-        , Html.i [ Attr.class "icon icon-mail ml-1 align-middle" ] []
-        ]
+viewAuthor : String -> Html msg
+viewAuthor author =
+    if String.isEmpty author then
+        Html.text ""
+
+    else
+        Html.span [ Attr.class "lia-card__contact" ] [ Html.text author ]
 
 
 get_active : Course -> Maybe Release
@@ -471,6 +487,7 @@ get_active course =
             course.versions
                 |> Dict.toList
                 |> List.sortBy Tuple.first
+                |> List.reverse
                 |> List.head
                 |> Maybe.map Tuple.second
 
