@@ -1,3 +1,6 @@
+@use "sass:map";
+@use "../00_settings/settings.global";
+
 address,
 h1,
 h2,
@@ -12,7 +15,7 @@ dl,
 ol,
 ul,
 fieldset {
-  margin-bottom: map-get($global-spacing, spacing-normal);
+  margin-bottom: map.get(settings.$global-spacing, spacing-normal);
 }
 
 :focus {
@@ -32,7 +35,7 @@ textarea,
   //-moz-appearance: none;
   //-webkit-appearance: none;
   align-items: center;
-  border-radius: $global-radius;
+  border-radius: settings.$global-radius;
   border: 1px solid transparent;
   box-shadow: none;
   color: currentColor;

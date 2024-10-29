@@ -1,45 +1,49 @@
+@use "../00_settings/settings.global";
+@use "../01_tools/tools.breakpoints";
+@use "../03_elements/elements.headline";
+
 .h1,
 .h2,
 .h3 {
-  font-family: $global-font-headline;
-  line-height: $global-line-height;
+  font-family: settings.$global-font-headline;
+  line-height: settings.$global-line-height;
 }
 
 .h1 {
-  font-size: calc(#{$h1-mobile} * var(--font-size-multiplier)) !important;
+  font-size: calc(#{elements.$h1-mobile} * var(--font-size-multiplier)) !important;
 
-  @include breakpoint("md") {
+  @include tools.breakpoint("md") {
     font-size: calc(
-      #{$h1-desktop-presentation} * var(--font-size-multiplier)
+      #{elements.$h1-desktop-presentation} * var(--font-size-multiplier)
     ) !important;
 
     @at-root .lia-mode--textbook & {
       font-size: calc(
-        #{$h1-desktop-textbook} * var(--font-size-multiplier)
+        #{elements.$h1-desktop-textbook} * var(--font-size-multiplier)
       ) !important;
     }
   }
 }
 
 .h2 {
-  font-size: calc(#{$h2-mobile} * var(--font-size-multiplier)) !important;
+  font-size: calc(#{elements.$h2-mobile} * var(--font-size-multiplier)) !important;
 
-  @include breakpoint("md") {
-    font-size: calc(#{$h2-desktop} * var(--font-size-multiplier)) !important;
+  @include tools.breakpoint("md") {
+    font-size: calc(#{elements.$h2-desktop} * var(--font-size-multiplier)) !important;
   }
 }
 
 .h3 {
-  font-size: calc(#{$h3-desktop} * var(--font-size-multiplier)) !important;
+  font-size: calc(#{elements.$h3-desktop} * var(--font-size-multiplier)) !important;
 
-  @include breakpoint("md") {
-    font-size: calc(#{$h3-desktop} * var(--font-size-multiplier)) !important;
+  @include tools.breakpoint("md") {
+    font-size: calc(#{elements.$h3-desktop} * var(--font-size-multiplier)) !important;
   }
 }
 
 .h4,
 .h5 {
-  font-family: $global-font-family;
-  font-size: calc(#{$h4-mobile} * var(--font-size-multiplier)) !important;
+  font-family: settings.$global-font-family;
+  font-size: calc(#{elements.$h4-mobile} * var(--font-size-multiplier)) !important;
   line-height: 1.38;
 }

@@ -1,8 +1,12 @@
+@use "sass:math";
+@use "sass:meta";
+@use "../00_settings/settings.global";
+
 @mixin transition(
-  $property: $global-transition-property,
-  $speed: $global-transition-speed,
-  $timing-function: $global-transition-timing-function,
-  $delay: $global-transition-delay
+  $property: settings.$global-transition-property,
+  $speed: settings.$global-transition-speed,
+  $timing-function: settings.$global-transition-timing-function,
+  $delay: settings.$global-transition-delay
 ) {
   $p: null;
   $s: null;
@@ -10,39 +14,39 @@
   $d: null;
 
   @if ($property) {
-    @if type-of($property) == string {
+    @if meta.type-of($property) == string {
       $p: $property;
     } @else {
       @warn "Make sure that `$property` is a string.";
     }
   } @else {
-    $p: $global-transition-property;
+    $p: settings.$global-transition-property;
   }
 
   @if ($speed) {
-    @if unitless($speed) {
+    @if math.is-unitless($speed) {
       $s: $speed + 0ms;
     } @else {
       $s: $speed;
     }
   } @else {
-    $s: $global-transition-speed;
+    $s: settings.$global-transition-speed;
   }
 
   @if ($timing-function) {
     $t: $timing-function;
   } @else {
-    $t: $global-transition-timing-function;
+    $t: settings.$global-transition-timing-function;
   }
 
   @if ($delay) {
-    @if unitless($delay) {
+    @if math.is-unitless($delay) {
       $d: $delay + 0ms;
     } @else {
       $d: $delay;
     }
   } @else {
-    $d: $global-transition-delay;
+    $d: settings.$global-transition-delay;
   }
 
   transition: $p $s $t $d;

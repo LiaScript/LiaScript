@@ -1,3 +1,7 @@
+@use "sass:color";
+@use "sass:map";
+@use "../00_settings/settings.global";
+
 .lia-accordion {
   &__item {
   }
@@ -13,7 +17,7 @@
     color: rgb(var(--lia-white));
     margin: 0 auto 0 0;
     font-size: 1.5rem;
-    font-family: $global-font-family;
+    font-family: settings.$global-font-family;
   }
 
   &__content {
@@ -28,9 +32,9 @@
 
 @mixin style-accordion($theme) {
   .lia-accordion {
-    $bg: map-get($theme, primary);
-    $fg: map-get($theme, background);
-    $rd: map-get($global-spacing, spacing-small);
+    $bg: map.get($theme, primary);
+    $fg: map.get($theme, background);
+    $rd: map.get(settings.$global-spacing, spacing-small);
 
     background-color: $bg;
     color: $fg;
@@ -38,20 +42,20 @@
     .lia-accordion-min-max {
       .active,
       &:hover {
-        background-color: mix($bg, $fg, 50%);
+        background-color: color.mix($bg, $fg, 50%);
       }
     }
 
     .active,
     &:hover {
-      background-color: mix($bg, $fg, 80%);
+      background-color: color.mix($bg, $fg, 80%);
     }
   }
 
   .lia-accordion-dummy {
-    $bg: map-get($theme, primary);
-    $fg: map-get($theme, background);
-    $rd: map-get($global-spacing, spacing-small);
+    $bg: map.get($theme, primary);
+    $fg: map.get($theme, background);
+    $rd: map.get(settings.$global-spacing, spacing-small);
 
     background-color: $bg;
     color: $fg;

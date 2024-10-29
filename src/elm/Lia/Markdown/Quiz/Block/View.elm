@@ -1,7 +1,7 @@
 module Lia.Markdown.Quiz.Block.View exposing (view)
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -67,7 +67,7 @@ text solution state =
         , Attr.disabled (not <| Solution.isOpen solution)
         , onInput Input
         , blockKeydown (Input state)
-        , A11y_Widget.label "quiz answer"
+        , A11y_Aria.label "quiz answer"
         ]
         []
 
@@ -85,9 +85,9 @@ select config solution open options i =
         ]
         [ Html.span
             [ Attr.class "lia-dropdown__selected"
-            , A11y_Widget.hidden False
+            , A11y_Aria.hidden False
             , A11y_Role.button
-            , A11y_Widget.expanded open
+            , A11y_Aria.expanded open
             ]
             [ get_option config i options
             , Html.i

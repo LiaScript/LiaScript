@@ -9,8 +9,8 @@ module Lia.Markdown.Inline.View exposing
     , viewer
     )
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Array
 import Conditional.List as CList
 import Dict exposing (Dict)
@@ -185,7 +185,7 @@ viewQuiz config ( length, id ) attr =
                           else
                             Attr.disabled True
                         , blockKeydown Msg.NoOp
-                        , A11y_Widget.label "quiz answer"
+                        , A11y_Aria.label "quiz answer"
                         , Attr.class <|
                             if config.input.active then
                                 ""
@@ -226,9 +226,9 @@ viewQuiz config ( length, id ) attr =
                 )
                 [ Html.span
                     [ Attr.class "lia-dropdown__selected"
-                    , A11y_Widget.hidden False
+                    , A11y_Aria.hidden False
                     , A11y_Role.button
-                    , A11y_Widget.expanded open
+                    , A11y_Aria.expanded open
                     , Attr.style "font-weight" "inherit"
                     , Attr.style "text-decoration" "inherit"
                     , Attr.style "font-style" "inherit"
@@ -269,12 +269,12 @@ highlightPartialSolution attr partiallyCorrect =
     case partiallyCorrect of
         Just True ->
             Attr.class "is-success"
-                :: A11y_Widget.invalid False
+                :: A11y_Aria.invalid False
                 :: attr
 
         Just False ->
             Attr.class "is-failure"
-                :: A11y_Widget.invalid True
+                :: A11y_Aria.invalid True
                 :: attr
 
         Nothing ->
@@ -689,7 +689,7 @@ reference config ref attr =
         QR_Link url title_ ->
             [ url
                 |> QRCode.fromString
-                |> Result.map (QRCode.toSvg [ A11y_Widget.label <| Translations.qrCode config.lang ++ ": " ++ url ])
+                |> Result.map (QRCode.toSvg [ A11y_Aria.label <| Translations.qrCode config.lang ++ ": " ++ url ])
                 |> Result.withDefault (Html.text (Translations.qrErr config.lang))
             ]
                 |> Html.a

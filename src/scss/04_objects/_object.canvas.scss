@@ -1,3 +1,6 @@
+@use "../00_settings/settings.global";
+@use "../01_tools/tools.breakpoints";
+
 /* --------------------------------------------------
    Layout Settings
    -------------------------------------------------- */
@@ -24,7 +27,7 @@ $slide-margin-left-textbook: 19rem !default;
   height: 100vh;
   left: 0;
   position: relative;
-  transition: $global-transition;
+  transition: settings.$global-transition;
   transition-property: left, right, width;
   width: 100vw;
   overflow-x: hidden;
@@ -49,7 +52,7 @@ $slide-margin-left-textbook: 19rem !default;
     top: 1rem;
   }
 
-  @include breakpoint('sm', 'max') {
+  @include tools.breakpoint('sm', 'max') {
     /* push support-menu-toggler to the right if toc is open,
        prevent that buttons overlay each other */
     &.lia-toc--visible #lia-btn-support {
@@ -72,7 +75,7 @@ $slide-margin-left-textbook: 19rem !default;
     }
   }
 
-  @include breakpoint('sm') {
+  @include tools.breakpoint('sm') {
     &.lia-toc--visible {
       left: $toc-width-desktop;
       width: calc(100% - #{$toc-width-desktop});
@@ -96,14 +99,14 @@ $slide-margin-left-textbook: 19rem !default;
     }
   }
 
-  @include breakpoint('md') {
+  @include tools.breakpoint('md') {
     &.lia-toc--visible.lia-mode--presentation .lia-slide__content,
     &.lia-toc--visible.lia-mode--textbook .lia-slide__content {
       //width: auto;
     }
   }
 
-  @include breakpoint('lg') {
+  @include tools.breakpoint('lg') {
     flex-direction: row;
 
     &.lia-support--visible {
@@ -118,7 +121,7 @@ $slide-margin-left-textbook: 19rem !default;
       height: calc(100vh - 14.2rem + 7rem);
     }
 
-    @include breakpoint('lg') {
+    @include tools.breakpoint('lg') {
       .lia-header {
         right: $notes-width-desktop;
       }
@@ -136,11 +139,11 @@ $slide-margin-left-textbook: 19rem !default;
       max-width: calc(71.1rem + #{$slide-margin-left-textbook} + 3rem);
       padding-left: 3rem !important;
 
-      @include breakpoint('sm') {
+      @include tools.breakpoint('sm') {
         margin: 1.25rem 0 2rem;
       }
 
-      @include breakpoint('md') {
+      @include tools.breakpoint('md') {
         margin: 4.5rem 0 2rem;
       }
     }
@@ -150,7 +153,7 @@ $slide-margin-left-textbook: 19rem !default;
       justify-content: center;
     }
 
-    @include breakpoint('md') {
+    @include tools.breakpoint('md') {
       .lia-slide__content {
         padding-left: $slide-margin-left-textbook;
       }
@@ -167,7 +170,7 @@ $slide-margin-left-textbook: 19rem !default;
       max-width: 124.6rem;
     }
 
-    @include breakpoint('lg') {
+    @include tools.breakpoint('lg') {
       .lia-slide__content {
         // margin-left: calc(#{$slide-margin-left-presentation} - 3rem);
       }
