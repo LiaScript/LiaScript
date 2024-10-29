@@ -174,10 +174,10 @@ update msg settings model =
                 ( { model
                     | courses =
                         model.courses
-                            |> activate course version
+                            |> List.map (activate course version)
                     , masonry =
                         model.masonry
-                            |> Masonry.map (activate2 course version)
+                            |> Masonry.map (activate course version)
                   }
                 , Cmd.none
                 , []
@@ -236,34 +236,8 @@ updateSettings msg settings ( model, cmd, events ) =
             ( settings, ( model, cmd, events ) )
 
 
-activate : String -> Maybe String -> List Course -> List Course
-activate course version list =
-    case list of
-        [] ->
-            []
-
-        c :: cs ->
-            if c.id == course then
-                { c
-                    | active =
-                        case version of
-                            Just ver ->
-                                c.versions
-                                    |> Dict.filter (\_ v -> v.definition.version == ver)
-                                    |> Dict.keys
-                                    |> List.head
-
-                            _ ->
-                                Nothing
-                }
-                    :: cs
-
-            else
-                c :: activate course version cs
-
-
-activate2 : String -> Maybe String -> Course -> Course
-activate2 course version c =
+activate : String -> Maybe String -> Course -> Course
+activate course version c =
     if c.id == course then
         { c
             | active =
