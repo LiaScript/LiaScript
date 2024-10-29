@@ -51,7 +51,7 @@ view session settings model =
                   else if model.initialized then
                     let
                         config =
-                            { toView = itemView
+                            { toView = itemView session.share
                             , columns = (session.screen.width // 600) + 1
                             , attributes = [ Attr.style "gap" "2rem", Attr.style "overflow" "hidden" ]
                             }
@@ -79,9 +79,9 @@ view session settings model =
         ]
 
 
-itemView : Masonry.Id -> Course -> Html Msg
-itemView _ course =
-    card course
+itemView : Bool -> Masonry.Id -> Course -> Html Msg
+itemView hasShareAPI _ course =
+    card hasShareAPI course
 
 
 searchBar : String -> Html Msg

@@ -18,15 +18,15 @@ import Lia.Markdown.Inline.View as Inline
 import Lia.Utils exposing (btn, btnIcon)
 
 
-card : Course -> Html Msg
-card course =
+card : Bool -> Course -> Html Msg
+card hasShareAPI course =
     get_active course
-        |> Maybe.map (article course)
+        |> Maybe.map (article hasShareAPI course)
         |> Maybe.withDefault (Html.text "something went wrong")
 
 
-article : Course -> Release -> Html Msg
-article course { title, definition } =
+article : Bool -> Course -> Release -> Html Msg
+article hasShareAPI course { title, definition } =
     Html.article [ Attr.class "lia-card" ]
         [ versions course
         , definition.macro
@@ -36,7 +36,7 @@ article course { title, definition } =
         , Html.div [ Attr.class "lia-card__content" ]
             [ header title definition.macro
             , body definition.comment
-            , controls title definition course
+            , controls hasShareAPI title definition course
             , footer definition.author
             ]
         ]
@@ -146,37 +146,59 @@ body comment =
         |> Html.p [ Attr.class "lia-card__body" ]
 
 
-controls : Inlines -> Definition -> Course -> Html Msg
-controls title definition course =
+controls : Bool -> Inlines -> Definition -> Course -> Html Msg
+controls hasShareAPI title definition course =
     Html.div [ Attr.class "lia-card__controls" ]
         [ btnIcon
             { msg = Just <| Delete course.id
-            , title = "delete"
+            , title = "Delete this course"
             , tabbable = True
             , icon = "icon-trash"
             }
             [ Attr.class "lia-btn--tag lia-btn--transparent text-red-dark border-red-dark px-1" ]
         , btnIcon
             { msg = Just <| Reset course.id course.active
-            , title = "reset"
+            , title = "Reset stored states in course"
             , tabbable = True
             , icon = "icon-refresh"
             }
             [ Attr.class "lia-btn--tag lia-btn--transparent text-yellow-dark border-yellow-dark px-1" ]
-        , btnIcon
-            { msg =
-                Just <|
-                    Share
-                        { title = stringify title
-                        , text = stringify definition.comment
-                        , url = Const.urlLiascriptCourse ++ course.id
-                        , image = Nothing
-                        }
-            , title = "share"
-            , tabbable = True
-            , icon = "icon-social"
-            }
-            [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise" ]
+        , if hasShareAPI then
+            btnIcon
+                { msg =
+                    Just <|
+                        Share
+                            { title = stringify title
+                            , text = stringify definition.comment
+                            , url = Const.urlLiascriptCourse ++ course.id
+                            , image =
+                                if String.isEmpty definition.logo then
+                                    Nothing
+
+                                else
+                                    Just definition.logo
+                            }
+                , title = "Share course via"
+                , tabbable = True
+                , icon = "icon-social"
+                }
+                [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise" ]
+
+          else
+            btnIcon
+                { msg =
+                    Just <|
+                        Share
+                            { title = stringify title
+                            , text = stringify definition.comment
+                            , url = Const.urlLiascriptCourse ++ course.id
+                            , image = Nothing
+                            }
+                , title = "Copy URL to clipboard"
+                , tabbable = True
+                , icon = "icon-copy"
+                }
+                [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise" ]
         , Html.a
             [ Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise"
             , Attr.href <| "mailto:" ++ definition.email
@@ -189,7 +211,7 @@ controls title definition course =
                 Html.a
                     [ Base.href course.id
                     , Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 border-turquoise"
-                    , Attr.title "open"
+                    , Attr.title "Open this course"
                     , Attr.style "border" "2.5px solid"
                     ]
                     [ Html.i [ Attr.class "icon icon-login text-turquoise" ] [] ]
@@ -197,7 +219,7 @@ controls title definition course =
             Just _ ->
                 btnIcon
                     { msg = Just <| Restore course.id course.active
-                    , title = "open"
+                    , title = "Open this course"
                     , tabbable = True
                     , icon = "icon-login"
                     }
