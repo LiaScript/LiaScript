@@ -24,6 +24,18 @@ function changeGoogleStyles() {
   if (select.length > 0) {
     select[0].setAttribute('data-group-id', 'translation')
   }
+
+  const removePopup = document.getElementById('goog-gt-tt')
+  if (removePopup && removePopup.parentNode) {
+    removePopup.parentNode.removeChild(removePopup)
+  }
+
+  const style = document.createElement('style')
+  style.innerHTML = `font {
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }`
+  document.head.appendChild(style)
 }
 
 /**

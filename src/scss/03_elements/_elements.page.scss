@@ -1,7 +1,10 @@
+@use "../00_settings/settings.colors";
+@use "../00_settings/settings.global" as settings2;
+
 :root {
   // Basic color definitions
   // Map $global-colors and define global color variables with prefix "lia".
-  @each $color, $rgb in $global-colors {
+  @each $color, $rgb in settings.$global-colors {
     --lia-#{$color}: #{$rgb};
   }
 }
@@ -49,9 +52,9 @@
 
 :root {
   // Global Font-Settings
-  --global-font-family: #{$global-font-family};
-  --global-font-mono: #{$global-font-mono};
-  --global-font-headline: #{$global-font-headline};
+  --global-font-family: #{settings2.$global-font-family};
+  --global-font-mono: #{settings2.$global-font-mono};
+  --global-font-headline: #{settings2.$global-font-headline};
   --global-font-size: 1.5rem;
   --font-size-multiplier: 1;
 

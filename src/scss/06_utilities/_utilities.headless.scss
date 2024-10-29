@@ -1,4 +1,7 @@
+@use "sass:map";
+@use "../00_settings/settings.global";
+
 .headless {
-  border-top-left-radius: map-get($global-spacing, spacing-small) !important;
-  border-top-right-radius: map-get($global-spacing, spacing-small) !important;
+  border-top-left-radius: map.get(settings.$global-spacing, spacing-small) !important;
+  border-top-right-radius: map.get(settings.$global-spacing, spacing-small) !important;
 }

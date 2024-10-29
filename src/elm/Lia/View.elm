@@ -1,8 +1,8 @@
 module Lia.View exposing (view)
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
-import Accessibility.Widget as A11y_Widget
 import Array
 import Const
 import Dict exposing (Dict)
@@ -462,7 +462,7 @@ navButton title id class msg =
         , Attr.id id
         , A11y_Key.tabbable True
         ]
-        [ Html.i [ A11y_Widget.hidden True, Attr.class <| "lia-btn__icon icon " ++ class ]
+        [ Html.i [ A11y_Aria.hidden True, Attr.class <| "lia-btn__icon icon " ++ class ]
             []
         ]
 

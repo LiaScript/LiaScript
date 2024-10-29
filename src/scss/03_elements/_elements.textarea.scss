@@ -1,3 +1,7 @@
+@use "sass:color";
+@use "sass:map";
+@use "../01_tools/tools.color";
+
 .lia-textarea {
   max-width: 100%;
   width: 100%;
@@ -15,23 +19,23 @@
 
 @mixin style-textarea($theme) {
   .lia-textarea {
-    $bg: map-get($theme, background);
-    $fg: color-contrast($bg);
+    $bg: map.get($theme, background);
+    $fg: tools.color-contrast($bg);
 
     background: $bg;
 
     &:not([disabled]) {
       color: $fg;
-      border-bottom-color: mix($bg, $fg, 50%);
+      border-bottom-color: color.mix($bg, $fg, 50%);
     }
 
     &[disabled] {
       color: rgba($fg, 0.38);
-      border-bottom-color: mix($bg, $fg, 50%);
+      border-bottom-color: color.mix($bg, $fg, 50%);
     }
 
     &:focus {
-      border-bottom-color: map-get($theme, primary);
+      border-bottom-color: map.get($theme, primary);
     }
   }
 }

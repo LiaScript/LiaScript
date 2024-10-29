@@ -251,7 +251,7 @@ svgbody len =
                    )
 
         ascii =
-            regexWith True False <|
+            regexWith { caseInsensitive = True, multiline = False } <|
                 if len <= 8 then
                     "[\t ]*(ascii|art)[\t ]*"
 

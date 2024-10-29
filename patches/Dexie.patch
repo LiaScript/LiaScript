@@ -1,67 +1,42 @@
---- node_modules/dexie/dist/dexie.es.js	2022-02-25 10:22:04.928839794 +0100
-+++ dexie.es.js	2022-02-25 10:21:09.568816030 +0100
-@@ -11,6 +11,11 @@
-  * Apache License Version 2.0, January 2004, http://www.apache.org/licenses/
-  */
-  
-+var localDB = {
-+    indexedDB: null,
-+    IDBKeyRange: null
-+};
+--- node_modules/dexie/dist/dexie.mjs	2024-10-25 10:28:58.955692160 +0200
++++ dexie.mjs	2024-10-25 10:28:31.467678581 +0200
+@@ -5619,6 +5619,39 @@
+         indexedDB: _global.indexedDB || _global.mozIndexedDB || _global.webkitIndexedDB || _global.msIndexedDB,
+         IDBKeyRange: _global.IDBKeyRange || _global.webkitIDBKeyRange
+     };
 +
- var keys = Object.keys;
- var isArray = Array.isArray;
- var _global = typeof self !== 'undefined' ? self :
-@@ -4414,11 +4419,47 @@
-     //
-     dependencies: (function () {
-         try {
--            return {
--                // Required:
--                indexedDB: _global.indexedDB || _global.mozIndexedDB || _global.webkitIndexedDB || _global.msIndexedDB,
--                IDBKeyRange: _global.IDBKeyRange || _global.webkitIDBKeyRange
--            };
-+            // this is a patch, which sequres the access to indexedDB, so that only
-+            // LiaScript can access and store this data ...
-+            if (!localDB.indexedDB && !localDB.IDBKeyRange) {
-+                localDB = {
-+                    // Required:
-+                    indexedDB: _global.indexedDB || _global.mozIndexedDB || _global.webkitIndexedDB || _global.msIndexedDB,
-+                    IDBKeyRange: _global.IDBKeyRange || _global.webkitIDBKeyRange
-+                }
-+
-+                try { 
-+                    delete _global.indexedDB; 
-+                } catch(e) { 
-+                    _global["indexedDB"] = undefined; 
-+                }
-+                try { 
-+                    delete _global.mozIndexedDB; 
-+                } catch(e) { 
-+                    _global["mozIndexedDB"] = undefined; 
-+                }
-+                try { 
-+                    delete _global.webkitIndexedDB; 
-+                } catch(e) { 
-+                    _global["webkitIndexedDB"] = undefined; 
-+                }
-+                try { 
-+                    delete _global.msIndexedDB; 
-+                } catch(e) { 
-+                    _global["msIndexedDB"] = undefined; 
-+                }
-+                try { 
-+                    delete _global.IDBKeyRange; 
-+                } catch(e) { 
-+                    _global["IDBKeyRange"] = undefined; 
-+                }
-+                try { 
-+                    delete _global.webkitIDBKeyRange; 
-+                } catch(e) { 
-+                    _global["webkitIDBKeyRange"] = undefined; 
-+                }
-+            }
-+            return localDB;
-         }
-         catch (e) {
-             return {
++    // this is a patch, which sequres the access to indexedDB, so that only
++    // LiaScript can access and store this data ...
++    try { 
++        delete _global.indexedDB; 
++    } catch(e) { 
++        _global["indexedDB"] = undefined; 
++    }
++    try { 
++        delete _global.mozIndexedDB; 
++    } catch(e) { 
++        _global["mozIndexedDB"] = undefined; 
++    }
++    try { 
++        delete _global.webkitIndexedDB; 
++    } catch(e) { 
++        _global["webkitIndexedDB"] = undefined; 
++    }
++    try { 
++        delete _global.msIndexedDB; 
++    } catch(e) { 
++        _global["msIndexedDB"] = undefined; 
++    }
++    try { 
++        delete _global.IDBKeyRange; 
++    } catch(e) { 
++        _global["IDBKeyRange"] = undefined; 
++    }
++    try { 
++        delete _global.webkitIDBKeyRange; 
++    } catch(e) { 
++        _global["webkitIDBKeyRange"] = undefined; 
++    }
+ }
+ catch (e) {
+     domDeps = { indexedDB: null, IDBKeyRange: null };

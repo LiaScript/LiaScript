@@ -1,3 +1,7 @@
+@use "../00_settings/settings.global";
+@use "../01_tools/tools.breakpoints";
+@use "../04_objects/object.canvas";
+
 .lia-notes {
   background-color: rgb(var(--lia-grey-light));
   display: flex;
@@ -7,21 +11,21 @@
   max-width: 144rem;
   overflow: auto;
   position: relative;
-  width: $notes-width-mobile;
+  width: object.$notes-width-mobile;
 
   @at-root html.lia-variant-dark & {
     background-color: rgb(var(--lia-anthracite));
   }
 
-  @include breakpoint("sm") {
+  @include tools.breakpoint("sm") {
     height: calc(14.2rem - 7rem);
   }
 
-  @include breakpoint("md") {
+  @include tools.breakpoint("md") {
     margin: 0 3rem;
   }
 
-  @include breakpoint("lg") {
+  @include tools.breakpoint("lg") {
     background-color: transparent;
     height: auto;
     margin: 0;
@@ -37,7 +41,7 @@
       background-color: rgb(var(--lia-anthracite));
     }
 
-    @include breakpoint("lg") {
+    @include tools.breakpoint("lg") {
       padding-top: 2.3rem;
     }
 
@@ -65,8 +69,8 @@
     margin-bottom: 0.5rem;
   }
 
-  @include breakpoint("lg") {
-    border-left: $global-border;
-    max-width: $notes-width-desktop;
+  @include tools.breakpoint("lg") {
+    border-left: settings.$global-border;
+    max-width: object.$notes-width-desktop;
   }
 }

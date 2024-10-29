@@ -55,7 +55,7 @@ type Toggle
 
 
 update :
-    Maybe { title : String, comment : Inlines, effectID : Maybe Int }
+    Maybe { title : String, comment : Inlines, effectID : Maybe Int, logo : Maybe String }
     -> Msg
     -> Settings
     -> Return Settings Msg sub
@@ -251,6 +251,9 @@ update main msg model =
                             |> Maybe.map (.comment >> stringify)
                             |> Maybe.withDefault ""
                      , url = url
+                     , image =
+                        main
+                            |> Maybe.andThen .logo
                      }
                         |> Service.Share.link
                     )

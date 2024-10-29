@@ -1,8 +1,8 @@
 module Lia.Markdown.Gallery.View exposing (view)
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -31,7 +31,7 @@ view config vector attr gallery =
                     , Attr.class "lia-lightbox__clickarea"
                     , A11y_Key.tabbable True
                     , A11y_Role.button
-                    , A11y_Widget.label "zoom media"
+                    , A11y_Aria.label "zoom media"
                     , A11y_Key.onKeyDown
                         [ A11y_Key.enter (Show gallery.id i)
                         , A11y_Key.space (Show gallery.id i)

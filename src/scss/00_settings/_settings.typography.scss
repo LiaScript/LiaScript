@@ -1,3 +1,5 @@
+@use "settings.global";
+
 html {
   font-size: 62.5%;
 }
@@ -6,10 +8,10 @@ body {
   background-color: rgb(var(--color-background));
   color: rgb(var(--color-text));
   font-size: calc(
-    var(--global-font-size, $global-font-size) * var(--font-size-multiplier)
+    var(--global-font-size, settings.$global-font-size) * var(--font-size-multiplier)
   );
   font-weight: 400;
-  line-height: $global-line-height;
+  line-height: settings.$global-line-height;
 }
 
 body,
@@ -18,7 +20,7 @@ input,
 optgroup,
 select,
 textarea {
-  font-family: var(--global-font-family, $global-font-family);
+  font-family: var(--global-font-family, settings.$global-font-family);
 }
 
 a,

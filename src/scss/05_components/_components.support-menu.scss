@@ -1,6 +1,13 @@
+@use "sass:map";
+@use "../00_settings/settings.global";
+@use "../01_tools/tools.breakpoints";
+@use "../03_elements/elements.button";
+@use "../04_objects/object.canvas";
+@use "components.header";
+
 .lia-support-menu {
   background-color: rgb(var(--color-background));
-  border-left: $global-border;
+  border-left: settings.$global-border;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -8,13 +15,13 @@
   position: fixed;
   right: 0;
   top: 0;
-  transition: $global-transition;
+  transition: settings.$global-transition;
   transition-property: width, transform;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  width: $support-width-mobile;
+  width: object.$support-width-mobile;
   z-index: 100;
 
   &--closed {
@@ -25,12 +32,12 @@
     }
   }
 
-  @include breakpoint('sm') {
-    width: $support-width-desktop;
+  @include tools.breakpoint('sm') {
+    width: object.$support-width-desktop;
     padding-top: 0rem;
   }
 
-  @include breakpoint('md') {
+  @include tools.breakpoint('md') {
     border: none;
     height: 100%;
     position: relative;
@@ -54,21 +61,21 @@
     transform: translate(-6.5rem, -50%);
     visibility: visible;
     top: calc(
-      (#{$header-height-mobile} / 2) +
-        (2 * #{map-get($global-spacing, spacing-small)} - (#{$btn-height} / 4))
+      (#{components.$header-height-mobile} / 2) +
+        (2 * #{map.get(settings.$global-spacing, spacing-small)} - (#{elements.$btn-height} / 4))
     );
 
-    @include breakpoint('sm', 'max') {
+    @include tools.breakpoint('sm', 'max') {
       transform: translate(2.1rem, -50%);
     }
 
-    @include breakpoint('md', 'max') {
+    @include tools.breakpoint('md', 'max') {
       &--closed {
         transform: translateX(100%);
       }
     }
 
-    @include breakpoint('md') {
+    @include tools.breakpoint('md') {
       display: none;
       visibility: hidden;
     }
@@ -89,7 +96,7 @@
       box-shadow: none !important;
     }
 
-    @include breakpoint('md') {
+    @include tools.breakpoint('md') {
       align-items: center;
       display: flex;
       flex-direction: row;
@@ -107,7 +114,7 @@
     padding: 1.8rem 0;
 
     &:not(:first-child) {
-      border-top: $global-border;
+      border-top: settings.$global-border;
     }
 
     > .icon {
@@ -129,11 +136,11 @@
       width: max-content;
     }
 
-    @include breakpoint('sm') {
+    @include tools.breakpoint('sm') {
       padding: 1.8rem 0.75rem;
     }
 
-    @include breakpoint('md') {
+    @include tools.breakpoint('md') {
       padding: 0 0.75rem;
 
       &:not(:first-child) {
@@ -186,8 +193,8 @@
       align-items: flex-start;
     }
 
-    @include breakpoint('md') {
-      border-radius: $global-radius;
+    @include tools.breakpoint('md') {
+      border-radius: settings.$global-radius;
       box-shadow: 0 0 1rem rgba(128, 128, 128, 0.2);
       display: none;
       max-width: 30rem;

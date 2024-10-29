@@ -1,12 +1,15 @@
+@use "../00_settings/settings.global";
+@use "../01_tools/tools.breakpoints";
+
 .lia-pagination {
   display: inline-block;
   width: 100%;
 
-  @include breakpoint("md") {
+  @include tools.breakpoint("md") {
     margin-bottom: 2rem;
     width: auto;
   }
-  @include breakpoint("lg") {
+  @include tools.breakpoint("lg") {
     margin-bottom: 0;
     margin-right: 2rem;
     width: auto;
@@ -23,8 +26,8 @@
     font-weight: 700;
     justify-content: space-between;
 
-    @include breakpoint("md") {
-      border-radius: $global-radius;
+    @include tools.breakpoint("md") {
+      border-radius: settings.$global-radius;
       width: 15rem;
     }
   }
