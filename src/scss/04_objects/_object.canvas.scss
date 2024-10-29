@@ -1,5 +1,5 @@
-@use "../00_settings/settings.global";
-@use "../01_tools/tools.breakpoints";
+@use '../00_settings/settings.global';
+@use '../01_tools/tools.breakpoints';
 
 /* --------------------------------------------------
    Layout Settings
@@ -274,7 +274,7 @@ $slide-margin-left-textbook: 19rem !default;
       width: 2rem;
       border-bottom: unset;
 
-      @include breakpoint('md', 'max') {
+      @include tools.breakpoint('md', 'max') {
         top: 2rem;
       }
     }
@@ -326,7 +326,7 @@ $slide-margin-left-textbook: 19rem !default;
         }
       }
 
-      @include breakpoint('md', 'min') {
+      @include tools.breakpoint('md', 'min') {
         &__submenu {
           right: 3rem;
           top: 2rem;
