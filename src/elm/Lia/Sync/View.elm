@@ -1,7 +1,7 @@
 module Lia.Sync.View exposing (view)
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
@@ -126,9 +126,9 @@ select editable sync =
                 ]
                 [ Html.div
                     [ Attr.class "lia-dropdown__selected"
-                    , A11y_Widget.hidden False
+                    , A11y_Aria.hidden False
                     , A11y_Role.button
-                    , A11y_Widget.expanded sync.open
+                    , A11y_Aria.expanded sync.open
                     ]
                     [ maybeSelect sync.select
                     , Html.i

@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.4] - 29/10/2024
+
+- improve(Index): The course overview now has a masonry organization of courses with different size for cards. This will allow for a better overview of the courses and a more dynamic layout.
+- improve(Cards): Better Design with more options
+- improve(Google-Translation): Annoying pop-ups and hover effects are now suppressed.
+- Upgrade:
+  
+  - [x] npm Dexie 4.0.9
+  - [x] elm andre-dietrich/parser-combinators
+  - [x] elm f0i/statistics
+  - [x] elm tesk9/accessible-html
+
+- feat: add . to \\. escape characters
+
+  ``` markdown
+  Next to escaping ellipsis, \.\.\. this will now allow to add numbers to lists:
+
+  * 5\.1 ....
+  * 5\.2 ....
+  ```
+
+- fix(Parser): Arrows have been overwritten by typography
+
+  Rules for typographical dashes kicked in before the arrows, which blocked
+  left to right arrows to don't be detected correctly.
+
+  `-->  ->`
+
 ## [0.16.3] - 21/10/2024
 
 - feat(Typography): It is now possible within a LiaScript Markdown to apply the following typographical elements:

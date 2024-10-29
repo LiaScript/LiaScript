@@ -19,9 +19,9 @@ module Lia.Utils exposing
     , urlBasePath
     )
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Array exposing (Array)
 import Browser.Dom as Dom
 import Dict exposing (Dict)
@@ -144,7 +144,7 @@ btn { title, tabbable, msg } =
             |> Maybe.map Event.onClick
             |> Maybe.withDefault (Attr.disabled True)
         , A11y_Key.tabbable tabbable
-        , A11y_Widget.hidden (not tabbable)
+        , A11y_Aria.hidden (not tabbable)
         , if String.isEmpty title then
             Attr.class ""
 
@@ -160,7 +160,7 @@ icon : String -> List (Attribute msg) -> Html msg
 icon class attributes =
     Html.i
         (List.append
-            [ A11y_Widget.hidden True
+            [ A11y_Aria.hidden True
             , Attr.class "icon"
             , Attr.class class
             ]
@@ -180,7 +180,7 @@ modal : msg -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
 modal msgClose controls content =
     Html.div
         [ Attr.class "lia-modal"
-        , A11y_Widget.modal True
+        , A11y_Aria.modal True
         , A11y_Role.dialog
         ]
         [ Html.div [ Attr.class "lia-modal__inner" ]
