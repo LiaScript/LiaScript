@@ -9,13 +9,13 @@
   color: rgb(var(--color-text));
   margin-top: 2rem;
 
-  &__media {
+  &__logo {
     @media (max-width: 240px) {
       display: none;
     }
   }
 
-  &__logo {
+  &__icon {
     height: 3rem;
     object-fit: cover;
     width: 3rem;
@@ -36,11 +36,6 @@
       height: auto;
       padding-top: 0;
     }
-  }
-
-  &__image {
-    height: 100%;
-    width: 100%;
   }
 
   &__version {
@@ -86,6 +81,18 @@
       margin: 0px 2rem;
     }
 
+    @media (max-width: 310px) {
+      > *:nth-child(3) {
+        display: none;
+      }
+    }
+
+    @media (max-width: 360px) {
+      > *:nth-child(4) {
+        display: none;
+      }
+    }
+
     > *:not(:last-child) {
       margin-right: 1rem;
 
@@ -129,13 +136,9 @@
     }
   }
 
-  &__contact {
+  &__author {
     color: grey;
     text-decoration: none;
     font-size: small;
-
-    i {
-      font-size: 2rem;
-    }
   }
 }

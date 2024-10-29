@@ -1,27 +1,21 @@
 module Index.View exposing (view)
 
-import Accessibility.Role exposing (definition)
-import Array
 import Const
-import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onInput)
 import I18n.Translations exposing (Lang(..))
-import Index.Model exposing (Course, Modal(..), Model, Release)
+import Index.Model exposing (Course, Modal(..), Model)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
-import Lia.Definition.Types exposing (Definition)
+import Index.View.Card exposing (card)
 import Lia.Markdown.Code.Log exposing (Level(..))
-import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View as Inline
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.View as Settings
-import Lia.Utils exposing (blockKeydown, btn, btnIcon, modal)
+import Lia.Utils exposing (blockKeydown, btn, modal)
 import Library.Masonry as Masonry
-import Session exposing (Screen, Session)
+import Session exposing (Session)
 
 
 view : Session -> Settings -> Model -> Html Msg
@@ -56,7 +50,7 @@ view session settings model =
                   else if model.initialized then
                     let
                         config =
-                            { toView = itemView session.screen
+                            { toView = itemView
                             , columns = (session.screen.width // 600) + 1
                             , attributes = [ Attr.style "gap" "2rem", Attr.style "overflow" "hidden" ]
                             }
@@ -84,9 +78,9 @@ view session settings model =
         ]
 
 
-itemView : Screen -> Masonry.Id -> Course -> Html Msg
-itemView screen _ course =
-    card screen course
+itemView : Masonry.Id -> Course -> Html Msg
+itemView _ course =
+    card course
 
 
 modal_files : Maybe String -> Html Msg
@@ -252,250 +246,3 @@ input attributes =
             ]
         )
         []
-
-
-getIcon : Dict String String -> String
-getIcon =
-    Dict.get "icon"
-        >> Maybe.withDefault Const.icon
-
-
-card : Screen -> Course -> Html Msg
-card screen course =
-    case get_active course of
-        Just { title, definition } ->
-            Html.article [ Attr.class "lia-card" ]
-                [ viewVersions course
-                , Html.img
-                    [ Attr.class "lia-card__logo"
-                    , definition.macro
-                        |> getIcon
-                        |> Attr.src
-                    , Attr.alt "Logo"
-                    , Attr.attribute "loading" "lazy"
-                    ]
-                    []
-                , viewMedia course.id definition.logo
-                , Html.div [ Attr.class "lia-card__content" ]
-                    [ viewHeader title definition.macro
-                    , viewBody definition.comment
-                    , viewControls screen title definition course
-                    , viewFooter definition
-                    ]
-                ]
-
-        _ ->
-            Html.text "something went wrong"
-
-
-viewVersions : Course -> Html Msg
-viewVersions course =
-    let
-        last =
-            Dict.size course.versions - 1
-    in
-    course.versions
-        |> Dict.toList
-        |> List.map (\( key, value ) -> ( key, value.definition.version ))
-        |> List.sortBy Tuple.first
-        |> List.indexedMap
-            (\i ( key, value ) ->
-                btn
-                    { tabbable = True
-                    , title = "load version " ++ value
-                    , msg =
-                        Activate course.id
-                            (if last == i then
-                                Nothing
-
-                             else
-                                Just value
-                            )
-                            |> Just
-                    }
-                    [ Attr.class "lia-btn lia-btn--small-tag"
-                    , Attr.class <|
-                        case course.active of
-                            Just id ->
-                                if id == key then
-                                    "active"
-
-                                else
-                                    "lia-btn--outline"
-
-                            Nothing ->
-                                if last == i then
-                                    "active"
-
-                                else
-                                    "lia-btn--outline"
-                    ]
-                    [ "V " ++ value |> Html.text
-                    ]
-            )
-        |> Html.div [ Attr.class "lia-card__version" ]
-
-
-viewMedia : String -> String -> Html msg
-viewMedia courseUrl logoUrl =
-    if String.isEmpty logoUrl then
-        Html.text ""
-
-    else
-        Html.img
-            [ Attr.class "lia-card__image"
-            , logoUrl
-                |> String.trim
-                |> Attr.src
-            , Attr.attribute "loading" "lazy"
-            ]
-            []
-
-
-viewHeader : Inlines -> Dict String String -> Html Msg
-viewHeader title macro =
-    Html.header [ Attr.class "lia-card__header" ]
-        [ title
-            |> inlines
-            |> Html.h2 [ Attr.class "lia-card__title" ]
-        , macro
-            |> Dict.get "tags"
-            |> Maybe.map
-                (String.replace ";" " | "
-                    >> Html.text
-                    >> List.singleton
-                    >> Html.h4 [ Attr.class "lia-card__subtitle" ]
-                )
-            |> Maybe.withDefault (Html.text "")
-        ]
-
-
-viewBody : Inlines -> Html Msg
-viewBody comment =
-    comment
-        |> inlines
-        |> Html.p [ Attr.class "lia-card__body" ]
-
-
-viewControls : Screen -> Inlines -> Definition -> Course -> Html Msg
-viewControls screen title definition course =
-    Html.div [ Attr.class "lia-card__controls" ]
-        [ btnIcon
-            { msg = Just <| Delete course.id
-            , title = "delete"
-            , tabbable = True
-            , icon = "icon-trash"
-            }
-            [ Attr.class "lia-btn--tag lia-btn--transparent text-red-dark border-red-dark px-1" ]
-        , btnIcon
-            { msg = Just <| Reset course.id course.active
-            , title = "reset"
-            , tabbable = True
-            , icon = "icon-refresh"
-            }
-            [ Attr.class "lia-btn--tag lia-btn--transparent text-yellow-dark border-yellow-dark px-1" ]
-        , if screen.width > 310 then
-            btnIcon
-                { msg =
-                    Just <|
-                        Share
-                            { title = stringify title
-                            , text = stringify definition.comment
-                            , url = Const.urlLiascriptCourse ++ course.id
-                            , image = Nothing
-                            }
-                , title = "share"
-                , tabbable = True
-                , icon = "icon-social"
-                }
-                [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise" ]
-
-          else
-            Html.text ""
-        , if String.isEmpty definition.email || screen.width < 360 then
-            Html.text ""
-
-          else
-            Html.a
-                [ Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise"
-                , Attr.href <| "mailto:" ++ definition.email
-                ]
-                [ Html.i [ Attr.class "icon icon-mail" ] []
-                ]
-        , case course.active of
-            Nothing ->
-                Html.a
-                    [ Base.href course.id
-                    , Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 border-turquoise"
-                    , Attr.title "open"
-                    , Attr.style "border" "2.5px solid"
-                    ]
-                    [ Html.i [ Attr.class "icon icon-login text-turquoise" ] [] ]
-
-            Just _ ->
-                btnIcon
-                    { msg = Just <| Restore course.id course.active
-                    , title = "open"
-                    , tabbable = True
-                    , icon = "icon-login"
-                    }
-                    [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise"
-                    , Attr.style "border" "2.5px solid"
-                    ]
-        ]
-
-
-viewFooter : Definition -> Html msg
-viewFooter definition =
-    Html.footer [ Attr.class "lia-card__footer" ]
-        [ viewAuthor definition.author
-
-        --Html.img
-        --  [ Attr.class "lia-card__logo"
-        --  , definition.macro
-        --      |> getIcon
-        --      |> Attr.src
-        --  , Attr.alt "Logo"
-        --  , Attr.attribute "loading" "lazy"
-        --  ]
-        --  []
-        --case ( String.trim definition.author, String.trim definition.email ) of
-        --  ( "", "" ) ->
-        --      Html.text ""
-        --  ( "", email ) ->
-        --      contact email email
-        --  ( author, "" ) ->
-        --      Html.span [ Attr.class "lia-card__contact" ] [ Html.text author ]
-        --  ( author, email ) ->
-        --      contact author email
-        ]
-
-
-viewAuthor : String -> Html msg
-viewAuthor author =
-    if String.isEmpty author then
-        Html.text ""
-
-    else
-        Html.span [ Attr.class "lia-card__contact" ] [ Html.text author ]
-
-
-get_active : Course -> Maybe Release
-get_active course =
-    case course.active of
-        Nothing ->
-            course.versions
-                |> Dict.toList
-                |> List.sortBy Tuple.first
-                |> List.reverse
-                |> List.head
-                |> Maybe.map Tuple.second
-
-        Just id ->
-            course.versions
-                |> Dict.get id
-
-
-inlines : Inlines -> List (Html Msg)
-inlines =
-    List.map (Inline.view_inf Array.empty En False False Nothing Nothing Nothing >> Html.map (always NoOp))
