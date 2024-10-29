@@ -71,7 +71,7 @@ update msg settings model =
             IndexList list ->
                 let
                     ( masonry, cmd ) =
-                        Masonry.init (Just "card") (List.repeat 10 list |> List.concat)
+                        Masonry.init (Just "card") list
                 in
                 ( { model
                     | courses = list

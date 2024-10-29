@@ -158,7 +158,7 @@ controls hasShareAPI title definition course =
             [ Attr.class "lia-btn--tag lia-btn--transparent text-red-dark border-red-dark px-1" ]
         , btnIcon
             { msg = Just <| Reset course.id course.active
-            , title = "Reset stored states in course"
+            , title = "Reset all stored states (quizzes, tasks, surveys, codes)"
             , tabbable = True
             , icon = "icon-refresh"
             }
@@ -203,6 +203,7 @@ controls hasShareAPI title definition course =
             [ Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise"
             , Attr.href <| "mailto:" ++ definition.email
             , Attr.classList [ ( "hide", String.isEmpty definition.email ) ]
+            , Attr.title ("Send an email to: " ++ definition.email)
             ]
             [ Html.i [ Attr.class "icon icon-mail" ] []
             ]
