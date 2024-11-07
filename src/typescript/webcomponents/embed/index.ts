@@ -142,7 +142,7 @@ export async function extract(link: string, params: Params) {
 }
 
 function iframe(url: string) {
-  return `<iframe src="${url}" style="width: 100%; height: inherit" allowfullscreen loading="lazy"></iframe>`
+  return `<iframe src="${url}" style="width: 100%; height: inherit" allowfullscreen></iframe>`
 }
 
 function init(event: Event) {
@@ -272,7 +272,7 @@ customElements.define(
             .catch((err: any) => {
               div.innerHTML = `<iframe src="${url_}" style="width: 100%; height: ${
                 options.maxheight ? options.maxheight + 'px' : 'inherit'
-              };" allowfullscreen loading="lazy"></iframe>`
+              };" allowfullscreen></iframe>`
 
               this.applyAttributesToIframe(div)
             })

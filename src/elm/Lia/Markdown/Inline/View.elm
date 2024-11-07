@@ -526,7 +526,7 @@ img : Config sub -> Parameters -> Inlines -> String -> Maybe Inlines -> Maybe In
 img config attr alt_ url_ title_ width =
     Html.img
         (Attr.src url_
-            :: Attr.attribute "loading" "lazy"
+            -- :: Attr.attribute "loading" "lazy"
             :: onError "img" url_
             :: (if List.isEmpty attr then
                     [ Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") ]
@@ -594,7 +594,7 @@ reference config ref attr =
                     if tube then
                         Html.iframe
                             (Attr.src url_
-                                :: Attr.attribute "loading" "lazy"
+                                -- :: Attr.attribute "loading" "lazy"
                                 :: Attr.attribute "allowfullscreen" ""
                                 :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                                 :: Attr.style "width" "100%"
@@ -629,7 +629,7 @@ reference config ref attr =
                                     |> Attr.src
                                  )
                                     :: Attr.attribute "allowfullscreen" ""
-                                    :: Attr.attribute "loading" "lazy"
+                                    -- :: Attr.attribute "loading" "lazy"
                                     :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                                     :: toAttribute attr
                                     |> CList.addWhen (title config title_)

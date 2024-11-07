@@ -360,7 +360,8 @@ viewMedia courseUrl logoUrl =
                     , logoUrl
                         |> String.trim
                         |> Attr.src
-                    , Attr.attribute "loading" "lazy"
+
+                    --, Attr.attribute "loading" "lazy"
                     , defaultBackground courseUrl
                     ]
                     []
@@ -466,7 +467,8 @@ viewFooter definition =
                 |> Attr.src
             , Attr.alt "Logo"
             , Attr.height 50
-            , Attr.attribute "loading" "lazy"
+
+            --, Attr.attribute "loading" "lazy"
             ]
             []
         , case ( String.trim definition.author, String.trim definition.email ) of
