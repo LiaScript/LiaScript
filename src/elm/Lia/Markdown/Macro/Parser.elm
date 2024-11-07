@@ -237,14 +237,34 @@ eval_parameter : String -> ( Context, Int, String ) -> ( Context, Int, String )
 eval_parameter param ( state, i, code ) =
     let
         ( new_state, new_param ) =
-            macro_parse state param
+            param
+                |> guard
+                |> macro_parse state
     in
     ( new_state
     , i + 1
     , code
+        |> guard
         |> String.replace ("@'" ++ String.fromInt i) (toEscapeString new_param)
         |> String.replace ("@" ++ String.fromInt i) new_param
+        |> unguard
     )
+
+
+{-| This pattern is used to replace escaped @-signs, otherwise LiaScript will also try to parse them as macros
+-}
+guard_pattern =
+    "iex3OAQpP4u3QT9xq"
+
+
+guard : String -> String
+guard =
+    String.replace "\\@" guard_pattern
+
+
+unguard : String -> String
+unguard =
+    String.replace guard_pattern "\\@"
 
 
 get : String -> Definition -> Maybe ( Bool, Bool, String )
