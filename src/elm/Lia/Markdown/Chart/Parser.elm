@@ -151,7 +151,7 @@ row =
                     |> ignore (string ")")
                 )
             )
-        |> ignore (regex "[\t ]*\\n")
+        |> ignore (regex "[\t ]*\n")
 
 
 segmentation : Int -> Float -> Float -> ( Float, Float )
@@ -163,11 +163,11 @@ x_axis : Parser Context ( String, ( Float, Float ) )
 x_axis =
     regex "[\t ]*\\+"
         |> keep (regex "\\-+")
-        |> ignore (regex "[\t ]*\\n[\t ]*")
+        |> ignore (regex "[\t ]*\n[\t ]*")
         |> map (\e x0 x_label x1 -> ( String.trim x_label, segmentation (String.length e) x0 x1 ))
         |> andMap (optional 0.0 number)
         |> andMap (optional "" (regex "[a-zA-Z_ .\\\\()\\-]+"))
-        |> andMap (optional 1.0 (regex "[\t ]*" |> keep number |> ignore (regex "[\t ]*\\n")))
+        |> andMap (optional 1.0 (regex "[\t ]*" |> keep number |> ignore (regex "[\t ]*\n")))
 
 
 number : Parser Context Float

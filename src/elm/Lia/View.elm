@@ -1,8 +1,8 @@
 module Lia.View exposing (view, viewFullPage)
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
-import Accessibility.Widget as A11y_Widget
 import Array
 import Const
 import Dict exposing (Dict)
@@ -10,6 +10,7 @@ import Html exposing (Html, section)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
+import I18n.Translations as Trans exposing (Lang)
 import Lia.Chat.View as Chat
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
@@ -34,7 +35,6 @@ import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 import Service.Database exposing (settings)
 import Session exposing (Screen)
-import Translations as Trans exposing (Lang)
 
 
 {-| Main view for the entire LiaScript model with the parameters:
@@ -484,7 +484,7 @@ navButton title id class msg =
         , Attr.id id
         , A11y_Key.tabbable True
         ]
-        [ Html.i [ A11y_Widget.hidden True, Attr.class <| "lia-btn__icon icon " ++ class ]
+        [ Html.i [ A11y_Aria.hidden True, Attr.class <| "lia-btn__icon icon " ++ class ]
             []
         ]
 

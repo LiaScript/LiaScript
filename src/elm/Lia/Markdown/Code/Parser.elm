@@ -90,7 +90,7 @@ code_body char len =
             char ++ "{" ++ String.fromInt len ++ "}"
     in
     manyTill
-        (Indent.maybeCheck |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n")))
+        (Indent.maybeCheck |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\n")))
         (Indent.check
             |> keep
                 (regex control_frame

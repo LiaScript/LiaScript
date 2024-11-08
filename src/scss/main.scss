@@ -1,87 +1,87 @@
 // Settings
-@import '00_settings/settings.colors';
-@import '00_settings/settings.fonts';
-@import '00_settings/settings.global';
-@import '00_settings/settings.iconfont';
-@import '00_settings/settings.typography';
+@use '00_settings/settings.colors';
+@use '00_settings/settings.fonts' as settings2;
+@use '00_settings/settings.global' as settings3;
+@use '00_settings/settings.iconfont' as settings4;
+@use '00_settings/settings.typography' as settings5;
 
 // Tools
-@import '01_tools/tools.color';
-@import '01_tools/tools.px-em-calc';
-@import '01_tools/tools.breakpoints';
-@import '01_tools/tools.flex';
-@import '01_tools/tools.font-size';
-@import '01_tools/tools.hidden-visually';
-@import '01_tools/tools.str-replace';
-@import '01_tools/tools.transition';
-@import '01_tools/tools.animation';
+@use '01_tools/tools.color';
+@use '01_tools/tools.px-em-calc' as tools2;
+@use '01_tools/tools.breakpoints' as tools3;
+@use '01_tools/tools.flex' as tools4;
+@use '01_tools/tools.font-size' as tools5;
+@use '01_tools/tools.hidden-visually' as tools6;
+@use '01_tools/tools.str-replace' as tools7;
+@use '01_tools/tools.transition' as tools8;
+@use '01_tools/tools.animation' as tools9;
 
 // Generic
-@import '02_generic/generic.reset';
-@import '02_generic/generic.normalize';
-@import '02_generic/generic.shared';
+@use '02_generic/generic.reset';
+@use '02_generic/generic.normalize' as generic2;
+@use '02_generic/generic.shared' as generic3;
 
 // Elements
-@import '03_elements/elements.button';
-@import '03_elements/elements.code';
-@import '03_elements/elements.headline';
-@import '03_elements/elements.hr';
-@import '03_elements/elements.input';
-@import '03_elements/elements.label';
-@import '03_elements/elements.link';
-@import '03_elements/elements.list';
-@import '03_elements/elements.media';
-@import '03_elements/elements.page';
-@import '03_elements/elements.select';
-@import '03_elements/elements.table';
-@import '03_elements/elements.text';
-@import '03_elements/elements.textarea';
+@use '03_elements/elements.button';
+@use '03_elements/elements.code' as elements2;
+@use '03_elements/elements.headline' as elements3;
+@use '03_elements/elements.hr' as elements4;
+@use '03_elements/elements.input' as elements5;
+@use '03_elements/elements.label' as elements6;
+@use '03_elements/elements.link' as elements7;
+@use '03_elements/elements.list' as elements8;
+@use '03_elements/elements.media' as elements9;
+@use '03_elements/elements.page' as elements10;
+@use '03_elements/elements.select' as elements11;
+@use '03_elements/elements.table' as elements12;
+@use '03_elements/elements.text' as elements13;
+@use '03_elements/elements.textarea' as elements14;
 
 // Objects
-@import '04_objects/objects.animations';
-@import '04_objects/object.canvas';
-@import '04_objects/objects.preview-grid';
+@use '04_objects/objects.animations';
+@use '04_objects/object.canvas';
+@use '04_objects/objects.preview-grid' as objects2;
 
 // Components
-@import '05_components/components.accordion';
-@import '05_components/components.card';
-@import '05_components/components.dropdown';
-@import '05_components/components.effect';
-@import '05_components/components.fontscale';
-@import '05_components/components.gallery';
-@import '05_components/components.google-translate';
-@import '05_components/components.header';
-@import '05_components/components.lightbox';
-@import '05_components/components.modal';
-@import '05_components/components.nav';
-@import '05_components/components.notes';
-@import '05_components/components.pagination';
-@import '05_components/components.quiz';
-@import '05_components/components.quote';
-@import '05_components/components.responsive-voice';
-@import '05_components/components.script';
-@import '05_components/components.slide-animation';
-@import '05_components/components.slide';
-@import '05_components/components.support-menu';
-@import '05_components/components.survey-matrix';
-@import '05_components/components.toc';
-@import '05_components/components.tooltip';
+@use '05_components/components.accordion';
+@use '05_components/components.card' as components2;
+@use '05_components/components.dropdown' as components3;
+@use '05_components/components.effect' as components4;
+@use '05_components/components.fontscale' as components5;
+@use '05_components/components.gallery' as components6;
+@use '05_components/components.google-translate' as components7;
+@use '05_components/components.header' as components8;
+@use '05_components/components.lightbox' as components9;
+@use '05_components/components.modal' as components10;
+@use '05_components/components.nav' as components11;
+@use '05_components/components.notes' as components12;
+@use '05_components/components.pagination' as components13;
+@use '05_components/components.quiz' as components14;
+@use '05_components/components.quote' as components15;
+@use '05_components/components.responsive-voice' as components16;
+@use '05_components/components.script' as components17;
+@use '05_components/components.slide-animation' as components18;
+@use '05_components/components.slide' as components19;
+@use '05_components/components.support-menu' as components20;
+@use '05_components/components.survey-matrix' as components21;
+@use '05_components/components.toc' as components22;
+@use '05_components/components.tooltip' as components23;
 
 // Utilities
-@import '06_utilities/utilities.alignment';
-@import '06_utilities/utilities.clearfix';
-@import '06_utilities/utilities.colors';
-@import '06_utilities/utilities.display';
-@import '06_utilities/utilities.flex';
-@import '06_utilities/utilities.headless';
-@import '06_utilities/utilities.headline';
-@import '06_utilities/utilities.hidden';
-@import '06_utilities/utilities.spacings';
-@import '06_utilities/utilities.text';
-@import '06_utilities/utilities.width';
+@use '06_utilities/utilities.alignment';
+@use '06_utilities/utilities.clearfix' as utilities2;
+@use '06_utilities/utilities.colors' as utilities3;
+@use '06_utilities/utilities.display' as utilities4;
+@use '06_utilities/utilities.flex' as utilities5;
+@use '06_utilities/utilities.headless' as utilities6;
+@use '06_utilities/utilities.headline' as utilities7;
+@use '06_utilities/utilities.hidden' as utilities8;
+@use '06_utilities/utilities.spacings' as utilities9;
+@use '06_utilities/utilities.text' as utilities10;
+@use '06_utilities/utilities.width' as utilities11;
 
 // Dump
-@import './dump.scss';
+@use 'dump.scss';
 
 /**
  * Used to hide elements on printing

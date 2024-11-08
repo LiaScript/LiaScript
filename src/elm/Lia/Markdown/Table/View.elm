@@ -4,14 +4,15 @@ module Lia.Markdown.Table.View exposing (view)
    <https://dequeuniversity.com/library/aria/table-sortable>
 -}
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Array
 import Const
 import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Keyed as Keyed
+import I18n.Translations as Translations exposing (Lang, sortAsc, sortDesc, sortNot)
 import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Point)
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Config exposing (Config)
@@ -34,7 +35,6 @@ import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Utils exposing (blockKeydown, btn, btnIcon, get, icon)
 import Set
-import Translations exposing (Lang, sortAsc, sortDesc, sortNot)
 
 
 view : Config sub -> Parameters -> Table -> Html Msg
@@ -624,7 +624,7 @@ viewTable sticky attr body =
             ]
         ]
         [ Html.table
-            (A11y_Role.grid :: A11y_Widget.readOnly True :: Param.annotation "lia-table" attr)
+            (A11y_Role.grid :: A11y_Aria.readOnly True :: Param.annotation "lia-table" attr)
             body
         ]
 
@@ -783,10 +783,10 @@ view_head2 lang sortable viewer id format state =
                         (Attr.class "lia-table__header"
                             :: (if i == id then
                                     if state.dir then
-                                        A11y_Widget.sortAscending
+                                        A11y_Aria.sortAscending
 
                                     else
-                                        A11y_Widget.sortDescending
+                                        A11y_Aria.sortDescending
 
                                 else
                                     Attr.class ""

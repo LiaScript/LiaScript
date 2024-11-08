@@ -16,11 +16,11 @@ module Lia.Markdown.Effect.Model exposing
 import Array exposing (Array)
 import Browser.Events exposing (Visibility(..))
 import Dict exposing (Dict)
+import I18n.Translations exposing (Lang(..))
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Translations exposing (Lang(..))
 
 
 type alias Model a =

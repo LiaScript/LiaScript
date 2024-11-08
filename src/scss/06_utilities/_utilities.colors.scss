@@ -1,4 +1,6 @@
-@each $colorName, $colorValue in $global-colors {
+@use "../00_settings/settings.colors";
+
+@each $colorName, $colorValue in settings.$global-colors {
   .bg-#{$colorName} {
     background-color: rgb(var(--lia-#{$colorName}));
   }

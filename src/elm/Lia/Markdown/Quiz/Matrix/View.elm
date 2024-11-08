@@ -1,7 +1,7 @@
 module Lia.Markdown.Quiz.Matrix.View exposing (view)
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -77,7 +77,7 @@ radio open colorClass row_id column_id value =
             , Attr.class colorClass
             , Attr.type_ "radio"
             , Attr.checked value
-            , A11y_Widget.label "Matrix quiz answer"
+            , A11y_Aria.label "Matrix quiz answer"
             , A11y_Role.radio
             , if open then
                 onClick <| Toggle row_id column_id
@@ -97,7 +97,7 @@ check open colorClass row_id column_id value =
             , Attr.class colorClass
             , Attr.type_ "checkbox"
             , Attr.checked value
-            , A11y_Widget.label "Matrix quiz answer"
+            , A11y_Aria.label "Matrix quiz answer"
             , A11y_Role.checkBox
             , if open then
                 onClick <| Toggle row_id column_id
@@ -124,9 +124,9 @@ add_text config inline ( toRow, partiallySolved ) =
                     Attr.class ""
 
                 Just True ->
-                    A11y_Widget.invalid False
+                    A11y_Aria.invalid False
 
                 Just False ->
-                    A11y_Widget.invalid True
+                    A11y_Aria.invalid True
             , A11y_Role.rowHeader
             ]

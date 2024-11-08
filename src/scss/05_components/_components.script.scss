@@ -1,5 +1,7 @@
+@use "../00_settings/settings.global";
+
 .lia-script {
-  border-radius: $global-radius;
+  border-radius: settings.$global-radius;
   display: inline-flex;
   overflow: hidden;
   vertical-align: middle;

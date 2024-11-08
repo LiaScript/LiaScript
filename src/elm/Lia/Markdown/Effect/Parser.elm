@@ -61,7 +61,7 @@ single =
 multi : Parser Context Markdown.Block -> Parser Context Markdown.Blocks
 multi blocks =
     Indent.check
-        |> ignore (regex "[\t ]*\\*{3,}\\n+")
+        |> ignore (regex "[\t ]*\\*{3,}\n+")
         |> keep
             (manyTill
                 (blocks |> ignore newlines)

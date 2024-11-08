@@ -24,10 +24,20 @@ TODO:
 
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Array
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
+import I18n.Translations as Translations
+    exposing
+        ( Lang
+        , quizAnswerError
+        , quizAnswerResolved
+        , quizAnswerSuccess
+        , quizCheck
+        , quizLabelCheck
+        , quizLabelSolution
+        , quizSolution
+        )
 import Json.Encode as JE
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Inline.Config exposing (Config)
@@ -54,17 +64,6 @@ import Lia.Markdown.Types as Markdown
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (btn, btnIcon, percentage)
 import List.Extra
-import Translations
-    exposing
-        ( Lang
-        , quizAnswerError
-        , quizAnswerResolved
-        , quizAnswerSuccess
-        , quizCheck
-        , quizLabelCheck
-        , quizLabelSolution
-        , quizSolution
-        )
 
 
 syncAttributes : List ( String, String )
@@ -433,7 +432,7 @@ viewSolutionButton { config, hidden, solution, msg } =
             [ ( "lia-btn--transparent lia-quiz__resolve", True )
             , ( "hide", hidden )
             ]
-        , A11y_Widget.label (quizLabelSolution config.lang)
+        , A11y_Aria.label (quizLabelSolution config.lang)
         ]
 
 
@@ -452,7 +451,7 @@ viewMainButton config trials solution msg =
                 Nothing
         , tabbable = solution == Solution.Open
         }
-        [ Attr.class "lia-btn--outline lia-quiz__check", A11y_Widget.label (quizLabelCheck config.lang) ]
+        [ Attr.class "lia-btn--outline lia-quiz__check", A11y_Aria.label (quizLabelCheck config.lang) ]
         [ Html.text (quizCheck config.lang)
         , Html.text <|
             if trials > 0 then

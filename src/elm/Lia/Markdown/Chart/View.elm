@@ -22,14 +22,14 @@ module Lia.Markdown.Chart.View exposing
 import Char exposing (toLower)
 import Conditional.List as CList
 import Dict exposing (Dict)
-import FStatistics
 import Html exposing (Html)
 import Html.Attributes as Attr
+import I18n.Translations exposing (getCodeFromLn)
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Data, Diagram(..), Settings)
 import Lia.Markdown.HTML.Attributes exposing (annotation)
+import List.Statistics as Stat
 import Maybe
-import Translations exposing (getCodeFromLn)
 
 
 view : Settings -> Chart -> Html msg
@@ -337,16 +337,16 @@ encodeBoxPlot { labels, category, data } =
                 |> List.map2
                     (\c data_ ->
                         case
-                            ( FStatistics.percentile 0.25 data_
-                            , FStatistics.median data_
-                            , FStatistics.percentile 0.75 data_
+                            ( Stat.percentile 0.25 data_
+                            , Stat.median data_
+                            , Stat.percentile 0.75 data_
                             )
                         of
                             ( Just q1, Just q2, Just q3 ) ->
                                 let
                                     ( min, max ) =
                                         data_
-                                            |> FStatistics.minmax
+                                            |> Stat.minmax
                                             |> Maybe.map
                                                 (\( min_, max_ ) ->
                                                     let

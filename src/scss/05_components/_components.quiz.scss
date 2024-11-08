@@ -1,3 +1,5 @@
+@use "../01_tools/tools.breakpoints";
+
 .lia-quiz {
   margin-bottom: 2rem;
   break-inside: avoid;
@@ -23,7 +25,7 @@
       margin-right: 1rem;
     }
 
-    @include breakpoint('md') {
+    @include tools.breakpoint('md') {
       grid-column-start: 2;
     }
   }

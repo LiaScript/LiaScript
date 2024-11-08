@@ -5,7 +5,6 @@ module Lia.Markdown.Inline.Multimedia exposing
     )
 
 import Lia.Parser.PatReplace exposing (replace, root)
-import Url exposing (percentEncode)
 
 
 website =
