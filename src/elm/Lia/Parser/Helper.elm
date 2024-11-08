@@ -123,19 +123,19 @@ inlineCode =
 logger identifier =
     modifyState
         (\input ->
-            let
-                _ =
-                    Debug.log identifier input.abort
-            in
+            -- let
+            --     _ =
+            --         Debug.log identifier input.abort
+            -- in
             input
         )
         |> ignore
             (modifyInput
                 (\input ->
-                    let
-                        _ =
-                            Debug.log identifier input
-                    in
+                    -- let
+                    --     _ =
+                    --         Debug.log identifier input
+                    -- in
                     input
                 )
             )
