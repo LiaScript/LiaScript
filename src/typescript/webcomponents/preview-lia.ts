@@ -95,12 +95,6 @@ export function addBase(base: string, url: string) {
 }
 
 const TEMPLATE = `<style>
-  html {
-    font-size: 62.5%;
-  }
-  body {
-    font-size: 1.5rem;
-  }
   .card {
     border: 5px solid #399193;
     position: relative;
@@ -137,8 +131,6 @@ const TEMPLATE = `<style>
   }
   .card__title {
     color: #4b4b4b;
-    font-size: 2.4rem;
-    font-family: serif;
     margin: 0;
     position: relative;
   }
@@ -152,7 +144,6 @@ const TEMPLATE = `<style>
   }
   .card__subtitle {
     color: #aeaeae;
-    font-size: 1.6rem;
     margin: 0.5rem 0 1rem;
   }
   .card__version {
@@ -167,16 +158,12 @@ const TEMPLATE = `<style>
     z-index: 1;
   }
   .card__body {
-    font-size: 1.6rem;
     line-height: 1.5;
-  }
-  .card__footer {
-    margin-top: 1rem;
   }
   .card__contact {
     color: #399193;
     text-decoration: none;
-    font-size: 1.4rem;
+    font-size: small;
   }
 </style>
 <a id="container" href="">preview-lia</a>`
@@ -236,7 +223,7 @@ class PreviewLia extends HTMLElement {
         ) {
           let tagLine = ''
           if (tags && tags.length > 0) {
-            tagLine = `<h4 class="card__subtitle">${tags.join(' | ')}</h4>`
+            tagLine = `<h3 class="card__subtitle">${tags.join(' | ')}</h3>`
           }
 
           if (logo) {
@@ -266,14 +253,13 @@ class PreviewLia extends HTMLElement {
             <div class="card__content">
               <img src="${icon}" alt="" style="display: block; height: 3rem; position: absolute; right: 5px; top: 5px">
               <header class="card__header">
-                <h3 class="card__title">${title}</h3>
+                <h2 class="card__title">${title}</h2>
                 ${tagLine}
               </header>
               <div class="card__body">
                 <p class="card__copy">${description}</p>
               </div>
-              <footer class="card__footer">
-                
+              <footer>
                 ${author}
               </footer>
             </div>
