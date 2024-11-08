@@ -21,6 +21,7 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
+import I18n.Translations exposing (Lang(..))
 import Json.Decode as JD
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Sync as Code
@@ -30,7 +31,6 @@ import Lia.Sync.Container as Container exposing (Container)
 import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
 import Set exposing (Set)
-import Translations exposing (Lang(..))
 
 
 type State

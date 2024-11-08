@@ -1,4 +1,4 @@
-module Lia.Markdown.HTML.Parser exposing (parse)
+module Lia.Markdown.HTML.Parser exposing (checkClosingTag, parse)
 
 import Combine
     exposing
@@ -8,10 +8,12 @@ import Combine
         , fail
         , ignore
         , keep
+        , lookAhead
         , many
         , manyTill
         , map
         , maybe
+        , modifyState
         , regex
         , string
         , succeed
@@ -21,12 +23,12 @@ import Combine
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
 import Lia.Markdown.HTML.Types as Tag exposing (Node(..))
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (stringTill)
+import Lia.Parser.Helper exposing (newlines, stringTill)
 
 
 parse : Parser Context x -> Parser Context (Node x)
 parse parser =
-    regex "[ \\t]*<[ \\t]*"
+    regex "[ \t]*<[ \t]*"
         |> keep tagName
         |> map Tuple.pair
         |> ignore whitespace
@@ -46,12 +48,16 @@ tag parser ( tagType, attributes ) =
     case tagType of
         Tag.HtmlNode name ->
             succeed (Node name attributes)
-                |> ignore (regex "[ \\t]*>[ \\t]*\\n*")
+                |> ignore (regex "[ \t]*>[ \t]*\n*")
+                |> ignore (pushClosingTag name)
                 |> andMap
                     (manyTill
-                        (parser |> ignore (regex "[\\n]*"))
+                        (newlines
+                            |> keep parser
+                        )
                         (closingTag name)
                     )
+                |> ignore popClosingTag
 
         Tag.HtmlVoidNode name ->
             succeed (Node name attributes [])
@@ -62,7 +68,7 @@ tag parser ( tagType, attributes ) =
 
         Tag.WebComponent name ->
             succeed (OuterHtml name attributes)
-                |> ignore (regex "[ \\t]*>")
+                |> ignore (regex "[ \t]*>")
                 |> andMap (stringTill (closingTag name))
 
         Tag.LiaKeep ->
@@ -138,9 +144,9 @@ closingTag name =
                             fail ("closing tag does not match opening tag: " ++ name)
                     )
     in
-    regex "[ \\t\\n]*</[ \\t]*"
+    regex "\n*</[ \t]*"
         |> keep chompName
-        |> ignore (regex "[ \\t\\n]*>")
+        |> ignore (regex "\\s*>")
 
 
 isVoidElement : String -> Bool
@@ -165,3 +171,57 @@ voidElements =
     , "track"
     , "wbr"
     ]
+
+
+checkClosingTag : Parser Context ()
+checkClosingTag =
+    withState
+        (\context ->
+            case context.abort.stack of
+                [] ->
+                    succeed ()
+
+                name :: _ ->
+                    if context.abort.isTrue then
+                        fail "abort"
+
+                    else
+                        lookAhead (maybe (string <| "</" ++ name ++ ">"))
+                            |> andThen
+                                (\found ->
+                                    case found of
+                                        Nothing ->
+                                            succeed ()
+
+                                        Just _ ->
+                                            modifyState (\s -> { s | abort = { stack = s.abort.stack, isTrue = True } })
+                                                |> keep (fail "abort")
+                                )
+        )
+
+
+pushClosingTag : String -> Parser Context ()
+pushClosingTag name =
+    modifyState
+        (\s ->
+            { s
+                | abort =
+                    { stack = name :: s.abort.stack
+                    , isTrue = False
+                    }
+            }
+        )
+
+
+popClosingTag : Parser Context ()
+popClosingTag =
+    modifyState
+        (\s ->
+            { s
+                | abort =
+                    { stack = List.drop 1 s.abort.stack
+                    , isTrue = False
+                    }
+            }
+        )
+        |> ignore (succeed ())

@@ -5,6 +5,12 @@ import Array
 import Html exposing (Html, button)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import I18n.Translations as Translations
+    exposing
+        ( surveySubmit
+        , surveySubmitted
+        , surveyText
+        )
 import Json.Encode as JE
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
@@ -39,12 +45,6 @@ import Lia.Utils
         , btn
         , icon
         , string2Color
-        )
-import Translations
-    exposing
-        ( surveySubmit
-        , surveySubmitted
-        , surveyText
         )
 
 

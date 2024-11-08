@@ -1,10 +1,13 @@
+@use "../00_settings/settings.global";
+@use "../01_tools/tools.breakpoints";
+
 $header-height-desktop: 7.8rem;
 $header-height-mobile: 5.6rem;
 
 .lia-header {
   align-items: center;
   background-color: rgb(var(--color-background));
-  border-bottom: $global-border;
+  border-bottom: settings.$global-border;
   display: flex;
   flex-direction: row;
   height: $header-height-mobile;
@@ -15,7 +18,7 @@ $header-height-mobile: 5.6rem;
   right: 0;
   z-index: 100;
 
-  @include breakpoint("md") {
+  @include tools.breakpoint("md") {
     height: $header-height-desktop;
     margin: 0 3rem;
   }

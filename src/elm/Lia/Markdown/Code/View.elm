@@ -3,25 +3,13 @@ module Lia.Markdown.Code.View exposing (view)
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Array exposing (Array)
 import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Html.Keyed as Keyed
-import Json.Decode as JD
-import Json.Encode as JE
-import Lia.Markdown.Code.Editor as Editor
-import Lia.Markdown.Code.Log as Log exposing (Log)
-import Lia.Markdown.Code.Sync exposing (Sync, sync)
-import Lia.Markdown.Code.Terminal as Terminal
-import Lia.Markdown.Code.Types exposing (Code(..), File, Model)
-import Lia.Markdown.Code.Update exposing (Msg(..))
-import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
-import Lia.Sync.Types as Sync
-import Lia.Utils exposing (btnIcon, noTranslate)
-import Translations
+import I18n.Translations as Translations
     exposing
         ( Lang
         , codeExecute
@@ -33,6 +21,17 @@ import Translations
         , codePrev
         , codeRunning
         )
+import Json.Decode as JD
+import Json.Encode as JE
+import Lia.Markdown.Code.Editor as Editor
+import Lia.Markdown.Code.Log as Log exposing (Log)
+import Lia.Markdown.Code.Sync exposing (Sync, sync)
+import Lia.Markdown.Code.Terminal as Terminal
+import Lia.Markdown.Code.Types exposing (Code(..), File, Model)
+import Lia.Markdown.Code.Update exposing (Msg(..))
+import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
+import Lia.Sync.Types as Sync
+import Lia.Utils exposing (btnIcon, noTranslate)
 
 
 view :
@@ -69,7 +68,7 @@ view { lang, theme, model, code, sync, cursors } =
                                 (Html.div
                                     [ Attr.class "lia-code-terminal"
                                     , A11y_Role.log
-                                    , A11y_Widget.label (Translations.codeTerminal lang)
+                                    , A11y_Aria.label (Translations.codeTerminal lang)
                                     ]
                                     [ view_result (Highlight id_1)
                                         pro.logSize
@@ -137,7 +136,7 @@ view { lang, theme, model, code, sync, cursors } =
                             , Html.div
                                 [ Attr.class "lia-code-terminal"
                                 , A11y_Role.log
-                                , A11y_Widget.label (Translations.codeTerminal lang)
+                                , A11y_Aria.label (Translations.codeTerminal lang)
                                 , if project.running then
                                     A11y_Live.livePolite
 
@@ -252,7 +251,7 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1, cursors } i
             [ Html.div (Attr.class "lia-accordion__item" :: Params.toAttribute attr)
                 [ Html.label
                     [ Attr.class "lia-accordion__header"
-                    , A11y_Widget.label <|
+                    , A11y_Aria.label <|
                         file.name
                             ++ " "
                             ++ (if file.visible then

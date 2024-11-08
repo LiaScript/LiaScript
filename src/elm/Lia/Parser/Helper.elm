@@ -19,6 +19,8 @@ import Combine
         , many1Till
         , manyTill
         , map
+        , modifyInput
+        , modifyState
         , regex
         , string
         , withColumn
@@ -80,12 +82,12 @@ newline =
 
 newlines : Parser s String
 newlines =
-    regex "\\n*"
+    regex "\n*"
 
 
 newlines1 : Parser s String
 newlines1 =
-    regex "\\n+"
+    regex "\n+"
 
 
 spaces : Parser s String
@@ -116,3 +118,24 @@ inlineCode =
         |> keep (regex "([^`\n\\\\]*|\\\\`|\\\\)+")
         |> ignore (string "`")
         |> map (String.replace "\\`" "`")
+
+
+logger identifier =
+    modifyState
+        (\input ->
+            -- let
+            --     _ =
+            --         Debug.log identifier input.abort
+            -- in
+            input
+        )
+        |> ignore
+            (modifyInput
+                (\input ->
+                    -- let
+                    --     _ =
+                    --         Debug.log identifier input
+                    -- in
+                    input
+                )
+            )

@@ -4,6 +4,62 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.6] - 08/12/2024
+
+- improve: LiaScript preview cards with new design
+- fix: HTML parser with combined macros
+
+## [0.16.5] - 07/11/2024
+
+- fix: Add escape `\@` for macros, this will allow to pass escaped parameters to macros, which will not be evaluated by the parser.
+
+
+## [0.16.4] - 29/10/2024
+
+- improve(Index): The course overview now has a masonry organization of courses with different size for cards. This will allow for a better overview of the courses and a more dynamic layout.
+- improve(Cards): Better Design with more options
+- improve(Google-Translation): Annoying pop-ups and hover effects are now suppressed.
+- Upgrade:
+  
+  - [x] npm Dexie 4.0.9
+  - [x] elm andre-dietrich/parser-combinators
+  - [x] elm f0i/statistics
+  - [x] elm tesk9/accessible-html
+
+- feat: add . to \\. escape characters
+
+  ``` markdown
+  Next to escaping ellipsis, \.\.\. this will now allow to add numbers to lists:
+
+  * 5\.1 ....
+  * 5\.2 ....
+  ```
+
+- fix(Parser): Arrows have been overwritten by typography
+
+  Rules for typographical dashes kicked in before the arrows, which blocked
+  left to right arrows to don't be detected correctly.
+
+  `-->  ->`
+
+## [0.16.3] - 21/10/2024
+
+- feat(Typography): It is now possible within a LiaScript Markdown to apply the following typographical elements:
+
+  - A sequence of dashes is now translated into:
+
+    1. - (single dash): Hyphen or minus sign
+    2. -- (double dash): En dash
+    3. --- (triple dash): Em dash
+
+  - Translate ... to unicode ellipsis
+
+  - Language base quotes single and double are translated into their typographical counterparts, based on the language of the course. Additionally these two types have been added to the escaped elements `\"` and `\'`.
+
+- improve(HTML-Parser): The parsing speed for HTML has been increased, due to a new abort mechanism, which will stop the parsing of a HTML end-tag has been detected. This will prevent the parser from running into an long loop.
+
+- improve(Parser): Some minor improvements for regular expressions have been applied after benchmarking the parser.
+
 ## [0.16.2] - 04/10/2024
 
 - feat(Zip): Courses can now be uploaded as ZIP files, which will be automatically extracted and loaded. Also courses can be hosted as Zip-files, which will be extracted on the fly.

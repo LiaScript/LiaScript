@@ -7,9 +7,9 @@ port module Lia.Update exposing
     )
 
 import Array exposing (Array)
-import Conditional.List as CList
 import Const
 import Dict
+import I18n.Translations exposing (Lang(..))
 import Json.Decode as JD
 import Lia.Chat.Update as Chat
 import Lia.Index.Update as Index
@@ -29,10 +29,8 @@ import Return exposing (Return)
 import Service.Console
 import Service.Database
 import Service.Event as Event exposing (Event)
-import Service.Local
 import Service.Slide
 import Session exposing (Session)
-import Translations exposing (Lang(..))
 
 
 port media : (( String, Maybe Int, Maybe Int ) -> msg) -> Sub msg
@@ -423,6 +421,15 @@ update session msg model =
                                 sec
                                     |> Maybe.map .effect_model
                                     |> Maybe.map .visible
+                            , logo =
+                                model.definition.logo
+                                    |> (\logo ->
+                                            if String.isEmpty logo then
+                                                Nothing
+
+                                            else
+                                                Just logo
+                                       )
                             }
                         )
                         childMsg

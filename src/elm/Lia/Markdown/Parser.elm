@@ -77,7 +77,8 @@ blocks : Parser Context Markdown.Block
 blocks =
     lazy <|
         \() ->
-            Indent.check
+            HTML.checkClosingTag
+                |> ignore Indent.check
                 |> keep macro
                 |> ignore whitespace
                 |> keep elements
@@ -250,7 +251,7 @@ svgbody len =
                    )
 
         ascii =
-            regexWith True False <|
+            regexWith { caseInsensitive = True, multiline = False } <|
                 if len <= 8 then
                     "[\t ]*(ascii|art)[\t ]*"
 
@@ -264,7 +265,7 @@ svgbody len =
         |> andMap
             (manyTill
                 (maybe Indent.check
-                    |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n"))
+                    |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\n"))
                 )
                 (Indent.check
                     |> keep (regex control_frame)
@@ -398,7 +399,7 @@ solution =
         rslt e1 blocks_ e2 =
             ( blocks_, e2 - e1 )
     in
-    regex "[\t ]*\\*{3,}[\t ]*\\n+"
+    regex "[\t ]*\\*{3,}[\t ]*\n+"
         |> keep (withState (\s -> succeed s.effect_model.effects))
         |> map rslt
         |> andMap
@@ -469,8 +470,8 @@ checkForCitation : Parameters -> Inlines -> Markdown.Block
 checkForCitation attr p =
     case p of
         (Chars chars cAttr) :: rest ->
-            if String.startsWith "--" chars then
-                Markdown.Citation attr (Chars (String.dropLeft 2 chars) cAttr :: rest)
+            if String.startsWith "–" chars then
+                Markdown.Citation attr (Chars (String.dropLeft 1 chars) cAttr :: rest)
 
             else
                 Markdown.Paragraph attr p
@@ -499,7 +500,7 @@ checkForCitation attr p =
 horizontal_line : Parser Context Markdown.Block
 horizontal_line =
     md_annotations
-        |> ignore (regex "-{3,}")
+        |> ignore (regex "-{3,}[ \t]*\n")
         |> map Markdown.HLine
 
 
@@ -588,7 +589,7 @@ md_annotations =
         |> keep macro
         |> keep (comment attr)
         |> ignore
-            (regex "[\t ]*\\n"
+            (regex "[\t ]*\n"
                 |> ignore Indent.check
                 |> maybe
             )

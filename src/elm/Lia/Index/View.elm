@@ -4,22 +4,22 @@ module Lia.Index.View exposing
     , search
     )
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Live as A11y_Live
-import Accessibility.Widget as A11y_Widget
 import Array exposing (Array)
 import Conditional.List as CList
 import Conditional.String as CString
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import I18n.Translations as Translations exposing (Lang, baseSearch)
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Section exposing (Section, Sections)
 import Lia.Utils exposing (blockKeydown, btn, icon)
-import Translations exposing (Lang, baseSearch)
 
 
 search : Lang -> Bool -> Array { x | visible : Bool } -> Model -> List (Html Msg)
@@ -33,7 +33,7 @@ search lang active results model =
         , blockKeydown (ScanIndex model)
         , Attr.id "lia-input-search"
         , A11y_Key.tabbable active
-        , A11y_Widget.hidden (not active)
+        , A11y_Aria.hidden (not active)
         , A11y_Key.onKeyDown [ A11y_Key.enter (ScanIndex "") ]
         ]
         []
@@ -104,7 +104,7 @@ bottom lang active msg =
         }
         [ Attr.class "lia-btn--transparent"
         , Attr.id "lia-btn-home"
-        , A11y_Widget.hidden (not active)
+        , A11y_Aria.hidden (not active)
         ]
         [ icon "icon-grid" []
         , Html.span [ Attr.class "lia-btn__text" ] [ Html.text (Translations.home lang) ]
@@ -122,7 +122,7 @@ item lang active sectionId msg section =
 itemLink : Bool -> Int -> Section -> List (Html msg) -> Html msg
 itemLink active sectionId section =
     [ A11y_Key.tabbable active
-    , A11y_Widget.hidden (not active)
+    , A11y_Aria.hidden (not active)
     , section.indentation
         |> String.fromInt
         |> (++) "lia-toc__link lia-toc__link--is-lvl-"

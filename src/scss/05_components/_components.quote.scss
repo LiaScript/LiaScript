@@ -1,3 +1,7 @@
+@use "sass:color";
+@use "sass:map";
+@use "../01_tools/tools.color";
+
 .lia-quote {
   background-color: rgba(var(--color-highlight), 0.15);
   padding: 2.4rem;
@@ -28,13 +32,13 @@
 
 @mixin style-quote($theme) {
   .lia-quote {
-    $info: map-get($theme, primary);
-    $bg: mix(map-get($theme, background), $info, 90%);
-    $fg: color-contrast($bg);
+    $info: map.get($theme, primary);
+    $bg: color.mix(map.get($theme, background), $info, 90%);
+    $fg: tools.color-contrast($bg);
 
     border-left-color: $info;
     background: $bg;
     color: $fg;
-    box-shadow: 8px 7px 0px mix($fg, $bg, 20%);
+    box-shadow: 8px 7px 0px color.mix($fg, $bg, 20%);
   }
 }

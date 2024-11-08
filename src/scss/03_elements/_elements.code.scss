@@ -1,5 +1,7 @@
+@use "../00_settings/settings.global";
+
 .lia-code {
-  font-family: $global-font-mono;
+  font-family: settings.$global-font-mono;
   margin-bottom: 2rem;
 
   &--block {
@@ -45,7 +47,7 @@
     &__input {
       align-items: center;
       background-color: rgba(var(--lia-white), 0.1);
-      border-radius: $global-radius;
+      border-radius: settings.$global-radius;
       border: 1px solid rgba(var(--lia-white), 0.5);
       color: rgb(var(--lia-white));
       display: flex;

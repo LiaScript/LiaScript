@@ -1,12 +1,13 @@
 module Lia.Markdown.Gallery.View exposing (view)
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
+import I18n.Translations as Translations exposing (Lang)
 import Lia.Markdown.Gallery.Types exposing (Gallery, Vector)
 import Lia.Markdown.Gallery.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
@@ -15,7 +16,6 @@ import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Markdown.Types exposing (Block(..))
 import Lia.Utils exposing (btnIcon, get, icon, modal)
-import Translations exposing (Lang)
 
 
 view : Config sub -> Vector -> Parameters -> Gallery -> Html (Msg sub)
@@ -31,7 +31,7 @@ view config vector attr gallery =
                     , Attr.class "lia-lightbox__clickarea"
                     , A11y_Key.tabbable True
                     , A11y_Role.button
-                    , A11y_Widget.label "zoom media"
+                    , A11y_Aria.label "zoom media"
                     , A11y_Key.onKeyDown
                         [ A11y_Key.enter (Show gallery.id i)
                         , A11y_Key.space (Show gallery.id i)

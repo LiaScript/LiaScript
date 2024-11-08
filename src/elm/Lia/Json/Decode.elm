@@ -2,6 +2,7 @@ module Lia.Json.Decode exposing (decode)
 
 import Array
 import Dict
+import I18n.Translations as Translations
 import Json.Decode as JD
 import Lia.Chat.Model as Chat
 import Lia.Definition.Json.Decode as Definition
@@ -14,7 +15,6 @@ import Lia.Settings.Types as Settings
 import Lia.Sync.Types as Sync
 import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
-import Translations
 
 
 {-| Decode the entire structure of a pre-parsed LiaScript course. The additional

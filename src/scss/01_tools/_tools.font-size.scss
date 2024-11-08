@@ -1,3 +1,7 @@
+@use "sass:math";
+@use "sass:meta";
+@use "../00_settings/settings.global";
+
 /* --------------------------------------------------
    Font Size
    -------------------------------------------------- */
@@ -7,8 +11,8 @@
 // @include font-size(16px, 1);
 
 @mixin font-size($font-size, $line-height: auto, $important: false) {
-  @if (type-of($font-size) == number) {
-    @if (unit($font-size) != "px") {
+  @if (meta.type-of($font-size) == number) {
+    @if (math.unit($font-size) != "px") {
       @error "`#{$font-size}` needs to be a pixel value.";
     }
   } @else {
@@ -25,13 +29,13 @@
 
   // `px` fallback für IE Support
   font-size: $font-size $important;
-  font-size: ($font-size / $global-font-size) * 1rem $important;
+  font-size: ($font-size / settings.$global-font-size) * 1rem $important;
 
   @if ($line-height == "auto") {
     line-height: $line-height $important;
   } @else {
     @if (
-      type-of($line-height) ==
+      meta.type-of($line-height) ==
         number or
         $line-height ==
         "inherit" or

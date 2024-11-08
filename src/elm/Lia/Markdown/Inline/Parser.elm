@@ -41,6 +41,7 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
+import I18n.Translations exposing (Lang(..))
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Effect.Script.Types as JS
 import Lia.Markdown.Footnote.Parser as Footnote
@@ -61,7 +62,6 @@ import Lia.Parser.Context
         )
 import Lia.Parser.Helper exposing (inlineCode, spaces)
 import Lia.Parser.Input as Context
-import Translations exposing (Lang(..))
 
 
 parse_inlines : Context -> String -> Inlines
@@ -109,7 +109,7 @@ annotations =
 
 javascript : Parser s String
 javascript =
-    regexWith True False "<script>"
+    regexWith { caseInsensitive = True, multiline = False } "<script>"
         |> keep scriptBody
 
 
@@ -120,7 +120,7 @@ javascriptWithAttributes =
             withState (.defines >> .base >> succeed)
                 |> andThen Attributes.parse
     in
-    regexWith True False "<script"
+    regexWith { caseInsensitive = True, multiline = False } "<script"
         |> keep (many (whitespace |> keep attr))
         |> ignore (string ">")
         |> map Tuple.pair
@@ -188,7 +188,8 @@ inlines : Parser Context Inline
 inlines =
     lazy <|
         \() ->
-            Macro.macro
+            HTML.checkClosingTag
+                |> keep Macro.macro
                 |> keep
                     ([ code
                      , Footnote.inline parse_inlines
@@ -406,12 +407,12 @@ refMail =
 
 refPreview : Parser Context Reference
 refPreview =
-    regexWith True False "\\[\\w*preview-"
+    regexWith { caseInsensitive = True, multiline = False } "\\[\\w*preview-"
         |> keep
             (choice
-                [ regexWith True False "lia"
+                [ regexWith { caseInsensitive = True, multiline = False } "lia"
                     |> onsuccess Preview_Lia
-                , regexWith True False "link"
+                , regexWith { caseInsensitive = True, multiline = False } "link"
                     |> onsuccess Preview_Link
                 ]
             )
@@ -424,7 +425,7 @@ refPreview =
 
 refQr : Parser Context Reference
 refQr =
-    regexWith True False "\\[\\w*qr-code\\w*]"
+    regexWith { caseInsensitive = True, multiline = False } "\\[\\w*qr-code\\w*]"
         |> onsuccess QR_Link
         |> ignore (string "(")
         |> andMap ref_url_1
@@ -468,6 +469,13 @@ between_ str =
         |> map (combine >> toContainer)
 
 
+between_2 : String -> String -> Parser Context Inline
+between_2 begin end =
+    string begin
+        |> keep (many1Till inlines (string end))
+        |> map (combine >> toContainer)
+
+
 toContainer : List Inline -> Inline
 toContainer inline_list =
     case combine inline_list of
@@ -482,71 +490,89 @@ strings : Parser Context (Parameters -> Inline)
 strings =
     lazy <|
         \() ->
-            choice
-                [ inline_url
-                , stringBase
-                , arrows
-                , smileys
-                , stringEscape
-                , stringBold
-                , stringItalic
-                , stringUnderline
-                , stringStrike
-                , stringSuperscript
-                , stringSpaces
-                , HTML.parse inlines |> map IHTML
-                , stringCharacters
-                , lineBreak
-                , stringBase2
-                ]
+            HTML.checkClosingTag
+                |> keep
+                    (choice
+                        [ inline_url
+                        , ellipsis
+                        , stringBase
+                        , arrows
+                        , dashes
+                        , smileys
+                        , stringEscape
+                        , stringWithStyle
+                        , stringSpaces
+                        , HTML.parse inlines |> map IHTML
+                        , stringCharacters
+                        , lineBreak
+                        , stringBase2
+                        ]
+                    )
+
+
+
+-- Combined string style parsers
+
+
+stringWithStyle : Parser Context (Parameters -> Inline)
+stringWithStyle =
+    choice
+        [ between_ "**" |> map Bold
+        , between_ "__" |> map Bold
+        , between_ "*" |> map Italic
+        , between_ "_" |> map Italic
+        , between_ "~~" |> map Underline
+        , between_ "~" |> map Strike
+        , between_ "^" |> map Superscript
+        , stringQuote
+        ]
 
 
 stringBase : Parser s (Parameters -> Inline)
 stringBase =
-    regex "[^\\[\\]\\(\\)@*+_~:;`\\^{}\\\\\\n<>=$ \"\\-|]+"
+    regex "[^\\[\\]\\(\\)@*+_~:;`\\^{}\\\\\\n<>=$ \"\\-|']+"
         |> map Chars
 
 
 stringEscape : Parser s (Parameters -> Inline)
 stringEscape =
     string "\\"
-        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#\\-<>]")
+        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#\\-<>'\".]")
         |> map Chars
 
 
-stringItalic : Parser Context (Parameters -> Inline)
-stringItalic =
-    or (between_ "*") (between_ "_")
-        |> map Italic
+stringQuote : Parser Context (Parameters -> Inline)
+stringQuote =
+    or
+        (between_ "\""
+            |> map (\text ( start, end ) -> [ Chars start [], text, Chars end [] ] |> Container)
+            |> andMap (withState (.defines >> .typographic_quotation >> .double >> succeed))
+        )
+        (between_2 " '" "'"
+            |> map (\text ( start, end ) -> [ Chars (" " ++ start) [], text, Chars end [] ] |> Container)
+            |> andMap (withState (.defines >> .typographic_quotation >> .single >> succeed))
+        )
 
 
-stringBold : Parser Context (Parameters -> Inline)
-stringBold =
-    or (between_ "**") (between_ "__")
-        |> map Bold
+dashes : Parser Context (Parameters -> Inline)
+dashes =
+    choice
+        [ string "---"
+            |> keep (succeed (Chars "—"))
+        , string "--"
+            |> keep (succeed (Chars "–"))
+        ]
 
 
-stringStrike : Parser Context (Parameters -> Inline)
-stringStrike =
-    between_ "~"
-        |> map Strike
-
-
-stringUnderline : Parser Context (Parameters -> Inline)
-stringUnderline =
-    between_ "~~"
-        |> map Underline
-
-
-stringSuperscript : Parser Context (Parameters -> Inline)
-stringSuperscript =
-    between_ "^"
-        |> map Superscript
+ellipsis : Parser Context (Parameters -> Inline)
+ellipsis =
+    string "..."
+        |> keep (succeed (Chars "…"))
 
 
 stringCharacters : Parser s (Parameters -> Inline)
 stringCharacters =
-    regex "[\\[\\]\\(\\)~:_;=${}\\-+\"*<>|]"
+    regex "[\\[\\]\\(\\)~:_;=${}\\-+\"*<>|']"
         |> map Chars
 
 
@@ -586,10 +612,10 @@ code =
 
 scriptBody : Parser s String
 scriptBody =
-    regexWith True False "</script>"
+    regexWith { caseInsensitive = True, multiline = False } "</script>"
         |> manyTill
             ([ regex "[^@\"'`</]+" --" this is only a comment for syntax-highlighting ...
-             , regex "[ \t\n]+"
+             , regex "\\s+"
              , string "@'"
              , string "@"
              , regex "\"([^\"]*|\\\\\"|\\\\)*\""

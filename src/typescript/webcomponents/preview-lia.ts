@@ -94,121 +94,92 @@ export function addBase(base: string, url: string) {
   return path.join('/') + '/' + url
 }
 
-const TEMPLATE = `<style>    
-html {
-  font-size: 62.5%;
-}
+const TEMPLATE = `<style>
+  html {
+    font-size: 62.5%;
+  }
   body {
     font-size: 1.5rem;
-}
+  }
   .card {
-    border: 1px solid #399193;
+    border: 5px solid #399193;
     position: relative;
     background-color: white;
     display: flex;
-    flex-direction: column;
-    max-width: 42.6rem;
-}
-  @media screen and (min-width: 768px) and (max-width: 1024px) {
-    .card {
-      display: grid;
-      grid-template-columns: 40% 1fr;
-      max-width: 100%;
+    flex-direction: row;
+    margin: 2rem auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
-}
-  @media screen and (min-width: 1024px) {
-    .card {
-      max-width: 42.6rem;
+  .card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   }
-}
   .card__media {
-    margin-bottom: 2rem;
-    height: 100%;
-}
-  @media screen and (min-width: 768px) and (max-width: 1024px) {
-    .card__media {
-      margin-bottom: 0;
+    flex: 1;
+    max-width: 300px;
+    min-height: 100%;
   }
-}
-  .card__content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-  @media screen and (min-width: 768px) and (max-width: 1024px) {
-    .card__content {
-      margin-top: 4rem;
-      height: auto;
-  }
-}
-  @media screen and (min-width: 768px) and (max-width: 1024px) {
-    .card__aside {
-      height: 100%;
-  }
-}
-  .card__figure {
-    margin: 0;
-    height: 20rem;
-    width: 100%;
-}
-  @media screen and (min-width: 768px) and (max-width: 1024px) {
-    .card__figure {
-      height: 100%;
-  }
-}
   .card__image {
     height: 100%;
     width: 100%;
     object-fit: cover;
-}
+    object-position: center;
+  }
+  .card__content {
+    flex: 2;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .card__header {
+    margin-bottom: 1.5rem;
+  }
+  .card__title {
+    color: #4b4b4b;
+    font-size: 2.4rem;
+    font-family: serif;
+    margin: 0;
+    position: relative;
+  }
+  .card__title:before {
+    content: "";
+    position: absolute;
+    bottom: -0.5rem;
+    width: 50%;
+    height: 2px;
+    background-color: #399193;
+  }
+  .card__subtitle {
+    color: #aeaeae;
+    font-size: 1.6rem;
+    margin: 0.5rem 0 1rem;
+  }
   .card__version {
     display: inline-block;
     padding: 0.5rem;
     background-color: #399193;
     color: white;
     position: absolute;
-    top: 0;
-    right: 2.4rem;
-}
-  .card__header {
-    padding: 0 2.4rem;
-}
-  .card__title {
-    display: inline-block;
-    color: #4b4b4b;
-    font-size: 2.3rem;
-    font-family: serif;
-    position: relative;
-    margin: 0 0 2rem;
-}
-  .card__title:before {
-    content: "";
-    position: absolute;
-    bottom: -0.5rem;
-    width: 80%;
-    height: 1px;
-    background-color: #399193;
-}
-  .card__subtitle {
-    color: #aeaeae;
-    margin: 0 0 1rem;
-}
+    font-size: x-small;
+    top: -1.5rem;
+    left: 1rem;
+    z-index: 1;
+  }
   .card__body {
-    padding: 0 2.4rem;
-}
+    font-size: 1.6rem;
+    line-height: 1.5;
+  }
   .card__footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2.4rem;
-    margin-top: auto;
-}
+    margin-top: 1rem;
+  }
   .card__contact {
     color: #399193;
     text-decoration: none;
-}
+    font-size: 1.4rem;
+  }
 </style>
-<div id="container" style="display:inline-block"></div>`
+<a id="container" href="">preview-lia</a>`
 
 class PreviewLia extends HTMLElement {
   public container: ShadowRoot
@@ -226,7 +197,9 @@ class PreviewLia extends HTMLElement {
 
   connectedCallback() {
     const url = this.getAttribute('src')
-    const div = this.container.getElementById('container')
+    const a = this.container.getElementById(
+      'container'
+    ) as HTMLAnchorElement | null
 
     if (!url) return
 
@@ -242,8 +215,8 @@ class PreviewLia extends HTMLElement {
       this.getAttribute('link') ||
       'https://LiaScript.github.io/course/?' + this.source_url
 
-    if (div) {
-      div.innerHTML = `<a href="${url}">preview-lia</a>`
+    if (a !== null) {
+      a.innerHTML = `<a href="${url}">preview-lia</a>`
 
       let self = this
 
@@ -269,11 +242,7 @@ class PreviewLia extends HTMLElement {
           if (logo) {
             logo_alt = logo_alt ? `alt="${logo_alt}"` : ''
             logo = `<div class="card__media">
-              <aside class="card__aside">
-                <figure class="card__figure">
-                  <img src="${logo}" ${logo_alt} class="card__image">
-                </figure>
-              </aside>
+              <img src="${logo}" ${logo_alt} class="card__image">
             </div>`
           }
 
@@ -287,10 +256,15 @@ class PreviewLia extends HTMLElement {
             author = ''
           }
 
-          div.innerHTML = `<a href="${link}" style="text-decoration: none; color: black"><article class="card">
+          a.href = link
+          a.style.textDecoration = 'none'
+          a.style.color = 'black'
+          a.style.display = 'block'
+          a.innerHTML = `<article class="card">
             <div class="card__version">V ${version}</div>
-            ${logo}
+            ${logo || ''}
             <div class="card__content">
+              <img src="${icon}" alt="" style="display: block; height: 3rem; position: absolute; right: 5px; top: 5px">
               <header class="card__header">
                 <h3 class="card__title">${title}</h3>
                 ${tagLine}
@@ -299,11 +273,12 @@ class PreviewLia extends HTMLElement {
                 <p class="card__copy">${description}</p>
               </div>
               <footer class="card__footer">
-                <img height="50" src="${icon}" alt="Logo" class="card__logo">
+                
                 ${author}
               </footer>
             </div>
-            </article></a>`
+            
+            </article>`
         }
       )
     }
