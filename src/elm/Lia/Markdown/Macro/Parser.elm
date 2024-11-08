@@ -220,8 +220,7 @@ inject_macro ( ( name, escape ), params ) =
                                )
                         )
                         |> modifyInput
-                        |> keep (putState new_state)
-                        |> keep (succeed ())
+                        |> ignore (putState new_state)
 
                 Nothing ->
                     fail "macro definition not found"

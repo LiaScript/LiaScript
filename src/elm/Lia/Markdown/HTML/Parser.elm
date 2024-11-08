@@ -23,7 +23,7 @@ import Combine
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
 import Lia.Markdown.HTML.Types as Tag exposing (Node(..))
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (stringTill)
+import Lia.Parser.Helper exposing (newlines, stringTill)
 
 
 parse : Parser Context x -> Parser Context (Node x)
@@ -52,7 +52,9 @@ tag parser ( tagType, attributes ) =
                 |> ignore (pushClosingTag name)
                 |> andMap
                     (manyTill
-                        parser
+                        (newlines
+                            |> keep parser
+                        )
                         (closingTag name)
                     )
                 |> ignore popClosingTag
@@ -184,7 +186,7 @@ checkClosingTag =
                         fail "abort"
 
                     else
-                        lookAhead (maybe (closingTag name))
+                        lookAhead (maybe (string <| "</" ++ name ++ ">"))
                             |> andThen
                                 (\found ->
                                     case found of
