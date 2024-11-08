@@ -224,8 +224,7 @@ inject_macro ( ( name, escape ), params ) =
                         inject_code
                         |> modifyInput
                         |> keep (modifyPosition ((+) (-1 * String.length inject_code)))
-                        |> keep (putState new_state)
-                        |> keep (succeed ())
+                        |> ignore (putState new_state)
 
                 Nothing ->
                     fail "macro definition not found"
