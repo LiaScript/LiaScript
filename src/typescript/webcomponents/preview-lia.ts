@@ -95,76 +95,102 @@ export function addBase(base: string, url: string) {
 }
 
 const TEMPLATE = `<style>
+.card {
+  border: 5px solid #399193;
+  position: relative;
+  background-color: white;
+  display: flex;
+  flex-direction: row;
+  margin: 2rem auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.card__media {
+  flex: 1;
+  max-width: 300px;
+  min-height: 100%;
+}
+
+.card__image {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.card__content {
+  flex: 2;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card__header {
+  margin-bottom: 1.5rem;
+}
+
+.card__title {
+  color: #4b4b4b;
+  margin: 0;
+  position: relative;
+}
+
+.card__title:before {
+  content: "";
+  position: absolute;
+  bottom: -0.5rem;
+  width: 50%;
+  height: 2px;
+  background-color: #399193;
+}
+
+.card__subtitle {
+  color: #aeaeae;
+  margin: 0.5rem 0 1rem;
+}
+
+.card__version {
+  display: inline-block;
+  padding: 0.5rem;
+  background-color: #399193;
+  color: white;
+  position: absolute;
+  font-size: x-small;
+  top: -1.5rem;
+  left: 1rem;
+  z-index: 1;
+}
+
+.card__body {
+  line-height: 1.5;
+}
+
+.card__contact {
+  color: #399193;
+  text-decoration: none;
+  font-size: small;
+}
+
+@media (max-width: 640px) {
   .card {
-    border: 5px solid #399193;
-    position: relative;
-    background-color: white;
-    display: flex;
-    flex-direction: row;
-    margin: 2rem auto;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  .card:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  }
-  .card__media {
-    flex: 1;
-    max-width: 300px;
-    min-height: 100%;
-  }
-  .card__image {
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
-    object-position: center;
-  }
-  .card__content {
-    flex: 2;
-    padding: 2rem;
-    display: flex;
     flex-direction: column;
-    justify-content: space-between;
   }
-  .card__header {
-    margin-bottom: 1.5rem;
+
+  .card__media {
+    max-width: 100%;
+    height: 200px;
   }
-  .card__title {
-    color: #4b4b4b;
-    margin: 0;
-    position: relative;
+
+  .card__content {
+    padding: 1.5rem;
   }
-  .card__title:before {
-    content: "";
-    position: absolute;
-    bottom: -0.5rem;
-    width: 50%;
-    height: 2px;
-    background-color: #399193;
-  }
-  .card__subtitle {
-    color: #aeaeae;
-    margin: 0.5rem 0 1rem;
-  }
-  .card__version {
-    display: inline-block;
-    padding: 0.5rem;
-    background-color: #399193;
-    color: white;
-    position: absolute;
-    font-size: x-small;
-    top: -1.5rem;
-    left: 1rem;
-    z-index: 1;
-  }
-  .card__body {
-    line-height: 1.5;
-  }
-  .card__contact {
-    color: #399193;
-    text-decoration: none;
-    font-size: small;
-  }
+}
 </style>
 <a id="container" href="">preview-lia</a>`
 
