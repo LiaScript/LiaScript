@@ -1,0 +1,73 @@
+name: Deploy LiaScript-Web-Site to Pages
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  liascript:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set ELM_HOME
+        run: echo "ELM_HOME=${GITHUB_WORKSPACE}/.elm" >> $GITHUB_ENV
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # build LiaScript
+      - name: LiaScript - download
+        run: git clone --branch development https://github.com/LiaScript/LiaScript.git
+      - name: LiaScript - prebuild
+        run: |
+          cd LiaScript
+          npm install
+          npm run prebuild
+      - name: LiaScript - patches
+        run: |
+          cd LiaScript
+          git submodule update --init --recursive
+          cd patches
+          make
+          cd ..
+          rm -rf elm-stuff .parcel-cache
+      - name: LiaScript - build
+        run: |
+          cd LiaScript
+          make all2
+
+      - name: Create ZIP artifact
+        run: |
+          zip -r WWW.zip LiaScript/dist
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: 'Release for ${{ github.ref }}'
+          draft: false
+          prerelease: false
+
+      - name: Upload ZIP Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: WWW.zip
+          asset_name: WWW.zip
+          asset_content_type: application/zip
