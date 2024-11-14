@@ -86,6 +86,7 @@ type alias Model =
     , to_do : List Event
     , translation : Translations.Lang
     , langCode : String
+    , langName : Maybe String
     , langCodeOriginal : String
     , search_index : String -> String
     , backup : Dict String String
@@ -163,6 +164,7 @@ init { seed, hasShareApi, openTOC, settings, backends, url, readme, origin, anch
     , to_do = []
     , translation = Translations.En
     , langCode = "en"
+    , langName = Nothing
     , langCodeOriginal = "en"
     , search_index = identity
     , backup = Dict.empty

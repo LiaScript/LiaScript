@@ -474,7 +474,7 @@ view_inf :
     -> Lang
     -> Bool
     -> Bool
-    -> Maybe ( String, String )
+    -> Maybe { old : String, new : String, name : Maybe String }
     -> Maybe (Dict String String)
     -> Maybe (Dict String ( Int, Int ))
     -> Inline
@@ -760,7 +760,7 @@ addTranslation config url_ =
 getLang : Config sub -> String
 getLang config =
     config.translations
-        |> Maybe.map Tuple.second
+        |> Maybe.map .new
         |> Maybe.withDefault (Translations.baseLang config.lang)
 
 

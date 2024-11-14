@@ -1,6 +1,7 @@
 module Lia.Json.Decode exposing (decode)
 
 import Array
+import Bitwise exposing (and)
 import Dict
 import I18n.Translations as Translations
 import Json.Decode as JD
@@ -54,6 +55,7 @@ toModel seed pane sync =
                 |> JD.map (Translations.getLnFromCode >> Maybe.withDefault Translations.En)
             )
         |> andMap "translation" JD.string
+        |> JD.map2 (|>) (JD.succeed Nothing)
         |> andMap "translation" JD.string
         |> JD.map2 (|>) (JD.succeed identity)
         |> JD.map2 (|>) (JD.succeed Dict.empty)

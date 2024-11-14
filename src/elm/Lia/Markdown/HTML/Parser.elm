@@ -186,7 +186,7 @@ checkClosingTag =
                         fail "abort"
 
                     else
-                        lookAhead (maybe (string <| "</" ++ name ++ ">"))
+                        lookAhead (maybe (string name))
                             |> andThen
                                 (\found ->
                                     case found of
@@ -206,7 +206,7 @@ pushClosingTag name =
         (\s ->
             { s
                 | abort =
-                    { stack = name :: s.abort.stack
+                    { stack = ("</" ++ name ++ ">") :: s.abort.stack
                     , isTrue = False
                     }
             }
