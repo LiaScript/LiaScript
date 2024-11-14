@@ -4,7 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.16.6] - 08/12/2024
+## [0.16.7] - 14/11/2025
+
+- upgrade: ASCII-Art now a bit faster
+- improve(Translations): Add lang without translations
+
+  Previously TTS could only be used if it is supported by responsive
+  voice. But since LiaScript now allows to use browser supported TTS with
+  locally installed languages, this check has become obsolete. TTS is now
+  enabled for all comments, even for languages such as Georgian.
+
+## [0.16.6] - 08/11/2024
 
 - improve: LiaScript preview cards with new design
 - fix: HTML parser with combined macros
