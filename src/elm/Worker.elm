@@ -9,6 +9,7 @@ import Lia.Json.Encode as Lia
 import Lia.Markdown.Quiz.Json as Quiz
 import Lia.Markdown.Survey.Json as Survey
 import Lia.Markdown.Task.Json as Task
+import Lia.Parser.Helper exposing (debug)
 import Lia.Parser.Parser exposing (parse_definition)
 import Lia.Script
 import Lia.Update exposing (generate)
@@ -23,6 +24,9 @@ port output : ( Bool, String ) -> Cmd msg
 
 
 port input : (List String -> msg) -> Sub msg
+
+
+port helper : ( String, String ) -> Cmd msg
 
 
 type Msg
@@ -108,6 +112,9 @@ update msg model =
                 |> respond
                 |> Tuple.second
             )
+
+        Handle [ "template", url, data ] ->
+            update (Load_Template_Result url (Ok data)) model
 
         Handle [ cmd, readme ] ->
             case Url.fromString readme of
@@ -284,6 +291,11 @@ load_readme readme model =
     load model initial.model initial.code initial.templates
 
 
+debug : String -> String -> Cmd msg
+debug title msg =
+    helper ( "debug", title ++ " " ++ msg )
+
+
 load : Model -> Lia.Script.Model -> Maybe String -> List String -> ( Model, Cmd Msg )
 load model lia code templates =
     case ( code, templates ) of
@@ -303,7 +315,14 @@ load model lia code templates =
                 , code = Just code_
               }
             , templates
-                |> List.map (download Load_Template_Result)
+                |> List.map
+                    (\url ->
+                        if String.startsWith "http" url then
+                            download Load_Template_Result url
+
+                        else
+                            helper ( "file", url )
+                    )
                 |> (::) (message LiaParse)
                 |> Cmd.batch
             )
