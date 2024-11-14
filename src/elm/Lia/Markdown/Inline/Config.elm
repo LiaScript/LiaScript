@@ -37,7 +37,7 @@ type alias Config sub =
         , active : Bool
         , partiallyCorrect : Array Bool
         }
-    , translations : Maybe ( String, String )
+    , translations : Maybe { old : String, new : String, name : Maybe String }
     , formulas : Dict String String
     , sync : Maybe Sync.Settings
     }
@@ -55,7 +55,7 @@ init :
     , hideVideoComments : Bool
     , media : Dict String ( Int, Int )
     , scripts : Scripts SubSection
-    , translations : Maybe ( String, String )
+    , translations : Maybe { old : String, new : String, name : Maybe String }
     , formulas : Maybe (Dict String String)
     , sync : Maybe Sync.Settings
     }
