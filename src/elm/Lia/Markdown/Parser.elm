@@ -582,7 +582,7 @@ md_annotations : Parser Context Parameters
 md_annotations =
     let
         attr =
-            withState (.defines >> .base >> succeed)
+            withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
                 |> andThen Attributes.parse
     in
     spaces

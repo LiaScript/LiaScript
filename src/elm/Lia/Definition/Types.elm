@@ -40,6 +40,7 @@ type alias Definition =
     , comment : Inlines
     , resources : List Resource
     , base : String
+    , appendix : String
     , translation : Dict String String
     , formulas : Dict String String
     , macro : Dict String String
@@ -54,8 +55,8 @@ type alias Definition =
     }
 
 
-default : String -> Definition
-default base =
+default : String -> String -> Definition
+default base appendix =
     { author = ""
     , date = ""
     , email = ""
@@ -70,6 +71,12 @@ default base =
     , comment = []
     , resources = []
     , base = base
+    , appendix =
+        if String.isEmpty appendix then
+            ""
+
+        else
+            "?" ++ appendix
     , translation = Dict.empty
     , formulas = Dict.empty
     , macro = Dict.empty
@@ -90,7 +97,7 @@ add_translation str def =
         [ lang, url ] ->
             { def
                 | translation =
-                    Dict.insert lang (toURL def.base url) def.translation
+                    Dict.insert lang (toURL def.base def.appendix url) def.translation
             }
 
         _ ->
@@ -143,19 +150,19 @@ add_macros orig temp =
 
 add_imports : String -> Definition -> Definition
 add_imports url def =
-    { def | imports = append link def.base url def.imports }
+    { def | imports = append link def.base def.appendix url def.imports }
 
 
 addToResources : (String -> Resource) -> String -> Definition -> Definition
 addToResources to urls def =
-    { def | resources = append to def.base urls def.resources }
+    { def | resources = append to def.base def.appendix urls def.resources }
 
 
-append : (String -> a) -> String -> String -> List a -> List a
-append to base urls list =
+append : (String -> a) -> String -> String -> String -> List a -> List a
+append to base appendix urls list =
     urls
         |> String.words
-        |> List.map (toURL base >> to)
+        |> List.map (toURL base appendix >> to)
         |> List.append list
 
 

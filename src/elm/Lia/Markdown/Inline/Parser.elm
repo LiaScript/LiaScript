@@ -97,7 +97,7 @@ annotations : Parser Context Parameters
 annotations =
     let
         attr =
-            withState (.defines >> .base >> succeed)
+            withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
                 |> andThen Attributes.parse
     in
     spaces
@@ -117,7 +117,7 @@ javascriptWithAttributes : Parser Context ( Parameters, String )
 javascriptWithAttributes =
     let
         attr =
-            withState (.defines >> .base >> succeed)
+            withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
                 |> andThen Attributes.parse
     in
     regexWith { caseInsensitive = True, multiline = False } "<script"
@@ -253,8 +253,8 @@ url =
 
 baseURL : String -> Parser Context String
 baseURL u =
-    withState (.defines >> .base >> succeed)
-        |> map (\base -> toURL base u)
+    withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
+        |> map (\( base, appendix ) -> toURL base appendix u)
 
 
 email : Parser s String
@@ -298,8 +298,11 @@ ref_url_1 =
 
 ref_url_2 : Parser Context String
 ref_url_2 =
-    withState (\s -> succeed s.defines.base)
-        |> map (++)
+    withState (\s -> succeed ( s.defines.base, s.defines.appendix ))
+        |> map
+            (\( base, appendix ) url_ ->
+                toURL base appendix url_
+            )
         |> andMap (regex "[^\\)\n \"]*")
         |> or url
 

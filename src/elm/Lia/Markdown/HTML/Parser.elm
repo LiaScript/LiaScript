@@ -38,7 +38,7 @@ parse parser =
 
 attrParser : Parser Context ( String, String )
 attrParser =
-    (.defines >> .base >> succeed)
+    (\c -> succeed ( c.defines.base, c.defines.appendix ))
         |> withState
         |> andThen Params.parse
 

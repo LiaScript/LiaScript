@@ -201,8 +201,8 @@ URL, then the base-URL is automatically added to the front:
         == ( "src", "http://base.url/pic.jpg" )
 
 -}
-base : String -> ( String, String ) -> ( String, String )
-base url ( key, value ) =
+base : String -> String -> ( String, String ) -> ( String, String )
+base url appendix ( key, value ) =
     ( key
     , if
         key
@@ -218,7 +218,7 @@ base url ( key, value ) =
             || key
             == "poster"
       then
-        toURL url value
+        toURL url appendix value
 
       else
         value
@@ -228,20 +228,22 @@ base url ( key, value ) =
 {-| Used to identify relative paths. If the URL does not start with "http", the
 basis is automatically added:
 
-    toUrl "https://base.url/" "pic.jpg"
-        == "https://base.url/pic.jpg"
+    toUrl "https://base.url/" "?ref=1" "pic.jpg"
+        == "https://base.url/pic.jpg?ref=1"
 
-    toUtl "https://base.url/" "http://url.de/pic.jpg"
+    toUtl "https://base.url/" "" "http://url.de/pic.jpg"
         == "http://url.de/pic.jpg"
 
 -}
-toURL : String -> String -> String
-toURL basis url =
+toURL : String -> String -> String -> String
+toURL basis appendix url =
     if allowedProtocol url || String.startsWith "#" url then
         url
 
     else
-        basis ++ url
+        basis
+            ++ url
+            ++ appendix
 
 
 {-| List of allowed supported protocols.
@@ -299,14 +301,14 @@ paths, as defined in function `base`:
         == Ok ( "src", "http://base.url/img.jpg" )
 
 -}
-parse : String -> Parser context ( String, String )
-parse url =
+parse : ( String, String ) -> Parser context ( String, String )
+parse ( url, appendix ) =
     regex "[A-Za-z0-9_\\-:]+"
         |> map (String.toLower >> Tuple.pair)
         |> ignore whitespace
         |> andMap tagAttributeValue
         |> ignore whitespace
-        |> map (base url)
+        |> map (base url appendix)
 
 
 {-| **@private**: A tag attribute-value can be set with:
