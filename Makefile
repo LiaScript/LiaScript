@@ -25,7 +25,8 @@ minify:
 all: clean app index manifest responsivevoice preview
 	rm -f dist/*.md
 
-all2: optimize all deoptimize minify
+#all2: optimize all deoptimize minify
+all2: all minify
 
 editor: base index responsivevoice
 	-f dist/README.md
