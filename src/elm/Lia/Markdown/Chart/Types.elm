@@ -3,8 +3,10 @@ module Lia.Markdown.Chart.Types exposing
     , Data
     , Diagram(..)
     , Labels
+    , Orientation(..)
     , Point
     , Settings
+    , invertDiagram
     )
 
 import Dict exposing (Dict)
@@ -16,6 +18,11 @@ type alias Point =
     { x : Float
     , y : Float
     }
+
+
+type Orientation
+    = Horizontal
+    | Vertical
 
 
 type alias Chart =
@@ -32,6 +39,7 @@ type alias Chart =
         { min : Maybe String
         , max : Maybe String
         }
+    , orientation : Maybe Orientation
     }
 
 
@@ -66,4 +74,20 @@ type alias Data x =
     { labels : Labels
     , category : List String
     , data : List x
+    , orientation : Maybe Orientation
     }
+
+
+invertDiagram : Diagram -> Diagram
+invertDiagram diagram =
+    case diagram of
+        Lines points color ->
+            Lines (List.map swapXY points) color
+
+        Dots points color ->
+            Dots (List.map swapXY points) color
+
+
+swapXY : Point -> Point
+swapXY point =
+    { x = point.y, y = point.x }

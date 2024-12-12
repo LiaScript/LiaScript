@@ -13,7 +13,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Keyed as Keyed
 import I18n.Translations as Translations exposing (Lang, sortAsc, sortDesc, sortNot)
-import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Point)
+import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Orientation(..), Point)
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Config exposing (Config)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
@@ -93,6 +93,19 @@ diagramTranspose attr matrix =
         matrix
 
 
+diagramOrientation : Parameters -> Maybe Orientation
+diagramOrientation attr =
+    case Param.get "data-orientation" attr of
+        Just "horizontal" ->
+            Just Horizontal
+
+        Just "vertical" ->
+            Just Vertical
+
+        _ ->
+            Nothing
+
+
 chart : Lang -> Int -> Bool -> Parameters -> Bool -> Class -> Matrix Cell -> Html Msg
 chart lang width isFormatted attr mode class matrix =
     let
@@ -104,6 +117,9 @@ chart lang width isFormatted attr mode class matrix =
 
         settings =
             { lang = lang, attr = attr, light = mode }
+
+        orientation =
+            diagramOrientation attr
     in
     case class of
         BarChart ->
@@ -122,6 +138,7 @@ chart lang width isFormatted attr mode class matrix =
                                 , row |> List.tail |> Maybe.map (List.map .float) |> Maybe.withDefault []
                                 )
                             )
+                , orientation = orientation
                 }
 
         PieChart ->
@@ -142,6 +159,7 @@ chart lang width isFormatted attr mode class matrix =
                                 (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
                                     >> List.filterMap identity
                                 )
+                    , orientation = orientation
                     }
 
             else
@@ -169,6 +187,7 @@ chart lang width isFormatted attr mode class matrix =
                                     classes
                                     >> List.filterMap identity
                                 )
+                    , orientation = orientation
                     }
 
         Funnel ->
@@ -189,6 +208,7 @@ chart lang width isFormatted attr mode class matrix =
                                 (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
                                     >> List.filterMap identity
                                 )
+                    , orientation = orientation
                     }
 
             else
@@ -219,6 +239,7 @@ chart lang width isFormatted attr mode class matrix =
                                     classes
                                     >> List.filterMap identity
                                 )
+                    , orientation = orientation
                     }
 
         HeatMap ->
@@ -248,6 +269,7 @@ chart lang width isFormatted attr mode class matrix =
                                 row
                                     |> List.indexedMap (\x_ cell -> ( x_, y_, cell.float ))
                             )
+                , orientation = orientation
                 }
 
         Radar ->
@@ -272,6 +294,7 @@ chart lang width isFormatted attr mode class matrix =
                                     |> Maybe.withDefault []
                                 )
                             )
+                , orientation = orientation
                 }
 
         Parallel ->
@@ -288,6 +311,7 @@ chart lang width isFormatted attr mode class matrix =
                         |> Matrix.tail
                         |> Matrix.map .float
                         |> Matrix.transpose
+                , orientation = orientation
                 }
 
         BoxPlot ->
@@ -298,6 +322,7 @@ chart lang width isFormatted attr mode class matrix =
                     body
                         |> Matrix.map .float
                         |> Matrix.transpose
+                , orientation = orientation
                 }
 
         Graph ->
@@ -323,6 +348,7 @@ chart lang width isFormatted attr mode class matrix =
             in
             Chart.viewGraph settings
                 { labels = labels
+                , orientation = orientation
                 , category = nodes
                 , data =
                     body
@@ -377,6 +403,7 @@ chart lang width isFormatted attr mode class matrix =
             Chart.viewSankey settings
                 { labels = labels
                 , category = nodes
+                , orientation = orientation
                 , data =
                     body
                         |> List.concatMap
@@ -424,6 +451,7 @@ chart lang width isFormatted attr mode class matrix =
             Chart.viewMapChart settings
                 (Param.get "data-src" attr)
                 { labels = labels
+                , orientation = orientation
                 , category = []
                 , data =
                     data
@@ -481,6 +509,7 @@ chart lang width isFormatted attr mode class matrix =
                 , diagrams = diagrams |> Dict.fromList
                 , xLimits = labels.xLimits
                 , yLimits = labels.yLimits
+                , orientation = orientation
                 }
                     |> Chart.viewChart settings
 
@@ -507,6 +536,7 @@ chart lang width isFormatted attr mode class matrix =
                     settings
                     { labels = labels
                     , category = xValues
+                    , orientation = orientation
                     , data =
                         body
                             |> Matrix.transpose

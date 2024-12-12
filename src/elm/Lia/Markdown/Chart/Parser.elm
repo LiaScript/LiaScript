@@ -41,7 +41,8 @@ parse =
                         |> List.filterMap identity
                         |> Dict.fromList
             in
-            { xLimits = { min = Nothing, max = Nothing }
+            { orientation = Nothing
+            , xLimits = { min = Nothing, max = Nothing }
             , yLimits = { min = Nothing, max = Nothing }
             , title = title
             , yLabel =
