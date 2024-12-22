@@ -280,11 +280,20 @@ ref_info =
 ref_title : Parser Context (Maybe Inlines)
 ref_title =
     spaces
-        |> ignore (string "\"")
-        |> keep (manyTill inlines (string "\""))
+        |> keep (or (between_ "\"") (between_ "'"))
         |> ignore spaces
-        |> map combine
+        |> map toInlines
         |> maybe
+
+
+toInlines : Inline -> Inlines
+toInlines element =
+    case element of
+        Container elements [] ->
+            elements
+
+        _ ->
+            [ element ]
 
 
 ref_url_1 : Parser Context String
