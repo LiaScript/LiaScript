@@ -49,7 +49,7 @@ import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Table.Parser as Table
 import Lia.Markdown.Task.Parser as Task
 import Lia.Markdown.Types as Markdown
-import Lia.Parser.Context exposing (Context)
+import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
 import Lia.Parser.Indentation as Indent
 import Lia.Parser.Input as Input
@@ -77,7 +77,7 @@ blocks : Parser Context Markdown.Block
 blocks =
     lazy <|
         \() ->
-            HTML.checkClosingTag
+            Context.checkAbort
                 |> ignore Indent.check
                 |> keep macro
                 |> ignore whitespace

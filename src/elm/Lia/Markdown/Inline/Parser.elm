@@ -55,11 +55,7 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Markdown.Quiz.Block.Parser as Input
 import Lia.Markdown.Quiz.Block.Types as Input
-import Lia.Parser.Context
-    exposing
-        ( Context
-        , searchIndex
-        )
+import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (inlineCode, spaces)
 import Lia.Parser.Input as Context
 
@@ -188,7 +184,7 @@ inlines : Parser Context Inline
 inlines =
     lazy <|
         \() ->
-            HTML.checkClosingTag
+            Context.checkAbort
                 |> keep Macro.macro
                 |> keep
                     ([ code
@@ -273,7 +269,9 @@ inline_url =
 ref_info : Parser Context Inlines
 ref_info =
     string "["
+        |> ignore (Context.addAbort "]")
         |> keep (manyTill inlines (string "]"))
+        |> ignore Context.popAbort
         |> map combine
 
 
@@ -300,7 +298,7 @@ ref_url_1 : Parser Context String
 ref_url_1 =
     choice
         [ url
-        , andMap (regex "#[^ \t\\)]+") searchIndex
+        , andMap (regex "#[^ \t\\)]+") Context.searchIndex
         , regex "[^\\)\n \"]*" |> andThen baseURL
         ]
 
@@ -502,7 +500,7 @@ strings : Parser Context (Parameters -> Inline)
 strings =
     lazy <|
         \() ->
-            HTML.checkClosingTag
+            Context.checkAbort
                 |> keep
                     (choice
                         [ inline_url
