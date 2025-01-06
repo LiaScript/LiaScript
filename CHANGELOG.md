@@ -33,6 +33,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   above a table allows to change the orientation of the generated diagram...
 
+- improve(Platform support): Courses can now also be loaded directly from the following platform, without requiring a proxy, and thus will not cause any CORS issues:
+
+  - [GitLab](https://gitlab.com)
+  - [Codeberg](https://onedrive.live.com)
+  
+
 ## [0.16.7] - 14/11/2025
 
 - upgrade: ASCII-Art now a bit faster
