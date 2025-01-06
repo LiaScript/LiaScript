@@ -1,8 +1,11 @@
 module Lia.Parser.Context exposing
     ( Context
+    , addAbort
+    , checkAbort
     , getLine
     , getSeed
     , init
+    , popAbort
     , searchIndex
     )
 
@@ -16,9 +19,15 @@ import Combine
     exposing
         ( Parser
         , andMap
+        , andThen
+        , fail
+        , ignore
         , keep
+        , lookAhead
         , map
+        , maybe
         , modifyState
+        , string
         , succeed
         , withLine
         , withState
@@ -159,3 +168,57 @@ getSeed =
             }
         )
         |> keep (withState (.seed >> succeed))
+
+
+addAbort : String -> Parser Context ()
+addAbort name =
+    modifyState
+        (\s ->
+            { s
+                | abort =
+                    { stack = name :: s.abort.stack
+                    , isTrue = False
+                    }
+            }
+        )
+
+
+popAbort : Parser Context ()
+popAbort =
+    modifyState
+        (\s ->
+            { s
+                | abort =
+                    { stack = List.drop 1 s.abort.stack
+                    , isTrue = False
+                    }
+            }
+        )
+        |> ignore (succeed ())
+
+
+checkAbort : Parser Context ()
+checkAbort =
+    withState
+        (\context ->
+            case context.abort.stack of
+                [] ->
+                    succeed ()
+
+                name :: _ ->
+                    if context.abort.isTrue then
+                        fail "abort"
+
+                    else
+                        lookAhead (maybe (string name))
+                            |> andThen
+                                (\found ->
+                                    case found of
+                                        Nothing ->
+                                            succeed ()
+
+                                        Just _ ->
+                                            modifyState (\s -> { s | abort = { stack = s.abort.stack, isTrue = True } })
+                                                |> keep (fail "abort")
+                                )
+        )

@@ -27,8 +27,8 @@ import Lia.Parser.Preprocessor as Preprocessor
 import Lia.Section as Section exposing (Section, SubSection(..))
 
 
-parse_definition : String -> String -> Result String ( Definition, ( String, Int ) )
-parse_definition base code =
+parse_definition : String -> String -> String -> Result String ( Definition, ( String, Int ) )
+parse_definition base appendix code =
     case
         Combine.runParser
             -- used to prevent false outputs if the first line does not start with a comment
@@ -39,8 +39,7 @@ parse_definition base code =
                         (stringTill (regex "\n#"))
                     )
             )
-            (base
-                |> Lia.Definition.Types.default
+            (Lia.Definition.Types.default base appendix
                 |> init Dict.empty Nothing Nothing 0
             )
             (code ++ "\n")
@@ -103,7 +102,7 @@ parse_subsection globals id code =
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
             (globals
-                |> Maybe.withDefault (Lia.Definition.Types.default "")
+                |> Maybe.withDefault (Lia.Definition.Types.default "" "")
                 -- TODO: random
                 |> init Dict.empty Nothing Nothing 0
             )

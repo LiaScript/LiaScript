@@ -1,4 +1,4 @@
-module Lia.Markdown.HTML.Parser exposing (checkClosingTag, parse)
+module Lia.Markdown.HTML.Parser exposing (parse)
 
 import Combine
     exposing
@@ -8,12 +8,10 @@ import Combine
         , fail
         , ignore
         , keep
-        , lookAhead
         , many
         , manyTill
         , map
         , maybe
-        , modifyState
         , regex
         , string
         , succeed
@@ -22,7 +20,7 @@ import Combine
         )
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
 import Lia.Markdown.HTML.Types as Tag exposing (Node(..))
-import Lia.Parser.Context exposing (Context)
+import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (newlines, stringTill)
 
 
@@ -38,7 +36,7 @@ parse parser =
 
 attrParser : Parser Context ( String, String )
 attrParser =
-    (.defines >> .base >> succeed)
+    (\c -> succeed ( c.defines.base, c.defines.appendix ))
         |> withState
         |> andThen Params.parse
 
@@ -49,7 +47,7 @@ tag parser ( tagType, attributes ) =
         Tag.HtmlNode name ->
             succeed (Node name attributes)
                 |> ignore (regex "[ \t]*>[ \t]*\n*")
-                |> ignore (pushClosingTag name)
+                |> ignore (Context.addAbort ("</" ++ name ++ ">"))
                 |> andMap
                     (manyTill
                         (newlines
@@ -57,7 +55,7 @@ tag parser ( tagType, attributes ) =
                         )
                         (closingTag name)
                     )
-                |> ignore popClosingTag
+                |> ignore Context.popAbort
 
         Tag.HtmlVoidNode name ->
             succeed (Node name attributes [])
@@ -171,57 +169,3 @@ voidElements =
     , "track"
     , "wbr"
     ]
-
-
-checkClosingTag : Parser Context ()
-checkClosingTag =
-    withState
-        (\context ->
-            case context.abort.stack of
-                [] ->
-                    succeed ()
-
-                name :: _ ->
-                    if context.abort.isTrue then
-                        fail "abort"
-
-                    else
-                        lookAhead (maybe (string name))
-                            |> andThen
-                                (\found ->
-                                    case found of
-                                        Nothing ->
-                                            succeed ()
-
-                                        Just _ ->
-                                            modifyState (\s -> { s | abort = { stack = s.abort.stack, isTrue = True } })
-                                                |> keep (fail "abort")
-                                )
-        )
-
-
-pushClosingTag : String -> Parser Context ()
-pushClosingTag name =
-    modifyState
-        (\s ->
-            { s
-                | abort =
-                    { stack = ("</" ++ name ++ ">") :: s.abort.stack
-                    , isTrue = False
-                    }
-            }
-        )
-
-
-popClosingTag : Parser Context ()
-popClosingTag =
-    modifyState
-        (\s ->
-            { s
-                | abort =
-                    { stack = List.drop 1 s.abort.stack
-                    , isTrue = False
-                    }
-            }
-        )
-        |> ignore (succeed ())

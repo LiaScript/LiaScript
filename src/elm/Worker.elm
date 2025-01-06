@@ -88,7 +88,7 @@ init flags =
 defines : String -> ( Bool, String )
 defines str =
     str
-        |> parse_definition ""
+        |> parse_definition "" ""
         |> Result.map (Tuple.first >> Def.encode >> JE.encode 2 >> Tuple.pair True)
         |> Result.withDefault ( False, "" )
 

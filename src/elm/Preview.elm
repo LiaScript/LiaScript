@@ -70,7 +70,7 @@ update msg _ =
 
 analyze : String -> ( Model, Cmd Msg )
 analyze readme =
-    case parse_definition "" readme of
+    case parse_definition "" "" readme of
         Ok ( definition, ( code, line ) ) ->
             let
                 title =

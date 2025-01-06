@@ -127,10 +127,10 @@ reference_macro =
         |> andMap
             (parameter_list
                 |> ignore (string "](")
-                |> map (\list url baseURL -> List.append list [ toURL baseURL url ])
+                |> map (\list url ( baseURL, appendix ) -> List.append list [ toURL baseURL appendix url ])
                 |> andMap (regex "[^) ]*")
                 |> ignore (regex "(\\)|[^)]*\\))")
-                |> andMap (withState (.defines >> .base >> succeed))
+                |> andMap (withState (\c -> succeed ( c.defines.base, c.defines.appendix )))
             )
 
 

@@ -17,6 +17,7 @@ import Lia.Section exposing (Sections)
 import Lia.Settings.Json
 import Lia.Settings.Types as Settings exposing (Settings)
 import Lia.Sync.Types as Sync
+import Lia.Utils exposing (urlQuery)
 import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 import Service.Event exposing (Event)
@@ -158,7 +159,11 @@ init { seed, hasShareApi, openTOC, settings, backends, url, readme, origin, anch
     , sections = Array.empty
     , section_active = 0
     , anchor = anchor
-    , definition = Definition.default url
+    , definition =
+        readme
+            |> urlQuery
+            |> Maybe.withDefault ""
+            |> Definition.default url
     , index_model = Index.init
     , resource = []
     , to_do = []
@@ -218,7 +223,7 @@ clear model =
         , sections = Array.empty
         , section_active = 0
         , anchor = Nothing
-        , definition = Definition.default ""
+        , definition = Definition.default "" ""
         , index_model = Index.init
         , resource = []
         , to_do = []

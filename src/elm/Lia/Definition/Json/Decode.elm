@@ -7,8 +7,8 @@ import Lia.Definition.Types exposing (Definition, Resource(..))
 import Lia.Markdown.Inline.Json.Decode as Inline
 
 
-decode : JD.Decoder Definition
-decode =
+decode : String -> JD.Decoder Definition
+decode appendix =
     JD.succeed Definition
         |> andMap "author" JD.string
         |> andMap "date" JD.string
@@ -21,6 +21,7 @@ decode =
         |> andMap "comment" Inline.decode
         |> andMap "resources" (JD.list decResource)
         |> andMap "base" JD.string
+        |> JD.map2 (|>) (JD.succeed appendix)
         |> andMap "translation" (JD.dict JD.string)
         |> JD.map2 (|>)
             (JD.field "formulas" (JD.dict JD.string)
