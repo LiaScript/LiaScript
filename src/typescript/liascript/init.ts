@@ -7,7 +7,7 @@ export function initGlobals() {
   }
 
   if (!window.LIA.version) {
-    window.LIA.version = '0.16.7'
+    window.LIA.version = '0.16.8'
   }
 
   if (!window.LIA.eventSemaphore) {
