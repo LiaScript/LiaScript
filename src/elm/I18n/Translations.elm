@@ -1,4 +1,4 @@
-module Translations exposing (..)
+module I18n.Translations exposing (..)
 
 {-| This file was automatically generated with elm-i18n-gen.
 For more in information visit:
