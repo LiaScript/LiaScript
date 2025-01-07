@@ -35,7 +35,7 @@ type alias Config sub =
 
 init :
     Lang
-    -> ( String, String )
+    -> { old : String, new : String, name : Maybe String }
     -> Settings
     -> Sync.Settings
     -> Screen
@@ -127,7 +127,7 @@ mergeFormulas main sec =
 
 inline :
     Lang
-    -> ( String, String )
+    -> { old : String, new : String, name : Maybe String }
     -> Settings
     -> Screen
     -> Effect.Model SubSection

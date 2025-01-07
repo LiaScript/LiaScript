@@ -285,7 +285,7 @@ decRelease : JD.Decoder Release
 decRelease =
     JD.map2 Release
         (JD.field "title" Inline.decode)
-        Definition.decode
+        (Definition.decode "")
 
 
 {-| Check if the current passed version string is also available as accessible

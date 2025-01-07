@@ -17,6 +17,7 @@ module Lia.Utils exposing
     , string2Color
     , toEscapeString
     , urlBasePath
+    , urlQuery
     )
 
 import Accessibility.Aria as A11y_Aria
@@ -326,3 +327,10 @@ urlBasePath =
                 >> String.join "/"
                 >> (\path -> path ++ "/")
             )
+
+
+urlQuery : String -> Maybe String
+urlQuery =
+    String.split "?"
+        >> List.tail
+        >> Maybe.andThen List.Extra.last

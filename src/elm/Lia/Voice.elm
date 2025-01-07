@@ -184,25 +184,25 @@ isMale voice =
     --> Just { translated = True, lang = "de", name = "Deutsch Male" }
 
 -}
-getVoiceFor : String -> ( String, String ) -> Maybe Voice
-getVoiceFor voice ( langOld, langNew ) =
-    if langOld == langNew then
+getVoiceFor : String -> { x | old : String, new : String } -> Maybe Voice
+getVoiceFor voice lang =
+    if lang.old == lang.new then
         -- Nothing has changed
         Just
             { translated = False
             , lang =
                 voice
                     |> getLang
-                    |> Maybe.withDefault langOld
+                    |> Maybe.withDefault lang.old
             , name = voice
             }
 
-    else if getLang voice == Just langOld then
+    else if getLang voice == Just lang.old then
         -- the old voice needs to be translated too
         voice
             |> isMale
-            |> getVoiceFromLang langNew
-            |> Maybe.map (Voice True langNew)
+            |> getVoiceFromLang lang.new
+            |> Maybe.map (Voice True lang.new)
 
     else
         -- the voice
@@ -211,6 +211,6 @@ getVoiceFor voice ( langOld, langNew ) =
             , lang =
                 voice
                     |> getLang
-                    |> Maybe.withDefault langNew
+                    |> Maybe.withDefault lang.new
             , name = voice
             }

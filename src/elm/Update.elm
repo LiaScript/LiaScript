@@ -184,8 +184,8 @@ update msg model =
                             )
 
                 ( Nothing, _, ( "lang", param ) ) ->
-                    case JD.decodeValue JD.string param of
-                        Ok str ->
+                    case JD.decodeValue (JD.list JD.string) param of
+                        Ok [ language_code, language_name ] ->
                             let
                                 lia =
                                     model.lia
@@ -194,10 +194,11 @@ update msg model =
                                 | lia =
                                     { lia
                                         | translation =
-                                            str
+                                            language_code
                                                 |> Translations.getLnFromCode
                                                 |> Maybe.withDefault lia.translation
-                                        , langCode = str
+                                        , langName = Just language_name
+                                        , langCode = language_code
                                     }
                               }
                             , Cmd.none
