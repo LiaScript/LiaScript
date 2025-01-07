@@ -55,11 +55,7 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Markdown.Quiz.Block.Parser as Input
 import Lia.Markdown.Quiz.Block.Types as Input
-import Lia.Parser.Context
-    exposing
-        ( Context
-        , searchIndex
-        )
+import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (inlineCode, spaces)
 import Lia.Parser.Input as Context
 
@@ -97,7 +93,7 @@ annotations : Parser Context Parameters
 annotations =
     let
         attr =
-            withState (.defines >> .base >> succeed)
+            withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
                 |> andThen Attributes.parse
     in
     spaces
@@ -117,7 +113,7 @@ javascriptWithAttributes : Parser Context ( Parameters, String )
 javascriptWithAttributes =
     let
         attr =
-            withState (.defines >> .base >> succeed)
+            withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
                 |> andThen Attributes.parse
     in
     regexWith { caseInsensitive = True, multiline = False } "<script"
@@ -188,7 +184,7 @@ inlines : Parser Context Inline
 inlines =
     lazy <|
         \() ->
-            HTML.checkClosingTag
+            Context.checkAbort
                 |> keep Macro.macro
                 |> keep
                     ([ code
@@ -253,8 +249,8 @@ url =
 
 baseURL : String -> Parser Context String
 baseURL u =
-    withState (.defines >> .base >> succeed)
-        |> map (\base -> toURL base u)
+    withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
+        |> map (\( base, appendix ) -> toURL base appendix u)
 
 
 email : Parser s String
@@ -273,33 +269,47 @@ inline_url =
 ref_info : Parser Context Inlines
 ref_info =
     string "["
+        |> ignore (Context.addAbort "]")
         |> keep (manyTill inlines (string "]"))
+        |> ignore Context.popAbort
         |> map combine
 
 
 ref_title : Parser Context (Maybe Inlines)
 ref_title =
     spaces
-        |> ignore (string "\"")
-        |> keep (manyTill inlines (string "\""))
+        |> keep (or (between_ "\"") (between_ "'"))
         |> ignore spaces
-        |> map combine
+        |> map toInlines
         |> maybe
+
+
+toInlines : Inline -> Inlines
+toInlines element =
+    case element of
+        Container elements [] ->
+            elements
+
+        _ ->
+            [ element ]
 
 
 ref_url_1 : Parser Context String
 ref_url_1 =
     choice
         [ url
-        , andMap (regex "#[^ \t\\)]+") searchIndex
+        , andMap (regex "#[^ \t\\)]+") Context.searchIndex
         , regex "[^\\)\n \"]*" |> andThen baseURL
         ]
 
 
 ref_url_2 : Parser Context String
 ref_url_2 =
-    withState (\s -> succeed s.defines.base)
-        |> map (++)
+    withState (\s -> succeed ( s.defines.base, s.defines.appendix ))
+        |> map
+            (\( base, appendix ) url_ ->
+                toURL base appendix url_
+            )
         |> andMap (regex "[^\\)\n \"]*")
         |> or url
 
@@ -490,7 +500,7 @@ strings : Parser Context (Parameters -> Inline)
 strings =
     lazy <|
         \() ->
-            HTML.checkClosingTag
+            Context.checkAbort
                 |> keep
                     (choice
                         [ inline_url

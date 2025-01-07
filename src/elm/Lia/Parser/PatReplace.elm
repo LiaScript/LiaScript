@@ -8,6 +8,7 @@ module Lia.Parser.PatReplace exposing
 import Base64
 import Const
 import Regex
+import Url exposing (percentEncode)
 
 
 replace : List { pattern : String, by : String -> String -> String } -> String -> ( Bool, String )
@@ -53,6 +54,43 @@ link =
           }
         , { by = \_ w -> createOneDriveLink ("https://onedrive.live.com/" ++ w)
           , pattern = root "onedrive\\.live\\.com/(.*)"
+          }
+        , { by =
+                \_ w ->
+                    case w |> String.split "/" of
+                        "api" :: "v1" :: "repos" :: params ->
+                            "https://codeberg.org/api/v1/repos/"
+                                ++ String.join "/" params
+
+                        user :: repository :: "raw" :: "branch" :: branch :: filePath ->
+                            "https://codeberg.org/api/v1/repos/"
+                                ++ String.join "/"
+                                    [ user, repository, "raw", String.join "/" filePath ]
+                                ++ "?ref="
+                                ++ branch
+
+                        _ ->
+                            "https://codeberg.org/" ++ w
+          , pattern = root "codeberg\\.org/(.*)"
+          }
+        , { by =
+                \_ w ->
+                    case w |> String.split "/" of
+                        "api" :: "v4" :: "projects" :: params ->
+                            "https://gitlab.com/api/v4/projects/"
+                                ++ String.join "/" params
+
+                        user :: repository :: "-" :: "raw" :: branch :: filePath ->
+                            "https://gitlab.com/api/v4/projects/"
+                                ++ String.join
+                                    "/"
+                                    [ percentEncode (user ++ "/" ++ repository), "repository/files", String.join "/" filePath, "raw" ]
+                                ++ "?ref="
+                                ++ branch
+
+                        _ ->
+                            "https://gitlab.com/" ++ w
+          , pattern = root "gitlab\\.com/(.*)"
           }
         ]
         >> Tuple.second

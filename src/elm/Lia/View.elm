@@ -164,7 +164,7 @@ viewSlide screen model =
                 { lang = model.translation
                 , light = model.settings.light
                 , tooltips = model.settings.tooltips && (screen.width >= Const.tooltipBreakpoint)
-                , translations = ( model.langCodeOriginal, model.langCode )
+                , translations = { old = model.langCodeOriginal, new = model.langCode, name = model.langName }
                 , mode = model.settings.mode
                 , formulas = model.definition.formulas
                 , media = model.media
@@ -249,7 +249,7 @@ initConfig : Screen -> Model -> Section -> Config sub
 initConfig screen model =
     Config.init
         model.translation
-        ( model.langCodeOriginal, model.langCode )
+        { old = model.langCodeOriginal, new = model.langCode, name = model.langName }
         model.settings
         model.sync
         screen
@@ -358,7 +358,7 @@ slideA11y :
     { lang : Lang
     , light : Bool
     , tooltips : Bool
-    , translations : ( String, String )
+    , translations : { old : String, new : String, name : Maybe String }
     , mode : Mode
     , formulas : Dict String String
     , media : Dict String ( Int, Int )

@@ -35,7 +35,7 @@ import Lia.Parser.Parser as Parser
 import Lia.Section as Section exposing (Sections)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
-import Lia.Utils exposing (checkFalse, checkPersistency, urlBasePath)
+import Lia.Utils exposing (checkFalse, checkPersistency, urlBasePath, urlQuery)
 import Lia.View
 import List.Extra
 import Return exposing (Return)
@@ -162,7 +162,7 @@ resources and to add additional macros.
 -}
 add_imports : { model : Model, base : String } -> String -> Model
 add_imports { model, base } code =
-    case Parser.parse_definition (urlBasePath base |> Maybe.withDefault "") code of
+    case Parser.parse_definition (urlBasePath base |> Maybe.withDefault "") (base |> urlQuery |> Maybe.withDefault "") code of
         Ok ( definition, _ ) ->
             add_todos definition model
 
@@ -247,7 +247,14 @@ init_script :
         , event : Maybe Event
         }
 init_script model script =
-    case Parser.parse_definition model.origin script of
+    case
+        Parser.parse_definition model.origin
+            (model.readme
+                |> urlQuery
+                |> Maybe.withDefault ""
+            )
+            script
+    of
         Ok ( definition, code ) ->
             let
                 settings =

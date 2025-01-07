@@ -144,7 +144,7 @@ store ( key_, value_ ) =
             set (addToResources Link value_)
 
         "logo" ->
-            set (\c -> { c | logo = toURL c.base value_ })
+            set (\c -> { c | logo = toURL c.base c.appendix value_ })
 
         "narrator" ->
             set (\c -> { c | narrator = value_ })
@@ -188,7 +188,7 @@ store ( key_, value_ ) =
             set (\c -> { c | onload = value_ })
 
         "icon" ->
-            set (\c -> { c | macro = Dict.insert "icon" (toURL c.base value_) c.macro })
+            set (\c -> { c | macro = Dict.insert "icon" (toURL c.base c.appendix value_) c.macro })
 
         _ ->
             set (Macro.add ( key_, value_ ))

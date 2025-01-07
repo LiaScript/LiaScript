@@ -108,11 +108,19 @@ const Service = {
       mutations.forEach(function (mutation) {
         changeGoogleStyles()
 
+        let displayNames = new Intl.DisplayNames(['en'], { type: 'language' })
+
         elmSend({
           reply: true,
           track: [],
           service: Port,
-          message: { cmd: 'lang', param: document.documentElement.lang },
+          message: {
+            cmd: 'lang',
+            param: [
+              document.documentElement.lang,
+              displayNames.of(document.documentElement.lang),
+            ],
+          },
         })
       })
     })
