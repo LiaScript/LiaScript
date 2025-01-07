@@ -26,7 +26,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import I18n.Translations exposing (getCodeFromLn)
 import Json.Encode as JE
-import Lia.Markdown.Chart.Types exposing (Chart, Data, Diagram(..), Settings)
+import Lia.Markdown.Chart.Types exposing (Chart, Data, Diagram(..), Orientation(..), Settings, invertDiagram)
 import Lia.Markdown.HTML.Attributes exposing (annotation)
 import List.Statistics as Stat
 import Maybe
@@ -267,7 +267,7 @@ encodeGraph { labels, category, data } =
 
 
 encodeSankey : Data ( String, String, Float ) -> JE.Value
-encodeSankey { labels, category, data } =
+encodeSankey { labels, category, data, orientation } =
     let
         dict =
             data
@@ -320,6 +320,7 @@ encodeSankey { labels, category, data } =
           )
         , ( "lineStyle", JE.object [ ( "color", JE.string "source" ) ] )
         ]
+            |> CList.addIf (orientation == Just Vertical) ( "orient", JE.string "vertical" )
             |> List.singleton
             |> JE.list JE.object
       )
@@ -436,7 +437,7 @@ encodeBoxPlot { labels, category, data } =
 
 
 encodeBarChart : Data ( Maybe String, List (Maybe Float) ) -> JE.Value
-encodeBarChart { labels, category, data } =
+encodeBarChart { labels, category, data, orientation } =
     let
         bars =
             data
@@ -464,7 +465,11 @@ encodeBarChart { labels, category, data } =
                     []
                 |> JE.list JE.object
     in
-    [ ( "xAxis"
+    [ ( if orientation == Just Horizontal then
+            "yAxis"
+
+        else
+            "xAxis"
       , [ ( "type", JE.string "category" )
         , ( "data", category |> JE.list JE.string )
         ]
@@ -472,7 +477,16 @@ encodeBarChart { labels, category, data } =
             |> addAxisLimits labels.xLimits
             |> JE.object
       )
-    , yAxis labels.yLimits "value" labels.y []
+    , (if orientation == Just Horizontal then
+        xAxis
+
+       else
+        yAxis
+      )
+        labels.yLimits
+        "value"
+        labels.y
+        []
     , grid
     , ( "legend"
       , [ ( "data"
@@ -556,7 +570,7 @@ encodeBasic type_ { labels, category, data } =
 
 
 encodeParallel : Data (List (Maybe Float)) -> JE.Value
-encodeParallel { labels, category, data } =
+encodeParallel { labels, category, data, orientation } =
     [ ( "parallelAxis"
       , category
             |> List.indexedMap (\i cat -> [ ( "dim", JE.int i ), ( "name", JE.string cat ) ])
@@ -587,6 +601,18 @@ encodeParallel { labels, category, data } =
         , magicType = False
         , restore = False
         }
+    , ( "parallel"
+      , JE.object <|
+            [ ( "layout"
+              , JE.string <|
+                    if orientation == Just Vertical then
+                        "vertical"
+
+                    else
+                        "horizontal"
+              )
+            ]
+      )
 
     --  , brush
     , ( "tooltip", JE.object [] )
@@ -1001,7 +1027,7 @@ encodePieChart width { labels, category, data } =
 
 
 encodeFunnel : Data (List ( String, Float )) -> JE.Value
-encodeFunnel { labels, category, data } =
+encodeFunnel { labels, category, data, orientation } =
     if List.length data == 1 then
         let
             pieces =
@@ -1055,6 +1081,7 @@ encodeFunnel { labels, category, data } =
               , ( "data", pieces )
               , ( "sort", JE.string "none" )
               ]
+                |> CList.addIf (orientation == Just Horizontal) ( "orient", JE.string "horizontal" )
             ]
                 |> JE.list JE.object
           )
@@ -1378,7 +1405,12 @@ encode withColor chart =
                 [ ( "fontFamily", JE.string "Roboto" )
                 ]
           )
-        , xAxis
+        , (if chart.orientation == Just Vertical then
+            yAxis
+
+           else
+            xAxis
+          )
             { min =
                 chart.xLimits.min
                     |> Maybe.withDefault min
@@ -1391,7 +1423,16 @@ encode withColor chart =
             "value"
             (Just chart.xLabel)
             []
-        , yAxis chart.yLimits "value" (Just chart.yLabel) []
+        , (if chart.orientation == Just Vertical then
+            xAxis
+
+           else
+            yAxis
+          )
+            chart.yLimits
+            "value"
+            (Just chart.yLabel)
+            []
         , ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
         , ( "legend"
           , JE.object
@@ -1414,6 +1455,12 @@ encode withColor chart =
         , ( "series"
           , chart.diagrams
                 |> Dict.toList
+                |> (if chart.orientation == Just Vertical then
+                        List.map (Tuple.mapSecond invertDiagram)
+
+                    else
+                        identity
+                   )
                 |> JE.list (series withColor)
           )
         ]

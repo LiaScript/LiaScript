@@ -13,6 +13,7 @@ import Lia.Parser.PatReplace exposing (repo)
 import Lia.Section as Section
 import Lia.Settings.Types as Settings
 import Lia.Sync.Types as Sync
+import Lia.Utils exposing (urlQuery)
 import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 
@@ -45,7 +46,16 @@ toModel seed pane sync =
         |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap (Section.init seed)))
         |> andMap "section_active" JD.int
         |> JD.map2 (|>) (JD.succeed Nothing)
-        |> andMap "definition" Definition.decode
+        |> andMap "readme"
+            (JD.string
+                |> JD.andThen
+                    (urlQuery
+                        >> Maybe.withDefault ""
+                        >> Definition.decode
+                        >> JD.field "definition"
+                    )
+            )
+        --|> andMap "definition" Definition.decode
         |> JD.map2 (|>) (JD.succeed Index.init)
         |> JD.map2 (|>) (JD.succeed [])
         |> JD.map2 (|>) (JD.succeed [])
@@ -54,6 +64,7 @@ toModel seed pane sync =
                 |> JD.map (Translations.getLnFromCode >> Maybe.withDefault Translations.En)
             )
         |> andMap "translation" JD.string
+        |> JD.map2 (|>) (JD.succeed Nothing)
         |> andMap "translation" JD.string
         |> JD.map2 (|>) (JD.succeed identity)
         |> JD.map2 (|>) (JD.succeed Dict.empty)

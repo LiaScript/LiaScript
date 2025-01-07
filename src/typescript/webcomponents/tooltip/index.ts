@@ -285,18 +285,20 @@ class PreviewLink extends HTMLElement {
           PREVIEW.fetch(
             liascript_url[1], // extracted markdown url
             function (
-              url?: string,
-              title?: string,
-              description?: string,
-              image?: string,
-              image_alt?: string
+              url: string,
+              meta: {
+                title?: string
+                description?: string
+                logo?: string
+                logo_alt?: string
+              }
             ) {
               self.cache = toCard(
                 self.sourceUrl,
-                title,
-                description,
-                image,
-                image_alt
+                meta.title,
+                meta.description,
+                meta.logo,
+                meta.logo_alt
               )
               self.show()
             }

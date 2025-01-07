@@ -4,7 +4,52 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.16.6] - 08/12/2024
+## [0.16.8] - 06/01/2025
+
+- chore: npm update ace, katex, caniuse-lite
+- localization: Updated italian translation
+- fix(Link): alt unfinished quotations
+
+  Previously not closing quotations where chomped away when a title link
+  was defined:
+
+  ```markdown
+  [... "closing" ... "open](#link "title")
+  ```
+- improve(Links): Title with single quotes
+
+  Now it is possible to add title within single quotes to links as well:
+
+  ```markdown
+  - [alt](ref 'title')
+  - [alt](ref "title")
+  ```
+
+- feat(Table): add data-orientation setting
+
+  using the following
+
+  `<!-- data-orientation="vertical|horizontal" -->`
+
+  above a table allows to change the orientation of the generated diagram...
+
+- improve(Platform support): Courses can now also be loaded directly from the following platform, without requiring a proxy, and thus will not cause any CORS issues:
+
+  - [GitLab](https://gitlab.com)
+  - [Codeberg](https://onedrive.live.com)
+  
+
+## [0.16.7] - 14/11/2025
+
+- upgrade: ASCII-Art now a bit faster
+- improve(Translations): Add lang without translations
+
+  Previously TTS could only be used if it is supported by responsive
+  voice. But since LiaScript now allows to use browser supported TTS with
+  locally installed languages, this check has become obsolete. TTS is now
+  enabled for all comments, even for languages such as Georgian.
+
+## [0.16.6] - 08/11/2024
 
 - improve: LiaScript preview cards with new design
 - fix: HTML parser with combined macros

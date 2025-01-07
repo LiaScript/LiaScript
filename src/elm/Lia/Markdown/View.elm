@@ -32,6 +32,7 @@ import Lia.Markdown.Json.Encode as Encode
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
+import Lia.Markdown.Table.Matrix exposing (transpose)
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Task.View as Task
 import Lia.Markdown.Types exposing (Block(..), Blocks)
@@ -202,7 +203,7 @@ fold config output blocks =
 
 addTranslation :
     { hidden : Bool
-    , translations : Maybe ( String, String )
+    , translations : Maybe { old : String, new : String, name : Maybe String }
     , id : Int
     , narrator : String
     , audio : Array String
@@ -211,7 +212,43 @@ addTranslation :
 addTranslation { hidden, translations, id, narrator, audio } =
     case translations |> Maybe.andThen (Voice.getVoiceFor narrator) of
         Nothing ->
-            []
+            case translations of
+                Nothing ->
+                    []
+
+                Just { old, new, name } ->
+                    case name of
+                        Nothing ->
+                            []
+
+                        Just language_name ->
+                            [ ( "class"
+                              , if hidden then
+                                    "translate hidden-visually"
+
+                                else
+                                    "translate"
+                              )
+                            , ( "class", "lia-tts-" ++ String.fromInt id )
+                            , ( "data-voice", language_name )
+                            , ( "data-lang", new )
+                            , ( "translate"
+                              , "yes"
+                              )
+                            ]
+                                |> CList.addIf hidden ( "aria-hidden", "true" )
+                                |> CList.addIf
+                                    (checkTranslation translations
+                                        && (audio
+                                                |> Array.isEmpty
+                                                |> not
+                                           )
+                                    )
+                                    ( "data-file"
+                                    , audio
+                                        |> Array.toList
+                                        |> String.join ","
+                                    )
 
         Just { translated, lang, name } ->
             [ ( "class"
@@ -254,11 +291,11 @@ addTranslation { hidden, translations, id, narrator, audio } =
                     )
 
 
-checkTranslation : Maybe ( String, String ) -> Bool
+checkTranslation : Maybe { x | old : String, new : String } -> Bool
 checkTranslation translations =
     case translations of
-        Just ( original, translation ) ->
-            original == translation
+        Just lang ->
+            lang.old == lang.new
 
         Nothing ->
             False
