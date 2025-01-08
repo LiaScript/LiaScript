@@ -23,6 +23,7 @@ TODO:
 -}
 
 import Accessibility.Aria as A11y_Aria
+import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
 import Array
 import Html exposing (Attribute, Html)
@@ -325,6 +326,7 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
                     |> Maybe.map A11y_Aria.labelledBy
                     |> Maybe.withDefault (Attr.class "")
                )
+            :: A11y_Live.polite
             :: attr
         )
         body
