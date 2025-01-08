@@ -121,6 +121,7 @@ customElements.define(
         } //, decal: { show: true }}
 
         let self = this
+        // @ts-ignore
         this.chart?.on('finished', function () {
           self.setAttribute(
             'aria-label',
