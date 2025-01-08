@@ -1,5 +1,6 @@
 import 'katex/dist/katex.min.css'
 import katex from 'katex'
+import renderA11yString from './render-a11y-strings'
 
 var katexStyles: null | string = null
 
@@ -15,6 +16,8 @@ customElements.define(
       this.span = document.createElement('span')
       this.formula_ = ''
       this.macros = {}
+
+      console.warn('formula: constructor', katex)
     }
 
     connectedCallback() {
@@ -109,14 +112,26 @@ customElements.define(
             displayMode: this.displayMode(),
             trust: true, // allow latex like \includegraphics
             macros: macros,
+            output: 'htmlAndMathml',
             //  Object.keys(this.macros_).length == 0 ? undefined : this.macros_,
           })
         } catch (e: any) {
           console.warn('formula: render ->', e.message)
         }
 
-        this.setAttribute('role', 'math')
-        this.setAttribute('aria-label', this.formula_)
+        this.span.setAttribute('role', 'math')
+
+        if (this.getAttribute('aria-label') === null) {
+          let label = this.formula_
+
+          try {
+            label = renderA11yString(label)
+          } catch (e) {
+            console.warn('formula: render a11y ->', e.message)
+          }
+
+          this.span.setAttribute('aria-label', label)
+        }
       }
     }
 
