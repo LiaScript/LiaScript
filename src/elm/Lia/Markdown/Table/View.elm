@@ -5,6 +5,7 @@ module Lia.Markdown.Table.View exposing (view)
 -}
 
 import Accessibility.Aria as A11y_Aria
+import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
 import Array
 import Const
@@ -64,7 +65,9 @@ view config attr table =
 viewDiagram : Config sub -> Table -> State -> Parameters -> Html Msg
 viewDiagram config table state attr =
     Html.div
-        [ blockKeydown (UpdateTable Sub.NoOp) ]
+        [ blockKeydown (UpdateTable Sub.NoOp)
+        , A11y_Live.polite
+        ]
         [ toggleBtn table.id ( "table", "Table" )
         , table.body
             |> toMatrix config.main
@@ -652,6 +655,7 @@ viewTable sticky attr body =
             , ( "has-thead-sticky", True )
             , ( "has-first-col-sticky", sticky )
             ]
+        , A11y_Live.polite
         ]
         [ Html.table
             (A11y_Role.grid :: A11y_Aria.readOnly True :: Param.annotation "lia-table" attr)
@@ -666,7 +670,14 @@ toggleBtn id ( name, title ) =
         , msg = Just <| UpdateTable <| Sub.Toggle id
         , tabbable = True
         }
-        [ Attr.class "lia-btn--outline lia-plot__switch mb-1" ]
+        [ Attr.class "lia-btn--outline lia-plot__switch mb-1"
+        , A11y_Aria.label <|
+            if name == "table" then
+                "switch to table representation"
+
+            else
+                "switch to visualization in mode " ++ title
+        ]
         [ --Html.img
           -- [ Attr.height 16
           -- , Attr.width 16
