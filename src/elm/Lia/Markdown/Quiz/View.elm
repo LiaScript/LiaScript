@@ -326,7 +326,6 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
                     |> Maybe.map A11y_Aria.labelledBy
                     |> Maybe.withDefault (Attr.class "")
                )
-            :: A11y_Live.polite
             :: attr
         )
         body
@@ -381,14 +380,14 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
 viewFeedback : Lang -> Element -> Html msg
 viewFeedback lang state =
     if state.error_msg /= "" then
-        Html.div [ Attr.class "lia-quiz__feedback text-error" ]
+        Html.div [ Attr.class "lia-quiz__feedback text-error", A11y_Live.polite ]
             [ Html.text state.error_msg
             ]
 
     else
         case state.solved of
             Solution.Solved ->
-                Html.div [ Attr.class "lia-quiz__feedback text-success" ]
+                Html.div [ Attr.class "lia-quiz__feedback text-success", A11y_Live.polite ]
                     -- TODO: maybe lable success, failure, ... locale independend
                     [ lang
                         |> quizAnswerSuccess
@@ -396,7 +395,7 @@ viewFeedback lang state =
                     ]
 
             Solution.ReSolved ->
-                Html.div [ Attr.class "lia-quiz__feedback text-disabled" ]
+                Html.div [ Attr.class "lia-quiz__feedback text-disabled", A11y_Live.polite ]
                     [ lang
                         |> quizAnswerResolved
                         |> Html.text
@@ -407,7 +406,7 @@ viewFeedback lang state =
                     Html.text ""
 
                 else
-                    Html.div [ Attr.class "lia-quiz__feedback text-error" ]
+                    Html.div [ Attr.class "lia-quiz__feedback text-error", A11y_Live.polite ]
                         [ lang
                             |> quizAnswerError
                             |> Html.text
@@ -478,7 +477,10 @@ viewHints config counter hints =
         hints
             |> List.take counter
             |> List.map (viewer config >> Html.li [])
-            |> Html.ul [ Attr.class "lia-list--unordered lia-quiz__hints" ]
+            |> Html.ul
+                [ Attr.class "lia-list--unordered lia-quiz__hints"
+                , A11y_Live.polite
+                ]
             |> Html.map Script
 
 
