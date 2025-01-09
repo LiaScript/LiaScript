@@ -3634,7 +3634,7 @@ confTooltip lang =
             "टूलटिप्स"
 
         It ->
-            "Tooltip"
+            "Suggerimento"
 
         Ja ->
             "ツールチップ"
@@ -3683,7 +3683,7 @@ ttsPreferBrowser lang =
             "ब्राउज़र TTS को प्राथमिकता दें"
 
         It ->
-            "Preferir TTS del navegador"
+            "Preferisci la sintesi vocale del browser"
 
         Ja ->
             "ブラウザのTTSを優先する"
@@ -4295,7 +4295,7 @@ codeMinimize lang =
             "նվազեցնել տեսքը"
 
         It ->
-            "minimizare la vista"
+            "minimizzare la vista"
 
         Ja ->
             "最小化"
@@ -4706,7 +4706,7 @@ quizHint lang =
             "ցուցադրել ակնարկ"
 
         It ->
-            "mosta un indizio"
+            "mostra un indizio"
 
         Ja ->
             "ヒントを表示"
@@ -5801,7 +5801,7 @@ chartBoxplot lang =
             "बॉक्सप्लॉट"
 
         It ->
-            "Boxplot"
+            "Diagramma a scatola"
 
         Ja ->
             "ボックスプロット"
@@ -5850,7 +5850,7 @@ chartHeatmap lang =
             "हीटमैप"
 
         It ->
-            "Heat map"
+            "Mappa termica"
 
         Ja ->
             "ヒートマップ"
@@ -5899,7 +5899,7 @@ chartMap lang =
             "मैप"
 
         It ->
-            "Map"
+            "Mappa"
 
         Ja ->
             "地図"
@@ -5948,7 +5948,7 @@ chartParallel lang =
             "समानांतर समन्वय मानचित्र"
 
         It ->
-            "Parallel coordinate map"
+            "Mappa a coordinate parallele"
 
         Ja ->
             "パラレル座標マップ"
@@ -5994,7 +5994,7 @@ chartLines lang =
             "लाइन चार्ट"
 
         It ->
-            "Line graph"
+            "Grafico a linee"
 
         Ja ->
             "折れ線グラフ"
@@ -6040,7 +6040,7 @@ chartGraph lang =
             "रिलेशनशिप ग्राफ"
 
         It ->
-            "Relationship graph"
+            "Grafico delle relazioni"
 
         Ja ->
             "関係グラフ"
@@ -6086,7 +6086,7 @@ chartSankey lang =
             "सैंके आरेख"
 
         It ->
-            "Sankey diagram"
+            "Diagramma di Sankey"
 
         Ja ->
             "サンキーダイアグラム"
@@ -6132,7 +6132,7 @@ chartFunnel lang =
             "फ़नल चार्ट"
 
         It ->
-            "Funnel chart"
+            "Grafico a imbuto"
 
         Ja ->
             "ファネルチャート"

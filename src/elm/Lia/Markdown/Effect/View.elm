@@ -5,6 +5,8 @@ module Lia.Markdown.Effect.View exposing
     )
 
 import Accessibility.Key as A11y_Key
+import Accessibility.Live as A11y_Live
+import Accessibility.Role as A11y_Role
 import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -72,7 +74,7 @@ block config model attr e body =
                     Html.text ""
 
                 else
-                    Html.div [ Attr.class "lia-effect" ]
+                    Html.div [ Attr.class "lia-effect", A11y_Live.polite, A11y_Role.alert ] <|
                         [ circle e.begin
                         , Html.div
                             (attr
@@ -91,7 +93,7 @@ block config model attr e body =
             PlayBackAnimation ->
                 Html.div [ Attr.hidden (not visible) ] <|
                     [ block_playback config e
-                    , Html.div [ Attr.class "lia-effect" ]
+                    , Html.div [ Attr.class "lia-effect", A11y_Live.polite, A11y_Role.alert ]
                         [ circle e.begin
                         , Html.div
                             (attr
@@ -149,15 +151,14 @@ inline config attr e body =
 
 
 hiddenSpan : Bool -> Parameters -> List (Html msg) -> Html msg
-hiddenSpan hide =
-    annotation
+hiddenSpan hide attr =
+    Html.span
         (if hide then
-            "lia-effect--inline hide"
+            annotation "lia-effect--inline hide" attr
 
          else
-            "lia-effect--inline"
+            A11y_Live.polite :: A11y_Role.alert :: annotation "lia-effect--inline" attr
         )
-        >> Html.span
 
 
 block_playback : Config sub -> Effect Block -> Html Msg
