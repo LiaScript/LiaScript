@@ -4,6 +4,7 @@ module Lia.Markdown.Effect.View exposing
     , state
     )
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
@@ -171,6 +172,7 @@ block_playback config e =
                 |> E.Mute
                 |> UpdateEffect True
                 |> onClick
+            , A11y_Aria.label "Stop playback"
             ]
             []
 
@@ -188,6 +190,7 @@ block_playback config e =
                         )
                         config.slide
                         "this.parentNode.childNodes[1]"
+                    , A11y_Aria.label "Start playback"
                     ]
                     []
 
@@ -196,6 +199,7 @@ block_playback config e =
                     [ Attr.class "lia-btn lia-btn--transparent text-highlight icon icon-play-circle"
                     , A11y_Key.tabbable True
                     , playBackAttr e.id name lang config.slide "this.parentNode.childNodes[1]"
+                    , A11y_Aria.label "Start playback"
                     ]
                     []
 
@@ -225,6 +229,7 @@ inline_playback config e =
                 |> (\event -> "window.LIA.playback(" ++ event ++ ")")
                 |> Attr.attribute "onclick"
             , A11y_Key.tabbable True
+            , A11y_Aria.label "Stop playback of phrase"
             ]
             []
 
@@ -243,6 +248,7 @@ inline_playback config e =
                         config.slide
                         "this.labels[0]"
                     , A11y_Key.tabbable True
+                    , A11y_Aria.label "Start playback of phrase"
                     ]
                     []
 
@@ -256,6 +262,7 @@ inline_playback config e =
                         config.slide
                         "this.labels[0]"
                     , A11y_Key.tabbable True
+                    , A11y_Aria.label "Start playback of phrase"
                     ]
                     []
 

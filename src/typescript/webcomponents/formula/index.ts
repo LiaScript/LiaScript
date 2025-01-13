@@ -8,12 +8,17 @@ customElements.define(
   'lia-formula',
   class extends HTMLElement {
     private span: HTMLSpanElement
+    private label: HTMLSpanElement
     private formula_: string
     private macros_: { [key: string]: string }
 
     constructor() {
       super()
       this.span = document.createElement('span')
+      this.label = document.createElement('span')
+      this.label.style.display = 'none'
+      this.label.setAttribute('aria-hidden', 'true')
+
       this.formula_ = ''
       this.macros = {}
 
@@ -35,6 +40,7 @@ customElements.define(
       shadowRoot.appendChild(link)
       shadowRoot.appendChild(style)
       shadowRoot.appendChild(this.span)
+      this.appendChild(this.label)
 
       this.formula_ = this.getAttribute('formula') || ''
 
@@ -131,6 +137,7 @@ customElements.define(
           }
 
           this.span.setAttribute('aria-label', label)
+          this.label.innerHTML = label
         }
       }
     }
@@ -159,6 +166,7 @@ customElements.define(
 
     disconnectedCallback() {
       this.span.innerHTML = ''
+      this.label.innerHTML = ''
     }
   }
 )
