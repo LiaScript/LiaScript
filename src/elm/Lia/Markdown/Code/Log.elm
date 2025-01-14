@@ -13,6 +13,7 @@ module Lia.Markdown.Code.Log exposing
     , view
     )
 
+import Accessibility.Aria as A11y_Aria
 import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -92,16 +93,16 @@ view_message { level, text } =
     ( text
     , case level of
         Debug ->
-            viewLog "text-debug" text
+            viewLog { class = "text-debug", str = text, label = "debug" }
 
         Info ->
-            viewLog "text-info" text
+            viewLog { class = "text-info", str = text, label = "info" }
 
         Warn ->
-            viewLog "text-warning" text
+            viewLog { class = "text-warning", str = text, label = "warning" }
 
         Error ->
-            viewLog "text-error" text
+            viewLog { class = "text-info", str = text, label = "error" }
 
         HTML ->
             Html.div
@@ -111,14 +112,16 @@ view_message { level, text } =
                 []
 
         Stream ->
-            viewLog "text-info" text
+            viewLog { class = "text-info", str = text, label = "info" }
     )
 
 
-viewLog : String -> String -> Html msg
-viewLog class str =
+viewLog : { class : String, str : String, label : String } -> Html msg
+viewLog { class, str, label } =
     Html.div
-        [ Attr.class class ]
+        [ Attr.class class
+        , A11y_Aria.label label
+        ]
         [ Html.text str
         ]
 

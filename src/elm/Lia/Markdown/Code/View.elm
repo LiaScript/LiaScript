@@ -67,7 +67,6 @@ view { lang, theme, model, code, sync, cursors } =
                             |> CList.attachIf (not <| Log.isEmpty pro.log)
                                 (Html.div
                                     [ Attr.class "lia-code-terminal"
-                                    , A11y_Role.log
                                     , A11y_Aria.label (Translations.codeTerminal lang)
                                     ]
                                     [ view_result (Highlight id_1)
@@ -541,6 +540,9 @@ view_result code height log =
         Log.view log
             |> Keyed.node "lia-terminal"
                 [ Attr.class "lia-code-terminal__output"
+                , A11y_Role.log
+                , A11y_Live.polite
+                , A11y_Live.atomic False
                 , Resize code
                     |> onChangeHeight
                 , height
