@@ -26,6 +26,7 @@ import Accessibility.Aria as A11y_Aria
 import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
 import Array
+import Conditional.List as CList
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import I18n.Translations as Translations
@@ -327,6 +328,7 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
                     |> Maybe.withDefault (Attr.class "")
                )
             :: attr
+            |> CList.addIf (state.solved == Solution.ReSolved) A11y_Live.polite
         )
         body
     , Html.div [ Attr.class "lia-quiz__control" ]
