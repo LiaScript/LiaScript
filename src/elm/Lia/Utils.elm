@@ -33,7 +33,7 @@ import Html.Events as Event
 import Json.Decode as JD
 import List.Extra
 import Process
-import Task exposing (Task)
+import Task
 
 
 {-| Convert common JavaScript string escapes elm escapes:

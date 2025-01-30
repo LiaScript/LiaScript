@@ -1,5 +1,6 @@
 module Lia.Markdown.Effect.Script.Types exposing
-    ( Msg(..)
+    ( Modifiable(..)
+    , Msg(..)
     , Script
     , Scripts
     , Stdout(..)
@@ -46,10 +47,17 @@ type Msg sub
     | Checkbox Int Bool String
     | Edit Bool Int
     | EditCode Int String
+    | EditParam Int String String
     | NoOp
     | Handle Event
     | Delay Float (Msg sub)
     | Sub Int sub
+
+
+type Modifiable
+    = Yes
+    | No
+    | Partially String
 
 
 isError : Stdout a -> Bool
@@ -80,7 +88,7 @@ type alias Script a =
     , block : Bool -- this indicates script execution is triggered by an external handler
     , update : Bool
     , runOnce : Bool
-    , modify : Bool
+    , modify : Modifiable
     , edit : Bool
     , result : Maybe (Stdout a)
     , output : Maybe String
@@ -98,6 +106,39 @@ input =
         Regex.fromString "@input\\(`([^`]+)`\\)"
 
 
+modifications : Parameters -> Modifiable
+modifications params =
+    let
+        pattern =
+            Attr.get "modify" params
+    in
+    case
+        Maybe.map (String.trim >> String.toLower) pattern
+    of
+        Just "true" ->
+            Yes
+
+        Just "1" ->
+            Yes
+
+        Just "" ->
+            Yes
+
+        Just "false" ->
+            No
+
+        Just "0" ->
+            No
+
+        Nothing ->
+            No
+
+        Just _ ->
+            pattern
+                |> Maybe.map (String.replace "\\n" "\n" >> String.replace "\\t" "\t" >> Partially)
+                |> Maybe.withDefault No
+
+
 push : String -> Int -> Parameters -> String -> Scripts a -> Scripts a
 push lang id params script javascript =
     Array.push
@@ -108,7 +149,7 @@ push lang id params script javascript =
         , block = Attr.isSet "block" params
         , update = False
         , runOnce = Attr.isSet "run-once" params
-        , modify = Attr.isNotSet "modify" params
+        , modify = modifications params
         , edit = False
         , result =
             params
