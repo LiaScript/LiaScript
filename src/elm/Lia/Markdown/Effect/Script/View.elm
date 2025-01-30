@@ -9,11 +9,12 @@ import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
 import Lia.Markdown.Effect.Script.Intl as Intl
-import Lia.Markdown.Effect.Script.Types exposing (Msg(..), Script, Stdout(..), isError)
+import Lia.Markdown.Effect.Script.Types exposing (Modifiable(..), Msg(..), Script, Stdout(..), isError)
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (blockKeydown, icon, modal, onEnter)
+import List.Extra
 
 
 view : Config sub -> Int -> Parameters -> Html (Msg sub)
@@ -24,7 +25,17 @@ view config id attr =
                 Just _ ->
                     if node.edit then
                         Html.span [ Attr.class "flex items-center" ]
-                            [ editor config.theme id node.script
+                            [ editor config.theme
+                                node.highlighting
+                                id
+                                (case node.modify of
+                                    Partially pattern ->
+                                        Just pattern
+
+                                    _ ->
+                                        Nothing
+                                )
+                                node.script
                             , if Input.isHidden node.input then
                                 Html.text ""
 
@@ -50,13 +61,13 @@ view config id attr =
 
 class : Script SubSection -> String
 class node =
-    if node.input.type_ /= Nothing && node.modify then
+    if node.input.type_ /= Nothing && (node.modify /= No) then
         "lia-script lia-script--with-border"
 
     else if node.input.type_ /= Nothing then
         "lia-script lia-script--border"
 
-    else if node.modify then
+    else if node.modify /= No then
         "lia-script"
 
     else
@@ -91,7 +102,7 @@ script config withStyling attr id node =
                             _ ->
                                 []
                         )
-                    |> CList.addIf node.modify (onEdit True id)
+                    |> CList.addIf (node.modify /= No) (onEdit True id)
                     |> CList.addIf (isError result) (Attr.style "color" "red")
                     |> CList.addIf
                         (case node.input.type_ of
@@ -354,18 +365,30 @@ onEdit bool =
            )
 
 
-editor : Maybe String -> Int -> String -> Html (Msg sub)
-editor theme id code =
+editor : Maybe String -> String -> Int -> Maybe String -> String -> Html (Msg sub)
+editor theme mode id subPattern code =
+    let
+        ( msg, value ) =
+            case subPattern of
+                Just str ->
+                    String.split str code
+                        |> List.Extra.getAt 1
+                        |> Maybe.map (Tuple.pair (EditParam id str))
+                        |> Maybe.withDefault ( EditCode id, code )
+
+                _ ->
+                    ( EditCode id, code )
+    in
     modal (Edit False id)
         Nothing
         [ Editor.editor
-            [ Editor.onChange (EditCode id)
-            , Editor.value code
+            [ Editor.onChange msg
+            , Editor.value value
             , theme
                 |> Maybe.withDefault "crimson_editor"
                 |> Editor.theme
             , Editor.focusing
-            , Editor.mode "javascript"
+            , Editor.mode mode
             , Editor.maxLines 16
             , Editor.showGutter True
             , Editor.useSoftTabs False

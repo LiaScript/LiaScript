@@ -15,6 +15,7 @@ import Lia.Chat.Update as Chat
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Effect.Update as Effect
+import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, loadResource)
 import Lia.Parser.Parser exposing (parse_section)
@@ -118,7 +119,7 @@ update session msg model =
                     }
             }
                 |> Return.val
-                |> Return.batchEvent (Service.Slide.initialize model.section_active)
+                |> Return.batchEvent (initializeSlide model)
 
         Load force idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
@@ -414,7 +415,7 @@ update session msg model =
                     in
                     return
                         |> Return.mapValCmd (set_active_section { model | to_do = [] }) UpdateMarkdown
-                        |> Return.batchEvents (Service.Slide.initialize model.section_active :: model.to_do)
+                        |> Return.batchEvents (initializeSlide model :: model.to_do)
 
                 ( JumpToFragment id, Just sec ) ->
                     if (model.settings.mode == Textbook) || sec.effect_model.visible == id then
@@ -472,6 +473,33 @@ update session msg model =
 
                 _ ->
                     Return.val model
+
+
+getTitle : Model -> String
+getTitle model =
+    case get_active_section model of
+        Just sec ->
+            stringify_
+                { scripts = sec.effect_model.javascript
+                , visible =
+                    if sec.visible then
+                        Just sec.effect_model.visible
+
+                    else
+                        Nothing
+                , input = { options = Array.empty, state = Array.empty }
+                }
+                sec.title
+                ++ " · "
+                ++ model.title
+
+        Nothing ->
+            model.title
+
+
+initializeSlide : Model -> Event
+initializeSlide model =
+    Service.Slide.initialize model.section_active (getTitle model)
 
 
 {-| **@private:** This helper is only required if the mode changes to Textbook.

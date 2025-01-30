@@ -24,6 +24,8 @@ const Service = {
   handle: function (event: Lia.Event) {
     switch (event.message.cmd) {
       case 'init': {
+        document.title = event.message.param.title
+
         scrollUp()
 
         // this the active link within the table of contents

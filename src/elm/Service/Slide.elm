@@ -13,9 +13,11 @@ import Service.Event as Event exposing (Event)
 to the top and also check if the associated title is visible in the table of
 contents, if not, this will be moved into the viewPort either.
 -}
-initialize : Int -> Event
-initialize slide =
-    [ ( "slide", JE.int slide ) ]
+initialize : Int -> String -> Event
+initialize slide title =
+    [ ( "slide", JE.int slide )
+    , ( "title", JE.string title )
+    ]
         |> JE.object
         |> event "init"
 

@@ -14,6 +14,7 @@ module Lia.Utils exposing
     , onEnter
     , onKeyDown
     , percentage
+    , scheduleFocus
     , string2Color
     , toEscapeString
     , urlBasePath
@@ -31,6 +32,7 @@ import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
 import List.Extra
+import Process
 import Task
 
 
@@ -173,6 +175,13 @@ icon class attributes =
 focus : msg -> String -> Cmd msg
 focus msg =
     Dom.focus >> Task.attempt (always msg)
+
+
+scheduleFocus : Maybe Float -> msg -> String -> Cmd msg
+scheduleFocus delay msg elementID =
+    Process.sleep (Maybe.withDefault 500 delay)
+        |> Task.andThen (always (Dom.focus elementID))
+        |> Task.attempt (always msg)
 
 
 {-| Create custom modals, which overlay the entire view.
