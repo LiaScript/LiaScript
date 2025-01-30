@@ -89,6 +89,7 @@ type alias Script a =
     , update : Bool
     , runOnce : Bool
     , modify : Modifiable
+    , highlighting : String
     , edit : Bool
     , result : Maybe (Stdout a)
     , output : Maybe String
@@ -150,6 +151,11 @@ push lang id params script javascript =
         , update = False
         , runOnce = Attr.isSet "run-once" params
         , modify = modifications params
+        , highlighting =
+            params
+                |> Attr.get "type"
+                |> Maybe.map (String.replace "text/" "")
+                |> Maybe.withDefault "javascript"
         , edit = False
         , result =
             params

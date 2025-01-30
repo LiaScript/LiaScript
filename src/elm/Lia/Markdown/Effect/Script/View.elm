@@ -26,6 +26,7 @@ view config id attr =
                     if node.edit then
                         Html.span [ Attr.class "flex items-center" ]
                             [ editor config.theme
+                                node.highlighting
                                 id
                                 (case node.modify of
                                     Partially pattern ->
@@ -364,8 +365,8 @@ onEdit bool =
            )
 
 
-editor : Maybe String -> Int -> Maybe String -> String -> Html (Msg sub)
-editor theme id subPattern code =
+editor : Maybe String -> String -> Int -> Maybe String -> String -> Html (Msg sub)
+editor theme mode id subPattern code =
     let
         ( msg, value ) =
             case subPattern of
@@ -387,7 +388,7 @@ editor theme id subPattern code =
                 |> Maybe.withDefault "crimson_editor"
                 |> Editor.theme
             , Editor.focusing
-            , Editor.mode "javascript"
+            , Editor.mode mode
             , Editor.maxLines 16
             , Editor.showGutter True
             , Editor.useSoftTabs False
