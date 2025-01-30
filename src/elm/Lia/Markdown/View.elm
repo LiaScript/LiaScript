@@ -6,6 +6,7 @@ module Lia.Markdown.View exposing
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
+import Accessibility.Live as A11y_Live
 import Array exposing (Array)
 import Conditional.List as CList
 import Dict
@@ -303,11 +304,16 @@ checkTranslation translations =
 
 viewMain : Bool -> List (Html msg) -> Html msg
 viewMain hidden =
-    Html.main_
-        [ Attr.class "lia-slide__content"
-        , A11y_Landmark.main_
-        , Attr.hidden hidden
-        ]
+    Html.main_ <|
+        if hidden then
+            [ Attr.hidden hidden
+            ]
+
+        else
+            [ Attr.class "lia-slide__content"
+            , A11y_Landmark.main_
+            , A11y_Live.polite
+            ]
 
 
 view_footnote : (Block -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
