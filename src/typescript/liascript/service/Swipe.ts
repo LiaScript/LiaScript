@@ -201,18 +201,14 @@ const Service = {
     element.addEventListener(
       'keydown',
       (e) => {
-        switch (e.key) {
-          case 'PageDown':
-          case 'ArrowRight': {
-            sendReply(elmSend, Dir.left)
-            break
-          }
-          case 'PageUp':
-          case 'ArrowLeft': {
-            sendReply(elmSend, Dir.right)
+        if (e.key === 'ArrowRight' || (e.shiftKey && e.key === 'ArrowRight')) {
+          sendReply(elmSend, Dir.right)
+          return
+        }
 
-            break
-          }
+        if (e.key === 'ArrowLeft' || (e.shiftKey && e.key === 'ArrowLeft')) {
+          sendReply(elmSend, Dir.left)
+          return
         }
       },
       false
