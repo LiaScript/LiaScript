@@ -1064,7 +1064,6 @@ header online lang screen settings logo buttons =
         [ Html.img
             [ Attr.src logo
             , Attr.class "lia_header__logo"
-            , Attr.alt "logo"
             ]
             []
         ]
