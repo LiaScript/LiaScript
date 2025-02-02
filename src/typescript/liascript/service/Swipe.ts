@@ -201,12 +201,18 @@ const Service = {
     element.addEventListener(
       'keydown',
       (e) => {
-        if (e.key === 'ArrowRight' || (e.shiftKey && e.key === 'ArrowRight')) {
+        if (
+          e.key === 'ArrowRight' ||
+          (e.altKey && e.shiftKey && (e.key === 'P' || e.key === 'p'))
+        ) {
           sendReply(elmSend, Dir.right)
           return
         }
 
-        if (e.key === 'ArrowLeft' || (e.shiftKey && e.key === 'ArrowLeft')) {
+        if (
+          e.key === 'ArrowLeft' ||
+          (e.altKey && e.shiftKey && (e.key === 'N' || e.key === 'n'))
+        ) {
           sendReply(elmSend, Dir.left)
           return
         }
