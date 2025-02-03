@@ -72,7 +72,7 @@ const Service = {
 /**
  * Scroll a slide to the start and put the first header element within in focus.
  */
-function scrollUp() {
+export function scrollUp() {
   // every LiaScript slide consists of a main tag
   const main = document.querySelector('main:not([hidden=""])')
 
@@ -118,7 +118,7 @@ function isInViewport(element: HTMLElement) {
  * @param id - id of the DOM element
  * @param delay - in milliseconds
  */
-function scrollIntoView(id: string, delay: number) {
+export function scrollIntoView(id: string, delay: number) {
   setTimeout(function () {
     const elem = document.getElementById(id)
 
