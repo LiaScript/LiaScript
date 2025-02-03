@@ -1,4 +1,5 @@
 import Lia from '../../liascript/types/lia.d'
+import { scrollIntoView, scrollUp } from './Slide'
 
 declare global {
   interface Window {
@@ -214,6 +215,20 @@ const Service = {
           (e.altKey && e.shiftKey && (e.key === 'N' || e.key === 'n'))
         ) {
           sendReply(elmSend, Dir.left)
+          return
+        }
+
+        if (e.altKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+          if (window.LIA.settings.table_of_contents) {
+            window.LIA.settings.table_of_contents = false
+          } else {
+            window.LIA.settings.table_of_contents = true
+            scrollIntoView('focusedToc', 300)
+            setTimeout(() => {
+              const link = document.getElementById('focusedToc')
+              link?.focus()
+            }, 1000)
+          }
           return
         }
       },
