@@ -30,7 +30,11 @@ view settings =
         , Attr.style "max-width" "600px"
         , Attr.style "overflow" "auto"
         ]
-        [ Html.h1 [ Attr.style "text-align" "center" ]
+        [ Html.h1
+            [ Attr.style "text-align" "center"
+            , Attr.id "lia-modal-focus"
+            , Attr.tabindex 0
+            ]
             [ Html.text "Classroom "
             , settings.sync.select
                 |> Maybe.map

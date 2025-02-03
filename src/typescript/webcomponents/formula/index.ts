@@ -1,5 +1,6 @@
 import 'katex/dist/katex.min.css'
 import katex from 'katex'
+import renderA11yString from './render-a11y-strings'
 
 var katexStyles: null | string = null
 
@@ -7,14 +8,21 @@ customElements.define(
   'lia-formula',
   class extends HTMLElement {
     private span: HTMLSpanElement
+    private label: HTMLSpanElement
     private formula_: string
     private macros_: { [key: string]: string }
 
     constructor() {
       super()
       this.span = document.createElement('span')
+      this.label = document.createElement('span')
+      this.label.style.display = 'none'
+      this.label.setAttribute('aria-hidden', 'true')
+
       this.formula_ = ''
       this.macros = {}
+
+      console.warn('formula: constructor', katex)
     }
 
     connectedCallback() {
@@ -32,6 +40,7 @@ customElements.define(
       shadowRoot.appendChild(link)
       shadowRoot.appendChild(style)
       shadowRoot.appendChild(this.span)
+      this.appendChild(this.label)
 
       this.formula_ = this.getAttribute('formula') || ''
 
@@ -109,14 +118,27 @@ customElements.define(
             displayMode: this.displayMode(),
             trust: true, // allow latex like \includegraphics
             macros: macros,
+            output: 'htmlAndMathml',
             //  Object.keys(this.macros_).length == 0 ? undefined : this.macros_,
           })
         } catch (e: any) {
           console.warn('formula: render ->', e.message)
         }
 
-        this.setAttribute('role', 'math')
-        this.setAttribute('aria-label', this.formula_)
+        this.span.setAttribute('role', 'math')
+
+        if (this.getAttribute('aria-label') === null) {
+          let label = this.formula_
+
+          try {
+            label = renderA11yString(label)
+          } catch (e) {
+            console.warn('formula: render a11y ->', e.message)
+          }
+
+          this.span.setAttribute('aria-label', label)
+          this.label.innerHTML = label
+        }
       }
     }
 
@@ -144,6 +166,7 @@ customElements.define(
 
     disconnectedCallback() {
       this.span.innerHTML = ''
+      this.label.innerHTML = ''
     }
   }
 )

@@ -6,6 +6,7 @@ module Lia.Markdown.View exposing
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
+import Accessibility.Live as A11y_Live
 import Array exposing (Array)
 import Conditional.List as CList
 import Dict
@@ -303,11 +304,16 @@ checkTranslation translations =
 
 viewMain : Bool -> List (Html msg) -> Html msg
 viewMain hidden =
-    Html.main_
-        [ Attr.class "lia-slide__content"
-        , A11y_Landmark.main_
-        , Attr.hidden hidden
-        ]
+    Html.main_ <|
+        if hidden then
+            [ Attr.hidden hidden
+            ]
+
+        else
+            [ Attr.class "lia-slide__content"
+            , A11y_Landmark.main_
+            , A11y_Live.polite
+            ]
 
 
 view_footnote : (Block -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
@@ -347,24 +353,24 @@ view_header config =
 header : Config Msg -> Int -> Int -> Parameters -> Inlines -> Html Msg
 header config main sub attr =
     config.view
-        >> (case sub of
-                0 ->
-                    Html.h1 (headerStyle (main + sub) attr)
-
+        >> (case main + sub of
                 1 ->
-                    Html.h2 (headerStyle (main + sub) attr)
+                    Html.h1 (headerStyle sub attr)
 
                 2 ->
-                    Html.h3 (headerStyle (main + sub) attr)
+                    Html.h2 (headerStyle sub attr)
 
                 3 ->
-                    Html.h4 (headerStyle (main + sub) attr)
+                    Html.h3 (headerStyle sub attr)
 
                 4 ->
-                    Html.h5 (headerStyle (main + sub) attr)
+                    Html.h4 (headerStyle sub attr)
+
+                5 ->
+                    Html.h5 (headerStyle sub attr)
 
                 _ ->
-                    Html.h6 (headerStyle (main + sub) attr)
+                    Html.h6 (headerStyle sub attr)
            )
 
 
@@ -373,11 +379,11 @@ headerStyle i =
     annotation
         ("h"
             ++ (String.fromInt <|
-                    if i > 4 then
-                        4
+                    if (i + 1) > 5 then
+                        5
 
                     else
-                        i
+                        i + 1
                )
         )
 
