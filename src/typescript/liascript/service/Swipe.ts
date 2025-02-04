@@ -204,17 +204,17 @@ const Service = {
       (e) => {
         if (
           e.key === 'ArrowRight' ||
-          (e.altKey && e.shiftKey && (e.key === 'P' || e.key === 'p'))
+          (e.altKey && e.shiftKey && (e.key === 'N' || e.key === 'n'))
         ) {
-          sendReply(elmSend, Dir.right)
+          sendReply(elmSend, Dir.left)
           return
         }
 
         if (
           e.key === 'ArrowLeft' ||
-          (e.altKey && e.shiftKey && (e.key === 'N' || e.key === 'n'))
+          (e.altKey && e.shiftKey && (e.key === 'P' || e.key === 'p'))
         ) {
-          sendReply(elmSend, Dir.left)
+          sendReply(elmSend, Dir.right)
           return
         }
 
