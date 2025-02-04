@@ -1,4 +1,5 @@
 import Lia from '../../liascript/types/lia.d'
+import { scrollIntoView, scrollUp } from './Slide'
 
 declare global {
   interface Window {
@@ -201,18 +202,34 @@ const Service = {
     element.addEventListener(
       'keydown',
       (e) => {
-        switch (e.key) {
-          case 'PageDown':
-          case 'ArrowRight': {
-            sendReply(elmSend, Dir.left)
-            break
-          }
-          case 'PageUp':
-          case 'ArrowLeft': {
-            sendReply(elmSend, Dir.right)
+        if (
+          e.key === 'ArrowRight' ||
+          (e.altKey && e.shiftKey && (e.key === 'P' || e.key === 'p'))
+        ) {
+          sendReply(elmSend, Dir.right)
+          return
+        }
 
-            break
+        if (
+          e.key === 'ArrowLeft' ||
+          (e.altKey && e.shiftKey && (e.key === 'N' || e.key === 'n'))
+        ) {
+          sendReply(elmSend, Dir.left)
+          return
+        }
+
+        if (e.altKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+          if (window.LIA.settings.table_of_contents) {
+            window.LIA.settings.table_of_contents = false
+          } else {
+            window.LIA.settings.table_of_contents = true
+            scrollIntoView('focusedToc', 300)
+            setTimeout(() => {
+              const link = document.getElementById('focusedToc')
+              link?.focus()
+            }, 1000)
           }
+          return
         }
       },
       false

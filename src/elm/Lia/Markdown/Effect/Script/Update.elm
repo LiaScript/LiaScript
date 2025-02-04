@@ -17,6 +17,7 @@ import Lia.Markdown.Effect.Script.Types as Script exposing (Msg(..), Script, Scr
 import Lia.Parser.Parser exposing (parse_subsection)
 import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (focus)
+import List.Extra
 import Process
 import Return exposing (Return)
 import Service.Event as Event exposing (Event)
@@ -204,6 +205,19 @@ update main msg scripts =
         EditCode id str ->
             scripts
                 |> Script.set id (\js -> { js | script = str })
+                |> Return.val
+
+        EditParam id subPattern str ->
+            scripts
+                |> Script.set id
+                    (\js ->
+                        { js
+                            | script =
+                                String.split subPattern js.script
+                                    |> List.Extra.setAt 1 str
+                                    |> String.join subPattern
+                        }
+                    )
                 |> Return.val
 
         Handle event ->

@@ -20,7 +20,7 @@ import Conditional.List as CList
 import Const
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
-import Html.Attributes as Attr exposing (width)
+import Html.Attributes as Attr exposing (lang, width)
 import Html.Events exposing (onClick, onInput)
 import I18n.Translations as Trans exposing (Lang)
 import Lia.Definition.Types exposing (Definition)
@@ -207,10 +207,38 @@ viewTheme grouping lang tabbable theme hasCustom =
 
 viewModes : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Settings -> List (Html Msg)
 viewModes grouping lang tabbable settings =
-    [ viewMode grouping lang tabbable Textbook settings.mode "lia-mode-textbook" "icon-book" "mb-1"
-    , viewMode grouping lang tabbable Presentation settings.mode "lia-mode-presentation" "icon-presentation" "mb-1"
-    , viewMode grouping lang tabbable Slides settings.mode "lia-mode-slides" "icon-slides" "mb-2"
-    , btnNavigation grouping lang tabbable settings.navigation
+    [ viewMode
+        grouping
+        lang
+        tabbable
+        Textbook
+        settings.mode
+        "lia-mode-textbook"
+        "icon-book"
+        "mb-1"
+    , viewMode
+        grouping
+        lang
+        tabbable
+        Presentation
+        settings.mode
+        "lia-mode-presentation"
+        "icon-presentation"
+        "mb-1"
+    , viewMode
+        grouping
+        lang
+        tabbable
+        Slides
+        settings.mode
+        "lia-mode-slides"
+        "icon-slides"
+        "mb-2"
+    , btnNavigation
+        grouping
+        lang
+        tabbable
+        settings.navigation
     ]
 
 
@@ -252,7 +280,7 @@ viewMode grouping lang tabbable mode activeMode id iconName additionalCSSClass =
             , A11y_Key.onKeyDown [ A11y_Key.enter (SwitchMode mode) ]
             , A11y_Key.tabbable tabbable
             , A11y_Aria.hidden (not tabbable)
-            , A11y_Role.menuItem
+            , A11y_Role.radio
             , A11y_Aria.checked <| Just (mode == activeMode)
             ]
         )
@@ -578,8 +606,11 @@ submenu grouping isActive =
 
         else
             ""
-    , A11y_Aria.checked (Just isActive)
-    , A11y_Role.menu
+
+    -- , A11y_Aria.checked (Just isActive)
+    , A11y_Role.radioGroup
+    , A11y_Aria.labeledBy "lia-mode-menu-button"
+    , A11y_Aria.label "select a presentation mode"
     ]
         |> grouping
         |> Html.div
@@ -795,23 +826,26 @@ menuMode lang tabbable settings =
     let
         grouping =
             group ShowModes
-    in
-    [ lang
-        |> Trans.modeMode
-        |> actionBtn
-            grouping
-            ShowModes
-            (settings.action == Just ShowModes)
-            (case settings.mode of
+
+        ( icon, mode ) =
+            case settings.mode of
                 Presentation ->
-                    "icon-presentation"
+                    ( "icon-presentation", Trans.modePresentation lang )
 
                 Slides ->
-                    "icon-slides"
+                    ( "icon-slides", Trans.modeSlides lang )
 
                 Textbook ->
-                    "icon-book"
-            )
+                    ( "icon-book", Trans.modeTextbook lang )
+    in
+    [ actionBtn
+        { grouping = grouping
+        , action = ShowModes
+        , open = settings.action == Just ShowModes
+        , icon = icon
+        , title = Trans.modeMode lang ++ ": " ++ mode
+        , attributes = [ Attr.id "lia-mode-menu-button" ]
+        }
     , viewModes grouping lang tabbable settings
         |> submenu grouping (settings.action == Just ShowModes)
     ]
@@ -823,13 +857,14 @@ menuSettings width lang tabbable settings =
         grouping =
             group ShowSettings
     in
-    [ lang
-        |> Trans.confSettings
-        |> actionBtn
-            grouping
-            ShowSettings
-            (settings.action == Just ShowSettings)
-            "icon-settings"
+    [ actionBtn
+        { grouping = grouping
+        , action = ShowSettings
+        , open = settings.action == Just ShowSettings
+        , icon = "icon-settings"
+        , title = Trans.confSettings lang
+        , attributes = []
+        }
     , viewSettings lang tabbable width settings
         |> submenu grouping (settings.action == Just ShowSettings)
     ]
@@ -927,13 +962,14 @@ menuShare url sync lang tabbable settings =
                     }
 
         _ ->
-            lang
-                |> Trans.confShare
-                |> actionBtn
-                    grouping
-                    ShowShare
-                    (settings.action == Just ShowShare)
-                    "icon-social"
+            actionBtn
+                { grouping = grouping
+                , action = ShowShare
+                , open = settings.action == Just ShowShare
+                , icon = "icon-social"
+                , title = Trans.confShare lang
+                , attributes = []
+                }
     , Html.i
         [ Attr.class "icon icon-social hide-md-up"
         , lang
@@ -991,31 +1027,41 @@ menuInformation repositoryURL definition lang tabbable settings =
             ]
         )
         []
-    , lang
-        |> Trans.confInformation
-        |> actionBtn
-            grouping
-            ShowInformation
-            (settings.action == Just ShowInformation)
-            "icon-info"
+    , actionBtn
+        { grouping = grouping
+        , action = ShowInformation
+        , open = settings.action == Just ShowInformation
+        , icon = "icon-info"
+        , title = Trans.confInformation lang
+        , attributes = []
+        }
     , viewInformation grouping lang tabbable repositoryURL definition
         |> submenu grouping (settings.action == Just ShowInformation)
     ]
 
 
-actionBtn : (List (Attribute Msg) -> List (Attribute Msg)) -> Action -> Bool -> String -> String -> Html Msg
-actionBtn grouping msg open iconName title =
+actionBtn :
+    { grouping : List (Attribute Msg) -> List (Attribute Msg)
+    , action : Action
+    , open : Bool
+    , icon : String
+    , title : String
+    , attributes : List (Attribute Msg)
+    }
+    -> Html Msg
+actionBtn conf =
     [ A11y_Aria.hasMenuPopUp
-    , A11y_Aria.expanded open
+    , A11y_Aria.expanded conf.open
     , A11y_Key.onKeyDown [ A11y_Key.escape (doAction Close) ]
     , Attr.class "lia-btn--transparent hide-md-down"
     ]
-        |> grouping
+        |> List.append conf.attributes
+        |> conf.grouping
         |> btnIcon
-            { title = title
-            , icon = iconName
+            { title = conf.title
+            , icon = conf.icon
             , tabbable = True
-            , msg = Just <| doAction msg
+            , msg = Just <| doAction conf.action
             }
 
 
@@ -1057,7 +1103,6 @@ header online lang screen settings logo buttons =
         [ Html.img
             [ Attr.src logo
             , Attr.class "lia_header__logo"
-            , Attr.alt "logo"
             ]
             []
         ]

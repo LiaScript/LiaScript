@@ -185,23 +185,31 @@ toQuiz : ( Markdown.Block, Bool ) -> Parser Context Markdown.Block
 toQuiz ( md, isQuiz ) =
     if isQuiz then
         case md of
-            Markdown.Paragraph attr _ ->
-                toQuiz_ attr md
+            Markdown.Paragraph attr md_ ->
+                case List.reverse md_ of
+                    (Script scriptID []) :: paragraph_ ->
+                        paragraph_
+                            |> List.reverse
+                            |> Markdown.Paragraph attr
+                            |> toQuiz_ (Just scriptID) attr
+
+                    _ ->
+                        toQuiz_ Nothing attr md
 
             Markdown.Citation attr _ ->
-                toQuiz_ attr md
+                toQuiz_ Nothing attr md
 
             Markdown.Quote attr _ ->
-                toQuiz_ attr md
+                toQuiz_ Nothing attr md
 
             Markdown.Table attr _ ->
-                toQuiz_ attr md
+                toQuiz_ Nothing attr md
 
             Markdown.Gallery attr _ ->
-                toQuiz_ attr md
+                toQuiz_ Nothing attr md
 
             Markdown.ASCII attr _ ->
-                toQuiz_ attr md
+                toQuiz_ Nothing attr md
 
             --Markdown.HTML attr _ ->
             --    toQuiz_ attr md
@@ -212,8 +220,8 @@ toQuiz ( md, isQuiz ) =
         succeed md
 
 
-toQuiz_ attr =
-    Quiz.gapText attr
+toQuiz_ scriptID attr =
+    Quiz.gapText scriptID attr
         >> map (Markdown.Quiz attr)
         >> andMap solution
 

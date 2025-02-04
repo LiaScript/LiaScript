@@ -15,7 +15,7 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Settings.Json as Json
 import Lia.Settings.Types exposing (Action(..), Audio(..), Mode(..), Settings)
-import Lia.Utils exposing (focus)
+import Lia.Utils exposing (focus, scheduleFocus)
 import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
@@ -23,6 +23,7 @@ import Service.Share
 import Service.Slide
 import Service.TTS
 import Service.Translate
+import Task
 
 
 type Msg
@@ -137,6 +138,13 @@ update main msg model =
 
         Toggle Sync ->
             no_log Nothing { model | sync = Maybe.map not model.sync }
+                |> Return.batchCmd
+                    (if model.sync == Just False then
+                        [ scheduleFocus Nothing Ignore "lia-modal-focus" ]
+
+                     else
+                        []
+                    )
 
         Toggle QRCode ->
             no_log Nothing { model | showQRCode = not model.showQRCode }
