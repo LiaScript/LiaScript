@@ -58,15 +58,15 @@ parse attr =
     ]
         |> choice
         |> andThen adds
-        |> andThen (modify_State attr)
+        |> andThen (modify_State Nothing attr)
 
 
-gapText attr block =
+gapText scriptID attr block =
     Input.pop
         |> map (\q -> { q | elements = [ block ] })
         |> map Multi_Type
         |> andThen adds
-        |> andThen (modify_State attr)
+        |> andThen (modify_State scriptID attr)
 
 
 randomize :
@@ -121,8 +121,8 @@ hints =
         |> optional []
 
 
-modify_State : Parameters -> Quiz x -> Parser Context (Quiz x)
-modify_State attr q =
+modify_State : Maybe Int -> Parameters -> Quiz x -> Parser Context (Quiz x)
+modify_State scriptID attr q =
     let
         add_state id seed s =
             { s
@@ -133,7 +133,12 @@ modify_State attr q =
                         , trial = 0
                         , hint = 0
                         , error_msg = ""
-                        , scriptID = id
+                        , scriptID =
+                            if scriptID /= Nothing then
+                                scriptID
+
+                            else
+                                id
                         , opt = getOptions q.quiz seed attr
                         , partiallySolved = Array.empty
                         }

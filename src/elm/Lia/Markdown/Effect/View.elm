@@ -4,7 +4,10 @@ module Lia.Markdown.Effect.View exposing
     , state
     )
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
+import Accessibility.Live as A11y_Live
+import Accessibility.Role as A11y_Role
 import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -72,7 +75,7 @@ block config model attr e body =
                     Html.text ""
 
                 else
-                    Html.div [ Attr.class "lia-effect" ]
+                    Html.div [ Attr.class "lia-effect", A11y_Live.polite, A11y_Role.alert ] <|
                         [ circle e.begin
                         , Html.div
                             (attr
@@ -91,7 +94,7 @@ block config model attr e body =
             PlayBackAnimation ->
                 Html.div [ Attr.hidden (not visible) ] <|
                     [ block_playback config e
-                    , Html.div [ Attr.class "lia-effect" ]
+                    , Html.div [ Attr.class "lia-effect", A11y_Live.polite, A11y_Role.alert ]
                         [ circle e.begin
                         , Html.div
                             (attr
@@ -149,15 +152,14 @@ inline config attr e body =
 
 
 hiddenSpan : Bool -> Parameters -> List (Html msg) -> Html msg
-hiddenSpan hide =
-    annotation
+hiddenSpan hide attr =
+    Html.span
         (if hide then
-            "lia-effect--inline hide"
+            annotation "lia-effect--inline hide" attr
 
          else
-            "lia-effect--inline"
+            A11y_Live.polite :: A11y_Role.alert :: annotation "lia-effect--inline" attr
         )
-        >> Html.span
 
 
 block_playback : Config sub -> Effect Block -> Html Msg
@@ -170,6 +172,7 @@ block_playback config e =
                 |> E.Mute
                 |> UpdateEffect True
                 |> onClick
+            , A11y_Aria.label "Stop playback"
             ]
             []
 
@@ -187,6 +190,7 @@ block_playback config e =
                         )
                         config.slide
                         "this.parentNode.childNodes[1]"
+                    , A11y_Aria.label "Start playback"
                     ]
                     []
 
@@ -195,6 +199,7 @@ block_playback config e =
                     [ Attr.class "lia-btn lia-btn--transparent text-highlight icon icon-play-circle"
                     , A11y_Key.tabbable True
                     , playBackAttr e.id name lang config.slide "this.parentNode.childNodes[1]"
+                    , A11y_Aria.label "Start playback"
                     ]
                     []
 
@@ -224,6 +229,7 @@ inline_playback config e =
                 |> (\event -> "window.LIA.playback(" ++ event ++ ")")
                 |> Attr.attribute "onclick"
             , A11y_Key.tabbable True
+            , A11y_Aria.label "Stop playback of phrase"
             ]
             []
 
@@ -242,6 +248,7 @@ inline_playback config e =
                         config.slide
                         "this.labels[0]"
                     , A11y_Key.tabbable True
+                    , A11y_Aria.label "Start playback of phrase"
                     ]
                     []
 
@@ -255,6 +262,7 @@ inline_playback config e =
                         config.slide
                         "this.labels[0]"
                     , A11y_Key.tabbable True
+                    , A11y_Aria.label "Start playback of phrase"
                     ]
                     []
 
