@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.16.10] - 04/02/2025
+
+- fix: keyboard switched direction of left right arrow keys
+
+## [0.16.9] - 03/02/2025
+
+- fix: associated scripts work now for gap-text paragraphs
+- chore: npm update ace, caniuse, echarts, katex
+- a11y:
+
+  - add <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd> for table of Contents toggle
+  - add additional keyboard navigation <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>P|N</kbd> for previous and next slide
+  - header levels defined by number of `#`
+  - remove alt from logo
+  - multiple aria-polite and aria-live optimizations for quizzes, tables and formulas, and the terminal output
+
+- feat: in script for the modify parameter it is now possible true or false the modification but also to add a string that is used as a code separator to allow modifications only for a certain part
+- 
+
 ## [0.16.8] - 06/01/2025
 
 - chore: npm update ace, katex, caniuse-lite

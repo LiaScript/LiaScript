@@ -37,9 +37,9 @@ const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 customElements.define(
   'lia-chart',
   class extends HTMLElement {
-    private container: HTMLDivElement
+    private container?: HTMLDivElement
 
-    private chart: null | echarts.ECharts
+    private chart?: echarts.ECharts
     private option_: { aria?: { show: boolean; decal?: boolean } }
     private geoJson: {
       url: string
@@ -60,12 +60,9 @@ customElements.define(
 
     constructor() {
       super()
-      const shadowRoot = this.attachShadow({
-        mode: 'open',
-      })
 
       this.option_ = {}
-      this.chart = null
+      this.chart = undefined
       this.geoJson = {
         url: '',
         data: null,
@@ -73,15 +70,6 @@ customElements.define(
       this.locale = 'en'
       this.setRenderer(this.getAttribute('renderer'))
       this.mode = ''
-      this.container = document.createElement('div')
-      shadowRoot.appendChild(this.container)
-
-      let self = this
-      this.resizeObserver = new ResizeObserver(
-        helper.debounce(() => {
-          self.resizeChart()
-        })
-      )
 
       this.style_ = style
     }
@@ -116,8 +104,14 @@ customElements.define(
     }
 
     connectedCallback() {
+      if (!this.container) {
+        this.init()
+      }
+
       if (!this.chart) {
-        this.container.setAttribute('style', this.style_)
+        if (this.container) {
+          this.container.setAttribute('style', this.style_)
+        }
         this.initChart()
 
         this.option_ = this.getOption() || this.option_
@@ -127,10 +121,11 @@ customElements.define(
         } //, decal: { show: true }}
 
         let self = this
-        this.chart.on('finished', function () {
+        // @ts-ignore
+        this.chart?.on('finished', function () {
           self.setAttribute(
             'aria-label',
-            self.container.getAttribute('aria-label') || ''
+            self.container?.getAttribute('aria-label') || ''
           )
         })
         // TODO: Check for more appropriate roles...
@@ -153,6 +148,21 @@ customElements.define(
       }
     }
 
+    init() {
+      const shadowRoot = this.attachShadow({
+        mode: 'open',
+      })
+      this.container = document.createElement('div')
+      shadowRoot.appendChild(this.container)
+
+      let self = this
+      this.resizeObserver = new ResizeObserver(
+        helper.debounce(() => {
+          self.resizeChart()
+        })
+      )
+    }
+
     disconnectedCallback() {
       if (this.chart) echarts.dispose(this.chart)
 
@@ -166,7 +176,7 @@ customElements.define(
       switch (name) {
         case 'style': {
           this.style_ = style + newValue
-          this.container.setAttribute('style', this.style_)
+          this.container?.setAttribute('style', this.style_)
           this.resizeChart()
           break
         }
