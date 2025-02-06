@@ -480,14 +480,22 @@ navButton title id class msg =
 -}
 slideTopBar : String -> Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> Sync_.Settings -> Html Msg
 slideTopBar languageCode lang screen url repositoryURL settings def sync =
-    [ ( Settings.menuChat, "chat" )
-    , ( Settings.menuMode, "mode" )
-    , ( Settings.menuSettings screen.width, "settings" )
-    , ( Settings.menuTranslations languageCode def, "lang" )
-    , ( Settings.menuShare url sync, "share" )
-    , ( Settings.menuInformation repositoryURL def, "info" )
-    ]
-        |> Settings.header (Sync_.isConnected sync.state) lang screen settings (Definition.getIcon def)
+    Settings.header
+        { online = Sync_.isConnected sync.state
+        , lang = lang
+        , screen = screen
+        , settings = settings
+        , logo = Definition.getIcon def
+        , buttons =
+            [ ( Settings.menuChat, "chat" )
+            , ( Settings.menuMode, "mode" )
+            , ( Settings.menuSettings screen.width, "settings" )
+            , ( Settings.menuTranslations languageCode def, "lang" )
+            , ( Settings.menuShare url sync, "share" )
+            , ( Settings.menuInformation repositoryURL def, "info" )
+            ]
+        , active = True
+        }
         |> Html.map UpdateSettings
 
 
