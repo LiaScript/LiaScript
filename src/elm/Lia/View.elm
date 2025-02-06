@@ -30,7 +30,7 @@ import Lia.Settings.View as Settings
 import Lia.Sync.Types as Sync_
 import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
-import Lia.Utils exposing (modal)
+import Lia.Utils exposing (deactivate, modal)
 import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 import Service.Database exposing (settings)
@@ -48,38 +48,46 @@ import Session exposing (Screen)
 -}
 view : Screen -> Bool -> Model -> Html Msg
 view screen hasIndex model =
+    let
+        modalIsActive =
+            isHidden model
+    in
     Html.div
         (Settings.design model.settings)
         (Html.a
-            [ Attr.class "lia-skip-nav"
-            , model.section_active
-                |> (+) 1
-                |> String.fromInt
-                |> (++) "#"
-                |> Attr.href
-            ]
+            (deactivate modalIsActive
+                [ Attr.class "lia-skip-nav"
+                , model.section_active
+                    |> (+) 1
+                    |> String.fromInt
+                    |> (++) "#"
+                    |> Attr.href
+                ]
+            )
             [ Html.text "skip navigation" ]
-            :: viewIndex hasIndex model
-            :: viewSlide screen model
+            :: viewIndex modalIsActive hasIndex model
+            :: viewSlide modalIsActive screen model
         )
 
 
 {-| **@private:** Display the side section that contains the document search,
 table of contents and the home button.
 -}
-viewIndex : Bool -> Model -> Html Msg
-viewIndex hasIndex model =
+viewIndex : Bool -> Bool -> Model -> Html Msg
+viewIndex modalIsActive hasIndex model =
     Html.div
-        [ Attr.class "lia-toc"
-        , Attr.id "lia-toc"
-        , Attr.class <|
-            if model.settings.table_of_contents then
-                "lia-toc--open"
+        (deactivate modalIsActive
+            [ Attr.class "lia-toc"
+            , Attr.id "lia-toc"
+            , Attr.class <|
+                if model.settings.table_of_contents then
+                    "lia-toc--open"
 
-            else
-                "lia-toc--closed"
-        , A11y_Landmark.navigation
-        ]
+                else
+                    "lia-toc--closed"
+            , A11y_Landmark.navigation
+            ]
+        )
         [ Settings.btnIndex
             model.translation
             model.settings.table_of_contents
@@ -137,11 +145,11 @@ viewIndex hasIndex model =
 {-| **@private:** show the current section, with navigation on top as well as a
 footer, if it is required by the current display mode.
 -}
-viewSlide : Screen -> Model -> List (Html Msg)
-viewSlide screen model =
+viewSlide : Bool -> Screen -> Model -> List (Html Msg)
+viewSlide modalIsActive screen model =
     case get_active_section model of
         Just section ->
-            [ Html.div [ Attr.class "lia-slide" ]
+            [ Html.div (deactivate modalIsActive [ Attr.class "lia-slide" ])
                 [ slideTopBar
                     model.langCode
                     model.translation
@@ -170,6 +178,7 @@ viewSlide screen model =
                 , media = model.media
                 , effect = section.effect_model
                 , id = model.section_active
+                , modalIsActive = modalIsActive
                 }
             , viewVideoComment
                 { active = model.settings.sound
@@ -364,9 +373,10 @@ slideA11y :
     , media : Dict String ( Int, Int )
     , effect : Effect.Model SubSection
     , id : Int
+    , modalIsActive : Bool
     }
     -> Html Msg
-slideA11y { lang, light, tooltips, translations, mode, formulas, media, effect, id } =
+slideA11y { lang, light, tooltips, translations, mode, formulas, media, effect, id, modalIsActive } =
     case mode of
         Slides ->
             effect
@@ -439,7 +449,7 @@ slideA11y { lang, light, tooltips, translations, mode, formulas, media, effect, 
                                 ]
                             |> Tuple.pair (String.fromInt id ++ "-/-" ++ String.fromInt counter)
                     )
-                |> Keyed.node "aside" [ Attr.class "lia-notes" ]
+                |> Keyed.node "aside" (deactivate modalIsActive [ Attr.class "lia-notes" ])
 
         _ ->
             Html.text ""
@@ -692,6 +702,22 @@ responsiveVoiceTTSText =
             []
         ]
     ]
+
+
+isHidden : Model -> Bool
+isHidden model =
+    case ( model.settings.sync, model.modal, model.settings.showQRCode ) of
+        ( Just True, _, _ ) ->
+            True
+
+        ( _, Just _, _ ) ->
+            True
+
+        ( _, _, True ) ->
+            True
+
+        _ ->
+            False
 
 
 showModal : Model -> Html Msg
