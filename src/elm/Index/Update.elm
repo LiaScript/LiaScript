@@ -17,6 +17,7 @@ import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
+import Lia.Utils exposing (scheduleFocus)
 import Library.Masonry as Masonry
 import List.Extra
 import Service.Console
@@ -203,7 +204,7 @@ update msg settings model =
                             _ ->
                                 Nothing
                   }
-                , Cmd.none
+                , scheduleFocus Nothing NoOp "lia-modal-focus"
                 , []
                 )
 
