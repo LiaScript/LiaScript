@@ -21,8 +21,6 @@ customElements.define(
 
       this.formula_ = ''
       this.macros = {}
-
-      console.warn('formula: constructor', katex)
     }
 
     connectedCallback() {
