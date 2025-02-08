@@ -94,8 +94,15 @@ export function loadScript(
       tag.onerror = function (_e: any) {
         window.LIA.eventSemaphore--
         console.warn('could not load =>', url)
-        window.LIA.fetchError('script', url)
-        // if (callback) callback(false)
+
+        if (window.LIA.fetchError) {
+          window.LIA.fetchError('script', url)
+          // if (callback) callback(false)
+        } else if (!url.startsWith('blob:')) {
+          loadScriptAsBlob(url, withSemaphore, callback)
+        } else if (callback) {
+          callback(false)
+        }
       }
     }
 
