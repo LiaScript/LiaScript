@@ -197,7 +197,11 @@ update msg model =
                     case Index.decodeGet param of
                         Ok ( url, course ) ->
                             ( { model | preload = course }
-                            , download_text_or_zip url
+                            , if isURI url then
+                                download False url
+
+                              else
+                                download_text_or_zip url
                             )
 
                         Err _ ->
@@ -705,6 +709,12 @@ load model initial =
 removeCR : String -> String
 removeCR =
     String.replace "\u{000D}" ""
+
+
+isURI : String -> Bool
+isURI url =
+    String.startsWith "data:text" url
+        || String.startsWith "magnet:" url
 
 
 {-| **@private:** Used by multiple times to connect a download with a message.
