@@ -56,7 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - improve(Platform support): Courses can now also be loaded directly from the following platform, without requiring a proxy, and thus will not cause any CORS issues:
 
   - [GitLab](https://gitlab.com)
-  - [Codeberg](https://onedrive.live.com)
+  - [Codeberg](https://codeberg.org)
   
 
 ## [0.16.7] - 14/11/2025
