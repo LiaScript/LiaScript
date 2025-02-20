@@ -7,9 +7,10 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import I18n.Translations exposing (Lang(..))
-import Index.Model exposing (Course, Modal(..), Release)
+import Index.Model exposing (Action(..), Course, Modal(..), Release)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
+import Index.View.Popup as Popup
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Log exposing (Level(..))
 import Lia.Markdown.Inline.Stringify exposing (stringify)
@@ -146,18 +147,52 @@ body comment =
         |> Html.p [ Attr.class "lia-card__body" ]
 
 
+popup : Action -> Maybe Action -> Msg -> Html Msg
+popup action open msg =
+    case ( action, open ) of
+        ( Popup_Delete, Just Popup_Delete ) ->
+            Popup.view
+                { text =
+                    "Are you sure you want to permanently delete this course and all of its stored states? "
+                        ++ "This action cannot be undone."
+                , action =
+                    { msg = msg
+                    , text = "Delete"
+                    }
+                , escape = PopupClose
+                }
+
+        ( Popup_Reset, Just Popup_Reset ) ->
+            Popup.view
+                { text =
+                    "Are you sure you want to reset this course? "
+                        ++ "This will permanently remove all stored states, including quizzes, tasks, surveys, and code entries. "
+                        ++ "This action cannot be undone."
+                , action =
+                    { msg = msg
+                    , text = "Reset"
+                    }
+                , escape = PopupClose
+                }
+
+        _ ->
+            Html.text ""
+
+
 controls : Bool -> Inlines -> Definition -> Course -> Html Msg
 controls hasShareAPI title definition course =
     Html.div [ Attr.class "lia-card__controls" ]
-        [ btnIcon
-            { msg = Just <| Delete course.id
+        [ popup Popup_Delete course.popup (Delete True course.id)
+        , popup Popup_Reset course.popup (Reset True course.id course.active)
+        , btnIcon
+            { msg = Just <| Delete False course.id
             , title = "Delete this course"
             , tabbable = True
             , icon = "icon-trash"
             }
             [ Attr.class "lia-btn--tag lia-btn--transparent text-red-dark border-red-dark px-1" ]
         , btnIcon
-            { msg = Just <| Reset course.id course.active
+            { msg = Just <| Reset False course.id course.active
             , title = "Reset all stored states (quizzes, tasks, surveys, codes)"
             , tabbable = True
             , icon = "icon-refresh"
