@@ -49,4 +49,5 @@ decResource =
     JD.oneOf
         [ JD.field "Link" JD.string |> JD.map Link
         , JD.field "Script" JD.string |> JD.map Script
+        , JD.field "Module" JD.string |> JD.map Module
         ]
