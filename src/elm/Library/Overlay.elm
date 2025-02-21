@@ -245,10 +245,75 @@ resizedSize model pos =
 
 
 -- VIEW
+-- This background div covers the entire screen and is rendered only when dragging or resizing.
 
 
-view : List (Attribute (Msg parentMsg)) -> Model -> Html parentMsg -> Html (Msg parentMsg)
-view attr model inside =
+backgroundDiv : Model -> Html (Msg parentMsg)
+backgroundDiv model =
+    if model.drag /= Nothing || model.resize /= Nothing then
+        div
+            [ style "position" "fixed"
+            , style "top" "0"
+            , style "left" "0"
+            , style "width" "100vw"
+            , style "height" "100vh"
+            , style "z-index" "40"
+            , style "background" "transparent"
+            , onMouseMove
+                (\pos ->
+                    if model.drag /= Nothing then
+                        DragAt pos
+
+                    else if model.resize /= Nothing then
+                        ResizeAt pos
+
+                    else
+                        DragAt pos
+                )
+            , onMouseUp
+                (if model.drag /= Nothing then
+                    DragEnd
+
+                 else if model.resize /= Nothing then
+                    ResizeEnd
+
+                 else
+                    DragEnd
+                )
+            , onTouchMove
+                (\pos ->
+                    if model.drag /= Nothing then
+                        DragAt pos
+
+                    else if model.resize /= Nothing then
+                        ResizeAt pos
+
+                    else
+                        DragAt pos
+                )
+            , onTouchEnd
+                (if model.drag /= Nothing then
+                    DragEnd
+
+                 else if model.resize /= Nothing then
+                    ResizeEnd
+
+                 else
+                    DragEnd
+                )
+            ]
+            []
+
+    else
+        text ""
+
+
+
+-- The main overlay div (unchanged from your original code)
+
+
+overlayDiv : List (Attribute (Msg parentMsg)) -> Model -> Html parentMsg -> Html (Msg parentMsg)
+overlayDiv attr model inside =
     div
         (List.append
             [ style "position" "absolute"
@@ -282,7 +347,6 @@ view attr model inside =
 
                     else
                         DragAt pos
-                 -- This will be ignored in the update function
                 )
             , onMouseUp
                 (if model.drag /= Nothing then
@@ -293,7 +357,6 @@ view attr model inside =
 
                  else
                     DragEnd
-                 -- This will be ignored in the update function
                 )
             , onTouchMove
                 (\pos ->
@@ -305,7 +368,6 @@ view attr model inside =
 
                     else
                         DragAt pos
-                 -- This will be ignored in the update function
                 )
             , onTouchEnd
                 (if model.drag /= Nothing then
@@ -316,7 +378,6 @@ view attr model inside =
 
                  else
                     DragEnd
-                 -- This will be ignored in the update function
                 )
             ]
             attr
@@ -377,6 +438,14 @@ view attr model inside =
                     ++ sizeToString model.size
                 )
             ]
+        ]
+
+
+view : List (Attribute (Msg parentMsg)) -> Model -> Html parentMsg -> Html (Msg parentMsg)
+view attr model inside =
+    div []
+        [ backgroundDiv model
+        , overlayDiv attr model inside
         ]
 
 
@@ -445,7 +514,6 @@ keyDecoder mode =
                 13 ->
                     { message = ToggleMode, preventDefault = True, stopPropagation = True }
 
-                -- Enter key
                 37 ->
                     { message = arrowMsg mode Left, preventDefault = True, stopPropagation = True }
 
