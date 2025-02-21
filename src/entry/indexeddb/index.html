@@ -53,15 +53,14 @@
       type="module"
       src="../../typescript/webcomponents/terminal.ts"
     ></script>
-    <script type="module">
+    <script>
       //if (process.env.NODE_ENV !== 'development') {
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
-          // Use new URL(...) with import.meta.url so Parcel processes sw.js
-          const swUrl = new URL('../../typescript/sw.js', import.meta.url)
+          let sw = './sw.js'
           try {
             navigator.serviceWorker
-              .register(swUrl)
+              .register(sw)
               .then(console.log)
               .catch(console.error)
           } catch (e) {
