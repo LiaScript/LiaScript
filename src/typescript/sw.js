@@ -1,51 +1,33 @@
+import { clientsClaim, cacheNames } from 'workbox-core'
+import { registerRoute } from 'workbox-routing'
+import { NetworkFirst, CacheFirst } from 'workbox-strategies'
+import { precacheAndRoute } from 'workbox-precaching'
 console.log('service-worker.js')
-
-// advanced config for injectManifest approach
-importScripts(
-  'https://storage.googleapis.com/workbox-cdn/releases/7.1.0/workbox-sw.js'
-)
-
-// Detailed logging is very useful during development
-workbox.setConfig({
-  debug: false,
-})
-
-// Updating SW lifecycle to update the app after user triggered refresh
+// (setConfig removed; in production builds, debug logging is disabled automatically)
+// Updating SW lifecycle to update the app after a user-triggered refresh
 self.skipWaiting()
-workbox.core.clientsClaim()
-
+clientsClaim()
 // data-uris shall not be cached and also work offline
-workbox.routing.registerRoute(
+registerRoute(
   ({ url }) => url.search.startsWith('?data:text'),
-
   async ({ event }) => {
-    const cache = await caches.open(workbox.core.cacheNames.precache)
+    const cache = await caches.open(cacheNames.precache)
     const response = await cache.match(event.request.url.split('?data:text')[0])
-
     return response || fetch(event.request)
   }
 )
-
 // workbox.googleAnalytics.initialize();
-workbox.routing.registerRoute(
+registerRoute(
   // Match all navigation requests, except those for URLs whose
-  // path starts with '/admin/'
+  // path starts with '/LiveEditor/'
   ({ request, url }) =>
     request.mode === 'navigate' && !url.pathname.startsWith('/LiveEditor/'),
-  new workbox.strategies.NetworkFirst()
+  new NetworkFirst()
 )
-
-//workbox.routing.registerRoute(/\/*/, new workbox.strategies.NetworkFirst())
-workbox.routing.registerRoute(/.*/, new workbox.strategies.NetworkFirst())
-
-workbox.routing.registerRoute(
-  /https:\/\/code\.responsivevoice\.org/,
-  new workbox.strategies.NetworkFirst()
-)
-
-workbox.routing.registerRoute(
+registerRoute(/.*/, new NetworkFirst())
+registerRoute(/https:\/\/code\.responsivevoice\.org/, new NetworkFirst())
+registerRoute(
   'https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-sw.js',
-  new workbox.strategies.CacheFirst()
+  new CacheFirst()
 )
-
-workbox.precaching.precacheAndRoute(self.__WB_MANIFEST)
+precacheAndRoute(self.__WB_MANIFEST)
