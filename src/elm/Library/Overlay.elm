@@ -391,6 +391,8 @@ overlayDiv attr model inside =
             , style "cursor" "move"
             , style "color" "#fff"
             , style "text-align" "center"
+            , style "top" "0px"
+            , style "right" "0px"
             , onMouseDown DragStart
             , onTouchStart DragStart
             , attribute "aria-label" "Drag to move video overlay"
