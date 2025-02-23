@@ -259,11 +259,17 @@ function read(event: Lia.Event) {
           videos[currentIndex - 1].style.display = 'none'
         }
 
-        if (response !== undefined) {
-          storeBackgroundVideo(player, video)
+        // Always store the background video regardless of play() return value
+        storeBackgroundVideo(player, video)
+
+        // If play() returns a promise (modern browsers), handle errors.
+        if (response && typeof response.then === 'function') {
           response.catch((e) => error(e.message))
         } else {
-          error("resource couldn't be played")
+          // For browsers like Firefox 48 where play() returns undefined,
+          // assume playback started successfully.
+          // Optionally, you can call sendResponse(event, 'start') here if needed.
+          //error("resource couldn't be played")
         }
       }
 
