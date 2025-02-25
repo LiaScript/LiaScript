@@ -157,7 +157,7 @@ update msg model =
             )
 
         ResizeEnd ->
-            ( { model | resize = Nothing }
+            ( { model | mode = Resize, resize = Nothing }
             , Cmd.none
             , Nothing
             )
