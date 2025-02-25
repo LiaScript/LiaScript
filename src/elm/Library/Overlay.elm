@@ -17,11 +17,13 @@ import Html.Attributes
     exposing
         ( attribute
         , style
+        , tabindex
         , title
         )
 import Html.Events
     exposing
         ( on
+        , onBlur
         , preventDefaultOn
         )
 import Json.Decode as Decode exposing (Decoder)
@@ -34,6 +36,7 @@ import Json.Decode as Decode exposing (Decoder)
 type Mode
     = Move
     | Resize
+    | FollowMouse Position -- Added new mode with the initial click position
 
 
 type alias Position =
@@ -62,6 +65,7 @@ type alias Model =
     , drag : Maybe Drag
     , resize : Maybe Drag
     , mode : Mode
+    , followOffset : Maybe Position -- Added to store the offset from click to overlay position
     }
 
 
@@ -74,6 +78,7 @@ init =
     , drag = Nothing
     , resize = Nothing
     , mode = Move
+    , followOffset = Nothing
     }
 
 
@@ -93,6 +98,10 @@ type Msg parentMsg
     | ArrowResize Direction
     | ToggleMode
     | Ignore
+    | DoubleClick Position -- Added for double-click activation
+    | MouseMoveFollow Position -- Added for mouse following
+    | ExitFollowMode -- Added for exiting follow mode
+    | LostFocus -- Added for when overlay loses focus
 
 
 type Direction
@@ -170,6 +179,62 @@ update msg model =
         ToggleMode ->
             ( { model | mode = toggleMode model.mode }, Cmd.none, Nothing )
 
+        DoubleClick pos ->
+            ( case model.mode of
+                FollowMouse _ ->
+                    { model
+                        | mode = Move
+                        , followOffset = Nothing
+                    }
+
+                _ ->
+                    { model
+                        | mode = FollowMouse pos
+                        , followOffset =
+                            Just
+                                -- Calculate the offset between click position and overlay position
+                                (Position
+                                    (pos.x + model.position.x)
+                                    (pos.y - model.position.y)
+                                )
+                    }
+            , Cmd.none
+            , Nothing
+            )
+
+        MouseMoveFollow pos ->
+            case model.mode of
+                FollowMouse _ ->
+                    -- Apply the offset to keep the initial click point under the cursor
+                    let
+                        newPosition =
+                            case model.followOffset of
+                                Just offset ->
+                                    Position
+                                        (offset.x - pos.x)
+                                        -- Changed from subtraction to addition
+                                        (pos.y - offset.y)
+
+                                Nothing ->
+                                    model.position
+                    in
+                    ( { model | position = newPosition }, Cmd.none, Nothing )
+
+                _ ->
+                    ( model, Cmd.none, Nothing )
+
+        ExitFollowMode ->
+            ( { model | mode = Move, followOffset = Nothing }, Cmd.none, Nothing )
+
+        LostFocus ->
+            -- When focus is lost, exit follow mode if active
+            case model.mode of
+                FollowMouse _ ->
+                    ( { model | mode = Move, followOffset = Nothing }, Cmd.none, Nothing )
+
+                _ ->
+                    ( model, Cmd.none, Nothing )
+
         Foreign parentMsg ->
             ( model, Cmd.none, Just parentMsg )
 
@@ -218,6 +283,9 @@ toggleMode mode =
         Resize ->
             Move
 
+        FollowMouse _ ->
+            Move
+
 
 draggedPosition : Model -> Position -> Position
 draggedPosition model pos =
@@ -250,7 +318,7 @@ resizedSize model pos =
 
 backgroundDiv : Model -> Html (Msg parentMsg)
 backgroundDiv model =
-    if model.drag /= Nothing || model.resize /= Nothing then
+    if model.drag /= Nothing || model.resize /= Nothing || isFollowMode model.mode then
         div
             [ style "position" "fixed"
             , style "top" "0"
@@ -259,6 +327,7 @@ backgroundDiv model =
             , style "height" "100vh"
             , style "z-index" "40"
             , style "background" "transparent"
+            , tabindex 0
             , onMouseMove
                 (\pos ->
                     if model.drag /= Nothing then
@@ -266,6 +335,9 @@ backgroundDiv model =
 
                     else if model.resize /= Nothing then
                         ResizeAt pos
+
+                    else if isFollowMode model.mode then
+                        MouseMoveFollow pos
 
                     else
                         DragAt pos
@@ -288,6 +360,9 @@ backgroundDiv model =
                     else if model.resize /= Nothing then
                         ResizeAt pos
 
+                    else if isFollowMode model.mode then
+                        MouseMoveFollow pos
+
                     else
                         DragAt pos
                 )
@@ -301,6 +376,8 @@ backgroundDiv model =
                  else
                     DragEnd
                 )
+
+            --, onDoubleClick (always ExitFollowMode)
             ]
             []
 
@@ -308,8 +385,30 @@ backgroundDiv model =
         text ""
 
 
+isFollowMode : Mode -> Bool
+isFollowMode mode =
+    case mode of
+        FollowMouse _ ->
+            True
 
--- The main overlay div (unchanged from your original code)
+        _ ->
+            False
+
+
+getBorderColor : Mode -> String
+getBorderColor mode =
+    case mode of
+        FollowMouse _ ->
+            "#ff5722"
+
+        -- Orange border for follow mode
+        _ ->
+            "#d3d3d3"
+
+
+
+-- Default gray border
+-- The main overlay div
 
 
 overlayDiv : List (Attribute (Msg parentMsg)) -> Model -> Html parentMsg -> Html (Msg parentMsg)
@@ -326,7 +425,7 @@ overlayDiv attr model inside =
             , style "top" (px model.position.y)
             , style "width" (px model.size.width)
             , style "height" (px model.size.height)
-            , style "border" "5px solid #d3d3d3"
+            , style "border" ("5px solid " ++ getBorderColor model.mode)
             , style "border-radius" "50%"
             , style "display" "flex"
             , style "flex-direction" "column"
@@ -345,8 +444,11 @@ overlayDiv attr model inside =
                     else if model.resize /= Nothing then
                         ResizeAt pos
 
+                    else if isFollowMode model.mode then
+                        MouseMoveFollow pos
+
                     else
-                        DragAt pos
+                        Ignore
                 )
             , onMouseUp
                 (if model.drag /= Nothing then
@@ -356,7 +458,7 @@ overlayDiv attr model inside =
                     ResizeEnd
 
                  else
-                    DragEnd
+                    Ignore
                 )
             , onTouchMove
                 (\pos ->
@@ -366,8 +468,11 @@ overlayDiv attr model inside =
                     else if model.resize /= Nothing then
                         ResizeAt pos
 
+                    else if isFollowMode model.mode then
+                        MouseMoveFollow pos
+
                     else
-                        DragAt pos
+                        Ignore
                 )
             , onTouchEnd
                 (if model.drag /= Nothing then
@@ -377,8 +482,9 @@ overlayDiv attr model inside =
                     ResizeEnd
 
                  else
-                    DragEnd
+                    Ignore
                 )
+            , onBlur LostFocus
             ]
             attr
         )
@@ -388,16 +494,29 @@ overlayDiv attr model inside =
             , style "width" "100%"
             , style "padding" "10px"
             , style "height" "100%"
-            , style "cursor" "move"
+            , style "cursor"
+                (if isFollowMode model.mode then
+                    "grabbing"
+
+                 else
+                    "move"
+                )
             , style "color" "#fff"
             , style "text-align" "center"
             , style "top" "0px"
             , style "right" "0px"
             , onMouseDown DragStart
             , onTouchStart DragStart
-            , attribute "aria-label" "Drag to move video overlay"
+            , onDoubleClick (\pos -> DoubleClick pos)
+            , attribute "aria-label" "Drag to move video overlay. Double-click to make it follow mouse."
             , attribute "tabindex" "0"
-            , title "drag video comment"
+            , title
+                (if isFollowMode model.mode then
+                    "double-click to release"
+
+                 else
+                    "drag or double-click video comment"
+                )
             ]
             []
         , div
@@ -427,14 +546,21 @@ overlayDiv attr model inside =
             [ text
                 ("Current mode: "
                     ++ modeToString model.mode
-                    ++ ". Use arrow keys to "
-                    ++ (if model.mode == Move then
-                            "move"
+                    ++ ". "
+                    ++ (if isFollowMode model.mode then
+                            "Overlay is following mouse. Double-click or press ESC to release. "
 
                         else
-                            "resize"
+                            "Use arrow keys to "
+                                ++ (if model.mode == Move then
+                                        "move"
+
+                                    else
+                                        "resize"
+                                   )
+                                ++ " the video overlay. Press Enter to switch modes. Double-click to make overlay follow mouse. "
                        )
-                    ++ " the video overlay. Press Enter to switch modes. Current position: "
+                    ++ "Current position: "
                     ++ positionToString model.position
                     ++ ". Current size: "
                     ++ sizeToString model.size
@@ -486,6 +612,11 @@ onTouchEnd msg =
     on "touchend" (Decode.succeed msg)
 
 
+onDoubleClick : (Position -> msg) -> Attribute msg
+onDoubleClick toMsg =
+    on "dblclick" (Decode.map toMsg positionDecoder)
+
+
 positionDecoder : Decoder Position
 positionDecoder =
     Decode.map2 Position
@@ -516,6 +647,10 @@ keyDecoder mode =
                 13 ->
                     { message = ToggleMode, preventDefault = True, stopPropagation = True }
 
+                27 ->
+                    -- ESC key to exit follow mode
+                    { message = ExitFollowMode, preventDefault = True, stopPropagation = True }
+
                 37 ->
                     { message = arrowMsg mode Right, preventDefault = True, stopPropagation = True }
 
@@ -543,6 +678,9 @@ arrowMsg mode direction =
         Resize ->
             ArrowResize direction
 
+        FollowMouse _ ->
+            Ignore
+
 
 modeToString : Mode -> String
 modeToString mode =
@@ -552,6 +690,9 @@ modeToString mode =
 
         Resize ->
             "Resize"
+
+        FollowMouse _ ->
+            "Follow Mouse"
 
 
 positionToString : Position -> String
