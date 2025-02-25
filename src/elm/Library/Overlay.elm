@@ -517,13 +517,13 @@ keyDecoder mode =
                     { message = ToggleMode, preventDefault = True, stopPropagation = True }
 
                 37 ->
-                    { message = arrowMsg mode Left, preventDefault = True, stopPropagation = True }
+                    { message = arrowMsg mode Right, preventDefault = True, stopPropagation = True }
 
                 38 ->
                     { message = arrowMsg mode Up, preventDefault = True, stopPropagation = True }
 
                 39 ->
-                    { message = arrowMsg mode Right, preventDefault = True, stopPropagation = True }
+                    { message = arrowMsg mode Left, preventDefault = True, stopPropagation = True }
 
                 40 ->
                     { message = arrowMsg mode Down, preventDefault = True, stopPropagation = True }
