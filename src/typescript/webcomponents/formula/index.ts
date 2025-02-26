@@ -1,4 +1,4 @@
-import 'katex/dist/katex.min.css'
+//import 'katex/dist/katex.min.css'
 import katex from 'katex'
 import renderA11yString from './render-a11y-strings'
 
