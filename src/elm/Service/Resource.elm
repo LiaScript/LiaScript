@@ -1,6 +1,7 @@
 module Service.Resource exposing
     ( link
     , script
+    , script_module
     , style
     )
 
@@ -22,6 +23,11 @@ JavaScript file/library into the head of the document.
 script : String -> Event
 script url =
     event "script" url
+
+
+script_module : String -> Event
+script_module url =
+    event "module" url
 
 
 {-| Generate an event that will dynamically load (inject) a custom

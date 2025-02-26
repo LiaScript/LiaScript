@@ -43,6 +43,7 @@ import Lia.Utils
         ( blockKeydown
         , btn
         , btnIcon
+        , deactivate
         , noTranslate
         )
 import Library.Group as Group
@@ -1086,14 +1087,16 @@ doAction =
 
 
 header :
-    Bool
-    -> Lang
-    -> Screen
-    -> Settings
-    -> String
-    -> List ( Lang -> Bool -> Settings -> List (Html Msg), String )
+    { online : Bool
+    , active : Bool
+    , lang : Lang
+    , screen : Screen
+    , settings : Settings
+    , logo : String
+    , buttons : List ( Lang -> Bool -> Settings -> List (Html Msg), String )
+    }
     -> Html Msg
-header online lang screen settings logo buttons =
+header { online, active, lang, screen, settings, logo, buttons } =
     let
         tabbable =
             screen.width >= Const.globalBreakpoints.md || settings.support_menu
@@ -1159,6 +1162,8 @@ header online lang screen settings logo buttons =
         ]
     ]
         |> Html.header
-            [ Attr.class "lia-header"
-            , Attr.id "lia-toolbar-nav"
-            ]
+            (deactivate (not active)
+                [ Attr.class "lia-header"
+                , Attr.id "lia-toolbar-nav"
+                ]
+            )

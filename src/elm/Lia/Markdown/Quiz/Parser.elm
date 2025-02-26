@@ -25,6 +25,8 @@ import Combine
         , withState
         )
 import I18n.Translations exposing (Lang(..))
+import Lia.Markdown.Effect.Model as Effect
+import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (eScript, parse_inlines)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -45,6 +47,7 @@ import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
 import Lia.Parser.Input as Input
+import Lia.Section exposing (SubSection)
 import Lia.Utils as Utils
 import PseudoRandom
 
@@ -143,6 +146,10 @@ modify_State scriptID attr q =
                         , partiallySolved = Array.empty
                         }
                         s.quiz_vector
+                , effect_model =
+                    scriptID
+                        |> Maybe.map (setScriptToHidden s.effect_model)
+                        |> Maybe.withDefault s.effect_model
             }
     in
     maybeJS
@@ -150,6 +157,28 @@ modify_State scriptID attr q =
         |> andMap Context.getSeed
         |> andThen modifyState
         |> keep (succeed q)
+
+
+setScriptToHidden : Effect.Model SubSection -> Int -> Effect.Model SubSection
+setScriptToHidden effect_model scriptID =
+    case Array.get scriptID effect_model.javascript of
+        Just js ->
+            let
+                input =
+                    js.input
+            in
+            { effect_model
+                | javascript =
+                    effect_model.javascript
+                        |> Array.set scriptID
+                            { js
+                                | block = True
+                                , input = { input | type_ = Just Input.Hidden_ }
+                            }
+            }
+
+        Nothing ->
+            effect_model
 
 
 getOptions : Type x -> Int -> Parameters -> Options

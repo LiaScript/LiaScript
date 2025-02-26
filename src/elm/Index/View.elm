@@ -14,7 +14,7 @@ import Lia.Markdown.Code.Log exposing (Level(..))
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.View as Settings
-import Lia.Utils exposing (blockKeydown, btn)
+import Lia.Utils exposing (blockKeydown, btn, deactivate)
 import Library.Masonry as Masonry
 import Session exposing (Session)
 
@@ -22,12 +22,21 @@ import Session exposing (Session)
 view : Session -> Settings -> Model -> Html Msg
 view session settings model =
     Html.div []
-        [ [ ( \_ _ _ -> [], "ignore" )
-          , ( Settings.menuSettings session.screen.width, "settings" )
-          ]
-            |> Settings.header False En session.screen settings Const.icon
+        [ Settings.header
+            { online = False
+            , active = model.modal == Nothing
+            , lang = En
+            , screen = session.screen
+            , settings = settings
+            , logo = Const.icon
+            , buttons =
+                [ ( \_ _ _ -> [], "ignore" )
+                , ( Settings.menuSettings session.screen.width, "settings" )
+                ]
+            }
             |> Html.map UpdateSettings
-        , Html.div [ Attr.class "lia-slide__container" ]
+        , Html.div
+            (deactivate (model.modal /= Nothing) [ Attr.class "lia-slide__container" ])
             [ Html.main_
                 [ Attr.class "lia-slide__content"
                 , if session.screen.width < 240 then

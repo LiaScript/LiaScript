@@ -1,5 +1,6 @@
 module Index.Model exposing
-    ( Course
+    ( Action(..)
+    , Course
     , Modal(..)
     , Model
     , Release
@@ -44,11 +45,17 @@ reset_modal model =
     { model | modal = Nothing, error = Nothing }
 
 
+type Action
+    = Popup_Delete
+    | Popup_Reset
+
+
 type alias Course =
     { id : String
     , versions : Dict String Release
     , active : Maybe String
     , last_visit : String
+    , popup : Maybe Action
     }
 
 

@@ -1,7 +1,9 @@
 module Lia.Markdown.Quiz.Block.View exposing (view)
 
 import Accessibility.Aria as A11y_Aria
+import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
+import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -12,7 +14,7 @@ import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Utils exposing (blockKeydown, icon)
+import Lia.Utils exposing (blockKeydown, deactivate, icon)
 
 
 view : Config sub -> Solution.State -> Quiz Inlines -> State -> List (Html (Msg sub))
@@ -74,10 +76,14 @@ text solution state =
 
 select : Config sub -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
 select config solution open options i =
+    let
+        active =
+            Solution.isOpen solution
+    in
     Html.div
         [ Attr.class "lia-dropdown"
         , Attr.class <| Solution.toClass solution Nothing
-        , if Solution.isOpen solution then
+        , if active then
             onClick Toggle
 
           else
@@ -88,6 +94,19 @@ select config solution open options i =
             , A11y_Aria.hidden False
             , A11y_Role.button
             , A11y_Aria.expanded open
+            , A11y_Aria.hasListBoxPopUp
+            , A11y_Key.onKeyDown <|
+                if active then
+                    [ A11y_Key.enter Toggle, A11y_Key.space Toggle ]
+
+                else
+                    []
+            , Attr.tabindex <|
+                if active then
+                    0
+
+                else
+                    -1
             ]
             [ get_option config i options
             , Html.i
@@ -99,26 +118,29 @@ select config solution open options i =
                             else
                                 " icon-chevron-down"
                            )
-                , A11y_Role.button
                 ]
                 []
             ]
         , options
-            |> List.indexedMap (option config)
+            |> List.indexedMap (option config (open && active))
             |> Html.div
-                [ Attr.class "lia-dropdown__options"
-                , Attr.class <|
-                    if open then
-                        "is-visible"
+                (deactivate (not (open || active))
+                    [ Attr.class "lia-dropdown__options"
+                    , A11y_Aria.hidden (not (open && active))
+                    , A11y_Role.listBox
+                    , Attr.class <|
+                        if open then
+                            "is-visible"
 
-                    else
-                        "is-hidden"
-                ]
+                        else
+                            "is-hidden"
+                    ]
+                )
         ]
 
 
-option : Config sub -> Int -> Inlines -> Html (Msg sub)
-option config id =
+option : Config sub -> Bool -> Int -> Inlines -> Html (Msg sub)
+option config active id =
     viewer config
         >> Html.div []
         >> Html.map Script
@@ -128,7 +150,18 @@ option config id =
             , id
                 |> Choose
                 |> onClick
+            , [ A11y_Key.enter (Choose id)
+              , A11y_Key.space (Choose id)
+              ]
+                |> CList.addIf active (A11y_Key.escape Toggle)
+                |> A11y_Key.onKeyDown
             , A11y_Role.listItem
+            , Attr.tabindex <|
+                if active then
+                    0
+
+                else
+                    -1
             ]
 
 

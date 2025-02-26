@@ -22,7 +22,11 @@ export const Service = {
   handle: function (event: Lia.Event) {
     switch (event.message.cmd) {
       case 'script':
-        loadScript(event.message.param, true)
+        loadScript(event.message.param, true, false)
+        break
+
+      case 'module':
+        loadScript(event.message.param, true, true)
         break
 
       case 'link':
@@ -64,11 +68,12 @@ function origin(url: string) {
 export function loadScript(
   url: string,
   withSemaphore = false,
+  asModule = false,
   callback?: (ok: boolean) => void
 ) {
   // try to load all local scripts as blobs
   if (!url.startsWith('blob:') && origin(url) === window.location.origin) {
-    loadScriptAsBlob(url, withSemaphore)
+    loadScriptAsBlob(url, asModule, withSemaphore)
     return
   }
 
@@ -79,6 +84,10 @@ export function loadScript(
     tag.async = false // load all scripts in order
     tag.defer = true // load the scripts after the main HTML content
     tag.type = 'text/javascript'
+
+    if (asModule) {
+      tag.type = 'module'
+    }
 
     if (withSemaphore) {
       // this semaphore is used by the system to block the evaluation of scripts
@@ -97,7 +106,7 @@ export function loadScript(
 
         // try to load all local scripts as blobs
         if (!url.startsWith('blob:')) {
-          loadScriptAsBlob(url, withSemaphore, callback)
+          loadScriptAsBlob(url, withSemaphore, asModule, callback)
         } else if (callback) {
           callback(false)
         }
@@ -107,13 +116,14 @@ export function loadScript(
     document.head.appendChild(tag)
   } catch (e) {
     log.warn('failed loading script => ', e)
-    loadScriptAsBlob(url, withSemaphore)
+    loadScriptAsBlob(url, withSemaphore, asModule)
   }
 }
 
 function loadScriptAsBlob(
   url: string,
   withSemaphore: boolean,
+  asModule: boolean,
   callback?: (ok: boolean) => void
 ) {
   if (!url.startsWith('blob:')) {
@@ -121,7 +131,7 @@ function loadScriptAsBlob(
       'script',
       url,
       (blobUrl: string) => {
-        loadScript(blobUrl, withSemaphore, callback)
+        loadScript(blobUrl, withSemaphore, asModule, callback)
       },
       withSemaphore
         ? (_url, _error) => {

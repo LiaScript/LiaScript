@@ -116,6 +116,9 @@ modifications params =
     case
         Maybe.map (String.trim >> String.toLower) pattern
     of
+        Nothing ->
+            Yes
+
         Just "true" ->
             Yes
 
@@ -129,9 +132,6 @@ modifications params =
             No
 
         Just "0" ->
-            No
-
-        Nothing ->
             No
 
         Just _ ->

@@ -6,6 +6,7 @@ module Lia.Utils exposing
     , btnIcon
     , checkFalse
     , checkPersistency
+    , deactivate
     , focus
     , get
     , icon
@@ -218,6 +219,17 @@ modal msgClose controls content =
             ]
             []
         ]
+
+
+{-| Deactivate tabs and aria within an attribute list entirely, used for deactivating in modals.
+-}
+deactivate : Bool -> List (Attribute msg) -> List (Attribute msg)
+deactivate true attr =
+    if true then
+        A11y_Aria.hidden True :: Attr.attribute "inert" "true" :: attr
+
+    else
+        attr
 
 
 array_getLast : Array a -> Maybe a

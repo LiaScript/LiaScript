@@ -23,6 +23,7 @@ import Lia.Settings.Types exposing (Mode)
 type Resource
     = Link String
     | Script String
+    | Module String
 
 
 type alias Definition =

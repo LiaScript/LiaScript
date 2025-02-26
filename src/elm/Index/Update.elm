@@ -9,7 +9,7 @@ module Index.Update exposing
 import Browser.Navigation as Nav
 import Dict
 import I18n.Translations exposing (Lang(..))
-import Index.Model exposing (Course, Modal, Model, Release)
+import Index.Model exposing (Action(..), Course, Modal, Model, Release)
 import Index.Version as Version
 import Json.Decode as JD
 import Lia.Definition.Json.Decode as Definition
@@ -17,6 +17,7 @@ import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
+import Lia.Utils exposing (scheduleFocus)
 import Library.Masonry as Masonry
 import List.Extra
 import Service.Console
@@ -29,8 +30,8 @@ type Msg
     = IndexList (List Course)
     | IndexError String
     | Input String
-    | Delete String
-    | Reset String (Maybe String)
+    | Delete Bool String
+    | Reset Bool String (Maybe String)
     | Restore String (Maybe String)
     | Share { title : String, text : String, url : String, image : Maybe String }
     | Handle Event
@@ -40,6 +41,8 @@ type Msg
     | UpdateSettings Settings.Msg
     | Modal (Maybe Modal)
     | MasonryMsg Masonry.Msg
+    | PopupClose
+    | None
 
 
 decodeGet : JD.Value -> Result JD.Error ( String, Maybe Course )
@@ -85,7 +88,18 @@ update msg settings model =
             IndexError _ ->
                 ( model, Cmd.none, [] )
 
-            Delete courseID ->
+            Delete False courseID ->
+                ( { model
+                    | masonry =
+                        Masonry.map
+                            (mapPopup Popup_Delete courseID)
+                            model.masonry
+                  }
+                , Lia.Utils.focus None "lia-popup"
+                , []
+                )
+
+            Delete True courseID ->
                 let
                     courses =
                         model.courses
@@ -102,8 +116,37 @@ update msg settings model =
                 , [ Service.Database.index_delete courseID ]
                 )
 
-            Reset courseID version ->
-                ( model
+            PopupClose ->
+                ( { model
+                    | masonry =
+                        Masonry.map
+                            (\course ->
+                                { course | popup = Nothing }
+                            )
+                            model.masonry
+                  }
+                , Cmd.none
+                , []
+                )
+
+            Reset False courseID _ ->
+                ( { model
+                    | masonry =
+                        Masonry.map
+                            (mapPopup Popup_Reset courseID)
+                            model.masonry
+                  }
+                , Lia.Utils.focus None "lia-popup"
+                , []
+                )
+
+            Reset True courseID version ->
+                ( { model
+                    | masonry =
+                        Masonry.map
+                            (mapPopup Popup_Reset "")
+                            model.masonry
+                  }
                 , Cmd.none
                 , [ Service.Database.index_reset
                         { url = courseID
@@ -203,7 +246,7 @@ update msg settings model =
                             _ ->
                                 Nothing
                   }
-                , Cmd.none
+                , scheduleFocus Nothing NoOp "lia-modal-focus"
                 , []
                 )
 
@@ -215,6 +258,18 @@ update msg settings model =
 
             _ ->
                 ( model, Cmd.none, [] )
+
+
+mapPopup : Action -> String -> Course -> Course
+mapPopup action courseID course =
+    { course
+        | popup =
+            if course.id == courseID then
+                Just action
+
+            else
+                Nothing
+    }
 
 
 updateSettings : Msg -> Settings -> ( Model, Cmd Msg, List Event ) -> ( Settings, ( Model, Cmd Msg, List Event ) )
@@ -274,11 +329,12 @@ decList =
 
 decCourse : JD.Decoder Course
 decCourse =
-    JD.map4 Course
+    JD.map5 Course
         (JD.field "id" JD.string)
         (JD.field "data" (JD.dict decRelease))
         (JD.succeed Nothing)
         (JD.field "updated_str" JD.string)
+        (JD.succeed Nothing)
 
 
 decRelease : JD.Decoder Release
