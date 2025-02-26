@@ -67,7 +67,7 @@
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "abortcontroller-polyfill": "^1.7.8",
     "ace-builds": "^1.39.0",
-    "caniuse-lite": "^1.0.30001700",
+    "caniuse-lite": "^1.0.30001701",
     "crypto-browserify": "^3.5.1",
     "dexie": "^4.0.11",
     "easy-speech": "^2.4.0",
