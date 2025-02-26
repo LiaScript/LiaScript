@@ -92,7 +92,7 @@
     "pdfast": "^0.2.0",
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
-    "sass": "^1.80.4",
+    "sass": "^1.85.1",
     "tsc": "^2.0.4",
     "typescript": "^5.6.3",
     "uint8-to-base64": "^0.2.0",
