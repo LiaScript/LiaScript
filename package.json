@@ -109,13 +109,6 @@
       "staticPath": "static"
     },
     {
-      "staticPath": "node_modules/katex/dist/katex.min.css"
-    },
-    {
-      "staticPath": "node_modules/katex/dist/fonts",
-      "staticOutPath": "fonts"
-    },
-    {
       "staticPath": "node_modules/ace-builds/src-min-noconflict"
     }
   ],
