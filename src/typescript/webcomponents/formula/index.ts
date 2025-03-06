@@ -1,6 +1,7 @@
 import katexCssUrl from 'katex/dist/katex.min.css'
 import katex from 'katex'
 import renderA11yString from './render-a11y-strings'
+import 'katex/contrib/mhchem/mhchem.js'
 
 var katexStyles: null | string = null
 
