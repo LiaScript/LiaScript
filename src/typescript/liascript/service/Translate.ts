@@ -72,7 +72,9 @@ function injectGoogleTranslate() {
     // the general URL without protocol needs to be checked with other
     // protocols IPFS, Hyper, etc.
     RESOURCE.loadScript(
-      'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
+      'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit',
+      false,
+      false
     )
 
     // Setup the global init function, this function is called by google as a

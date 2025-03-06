@@ -152,6 +152,9 @@ store ( key_, value_ ) =
         "script" ->
             set (addToResources Script value_)
 
+        "SCRIPT" ->
+            set (addToResources Module value_)
+
         "translation" ->
             set (add_translation value_)
 

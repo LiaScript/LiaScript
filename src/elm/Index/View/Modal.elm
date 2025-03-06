@@ -23,7 +23,7 @@ files error =
             , Attr.style "margin" "auto"
             , Attr.style "padding" "1rem"
             ]
-            [ Html.h1 [] [ Html.text "Import File(s)" ]
+            [ Html.h1 [ Attr.tabindex -1, Attr.id "lia-modal-focus" ] [ Html.text "Import File(s)" ]
             , Html.p []
                 [ Html.text "You can import a course either from a single ZIP file or from multiple uncompressed files that contain all the necessary content. "
                 , Html.text "To do this, you can either click on the button below to load the files or simply drag and drop them onto the field below. "
@@ -82,9 +82,9 @@ directory error =
             , Attr.style "margin" "auto"
             , Attr.style "padding" "1rem"
             ]
-            [ Html.h1 [] [ Html.text "Import Directory" ]
+            [ Html.h1 [ Attr.tabindex -1, Attr.id "lia-modal-focus" ] [ Html.text "Import Directory" ]
             , Html.p []
-                [ Html.text "Select a folder (which might contain subfolders as well) by clicking on the button below or drag and drop it onto the field below. "
+                [ Html.text "Select a folder (which might contain sub-folders as well) by clicking on the button below or drag and drop it onto the field below. "
                 , Html.text "The folder should contain at least one \"README.md\" file, which will be used as the main entry point for your course."
                 ]
             , input
