@@ -204,6 +204,9 @@ loadResource old new =
 
                 Link url ->
                     Service.Resource.link url
+
+                Module url ->
+                    Service.Resource.script_module url
         )
         to_load
     )

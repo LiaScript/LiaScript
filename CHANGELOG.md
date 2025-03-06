@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.11] - 06/03/2025
+
+- feat(Formulas): Add chemistry support via https://mhchem.github.io/MathJax-mhchem/
+- improve(Tooltips): Use Wikipedia to generate tooltips for links
+- chore: npm update ace, caniuse, echarts, katex
+- improve(Comment): Better video overlay positioning
+- fix: Working on kaios again
+- update: oEmbed endpoints
+- translations: Add Urdu and Georgian
+- improve(Index): Add popups to index cards for deleting and resetting courses
+- improve(ASCII-Art): Better widechart detection
+- fix: Loading courses from zip-files
+- improved(a11y): Better keyboard navigation for quizzes and surveys and modals
 
 ## [0.16.10] - 04/02/2025
 
@@ -22,7 +35,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - multiple aria-polite and aria-live optimizations for quizzes, tables and formulas, and the terminal output
 
 - feat: in script for the modify parameter it is now possible true or false the modification but also to add a string that is used as a code separator to allow modifications only for a certain part
-- 
 
 ## [0.16.8] - 06/01/2025
 
@@ -56,7 +68,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - improve(Platform support): Courses can now also be loaded directly from the following platform, without requiring a proxy, and thus will not cause any CORS issues:
 
   - [GitLab](https://gitlab.com)
-  - [Codeberg](https://onedrive.live.com)
+  - [Codeberg](https://codeberg.org)
   
 
 ## [0.16.7] - 14/11/2025

@@ -6,6 +6,8 @@ import log from './log'
 import './types/globals'
 import Lia from './types/lia.d'
 
+import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only.js'
+
 import { Connector } from '../connectors/Base/index'
 
 import * as TOOLTIP from '../webcomponents/tooltip/index'
@@ -31,6 +33,12 @@ import * as GLOBALS from './init'
 // TODO: CHECK window.LIA.defaultCourse functionality
 GLOBALS.initGlobals()
 window.LIA.injectResposivevoice = TTS.inject
+
+if (typeof queueMicrotask !== 'function') {
+  window.queueMicrotask = function (callback) {
+    Promise.resolve().then(callback)
+  }
+}
 
 // ----------------------------------------------------------------------------
 export class LiaScript {

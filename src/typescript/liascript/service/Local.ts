@@ -92,7 +92,11 @@ function getFileMimeType(fileName: string) {
 }
 
 function LOG(arg: any) {
-  log.info('local:', ...arg)
+  if (typeof arg === 'string') {
+    log.info('local:', arg)
+  } else {
+    log.info('local:', ...arg)
+  }
 }
 
 async function hash(readme: File) {
@@ -215,7 +219,7 @@ const Service = {
                 // Create a new File object for each extracted file
                 const extractedFile = new File(
                   [content],
-                  allInBase ? fileName.slice(trim) : fileName,
+                  (allInBase ? fileName.slice(trim) : fileName) || fileName,
                   {
                     type:
                       getFileMimeType(fileName) || 'application/octet-stream',

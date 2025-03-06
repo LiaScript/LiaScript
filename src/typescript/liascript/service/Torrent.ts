@@ -12,6 +12,7 @@ const Service = {
       loadScript(
         'https://cdn.jsdelivr.net/webtorrent/latest/webtorrent.min.js',
         true,
+        false,
         (ok: boolean) => {
           if (ok) {
             this.handle(event)
