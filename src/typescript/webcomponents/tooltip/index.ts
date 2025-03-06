@@ -235,7 +235,7 @@ class PreviewLink extends HTMLElement {
    */
   activate(positionX: number, positionY: number) {
     if (this.container) {
-      // of course, mark the tooltip as activated
+      // mark the tooltip as activated
       this.isActive = true
 
       if (this.isClicked) {
@@ -243,47 +243,33 @@ class PreviewLink extends HTMLElement {
         return
       }
 
-      // This adds some space to the vertical position of the tooltip,
-      // which places the tooltip more to the right or to the left, depending
-      // on the position and on window width.
+      // Calculate the tooltip positioning
       this.container.style.left = `${
         positionX - (425 * positionX) / window.innerWidth
       }px`
-
-      // Similar as above, but the tooltip is either placed above or below the
-      // current position.
       if (positionY * 1.5 > window.innerHeight) {
-        // placed below if the position is on the upper part of the screen
         this.container.style.top = ''
         this.container.style.bottom = `${window.innerHeight - positionY + 10}px`
       } else {
-        // placed above, on the lower part of the screen
         this.container.style.top = `${positionY + 10}px`
         this.container.style.bottom = ''
       }
 
-      // if the tooltip has already been watched
+      // Check if we already have cached tooltip data
       if (this.cache) {
         this.show()
-      }
-      // has it been previously stored by another link
-      else if (backup[this.sourceUrl]) {
+      } else if (backup[this.sourceUrl]) {
         this.cache = backup[this.sourceUrl]
         this.show()
-      }
-      // if the fetching process has not started yet
-      else if (!this.isFetching) {
-        // set this once and for all
+      } else if (!this.isFetching) {
         this.isFetching = true
-
         let self = this
 
-        // check if this is a link to a LiaScript course
+        // Check if this is a link to a LiaScript course
         let liascript_url = this.sourceUrl.match(LIASCRIPT_PATTERN)
         if (liascript_url) {
-          // apply the fetching function from module `preview-lia.ts`
           PREVIEW.fetch(
-            liascript_url[1], // extracted markdown url
+            liascript_url[1],
             function (
               url: string,
               meta: {
@@ -304,28 +290,92 @@ class PreviewLink extends HTMLElement {
             }
           )
         } else {
-          try {
-            // try to get the oEmbed resource, this is much cheaper than to
-            // parse the entire HTML document
-            EMBED.extract(this.sourceUrl, {})
-              .then((data) => {
-                self.cache = toCard(
-                  self.sourceUrl,
-                  data.title,
-                  undefined,
-                  data.thumbnail_url
-                )
+          // Use the revised regex to detect Wikipedia links (which supports titles with parentheses)
+          const wikipediaRegex =
+            /\/\/([a-z]+)\.wikipedia\.org\/wiki\/([^#?\s]+(?:\([^#?\s]*\)[^#?\s]*)*)/i
+          const wikipediaMatch = this.sourceUrl.match(wikipediaRegex)
+          if (wikipediaMatch) {
+            let lang = wikipediaMatch[1]
+            let title = wikipediaMatch[2]
+            // Decode first to avoid double encoding (e.g. '%28' becomes '(')
+            try {
+              title = decodeURIComponent(title)
+            } catch (e) {
+              console.error('Error decoding title:', e)
+            }
+            // Re-encode the title for a proper API request
+            let wikiApiUrl = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+              title
+            )}`
 
-                self.show()
+            window
+              .fetch(wikiApiUrl, {
+                headers: {
+                  Accept: 'application/json',
+                },
               })
-              .catch((_) => {
-                // if there is no oEmbed-service defined for this URL, then
-                // fetch the content from the website and parse it
-                fetch(this.sourceUrl, function (doc: string) {
-                  self.parse(doc)
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`)
+                }
+                return response.json()
+              })
+              .then((data) => {
+                this.cache = toCard(
+                  this.sourceUrl, //data.content_urls.desktop.page,
+                  data.title,
+                  data.extract,
+                  data.thumbnail?.source,
+                  data.thumbnail?.caption
+                )
+                this.show()
+              })
+              .catch((error) => {
+                console.error('Wikipedia API error:', error)
+                // Fallback: try using oEmbed or direct HTML parsing if the API fails
+                EMBED.extract(this.sourceUrl, {})
+                  .then((data) => {
+                    this.cache = toCard(
+                      this.sourceUrl,
+                      data.title,
+                      undefined,
+                      data.thumbnail_url
+                    )
+                    this.show()
+                  })
+                  .catch((_) => {
+                    fetch(
+                      this.sourceUrl,
+                      function (doc: string) {
+                        this.parse(doc)
+                      }.bind(this)
+                    )
+                  })
+              })
+          } else {
+            // For all other links, try the oEmbed service first
+            try {
+              EMBED.extract(this.sourceUrl, {})
+                .then((data) => {
+                  this.cache = toCard(
+                    this.sourceUrl,
+                    data.title,
+                    undefined,
+                    data.thumbnail_url
+                  )
+                  this.show()
                 })
-              })
-          } catch (e) {}
+                .catch((_) => {
+                  // If no oEmbed service exists, fetch and parse the full HTML
+                  fetch(
+                    this.sourceUrl,
+                    function (doc: string) {
+                      this.parse(doc)
+                    }.bind(this)
+                  )
+                })
+            } catch (e) {}
+          }
         }
       }
     }
