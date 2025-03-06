@@ -37,4 +37,7 @@ encResource r =
 
             Script url ->
                 ( "Script", string url )
+
+            Module url ->
+                ( "Module", string url )
         ]

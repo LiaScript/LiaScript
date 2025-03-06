@@ -1,6 +1,6 @@
 {
   "name": "liascript",
-  "version": "0.16.10",
+  "version": "0.16.11",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -65,8 +65,9 @@
     "@typescript-eslint/eslint-plugin": "^8.11.0",
     "@typescript-eslint/parser": "^8.11.0",
     "@webcomponents/webcomponentsjs": "^2.8.0",
-    "ace-builds": "^1.37.5",
-    "caniuse-lite": "^1.0.30001696",
+    "abortcontroller-polyfill": "^1.7.8",
+    "ace-builds": "^1.39.0",
+    "caniuse-lite": "^1.0.30001701",
     "crypto-browserify": "^3.5.1",
     "dexie": "^4.0.11",
     "easy-speech": "^2.4.0",
@@ -91,7 +92,7 @@
     "pdfast": "^0.2.0",
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
-    "sass": "^1.80.4",
+    "sass": "^1.85.1",
     "tsc": "^2.0.4",
     "typescript": "^5.6.3",
     "uint8-to-base64": "^0.2.0",
@@ -106,9 +107,6 @@
   "staticFiles": [
     {
       "staticPath": "static"
-    },
-    {
-      "staticPath": "node_modules/katex/dist/katex.min.css"
     },
     {
       "staticPath": "node_modules/ace-builds/src-min-noconflict"
