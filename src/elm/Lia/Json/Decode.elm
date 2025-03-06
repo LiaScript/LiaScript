@@ -35,47 +35,42 @@ andMap key dec =
 
 toModel : Int -> SplitPane.State -> Sync.Settings -> JD.Decoder Model
 toModel seed pane sync =
-    JD.succeed Model
-        |> andMap "url" JD.string
-        |> andMap "readme" (JD.string |> JD.map repo)
-        |> andMap "readme" JD.string
-        |> andMap "origin" JD.string
-        |> andMap "str_title" JD.string
-        |> JD.map2 (|>) (JD.succeed (Settings.init False Settings.Slides))
-        |> JD.map2 (|>) (JD.succeed Nothing)
-        |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap (Section.init seed)))
-        |> andMap "section_active" JD.int
-        |> JD.map2 (|>) (JD.succeed Nothing)
-        |> andMap "readme"
-            (JD.string
-                |> JD.andThen
-                    (urlQuery
-                        >> Maybe.withDefault ""
-                        >> Definition.decode
-                        >> JD.field "definition"
-                    )
+    JD.field "readme" JD.string
+        |> JD.andThen
+            (\readme ->
+                JD.succeed Model
+                    |> andMap "url" JD.string
+                    |> andMap "readme" (JD.string |> JD.map repo)
+                    |> JD.map2 (|>) (JD.succeed readme)
+                    |> andMap "origin" JD.string
+                    |> andMap "str_title" JD.string
+                    |> JD.map2 (|>) (JD.succeed (Settings.init False Settings.Slides))
+                    |> JD.map2 (|>) (JD.succeed Nothing)
+                    |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap (Section.init seed)))
+                    |> andMap "section_active" JD.int
+                    |> JD.map2 (|>) (JD.succeed Nothing)
+                    |> andMap "definition" (Definition.decode (readme |> urlQuery |> Maybe.withDefault ""))
+                    |> JD.map2 (|>) (JD.succeed Index.init)
+                    |> JD.map2 (|>) (JD.succeed [])
+                    |> JD.map2 (|>) (JD.succeed [])
+                    |> andMap "translation"
+                        (JD.string
+                            |> JD.map (Translations.getLnFromCode >> Maybe.withDefault Translations.En)
+                        )
+                    |> andMap "translation" JD.string
+                    |> JD.map2 (|>) (JD.succeed Nothing)
+                    |> andMap "translation" JD.string
+                    |> JD.map2 (|>) (JD.succeed identity)
+                    |> JD.map2 (|>) (JD.succeed Dict.empty)
+                    |> JD.map2 (|>) (JD.succeed Dict.empty)
+                    |> JD.map2 (|>) (JD.succeed Nothing)
+                    |> JD.map2 (|>) (JD.succeed sync)
+                    |> JD.map2 (|>) (JD.succeed False)
+                    |> JD.map2 (|>) (JD.succeed seed)
+                    |> JD.map2 (|>) (JD.succeed pane)
+                    |> JD.map2 (|>) (JD.succeed Chat.init)
+                    |> JD.map2 (|>) (JD.succeed Overlay.init)
             )
-        --|> andMap "definition" Definition.decode
-        |> JD.map2 (|>) (JD.succeed Index.init)
-        |> JD.map2 (|>) (JD.succeed [])
-        |> JD.map2 (|>) (JD.succeed [])
-        |> andMap "translation"
-            (JD.string
-                |> JD.map (Translations.getLnFromCode >> Maybe.withDefault Translations.En)
-            )
-        |> andMap "translation" JD.string
-        |> JD.map2 (|>) (JD.succeed Nothing)
-        |> andMap "translation" JD.string
-        |> JD.map2 (|>) (JD.succeed identity)
-        |> JD.map2 (|>) (JD.succeed Dict.empty)
-        |> JD.map2 (|>) (JD.succeed Dict.empty)
-        |> JD.map2 (|>) (JD.succeed Nothing)
-        |> JD.map2 (|>) (JD.succeed sync)
-        |> JD.map2 (|>) (JD.succeed False)
-        |> JD.map2 (|>) (JD.succeed seed)
-        |> JD.map2 (|>) (JD.succeed pane)
-        |> JD.map2 (|>) (JD.succeed Chat.init)
-        |> JD.map2 (|>) (JD.succeed Overlay.init)
 
 
 toSectionBase : JD.Decoder Section.Base

@@ -1,6 +1,6 @@
 # oEmbed Service Providers
 
-__date__: 18/02/2025
+__date__: 26/02/2025
 
 __23HQ:__ https://www.23hq.com
 
@@ -188,7 +188,7 @@ __Balsamiq Cloud:__ https://balsamiq.cloud/
 
 Fast, Approachable, Collaborative Wireframing
 
-![logo](./images/landing_page_thumbnail_wide.png)
+![logo](https://static.balsamiq.cloud/1607/landing/images/e9fe917dc627cf702023.png)
 
 ---
 
@@ -444,6 +444,8 @@ Cueup is an online platform connecting DJs and event organizers - the easiest wa
 
 __Curated:__ https://curated.co/
 
+Curated is like a custom-tailored suit: so perfectly fitted to its task that you can never see any other option the same way again. Every part of the platform — from the article collection and management to the email template formatting — makes the creation and management process completely intuitiv..
+
 ![logo](https://cdn.prod.website-files.com/654bab65ef556fcf34761463/654bab65ef556fcf34761477_curated-a05f7683c39fa9689e68e028003638c5906155098f2bddee222b17ec84ed0073.png)
 
 ---
@@ -616,7 +618,7 @@ Transform your online and offline shopping experience with Firework's leading vi
 
 __FITE:__ https://www.fite.tv/
 
-✓ 1,000+ live events per year ✓ 7M strong fan community ✓ Watch: AEW 2025 PPV: Pack #1 (Revolution & Dynasty), AEW: Revolution 2025, Maple Leaf Pro Wrestling: Mayhem Bundle, PS Fight Series: Rahim Pardesi vs Feroze Khan, GLORY 98: Uku Jurgendal vs Jamal Ben Saddik, Fight Club OC, February 13th, BKFC..
+✓ 1,000+ live events per year ✓ 7M strong fan community ✓ Watch: AEW 2025 PPV: Pack #1 (Revolution & Dynasty), AEW: Revolution 2025, Maple Leaf Pro Wrestling: Mayhem Bundle, QPW: Super Slam III Bundle, BKFC Dubai: Austin Trout vs Carlos Trinidad-Snake ✓ Statistics & interviews
 
 ![logo](https://www.trillertv.com/static/img/home-trillertv.png)
 
@@ -654,9 +656,17 @@ Visual Node-RED Flow Management.
 
 ---
 
+__Fooday:__ https://fooday.app
+
+See more reviews of All
+
+![logo](https://fooday.app/images/og-image-en.jpg)
+
+---
+
 __FOX SPORTS Australia:__ https://www.foxsports.com.au
 
-Reference #18.87851502.1739903113.256de2ff
+Reference #18.9cef19b8.1740590496.6540478
 
 ---
 
@@ -678,7 +688,7 @@ __Geograph Britain and Ireland:__ https://www.geograph.org.uk/
 
 Geograph Britain and Ireland is a web-based project to collect and reference geographically representative images of every square kilometre of the British Isles.
 
-![logo](https://s0.geograph.org.uk/geophotos/07/26/89/7268918_b8d77fe5.jpg)
+![logo](https://s0.geograph.org.uk/photos/41/55/415594_3e6f6026.jpg)
 
 ---
 
@@ -1168,14 +1178,6 @@ It's all about music boxes. Online music box melody editor, music box melody gal
 
 ---
 
-__myBeweeg:__ https://mybeweeg.com
-
-More than 10000 personal trainers and 1000 gyms are on FITAPP.pro register for FREE today and manage your customers, workouts, finances and much more
-
-![logo](https://fitapp.pro/img/shareFacebook.png)
-
----
-
 __MySQL Visual Explain:__ https://mysqlexplain.com
 
 Optimize MySQL queries with easy-to-understand Visual Explains.
@@ -1336,9 +1338,9 @@ Create interactive user flows and stunning design presentations to engage your a
 
 __OZ:__ https://www.oz.com/
 
-OZ Sports integrates production, fan commentary, and innovative VAR technologies. We are reinventing sports production and broadcasting globally.
+OZ Sports revolutionizes sports production with AI-driven, multi-camera 4K60p HDR technology, delivering Champions League-quality broadcasts at a fraction of the cost—featuring slow-mo replays, real-time graphics, and industry-first AI-driven optical zoom closeups.
 
-![logo](https://assets.website-files.com/62c58eb5cb8ce19b27e911e5/62cee5c4448ae61afef81b08_logo_oz.png)
+![logo](https://oz.com/og-image.png)
 
 ---
 
@@ -1462,9 +1464,9 @@ Self-descriptive content platform, Present
 
 __Prezi Video:__ https://prezi.com/
 
-Welcome to Prezi, the presentation software that uses motion, zoom, and spatial relationships to bring your ideas to life and make you a great presenter.
+Welcome to Prezi, the presentation software that helps you stand out, bring your ideas to life, and create interactive presentations easier than ever.
 
-![logo](https://assets.prezicdn.net/assets-versioned/coverservice-versioned/4660-10df5de/coverservice/webflow/images/Hero-06-2x.png)
+![logo](https://assets.prezicdn.net/assets-versioned/coverservice-versioned/4671-aeebbaa/coverservice/webflow/images/Hero-06-2x.png)
 
 ---
 
@@ -1544,7 +1546,7 @@ __ReverbNation:__ https://www.reverbnation.com/
 
 ReverbNation helps Artists grow lasting careers by introducing them to music industry partners, exposing them to fans, and building innovative tools to promote their success.
 
-![logo](https://d16o2fplq2wi4c.cloudfront.net/20250214082437/images/main_page/open_graph/rn-logo_1200x630.png)
+![logo](https://d16o2fplq2wi4c.cloudfront.net/20250225220109/images/main_page/open_graph/rn-logo_1200x630.png)
 
 ---
 
@@ -1618,7 +1620,7 @@ Easily Create, Analyze, and Share Maps. Share with friends, embed maps on websit
 
 __Scribd:__ https://www.scribd.com/
 
-Explore over 195M documents from a global community. Share information, and find inspiration on Scribd.
+Get to the source. Specialized knowledge on any topic, and answers you won’t find anywhere else. Home to the world’s documents, 200M+ and counting.
 
 ---
 
@@ -1725,7 +1727,7 @@ __SpeakerDeck:__ https://speakerdeck.com
 
 Speaker Deck is the best way to share presentations online. Simply upload your slides as a PDF, and we’ll turn them into a beautiful online experience. View them on SpeakerDeck.com, or share them on any website with an embed code.
 
-![logo](https://d1eu30co0ohy4w.cloudfront.net/assets/speaker-deck-og-image-afaa3344a1954bf9e255b893d3d464fe2bee1ef57c8f9655d14f560f3fd8d358.png)
+![logo](https://d1eu30co0ohy4w.cloudfront.net/assets/speaker-deck-og-image-e5cb37b9a277dd3f1b3cfe930515037e02f08de5a834a606e9bfbef5d84e64a2.png)
 
 ---
 
@@ -1919,7 +1921,7 @@ Info for efficiency
 
 __tvcf:__ https://tvcf.co.kr
 
-Magnum
+Grupo Cavallaro
 
 ![logo](https://tvcf.co.kr/images/RenewV1.1/logo.svg)
 
@@ -1933,7 +1935,7 @@ Twinmotion Cloud enables easily sharing content created in Twinmotion, providing
 
 __Twitter:__ https://www.twitter.com/
 
-x.com
+Please switch to a supported browser to continue using x.com. You can see a list of supported browsers in our Help Center.
 
 ---
 
@@ -2005,7 +2007,9 @@ __Videfit:__ https://videfit.com/
 
 __VidMount:__ https://vidmount.com/
 
-Oops! We couldn't find the page that you're looking for.
+For all your daily video and music dose. Or upload your own content and share it with others.
+
+![logo](https://vidmount.com/favicon.png)
 
 ---
 
@@ -2129,7 +2133,7 @@ Wistia is the video marketing platform for business. Create, host, market, and m
 
 __wizer.me:__ https://www.wizer.me/
 
-![logo](https://www.facebook.com/tr?id=2485261641514575&ev=PageView&noscript=1)
+Amaze your students with smarter worksheets. Wizer.me is a platform where teachers build beautiful, engaging online worksheets!
 
 ---
 
@@ -2159,7 +2163,7 @@ Build a site, sell online, earn with your content, and more
 
 __X:__ https://www.x.com/
 
-x.com
+Please switch to a supported browser to continue using x.com. You can see a list of supported browsers in our Help Center.
 
 ---
 
@@ -2265,7 +2269,7 @@ __EgliseInfo:__ https://egliseinfo.catholique.fr/
 __Ex.Co:__ https://ex.co
 
 ```
-{'date': 'Tue, 18 Feb 2025 18:25:00 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'cf-cache-status': 'DYNAMIC', 'server': 'cloudflare', 'cf-ray': '91400ea3ff89e52f-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
+{'date': 'Wed, 26 Feb 2025 17:21:23 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'cf-cache-status': 'DYNAMIC', 'server': 'cloudflare', 'cf-ray': '91819c74e8fde519-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
 
 b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n'
 ```
@@ -2275,7 +2279,7 @@ b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>4
 __Eyrie:__ https://eyrie.io/
 
 ```
-{'server': 'awselb/2.0', 'date': 'Tue, 18 Feb 2025 18:25:00 GMT', 'content-type': 'text/html', 'content-length': '122', 'connection': 'keep-alive', 'set-cookie': 'AWSALB=DuQgB1vs5NSZtIXj8p/8bEuItMqnjsrxk4Dzz/GUY+ZMCt8lv2Kb7LvuZYKfjFkEmudbK2zyq78SOJ/kF/Qrc6epvuJXCdXDE9bjtKg/tNMJs/KDg0AqDvJ3yCzJ; Expires=Tue, 25 Feb 2025 18:25:00 GMT; Path=/, AWSALBCORS=DuQgB1vs5NSZtIXj8p/8bEuItMqnjsrxk4Dzz/GUY+ZMCt8lv2Kb7LvuZYKfjFkEmudbK2zyq78SOJ/kF/Qrc6epvuJXCdXDE9bjtKg/tNMJs/KDg0AqDvJ3yCzJ; Expires=Tue, 25 Feb 2025 18:25:00 GMT; Path=/; SameSite=None; Secure', 'status': '502'}
+{'server': 'awselb/2.0', 'date': 'Wed, 26 Feb 2025 17:21:24 GMT', 'content-type': 'text/html', 'content-length': '122', 'connection': 'keep-alive', 'set-cookie': 'AWSALB=dnxUIXHxigNFGuP8tKh2Mr1PIlzR2PN5UCfeBXQt9fkGWVmcm+e76SGujq0Xc5mn62f6LhuYaduKJ/TUk06NvVyKRSAmQwBcNb751oqyKGOoNHHrhC7KEP1ooP7Q; Expires=Wed, 05 Mar 2025 17:21:24 GMT; Path=/, AWSALBCORS=dnxUIXHxigNFGuP8tKh2Mr1PIlzR2PN5UCfeBXQt9fkGWVmcm+e76SGujq0Xc5mn62f6LhuYaduKJ/TUk06NvVyKRSAmQwBcNb751oqyKGOoNHHrhC7KEP1ooP7Q; Expires=Wed, 05 Mar 2025 17:21:24 GMT; Path=/; SameSite=None; Secure', 'status': '502'}
 
 b'<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n</body>\r\n</html>\r\n'
 ```
@@ -2285,17 +2289,10 @@ b'<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1
 __Fader:__ https://app.getfader.com
 
 ```
-{'server': 'keycdn', 'date': 'Tue, 18 Feb 2025 18:25:01 GMT', 'content-length': '0', 'connection': 'keep-alive', 'status': '451'}
+{'server': 'keycdn', 'date': 'Wed, 26 Feb 2025 17:21:25 GMT', 'content-length': '0', 'connection': 'keep-alive', 'status': '451'}
 
 b''
 ```
-
----
-
-__Fooday:__ https://fooday.app
-
-```
-IncompleteRead(53216 bytes read)```
 
 ---
 
@@ -2309,7 +2306,7 @@ timed out```
 __Geograph Channel Islands:__ https://channel-islands.geograph.org/
 
 ```
-{'server': 'nginx', 'date': 'Tue, 18 Feb 2025 18:25:47 GMT', 'content-type': 'text/html; charset=iso-8859-1', 'content-length': '199', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'status': '403'}
+{'server': 'nginx', 'date': 'Wed, 26 Feb 2025 17:22:08 GMT', 'content-type': 'text/html; charset=iso-8859-1', 'content-length': '199', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'status': '403'}
 
 b'<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">\n<html><head>\n<title>403 Forbidden</title>\n</head><body>\n<h1>Forbidden</h1>\n<p>You don\'t have permission to access this resource.</p>\n</body></html>\n'
 ```
@@ -2326,7 +2323,7 @@ timed out```
 __Idomoo:__ https://idomoo.com/
 
 ```
-{'date': 'Tue, 18 Feb 2025 18:26:36 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'access-control-allow-origin': '*', 'content-security-policy': "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'", 'referrer-policy': 'origin', 'strict-transport-security': 'max-age=63072000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'cf-cache-status': 'DYNAMIC', 'server': 'cloudflare', 'cf-ray': '914010fd6827e525-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
+{'date': 'Wed, 26 Feb 2025 17:22:57 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'access-control-allow-origin': '*', 'content-security-policy': "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'", 'referrer-policy': 'origin', 'strict-transport-security': 'max-age=63072000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'cf-cache-status': 'DYNAMIC', 'server': 'cloudflare', 'cf-ray': '91819ec0aff4e504-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
 
 b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n'
 ```
@@ -2350,7 +2347,7 @@ Unable to find the server at inphood.com```
 __Kirim.Email:__ https://kirim.email/
 
 ```
-{'date': 'Tue, 18 Feb 2025 18:26:52 GMT', 'content-type': 'text/html; charset=UTF-8', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'alt-svc': 'h3=":443"; ma=86400', 'x-powered-by': 'PHP/8.3.13', 'cf-cache-status': 'DYNAMIC', 'report-to': '{"endpoints":[{"url":"https:\\/\\/a.nel.cloudflare.com\\/report\\/v4?s=vEbVH23uX01CxM2gpiF5lcr6g31s7VvIfXVzUuafUOW3S9Iqt%2BVywvi%2BmRHnCf8Toj5UPZyG7k6hitenAJLGdPI7JbIrtSkA5EY3qd%2BAr7ROYs%2B8GmuX7GSkTqBBNMigcM9%2BH5tzek30xA%3D%3D"}],"group":"cf-nel","max_age":604800}', 'nel': '{"success_fraction":0,"report_to":"cf-nel","max_age":604800}', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '91401160991c66c4-AMS', 'server-timing': 'cfL4;desc="?proto=TCP&rtt=28477&min_rtt=28253&rtt_var=10755&sent=5&recv=6&lost=0&retrans=0&sent_bytes=2334&recv_bytes=731&delivery_rate=95423&cwnd=37&unsent_bytes=0&cid=b9ff0813fa54e081&ts=611&x=0"', 'status': '403', 'content-length': '0', '-content-encoding': 'gzip'}
+{'date': 'Wed, 26 Feb 2025 17:23:17 GMT', 'content-type': 'text/html; charset=UTF-8', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'alt-svc': 'h3=":443"; ma=86400', 'x-powered-by': 'PHP/8.3.13', 'cf-cache-status': 'DYNAMIC', 'report-to': '{"endpoints":[{"url":"https:\\/\\/a.nel.cloudflare.com\\/report\\/v4?s=IdP63XK8kWdVkTRJwN29fA%2FfoFYqn5KKIjf34Vl0ZSiBmo8uveD57tYPFqxDqzTJPM8FSBj519ebevjdtBRyyJej6BekEIg%2FLqQxqixHhMqX4Ss%2Fib%2FXqq0eVsQMya1uyg4pMPBntHJ0UA%3D%3D"}],"group":"cf-nel","max_age":604800}', 'nel': '{"success_fraction":0,"report_to":"cf-nel","max_age":604800}', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '91819f3c7df2bbe1-WAW', 'server-timing': 'cfL4;desc="?proto=TCP&rtt=23933&min_rtt=23677&rtt_var=9062&sent=4&recv=5&lost=0&retrans=0&sent_bytes=2334&recv_bytes=731&delivery_rate=113865&cwnd=251&unsent_bytes=0&cid=1374102e4fcd648b&ts=885&x=0"', 'status': '403', 'content-length': '0', '-content-encoding': 'gzip'}
 
 b''
 ```
@@ -2385,6 +2382,13 @@ Unable to find the server at www.minervaknows.com```
 
 ---
 
+__myBeweeg:__ https://mybeweeg.com
+
+```
+The read operation timed out```
+
+---
+
 __NoPaste:__ https://nopaste.ml
 
 ```
@@ -2395,7 +2399,7 @@ Unable to find the server at nopaste.ml```
 __Official FM:__ https://official.fm
 
 ```
-{'server': 'nginx-rc', 'date': 'Tue, 18 Feb 2025 18:28:08 GMT', 'content-type': 'text/html; charset=iso-8859-1', 'content-length': '199', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'strict-transport-security': 'max-age=31536000', 'status': '403'}
+{'server': 'nginx-rc', 'date': 'Wed, 26 Feb 2025 17:25:04 GMT', 'content-type': 'text/html; charset=iso-8859-1', 'content-length': '199', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'strict-transport-security': 'max-age=31536000', 'status': '403'}
 
 b'<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">\n<html><head>\n<title>403 Forbidden</title>\n</head><body>\n<h1>Forbidden</h1>\n<p>You don\'t have permission to access this resource.</p>\n</body></html>\n'
 ```
@@ -2419,7 +2423,7 @@ Remote end closed connection without response```
 __Screenr:__ https://www.screenr.com/
 
 ```
-{'date': 'Tue, 18 Feb 2025 18:28:52 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'cf-cache-status': 'DYNAMIC', 'server': 'cloudflare', 'cf-ray': '914014528fcfe51f-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
+{'date': 'Wed, 26 Feb 2025 17:25:46 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'cf-cache-status': 'DYNAMIC', 'server': 'cloudflare', 'cf-ray': '9181a2e25f50e513-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
 
 b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n'
 ```
@@ -2450,9 +2454,9 @@ __Smeme:__ https://smeme.com
 __Smrthi:__ https://www.smrthi.com
 
 ```
-{'cache-control': 'public, max-age=0, must-revalidate', 'content-length': '78', 'content-type': 'text/plain; charset=utf-8', 'date': 'Tue, 18 Feb 2025 18:29:11 GMT', 'server': 'Vercel', 'strict-transport-security': 'max-age=63072000', 'x-vercel-error': 'DEPLOYMENT_DISABLED', 'x-vercel-id': 'fra1::z86kl-1739903351111-623788ba25eb', 'status': '402'}
+{'cache-control': 'public, max-age=0, must-revalidate', 'content-length': '78', 'content-type': 'text/plain; charset=utf-8', 'date': 'Wed, 26 Feb 2025 17:26:02 GMT', 'server': 'Vercel', 'strict-transport-security': 'max-age=63072000', 'x-vercel-error': 'DEPLOYMENT_DISABLED', 'x-vercel-id': 'fra1::jdmrk-1740590762035-9f831f8ef6a7', 'status': '402'}
 
-b'Payment required\n\nDEPLOYMENT_DISABLED\n\nfra1::z86kl-1739903351111-623788ba25eb\n'
+b'Payment required\n\nDEPLOYMENT_DISABLED\n\nfra1::jdmrk-1740590762035-9f831f8ef6a7\n'
 ```
 
 ---
@@ -2474,7 +2478,7 @@ timed out```
 __uStudio, Inc.:__ https://www.ustudio.com
 
 ```
-{'server': 'nginx', 'date': 'Tue, 18 Feb 2025 18:30:28 GMT', 'content-type': 'text/html', 'content-length': '146', 'connection': 'keep-alive', 'keep-alive': 'timeout=20', 'vary': 'Accept-Encoding', 'status': '403'}
+{'server': 'nginx', 'date': 'Wed, 26 Feb 2025 17:27:18 GMT', 'content-type': 'text/html', 'content-length': '146', 'connection': 'keep-alive', 'keep-alive': 'timeout=20', 'vary': 'Accept-Encoding', 'status': '403'}
 
 b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n'
 ```

@@ -1,6 +1,7 @@
-import 'katex/dist/katex.min.css'
+import katexCssUrl from 'katex/dist/katex.min.css'
 import katex from 'katex'
 import renderA11yString from './render-a11y-strings'
+import 'katex/contrib/mhchem/mhchem.js'
 
 var katexStyles: null | string = null
 
@@ -30,7 +31,7 @@ customElements.define(
 
       let link = document.createElement('link')
       link.rel = 'stylesheet'
-      link.href = 'katex.min.css'
+      link.href = katexCssUrl // 'katex.min.css'
 
       let style = document.createElement('style')
       style.textContent = this.extractKatexStyles()
