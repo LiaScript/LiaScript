@@ -397,7 +397,7 @@ slider name title message maximum grouping tabbable value =
                 , A11y_Aria.hidden (not tabbable)
                 , Attr.min "0"
                 , Attr.max maximum
-                , Attr.step "0.01"
+                , Attr.step "0.1"
                 , Attr.value value
                 , onInput (message >> Change)
                 , Attr.style "flex-grow" "1"
