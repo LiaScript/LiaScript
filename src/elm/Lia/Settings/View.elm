@@ -100,6 +100,8 @@ viewSettings lang tabbable width settings =
     , divider
     , viewSizing grouping lang tabbable settings.font_size
     , divider
+    , viewFullscreen grouping lang tabbable settings.fullscreen
+    , divider
     , viewTooltips grouping lang tabbable width settings.tooltips
     , divider
     , viewVideoComment grouping lang tabbable width settings.hideVideoComments
@@ -148,6 +150,40 @@ viewLightMode grouping lang tabbable isLight =
 
                 else
                     Trans.cBright lang
+            ]
+        ]
+
+
+viewFullscreen : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Bool -> Html Msg
+viewFullscreen grouping lang tabbable isFullscreen =
+    Html.button
+        (grouping
+            [ Attr.class "lia-btn lia-btn--transparent"
+            , onClick (Toggle Fullscreen)
+            , A11y_Key.tabbable tabbable
+            , A11y_Aria.hidden (not tabbable)
+            , Attr.id "lia-btn-fullscreen"
+            , Attr.style "width" "100%"
+            ]
+        )
+        [ --Html.i
+          --  [ A11y_Aria.hidden True
+          --  , Attr.class "lia-btn__icon icon"
+          --  , Attr.class <|
+          --      if isFullscreen then
+          --          "icon-darkmode"
+          --      else
+          --          "icon-lightmode"
+          --  ]
+          --  []
+          Html.span [ Attr.class "lia-btn__text" ]
+            [ Html.text <|
+                if isFullscreen then
+                    Trans.fullscreenExit lang
+
+                else
+                    Trans.fullscreenEnter lang
+            , Html.text " (F11)"
             ]
         ]
 
