@@ -412,6 +412,7 @@ init :
     { seed : Int
     , hasShareApi : Bool
     , openTOC : Bool
+    , isFullscreen : Bool
     , settings : JE.Value
     , backends : { support : List String, enabled : Bool }
     , url : String

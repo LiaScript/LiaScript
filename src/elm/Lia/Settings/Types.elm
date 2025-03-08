@@ -36,6 +36,7 @@ type alias Settings =
     , chat : { show : Bool, updates : Bool }
     , navigation : Bool
     , audio : { pitch : String, rate : String }
+    , fullscreen : Bool
     }
 
 
@@ -66,8 +67,8 @@ type Audio
     | Rate String
 
 
-init : Bool -> Mode -> Settings
-init hasShareApi mode =
+init : Bool -> Bool -> Mode -> Settings
+init hasShareApi isFullscreen mode =
     { table_of_contents = True
     , support_menu = False
     , mode = mode
@@ -98,6 +99,7 @@ init hasShareApi mode =
         }
     , navigation = True
     , audio = { pitch = "1", rate = "1" }
+    , fullscreen = isFullscreen
     }
 
 

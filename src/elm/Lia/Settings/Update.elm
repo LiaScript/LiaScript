@@ -23,7 +23,6 @@ import Service.Share
 import Service.Slide
 import Service.TTS
 import Service.Translate
-import Task
 
 
 type Msg
@@ -54,6 +53,7 @@ type Toggle
     | PreferBrowserTTS
     | Navigation
     | VideoComments
+    | Fullscreen
 
 
 update :
@@ -132,6 +132,10 @@ update main msg model =
 
         Toggle Light ->
             log Nothing { model | light = not model.light }
+
+        Toggle Fullscreen ->
+            no_log Nothing { model | fullscreen = not model.fullscreen }
+                |> Return.batchEvent Service.Slide.fullscreen
 
         Toggle Tooltips ->
             log Nothing { model | tooltips = not model.tooltips }
