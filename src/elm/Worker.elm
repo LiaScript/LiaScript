@@ -67,6 +67,7 @@ init flags =
         { seed = 0
         , hasShareApi = False
         , openTOC = True
+        , isFullscreen = False
         , settings = JE.null
         , backends = { support = [], enabled = False }
         , url = ""
@@ -128,6 +129,7 @@ update msg model =
                                 { seed = 0
                                 , hasShareApi = False
                                 , openTOC = True
+                                , isFullscreen = False
                                 , settings = JE.null
                                 , backends = { support = [], enabled = False }
                                 , url = ""

@@ -65,6 +65,7 @@ type alias Flags =
     , settings : JE.Value
     , screen : Screen
     , hasShareAPI : Bool
+    , isFullscreen : Bool
     , hasIndex : Bool
     , seed : Int
     , sync :
@@ -100,6 +101,7 @@ init flags url key =
                         { seed = flags.seed
                         , hasShareApi = flags.hasShareAPI
                         , openTOC = openTableOfContents
+                        , isFullscreen = flags.isFullscreen
                         , settings = flags.settings
                         , backends = flags.sync
                         , url = lia_.url

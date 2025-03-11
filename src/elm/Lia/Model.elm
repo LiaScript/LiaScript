@@ -122,6 +122,7 @@ init :
     { seed : Int
     , hasShareApi : Bool
     , openTOC : Bool
+    , isFullscreen : Bool
     , settings : JE.Value
     , backends : { support : List String, enabled : Bool }
     , url : String
@@ -130,10 +131,10 @@ init :
     , anchor : Maybe String
     }
     -> Model
-init { seed, hasShareApi, openTOC, settings, backends, url, readme, origin, anchor } =
+init { seed, hasShareApi, openTOC, isFullscreen, settings, backends, url, readme, origin, anchor } =
     let
         default =
-            Settings.init hasShareApi Settings.Presentation
+            Settings.init hasShareApi isFullscreen Settings.Presentation
     in
     { url = url
     , repositoryUrl = repo readme
