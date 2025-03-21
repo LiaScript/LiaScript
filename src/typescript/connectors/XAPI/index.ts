@@ -126,10 +126,7 @@ export class Connector extends Base.Connector {
         headers['Authorization'] = this.lrs.auth
       }
 
-      navigator.sendBeacon(
-        this.lrs.endpoint + '/statements',
-        JSON.stringify([statement])
-      )
+      navigator.sendBeacon(this.lrs.endpoint, JSON.stringify([statement]))
     } else {
       // Fallback to synchronous XHR
       this.lrs.sendStatement(statement)
@@ -217,7 +214,7 @@ export class Connector extends Base.Connector {
 
     // Update course ID and title if available
     if (uidDB) {
-      this.courseId = uidDB
+      this.courseId = String(uidDB)
     }
 
     if (window.LIA && window.LIA.course) {
@@ -279,9 +276,9 @@ export class Connector extends Base.Connector {
 
     this.lrs
       .sendStatement(statement)
-      .then((id) => {
+      .then((responseId) => {
         if (this.debug) {
-          console.log('Sent experienced statement, ID:', id)
+          console.log('Sent experienced statement, ID:', responseId)
         }
       })
       .catch((err) => {
@@ -366,9 +363,9 @@ export class Connector extends Base.Connector {
 
         this.lrs
           .sendStatement(statement)
-          .then((id) => {
+          .then((responseId) => {
             if (this.debug) {
-              console.log('Sent answered statement, ID:', id)
+              console.log('Sent answered statement, ID:', responseId)
             }
 
             // Check if course is complete after answering quiz

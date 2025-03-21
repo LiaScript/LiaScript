@@ -3,8 +3,8 @@
  */
 
 export class LRSConnection {
-  private endpoint: string
-  private auth: string
+  public endpoint: string
+  public auth: string
   private version: string
   private debug: boolean
 
@@ -21,11 +21,14 @@ export class LRSConnection {
     version: string = '1.0.3',
     debug: boolean = false
   ) {
-    // Ensure endpoint ends with a slash
-    this.endpoint = endpoint.endsWith('/') ? endpoint : endpoint + '/'
+    this.endpoint = endpoint + (endpoint.endsWith('/') ? '' : '/')
     this.auth = auth
     this.version = version
     this.debug = debug
+
+    if (this.debug) {
+      console.log('LRS endpoint configured as:', this.endpoint)
+    }
   }
 
   /**
@@ -42,18 +45,21 @@ export class LRSConnection {
         )
       }
 
-      const response = await fetch(this.endpoint + 'statements', {
+      // Ensure all object references are properly stringified
+      const processedStatement = this.ensureStringReferences(statement)
+
+      const response = await fetch(this.endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Experience-API-Version': this.version,
           Authorization: this.auth,
         },
-        body: JSON.stringify(statement),
+        body: JSON.stringify(processedStatement),
       })
 
       if (!response.ok) {
-        console.error('LRS error:', response.status, response.statusText)
+        console.error('LRS error:', response.status, await response.text())
         return null
       }
 
@@ -84,18 +90,23 @@ export class LRSConnection {
         )
       }
 
-      const response = await fetch(this.endpoint + 'statements', {
+      // Ensure all object references are properly stringified
+      const processedStatements = statements.map((statement) =>
+        this.ensureStringReferences(statement)
+      )
+
+      const response = await fetch(this.endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Experience-API-Version': this.version,
           Authorization: this.auth,
         },
-        body: JSON.stringify(statements),
+        body: JSON.stringify(processedStatements),
       })
 
       if (!response.ok) {
-        console.error('LRS error:', response.status, response.statusText)
+        console.error('LRS error:', response.status, await response.text())
         return []
       }
 
@@ -126,8 +137,7 @@ export class LRSConnection {
         )
         .join('&')
 
-      const url =
-        this.endpoint + 'statements' + (queryString ? `?${queryString}` : '')
+      const url = this.endpoint + (queryString ? `?${queryString}` : '')
 
       if (this.debug) {
         console.log('Getting statements from LRS:', url)
@@ -142,7 +152,7 @@ export class LRSConnection {
       })
 
       if (!response.ok) {
-        console.error('LRS error:', response.status, response.statusText)
+        console.error('LRS error:', response.status, await response.text())
         return null
       }
 
@@ -165,7 +175,15 @@ export class LRSConnection {
    */
   async testConnection(): Promise<boolean> {
     try {
-      const response = await fetch(this.endpoint + 'about', {
+      // For SCORM Cloud, we need to use a different endpoint for testing
+      let testEndpoint = this.endpoint
+      if (testEndpoint.includes('api/v2/statements')) {
+        testEndpoint = testEndpoint.replace('api/v2/statements', 'api/v2/about')
+      } else if (testEndpoint.endsWith('/statements')) {
+        testEndpoint = testEndpoint.replace('/statements', '/about')
+      }
+
+      const response = await fetch(testEndpoint, {
         method: 'GET',
         headers: {
           'X-Experience-API-Version': this.version,
@@ -177,6 +195,35 @@ export class LRSConnection {
     } catch (error) {
       console.error('Error testing LRS connection:', error)
       return false
+    }
+  }
+
+  /**
+   * Ensure all object references in a statement are properly stringified
+   * @param obj The object to process
+   * @returns The processed object with stringified references
+   */
+  private ensureStringReferences(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return obj
+    }
+
+    if (typeof obj === 'object') {
+      if (Array.isArray(obj)) {
+        return obj.map((item) => this.ensureStringReferences(item))
+      } else {
+        const result: any = {}
+        for (const key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            result[key] = this.ensureStringReferences(obj[key])
+          }
+        }
+        return result
+      }
+    } else if (typeof obj === 'function') {
+      return obj.toString()
+    } else {
+      return obj
     }
   }
 }
