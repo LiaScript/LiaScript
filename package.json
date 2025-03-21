@@ -50,6 +50,8 @@
     "watch:webcomponent": "npx parcel serve src/entry/webcomponent/index.html --open",
     "build:webcomponent": "npm run clean && npx parcel build --no-source-maps src/entry/webcomponent/index.ts && rm dist/README.md",
     "build:webcomponentPublic": "npm run clean && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md",
+    "build:xapi": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/xapi/index.html",
+    "watch:xapi": "npx parcel serve src/entry/xapi/index.html",
     "minify:js": "find dist -name \"*.js\" -print0 | xargs -0 -P 4 -I {} sh -c 'before=$(wc -c < {}); if npx minify {} > {}.min 2>/dev/null; then after=$(wc -c < {}.min); if [ ${after} -lt ${before} ]; then mv {}.min {}; reduction=$((${before}-${after})); percent=$(awk \"BEGIN {printf \\\"%.2f\\\", ${reduction}/${before}*100}\"); echo \"{} reduced from ${before} to ${after} bytes (${percent}% reduction)\"; else rm {}.min; echo \"{} no reduction achieved, file size unchanged\"; fi; else echo \"{} minification failed, skipping\"; fi'"
   },
   "devDependencies": {
