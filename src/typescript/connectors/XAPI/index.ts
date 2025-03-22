@@ -65,7 +65,9 @@ export class Connector extends Base.Connector {
     }
 
     // Set course ID and title
-    this.courseId = config.courseId || window.location.href
+    const base = window.location.origin
+    this.courseId = config.courseId || new URL(window.location.href, base).href
+
     this.courseTitle =
       config.courseTitle || document.title || 'LiaScript Course'
 
@@ -211,16 +213,6 @@ export class Connector extends Base.Connector {
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
     this.completionSent = false
-
-    // Update course ID and title if available
-    if (uidDB) {
-      this.courseId = String(uidDB)
-    }
-
-    if (window.LIA && window.LIA.course) {
-      this.courseTitle = window.LIA.course.title || this.courseTitle
-      this.totalSlides = window.LIA.course.slides.length || 0
-    }
 
     // Send initialized statement
     const statement = Statement.generateInitializedStatement(
