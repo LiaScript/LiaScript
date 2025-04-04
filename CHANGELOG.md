@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.12] - 04/04/2025
+
+- fix: length calculation for ASCII-Art with complex emojis
+- feat: add time settings to multimedia comments `#t=start,end`
+
 ## [0.16.11] - 06/03/2025
 
 - feat(Formulas): Add chemistry support via https://mhchem.github.io/MathJax-mhchem/
