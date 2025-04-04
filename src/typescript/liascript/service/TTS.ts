@@ -300,6 +300,22 @@ function read(event: Lia.Event) {
 
         const audio = audioUrls[currentIndex]
         const source = audio.firstChild as HTMLSourceElement
+
+        // Parse time fragment from audio URL
+        const timeFragment = parseTimeFragment(source.src)
+
+        // Set up event to handle end time if specified
+        if (timeFragment.end !== null) {
+          const checkTimeUpdate = () => {
+            if (audio.currentTime >= timeFragment.end!) {
+              audio.pause()
+              audio.removeEventListener('timeupdate', checkTimeUpdate)
+              audio.onended!({} as Event) // Trigger the onended event manually
+            }
+          }
+          audio.addEventListener('timeupdate', checkTimeUpdate)
+        }
+
         const error = (error: string) => {
           console.warn('TTS failed to play ->', '' + error, source.src)
 
@@ -329,17 +345,11 @@ function read(event: Lia.Event) {
           playNext()
         }
 
-        // resource could not be loaded
-        if (audio.readyState === 0) {
-          // has previously failed
-          error("resource couldn't be loaded")
-          return
-        }
-
-        // this might be the case for *.flac files or others,
-        // in Firefox they can be played only ones and not set
-        // to start, this will force the audio to be reloaded
-        if (audio.currentTime > 0) {
+        // Set start time if specified
+        if (timeFragment.start !== null) {
+          audio.currentTime = timeFragment.start
+        } else if (audio.currentTime > 0) {
+          // Your existing logic for resetting audio
           audio.innerHTML = source.outerHTML
         }
 
