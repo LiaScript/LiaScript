@@ -211,42 +211,35 @@ function read(event: Lia.Event) {
             isEnding = true
             sendResponse(event, 'stop')
           }
-
           return
         }
 
         const video = videos[currentIndex]
+
+        // Parse time fragment from video URL
+        const timeFragment = parseTimeFragment(video.src)
+
+        // Set up event to handle end time if specified
+        if (timeFragment.end !== null) {
+          const checkTimeUpdate = () => {
+            if (video.currentTime >= timeFragment.end!) {
+              video.pause()
+              video.removeEventListener('timeupdate', checkTimeUpdate)
+              video.onended!({} as Event) // Trigger the onended event manually
+            }
+          }
+          video.addEventListener('timeupdate', checkTimeUpdate)
+        }
 
         video.onended = () => {
           currentIndex++
           playNext()
         }
 
-        const error = (error: string) => {
-          console.warn('TTS failed to play ->', '' + error, video.src)
-
-          if (video.src.startsWith('blob:')) {
-            currentIndex++
-            playNext()
-            return
-          }
-
-          video.pause()
-
-          if (window.LIA.fetchError) {
-            window.LIA.fetchError(
-              'video',
-              video.src.replace(window.location.origin, '')
-            )
-            return
-          }
-
-          currentIndex++
-          playNext()
-        }
-
-        // In case the video has been played before
-        if (video.currentTime !== 0) {
+        // Set start time if specified, otherwise reset to beginning if previously played
+        if (timeFragment.start !== null) {
+          video.currentTime = timeFragment.start
+        } else if (video.currentTime !== 0) {
           video.currentTime = 0
         }
 
@@ -649,6 +642,37 @@ function storeBackgroundVideo(player: HTMLElement, video: HTMLVideoElement) {
   } catch (e) {
     console.warn('TTS failed to draw video frame ->', e.message)
   }
+}
+
+function parseTimeFragment(url: string): {
+  start: number | null
+  end: number | null
+} {
+  const result: { start: number | null; end: number | null } = {
+    start: null,
+    end: null,
+  }
+
+  try {
+    // Extract time fragment if it exists
+    const hashIndex = url.indexOf('#t=')
+    if (hashIndex !== -1) {
+      const timeValue = url.substring(hashIndex + 3)
+      const timeParts = timeValue.split(',')
+
+      if (timeParts[0]) {
+        result.start = parseFloat(timeParts[0])
+      }
+
+      if (timeParts[1]) {
+        result.end = parseFloat(timeParts[1])
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to parse time fragment:', e)
+  }
+
+  return result
 }
 
 export default Service
