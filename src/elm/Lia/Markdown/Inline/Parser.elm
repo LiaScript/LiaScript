@@ -76,15 +76,30 @@ parse_inlines state str =
 
 comment : Parser s a -> Parser s (List a)
 comment p =
-    string "<!--"
-        |> ignore whitespace
-        |> keep (manyTill p (string "-->"))
+    or ignore_comment
+        (string "<!--"
+            |> ignore whitespace
+            |> keep (manyTill p (string "-->"))
+        )
+
+
+{-| Special comment parser for the HTML comments that totally ignores
+everything within --- three dashed lines...
+-}
+ignore_comment : Parser s (List a)
+ignore_comment =
+    string "<!---"
+        |> ignore (manyTill anyChar (string "--->"))
+        |> keep (succeed [])
 
 
 comments : Parser Context ()
 comments =
-    Effect.hidden_comment
-        |> or (skip (comment anyChar))
+    choice
+        [ ignore_comment |> skip
+        , Effect.hidden_comment
+        , ignore_comment |> skip
+        ]
         |> many
         |> skip
 
