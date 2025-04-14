@@ -33,6 +33,7 @@ function dynamicGossip(self: Sync) {
   let timerID: number | null = null
 
   function delay() {
+    // Only use longer delay if actually initialized
     return (
       (self.db.getPeers().length + 1) * 200 +
       (self.db.initialized ? 5000 : 1000)
@@ -43,9 +44,9 @@ function dynamicGossip(self: Sync) {
     if (!self.isConnected) return
     try {
       self.broadcast(true, self.db.encode())
-
       timerID = window.setTimeout(publish, delay())
     } catch (e) {
+      console.warn('Gossip error:', e)
       timerID = null
     }
   }
@@ -55,7 +56,14 @@ function dynamicGossip(self: Sync) {
       window.clearTimeout(timerID)
     }
 
-    timerID = window.setTimeout(publish, delay())
+    // Start immediately if initialized, otherwise wait
+    if (self.db.initialized) {
+      publish()
+    } else if (self.db.initPromise) {
+      self.db.initPromise.then(publish)
+    } else {
+      timerID = window.setTimeout(publish, delay())
+    }
   }
 }
 
