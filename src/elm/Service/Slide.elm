@@ -1,5 +1,6 @@
 module Service.Slide exposing
-    ( initialize
+    ( fullscreen
+    , initialize
     , scrollDown
     , scrollIntoView
     , scrollUp
@@ -49,6 +50,11 @@ scrollDown elementID delay =
     ]
         |> JE.object
         |> event "scroll_down"
+
+
+fullscreen : Event
+fullscreen =
+    event "fullscreen" (JE.bool True)
 
 
 {-| **private:** Helper function to generate event - stubs that will be handled

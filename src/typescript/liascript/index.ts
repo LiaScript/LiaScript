@@ -68,6 +68,7 @@ export class LiaScript {
           height: window.innerHeight,
         },
         hasShareAPI: Share.isSupported(),
+        isFullscreen: !!document.fullscreenElement,
         hasIndex: connector.hasIndex(),
         sync: {
           support: Sync.supported,

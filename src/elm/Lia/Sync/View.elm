@@ -93,6 +93,14 @@ view settings =
                     , Backend.view (open && support) via
                         |> Html.map Config
                         |> Html.map Backend
+                    , Html.div []
+                        [ Backend.checkbox
+                            { active = True
+                            , msg = EnabledScript settings.scriptsEnabled
+                            , label = Html.text "Allow scripts to be executed in the chat"
+                            , value = settings.scriptsEnabled
+                            }
+                        ]
                     , button settings
                     , viewError settings.error
                     , Backend.infoOn support via

@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.14] - 14/04/2025
+
+- fix(Formulas): Translating the content with Google-Translate does now not affect formulas anymore.
+- chors: Npm update of katex, ace, caniuse, etc
+- feat: Special ignore comments added `<!---.*--->`
+
+  Since separating HTML-comments with HTML-parameters is difficult,
+  compared to only comments. This new parser introduces a comment with at
+  least three dashes, which means that the content will be totally ignored.
+
+  `<!--- Everything style="here" will be ignored --->`
+
+  `<!-- everything style="width: 100" data-will be-kept -->`
+
+## [0.16.12] - 04/04/2025
+
+- fix: length calculation for ASCII-Art with complex emojis
+- feat: add time settings to multimedia comments `#t=start,end`
+
 ## [0.16.11] - 06/03/2025
 
 - feat(Formulas): Add chemistry support via https://mhchem.github.io/MathJax-mhchem/

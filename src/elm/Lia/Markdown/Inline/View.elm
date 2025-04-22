@@ -107,6 +107,8 @@ view config element =
         Formula mode_ e [] ->
             Html.node "lia-formula"
                 [ Attr.attribute "displayMode" mode_
+                , Attr.class "notranslate"
+                , Attr.attribute "translate" "no"
                 , e
                     |> JE.string
                     |> Attr.property "formula"
@@ -311,6 +313,8 @@ toText config element =
         Formula mode_ e _ ->
             Html.node "lia-formula"
                 [ Attr.attribute "displayMode" mode_
+                , Attr.class "notranslate"
+                , Attr.attribute "translate" "no"
                 , e
                     |> JE.string
                     |> Attr.property "formula"
