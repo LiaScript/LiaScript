@@ -65,6 +65,7 @@ type alias Settings =
     , peers : Set String
     , error : Maybe String
     , data : Data
+    , scriptsEnabled : Bool
     }
 
 
@@ -119,6 +120,7 @@ init supportedBackends =
         , quiz = Dict.empty
         , code = Dict.empty
         }
+    , scriptsEnabled = False
     }
 
 

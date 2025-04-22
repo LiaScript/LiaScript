@@ -2713,6 +2713,158 @@ cTurquoise lang =
             "Turquoise"
 
 
+fullscreenEnter : Lang -> String
+fullscreenEnter lang =
+    case lang of
+        Am ->
+            "ሙሉ ማስታወሻ"
+
+        Ar ->
+            "الدخول إلى وضع العرض الكامل"
+
+        Bg ->
+            "Влезте в цял екран"
+
+        Bn ->
+            "ফুলস্ক্রিনে ঢুকুন"
+
+        De ->
+            "Vollbildmodus aktivieren"
+
+        Es ->
+            "entrar en pantalla completa"
+
+        Fa ->
+            "ورود به حالت تمام صفحه"
+
+        Fr ->
+            "Passer en plein écran"
+
+        Hi ->
+            "पूर्ण स्क्रीन में जाएं"
+
+        Hy ->
+            "մոտեցնել լիավանդակային ռեժիմ"
+
+        It ->
+            "Entra a schermo intero"
+
+        Ja ->
+            "フルスクリーンに入る"
+
+        Ka ->
+            "სრულეკრანი"
+
+        Ko ->
+            "전체 화면으로"
+
+        Nl ->
+            "Volledig scherm"
+
+        Pa ->
+            "ਪੂਰੀ ਸਕ੍ਰੀਨ"
+
+        Pt ->
+            "Entrar em tela cheia"
+
+        Ru ->
+            "перейти в полноэкранный режим"
+
+        Sw ->
+            "Ingia kwenye skrini kamili"
+
+        Tw ->
+            "進入全屏模式"
+
+        Uk ->
+            "увімкнути повноекранний режим"
+
+        Ur ->
+            "پوری سکرین"
+
+        Zh ->
+            "進入全屏模式"
+
+        _ ->
+            "Enter Fullscreen"
+
+
+fullscreenExit : Lang -> String
+fullscreenExit lang =
+    case lang of
+        Am ->
+            "ሙሉ ማስታወሻ ያድርጉz6"
+
+        Ar ->
+            "الخروج من وضع العرض الكامل"
+
+        Bg ->
+            "Излезте от цял екран"
+
+        Bn ->
+            "ফুলস্ক্রিন থেকে বের হোন"
+
+        De ->
+            "Vollbildmodus beenden"
+
+        Es ->
+            "salir de pantalla completa"
+
+        Fa ->
+            "خروج از حالت تمام صفحه"
+
+        Fr ->
+            "Quitter le plein écran"
+
+        Hi ->
+            "पूर्ण स्क्रीन से बाहर निकलें"
+
+        Hy ->
+            "դուրս գալ լիավանդակային ռեժիմից"
+
+        It ->
+            "Esci da schermo intero"
+
+        Ja ->
+            "フルスクリーンを終了する"
+
+        Ka ->
+            "გამოსვლა"
+
+        Ko ->
+            "전체 화면에서 나가기"
+
+        Nl ->
+            "Volledig scherm verlaten"
+
+        Pa ->
+            "ਪੂਰੀ ਸਕ੍ਰੀਨ ਤੋਂ ਬਾਹਰ"
+
+        Pt ->
+            "Sair da tela cheia"
+
+        Ru ->
+            "выйти из полноэкранного режима"
+
+        Sw ->
+            "Toka kwenye skrini kamili"
+
+        Tw ->
+            "退出全屏模式"
+
+        Uk ->
+            "вийти з повноекранного режиму"
+
+        Ur ->
+            "پوری سکرین سے باہر"
+
+        Zh ->
+            "退出全屏模式"
+
+        _ ->
+            "Exit Fullscreen"
+
+
 modeMode : Lang -> String
 modeMode lang =
     case lang of

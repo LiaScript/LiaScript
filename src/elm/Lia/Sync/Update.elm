@@ -48,6 +48,7 @@ type Msg
     | Handle Event
     | Random_Generate
     | Random_Result String
+    | EnabledScript Bool
 
 
 type SyncMsg
@@ -232,6 +233,10 @@ update session model msg =
             { model | sync = { sync | sync = updateSync sub sync.sync } }
                 |> Return.val
 
+        EnabledScript enabled ->
+            { model | sync = { sync | scriptsEnabled = not enabled } }
+                |> Return.val
+
         Connect ->
             case ( sync.sync.select, sync.state ) of
                 ( Just ( True, backend ), Disconnected ) ->
@@ -387,7 +392,7 @@ synchronize model json =
                 ( todo, chat ) =
                     param
                         |> JD.decodeValue Chat.decoder
-                        |> Result.map (Chat.insert model.search_index model.definition model.chat)
+                        |> Result.map (Chat.insert model.sync.scriptsEnabled model.search_index model.definition model.chat)
                         |> Result.withDefault ( [], model.chat )
             in
             { model | chat = chat, settings = updatedChatMessages model.settings }

@@ -67,6 +67,7 @@ view lang config model =
                 [ Attr.style "position" "absolute"
                 , Attr.style "right" "2rem"
                 , Attr.style "z-index" "100"
+                , Attr.style "color" "#888"
                 , Attr.class "lia-btn--transparent"
                 , A11y.keyShortcuts [ "Ctrl-Enter", "Command-Enter" ]
                 ]

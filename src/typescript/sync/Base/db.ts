@@ -16,6 +16,8 @@ export class CRDT {
   public doc: Y.Doc
 
   public timestamp: number = Date.now()
+  public initialized: boolean = false
+  public initPromise: Promise<void> | null = null
 
   protected peers: Y.Map<boolean>
   protected cursors: Y.Map<State.Cursor>
@@ -29,7 +31,6 @@ export class CRDT {
   protected color?: string
 
   protected initState: any
-  public initialized: boolean = false
 
   constructor(
     peerID: string,
@@ -52,31 +53,33 @@ export class CRDT {
     this.quizzes = new YKeyValue(this.doc.getArray(QUIZ))
     this.surveys = new YKeyValue(this.doc.getArray(SURVEY))
     this.chat = new YKeyValue(this.doc.getArray('chat'))
-
-    const self = this
-    setTimeout(() => {
-      self.initialized = true
-    }, 5000)
   }
 
   init(data: State.Vector) {
-    this.initState = data
+    // Create a promise for initialization
+    this.initPromise = new Promise<void>((resolve) => {
+      this.initState = data
+      this.length = Math.max(this.length, data.length)
+      const self = this
 
-    this.length = Math.max(this.length, data.length)
+      this.doc.transact(() => {
+        for (let i = 0; i < data.length; i++) {
+          self.initMap(this.quizzes, i, data[i][QUIZ])
+          self.initMap(this.surveys, i, data[i][SURVEY])
+          self.initText(i, data[i][CODE])
+        }
 
-    const self = this
+        self.peers.set(self.peerID, true)
+      }, this.peerID)
 
-    this.doc.transact(() => {
-      for (let i = 0; i < data.length; i++) {
-        self.initMap(this.quizzes, i, data[i][QUIZ])
-        self.initMap(this.surveys, i, data[i][SURVEY])
-        self.initText(i, data[i][CODE])
-      }
+      this.registerCallbacks()
 
-      self.peers.set(self.peerID, true)
-    }, this.peerID)
+      // Mark as initialized and resolve promise
+      this.initialized = true
+      resolve()
+    })
 
-    this.registerCallbacks()
+    return this.initPromise
   }
 
   registerCallbacks() {
