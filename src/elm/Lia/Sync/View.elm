@@ -10,7 +10,6 @@ import Lia.Sync.Types as Sync exposing (State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
 import Lia.Sync.Via as Backend exposing (Backend)
 import Lia.Utils exposing (btn, btnIcon)
-import Service.Event exposing (message)
 
 
 view : Sync.Settings -> Html Msg

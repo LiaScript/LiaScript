@@ -6,7 +6,7 @@ import Accessibility.Landmark as A11y_Landmark
 import Array
 import Const
 import Dict exposing (Dict)
-import Html exposing (Html, section)
+import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
@@ -14,10 +14,8 @@ import I18n.Translations as Trans exposing (Lang)
 import Lia.Chat.View as Chat
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
-import Lia.Markdown.Code.Editor exposing (mode)
 import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Effect.Model as Effect
-import Lia.Markdown.Effect.Parser exposing (comment)
 import Lia.Markdown.Effect.View exposing (state)
 import Lia.Markdown.HTML.Attributes exposing (toAttribute)
 import Lia.Markdown.Inline.View exposing (audio, view_inf)
@@ -33,7 +31,6 @@ import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (deactivate, modal)
 import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
-import Service.Database exposing (settings)
 import Session exposing (Screen)
 
 

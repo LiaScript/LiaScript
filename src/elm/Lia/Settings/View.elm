@@ -20,7 +20,7 @@ import Conditional.List as CList
 import Const
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
-import Html.Attributes as Attr exposing (lang, width)
+import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import I18n.Translations as Trans exposing (Lang)
 import Lia.Definition.Types exposing (Definition)
@@ -48,7 +48,6 @@ import Lia.Utils
         )
 import Library.Group as Group
 import QRCode
-import Service.Database exposing (settings)
 import Session exposing (Screen)
 
 

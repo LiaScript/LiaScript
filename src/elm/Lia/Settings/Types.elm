@@ -9,8 +9,6 @@ module Lia.Settings.Types exposing
     , toGroup
     )
 
-import I18n.Translations exposing (Lang(..))
-
 
 type alias Settings =
     { table_of_contents : Bool

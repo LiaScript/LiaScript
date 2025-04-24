@@ -4,7 +4,6 @@ module Lia.Voice exposing
     , getVoiceFor
     )
 
-import I18n.Translations exposing (Lang(..))
 import List.Extra
 
 

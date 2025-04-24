@@ -26,7 +26,6 @@ import Index.Version
 import Json.Decode as JD
 import Lia.Definition.Types as Definition
 import Lia.Json.Decode
-import Lia.Markdown.Code.Log exposing (Level(..))
 import Lia.Model
 import Lia.Script
 import Library.IPFS as IPFS

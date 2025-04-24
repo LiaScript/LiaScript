@@ -10,7 +10,6 @@ import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
 import Index.View.Card exposing (card)
 import Index.View.Modal as Modal
-import Lia.Markdown.Code.Log exposing (Level(..))
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.View as Settings
