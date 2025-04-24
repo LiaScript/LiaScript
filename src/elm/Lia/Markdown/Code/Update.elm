@@ -64,7 +64,7 @@ restore sectionID json model =
             model
                 |> Return.val
                 |> Return.batchEvents
-                    (if Array.length model.evaluate == 0 then
+                    (if Array.isEmpty model.evaluate then
                         []
 
                      else
