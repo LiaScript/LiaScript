@@ -35,7 +35,7 @@ import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Local
-import Service.Torrent
+import Service.P2P
 import Service.Zip
 import Session exposing (Screen)
 import Task
@@ -222,7 +222,7 @@ update msg model =
                         model
 
                 ( Nothing, _, ( "load", param ) ) ->
-                    case Service.Torrent.decode param of
+                    case Service.P2P.decode param of
                         ( False, uri, result ) ->
                             update (Load_ReadMe_Result uri result)
                                 (if String.isEmpty model.lia.readme || model.lia.readme /= uri then
@@ -692,6 +692,7 @@ isURI : String -> Bool
 isURI url =
     String.startsWith "data:text" url
         || String.startsWith "magnet:" url
+        || String.startsWith "nostr:" url
 
 
 {-| **@private:** Used by multiple times to connect a download with a message.
@@ -702,7 +703,14 @@ download template url =
         loadFromData template url
 
     else if String.startsWith "magnet:" url then
-        loadFromTorrent template url
+        { template = template, uri = url }
+            |> Service.P2P.torrent
+            |> event2js
+
+    else if String.startsWith "nostr:" url then
+        { template = template, uri = url }
+            |> Service.P2P.nostr
+            |> event2js
 
     else
         Http.get
@@ -765,15 +773,6 @@ loadFromData template url =
         _ ->
             toCmd msg <|
                 Err (Http.BadBody "wrong data protocol")
-
-
-loadFromTorrent : Bool -> String -> Cmd Msg
-loadFromTorrent template uri =
-    { template = template
-    , uri = uri
-    }
-        |> Service.Torrent.load
-        |> event2js
 
 
 getIndex : String -> Model -> ( Model, Cmd Msg )
