@@ -16,7 +16,7 @@
 
     > li {
       &:before {
-        content: '\EA27';
+        content: '\EA28';
         color: rgb(var(--color-highlight-dark));
         font-family: 'icon';
         left: 0;
@@ -31,14 +31,14 @@
     ul li {
       //padding-left: 1rem;
       &:before {
-        content: '\EA28';
+        content: '\EA29';
       }
     }
 
     ul li ul li {
       //padding-left: 1rem;
       &:before {
-        content: '\EA29';
+        content: '\EA2A';
       }
     }
   }
