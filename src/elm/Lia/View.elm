@@ -179,7 +179,7 @@ viewSlide modalIsActive screen model =
                 }
             , viewVideoComment
                 { active = model.settings.sound
-                , hide = model.settings.hideVideoComments
+                , hide = model.settings.hideVideoComments || model.settings.mode == Textbook
                 }
                 model.overlayVideo
                 section.effect_model
