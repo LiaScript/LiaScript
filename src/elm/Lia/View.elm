@@ -494,13 +494,22 @@ slideTopBar languageCode lang screen url repositoryURL settings def sync =
         , settings = settings
         , logo = Definition.getIcon def
         , buttons =
-            [ ( Settings.menuChat, "chat" )
-            , ( Settings.menuMode, "mode" )
-            , ( Settings.menuSettings screen.width, "settings" )
-            , ( Settings.menuTranslations languageCode def, "lang" )
-            , ( Settings.menuShare url sync, "share" )
-            , ( Settings.menuInformation repositoryURL def, "info" )
-            ]
+            List.concat
+                [ [ ( Settings.menuChat, "chat" )
+                  , ( Settings.menuMode, "mode" )
+                  , ( Settings.menuSettings screen.width, "settings" )
+                  , ( Settings.menuTranslations languageCode def, "lang" )
+                  ]
+                , case settings.edit of
+                    Nothing ->
+                        []
+
+                    Just editURL ->
+                        [ ( Settings.menuEdit editURL, "edit" ) ]
+                , [ ( Settings.menuShare url sync, "share" )
+                  , ( Settings.menuInformation repositoryURL def, "info" )
+                  ]
+                ]
         , active = True
         }
         |> Html.map UpdateSettings

@@ -4087,11 +4087,20 @@ confTooltip lang =
         Am ->
             "የማጣሪያ ጥቅል"
 
+        Ar ->
+            "تلميحات"
+
+        Bg ->
+            "Подсказки"
+
         Bn ->
             "টুল"
 
         De ->
             "Tooltipps"
+
+        Fa ->
+            "راهنمای ابزار"
 
         Fr ->
             "Infobulles"
@@ -4108,6 +4117,9 @@ confTooltip lang =
         Ka ->
             "ინსტრუქციები"
 
+        Ko ->
+            "도구 설명"
+
         Pa ->
             "ਉਪਸਮਾਨ"
 
@@ -4120,14 +4132,96 @@ confTooltip lang =
         Sw ->
             "Vidokezo vya zana"
 
+        Tw ->
+            "工具提示"
+
         Uk ->
             "підказки"
 
         Ur ->
             "ٹول ٹپس"
 
+        Zh ->
+            "工具提示"
+
         _ ->
             "Tooltips"
+
+
+confEdit : Lang -> String
+confEdit lang =
+    case lang of
+        Am ->
+            "ኤዲተር ክፈት"
+
+        Ar ->
+            "فتح المحرر"
+
+        Bg ->
+            "Отвори редактор"
+
+        Bn ->
+            "সম্পাদক খুলুন"
+
+        De ->
+            "Editor öffnen"
+
+        Es ->
+            "Abrir editor"
+
+        Fa ->
+            "باز کردن ویرایشگر"
+
+        Fr ->
+            "Ouvrir l'éditeur"
+
+        Hi ->
+            "संपादक खोलें"
+
+        Hy ->
+            "Բացել խմբագրիչը"
+
+        It ->
+            "Apri l'editor"
+
+        Ja ->
+            "エディターを開く"
+
+        Ka ->
+            "რედაქტორის გახსნა"
+
+        Ko ->
+            "편집기 열기"
+
+        Nl ->
+            "Editor openen"
+
+        Pa ->
+            "ਸੰਪਾਦਕ ਖੋਲ੍ਹੋ"
+
+        Pt ->
+            "Abrir editor"
+
+        Ru ->
+            "открыть редактор"
+
+        Sw ->
+            "Fungua Kihariri"
+
+        Tw ->
+            "開啟編輯器"
+
+        Uk ->
+            "відкрити редактор"
+
+        Ur ->
+            "ایڈیٹر کھولیں"
+
+        Zh ->
+            "打開編輯器"
+
+        _ ->
+            "Open editor"
 
 
 ttsPreferBrowser : Lang -> String
