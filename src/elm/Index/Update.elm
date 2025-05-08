@@ -8,7 +8,6 @@ module Index.Update exposing
 
 import Browser.Navigation as Nav
 import Dict
-import I18n.Translations exposing (Lang(..))
 import Index.Model exposing (Action(..), Course, Modal, Model, Release)
 import Index.Version as Version
 import Json.Decode as JD
@@ -16,7 +15,6 @@ import Lia.Definition.Json.Decode as Definition
 import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
-import Lia.Update exposing (Msg(..))
 import Lia.Utils exposing (scheduleFocus)
 import Library.Masonry as Masonry
 import List.Extra

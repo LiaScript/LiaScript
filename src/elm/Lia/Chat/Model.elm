@@ -4,17 +4,16 @@ module Lia.Chat.Model exposing
     , insert
     )
 
---import Service.Database
-
 import Array
 import Dict exposing (Dict)
 import Json.Encode as JE
 import Lia.Chat.Sync exposing (Change, Changes)
 import Lia.Definition.Types exposing (Definition)
-import Lia.Parser.Context exposing (searchIndex)
+import Lia.Markdown.Effect.Script.Types exposing (Stdout(..))
 import Lia.Parser.Parser exposing (parse_section)
 import Lia.Section as Section exposing (Section)
 import Service.Event as Event exposing (Event)
+import Service.Script as Script
 
 
 type alias Model =
@@ -30,20 +29,20 @@ init =
     }
 
 
-insert : (String -> String) -> Definition -> Model -> Changes -> ( List Event, Model )
-insert searchIndex definition model changes =
+insert : Bool -> (String -> String) -> Definition -> Model -> Changes -> ( List Event, Model )
+insert scriptsEnabled searchIndex definition model changes =
     let
         ( todo, messages ) =
             List.foldl
-                (parse searchIndex definition)
+                (parse scriptsEnabled searchIndex definition)
                 ( [], model.messages )
                 changes
     in
     ( todo, { model | messages = messages } )
 
 
-parse : (String -> String) -> Definition -> Change -> ( List Event, Dict String Section ) -> ( List Event, Dict String Section )
-parse searchIndex definition change ( todo, chat ) =
+parse : Bool -> (String -> String) -> Definition -> Change -> ( List Event, Dict String Section ) -> ( List Event, Dict String Section )
+parse scriptsEnabled searchIndex definition change ( todo, chat ) =
     case
         change.message
             ++ "\n\n"
@@ -52,14 +51,62 @@ parse searchIndex definition change ( todo, chat ) =
             |> parse_section searchIndex definition
     of
         Ok new ->
-            ( if Array.isEmpty new.code_model.evaluate then
-                todo
+            let
+                ( javascript, eval ) =
+                    new.effect_model.javascript
+                        |> Array.toList
+                        |> List.map
+                            (\js ->
+                                ( if scriptsEnabled then
+                                    js
+
+                                  else
+                                    { js
+                                        | result =
+                                            "<code class='notranslate lia-code lia-code--inline'>blocked script</code>"
+                                                |> HTML
+                                                |> Just
+                                        , running = True
+                                    }
+                                , js.script
+                                )
+                            )
+                        |> List.unzip
+
+                newTodo =
+                    if scriptsEnabled then
+                        eval
+                            |> List.indexedMap
+                                (\id event ->
+                                    Script.exec 350 False event
+                                        |> Event.pushWithId "script" id
+                                        |> Event.pushWithId "effect" change.id
+                                )
+                            |> List.append todo
+
+                    else
+                        todo
+
+                effect_model =
+                    new.effect_model
+
+                section =
+                    { new
+                        | effect_model =
+                            { effect_model
+                                | javascript =
+                                    Array.fromList javascript
+                            }
+                    }
+            in
+            ( if Array.isEmpty section.code_model.evaluate then
+                newTodo
 
               else
-                load change.id :: todo
+                load change.id :: newTodo
             , Dict.insert
                 (String.fromInt change.id)
-                new
+                section
                 chat
             )
 

@@ -304,7 +304,7 @@ parseDefinition code message =
 
 ---
 
-If it should work, and you think you have detected bug, please contact us. For
+If it should work, and you think you have detected a bug, please contact us. For
 more information see the [last Section](#get-help?).
 """
 

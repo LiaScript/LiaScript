@@ -14,8 +14,8 @@ import Accessibility.Role as A11y_Role
 import Array
 import Conditional.List as CList
 import Dict exposing (Dict)
-import Html exposing (Attribute, Html, input)
-import Html.Attributes as Attr exposing (width)
+import Html exposing (Attribute, Html)
+import Html.Attributes as Attr
 import Html.Keyed
 import I18n.Translations as Translations exposing (Lang)
 import Json.Encode as JE

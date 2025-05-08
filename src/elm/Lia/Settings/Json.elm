@@ -6,8 +6,6 @@ module Lia.Settings.Json exposing
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
-import Lia.Markdown.Code.Editor exposing (editor)
-import Lia.Markdown.Inline.Multimedia exposing (audio)
 import Lia.Settings.Types exposing (Mode(..), Settings)
 
 

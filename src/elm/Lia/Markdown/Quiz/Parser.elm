@@ -24,7 +24,6 @@ import Combine
         , succeed
         , withState
         )
-import I18n.Translations exposing (Lang(..))
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
@@ -38,7 +37,6 @@ import Lia.Markdown.Quiz.Types
     exposing
         ( Options
         , Quiz
-        , State(..)
         , Type(..)
         , initState
         )

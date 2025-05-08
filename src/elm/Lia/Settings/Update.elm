@@ -9,7 +9,6 @@ module Lia.Settings.Update exposing
     , updatedChatMessages
     )
 
-import I18n.Translations exposing (Lang(..))
 import Json.Encode as JE
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)

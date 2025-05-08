@@ -10,7 +10,6 @@ import Lia.Sync.Types as Sync exposing (State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
 import Lia.Sync.Via as Backend exposing (Backend)
 import Lia.Utils exposing (btn, btnIcon)
-import Service.Event exposing (message)
 
 
 view : Sync.Settings -> Html Msg
@@ -93,6 +92,14 @@ view settings =
                     , Backend.view (open && support) via
                         |> Html.map Config
                         |> Html.map Backend
+                    , Html.div []
+                        [ Backend.checkbox
+                            { active = True
+                            , msg = EnabledScript settings.scriptsEnabled
+                            , label = Html.text "Allow scripts to be executed in the chat"
+                            , value = settings.scriptsEnabled
+                            }
+                        ]
                     , button settings
                     , viewError settings.error
                     , Backend.infoOn support via

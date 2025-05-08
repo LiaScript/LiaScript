@@ -1,6 +1,7 @@
 module Lia.Sync.Via exposing
     ( Backend(..)
     , Msg
+    , checkbox
     , eq
     , fromString
     , icon
@@ -276,6 +277,9 @@ infoOn supported about =
                 , Html.text ". Additionally, your course has to be loaded via the "
                 , link "module-liascript" "https://github.com/edrys-labs/module-liascript"
                 , Html.text "."
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
                 ]
 
             ( GUN _, _ ) ->
@@ -291,6 +295,9 @@ infoOn supported about =
                 , Html.text ". By checking \"persistent storage\" you can ensure that the chat messages and the modified code will be accessible over a longer time period, otherwise the state is deleted."
                 , Html.text " However, since this is a free service, we cannot give guarantees that your messages will be stored forever and that the GunDB server might be offline."
                 , Html.text " If you want to be certain, you can host your own instance of a GunDB server and change the URL appropriately."
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
                 ]
 
             ( NoStr, _ ) ->
@@ -301,6 +308,9 @@ infoOn supported about =
                 , Html.text "Users are identified by public keys, and all events (like messages or updates) are signed for verification. "
                 , Html.text "NoStr's decentralization ensures resilience against censorship and single points of failure, as data is distributed across multiple nodes. "
                 , Html.text "It's an open standard, allowing anyone to build upon it, and its design promotes freedom of speech and global accessibility."
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
                 ]
 
             ( MQTT, _ ) ->
@@ -310,6 +320,9 @@ infoOn supported about =
                 , Html.text "MQTT operates over a transport protocol like TCP/IP, ensuring ordered, lossless, bi-directional connections."
                 , Html.text "The protocol is event-driven, with a broker managing the distribution of messages between publishers and subscribers based on topics. "
                 , Html.text "This decoupling allows for scalable and reliable data exchange, making MQTT a standard for IoT data transmission."
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
                 ]
 
             ( Torrent, _ ) ->
@@ -317,6 +330,9 @@ infoOn supported about =
                 , Html.text " is a peer-to-peer file-sharing protocol used for distributing large files across a network of computers. "
                 , Html.text "In the context of browser-based Pub/Sub (Publish/Subscribe) messaging, Torrent can facilitate the distribution of messages or data across a network of peers, enabling efficient, decentralized communication without a central server. "
                 , Html.text "This approach is particularly useful for real-time applications like chat or live streaming, ensuring data is quickly and reliably distributed to all interested peers."
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
                 ]
 
             -- ( Jitsi _, _ ) ->
@@ -348,6 +364,9 @@ infoOn supported about =
                 , Html.text "The basic steps that are required, are described in more detail "
                 , link "here" "https://www.appypie.com/faqs/how-to-get-pubnub-publish-key-and-subscribe-key"
                 , Html.text "."
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
                 ]
 
             ( P2PT _, _ ) ->
@@ -362,7 +381,15 @@ infoOn supported about =
                 , Html.text "Thus, you have to provide WebSocket-URLs, which start with "
                 , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://" ]
                 , Html.text "."
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
                 ]
+
+
+allowScripts : Html msg
+allowScripts =
+    Html.text "If you want to allow scripts to be executed in the chat, you can check this box, allowing for dynamic content and interactivity. However, please be cautious as this may pose security risks if untrusted code is executed."
 
 
 link : String -> String -> Html msg

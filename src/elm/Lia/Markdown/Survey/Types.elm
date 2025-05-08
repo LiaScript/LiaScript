@@ -12,7 +12,6 @@ module Lia.Markdown.Survey.Types exposing
 import Array exposing (Array)
 import Dict exposing (Dict)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Table.Types exposing (isNumber)
 
 
 type alias Vector =

@@ -21,7 +21,14 @@ export class LRSConnection {
     version: string = '1.0.3',
     debug: boolean = false
   ) {
-    this.endpoint = endpoint + (endpoint.endsWith('/') ? '' : '/')
+    // Ensure endpoint ends with a slash but doesn't have "statements" twice
+    this.endpoint = endpoint.endsWith('/') ? endpoint : endpoint + '/'
+
+    // If endpoint already includes "statements", remove it to avoid duplication
+    if (this.endpoint.endsWith('statements/')) {
+      this.endpoint = this.endpoint.slice(0, -11)
+    }
+
     this.auth = auth
     this.version = version
     this.debug = debug
@@ -45,10 +52,16 @@ export class LRSConnection {
         )
       }
 
-      // Ensure all object references are properly stringified
+      // Ensure all object references are properly stringified and IDs are strings
       const processedStatement = this.ensureStringReferences(statement)
 
-      const response = await fetch(this.endpoint, {
+      // Validate the statement has proper structure before sending
+      if (!this.validateStatement(processedStatement)) {
+        console.error('Invalid statement structure:', processedStatement)
+        return null
+      }
+
+      const response = await fetch(this.endpoint + 'statements', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +82,14 @@ export class LRSConnection {
         console.log('LRS response:', data)
       }
 
-      return data.id || null
+      // Handle both array responses and object responses
+      if (Array.isArray(data) && data.length > 0) {
+        return data[0] // SCORM Cloud returns an array of IDs
+      } else if (data && typeof data === 'object') {
+        return data.id || null
+      }
+
+      return null
     } catch (error) {
       console.error('Error sending statement to LRS:', error)
       return null
@@ -95,7 +115,7 @@ export class LRSConnection {
         this.ensureStringReferences(statement)
       )
 
-      const response = await fetch(this.endpoint, {
+      const response = await fetch(this.endpoint + 'statements', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +136,12 @@ export class LRSConnection {
         console.log('LRS response:', data)
       }
 
-      return Array.isArray(data) ? data : []
+      // Handle the response properly - SCORM Cloud returns an array of IDs
+      if (Array.isArray(data)) {
+        return data
+      }
+
+      return []
     } catch (error) {
       console.error('Error sending statements to LRS:', error)
       return []
@@ -128,16 +153,29 @@ export class LRSConnection {
    * @param query Query parameters for filtering statements
    * @returns Promise resolving to the statements
    */
-  async getStatements(query: Record<string, string> = {}): Promise<any> {
+  async getStatements(query: Record<string, any> = {}): Promise<any> {
     try {
-      const queryString = Object.entries(query)
-        .map(
-          ([key, value]) =>
-            `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
-        )
-        .join('&')
+      // Build a URLSearchParams with proper serialization
+      const params = new URLSearchParams()
 
-      const url = this.endpoint + (queryString ? `?${queryString}` : '')
+      // Properly handle each parameter
+      for (const [key, value] of Object.entries(query)) {
+        if (value === null || value === undefined) {
+          continue // Skip null or undefined values
+        }
+
+        if (typeof value === 'object') {
+          // Stringify objects properly for query parameters
+          params.append(key, JSON.stringify(value))
+        } else {
+          params.append(key, String(value))
+        }
+      }
+
+      // Build URL with endpoint + statements + query params
+      const url = `${this.endpoint}statements${
+        params.toString() ? `?${params.toString()}` : ''
+      }`
 
       if (this.debug) {
         console.log('Getting statements from LRS:', url)
@@ -157,11 +195,9 @@ export class LRSConnection {
       }
 
       const data = await response.json()
-
       if (this.debug) {
         console.log('LRS response:', data)
       }
-
       return data
     } catch (error) {
       console.error('Error getting statements from LRS:', error)
@@ -225,5 +261,38 @@ export class LRSConnection {
     } else {
       return obj
     }
+  }
+
+  /**
+   * Validate the structure of a statement
+   * @param statement The statement to validate
+   * @returns True if the statement structure is valid
+   */
+  private validateStatement(statement: any): boolean {
+    // Basic validation to ensure required fields have the right type
+    if (!statement) return false
+
+    // Validate actor
+    if (!statement.actor || typeof statement.actor !== 'object') return false
+
+    // Validate verb
+    if (
+      !statement.verb ||
+      typeof statement.verb !== 'object' ||
+      !statement.verb.id ||
+      typeof statement.verb.id !== 'string'
+    )
+      return false
+
+    // Validate object
+    if (
+      !statement.object ||
+      typeof statement.object !== 'object' ||
+      !statement.object.id ||
+      typeof statement.object.id !== 'string'
+    )
+      return false
+
+    return true
   }
 }
