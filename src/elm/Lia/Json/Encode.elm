@@ -4,7 +4,7 @@ module Lia.Json.Encode exposing
     )
 
 import Array
-import I18n.Translations exposing (Lang(..), getCodeFromLn)
+import I18n.Translations exposing (getCodeFromLn)
 import Json.Encode as JE
 import Lia.Definition.Json.Encode as Definition
 import Lia.Markdown.Inline.Json.Encode as Inline

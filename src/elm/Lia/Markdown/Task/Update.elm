@@ -5,7 +5,6 @@ module Lia.Markdown.Task.Update exposing
     )
 
 import Array
-import Browser exposing (element)
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Update exposing (init, merge)

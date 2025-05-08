@@ -4,6 +4,7 @@ module Lia.Settings.View exposing
     , design
     , header
     , menuChat
+    , menuEdit
     , menuInformation
     , menuMode
     , menuSettings
@@ -20,7 +21,7 @@ import Conditional.List as CList
 import Const
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
-import Html.Attributes as Attr exposing (lang, width)
+import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import I18n.Translations as Trans exposing (Lang)
 import Lia.Definition.Types exposing (Definition)
@@ -44,11 +45,11 @@ import Lia.Utils
         , btn
         , btnIcon
         , deactivate
+        , icon
         , noTranslate
         )
 import Library.Group as Group
 import QRCode
-import Service.Database exposing (settings)
 import Session exposing (Screen)
 
 
@@ -1007,6 +1008,31 @@ menuShare url sync lang tabbable settings =
             Html.text ""
       ]
         |> submenu grouping (settings.action == Just ShowShare)
+    ]
+
+
+menuEdit : String -> Lang -> Bool -> Settings -> List (Html Msg)
+menuEdit url lang tabbable _ =
+    [ Html.a
+        [ Attr.class "lia-btn lia-btn--transparent lia-btn--tag "
+        , Attr.href url
+        , A11y_Key.tabbable tabbable
+        , A11y_Aria.hidden (not tabbable)
+        , Attr.target "_blank"
+        , lang
+            |> Trans.confEdit
+            |> Attr.title
+        ]
+        [ icon "icon-edit" []
+        , Html.span
+            [ Attr.style "margin-left" "1rem"
+            , Attr.class " hide-md-up"
+            ]
+            [ lang
+                |> Trans.confEdit
+                |> Html.text
+            ]
+        ]
     ]
 
 

@@ -14,7 +14,6 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Inline.View as Inline
-import Lia.Markdown.Types exposing (Block(..))
 import Lia.Utils exposing (btnIcon, get, icon, modal)
 
 
