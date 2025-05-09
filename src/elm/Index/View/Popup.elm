@@ -2,7 +2,7 @@ module Index.View.Popup exposing (..)
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
-import Html as Html exposing (Html)
+import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Library.Group as Group

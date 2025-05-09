@@ -4,6 +4,47 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.15] - 08/05/2025
+
+- feat: Add `edit` macro that allows to share a link to the course resource for editing.
+
+  ```markdown
+  <!--
+  edit: true
+  -->
+
+  # Open automatically provide a link to the LiveEditor
+
+  https://LiaScript.github.io/LiveEditor/
+  ```
+
+  ---
+
+  ... or provide a link to a custom editor
+
+
+  ```markdown
+  <!--
+  edit: https://github.dev/username/repo/...
+  -->
+
+  # Provide a link to a custom editor
+  ```
+
+- feat: [Nostr](https://nostr.com) as data source is now, which means you can host course content on a decentralized storage. A Nostr-URI typically starts with `npub` or `nsec` and is followed by a base64 encoded string. The Nostr-URI can be used in the same way as a normal URL, but it will be resolved via the Nostr protocol.
+
+  > The LiveEditor provides an export to Nostr.
+
+- feat: Chats in classroom mode now can also execute scripts, but the user has to
+  explicitly allow this.
+
+- chors: Upgrade npm packages and trystero
+
+  # Classroom
+
+  This will allow to execute scripts in the classroom mode.
+  ```
+
 ## [0.16.14] - 14/04/2025
 
 - fix(Formulas): Translating the content with Google-Translate does now not affect formulas anymore.

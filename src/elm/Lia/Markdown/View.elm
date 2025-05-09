@@ -33,7 +33,6 @@ import Lia.Markdown.Json.Encode as Encode
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
-import Lia.Markdown.Table.Matrix exposing (transpose)
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Task.View as Task
 import Lia.Markdown.Types exposing (Block(..), Blocks)

@@ -13,18 +13,42 @@ import('../../typescript/connectors/XAPI/index').then(function (xAPI) {
       debug = true
     }
 
-    // Get xAPI configuration from window object
-    const xAPIConfig = window['xAPIConfig'] || {
-      endpoint: '',
-      auth: '',
-      actor: {
-        objectType: 'Agent',
-        name: 'Anonymous',
-        mbox: 'mailto:anonymous@example.com',
-      },
-      courseId: '',
-      courseTitle: '',
-      debug: false,
+    // Try to load saved config from localStorage first
+    let xAPIConfig
+    try {
+      const storedConfig = localStorage.getItem('xapi-config')
+      if (storedConfig) {
+        xAPIConfig = JSON.parse(storedConfig)
+      } else {
+        // Fall back to window config
+        xAPIConfig = window['xAPIConfig'] || {
+          endpoint: '',
+          auth: '',
+          actor: {
+            objectType: 'Agent',
+            name: 'Anonymous',
+            mbox: 'mailto:anonymous@example.com',
+          },
+          courseId: '',
+          courseTitle: '',
+          debug: false,
+        }
+      }
+    } catch (e) {
+      console.error('Error loading xAPI config:', e)
+      // Use default config if there's an error
+      xAPIConfig = window['xAPIConfig'] || {
+        endpoint: '',
+        auth: '',
+        actor: {
+          objectType: 'Agent',
+          name: 'Anonymous',
+          mbox: 'mailto:anonymous@example.com',
+        },
+        courseId: '',
+        courseTitle: '',
+        debug: false,
+      }
     }
 
     // Enable debug mode if in development

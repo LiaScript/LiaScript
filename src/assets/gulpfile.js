@@ -148,7 +148,7 @@ gulp.task("iconfont", (done) => {
   ]);
 
   let scssContent =
-    '@import "' + '../../assets/fonts' + /* outputPath + */ "/" + fontName + '/_icons.scss";';
+    '@use "' + '../../assets/fonts' + /* outputPath + */ "/" + fontName + '/_icons.scss";';
   fs.writeFile(paths.iconFontCssFile, scssContent, (error) => {
     if (error) {
       console.error(error);

@@ -9,8 +9,6 @@ module Lia.Settings.Types exposing
     , toGroup
     )
 
-import I18n.Translations exposing (Lang(..))
-
 
 type alias Settings =
     { table_of_contents : Bool
@@ -37,6 +35,7 @@ type alias Settings =
     , navigation : Bool
     , audio : { pitch : String, rate : String }
     , fullscreen : Bool
+    , edit : Maybe String
     }
 
 
@@ -100,6 +99,7 @@ init hasShareApi isFullscreen mode =
     , navigation = True
     , audio = { pitch = "1", rate = "1" }
     , fullscreen = isFullscreen
+    , edit = Nothing
     }
 
 
