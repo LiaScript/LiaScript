@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.0] - 13/05/2025
+
+Added SVG integration of LiaScript.
+LiaScript code can now be embedded into SVG via the `foreignObject` tag, which allows to combine drawings with animations and LiaScript code to make SVG more interactive.
+
+```markdown
+<svg width="400" height="250">
+<!-- Circle with blue fill and black border -->
+<circle cx="100" cy="100" r="80" fill="lightblue" stroke="black" stroke-width="2" />
+
+<!-- Foreign object with LiaScript formula and animation -->
+<foreignObject x="10" y="60" width="180" height="40">
+
+           {{1}}
+$$
+   \sum_{i=1}^\infty\frac{1}{n^2}
+      =\frac{\pi^2}{6}
+$$
+
+</foreignObject>
+</svg>
+```
+
 ## [0.16.15] - 08/05/2025
 
 - feat: Add `edit` macro that allows to share a link to the course resource for editing.
