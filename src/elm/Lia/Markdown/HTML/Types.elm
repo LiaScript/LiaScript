@@ -16,6 +16,7 @@ type Node content
     = Node String Parameters (List content)
     | InnerHtml String
     | OuterHtml String Parameters String
+    | SvgNode Parameters String (List ( Parameters, List content ))
 
 
 type Type
@@ -61,6 +62,29 @@ encode contentEncoder obj =
                         |> JE.dict identity JE.string
                   )
                 , ( "body", JE.string body )
+                ]
+
+            SvgNode attr code foreignObjects ->
+                [ ( "node_svg", JE.string code )
+                , ( "attr"
+                  , attr
+                        |> Dict.fromList
+                        |> JE.dict identity JE.string
+                  )
+                , ( "foreignObjects"
+                  , JE.list
+                        (\( foreignAttr, children ) ->
+                            JE.object
+                                [ ( "attr"
+                                  , foreignAttr
+                                        |> Dict.fromList
+                                        |> JE.dict identity JE.string
+                                  )
+                                , ( "objects", JE.list contentEncoder children )
+                                ]
+                        )
+                        foreignObjects
+                  )
                 ]
 
 
