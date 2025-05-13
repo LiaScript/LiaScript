@@ -5,6 +5,7 @@ import Html.Attributes as Attr
 import Json.Encode as JE
 import Lia.Markdown.HTML.Attributes exposing (Parameters, toAttribute)
 import Lia.Markdown.HTML.Types exposing (Node(..))
+import Svg
 
 
 view : (List (Html.Attribute msg) -> List (Html msg) -> Html msg) -> (x -> Html msg) -> Parameters -> Node x -> Html msg
@@ -29,3 +30,20 @@ view containerX fn attr obj =
                     |> toAttribute
                 )
                 [ Html.text body ]
+
+        SvgNode attrs body foreignObjects ->
+            Svg.node "svg"
+                ((body
+                    |> JE.string
+                    |> Attr.property "innerHTML"
+                 )
+                    :: toAttribute attrs
+                )
+                (foreignObjects
+                    |> List.map
+                        (\( foreignAttributes, foreignObject ) ->
+                            foreignObject
+                                |> List.map fn
+                                |> Svg.foreignObject (toAttribute foreignAttributes)
+                        )
+                )
