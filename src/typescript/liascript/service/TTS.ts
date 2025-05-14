@@ -177,6 +177,7 @@ function read(event: Lia.Event) {
   if (element.length) {
     let voice = element[0].getAttribute('data-voice') || 'default'
     let lang = element[0].getAttribute('data-lang') || 'en'
+    let translation = (element[0].getAttribute('translate') || 'no') === 'yes'
 
     const options = getAudioSettings(element[0])
 
@@ -204,12 +205,17 @@ function read(event: Lia.Event) {
     if (videos.length > 0 && player) {
       let currentIndex = 0
       let isEnding = false
+      let ttsFinished = !translation // If no translation needed, mark TTS as finished
 
       async function playNext() {
         if (currentIndex >= videos.length) {
           if (!isEnding) {
             isEnding = true
-            sendResponse(event, 'stop')
+
+            // Only send stop response when both video is done AND TTS is finished
+            if (ttsFinished) {
+              sendResponse(event, 'stop')
+            }
           }
           return
         }
@@ -246,7 +252,9 @@ function read(event: Lia.Event) {
         video.preservesPitch = true
         video.playbackRate = options.rate
 
-        const response = video.play()
+        // Set muted state based on translation flag
+        video.muted = translation
+
         video.style.display = 'block'
         if (currentIndex > 0) {
           videos[currentIndex - 1].style.display = 'none'
@@ -255,35 +263,64 @@ function read(event: Lia.Event) {
         // Always store the background video regardless of play() return value
         storeBackgroundVideo(player, video)
 
+        // Actually play the video
+        const response = video.play()
+
         // If play() returns a promise (modern browsers), handle errors.
         if (response && typeof response.then === 'function') {
-          response.catch((e) => error(e.message))
-        } else {
-          // For browsers like Firefox 48 where play() returns undefined,
-          // assume playback started successfully.
-          // Optionally, you can call sendResponse(event, 'start') here if needed.
-          //error("resource couldn't be played")
+          response.catch((e) => {
+            console.warn('Failed to play video:', e.message)
+          })
         }
       }
 
-      playNext()
+      // Send initial start response
       sendResponse(event, 'start')
 
-      /*// Create a new video element for preloading
-      const nextVideo = video.cloneNode() as HTMLVideoElement
-      nextVideo.src = videoUrls[0]
-      player.appendChild(nextVideo)
+      // Handle translation mode differently
+      if (translation && text.trim() !== '') {
+        // For translation mode, we start the video when TTS begins
+        speak(text, voice, lang, options, {
+          // Create a modified event for TTS response handling
+          ...event,
+          message: {
+            ...event.message,
+            cmd: event.message.cmd,
+          },
+          // Custom handlers for TTS events
+          handlers: {
+            onStart: () => {
+              // Start video when TTS starts speaking
+              playNext()
+            },
+            onStop: () => {
+              // TTS finished
+              ttsFinished = true
 
-      // Preload the next video
-      nextVideo.load()
+              // If videos are also finished, send the stop response
+              if (currentIndex >= videos.length && isEnding) {
+                sendResponse(event, 'stop')
+              }
+            },
+            onError: (error) => {
+              console.warn('TTS translation error:', error)
+              ttsFinished = true
 
-      // When the new video is ready to play
-      nextVideo.oncanplay = () => {
-        nextVideo.play()
+              // If TTS fails, still try to play the video
+              if (!videos[currentIndex]?.played.length) {
+                playNext()
+              }
 
-        // Remove the preloading video element
-        player.removeChild(video)
-      }*/
+              if (currentIndex >= videos.length && isEnding) {
+                sendResponse(event, 'stop')
+              }
+            },
+          },
+        })
+      } else {
+        // For non-translation mode, play the video immediately with original audio
+        playNext()
+      }
     } else if (hasAudioURLs) {
       let audioUrls: HTMLMediaElement[] = Array.from(
         document.getElementsByClassName(
@@ -455,16 +492,25 @@ function speak(
   },
   event: Lia.Event
 ) {
+  const customHandlers = event.handlers || {
+    onStart: () => sendResponse(event, 'start'),
+    onStop: () => sendResponse(event, 'stop'),
+    onError: (e) => {
+      sendResponse(event, 'error', e.toString())
+      console.warn('TTS playback failed:', e.toString())
+    },
+  }
+
   if (useBrowserTTS) {
     const syncVoice = getVoice(lang, voice)
 
     // there was a voice
     if (syncVoice) {
-      easySpeak(text, syncVoice, options, event)
+      easySpeak(text, syncVoice, options, customHandlers)
     }
     // try responsive-voice
     else if (window.responsiveVoice) {
-      responsiveSpeak(text, voice, options, event)
+      responsiveSpeak(text, voice, options, customHandlers)
     }
     // if everything fails get the first voice from the browser
     // and use it as the default voice
@@ -475,9 +521,9 @@ function speak(
         // store as default for the next run
         browserVoices[toKey(lang, voice)] = defaultVoice
 
-        easySpeak(text, defaultVoice, options, event)
+        easySpeak(text, defaultVoice, options, customHandlers)
       } else {
-        sendResponse(event, 'ERROR', 'no TTS support')
+        customHandlers.onError('no TTS support')
       }
     }
   } else if (window.responsiveVoice) {
@@ -485,7 +531,7 @@ function speak(
     if (voice.startsWith('German')) {
       voice.replace('German', 'Deutsch')
     }
-    responsiveSpeak(text, voice, options, event)
+    responsiveSpeak(text, voice, options, customHandlers)
   }
 }
 
@@ -496,23 +542,20 @@ function easySpeak(
     rate: number
     pitch: number
   },
-  event: Lia.Event
+  handlers: {
+    onStart: () => void
+    onStop: () => void
+    onError: (error: any) => void
+  }
 ) {
   EasySpeech.speak({
     text: text,
     voice: syncVoice,
-    start: function () {
-      sendResponse(event, 'start')
-    },
-    end: function () {
-      sendResponse(event, 'stop')
-    },
-    error: function (e: any) {
-      sendResponse(event, 'error', e.toString())
-      console.warn('TTS playback failed:', e.toString())
-    },
-    pitch: options.pitch, // a little bit higher
-    rate: options.rate, // a little bit faster
+    start: handlers.onStart,
+    end: handlers.onStop,
+    error: handlers.onError,
+    pitch: options.pitch,
+    rate: options.rate,
   })
 }
 
@@ -520,23 +563,17 @@ function responsiveSpeak(
   text: string,
   voice: string,
   options: { pitch: number; rate: number },
-  event: Lia.Event
+  handlers: {
+    onStart: () => void
+    onStop: () => void
+    onError: (error: any) => void
+  }
 ) {
   if (window.responsiveVoice)
     window.responsiveVoice.speak(text, voice, {
-      onstart: function () {
-        sendResponse(event, 'start')
-      },
-
-      onend: function () {
-        sendResponse(event, 'stop')
-      },
-
-      onerror: function (e: any) {
-        sendResponse(event, 'error', e.toString())
-        console.warn('TTS playback failed:', e.toString())
-      },
-
+      onstart: handlers.onStart,
+      onend: handlers.onStop,
+      onerror: handlers.onError,
       pitch: options.pitch,
       rate: options.rate,
     })
