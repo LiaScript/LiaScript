@@ -269,23 +269,43 @@ Find out what you also can do ...
 """
 
 
-parseDefinition : String -> String -> String
-parseDefinition code message =
+parseDefinition : String -> Int -> String -> String
+parseDefinition code errorLine message =
+    let
+        begin =
+            if errorLine < 10 then
+                0
+
+            else
+                errorLine - 10
+
+        end =
+            if errorLine + 10 > String.length code then
+                String.length code
+
+            else
+                errorLine + 10
+    in
     """
 > I was trying to parse the **first** part of the course, which is either an
 > HTML-comment or something else, until I reach the header (which is marked by
 > an `#`). But, everything I got was the following:
 
-```
+<!-- data-showGutter data-firstLineNumber=\""""
+        ++ String.fromInt begin
+        ++ """" -->
+````` markdown
+...
 """
         ++ (code
                 |> String.lines
-                |> List.take 15
+                |> List.drop begin
+                |> List.take (end - begin)
                 |> String.join "\n"
            )
         ++ """
 ...
-```
+`````
 
 > I might be wrong, but in most cases this refers to a falsely loaded HTML page!
 >

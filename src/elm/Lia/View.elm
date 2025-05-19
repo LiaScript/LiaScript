@@ -18,7 +18,6 @@ import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.View exposing (state)
 import Lia.Markdown.HTML.Attributes exposing (toAttribute)
-import Lia.Markdown.Inline.Types as Inline
 import Lia.Markdown.Inline.View exposing (audio, view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
@@ -28,7 +27,7 @@ import Lia.Settings.Update as Settings_
 import Lia.Settings.View as Settings
 import Lia.Sync.Types as Sync_
 import Lia.Sync.View as Sync
-import Lia.Update exposing (Msg(..), generate, get_active_section)
+import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (deactivate, modal)
 import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
@@ -188,22 +187,19 @@ viewSlide modalIsActive screen model =
             ]
 
         Nothing ->
-            let
-                errorModel =
-                    { model
-                        | sections =
-                            [ Lia.Section.Base 1
-                                (Inline.chars "Parsing Problem")
-                                (model.error
-                                    |> Maybe.withDefault "Ups, that should not happen, a parsing error has happened.\n"
-                                )
-                                |> Lia.Section.init 1 1
-                            ]
-                                |> Array.fromList
-                    }
-                        |> generate
-            in
-            viewSlide modalIsActive screen errorModel
+            [ Html.div [ Attr.class "lia-slide" ]
+                [ slideTopBar
+                    model.langCode
+                    model.translation
+                    screen
+                    model.url
+                    model.repositoryUrl
+                    model.settings
+                    model.definition
+                    model.sync
+                , Html.text "Ups, something went wrong"
+                ]
+            ]
 
 
 viewPanes : Screen -> Model -> Html Msg
