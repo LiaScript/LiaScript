@@ -87,7 +87,7 @@ tag parser ( tagType, attributes ) =
                     (\( code, state ) ->
                         let
                             ( svgCode, foreignObjects ) =
-                                getAllForeignObjects code
+                                getAllForeignObjects state code
 
                             ( newState, parsedForeignObjects ) =
                                 foreignObjects
@@ -134,8 +134,8 @@ subParse defines parser code =
             ( defines, [] )
 
 
-getAllForeignObjects : String -> ( String, List ( Parameters, String ) )
-getAllForeignObjects svgCode =
+getAllForeignObjects : Context -> String -> ( String, List ( Parameters, String ) )
+getAllForeignObjects context svgCode =
     let
         findForeignObjects remaining offset results svgParts =
             case String.indexes "<foreignObject" remaining of
@@ -196,26 +196,14 @@ getAllForeignObjects svgCode =
         -- Helper function to parse attributes string into Parameters
         parseAttributes : String -> Parameters
         parseAttributes attrStr =
-            let
-                attrPairs =
-                    String.split " " attrStr
-                        |> List.filter (not << String.isEmpty)
-                        |> List.filterMap parseAttribute
-            in
-            attrPairs
+            case runParser (many attrParser) context attrStr of
+                Ok ( _, _, attr ) ->
+                    -- If parsing is successful, return the attributes
+                    attr
 
-        -- Parse a single attribute string like key="value"
-        parseAttribute : String -> Maybe ( String, String )
-        parseAttribute attr =
-            case String.split "=" attr of
-                [ key, value ] ->
-                    Just
-                        ( String.trim key
-                        , String.trim (String.dropLeft 1 (String.dropRight 1 value))
-                        )
-
-                _ ->
-                    Nothing
+                Err _ ->
+                    -- If parsing fails, return an empty list
+                    []
     in
     findForeignObjects svgCode 0 [] []
 
