@@ -9,7 +9,6 @@ port module Lia.Update exposing
 import Array exposing (Array)
 import Const
 import Dict
-import I18n.Translations exposing (Lang(..))
 import Json.Decode as JD
 import Lia.Chat.Update as Chat
 import Lia.Index.Update as Index

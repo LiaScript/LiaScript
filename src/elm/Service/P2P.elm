@@ -1,4 +1,4 @@
-module Service.Torrent exposing (decode, load)
+module Service.P2P exposing (decode, nostr, torrent)
 
 import Http
 import Json.Decode as JD
@@ -13,16 +13,25 @@ type alias Response =
     }
 
 
-load : { template : Bool, uri : String } -> Event
+torrent : { template : Bool, uri : String } -> Event
+torrent =
+    load >> Event.init "torrent"
+
+
+nostr : { template : Bool, uri : String } -> Event
+nostr =
+    load >> Event.init "nostr"
+
+
+load : { template : Bool, uri : String } -> { cmd : String, param : JE.Value }
 load { template, uri } =
-    Event.init "torrent"
-        { cmd = "load"
-        , param =
-            JE.object
-                [ ( "template", JE.bool template )
-                , ( "uri", JE.string uri )
-                ]
-        }
+    { cmd = "load"
+    , param =
+        JE.object
+            [ ( "template", JE.bool template )
+            , ( "uri", JE.string uri )
+            ]
+    }
 
 
 decode :

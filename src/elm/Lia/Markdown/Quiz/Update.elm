@@ -7,11 +7,9 @@ module Lia.Markdown.Quiz.Update exposing
     )
 
 import Array exposing (Array)
-import I18n.Translations exposing (Lang(..))
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
-import Lia.Markdown.Quiz.Block.Types as Markdown
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix

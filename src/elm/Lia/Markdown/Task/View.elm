@@ -1,7 +1,6 @@
 module Lia.Markdown.Task.View exposing (view)
 
 import Array
-import Browser exposing (element)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)

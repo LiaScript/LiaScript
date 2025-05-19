@@ -313,6 +313,25 @@ init_script model script =
 
                                     _ ->
                                         settings.sync
+                            , edit =
+                                case Dict.get "edit" definition.macro of
+                                    Just "true" ->
+                                        openInLiveEditor model.readme
+
+                                    Just "on" ->
+                                        openInLiveEditor model.readme
+
+                                    Just "false" ->
+                                        Nothing
+
+                                    Just "off" ->
+                                        Nothing
+
+                                    Just url ->
+                                        Just url
+
+                                    _ ->
+                                        Nothing
                         }
                 }
                     |> add_todos definition
@@ -330,6 +349,11 @@ init_script model script =
             , templates = []
             , event = Nothing
             }
+
+
+openInLiveEditor : String -> Maybe String
+openInLiveEditor url =
+    Just ("https://liascript.github.io/LiveEditor/?/show/file/" ++ url)
 
 
 {-| Successively parse section after section. Every time this function is

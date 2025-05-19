@@ -9,8 +9,6 @@ module Lia.Settings.Types exposing
     , toGroup
     )
 
-import I18n.Translations exposing (Lang(..))
-
 
 type alias Settings =
     { table_of_contents : Bool
@@ -36,6 +34,7 @@ type alias Settings =
     , chat : { show : Bool, updates : Bool }
     , audio : { pitch : String, rate : String }
     , fullscreen : Bool
+    , edit : Maybe String
     }
 
 
@@ -98,6 +97,7 @@ init hasShareApi isFullscreen mode =
         }
     , audio = { pitch = "1", rate = "1" }
     , fullscreen = isFullscreen
+    , edit = Nothing
     }
 
 

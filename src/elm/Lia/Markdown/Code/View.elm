@@ -25,7 +25,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Log as Log exposing (Log)
-import Lia.Markdown.Code.Sync exposing (Sync, sync)
+import Lia.Markdown.Code.Sync exposing (Sync)
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Model)
 import Lia.Markdown.Code.Update exposing (Msg(..))

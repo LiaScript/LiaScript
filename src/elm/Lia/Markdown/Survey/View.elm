@@ -2,7 +2,7 @@ module Lia.Markdown.Survey.View exposing (view)
 
 import Accessibility.Role as A11y_Role
 import Array
-import Html exposing (Html, button)
+import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import I18n.Translations as Translations
@@ -32,7 +32,6 @@ import Lia.Markdown.Survey.Sync as Sync exposing (Sync)
 import Lia.Markdown.Survey.Types
     exposing
         ( Analysis(..)
-        , State(..)
         , Survey
         , Type(..)
         , Vector

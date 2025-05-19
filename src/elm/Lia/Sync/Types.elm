@@ -16,12 +16,10 @@ module Lia.Sync.Types exposing
     )
 
 import Array exposing (Array)
-import Browser exposing (element)
 import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import I18n.Translations exposing (Lang(..))
 import Json.Decode as JD
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Sync as Code
