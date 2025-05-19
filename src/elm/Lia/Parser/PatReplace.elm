@@ -101,7 +101,6 @@ link =
                         -- Remove potential query string
                         baseUrl =
                             w
-                                |> Debug.log "BASE URL"
                                 |> String.split "?"
                                 |> List.head
                                 |> Maybe.withDefault w
@@ -109,7 +108,6 @@ link =
                         -- Extract parts: domain/user/repo/-/raw/branch/path
                         urlParts =
                             String.split "/" baseUrl
-                                |> Debug.log "URL PARTS"
 
                         domain =
                             urlParts
