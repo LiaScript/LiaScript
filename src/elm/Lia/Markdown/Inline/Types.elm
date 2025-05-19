@@ -2,6 +2,7 @@ module Lia.Markdown.Inline.Types exposing
     ( Inline(..)
     , Inlines
     , Reference(..)
+    , chars
     , combine
     , htmlBlock
     , mediaBlock
@@ -100,3 +101,8 @@ combineHelper input output =
 
         ( i :: is, _ ) ->
             combineHelper is (i :: output)
+
+
+chars : String -> Inlines
+chars str =
+    [ Chars str [] ]
