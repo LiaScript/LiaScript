@@ -304,7 +304,7 @@ paths, as defined in function `base`:
 parse : ( String, String ) -> Parser context ( String, String )
 parse ( url, appendix ) =
     regex "[A-Za-z0-9_\\-:]+"
-        |> map (String.toLower >> Tuple.pair)
+        |> map Tuple.pair
         |> ignore whitespace
         |> andMap tagAttributeValue
         |> ignore whitespace
