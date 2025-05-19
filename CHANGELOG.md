@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.1] - 19/05/2025
+
+- fix: Support for `foreignObject` in SVG now scales correctly.
+- improve: Self hosted gitlabs can now be referenced with `gitlab://` instead of `https://`. LiaScript will automatically switch to the data api, removing the need for a proxy.
+- improve: Video comments with translations are now synced with the text to speech api from the browser.
+
 ## [0.17.0] - 13/05/2025
 
 Added SVG integration of LiaScript.
