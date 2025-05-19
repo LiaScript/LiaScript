@@ -53,7 +53,7 @@ parse_definition base appendix code =
 
                 else
                     formatError ms stream
-                        |> Error.Message.parseDefinition True code (currentLocation stream |> .line)
+                        |> Error.Message.parseDefinition True ( code, currentLocation stream |> .line )
 
 
 

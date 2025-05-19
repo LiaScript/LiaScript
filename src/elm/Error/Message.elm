@@ -272,8 +272,8 @@ Find out what you also can do ...
 """
 
 
-parseDefinition : Bool -> String -> Int -> String -> String
-parseDefinition first code errorLine message =
+parseDefinition : Bool -> ( String, Int ) -> String -> String
+parseDefinition first ( code, errorLine ) message =
     let
         begin =
             if errorLine < 10 then

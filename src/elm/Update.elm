@@ -613,7 +613,7 @@ parsing model =
                                 { model
                                     | state =
                                         error
-                                            |> Error.Message.parseDefinition False code 0
+                                            |> Error.Message.parseDefinition False ( code, 0 )
                                             |> Error.Report.add model.state
                                 }
 
