@@ -5,7 +5,6 @@ module Lia.Markdown.Quiz.Json exposing
     )
 
 import Array
-import I18n.Translations exposing (Lang(..))
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Inline.Json.Encode as Inline

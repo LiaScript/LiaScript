@@ -7,10 +7,8 @@ module Index.View.Modal exposing
 
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
-import I18n.Translations exposing (Lang(..))
 import Index.Model exposing (Modal(..))
 import Index.Update exposing (Msg(..))
-import Lia.Markdown.Code.Log exposing (Level(..))
 import Lia.Utils exposing (btn, modal)
 
 

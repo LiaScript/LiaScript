@@ -33,6 +33,24 @@ encode encoder node =
                 ]
             )
 
+        SvgNode a code foreignObjects ->
+            ( "SvgNode"
+            , JE.object
+                [ ( "body", JE.string code )
+                , encParameters a
+                , ( "foreignObjects"
+                  , JE.list
+                        (\( attr, content ) ->
+                            JE.object
+                                [ encParameters attr
+                                , ( "content", JE.list encoder content )
+                                ]
+                        )
+                        foreignObjects
+                  )
+                ]
+            )
+
 
 encParameters : Parameters -> ( String, JE.Value )
 encParameters annotation =

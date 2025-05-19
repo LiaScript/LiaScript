@@ -9,7 +9,6 @@ import Lia.Json.Encode as Lia
 import Lia.Markdown.Quiz.Json as Quiz
 import Lia.Markdown.Survey.Json as Survey
 import Lia.Markdown.Task.Json as Task
-import Lia.Parser.Helper exposing (debug)
 import Lia.Parser.Parser exposing (parse_definition)
 import Lia.Script
 import Lia.Update exposing (generate)

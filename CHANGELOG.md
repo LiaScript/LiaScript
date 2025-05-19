@@ -4,6 +4,76 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.1] - 19/05/2025
+
+- fix: Support for `foreignObject` in SVG now scales correctly.
+- improve: Self hosted gitlabs can now be referenced with `gitlab://` instead of `https://`. LiaScript will automatically switch to the data api, removing the need for a proxy.
+- improve: Video comments with translations are now synced with the text to speech api from the browser.
+
+## [0.17.0] - 13/05/2025
+
+Added SVG integration of LiaScript.
+LiaScript code can now be embedded into SVG via the `foreignObject` tag, which allows to combine drawings with animations and LiaScript code to make SVG more interactive.
+
+```markdown
+<svg width="400" height="250">
+<!-- Circle with blue fill and black border -->
+<circle cx="100" cy="100" r="80" fill="lightblue" stroke="black" stroke-width="2" />
+
+<!-- Foreign object with LiaScript formula and animation -->
+<foreignObject x="10" y="60" width="180" height="40">
+
+           {{1}}
+$$
+   \sum_{i=1}^\infty\frac{1}{n^2}
+      =\frac{\pi^2}{6}
+$$
+
+</foreignObject>
+</svg>
+```
+
+## [0.16.15] - 08/05/2025
+
+- feat: Add `edit` macro that allows to share a link to the course resource for editing.
+
+  ```markdown
+  <!--
+  edit: true
+  -->
+
+  # Open automatically provide a link to the LiveEditor
+
+  https://LiaScript.github.io/LiveEditor/
+  ```
+
+  ---
+
+  ... or provide a link to a custom editor
+
+
+  ```markdown
+  <!--
+  edit: https://github.dev/username/repo/...
+  -->
+
+  # Provide a link to a custom editor
+  ```
+
+- feat: [Nostr](https://nostr.com) as data source is now, which means you can host course content on a decentralized storage. A Nostr-URI typically starts with `npub` or `nsec` and is followed by a base64 encoded string. The Nostr-URI can be used in the same way as a normal URL, but it will be resolved via the Nostr protocol.
+
+  > The LiveEditor provides an export to Nostr.
+
+- feat: Chats in classroom mode now can also execute scripts, but the user has to
+  explicitly allow this.
+
+- chors: Upgrade npm packages and trystero
+
+  # Classroom
+
+  This will allow to execute scripts in the classroom mode.
+  ```
+
 ## [0.16.14] - 14/04/2025
 
 - fix(Formulas): Translating the content with Google-Translate does now not affect formulas anymore.

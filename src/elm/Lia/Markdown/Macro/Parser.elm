@@ -3,7 +3,6 @@ module Lia.Markdown.Macro.Parser exposing
     , macro
     )
 
-import Browser.Navigation exposing (back)
 import Combine
     exposing
         ( Parser

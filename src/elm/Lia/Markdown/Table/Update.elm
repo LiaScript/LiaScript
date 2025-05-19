@@ -5,8 +5,7 @@ module Lia.Markdown.Table.Update exposing
     )
 
 import Array
-import Lia.Markdown.Survey.Update exposing (Msg(..))
-import Lia.Markdown.Table.Types exposing (Class(..), State, Vector)
+import Lia.Markdown.Table.Types exposing (State, Vector)
 import Return exposing (Return)
 import Service.Event exposing (Event)
 

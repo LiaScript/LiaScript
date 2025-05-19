@@ -41,7 +41,6 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
-import I18n.Translations exposing (Lang(..))
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Effect.Script.Types as JS
 import Lia.Markdown.Footnote.Parser as Footnote

@@ -1,18 +1,16 @@
 module Index.View.Card exposing (card)
 
-import Accessibility.Role exposing (definition)
 import Array
 import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import I18n.Translations exposing (Lang(..))
-import Index.Model exposing (Action(..), Course, Modal(..), Release)
+import Index.Model exposing (Action(..), Course, Release)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
 import Index.View.Popup as Popup
 import Lia.Definition.Types exposing (Definition)
-import Lia.Markdown.Code.Log exposing (Level(..))
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
