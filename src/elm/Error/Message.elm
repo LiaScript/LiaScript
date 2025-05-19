@@ -34,11 +34,11 @@ getHelp =
     """Feel free to contact us, if you need help, found a bug, or if you have some ideas for improvements.
 You can reach us via:
 
-* mail: LiaScript@web.de
+* mail: [LiaScript\\@web.de](mailto:LiaScript@web.de)
 * chat: https://gitter.im/LiaScript/community
 * twitter: https://twitter.com/liascript
 
-Have nice one 
+Have nice day and happy coding!
 """
 
 
@@ -97,8 +97,11 @@ whatIsLiaScript =
 For more information visit some of the following sources:
 
 * Project-website: """ ++ Const.urlLiascript ++ """
-* Documentation: https://github.com/liascript/docs
+* Blog: https://liascript.github.io/blog
+* Documentation: https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md
 * YouTube: https://www.youtube.com/channel/UCyiTe2GkW_u05HSdvUblGYg
+
+!?[LiaScript Intro](https://www.youtube.com/watch?v=YYhvGnE1PAA)
 """
 
 
@@ -269,8 +272,8 @@ Find out what you also can do ...
 """
 
 
-parseDefinition : String -> Int -> String -> String
-parseDefinition code errorLine message =
+parseDefinition : Bool -> String -> Int -> String -> String
+parseDefinition first code errorLine message =
     let
         begin =
             if errorLine < 10 then
@@ -286,10 +289,16 @@ parseDefinition code errorLine message =
             else
                 errorLine + 10
     in
-    """
+    (if first then
+        """
 > I was trying to parse the **first** part of the course, which is either an
 > HTML-comment or something else, until I reach the header (which is marked by
-> an `#`). But, everything I got was the following:
+> an `#`). But, everything I got was the following:"""
+
+     else
+        """> I have a problem with the following part of the code:"""
+    )
+        ++ """
 
 <!-- data-showGutter data-firstLineNumber=\""""
         ++ String.fromInt begin
@@ -306,12 +315,19 @@ parseDefinition code errorLine message =
         ++ """
 ...
 `````
-
+"""
+        ++ (if first then
+                """
 > I might be wrong, but in most cases this refers to a falsely loaded HTML page!
 >
 > Please make sure, that the course you try to load is a Markdown file, which
 > is served as a plain text file...
+"""
 
+            else
+                "> If you see this in the editor, try to fix it otherwise contact the creator.\n"
+           )
+        ++ """
 ---
 
 **Error Message:**
