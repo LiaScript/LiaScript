@@ -54,7 +54,7 @@ parse_definition base appendix code =
 
                 else
                     formatError ms stream
-                        |> Error.Message.parseDefinition code
+                        |> Error.Message.parseDefinition True ( code, currentLocation stream |> .line )
 
 
 
@@ -170,10 +170,10 @@ formatError ms stream =
             currentLocation stream
 
         separator =
-            "\n "
+            "\n\n"
 
         expectationSeparator =
-            "\n  * "
+            "\n* "
 
         --        lineNumberOffset =
         --            floor (logBase 10 (toFloat location.line)) + 1
@@ -191,4 +191,4 @@ formatError ms stream =
         ++ String.padLeft padding ' ' "^"
         ++ "\nI expected one of the following:\n"
         ++ expectationSeparator
-        ++ String.join expectationSeparator ms
+        ++ String.join expectationSeparator (List.map (\s -> String.append s "\n") ms)

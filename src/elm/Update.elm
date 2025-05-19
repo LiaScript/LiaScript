@@ -637,11 +637,23 @@ parsing model =
                         new_model =
                             { model | lia = lia, code = remaining_code }
                     in
-                    if modBy model.parse_steps (Lia.Script.pages lia) == 1 then
-                        ( new_model, message LiaParse )
+                    case lia.error of
+                        Nothing ->
+                            -- stop after 4 iterations to update the view
+                            if modBy model.parse_steps (Lia.Script.pages lia) == 1 then
+                                ( new_model, message LiaParse )
 
-                    else
-                        parsing new_model
+                            else
+                                parsing new_model
+
+                        Just error ->
+                            startWithError
+                                { model
+                                    | state =
+                                        error
+                                            |> Error.Message.parseDefinition False code
+                                            |> Error.Report.add model.state
+                                }
 
         _ ->
             ( model, Cmd.none )
