@@ -102,7 +102,7 @@ view_message { level, text } =
             viewLog { class = "text-warning", str = text, label = "warning" }
 
         Error ->
-            viewLog { class = "text-info", str = text, label = "error" }
+            viewLog { class = "text-error", str = text, label = "error" }
 
         HTML ->
             Html.div
