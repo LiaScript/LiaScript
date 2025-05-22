@@ -68,6 +68,13 @@ link =
                                     [ user, repository, "raw", String.join "/" filePath ]
                                 ++ "?ref="
                                 ++ branch
+                                
+                        user :: repository :: "src" :: "branch" :: branch :: filePath ->
+                            "https://codeberg.org/api/v1/repos/"
+                                ++ String.join "/"
+                                    [ user, repository, "raw", String.join "/" filePath ]
+                                ++ "?ref="
+                                ++ branch
 
                         _ ->
                             "https://codeberg.org/" ++ w
