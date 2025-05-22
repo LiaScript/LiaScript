@@ -4,7 +4,8 @@ module Lia.Markdown.Inline.Multimedia exposing
     , website
     )
 
-import Lia.Parser.PatReplace exposing (replace, root)
+import Lia.Parser.PatReplace exposing (replace)
+import Lia.Parser.UrlPattern.Generic exposing (root)
 
 
 website =

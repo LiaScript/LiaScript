@@ -382,6 +382,9 @@ update msg model =
             load_readme readme model
 
         Load_ReadMe_Result url (Err info) ->
+            --if info == Http.BadStatus 404 then
+            -- Handle BadStatus error
+            --    ( model, Cmd.none )
             if info == Http.NetworkError && String.startsWith "local://http" url then
                 let
                     lia =
