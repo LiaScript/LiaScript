@@ -1,5 +1,6 @@
 module Error.Message exposing
-    ( emptyFile
+    ( badStatus
+    , emptyFile
     , getHelp
     , loadingCourse
     , loadingResource
@@ -45,6 +46,60 @@ Have nice day and happy coding!
 loadingCourse : String -> Http.Error -> String
 loadingCourse =
     loadingError "It seems, that I could not load the following LiaScript document for some reason:"
+
+
+badStatus : String -> Int -> String
+badStatus url statusCode =
+    "> I received a response back with a nice status code, but the status code indicates failure...\n\n"
+        ++ parseNetworkError (Http.BadStatus statusCode)
+        ++ "\n\n---\n\n"
+        ++ "The following URL seems to be broken:\n\n"
+        ++ url
+        ++ "\n\n---\n\n"
+        ++ "The error message is:\n\n"
+        ++ (case statusCode of
+                400 ->
+                    "__Bad Request: The server cannot process the request due to a client error. The request may be malformed.__"
+                        ++ "\n\n**Hint:** Check if the URL contains special characters that need encoding."
+
+                401 ->
+                    "__Unauthorized: Authentication is required and has failed or has not been provided.__"
+                        ++ "\n\n**Hint:** You may need to log in or provide authentication credentials to access this resource."
+
+                403 ->
+                    "__Forbidden: You don't have permission to access this resource.__"
+                        ++ "\n\n**Hint:** The server understood the request but refuses to authorize it. Contact the resource owner if you believe you should have access."
+
+                404 ->
+                    "__Not Found: The requested resource could not be found on the server.__"
+                        ++ "\n\n1. **Hint:** Check if the URL is typed correctly. The resource might have been moved or deleted."
+                        ++ "\n\n2. **Hint:** Check if the repository is publicly available, a private repository cannot be accessed."
+
+                405 ->
+                    "__Method Not Allowed: The request method is not supported for the requested resource.__"
+                        ++ "\n\n**Hint:** This is typically a server configuration issue and not something you can fix as a user."
+
+                408 ->
+                    "__Request Timeout: The server timed out waiting for the request.__"
+                        ++ "\n\n**Hint:** Try again later when your connection is more stable or the server is less busy."
+
+                429 ->
+                    "__Too Many Requests: You have sent too many requests in a given amount of time.__"
+                        ++ "\n\n- **Hint:** Wait before trying again. The server is limiting how often you can access this resource."
+
+                _ ->
+                    if statusCode >= 400 && statusCode < 500 then
+                        "__Client Error "
+                            ++ String.fromInt statusCode
+                            ++ ": Your request contains an error.__"
+                            ++ "\n\n**Hint:** Check the URL and try again. If the problem persists, the resource might be temporarily unavailable."
+
+                    else
+                        "__Error "
+                            ++ String.fromInt statusCode
+                            ++ ": An unknown error occurred.__"
+                            ++ "\n\n**Hint:** If this persists, contact the website administrator or check if the service is down."
+           )
 
 
 loadingResource : String -> Http.Error -> String
@@ -363,7 +418,7 @@ parseNetworkError msg =
         Http.BadStatus int ->
             reasonCause
                 ("Bad Status " ++ String.fromInt int)
-                "This means I got a response back, but the status code indicates failure... You can check out [Wikipedia](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) to see what this means in detail."
+                "This means I got a response back, but the status code indicates failure... You can check out [Wikipedia](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) to see what the code means in detail."
 
         Http.NetworkError ->
             reasonCause

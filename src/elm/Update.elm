@@ -419,50 +419,61 @@ update msg model =
             load_readme readme model
 
         Load_ReadMe_Result url (Err info) ->
-            if info == Http.NetworkError && String.startsWith "local://http" url then
-                let
-                    lia =
-                        model.lia
-                in
-                update (GotResponse (String.dropLeft 8 url) (Ok IsZip))
-                    { model | lia = { lia | origin = "" } }
-                -- Handle ZIP file URL
+            case info of
+                Http.BadStatus errorCode ->
+                    -- Handle BadStatus error
+                    startWithError
+                        { model
+                            | state =
+                                Error.Message.badStatus url errorCode
+                                    |> Error.Report.add model.state
+                        }
 
-            else if String.startsWith Const.urlProxy url then
-                startWithError
-                    { model
-                        | state =
-                            Error.Message.loadingCourse url info
-                                |> Error.Report.add model.state
-                    }
+                _ ->
+                    if info == Http.NetworkError && String.startsWith "local://http" url then
+                        let
+                            lia =
+                                model.lia
+                        in
+                        update (GotResponse (String.dropLeft 8 url) (Ok IsZip))
+                            { model | lia = { lia | origin = "" } }
+                        -- Handle ZIP file URL
 
-            else if isOffline info && model.preload /= Nothing then
-                restore model
+                    else if String.startsWith Const.urlProxy url then
+                        startWithError
+                            { model
+                                | state =
+                                    Error.Message.loadingCourse url info
+                                        |> Error.Report.add model.state
+                            }
 
-            else if IPFS.isIPFS url then
-                ( model
-                , case Session.getType model.session.url of
-                    Session.Class room _ ->
-                        Session.setClass
-                            { room | course = IPFS.toHTTPS (Const.urlProxy ++ url) url }
-                            model.session
+                    else if isOffline info && model.preload /= Nothing then
+                        restore model
+
+                    else if IPFS.isIPFS url then
+                        ( model
+                        , case Session.getType model.session.url of
+                            Session.Class room _ ->
+                                Session.setClass
+                                    { room | course = IPFS.toHTTPS (Const.urlProxy ++ url) url }
+                                    model.session
+                                    |> .url
+                                    |> Session.load
+
+                            _ ->
+                                Session.setQuery
+                                    (IPFS.toHTTPS (Const.urlProxy ++ url) url)
+                                    model.session
+                                    |> .url
+                                    |> Session.load
+                        )
+
+                    else
+                        ( model
+                        , Session.setQuery (IPFS.toHTTPS (Const.urlProxy ++ url) url) model.session
                             |> .url
                             |> Session.load
-
-                    _ ->
-                        Session.setQuery
-                            (IPFS.toHTTPS (Const.urlProxy ++ url) url)
-                            model.session
-                            |> .url
-                            |> Session.load
-                )
-
-            else
-                ( model
-                , Session.setQuery (IPFS.toHTTPS (Const.urlProxy ++ url) url) model.session
-                    |> .url
-                    |> Session.load
-                )
+                        )
 
         Load_Template_Result url (Ok template) ->
             parsing
