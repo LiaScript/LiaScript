@@ -761,6 +761,7 @@ function getVoice(lang: string, voice: string) {
 }
 
 function detectGender(voice: string) {
+  // Check explicit gender indicators first
   if (voice.match(/female/i)) {
     return Gender.Female
   }
@@ -769,6 +770,30 @@ function detectGender(voice: string) {
     return Gender.Male
   }
 
+  // iOS/Safari male voices
+  const maleVoices =
+    /\b(Albert|Daniel|Eddy|Fred|Grandpa|Jacques|Junior|Maged|Ralph|Reed|Rishi|Rocko|Thomas|Zarvox|Xander)\b/i
+  if (voice.match(maleVoices)) {
+    return Gender.Male
+  }
+
+  // iOS/Safari female voices - comprehensive list
+  const femaleVoices =
+    /\b(Alice|Alva|Amelie|Amira|Anna|Carmit|Damayanti|Daria|Ellen|Grandma|Ioana|Joana|Kanya|Karen|Kathy|Kyoko|Lana|Laura|Lekha|Lesya|Linh|Luciana|Mariska|Meijia|Melina|Milena|Moira|Monica|Montserrat|Nora|Paulina|Princess|Samantha|Sandy|Sara|Satu|Shelley|Tessa|Tina|Tingting|Yelda|Yuna|Zosia|Zuzana)\b/i
+  if (voice.match(femaleVoices)) {
+    return Gender.Female
+  }
+
+  // Additional generic gender detection for other voices
+  if (voice.match(/\b(man|boy|guy|sir|mr\.?|he|him)\b/i)) {
+    return Gender.Male
+  }
+
+  if (voice.match(/\b(woman|girl|lady|ms\.?|mrs\.?|miss|she|her)\b/i)) {
+    return Gender.Female
+  }
+
+  // Neutral or non-human voices: Bahh, Bells, Flo, Sinji, Trinoids
   return Gender.Unknown
 }
 
