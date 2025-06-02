@@ -64,9 +64,14 @@ update main msg model =
         Handle event ->
             case Event.destructure event of
                 ( Nothing, _, ( "init", settings ) ) ->
-                    settings
-                        |> load { model | initialized = True }
+                    let
+                        newSettings =
+                            settings
+                                |> load { model | initialized = True }
+                    in
+                    newSettings
                         |> no_log Nothing
+                        |> Return.batchEvent (Service.TTS.preferBrowser newSettings.tts.preferBrowser)
 
                 _ ->
                     case event.service of
