@@ -10,7 +10,7 @@ enum Gender {
   Unknown,
 }
 
-var useBrowserTTS = false
+var useBrowserTTS: null | boolean = null
 var browserVoices = {}
 
 var firstSpeak = true
@@ -532,7 +532,7 @@ function sendEnabledTTS(system: 'responsiveVoiceTTS' | 'browserTTS') {
 
 export function inject(key: string) {
   if (typeof key === 'string') {
-    useBrowserTTS = false
+    useBrowserTTS = useBrowserTTS === null ? false : useBrowserTTS
 
     setTimeout(function () {
       const script = document.createElement('script')
