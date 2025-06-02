@@ -278,7 +278,7 @@ update main msg model =
                     not tts.preferBrowser
             in
             { model | tts = { tts | preferBrowser = newPreference } }
-                |> Return.val
+                |> log Nothing
                 |> Return.batchEvent (Service.TTS.preferBrowser newPreference)
 
         Toggle TranslateWithGoogle ->

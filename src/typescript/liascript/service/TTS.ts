@@ -96,7 +96,7 @@ export const Service = {
         break
       }
 
-      case 'browserTTS': {
+      case 'preferBrowserTTS': {
         useBrowserTTS = event.message.param ? true : false
         break
       }
