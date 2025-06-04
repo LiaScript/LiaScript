@@ -28,6 +28,7 @@ view session settings model =
             , screen = session.screen
             , settings = settings
             , logo = Const.icon
+            , progress = "0px"
             , buttons =
                 [ ( \_ _ _ -> [], "ignore" )
                 , ( Settings.menuSettings session.screen.width, "settings" )
