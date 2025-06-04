@@ -147,7 +147,8 @@ viewSlide modalIsActive screen model =
     case get_active_section model of
         Just section ->
             [ Html.div (deactivate modalIsActive [ Attr.class "lia-slide" ])
-                [ slideTopBar
+                [ viewProgress model section.effect_model
+                , slideTopBar
                     model.langCode
                     model.translation
                     screen
@@ -200,6 +201,38 @@ viewSlide modalIsActive screen model =
                 , Html.text "Ups, something went wrong"
                 ]
             ]
+
+
+viewProgress : Model -> Effect.Model SubSection -> Html Msg
+viewProgress model effect_model =
+    let
+        toPercent val array =
+            (toFloat val * 100.0) / toFloat (Array.length array)
+
+        percent =
+            (\x -> String.fromFloat x ++ "%") <|
+                case model.settings.mode of
+                    Textbook ->
+                        toPercent
+                            (model.section_active + 1)
+                            model.sections
+
+                    _ ->
+                        let
+                            onePercent =
+                                (toPercent 1 model.sections / toFloat (effect_model.effects + 1)) * toFloat (effect_model.visible + 1)
+                        in
+                        onePercent
+                            + toPercent
+                                model.section_active
+                                model.sections
+    in
+    Html.div
+        [ Attr.style "width" percent
+        , Attr.class "lia-progress"
+        , A11y_Aria.hidden True
+        ]
+        []
 
 
 viewPanes : Screen -> Model -> Html Msg
