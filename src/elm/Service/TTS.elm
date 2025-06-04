@@ -71,7 +71,7 @@ playback { voice, lang, text } =
 -}
 preferBrowser : Bool -> Event
 preferBrowser =
-    JE.bool >> event "browserTTS"
+    JE.bool >> event "preferBrowserTTS"
 
 
 decode : Event -> Msg
