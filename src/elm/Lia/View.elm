@@ -155,6 +155,7 @@ viewSlide modalIsActive screen model =
                     model.repositoryUrl
                     model.settings
                     (Definition.merge model.definition section.definition)
+                    (viewProgress model section.effect_model)
                     model.sync
                 , viewPanes screen model
                 , slideBottom
@@ -196,10 +197,37 @@ viewSlide modalIsActive screen model =
                     model.repositoryUrl
                     model.settings
                     model.definition
+                    "0px"
                     model.sync
                 , Html.text "Ups, something went wrong"
                 ]
             ]
+
+
+viewProgress : Model -> Effect.Model SubSection -> String
+viewProgress model effect_model =
+    let
+        toPercent val array =
+            (toFloat val * 100.0) / toFloat (Array.length array)
+
+        percent =
+            case model.settings.mode of
+                Textbook ->
+                    toPercent
+                        (model.section_active + 1)
+                        model.sections
+
+                _ ->
+                    let
+                        onePercent =
+                            (toPercent 1 model.sections / toFloat (effect_model.effects + 1)) * toFloat (effect_model.visible + 1)
+                    in
+                    onePercent
+                        + toPercent
+                            model.section_active
+                            model.sections
+    in
+    String.fromFloat percent ++ "%"
 
 
 viewPanes : Screen -> Model -> Html Msg
@@ -485,8 +513,8 @@ navButton title id class msg =
 6.  `state`: fragments, if animations are active, not visible in textbook mode
 
 -}
-slideTopBar : String -> Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> Sync_.Settings -> Html Msg
-slideTopBar languageCode lang screen url repositoryURL settings def sync =
+slideTopBar : String -> Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> String -> Sync_.Settings -> Html Msg
+slideTopBar languageCode lang screen url repositoryURL settings def progress sync =
     Settings.header
         { online = Sync_.isConnected sync.state
         , lang = lang
@@ -510,6 +538,7 @@ slideTopBar languageCode lang screen url repositoryURL settings def sync =
                   , ( Settings.menuInformation repositoryURL def, "info" )
                   ]
                 ]
+        , progress = progress
         , active = True
         }
         |> Html.map UpdateSettings
