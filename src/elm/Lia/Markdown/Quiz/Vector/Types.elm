@@ -38,9 +38,19 @@ comp : Quiz -> State -> Bool
 comp quiz state =
     case ( quiz.solution, state ) of
         ( SingleChoice list1, SingleChoice list2 ) ->
-            List.map2 (\l1 l2 -> l1 && l2) list1 list2
-                |> List.any identity
+            if List.any identity list1 then
+                -- If the solution is not empty, check if one the selected option matches
+                list2
+                    |> List.map2 (\l1 l2 -> l1 && l2) list1
+                    |> List.any identity
 
+            else
+                -- If the solution is empty, we check if all options are unselected
+                list2
+                    |> List.all identity
+                    |> not
+
+        -- If the solution is empty, we check if all options are unselected
         ( MultipleChoice list1, MultipleChoice list2 ) ->
             list1 == list2
 

@@ -47,18 +47,25 @@ toggle id state =
 
 toggleSingle : Int -> List Bool -> List Bool
 toggleSingle id =
-    List.indexedMap (\i _ -> i == id)
+    List.indexedMap
+        (\i value ->
+            if i == id then
+                not value
+
+            else
+                False
+        )
 
 
 toggleMultiple : Int -> List Bool -> List Bool
 toggleMultiple id =
     List.indexedMap
-        (\i b ->
+        (\i value ->
             if i == id then
-                not b
+                not value
 
             else
-                b
+                value
         )
 
 
