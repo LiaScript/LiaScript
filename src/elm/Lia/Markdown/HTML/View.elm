@@ -2,6 +2,7 @@ module Lia.Markdown.HTML.View exposing (view)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
+import Html.Keyed
 import Json.Encode as JE
 import Lia.Markdown.HTML.Attributes exposing (Parameters, toAttribute)
 import Lia.Markdown.HTML.Types exposing (Node(..))
@@ -32,18 +33,23 @@ view containerX fn attr obj =
                 [ Html.text body ]
 
         SvgNode attrs body foreignObjects ->
-            Svg.node "svg"
-                ((body
-                    |> JE.string
-                    |> Attr.property "innerHTML"
-                 )
-                    :: toAttribute attrs
-                )
-                (foreignObjects
-                    |> List.map
-                        (\( foreignAttributes, foreignObject ) ->
-                            foreignObject
-                                |> List.map fn
-                                |> Svg.foreignObject (toAttribute foreignAttributes)
+            Html.Keyed.node "div"
+                []
+                [ ( body
+                  , Svg.svg
+                        ((body
+                            |> JE.string
+                            |> Attr.property "innerHTML"
+                         )
+                            :: toAttribute attrs
                         )
-                )
+                        (foreignObjects
+                            |> List.map
+                                (\( foreignAttributes, foreignObject ) ->
+                                    foreignObject
+                                        |> List.map fn
+                                        |> Svg.foreignObject (toAttribute foreignAttributes)
+                                )
+                        )
+                  )
+                ]

@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.2] - 04/06/2025
+
+- feat: Add progress slider
+- improve: voice gender detection for IOS
+- improve: error messages for loading failures
+- improve: loading from gitlab, codeberg, and other git services now works without a proxy
+- fixes: on service workers and caching
+
 ## [0.17.1] - 19/05/2025
 
 - fix: Support for `foreignObject` in SVG now scales correctly.

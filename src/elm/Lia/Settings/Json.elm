@@ -21,7 +21,7 @@ fromModel model =
         , ( "sound", JE.bool model.sound )
         , ( "lang", JE.string model.lang )
         , ( "tooltips", JE.bool model.tooltips )
-        , ( "PreferBrowserTTS", JE.bool model.tts.preferBrowser )
+        , ( "preferBrowserTTS", JE.bool model.tts.preferBrowser )
         , ( "hideVideoComments", JE.bool model.hideVideoComments )
         , ( "audio"
           , JE.object
@@ -101,7 +101,7 @@ toModel model =
             |> JDP.required "sound" JD.bool
             |> JDP.required "lang" JD.string
             |> JDP.optional "tooltips" JD.bool False
-            |> JDP.optional "PreferBrowserTTS" JD.bool True
+            |> JDP.optional "preferBrowserTTS" JD.bool True
             |> JDP.optional "hideVideoComments" JD.bool False
             |> JDP.optional "audio"
                 (JD.succeed

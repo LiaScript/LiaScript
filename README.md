@@ -24,6 +24,12 @@ Educational Resources (OER). Courses are simple text-files, that can be hosted
 and created freely by everyone similar to Open-Source project. This projects
 contains the just-in-time compiler that runs directly within your browser.
 
+
+
+https://github.com/user-attachments/assets/7cab2d61-5858-4b62-87bf-0598e44af2e7
+
+
+
 **Website:** https://LiaScript.github.io
 
 **Extension:**

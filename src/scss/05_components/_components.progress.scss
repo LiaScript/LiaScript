@@ -1,0 +1,8 @@
+.lia-progress {
+  position: absolute;
+  height: 0.1rem;
+  background: rgb(var(--color-highlight));
+  overflow: hidden;
+  transition: 0.4s linear;
+  bottom: 0px;
+}
