@@ -36,7 +36,6 @@ workbox.routing.registerRoute(
 )
 
 //workbox.routing.registerRoute(/\/*/, new workbox.strategies.NetworkFirst())
-workbox.routing.registerRoute(/.*/, new workbox.strategies.NetworkFirst())
 
 workbox.routing.registerRoute(
   /https:\/\/code\.responsivevoice\.org/,
@@ -47,5 +46,11 @@ workbox.routing.registerRoute(
   'https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-sw.js',
   new workbox.strategies.CacheFirst()
 )
+
+// Add error handling for fetch operations
+workbox.routing.setCatchHandler(({ event }) => {
+  console.error(`Failed to handle fetch: ${event.request.url}`)
+  return Response.error()
+})
 
 workbox.precaching.precacheAndRoute(self.__WB_MANIFEST)

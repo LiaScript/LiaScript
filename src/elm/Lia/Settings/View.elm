@@ -47,6 +47,7 @@ import Lia.Utils
         , deactivate
         , icon
         , noTranslate
+        , percentage
         )
 import Library.Group as Group
 import QRCode
@@ -1116,10 +1117,11 @@ header :
     , screen : Screen
     , settings : Settings
     , logo : String
+    , progress : String
     , buttons : List ( Lang -> Bool -> Settings -> List (Html Msg), String )
     }
     -> Html Msg
-header { online, active, lang, screen, settings, logo, buttons } =
+header { online, active, lang, screen, settings, logo, progress, buttons } =
     let
         tabbable =
             screen.width >= Const.globalBreakpoints.md || settings.support_menu
@@ -1183,6 +1185,7 @@ header { online, active, lang, screen, settings, logo, buttons } =
                 ]
             ]
         ]
+    , Html.div [ Attr.class "lia-progress", Attr.style "width" progress ] []
     ]
         |> Html.header
             (deactivate (not active)
