@@ -11,6 +11,7 @@ import Lia.Parser.UrlPattern.DropBox as DropBox
 import Lia.Parser.UrlPattern.Generic exposing (root)
 import Lia.Parser.UrlPattern.GitHub as GitHub
 import Lia.Parser.UrlPattern.GitLab as GitLab
+import Lia.Parser.UrlPattern.NextCloud as NextCloud
 import Lia.Parser.UrlPattern.OneDrive as OneDrive
 import Regex
 
@@ -57,6 +58,9 @@ link url =
                 -- Generic GitLab
                 , { by = GitLab.byGeneric
                   , pattern = GitLab.patternGeneric
+                  }
+                , { by = NextCloud.byGeneric
+                  , pattern = NextCloud.patternGeneric
                   }
                 ]
             |> Tuple.second
