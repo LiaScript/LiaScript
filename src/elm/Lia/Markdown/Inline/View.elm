@@ -1,6 +1,7 @@
 module Lia.Markdown.Inline.View exposing
     ( audio
     , highlightPartialSolution
+    , onError
     , reduce
     , toScript
     , view
