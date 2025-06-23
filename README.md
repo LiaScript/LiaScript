@@ -16,233 +16,132 @@ comment:  Main LiaScript Parser project, written in elm.
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/liascript/liascript)
 ![GitHub repo size](https://img.shields.io/github/repo-size/liascript/liascript)
 
-# LiaScript
+# LiaScript📝🚀
 
-[LiaScript](https://LiaScript.github.io) is an extension to Markdown to support
-the creation of free and open online courses, interactive books and thus, Open
-Educational Resources (OER). Courses are simple text-files, that can be hosted
-and created freely by everyone similar to Open-Source project. This projects
-contains the just-in-time compiler that runs directly within your browser.
+**Create fully interactive, offline-capable online courses using Markdown – perfect for educators, NGOs, and developers.**
 
-**Website:** https://LiaScript.github.io
+[![Try Live](https://img.shields.io/badge/Try%20Live-Demo%20in%20Browser-brightgreen)](https://liascript.github.io/LiveEditor/?/show/file/https://raw.githubusercontent.com/LiaScript/Hello-LiaScript/refs/heads/main/README.md)
+[![License: BSD3](https://img.shields.io/badge/license-BSD3-blue.svg)](LICENSE)
+[![Made with Markdown](https://img.shields.io/badge/Made%20with-Markdown-blueviolet)](https://github.com/LiaScript)
+[![GitHub issues](https://img.shields.io/github/issues/LiaScript/LiaScript)](https://github.com/LiaScript/LiaScript/issues)
+[![Twitter Follow](https://img.shields.io/twitter/follow/LiaScript)](https://twitter.com/LiaScript)
 
-**Extension:**
 
-- Multimedia
-- Quizzes
-- Text2Speech
-- Animations
-- Surveys
-- Interactive Tables
-- ASCII-art
-- Online Programming
-- Integration of JavaScript
-- Mixing HTML with Markdown
-- Extendability due to Macros
-- Internal event system
-- Literal programming
-- ...
+## 🚀 What is LiaScript?
 
-Furthermore, this project is a
-[Progressive Web App (PWA)](https://en.wikipedia.org/wiki/Progressive_web_application)
-, which means, if you open your LiaScript document at the project site at
-https://LiaScript.github.io/course/ , the document gets stored on your Browser
-like in your personal library. The Website can be installed locally and all
-states are also stored within your system locally. Thus, you have total access
-to your courses even if you are offline. And sharing a course is simply, sharing
-the link to the README.md file.
+**LiaScript** is an open-source interpreter that turns static Markdown files into fully interactive learning experiences – rendered directly in the browser, even offline. It’s built for:
 
-## Docs & Impressions
+- 🎓 **Educators**: Craft structured lessons with quizzes, animations, TTS, and live code.
+- 🌍 **NGOs**: Distribute multilingual, low-bandwidth-friendly content, globally and for free.
+- 💻 **Developers**: Document APIs or teach programming with executable code and narration.
 
-To get an impression of the [LiaScript](https://LiaScript.github.io)
-capabilities see the docs at
+https://github.com/user-attachments/assets/7cab2d61-5858-4b62-87bf-0598e44af2e7
 
-- GitHub: https://github.com/LiaScript/docs
-- LiaScript: https://LiaScript.github.io/course/?https://github.com/LiaScript/docs
 
-or checkout the videos at:
+## ✨ Features
 
-- Channel: https://www.youtube.com/channel/UCyiTe2GkW_u05HSdvUblGYg
-- Elm-Europe 2019: https://www.youtube.com/watch?v=w_CRABsJNKA&list=PL-cYi7I913S_oRLJEpsVbSTq_OOMSXlPD&index=2
+- ✅ **Plain Markdown-compatible** with educational extensions
+- ❓ **Quizzes, cloze tests, and surveys**
+- 🗣️ **Text-to-Speech (TTS)** in multiple languages
+- 💻 **Live Code execution** (JavaScript, Python via Pyodide, MicroPython, etc.)
+- 📊 **ASCII diagrams, charts, and tables**
+- 📲 **PWA support** – works completely offline
+- 📤 **Export to PDF, SCORM, IMS**
+- 🔌 **Plugin system and macros**
+- 👥 **Peer-to-Peer mode** for offline-first collaboration
+- much more ...
 
-## Related Projects
+## 🧪 Get Started in 60 Seconds
 
-**Editor:** There are currently two plugins available for the GitHub-Editor
-[Atom](https://atom.io), that should help to ease the writing process of
-LiaScript courses.
+1. Create a Markdown file:
 
-- [liascript-preview](https://github.com/andre-dietrich/liascript-preview): Is a tiny
-  previewer that, if it was toggled, updates the view on your course each time
-  you save your document.
+   ```markdown
+   # Hello LiaScript
 
-- [liascript-snippets](https://github.com/andre-dietrich/liascript-snippets): If you
-  start typing "lia" in your document you switch on a fuzzy search, that
-  contains a lot of LiaScript help, examples, and snippets.
+   {{|>}}
+   Welcome to this interactive course.
 
-Additionally it is also possible to use [VS-Code](https://code.visualstudio.com/Download)
-as an editor for creating LiaScript online courses. The packages work similar to the
-upper ones, but to enable the preview the Dev-Server is used for the previews in
-[VS-Code](https://code.visualstudio.com/Download):
+   What is 2 + 2?
 
-- [liascript-preview](https://marketplace.visualstudio.com/items?itemName=LiaScript.liascript-preview)
-- [liascript-snippets](https://marketplace.visualstudio.com/items?itemName=LiaScript.liascript-snippets)
-- [liascript-preview-web](https://marketplace.visualstudio.com/items?itemName=LiaScript.liascript-preview-web)
+   - [( )] 3
+   - [(X)] 4
+   - [( )] 5
+   ```
 
----
+2. Host it (e.g., on GitHub)
 
-**LiaScript-DevServer:** If you your another editor you can also use this
-project to run your own LiaScript server that monitors your files and performs
-an update of your preview, whenever you save your files...
+   📦 Example: https://github.com/yourname/my-course/README.md
 
-- Project-Sources:
-  https://github.com/LiaScript/LiaScript-DevServer/
+3. Open it in your browser:
 
-- or install directly from
-  [npmjs.com](https://www.npmjs.com/package/@liascript/devserver)
-  via:
+   `https://liascript.github.io/course/?https://github.com/yourname/my-course/README.md`
 
-  `npm install -g @liascript/devserver`
+### Alternatively
+
+1. Open the [LiveEditor](https://liascript.github.io/LiveEditor/?/show/code/H4sIAAAAAAAAA1NW8EjNyclX8MlMDE4uyiwo4eKqrq6xq63lCk/NSc7PTVUoyVcoycgsVsjMK0ktSkwuySxLVUjOLy0qTtXj4grPSCxRAEoaKWgrGNlzcekqRGsoaMYqGINZEUCWCVzMFADtbaoFbAAAAA==)
+
+2. Change the example and click on parsing
+
+3. Export it to GitHub gist, Nostr, or share it directly as a data-URI (only within the URL).
+
+## 📚 Resources & Showcase
+
+| Resource                                                                                            | Description                                             |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| [Blog](https://LiaScript.github.io)                                                                 | News, features, tutorials, examples and more            |
+| [LiveEditor](https://liascript.github.io/LiveEditor/examples.html)                                  | Online & browser only editor for LiaScript              |
+| [Docs](https://liascript.github.io/course/?https://github.com/LiaScript/docs)                       | Full documentation, syntax, tutorials                   |
+| [YouTube Channel](https://www.youtube.com/@liascript4180)                                           | Video guides & examples                                 |
+| [Exporter-CLI](https://github.com/LiaScript/LiaScript-Exporter)                                     | PDF/SCORM/IMS/WEP/Project exporter                      |
+| [Markdownify JSON -> LiaScript](https://github.com/LiaScript/markdownify)                           | AI-compatible JSON course generator                     |
+| [VSCode Preview Plugin](https://liascript.github.io/blog/install-visual-studio-code-with-liascript) | Live Preview courses in VSCode                          |
+| [VSCode Web-Preview Plugin](https://liascript.github.io/vscode-web)                                 | Live Preview courses in VSCode-Web (https://github.dev) |
+| [Atom Preview Plugin](https://liascript.github.io/blog/install-atom-with-liascript)                 | Live Preview courses in Atom                            |
+| [Development Server](https://liascript.github.io/development-server)                                | Lvve Preview courses with any editor                    |
 
 ---
 
-**CodiMD -> LiaMD:** At the
-[#SemesterHack](https://hochschulforumdigitalisierung.de/de/online-hackathon)
-we updated the free and open online editor for Markdown (CodiMD) to work with
-LiaScript. This can now be used to setup and host your own LiaScript online
-editor, and it runs also in docker.
+## 👩‍💻 Join the Community
 
-- Project-Sources:
-  https://github.com/liascript/codimd
+### 💬 Engage
 
-- Result-presentation of the hackathon:
-  https://semesterhack.incom.org/project/187
+* Ask questions in [GitHub Discussions](https://github.com/LiaScript/LiaScript/discussions)
+* See what others are building in [LiaScript Courses](https://github.com/topics/liascript-course)
+* Create your own extensions and share them [LiaScript Templates](https://github.com/topics/liascript-template)
+* Found a bug or have an idea? → [Open an issue](https://github.com/LiaScript/LiaScript/issues)
+* Extend the internationalization: [Create or correct a Translation](https://github.com/liaScript/lia-localization/locale)
+
+## 🌍 For NGOs & OER Projects
+
+We welcome collaborations with:
+
+* 📚 Open Education Initiatives
+* 🌱 Non-profit training programs
+* 🏫 Teachers & universities worldwide
+
+> Let’s build a global library of interactive knowledge.
+
+## ⚙️ Dev Tools & Automation
+
+* Use our [Exporter-CLI](https://liascript.github.io/exporter/) to export courses to PDF/SCORM/IMS/Index/Web
+* Automate deployment with GitHub Actions [(Examples)](https://liascript.github.io/categories/automation)
+* Convert AI-generated JSON to Markdown using [Markdownify](https://github.com/LiaScript/markdownify)
+
+## 📜 License
+
+Licensed under the BSD3 License – 100% free and open.
+
+## 📣 Stay in Touch
+
+
+* ✉️ Newsletter: [Typeform](https://liascript.github.io/newsletter)
+* 💬 Twitter: [@LiaScript](https://twitter.com/LiaScript)
+* 📫 Email: [LiaScript@web.de](mailto:liascript@web.de)
 
 ---
 
-**LiaScript-Exporter:** Currently a command-line tool to export
-LiaScript-courses to other formats. At the moment SCORM1.2 and SCORM2004 are
-supported, which allow to upload a course packed as zip, into nearly every
-commonly used Learning Management System (LMS). A list of supported LMS is
-contained within the project description. It has been tested with
-[Moodle](https://moodle.org) and [OPAL](https://bildungsportal.sachsen.de/opal).
-Additionally it is possible to export courses to the IMS-Cartridge format, PDF,
-standalone web-projects and Android APKs.
+*“Markdown is just text – LiaScript turns it into learning.”*
 
-GitHub: https://github.com/LiaScript/LiaScript-Exporter/
-
----
-
-**Localization:** The project internationalization files are contained at
-
-https://github.com/liaScript/lia-localization/locale
-
-If you want to contribute, add a new translation file ...
-
-## Examples
-
-**Templates:** Since courses can make use of JavaScript, HTML, CSS, ETC, and
-encapsulate functionality within Macros, these Macros can be imported by other
-courses. A set of importable documents is hosted at
-[GitHub](https://github.com). Every document is a self-contained course
-describing the usage of Macro and their implementation.
-
-GitHub: https://github.com/topics/liascript-template
-
-**Library:** At the moment there is a collection of some open tutorials and
-complete ports of some Wikibooks (about C Programming, Lua, etc.) that are now
-interactive.
-
-GitHub: https://github.com/topics/liascript-course
-
-**Further Examples:**
-
-- https://github.com/andre-dietrich/e-Learning-2019
-- https://github.com/andre-dietrich/BerLearn-Talk-2019
-- https://github.com/andre-dietrich/Tutorial_Regelungstechnik
-- https://github.com/andre-dietrich/TensorFlowJS_tutorial
-- https://github.com/andre-dietrich/elmeurope-2019
-- https://github.com/SebastianZug/CsharpCourse
-- https://github.com/SebastianZug/CCourse
-- https://github.com/SebastianZug/CodingEventFreiberg
-- https://github.com/SebastianZug/WillkommenAufLiaScript
-- https://github.com/SebastianZug/Lia_Gatter
-
-## Contribute
-
-Start writing online courses, translate your PowerPoint presentations, Word
-documents, LMS courses, etc. into LiaScript Markdown and host them on
-[GitHub](https://github.com), but [Dropbox](https://www.dropbox.com) is also
-okay. Make your content and notes accessible and searchable on GitHub, so that
-it is not lost over time.
-
-If you know some nice JS libraries or services, create a template course, that
-can be imported into other courses, to make them even fancier. You can host them
-in your own GitHub repository.
-
-LiaScript has a set of connectors to store and retrieve data from different
-"Backends". At the moment there are three versions, a basic connector, a pwa
-connector that makes use of IndexedDB to store data, and a SCORM1.2 connector.
-It would be great to support a wider range of systems and LMS formats (e.g.
-AICC, xAPI, cMi5).
-
-It exists an an [editor](https://github.com/liaScript/LiaScript/tree/editor)
-branch, that is currently used to connect to Atom via the
-[liascript-preview](https://github.com/andre-dietrich/liascript-preview) Plugin.
-It would be great, to support also other editors in the future.
-
-Add some more localization files to: https://github.com/liaScript/lia-localization
-
-I could not compile the project so far, that it runs on Internet explorer and
-other older Browsers, that are still in use. Is there is an expert on Babel and
-Parcel out there, who could help?
-
-## Preview
-
-If you want to add a preview-link for the course to your site, simply add the
-following script to the head of your website and place the custom webcomponent
-`preview-lia` anyone in your document, with `src` pointing to your LiaScript
-course.
-
-```html
-<html>
-  <head>
-    ...
-    <!-- add preview-lia tag support to display all course related information -->
-    <script
-      type="text/javascript"
-      src="https://liascript.github.io/course/preview-lia.js"
-    ></script>
-    ...
-  </head>
-  <body>
-    ...
-    <preview-lia
-      src="https://raw.githubusercontent.com/liaScript/docs/master/README.md"
-    ></preview-lia>
-    ...
-  </body>
-</html>
-```
-
-## Badges
-
-Simply replace `URL` at the end of the snippet below with your desired GitHub
-repository (and the main README.md of your master-branch will be used) or
-directly point to any Markdown-file anywhere within the web.
-
-**Badges:**
-
-- course:
-
-  [![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/course.svg)](https://LiaScript.github.io/course/?https://github.com/LiaScript/docs)
-
-  `[![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/course.svg)](https://LiaScript.github.io/course/?URL)`
-
-- learn more:
-
-  [![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/learn_more.svg)](https://LiaScript.github.io/course/?https://raw.githubusercontent.com/LiaScript/docs/master/README.md)
-
-  `[![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/learn_more.svg)](https://LiaScript.github.io/course/?URL)`
 
 ## Build
 
@@ -291,10 +190,50 @@ This will apply the following four patches:
   security, by restricting the access. This way information about user states,
   visited courses, etc. cannot be leaked or spied by other JavaScript modules.
 
-## Contact
+## Preview
 
-Author: André Dietrich
+If you want to add a preview-link for the course to your site, simply add the
+following script to the head of your website and place the custom webcomponent
+`preview-lia` anyone in your document, with `src` pointing to your LiaScript
+course.
 
-eMail: LiaScript@web.de
+```html
+<html>
+  <head>
+    ...
+    <!-- add preview-lia tag support to display all course related information -->
+    <script
+      type="text/javascript"
+      src="https://liascript.github.io/course/preview-lia.js"
+    ></script>
+    ...
+  </head>
+  <body>
+    ...
+    <preview-lia
+      src="https://raw.githubusercontent.com/liaScript/docs/master/README.md"
+    ></preview-lia>
+    ...
+  </body>
+</html>
+```
 
-Website: https://LiaScript.github.io
+## Badges
+
+Simply replace `URL` at the end of the snippet below with your desired GitHub
+repository (and the main README.md of your master-branch will be used) or
+directly point to any Markdown-file anywhere within the web.
+
+**Badges:**
+
+- course:
+
+  [![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/course.svg)](https://LiaScript.github.io/course/?https://github.com/LiaScript/docs)
+
+  `[![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/course.svg)](https://LiaScript.github.io/course/?URL)`
+
+- learn more:
+
+  [![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/learn_more.svg)](https://LiaScript.github.io/course/?https://raw.githubusercontent.com/LiaScript/docs/master/README.md)
+
+  `[![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/learn_more.svg)](https://LiaScript.github.io/course/?URL)`

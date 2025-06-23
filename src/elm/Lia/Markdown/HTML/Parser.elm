@@ -125,7 +125,7 @@ subParse defines parser code =
         runParser
             (regex "( |\t|\n)*" |> keep (many parser))
             defines
-            code
+            (code ++ "\n")
     of
         Ok ( state, stream, s ) ->
             ( state, s )

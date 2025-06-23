@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.3] - 23/06/2025
+
+- improve: Images in links are now not zoomable anymore
+- fix: Matrix quizzes with empty single-choice rows work now as expected
+- feat: add `nextcloud://` URL to translate self-hosted nextcloud links properly
+
 ## [0.17.2] - 04/06/2025
 
 - feat: Add progress slider
