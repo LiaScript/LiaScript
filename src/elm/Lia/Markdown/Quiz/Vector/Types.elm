@@ -46,9 +46,7 @@ comp quiz state =
 
             else
                 -- If the solution is empty, we check if all options are unselected
-                list2
-                    |> List.all identity
-                    |> not
+                List.all not list2
 
         -- If the solution is empty, we check if all options are unselected
         ( MultipleChoice list1, MultipleChoice list2 ) ->
