@@ -40,6 +40,7 @@ type alias Config sub =
     , translations : Maybe { old : String, new : String, name : Maybe String }
     , formulas : Dict String String
     , sync : Maybe Sync.Settings
+    , image_zoom : Bool
     }
 
 
@@ -91,6 +92,7 @@ init config =
     , formulas =
         config.formulas
             |> Maybe.withDefault Dict.empty
+    , image_zoom = True
     }
 
 

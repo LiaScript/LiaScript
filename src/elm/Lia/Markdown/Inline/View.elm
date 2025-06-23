@@ -533,7 +533,7 @@ img config attr alt_ url_ title_ width =
         (Attr.src url_
             :: Attr.attribute "loading" "lazy"
             :: onError "img" url_
-            :: (if List.isEmpty attr then
+            :: (if List.isEmpty attr && config.image_zoom then
                     [ Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") ]
 
                 else
@@ -578,10 +578,10 @@ reference : Config sub -> Reference -> Parameters -> Html (Msg sub)
 reference config ref attr =
     case ref of
         Link alt_ url_ title_ ->
-            view_url config alt_ url_ title_ attr
+            view_url { config | image_zoom = False } alt_ url_ title_ attr
 
         Mail alt_ url_ title_ ->
-            view_url config alt_ url_ title_ attr
+            view_url { config | image_zoom = False } alt_ url_ title_ attr
 
         Image alt_ url_ title_ ->
             let
