@@ -148,7 +148,7 @@ init { seed, hasShareApi, openTOC, isFullscreen, settings, backends, url, readme
                     { set
                         | table_of_contents = openTOC
                         , sync =
-                            if List.isEmpty backends.support then
+                            if List.isEmpty backends.support || not backends.enabled then
                                 Nothing
 
                             else
