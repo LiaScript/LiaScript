@@ -43,23 +43,21 @@ jobs:
           cd ..
           rm -rf elm-stuff .parcel-cache
 
-      - name: LiaScript - build
+      - name: LiaScript - build (PWA)
         run: |
           cd LiaScript
           make all2
-          rm dist/README.md
 
-      - name: Create ZIP artifact
+      - name: Create ZIP artifact (PWA)
         run: |
           zip -r pwa-build.zip LiaScript/dist/*
 
-      - name: LiaScript - build
+      - name: LiaScript - build (OPAL)
         run: |
           cd LiaScript
           npm run build:opal
-          rm dist/README.md
 
-      - name: Create ZIP artifact
+      - name: Create ZIP artifact (OPAL)
         run: |
           zip -r opal-build.zip LiaScript/dist/*
 
