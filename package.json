@@ -94,6 +94,7 @@
     "parcel-reporter-static-files-copy": "^1.5.3",
     "path-browserify": "^1.0.1",
     "pdfast": "^0.2.0",
+    "prettier": "^3.6.2",
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
     "sass": "^1.87.0",

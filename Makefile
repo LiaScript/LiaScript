@@ -11,6 +11,7 @@ help:
 	@echo "make lib                  - make the library"
 	@echo "make lib2                 - make the library with elm-optimize2"
 	@echo "make clean                - delete dist folder"
+	@echo "make prettier             - auto-format code using Prettier"
 	@echo "make ... KEY='adfia2'     - if you want to host this app by your own,"
 	@echo "                            you will have to get a responsivevoice-API key"
 	@echo "                            your key can be passed via the KEY parameter"
@@ -85,3 +86,6 @@ optimize:
 deoptimize:
 	sed -i "s/\.\.\/elm.js/elm\/Main\.elm/g" src/typescript/liascript/index.ts
 	rm elm.js
+
+prettier:
+	npx prettier --write .
