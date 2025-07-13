@@ -9,6 +9,7 @@ const defaultSettings: Lia.Settings = {
   font_size: 1,
   sound: true,
   lang: 'en',
+  dir: 'ltr',
 
   tooltips: false,
   preferBrowserTTS: true,
@@ -92,7 +93,8 @@ export const Settings = {
       | 'tooltip'
       | 'preferBrowserTTS'
       | 'hideVideoComments'
-      | 'audio',
+      | 'audio'
+      | 'dir',
     value: any
   ) {
     if (JSON.stringify(value) !== JSON.stringify(this.data[name])) {
@@ -190,5 +192,12 @@ export const Settings = {
   },
   get audio() {
     return this.data.audio
+  },
+
+  get dir(): 'ltr' | 'rtl' {
+    return this.data.dir
+  },
+  set dir(value: 'ltr' | 'rtl') {
+    this.setter('dir', value)
   },
 }

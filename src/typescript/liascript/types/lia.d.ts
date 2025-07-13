@@ -31,6 +31,7 @@ export type Settings = {
   font_size: number
   sound: boolean
   lang: Lang
+  dir: 'ltr' | 'rtl'
   tooltips: boolean
   preferBrowserTTS: boolean
   hideVideoComments: boolean
