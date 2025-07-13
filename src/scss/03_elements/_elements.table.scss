@@ -1,4 +1,4 @@
-@use "../00_settings/settings.global";
+@use '../00_settings/settings.global';
 
 .lia-table {
   border-collapse: separate;
@@ -9,6 +9,7 @@
   &-responsive {
     display: block;
     margin-bottom: 3rem;
+    margin-block-end: 3rem;
     max-height: 80vh;
     overflow: auto;
     width: 100%;
@@ -94,7 +95,9 @@
       .lia-table__data {
         &:first-child {
           border-left: settings.$global-border;
+          border-inline-start: settings.$global-border;
           border-right: settings.$global-border;
+          border-inline-end: settings.$global-border;
           left: 0;
           position: -webkit-sticky;
           position: sticky;
@@ -136,11 +139,14 @@
       .lia-table__data {
         &:first-child {
           border-right: settings.$global-border;
+          border-inline-end: settings.$global-border;
         }
 
         &:last-child {
           border-left: settings.$global-border;
+          border-inline-start: settings.$global-border;
           border-right: settings.$global-border;
+          border-inline-end: settings.$global-border;
           right: 0;
           position: -webkit-sticky;
           position: sticky;
@@ -212,39 +218,53 @@
   &__header {
     position: relative;
     border-top: settings.$global-border;
+    border-inline-start: settings.$global-border;
     border-left: settings.$global-border;
+    border-inline-start: settings.$global-border;
     border-bottom: settings.$global-border;
+    border-block-end: settings.$global-border;
     border-right: 0;
+    border-inline-end: 0;
     padding: 1.3rem 3.2rem 1.3rem 1.6rem;
 
     &:first-child {
       border-left: settings.$global-border;
+      border-inline-start: settings.$global-border;
       border-right: settings.$global-border;
+      border-inline-end: settings.$global-border;
     }
 
     &:nth-child(2) {
       border-left: 0;
+      border-inline-start: 0;
     }
 
     &:last-child {
       border-right: settings.$global-border;
+      border-inline-end: settings.$global-border;
     }
   }
 
   &__data {
     border-top: settings.$global-border;
+    border-block-start: settings.$global-border;
     border-left: settings.$global-border;
+    border-inline-start: settings.$global-border;
     border-bottom: 0;
+    border-block-end: 0;
     border-right: 0;
+    border-inline-end: 0;
     padding: 1rem 3.2rem 1rem 1.6rem;
 
     &:last-child {
       border-right: settings.$global-border;
+      border-inline-end: settings.$global-border;
     }
 
     .has-first-col-sticky {
       &:nth-child(2) {
         border-left: 0;
+        border-inline-start: 0;
       }
     }
   }
@@ -258,6 +278,7 @@
 
   &__sort {
     margin-left: auto;
+    margin-inline-start: auto;
     position: absolute;
     right: 2px;
     top: 50%;

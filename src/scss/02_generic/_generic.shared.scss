@@ -1,5 +1,5 @@
-@use "sass:map";
-@use "../00_settings/settings.global";
+@use 'sass:map';
+@use '../00_settings/settings.global';
 
 address,
 h1,
@@ -16,6 +16,7 @@ ol,
 ul,
 fieldset {
   margin-bottom: map.get(settings.$global-spacing, spacing-normal);
+  margin-block-end: map.get(settings.$global-spacing, spacing-normal);
 }
 
 :focus {

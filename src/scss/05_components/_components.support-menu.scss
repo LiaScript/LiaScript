@@ -1,13 +1,14 @@
-@use "sass:map";
-@use "../00_settings/settings.global";
-@use "../01_tools/tools.breakpoints";
-@use "../03_elements/elements.button";
-@use "../04_objects/object.canvas";
-@use "components.header";
+@use 'sass:map';
+@use '../00_settings/settings.global';
+@use '../01_tools/tools.breakpoints';
+@use '../03_elements/elements.button';
+@use '../04_objects/object.canvas';
+@use 'components.header';
 
 .lia-support-menu {
   background-color: rgb(var(--color-background));
   border-left: settings.$global-border;
+  border-inline-start: settings.$global-border;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -62,7 +63,10 @@
     visibility: visible;
     top: calc(
       (#{components.$header-height-mobile} / 2) +
-        (2 * #{map.get(settings.$global-spacing, spacing-small)} - (#{elements.$btn-height} / 4))
+        (
+          2 * #{map.get(settings.$global-spacing, spacing-small)} -
+            (#{elements.$btn-height} / 4)
+        )
     );
 
     @include tools.breakpoint('sm', 'max') {
@@ -119,6 +123,7 @@
 
     > .icon {
       margin-bottom: 1.8rem;
+      margin-block-end: 1.8rem;
     }
 
     > button {
@@ -149,6 +154,7 @@
 
       > .icon {
         margin-bottom: 0;
+        margin-block-end: 0;
       }
     }
   }
@@ -166,6 +172,11 @@
     right: 0;
     top: 0;
     width: max-content;
+
+    [dir='rtl'] & {
+      right: auto;
+      left: 0;
+    }
 
     @at-root html.lia-variant-dark & {
       background-color: rgb(var(--lia-grey-dark));

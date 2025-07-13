@@ -1,5 +1,5 @@
-@use "../00_settings/settings.global";
-@use "../01_tools/tools.breakpoints";
+@use '../00_settings/settings.global';
+@use '../01_tools/tools.breakpoints';
 
 /* --------------------------------------------------
    Layout Settings
@@ -82,6 +82,16 @@ $slide-margin-left-textbook: 19rem !default;
 
       .lia-header {
         left: #{$toc-width-desktop};
+
+        [dir='rtl'] & {
+          left: 0;
+          right: #{$toc-width-desktop};
+        }
+      }
+
+      [dir='rtl'] & {
+        left: auto;
+        right: $toc-width-desktop;
       }
     }
 
@@ -89,8 +99,18 @@ $slide-margin-left-textbook: 19rem !default;
       right: $support-width-desktop;
       width: calc(100% - #{$support-width-desktop});
 
+      [dir='rtl'] & {
+        right: auto;
+        left: $support-width-desktop;
+      }
+
       .lia-header {
         right: #{$support-width-desktop};
+
+        [dir='rtl'] & {
+          right: auto;
+          left: #{$support-width-desktop};
+        }
       }
     }
 
@@ -124,6 +144,11 @@ $slide-margin-left-textbook: 19rem !default;
     @include tools.breakpoint('lg') {
       .lia-header {
         right: $notes-width-desktop;
+
+        [dir='rtl'] & {
+          right: auto;
+          left: $notes-width-desktop;
+        }
       }
 
       .lia-slide {
@@ -138,6 +163,7 @@ $slide-margin-left-textbook: 19rem !default;
     .lia-slide__content {
       max-width: calc(71.1rem + #{$slide-margin-left-textbook} + 3rem);
       padding-left: 3rem !important;
+      padding-inline-start: 3rem !important;
 
       @include tools.breakpoint('sm') {
         margin: 1.25rem 0 2rem;
@@ -156,10 +182,12 @@ $slide-margin-left-textbook: 19rem !default;
     @include tools.breakpoint('md') {
       .lia-slide__content {
         padding-left: $slide-margin-left-textbook;
+        padding-inline-start: $slide-margin-left-textbook;
       }
 
       .lia-pagination {
         margin-bottom: 2rem;
+        margin-block-end: 2rem;
       }
     }
   }

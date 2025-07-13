@@ -1,13 +1,14 @@
-@use "sass:map";
-@use "../00_settings/settings.global";
-@use "../01_tools/tools.breakpoints";
-@use "../03_elements/elements.button";
-@use "../04_objects/object.canvas";
-@use "components.header";
+@use 'sass:map';
+@use '../00_settings/settings.global';
+@use '../01_tools/tools.breakpoints';
+@use '../03_elements/elements.button';
+@use '../04_objects/object.canvas';
+@use 'components.header';
 
 .lia-toc {
   background-color: rgb(var(--color-background));
   border-right: settings.$global-border;
+  border-inline-end: settings.$global-border;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -19,46 +20,74 @@
   width: object.$toc-width-mobile;
   z-index: 200;
 
+  [dir='rtl'] & {
+    left: auto;
+    right: 0;
+  }
+
   #lia-btn-toc {
     color: rgb(var(--color-highlight));
     font-size: 2rem;
     position: absolute;
     top: calc(
       (#{components.$header-height-desktop} / 2) +
-        (2 * #{map.get(settings.$global-spacing, spacing-small)} - (#{elements.$btn-height} / 4))
+        (
+          2 * #{map.get(settings.$global-spacing, spacing-small)} -
+            (#{elements.$btn-height} / 4)
+        )
     );
     right: 0;
     transform: translate(6.5rem, -50%);
     transition: settings.$global-transition;
 
-    @include tools.breakpoint("sm", "max") {
-      transform: translate(-3rem, -50%);
+    [dir='rtl'] & {
+      left: 0;
+      right: auto;
+      transform: translate(-6.5rem, -50%);
     }
 
-    @include tools.breakpoint("md", "max") {
+    @include tools.breakpoint('sm', 'max') {
+      transform: translate(-3rem, -50%);
+
+      [dir='rtl'] & {
+        transform: translate(3rem, -50%);
+      }
+    }
+
+    @include tools.breakpoint('md', 'max') {
       top: calc(
         (#{components.$header-height-mobile} / 2) +
           (
-            2 * #{map.get(settings.$global-spacing, spacing-small)} - (#{elements.$btn-height} / 4)
+            2 * #{map.get(settings.$global-spacing, spacing-small)} -
+              (#{elements.$btn-height} / 4)
           )
       );
     }
   }
 
-  @include tools.breakpoint("sm") {
+  @include tools.breakpoint('sm') {
     width: object.$toc-width-desktop;
   }
 
   &--closed {
     transform: translateX(-100%);
 
+    [dir='rtl'] & {
+      transform: translateX(100%);
+    }
+
     #lia-btn-toc {
       transform: translate(6.5rem, -50%);
+
+      [dir='rtl'] & {
+        transform: translate(-6.5rem, -50%);
+      }
     }
   }
 
-  @include tools.breakpoint("sm", "max") {
+  @include tools.breakpoint('sm', 'max') {
     padding-top: 6rem;
+    padding-block-start: 6rem;
   }
 
   &__search {
@@ -69,7 +98,9 @@
     input {
       background-color: rgba(var(--lia-grey-light), 0.1);
       padding-left: 3rem;
+      padding-inline-start: 3rem;
       padding-right: 3.75rem;
+      padding-inline-end: 3.75rem;
       transition: left 250ms ease-in-out;
     }
 
@@ -80,6 +111,11 @@
       transform-origin: center center;
       transform: translate(0, -50%);
       font-size: 2rem;
+
+      [dir='rtl'] & {
+        left: auto;
+        right: 0.5rem;
+      }
     }
 
     .lia-toc__clear-index {
@@ -96,6 +132,11 @@
       -ms-user-select: none;
       user-select: none;
       width: 3rem;
+
+      [dir='rtl'] & {
+        left: 0.5rem;
+        right: auto;
+      }
     }
   }
 
@@ -104,6 +145,7 @@
     flex-direction: column;
     overflow: auto;
     margin-bottom: auto;
+    margin-inline-end: auto;
 
     a {
       width: 100%;
@@ -117,12 +159,17 @@
 
         &:before {
           bottom: 0.5rem;
-          content: "";
+          content: '';
           position: absolute;
           left: 0;
           top: 0.5rem;
           width: 5px;
           background-color: rgb(var(--color-highlight));
+
+          [dir='rtl'] & {
+            left: auto;
+            right: 0;
+          }
         }
       }
 
@@ -136,10 +183,11 @@
           font-weight: 600;
           font-size: calc(1.7rem * var(--font-size-multiplier));
           padding-left: settings.$global-font-size + 3rem;
+          padding-inline-start: settings.$global-font-size + 3rem;
           position: relative;
 
           &:after {
-            content: "";
+            content: '';
             background-color: rgb(var(--lia-grey-light));
             display: inline-block;
             height: 1px;
@@ -152,18 +200,22 @@
 
         &3 {
           padding-left: 2 * settings.$global-font-size + 3rem;
+          padding-inline-start: 2 * settings.$global-font-size + 3rem;
         }
 
         &4 {
           padding-left: 3 * settings.$global-font-size + 3rem;
+          padding-inline-start: 3 * settings.$global-font-size + 3rem;
         }
 
         &5 {
           padding-left: 4 * settings.$global-font-size + 3rem;
+          padding-inline-start: 4 * settings.$global-font-size + 3rem;
         }
 
         &6 {
           padding-left: 5 * settings.$global-font-size + 3rem;
+          padding-inline-start: 5 * settings.$global-font-size + 3rem;
         }
       }
     }
@@ -171,6 +223,7 @@
 
   &__bottom {
     margin-top: 1rem;
+    margin-block-start: 1rem;
     padding: 1rem 0 0 3rem;
     position: relative;
 
@@ -179,7 +232,7 @@
     }
 
     &:after {
-      content: "";
+      content: '';
       background-color: rgb(var(--lia-grey-light));
       display: inline-block;
       height: 1px;
@@ -193,12 +246,12 @@
 
 /* Theming */
 
-html:not([class*="lia-theme-default"]) {
+html:not([class*='lia-theme-default']) {
   .lia-toc--visible {
     #lia-btn-toc {
       color: rgb(var(--lia-white));
 
-      @include tools.breakpoint("sm") {
+      @include tools.breakpoint('sm') {
         color: rgb(var(--color-highlight));
       }
     }

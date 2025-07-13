@@ -2,12 +2,15 @@
   &--unordered,
   &--ordered {
     margin-left: 2rem;
+    margin-inline-start: 2rem;
     padding-left: 2rem;
+    padding-inline-start: 2rem;
     position: relative;
 
     ul,
     ol {
       margin-left: 0;
+      margin-inline-start: 0;
     }
   }
 

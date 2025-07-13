@@ -1,6 +1,7 @@
 .lia-gallery {
   display: flex;
   margin-bottom: 2rem;
+  margin-block-end: 2rem;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
@@ -33,5 +34,6 @@
 
   > * {
     margin-right: 3.2rem;
+    margin-inline-end: 3.2rem;
   }
 }

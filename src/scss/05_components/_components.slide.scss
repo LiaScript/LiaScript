@@ -1,5 +1,5 @@
-@use "../01_tools/tools.breakpoints";
-@use "components.header";
+@use '../01_tools/tools.breakpoints';
+@use 'components.header';
 
 .lia-slide {
   display: flex;
@@ -29,12 +29,14 @@
 
   &__container {
     margin-top: calc(#{components.$header-height-mobile});
+    margin-block-start: calc(#{components.$header-height-mobile});
     height: 100%;
     overflow: auto;
     position: relative;
 
     @include tools.breakpoint('md') {
       margin-top: calc(#{components.$header-height-desktop});
+      margin-block-start: calc(#{components.$header-height-desktop});
     }
   }
 

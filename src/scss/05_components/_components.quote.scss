@@ -1,6 +1,6 @@
-@use "sass:color";
-@use "sass:map";
-@use "../01_tools/tools.color";
+@use 'sass:color';
+@use 'sass:map';
+@use '../01_tools/tools.color';
 
 .lia-quote {
   background-color: rgba(var(--color-highlight), 0.15);
@@ -12,11 +12,12 @@
 
   > *:last-child {
     margin-bottom: 0;
+    margin-block-end: 0;
   }
 
   &__text {
     color: rgb(var(--color-highlight-dark));
-    font-family: "LiaSourceSerifPro";
+    font-family: 'LiaSourceSerifPro';
     font-weight: 600;
     font-size: 1.6rem;
     text-align: center;
@@ -26,6 +27,7 @@
     display: block;
     font-style: normal;
     margin-top: 2rem;
+    margin-block-start: 2rem;
     text-align: center;
   }
 }
@@ -37,6 +39,7 @@
     $fg: tools.color-contrast($bg);
 
     border-left-color: $info;
+    border-inline-start-color: $info;
     background: $bg;
     color: $fg;
     box-shadow: 8px 7px 0px color.mix($fg, $bg, 20%);

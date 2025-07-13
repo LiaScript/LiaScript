@@ -10,11 +10,13 @@
 
     span {
       margin-right: auto;
+      margin-inline-end: auto;
     }
 
     .icon {
       font-size: 2rem;
       margin-left: 2rem;
+      margin-inline-start: 2rem;
     }
   }
 
@@ -32,10 +34,12 @@
 
     &:first-child {
       margin-top: 1rem;
+      margin-block-start: 1rem;
     }
 
     &:not(:last-child) {
       margin-bottom: 1rem;
+      margin-block-end: 1rem;
     }
 
     &:hover {
