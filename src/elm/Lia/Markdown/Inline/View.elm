@@ -6,6 +6,7 @@ module Lia.Markdown.Inline.View exposing
     , toScript
     , view
     , viewMedia
+    , viewQuizDrops
     , view_inf
     , viewer
     )
@@ -35,6 +36,7 @@ import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (blockKeydown, noTranslate)
+import List.Extra
 import QRCode
 
 
@@ -206,6 +208,17 @@ viewQuiz config ( length, id ) attr =
                     config.input.options
                         |> Array.get id
                         |> Maybe.withDefault []
+
+                action =
+                    if config.input.active then
+                        [ Attr.attribute "onClick" (config.input.on "toggle" id "true")
+                        , keyDownEvent (config.input.on "toggle" id "true")
+                        ]
+
+                    else
+                        [ Attr.disabled True
+                        , Attr.class "is-disabled"
+                        ]
             in
             Html.span
                 (attr
@@ -213,18 +226,16 @@ viewQuiz config ( length, id ) attr =
                     |> List.append
                         [ Attr.class "lia-dropdown"
                         , Attr.style "padding" "0 0.5rem"
-                        , if config.input.active then
-                            Attr.attribute "onclick" (config.input.on "toggle" id "true")
+                        , Attr.tabindex 0
+                        , Attr.style "vertical-align"
+                            (if open then
+                                "text-top"
 
-                          else
-                            Attr.disabled True
-                        , Attr.class <|
-                            if config.input.active then
-                                ""
-
-                            else
-                                "is-disabled"
+                             else
+                                "middle"
+                            )
                         ]
+                    |> List.append action
                     |> highlight
                 )
                 [ Html.span
@@ -263,8 +274,203 @@ viewQuiz config ( length, id ) attr =
                         ]
                 ]
 
+        Just (Drop _ _ [ i ]) ->
+            let
+                option =
+                    config.input.options
+                        |> Array.get id
+                        |> Maybe.andThen (List.Extra.getAt i)
+            in
+            Html.span
+                (List.append (toAttribute attr)
+                    [ Attr.style "padding" "1rem"
+                    , Attr.style "margin" "0.25rem"
+                    , Attr.style "position" "relative"
+                    , Attr.style "border" "3px dashed #ccc"
+                    , Attr.style "border-radius" "4px"
+                    , Attr.style "display" "inline-block"
+                    , Attr.style "vertical-align" "middle"
+                    ]
+                )
+                [ option
+                    |> Maybe.map
+                        (viewer config
+                            >> Html.span []
+                        )
+                    |> Maybe.withDefault (Html.text "Drop here")
+                ]
+
+        Just (Drop highlighted activated state) ->
+            let
+                ( option, uri ) =
+                    case state of
+                        [ i, j ] ->
+                            ( config.input.options
+                                |> Array.get i
+                                |> Maybe.andThen (List.Extra.getAt j)
+                            , [ i, j ]
+                                |> JE.list JE.int
+                                |> JE.encode 0
+                            )
+
+                        _ ->
+                            ( Nothing, "" )
+            in
+            Html.span
+                (List.append (toAttribute attr)
+                    [ Attr.style "padding" "1rem"
+                    , Attr.style "margin" "0.25rem"
+                    , Attr.style "position" "relative"
+                    , Attr.style "border"
+                        (if highlighted then
+                            "3px dashed #ccc"
+
+                         else
+                            "1px dashed #ccc"
+                        )
+                    , Attr.style "border-radius" "4px"
+                    , Attr.style "display" "inline-block"
+                    , Attr.style "vertical-align" "middle"
+                    , Attr.attribute "ondragover" (config.input.on "dragenter" id "true")
+                    , Attr.attribute "ondragleave" (config.input.on "dragenter" id "false")
+                    , Attr.tabindex 0
+                    , A11y_Role.button
+                    , Attr.attribute "onclick" (config.input.on "dragtarget" id "null")
+                    , keyDownEvent (config.input.on "dragtarget" id "null")
+                    ]
+                )
+                [ option
+                    |> Maybe.map
+                        (viewer config
+                            >> Html.span
+                                [ Attr.draggable "true"
+                                , Attr.style "cursor" "pointer"
+                                , config.input.on "dragend" id uri
+                                    |> Attr.attribute "ondragend"
+                                ]
+                        )
+                    |> Maybe.withDefault (Html.text "Drop here")
+                ]
+
         _ ->
             Html.text "todo"
+
+
+viewQuizDrops : Config sub -> List (Html (Msg sub))
+viewQuizDrops config =
+    let
+        occupied =
+            config.input.state
+                |> Array.toList
+                |> List.indexedMap
+                    (\i state ->
+                        case state of
+                            -- only one id, is shown, when the quiz was resolved
+                            Drop _ _ [ state_ ] ->
+                                Just [ i, state_ ]
+
+                            Drop _ _ [] ->
+                                Nothing
+
+                            Drop _ _ state_ ->
+                                Just state_
+
+                            _ ->
+                                Nothing
+                    )
+                |> List.filterMap identity
+    in
+    List.map2 Tuple.pair
+        (Array.toList config.input.state)
+        (Array.toList config.input.options)
+        |> List.indexedMap
+            (\id ( state, option ) ->
+                case state of
+                    Drop _ active _ ->
+                        option
+                            |> List.indexedMap
+                                (\i o ->
+                                    if List.member [ id, i ] occupied then
+                                        Html.text ""
+
+                                    else
+                                        viewer config o
+                                            |> Html.span
+                                                ([ Attr.style "border" "1px dashed green"
+                                                 , Attr.style "margin" "0.25rem"
+                                                 , Attr.style "padding" "1rem"
+                                                 , Attr.style "background-color" "#f9f9f9"
+                                                 , Attr.style "border-radius" "4px"
+                                                 , Attr.style "display" "inline-block"
+                                                 , A11y_Role.button
+                                                 , Attr.tabindex 0
+                                                 , Attr.attribute "aria-grabbed"
+                                                    (if active then
+                                                        "true"
+
+                                                     else
+                                                        "false"
+                                                    )
+                                                 ]
+                                                    |> CList.appendIf
+                                                        config.input.active
+                                                        [ Attr.style "cursor" "pointer"
+                                                        , Attr.draggable "true"
+                                                        , dragEvent config
+                                                            { msg = "dragend"
+                                                            , event = "ondragend"
+                                                            , id = id
+                                                            , i = i
+                                                            }
+                                                        , dragEvent config
+                                                            { msg = "dragstart"
+                                                            , event = "ondragstart"
+                                                            , id = id
+                                                            , i = i
+                                                            }
+                                                        , dragEvent config
+                                                            { msg = "dragsource"
+                                                            , event = "onclick"
+                                                            , id = id
+                                                            , i = i
+                                                            }
+                                                        , [ id, i ]
+                                                            |> JE.list JE.int
+                                                            |> JE.encode 0
+                                                            |> config.input.on "dragsource" id
+                                                            |> keyDownEvent
+                                                        ]
+                                                )
+                                )
+
+                    _ ->
+                        []
+            )
+        |> List.concat
+
+
+dragEvent :
+    Config sub
+    ->
+        { msg : String
+        , event : String
+        , id : Int
+        , i : Int
+        }
+    -> Attribute msg
+dragEvent config { msg, event, id, i } =
+    [ id, i ]
+        |> JE.list JE.int
+        |> JE.encode 0
+        |> config.input.on msg id
+        |> Attr.attribute event
+
+
+keyDownEvent : String -> Attribute msg
+keyDownEvent msg =
+    Attr.attribute
+        "onkeydown"
+        ("if(event.key===' '||event.key==='Enter')" ++ msg)
 
 
 highlightPartialSolution : List (Attribute msg) -> Maybe Bool -> List (Attribute msg)
@@ -897,4 +1103,6 @@ showOption config id1 id2 =
             [ Attr.class "lia-dropdown__option"
             , Attr.attribute "onclick" (config.input.on "choose" id1 (String.fromInt id2))
             , A11y_Role.listItem
+            , Attr.tabindex 0
+            , keyDownEvent (config.input.on "choose" id1 (String.fromInt id2))
             ]

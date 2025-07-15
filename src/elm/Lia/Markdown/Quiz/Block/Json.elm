@@ -19,6 +19,9 @@ encode quiz =
 
         Select _ _ ->
             "Select"
+
+        Drop _ _ _ ->
+            "Drop"
     , JE.object
         [ ( "options", JE.list Inline.encode quiz.options )
         , ( "solution", fromState quiz.solution )
@@ -38,6 +41,12 @@ fromState state =
 
             Select _ _ ->
                 [ ( "Select", JE.int -1 ) ]
+
+            Drop _ _ [ x ] ->
+                [ ( "Drop", JE.int x ) ]
+
+            Drop _ _ _ ->
+                [ ( "Drop", JE.int -1 ) ]
 
 
 toState : JD.Decoder State

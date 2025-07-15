@@ -16,12 +16,11 @@ import('../../typescript/connectors/SCORM1.2/index').then(function (Browser) {
       debug = true
     }
 
-    const app = new Lia.LiaScript(
-      new Browser.Connector(),
-      false, // allowSync
-      debug,
-      null,
-      window['liascript_course'] || null
-    )
+    const app = new Lia.LiaScript(new Browser.Connector(), {
+      allowSync: false,
+      debug: debug,
+      courseUrl: null,
+      script: window['liascript_course'] || null,
+    })
   }
 })

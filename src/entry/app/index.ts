@@ -16,10 +16,9 @@ import('../../typescript/connectors/Browser/index').then(function (Browser) {
       debug = true
     }
 
-    const app = new Lia.LiaScript(
-      new Browser.Connector(),
-      true, // allowSync
-      debug
-    )
+    const app = new Lia.LiaScript(new Browser.Connector(), {
+      allowSync: true,
+      debug,
+    })
   }
 })
