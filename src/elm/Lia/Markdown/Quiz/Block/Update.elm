@@ -14,6 +14,12 @@ type Msg sub
     | Choose Int
     | Input String
     | Script (Script.Msg sub)
+    | DropStart
+    | DropData Int
+    | DropEnter Bool
+    | DropTarget
+    | DropSource Int
+    | None
 
 
 update : Msg sub -> State -> Return State msg sub
@@ -35,6 +41,33 @@ update msg state =
             state
                 |> Return.val
                 |> Return.script sub
+
+        ( DropStart, Drop allowed _ value ) ->
+            Drop allowed True value
+                |> Return.val
+
+        ( DropData id, Drop highlight _ value ) ->
+            Return.val <|
+                if highlight then
+                    Drop False False [ id ]
+
+                else if not highlight && [ id ] == value then
+                    Drop False False []
+
+                else
+                    Drop highlight False value
+
+        ( DropEnter yes, Drop _ active value ) ->
+            Drop yes active value
+                |> Return.val
+
+        ( DropTarget, Drop highlight _ _ ) ->
+            Drop highlight False []
+                |> Return.val
+
+        ( DropSource id, Drop _ _ _ ) ->
+            Drop False False [ id ]
+                |> Return.val
 
         _ ->
             state

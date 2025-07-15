@@ -1,13 +1,23 @@
 module Lia.Markdown.Quiz.Multi.View exposing (view)
 
 import Array exposing (Array)
+import I18n.Translations exposing (Lang(..))
 import Json.Encode as JE
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 import Lia.Markdown.Quiz.Multi.Types exposing (Quiz, State)
 
 
-view : { config : Config sub, id : Int, active : Bool, partiallyCorrect : Array Bool, quiz : Quiz x Inlines, state : State } -> ( Config sub, Maybe x )
+view :
+    { config : Config sub
+    , id : Int
+    , active : Bool
+    , partiallyCorrect : Array Bool
+    , quiz : Quiz x Inlines
+    , state : State
+    }
+    -> ( Config sub, Maybe x )
 view { config, id, active, partiallyCorrect, quiz, state } =
     let
         input =
@@ -26,8 +36,7 @@ view { config, id, active, partiallyCorrect, quiz, state } =
             , partiallyCorrect = partiallyCorrect
             }
       }
-    , quiz.elements
-        |> List.head
+    , List.head quiz.elements
     )
 
 

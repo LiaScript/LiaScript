@@ -668,8 +668,20 @@ viewQuiz : Config Msg -> Maybe String -> Parameters -> Quiz.Quiz Block -> Maybe 
 viewQuiz config labeledBy attr quiz solution =
     case Quizzes.maybeConfig config.main quiz config.section.quiz_vector of
         Just ( main, md ) ->
+            let
+                mainConfig =
+                    Config.setMain main config
+            in
             Html.div []
-                [ view_block (Config.setMain main config) md
+                [ view_block mainConfig md
+                , Inline.viewQuizDrops mainConfig.main
+                    |> Html.div
+                        [ Attr.style "display" "flex"
+                        , Attr.style "flex-wrap" "wrap"
+                        , Attr.style "gap" "0.5rem"
+                        , Attr.style "align-items" "flex-start"
+                        ]
+                    |> Html.map Script
                 , quizControl config labeledBy attr quiz solution
                 ]
 
