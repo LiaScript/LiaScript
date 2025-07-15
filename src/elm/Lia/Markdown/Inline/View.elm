@@ -282,14 +282,16 @@ viewQuiz config ( length, id ) attr =
                         |> Maybe.andThen (List.Extra.getAt i)
             in
             Html.span
-                [ Attr.style "padding" "1rem"
-                , Attr.style "margin" "0.25rem"
-                , Attr.style "position" "relative"
-                , Attr.style "border" "3px dashed #ccc"
-                , Attr.style "border-radius" "4px"
-                , Attr.style "display" "inline-block"
-                , Attr.style "vertical-align" "middle"
-                ]
+                (List.append (toAttribute attr)
+                    [ Attr.style "padding" "1rem"
+                    , Attr.style "margin" "0.25rem"
+                    , Attr.style "position" "relative"
+                    , Attr.style "border" "3px dashed #ccc"
+                    , Attr.style "border-radius" "4px"
+                    , Attr.style "display" "inline-block"
+                    , Attr.style "vertical-align" "middle"
+                    ]
+                )
                 [ option
                     |> Maybe.map
                         (viewer config
@@ -315,26 +317,28 @@ viewQuiz config ( length, id ) attr =
                             ( Nothing, "" )
             in
             Html.span
-                [ Attr.style "padding" "1rem"
-                , Attr.style "margin" "0.25rem"
-                , Attr.style "position" "relative"
-                , Attr.style "border"
-                    (if highlighted then
-                        "3px dashed #ccc"
+                (List.append (toAttribute attr)
+                    [ Attr.style "padding" "1rem"
+                    , Attr.style "margin" "0.25rem"
+                    , Attr.style "position" "relative"
+                    , Attr.style "border"
+                        (if highlighted then
+                            "3px dashed #ccc"
 
-                     else
-                        "1px dashed #ccc"
-                    )
-                , Attr.style "border-radius" "4px"
-                , Attr.style "display" "inline-block"
-                , Attr.style "vertical-align" "middle"
-                , Attr.attribute "ondragover" (config.input.on "dragenter" id "true")
-                , Attr.attribute "ondragleave" (config.input.on "dragenter" id "false")
-                , Attr.tabindex 0
-                , A11y_Role.button
-                , Attr.attribute "onclick" (config.input.on "dragtarget" id "null")
-                , keyDownEvent (config.input.on "dragtarget" id "null")
-                ]
+                         else
+                            "1px dashed #ccc"
+                        )
+                    , Attr.style "border-radius" "4px"
+                    , Attr.style "display" "inline-block"
+                    , Attr.style "vertical-align" "middle"
+                    , Attr.attribute "ondragover" (config.input.on "dragenter" id "true")
+                    , Attr.attribute "ondragleave" (config.input.on "dragenter" id "false")
+                    , Attr.tabindex 0
+                    , A11y_Role.button
+                    , Attr.attribute "onclick" (config.input.on "dragtarget" id "null")
+                    , keyDownEvent (config.input.on "dragtarget" id "null")
+                    ]
+                )
                 [ option
                     |> Maybe.map
                         (viewer config
