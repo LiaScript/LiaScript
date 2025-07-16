@@ -17,6 +17,10 @@
     transform: translateX(-124%);
     width: 2rem;
 
+    [dir='rtl'] & {
+      transform: translateX(124%);
+    }
+
     &.animated {
       left: 2.5rem * -1.5;
     }
@@ -29,7 +33,9 @@
       line-height: initial;
       transform: none;
 
-      font-family: var(--global-font-family) !important; // this is necessary in ascii-art environment
+      font-family: var(
+        --global-font-family
+      ) !important; // this is necessary in ascii-art environment
 
       &.animated {
         left: 1.8rem * -1.5;

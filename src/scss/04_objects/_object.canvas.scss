@@ -80,6 +80,11 @@ $slide-margin-left-textbook: 19rem !default;
       left: $toc-width-desktop;
       width: calc(100% - #{$toc-width-desktop});
 
+      [dir='rtl'] & {
+        left: -$toc-width-desktop;
+        right: auto;
+      }
+
       .lia-header {
         left: #{$toc-width-desktop};
 
@@ -88,34 +93,33 @@ $slide-margin-left-textbook: 19rem !default;
           right: #{$toc-width-desktop};
         }
       }
-
-      [dir='rtl'] & {
-        left: auto;
-        right: $toc-width-desktop;
-      }
     }
 
     &.lia-support--visible {
-      right: $support-width-desktop;
+      // right: 0;
       width: calc(100% - #{$support-width-desktop});
-
-      [dir='rtl'] & {
-        right: auto;
-        left: $support-width-desktop;
-      }
 
       .lia-header {
         right: #{$support-width-desktop};
 
         [dir='rtl'] & {
-          right: auto;
           left: #{$support-width-desktop};
+          right: 0;
         }
       }
     }
 
     &.lia-toc--visible.lia-support--visible {
       width: calc(100% - #{$toc-width-desktop} - #{$support-width-desktop});
+
+      .lia-header {
+        right: #{$support-width-desktop};
+
+        [dir='rtl'] & {
+          left: #{$support-width-desktop};
+          right: #{$toc-width-desktop};
+        }
+      }
     }
   }
 
@@ -144,11 +148,6 @@ $slide-margin-left-textbook: 19rem !default;
     @include tools.breakpoint('lg') {
       .lia-header {
         right: $notes-width-desktop;
-
-        [dir='rtl'] & {
-          right: auto;
-          left: $notes-width-desktop;
-        }
       }
 
       .lia-slide {
