@@ -120,15 +120,18 @@ elements =
                     )
                 )
             |> checkQuiz
-        , Input.setGroupPermission True
-            |> keep svgbob
-            |> ignore (Input.setGroupPermission False)
+        , md_annotations
+            |> andThen (Input.setGroupPermission True)
+            |> svgbob
+            |> ignore (Input.setGroupPermission False [])
             |> ignore (Input.setPermission True)
             |> checkQuiz
         , map Markdown.Code (Code.parse md_annotations)
         , md_annotations
+            |> ignore (Input.setPermission True)
             |> map Markdown.Header
             |> andMap subHeader
+            |> checkQuiz
         , horizontal_line
         , md_annotations
             |> map Markdown.Survey
@@ -139,22 +142,34 @@ elements =
         , md_annotations
             |> map Markdown.Task
             |> andMap Task.parse
-        , Input.setGroupPermission True
-            |> keep quote
-            |> ignore (Input.setGroupPermission False)
+        , md_annotations
+            |> andThen (Input.setGroupPermission True)
+            |> quote
+            |> ignore (Input.setGroupPermission False [])
             |> ignore (Input.setPermission True)
             |> checkQuiz
         , md_annotations
+            |> andThen (Input.setGroupPermission False)
             |> map Markdown.OrderedList
             |> andMap ordered_list
+            |> ignore (Input.setGroupPermission False [])
+            |> ignore (Input.setPermission True)
+            |> checkQuiz
         , md_annotations
+            |> andThen (Input.setGroupPermission False)
             |> map Markdown.BulletList
             |> andMap unordered_list
+            |> ignore (Input.setGroupPermission False [])
+            |> ignore (Input.setPermission True)
+            |> checkQuiz
         , md_annotations
+            |> andThen (Input.setGroupPermission False)
             |> map Markdown.HTML
-            --|> ignore (Input.setGroupPermission True)
             |> andMap (HTML.parse blocks)
             |> ignore (regex "[ \t]*\n")
+            |> ignore (Input.setGroupPermission False [])
+            |> ignore (Input.setPermission True)
+            |> checkQuiz
 
         --|> ignore (Input.setGroupPermission False)
         --|> ignore (Input.setPermission True)
@@ -211,8 +226,18 @@ toQuiz ( md, isQuiz ) =
             Markdown.ASCII attr _ ->
                 toQuiz_ Nothing attr md
 
-            --Markdown.HTML attr _ ->
-            --    toQuiz_ attr md
+            Markdown.HTML attr _ ->
+                toQuiz_ Nothing attr md
+
+            Markdown.OrderedList attr _ ->
+                toQuiz_ Nothing attr md
+
+            Markdown.BulletList attr _ ->
+                toQuiz_ Nothing attr md
+
+            Markdown.Header attr _ ->
+                toQuiz_ Nothing attr md
+
             _ ->
                 succeed md
 
@@ -282,17 +307,16 @@ svgbody len =
             )
 
 
-svgbob : Parser Context Markdown.Block
+svgbob : Parser Context Parameters -> Parser Context Markdown.Block
 svgbob =
-    md_annotations
-        |> map Markdown.ASCII
-        |> andMap
+    map Markdown.ASCII
+        >> andMap
             (c_frame
                 |> andThen svgbody
                 |> andThen svgbobSub
             )
-        |> ignore spaces
-        |> ignore newline
+        >> ignore spaces
+        >> ignore newline
 
 
 svgbobSub : ( Maybe Inlines, String ) -> Parser Context ( Maybe Inlines, SvgBob.Configuration Markdown.Blocks )
@@ -464,14 +488,14 @@ newlineWithIndentation =
         |> ignore newline
 
 
-quote : Parser Context Markdown.Block
+quote : Parser Context Parameters -> Parser Context Markdown.Block
 quote =
-    map Markdown.Quote md_annotations
-        |> ignore (regex "> ?")
-        |> ignore (Indent.push "> ?")
-        |> ignore Indent.skip
-        |> andMap (sepBy newlineWithIndentation blocks)
-        |> ignore Indent.pop
+    map Markdown.Quote
+        >> ignore (regex "> ?")
+        >> ignore (Indent.push "> ?")
+        >> ignore Indent.skip
+        >> andMap (sepBy newlineWithIndentation blocks)
+        >> ignore Indent.pop
 
 
 checkForCitation : Parameters -> Inlines -> Markdown.Block
