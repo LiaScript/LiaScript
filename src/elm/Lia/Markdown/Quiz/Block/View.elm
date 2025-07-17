@@ -5,11 +5,11 @@ import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
 import Conditional.List as CList
 import Html exposing (Html)
-import Html.Attributes as Attr
+import Html.Attributes as Attr exposing (width)
 import Html.Events exposing (onClick, onInput)
 import I18n.Translations as Translations
 import Json.Decode as JD
-import Lia.Markdown.Effect.Parser exposing (inline)
+import Json.Encode as JE
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
@@ -112,15 +112,15 @@ view config solution quiz state =
                     |> Maybe.map
                         (viewer config
                             >> List.map (Html.map Script)
-                            >> Html.span
+                            >> Html.div
                                 [ Attr.style "border" "1px dashed green"
-                                , Attr.style "padding" "0.5rem"
-                                , Attr.style "margin" "0.25rem"
-                                , Attr.style "display" "block"
+                                , Attr.style "padding" "1rem"
                                 , Attr.style "cursor" "pointer"
                                 , Attr.style "background-color" "#f9f9f9"
                                 , Attr.style "border-radius" "4px"
-                                , Attr.style "padding" "2rem"
+                                , Attr.style "display" "flex"
+                                , Attr.style "justify-content" "center"
+                                , Attr.style "display" "flex"
                                 , Attr.draggable <|
                                     if solved then
                                         "false"
@@ -149,7 +149,20 @@ view config solution quiz state =
                                 , Attr.tabindex 0
                                 ]
                         )
-                    |> Maybe.withDefault (Html.text "Drop here!")
+                    |> Maybe.withDefault
+                        (Html.div
+                            [ Attr.style "width" "100%"
+                            , Attr.style "height" "4rem"
+                            , Attr.style "display" "flex"
+                            , Attr.style "justify-content" "center"
+                            , Attr.style "align-items" "center"
+                            , Attr.style "font-size" "4rem" -- fallback
+                            , Attr.style "font-size" "min(10vw, 4rem)" -- scales with viewport
+                            , Attr.style "line-height" "1"
+                            , Attr.style "color" "#888"
+                            ]
+                            [ Html.text "✛" ]
+                        )
                 , Html.div
                     [ Html.Events.on "dragenter"
                         (JD.succeed
@@ -254,6 +267,7 @@ view config solution quiz state =
                     , Attr.style "flex-wrap" "wrap"
                     , Attr.style "gap" "0.5rem"
                     , Attr.style "align-items" "flex-start"
+                    , Attr.style "margin" "1rem 0px"
                     ]
             ]
 
