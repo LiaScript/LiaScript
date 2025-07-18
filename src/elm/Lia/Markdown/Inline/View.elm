@@ -1,5 +1,6 @@
 module Lia.Markdown.Inline.View exposing
     ( audio
+    , dropHere
     , highlightPartialSolution
     , onError
     , reduce
@@ -297,7 +298,7 @@ viewQuiz config ( length, id ) attr =
                         (viewer config
                             >> Html.span []
                         )
-                    |> Maybe.withDefault (Html.text "Drop here")
+                    |> Maybe.withDefault (dropHere [])
                 ]
 
         Just (Drop highlighted activated state) ->
@@ -332,7 +333,7 @@ viewQuiz config ( length, id ) attr =
                     , Attr.style "display" "inline-block"
                     , Attr.style "vertical-align" "middle"
                     , Attr.attribute "ondragover" (config.input.on "dragenter" id "true")
-                    , Attr.attribute "ondragleave" (config.input.on "dragenter" id "false")
+                    , Attr.attribute "ondragleave" ("setTimeout(()=>" ++ config.input.on "dragenter" id "false" ++ ", 100)")
                     , Attr.tabindex 0
                     , A11y_Role.button
                     , Attr.attribute "onclick" (config.input.on "dragtarget" id "null")
@@ -349,7 +350,7 @@ viewQuiz config ( length, id ) attr =
                                     |> Attr.attribute "ondragend"
                                 ]
                         )
-                    |> Maybe.withDefault (Html.text "Drop here")
+                    |> Maybe.withDefault (dropHere [])
                 ]
 
         _ ->
@@ -447,6 +448,22 @@ viewQuizDrops config =
                         []
             )
         |> List.concat
+
+
+dropHere : List (Attribute msg) -> Html msg
+dropHere attr =
+    Html.div
+        (List.append
+            [ Attr.style "display" "flex"
+            , Attr.style "justify-content" "center"
+            , Attr.style "align-items" "center"
+            , Attr.style "line-height" "1"
+            , Attr.style "color" "#888"
+            , Attr.style "min-width" "3rem"
+            ]
+            attr
+        )
+        [ Html.text "✛" ]
 
 
 dragEvent :

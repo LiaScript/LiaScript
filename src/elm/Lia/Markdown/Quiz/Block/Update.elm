@@ -6,7 +6,9 @@ module Lia.Markdown.Quiz.Block.Update exposing
 
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Quiz.Block.Types exposing (State(..))
+import Process
 import Return exposing (Return)
+import Task
 
 
 type Msg sub
@@ -17,12 +19,13 @@ type Msg sub
     | DropStart
     | DropData Int
     | DropEnter Bool
+    | DropExit
     | DropTarget
     | DropSource Int
     | None
 
 
-update : Msg sub -> State -> Return State msg sub
+update : Msg sub -> State -> Return State (Msg sub) sub
 update msg state =
     case ( msg, state ) of
         ( Choose option, Select _ _ ) ->
@@ -57,8 +60,20 @@ update msg state =
                 else
                     Drop highlight False value
 
-        ( DropEnter yes, Drop _ active value ) ->
-            Drop yes active value
+        ( DropEnter True, Drop _ active value ) ->
+            Drop True active value
+                |> Return.val
+
+        ( DropEnter False, _ ) ->
+            state
+                |> Return.val
+                |> Return.cmd
+                    (Process.sleep 1
+                        |> Task.attempt (always DropExit)
+                    )
+
+        ( DropExit, Drop _ active value ) ->
+            Drop False active value
                 |> Return.val
 
         ( DropTarget, Drop highlight _ _ ) ->
