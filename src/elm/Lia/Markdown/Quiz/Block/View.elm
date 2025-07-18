@@ -5,14 +5,13 @@ import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
 import Conditional.List as CList
 import Html exposing (Html)
-import Html.Attributes as Attr exposing (width)
+import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import I18n.Translations as Translations
 import Json.Decode as JD
-import Json.Encode as JE
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Markdown.Inline.View exposing (dropHere, viewer)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Solution as Solution
@@ -150,18 +149,13 @@ view config solution quiz state =
                                 ]
                         )
                     |> Maybe.withDefault
-                        (Html.div
-                            [ Attr.style "width" "100%"
-                            , Attr.style "height" "4rem"
+                        (dropHere
+                            [ Attr.style "height" "4rem"
                             , Attr.style "display" "flex"
-                            , Attr.style "justify-content" "center"
-                            , Attr.style "align-items" "center"
                             , Attr.style "font-size" "4rem" -- fallback
                             , Attr.style "font-size" "min(10vw, 4rem)" -- scales with viewport
                             , Attr.style "line-height" "1"
-                            , Attr.style "color" "#888"
                             ]
-                            [ Html.text "✛" ]
                         )
                 , Html.div
                     [ Html.Events.on "dragenter"
