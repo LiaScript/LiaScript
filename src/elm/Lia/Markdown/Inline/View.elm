@@ -333,7 +333,7 @@ viewQuiz config ( length, id ) attr =
                     , Attr.style "display" "inline-block"
                     , Attr.style "vertical-align" "middle"
                     , Attr.attribute "ondragover" (config.input.on "dragenter" id "true")
-                    , Attr.attribute "ondragleave" (config.input.on "dragenter" id "false")
+                    , Attr.attribute "ondragleave" ("setTimeout(()=>" ++ config.input.on "dragenter" id "false" ++ ", 100)")
                     , Attr.tabindex 0
                     , A11y_Role.button
                     , Attr.attribute "onclick" (config.input.on "dragtarget" id "null")
