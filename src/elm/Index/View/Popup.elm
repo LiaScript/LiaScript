@@ -5,6 +5,7 @@ import Accessibility.Role as A11y_Role
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
+import Lia.Utils exposing (btnIcon)
 import Library.Group as Group
 
 
@@ -59,4 +60,17 @@ view { escape, text, action } =
             , Attr.style "cursor" "pointer"
             ]
             [ Html.text action.text ]
+        , btnIcon
+            { title = "abort"
+            , tabbable = True
+            , msg = Just escape
+            , icon = "icon-close"
+            }
+            [ Group.id groupID
+            , Attr.class "lia-btn--transparent px-0 py-0"
+            , Attr.style "position" "absolute"
+            , Attr.style "right" "2px"
+            , Attr.style "top" "-3px"
+            , Group.blur (always escape)
+            ]
         ]
