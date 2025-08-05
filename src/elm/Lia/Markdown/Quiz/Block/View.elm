@@ -105,12 +105,12 @@ view config randomize solution quiz state =
                         -1
                 , Attr.style "border"
                     (if highlight then
-                        "3px dashed #ccc"
+                        "5px dotted #888"
 
                      else
-                        "1px dashed #ccc"
+                        "3px dotted #888"
                     )
-                , Attr.style "border-radius" "4px"
+                , Attr.style "border-radius" "5px"
                 ]
                 [ quiz.options
                     |> List.Extra.getAt id
@@ -118,7 +118,7 @@ view config randomize solution quiz state =
                         (viewer config
                             >> List.map (Html.map Script)
                             >> Html.div
-                                [ Attr.style "border" "1px dashed green"
+                                [ Attr.style "border" "3px dotted #888"
                                 , Attr.style "padding" "1rem"
                                 , Attr.style "cursor" "pointer"
                                 , Attr.style "background-color" "#f9f9f9"
@@ -210,7 +210,7 @@ view config randomize solution quiz state =
                             viewer config a
                                 |> List.map (Html.map Script)
                                 |> Html.span
-                                    [ Attr.style "border" "1px dashed green"
+                                    [ Attr.style "border" "3px dotted #888"
                                     , Attr.style "margin" "0.25rem"
                                     , Attr.style "padding" "1rem"
                                     , Attr.style "cursor" "pointer"
