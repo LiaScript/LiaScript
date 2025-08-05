@@ -1,4 +1,12 @@
-module Lia.Parser.Input exposing (add, getPermission, isIdentified, isInput, pop, setGroupPermission, setPermission)
+module Lia.Parser.Input exposing
+    ( add
+    , getPermission
+    , isIdentified
+    , isInput
+    , pop
+    , setGroupPermission
+    , setPermission
+    )
 
 import Array
 import Combine

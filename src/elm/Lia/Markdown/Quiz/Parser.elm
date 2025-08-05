@@ -90,6 +90,13 @@ randomize typeOf seed =
                     seed
                 )
 
+        Block_Type vec ->
+            Just
+                (PseudoRandom.integerSequence
+                    (List.length vec.options)
+                    seed
+                )
+
         _ ->
             Nothing
 

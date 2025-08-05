@@ -19,8 +19,14 @@ import Lia.Utils exposing (blockKeydown, deactivate, icon)
 import List.Extra
 
 
-view : Config sub -> Solution.State -> Quiz Inlines -> State -> List (Html (Msg sub))
-view config solution quiz state =
+view :
+    Config sub
+    -> (List (Html (Msg sub)) -> List (Html (Msg sub)))
+    -> Solution.State
+    -> Quiz Inlines
+    -> State
+    -> List (Html (Msg sub))
+view config randomize solution quiz state =
     case state of
         Text str ->
             [ text solution str
@@ -51,7 +57,7 @@ view config solution quiz state =
             [ value
                 |> List.head
                 |> Maybe.withDefault -1
-                |> select config solution open quiz.options
+                |> select config randomize solution open quiz.options
             ]
 
         Drop highlight active value ->
@@ -256,6 +262,7 @@ view config solution quiz state =
                                 |> Just
                     )
                 |> List.filterMap identity
+                |> randomize
                 |> Html.div
                     [ Attr.style "display" "flex"
                     , Attr.style "flex-wrap" "wrap"
@@ -287,8 +294,8 @@ text solution state =
         []
 
 
-select : Config sub -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
-select config solution open options i =
+select : Config sub -> (List (Html (Msg sub)) -> List (Html (Msg sub))) -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
+select config randomize solution open options i =
     let
         active =
             Solution.isOpen solution
@@ -336,6 +343,7 @@ select config solution open options i =
             ]
         , options
             |> List.indexedMap (option config (open && active))
+            |> randomize
             |> Html.div
                 (deactivate (not (open || active))
                     [ Attr.class "lia-dropdown__options"

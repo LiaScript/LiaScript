@@ -255,7 +255,7 @@ viewState config elem quiz =
         ( Block_State s, Block_Type q ) ->
             ( []
             , s
-                |> Block.view config ( elem.solved, elem.trial ) q
+                |> Block.view config (shuffle elem.opt.randomize) ( elem.solved, elem.trial ) q
                 |> List.map (Html.map (Block_Update quiz.id))
             )
 
