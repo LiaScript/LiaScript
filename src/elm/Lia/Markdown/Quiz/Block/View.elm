@@ -15,13 +15,13 @@ import Lia.Markdown.Inline.View exposing (dropHere, viewer)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Utils exposing (blockKeydown, deactivate, icon)
+import Lia.Utils exposing (blockKeydown, deactivate, icon, shuffle)
 import List.Extra
 
 
 view :
     Config sub
-    -> (List (Html (Msg sub)) -> List (Html (Msg sub)))
+    -> Maybe (List Int)
     -> Solution.State
     -> Quiz Inlines
     -> State
@@ -262,7 +262,7 @@ view config randomize solution quiz state =
                                 |> Just
                     )
                 |> List.filterMap identity
-                |> randomize
+                |> shuffle randomize
                 |> Html.div
                     [ Attr.style "display" "flex"
                     , Attr.style "flex-wrap" "wrap"
@@ -294,7 +294,7 @@ text solution state =
         []
 
 
-select : Config sub -> (List (Html (Msg sub)) -> List (Html (Msg sub))) -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
+select : Config sub -> Maybe (List Int) -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
 select config randomize solution open options i =
     let
         active =
@@ -343,7 +343,7 @@ select config randomize solution open options i =
             ]
         , options
             |> List.indexedMap (option config (open && active))
-            |> randomize
+            |> shuffle randomize
             |> Html.div
                 (deactivate (not (open || active))
                     [ Attr.class "lia-dropdown__options"

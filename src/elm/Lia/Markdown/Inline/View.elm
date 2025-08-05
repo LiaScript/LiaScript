@@ -36,7 +36,7 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (blockKeydown, noTranslate)
+import Lia.Utils exposing (blockKeydown, noTranslate, shuffle)
 import List.Extra
 import QRCode
 
@@ -159,6 +159,10 @@ view config element =
 viewQuiz : Config sub -> ( String, Int ) -> Parameters -> Html (Msg sub)
 viewQuiz config ( length, id ) attr =
     let
+        randomize =
+            config.input.randomize
+                |> Maybe.andThen (Array.get id)
+
         isPartiallyCorrect =
             if config.input.active then
                 config.input.partiallyCorrect
@@ -268,6 +272,7 @@ viewQuiz config ( length, id ) attr =
                     ]
                 , options
                     |> List.indexedMap (showOption config id)
+                    |> shuffle randomize
                     |> Html.div
                         [ Attr.class "lia-dropdown__options"
                         , Attr.class <|

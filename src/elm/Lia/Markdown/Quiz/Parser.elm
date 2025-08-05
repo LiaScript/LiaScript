@@ -97,6 +97,16 @@ randomize typeOf seed =
                     seed
                 )
 
+        Multi_Type vec ->
+            Just
+                (PseudoRandom.integerSequence
+                    (vec.options
+                        |> Array.map List.length
+                        |> Array.foldl (+) 0
+                    )
+                    seed
+                )
+
         _ ->
             Nothing
 
