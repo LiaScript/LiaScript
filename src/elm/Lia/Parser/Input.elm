@@ -61,7 +61,7 @@ setGroupPermission enable attr =
                     { input
                         | isEnabled = False
                         , grouping =
-                            if Params.isSet "data-quiz-group" attr then
+                            if Params.isSet "data-group" attr then
                                 True
 
                             else
