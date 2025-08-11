@@ -507,6 +507,13 @@ class Connector extends Base.Connector {
       Utils.encodeJSON(state)
     )
 
+    if (state.score) {
+      this.write(
+        `cmi.interactions.${id}.weighting`,
+        JSON.stringify(state.score)
+      )
+    }
+
     // Only write timestamp if it hasn't been set before
     if (!this.scorm?.GetValue(`cmi.interactions.${id}.timestamp`)) {
       var date = new Date()
