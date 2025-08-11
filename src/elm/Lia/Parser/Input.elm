@@ -1,14 +1,24 @@
-module Lia.Parser.Input exposing (add, getPermission, isIdentified, isInput, pop, setGroupPermission, setPermission)
+module Lia.Parser.Input exposing
+    ( add
+    , getPermission
+    , isIdentified
+    , isInput
+    , pop
+    , setGroupPermission
+    , setPermission
+    )
 
 import Array
 import Combine
     exposing
         ( Parser
         , ignore
+        , keep
         , modifyState
         , succeed
         , withState
         )
+import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.Multi.Types as Multi
@@ -38,8 +48,8 @@ setPermission enable =
         )
 
 
-setGroupPermission : Bool -> Parser Context ()
-setGroupPermission enable =
+setGroupPermission : Bool -> Parameters -> Parser Context Parameters
+setGroupPermission enable attr =
     modifyState
         (\state ->
             let
@@ -50,10 +60,16 @@ setGroupPermission enable =
                 | input =
                     { input
                         | isEnabled = False
-                        , grouping = enable
+                        , grouping =
+                            if Params.isSet "data-group" attr then
+                                True
+
+                            else
+                                enable
                     }
             }
         )
+        |> keep (succeed attr)
 
 
 getPermission : Parser Context Bool

@@ -155,7 +155,7 @@ comp quiz state =
     if
         case ( quiz, state ) of
             ( Block_Type q, Block_State s ) ->
-                Block.comp q s
+                Block.comp Nothing q s
 
             ( Multi_Type q, Multi_State s ) ->
                 Multi.comp q s

@@ -64,7 +64,13 @@ import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
 import Lia.Markdown.Types as Markdown
 import Lia.Sync.Types as Sync
-import Lia.Utils exposing (btn, btnIcon, percentage)
+import Lia.Utils
+    exposing
+        ( btn
+        , btnIcon
+        , percentage
+        , shuffle
+        )
 import List.Extra
 
 
@@ -89,7 +95,7 @@ view config labeledBy quiz vector =
             ( Nothing, [] )
 
 
-maybeConfig : Config sub -> Quiz Markdown.Block -> Vector -> Maybe ( Config sub, Markdown.Block )
+maybeConfig : Config sub -> Quiz Markdown.Block -> Vector -> Maybe ( Config sub, Markdown.Block, Maybe (List Int) )
 maybeConfig config quiz vector =
     case ( Array.get quiz.id vector, quiz.quiz ) of
         ( Just elem, Multi_Type q ) ->
@@ -103,10 +109,11 @@ maybeConfig config quiz vector =
                             , partiallyCorrect = elem.partiallySolved
                             , quiz = q
                             , state = state
+                            , randomize = elem.opt.randomize
                             }
                     of
                         ( newConfig, Just block ) ->
-                            Just ( newConfig, block )
+                            Just ( newConfig, block, elem.opt.randomize )
 
                         _ ->
                             Nothing
@@ -255,7 +262,7 @@ viewState config elem quiz =
         ( Block_State s, Block_Type q ) ->
             ( []
             , s
-                |> Block.view config ( elem.solved, elem.trial ) q
+                |> Block.view config elem.opt.randomize ( elem.solved, elem.trial ) q
                 |> List.map (Html.map (Block_Update quiz.id))
             )
 
@@ -287,19 +294,6 @@ viewState config elem quiz =
 
         _ ->
             ( [], [] )
-
-
-shuffle : Maybe (List Int) -> List x -> List x
-shuffle randomize rows =
-    case randomize of
-        Nothing ->
-            rows
-
-        Just order ->
-            rows
-                |> List.map2 Tuple.pair order
-                |> List.sortBy Tuple.first
-                |> List.map Tuple.second
 
 
 {-| **private:** Return the current quiz as List of elements that contains:

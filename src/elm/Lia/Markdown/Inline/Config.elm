@@ -32,6 +32,7 @@ type alias Config sub =
     , input :
         { state : Input.State
         , options : Array (List Inlines)
+        , randomize : Maybe (Array (List Int))
         , on : String -> Int -> String -> String
         , path : List ( String, Int )
         , active : Bool
@@ -40,6 +41,7 @@ type alias Config sub =
     , translations : Maybe { old : String, new : String, name : Maybe String }
     , formulas : Dict String String
     , sync : Maybe Sync.Settings
+    , image_zoom : Bool
     }
 
 
@@ -81,6 +83,7 @@ init config =
     , input =
         { state = Array.empty
         , options = Array.empty
+        , randomize = Nothing
         , on = \_ _ _ -> ""
         , path = []
         , active = False
@@ -91,6 +94,7 @@ init config =
     , formulas =
         config.formulas
             |> Maybe.withDefault Dict.empty
+    , image_zoom = True
     }
 
 

@@ -87,6 +87,9 @@ toSelect quiz =
         BlockTypes.Select _ [] ->
             succeed <| Select quiz.options
 
+        BlockTypes.Drop _ _ [] ->
+            succeed <| DragAndDrop quiz.options
+
         _ ->
             fail ""
 
@@ -162,6 +165,9 @@ modify_State survey_ =
 
                 Select _ ->
                     Select_State False -1
+
+                DragAndDrop _ ->
+                    DragAndDrop_State False False -1
 
                 Vector bool vars _ ->
                     vars

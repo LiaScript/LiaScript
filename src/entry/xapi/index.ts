@@ -56,12 +56,11 @@ import('../../typescript/connectors/XAPI/index').then(function (xAPI) {
       xAPIConfig.debug = true
     }
 
-    const app = new Lia.LiaScript(
-      new xAPI.Connector(xAPIConfig),
-      false, // allowSync
+    const app = new Lia.LiaScript(new xAPI.Connector(xAPIConfig), {
+      allowSync: false,
       debug,
-      null,
-      window['liascript_course'] || null
-    )
+      courseUrl: null,
+      script: window['liascript_course'] || null,
+    })
   }
 })

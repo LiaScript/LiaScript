@@ -18,7 +18,7 @@ import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.View exposing (state)
 import Lia.Markdown.HTML.Attributes exposing (toAttribute)
-import Lia.Markdown.Inline.View exposing (audio, view_inf)
+import Lia.Markdown.Inline.View exposing (audio, onError, view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Section exposing (Section, SubSection)
@@ -701,6 +701,7 @@ viewVideoComment comments overlay effects =
                     , Attr.preload "auto"
                     , Attr.src url
                     , Attr.style "position" "absolute"
+                    , onError "video" url
                     ]
                     []
             )

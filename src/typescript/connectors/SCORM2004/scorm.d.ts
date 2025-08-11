@@ -8,12 +8,12 @@ export type SCORM = {
   /**
    * Begins a communication session with the LMS.
    */
-  Initialize: (_: Empty) => boolean
+  Initialize: (_: Empty) => 'true' | 'false'
 
   /**
    * Ends a communication session with the LMS.
    */
-  Terminate: (_: Empty) => boolean
+  Terminate: (_: Empty) => 'true' | 'false'
 
   /**
    *  Retrieves a value from the LMS.
@@ -28,7 +28,7 @@ export type SCORM = {
   /**
    * Indicates to the LMS that all data should be persisted (not required).
    */
-  Commit: (_: Empty) => void
+  Commit: (_: Empty) => 'true' | 'false'
 
   /**
    * Returns the error code that resulted from the last API call.

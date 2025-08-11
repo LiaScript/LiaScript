@@ -1,5 +1,6 @@
 module Lia.Markdown.Survey.View exposing (view)
 
+import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
 import Array
 import Html exposing (Html)
@@ -11,17 +12,23 @@ import I18n.Translations as Translations
         , surveySubmitted
         , surveyText
         )
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Markdown.Inline.View
+    exposing
+        ( dropHere
+        , viewer
+        )
 import Lia.Markdown.Quiz.View exposing (syncAttributes)
 import Lia.Markdown.Survey.Model
     exposing
         ( getErrorMessage
+        , get_drop_state
         , get_matrix_state
         , get_select_state
         , get_submission_state
@@ -36,7 +43,12 @@ import Lia.Markdown.Survey.Types
         , Type(..)
         , Vector
         )
-import Lia.Markdown.Survey.Update exposing (Msg(..))
+import Lia.Markdown.Survey.Update
+    exposing
+        ( DropMsg(..)
+        , Msg(..)
+        , SelectMsg(..)
+        )
 import Lia.Sync.Types as Sync_
 import Lia.Utils
     exposing
@@ -45,6 +57,8 @@ import Lia.Utils
         , icon
         , string2Color
         )
+import List.Extra
+import Return exposing (val)
 
 
 view : Config sub -> Parameters -> Survey -> Vector -> ( Maybe Int, Html (Msg sub) )
@@ -61,6 +75,11 @@ view config attr survey model =
         Select inlines ->
             view_select config inlines (get_select_state model survey.id) survey.id
                 |> view_survey config attr "select" model survey.id
+                |> viewSelectSync config inlines (getSync config survey.id)
+
+        DragAndDrop inlines ->
+            view_drop config inlines (get_drop_state model survey.id) survey.id
+                |> view_survey config attr "drop" model survey.id
                 |> viewSelectSync config inlines (getSync config survey.id)
 
         Vector button questions analysis ->
@@ -571,7 +590,7 @@ view_select config options ( open, value ) id submitted =
                     Attr.disabled True
 
                   else
-                    onClick <| SelectChose id
+                    onClick <| SelectUpdate id Choose
                 ]
                 [ Html.span [] [ get_option config value options ]
                 , icon
@@ -598,6 +617,206 @@ view_select config options ( open, value ) id submitted =
         ]
 
 
+view_drop : Config sub -> List Inlines -> ( Bool, Bool, Int ) -> Int -> Bool -> Html (Msg sub)
+view_drop config options ( highlight, active, value ) id submitted =
+    Html.div []
+        [ Html.div
+            [ Attr.style "width" "100%"
+            , Attr.style "padding" "0.5rem"
+            , Attr.style "margin" "0.25rem"
+            , Attr.style "position" "relative"
+            , Html.Events.onClick
+                (if submitted then
+                    None
+
+                 else
+                    DropUpdate id Target
+                )
+            , A11y_Role.button
+            , A11y_Key.onKeyDown
+                (if submitted then
+                    []
+
+                 else
+                    [ A11y_Key.enter <| DropUpdate id Target
+                    , A11y_Key.space <| DropUpdate id Target
+                    ]
+                )
+            , Attr.tabindex <|
+                if submitted then
+                    -1
+
+                else
+                    0
+            , Attr.style "border"
+                (if highlight then
+                    "5px dotted #888"
+
+                 else
+                    "3px dotted #888"
+                )
+            , Attr.style "border-radius" "5px"
+            ]
+            [ options
+                |> List.Extra.getAt value
+                |> Maybe.map
+                    (viewer config
+                        >> List.map (Html.map Script)
+                        >> Html.div
+                            [ Attr.style "border" "3px dotted #888"
+                            , Attr.style "padding" "1rem"
+                            , Attr.style "cursor" "pointer"
+                            , Attr.style "background-color" "#f9f9f9"
+                            , Attr.style "border-radius" "4px"
+                            , Attr.style "display" "flex"
+                            , Attr.style "justify-content" "center"
+                            , Attr.style "display" "flex"
+                            , Attr.draggable <|
+                                if submitted then
+                                    "false"
+
+                                else
+                                    "true"
+                            , Html.Events.on "dragend"
+                                (JD.succeed
+                                    (if submitted then
+                                        None
+
+                                     else
+                                        DropUpdate id (Drop value)
+                                    )
+                                )
+                            , Html.Events.on "dragstart"
+                                (JD.succeed
+                                    (if submitted then
+                                        None
+
+                                     else
+                                        DropUpdate id Start
+                                    )
+                                )
+                            , A11y_Role.button
+                            , Attr.tabindex 0
+                            ]
+                    )
+                |> Maybe.withDefault
+                    (dropHere
+                        [ Attr.style "height" "4rem"
+                        , Attr.style "display" "flex"
+                        , Attr.style "font-size" "4rem" -- fallback
+                        , Attr.style "font-size" "min(10vw, 4rem)" -- scales with viewport
+                        , Attr.style "line-height" "1"
+                        ]
+                    )
+            , Html.div
+                [ Html.Events.on "dragenter"
+                    (JD.succeed
+                        (if submitted then
+                            None
+
+                         else
+                            DropUpdate id (Enter True)
+                        )
+                    )
+                , Html.Events.on "dragleave"
+                    (JD.succeed
+                        (if submitted then
+                            None
+
+                         else
+                            DropUpdate id (Enter False)
+                        )
+                    )
+                , Attr.style
+                    "height"
+                    "100%"
+                , Attr.style "width" "100%"
+                , Attr.style "position" "absolute"
+                , Attr.style "top" "0"
+                , Attr.style "left" "0"
+                , Attr.style "z-index" "10"
+                , Attr.style "display"
+                    (if active then
+                        "block"
+
+                     else
+                        "none"
+                    )
+                ]
+                []
+            ]
+        , options
+            |> List.indexedMap
+                (\i a ->
+                    if i == value then
+                        Nothing
+
+                    else
+                        viewer config a
+                            |> List.map (Html.map Script)
+                            |> Html.span
+                                [ Attr.style "border" "3px dotted #888"
+                                , Attr.style "margin" "0.25rem"
+                                , Attr.style "padding" "1rem"
+                                , Attr.style "cursor" "pointer"
+                                , Attr.style "background-color" "#f9f9f9"
+                                , Attr.style "border-radius" "4px"
+                                , Attr.draggable <|
+                                    if submitted then
+                                        "false"
+
+                                    else
+                                        "true"
+                                , Html.Events.on "dragend"
+                                    (JD.succeed
+                                        (if submitted then
+                                            None
+
+                                         else
+                                            DropUpdate id (Drop i)
+                                        )
+                                    )
+                                , Html.Events.on "dragstart"
+                                    (JD.succeed <|
+                                        if submitted then
+                                            None
+
+                                        else
+                                            DropUpdate id Start
+                                    )
+                                , Html.Events.onClick
+                                    (if submitted then
+                                        None
+
+                                     else
+                                        DropUpdate id (Source i)
+                                    )
+                                , A11y_Key.onKeyDown
+                                    (if submitted then
+                                        []
+
+                                     else
+                                        [ A11y_Key.enter (DropUpdate id (Source i))
+                                        , A11y_Key.space (DropUpdate id (Source i))
+                                        ]
+                                    )
+                                , Attr.style "display" "inline-flex"
+                                , A11y_Role.button
+                                , Attr.tabindex 0
+                                ]
+                            |> Just
+                )
+            |> List.filterMap identity
+            |> Html.div
+                [ Attr.style "display" "flex"
+                , Attr.style "flex-wrap" "wrap"
+                , Attr.style "gap" "0.5rem"
+                , Attr.style "align-items" "flex-start"
+                , Attr.style "margin" "1rem 0px"
+                ]
+        ]
+
+
 option : Config sub -> Int -> Int -> Inlines -> Html (Msg sub)
 option config id1 id2 opt =
     opt
@@ -605,7 +824,9 @@ option config id1 id2 opt =
         |> List.map (Html.map Script)
         |> Html.div
             [ Attr.class "lia-dropdown__option"
-            , SelectUpdate id1 id2 |> onClick
+            , Update id2
+                |> SelectUpdate id1
+                |> onClick
             ]
 
 
