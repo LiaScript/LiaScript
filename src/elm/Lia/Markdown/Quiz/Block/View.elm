@@ -8,17 +8,25 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import I18n.Translations as Translations
+import Json.Decode as JD
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Markdown.Inline.View exposing (dropHere, viewer)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Utils exposing (blockKeydown, deactivate, icon)
+import Lia.Utils exposing (blockKeydown, deactivate, icon, shuffle)
+import List.Extra
 
 
-view : Config sub -> Solution.State -> Quiz Inlines -> State -> List (Html (Msg sub))
-view config solution quiz state =
+view :
+    Config sub
+    -> Maybe (List Int)
+    -> Solution.State
+    -> Quiz Inlines
+    -> State
+    -> List (Html (Msg sub))
+view config randomize solution quiz state =
     case state of
         Text str ->
             [ text solution str
@@ -49,7 +57,219 @@ view config solution quiz state =
             [ value
                 |> List.head
                 |> Maybe.withDefault -1
-                |> select config solution open quiz.options
+                |> select config randomize solution open quiz.options
+            ]
+
+        Drop highlight active value ->
+            let
+                solved =
+                    case solution of
+                        ( Solution.Open, _ ) ->
+                            False
+
+                        _ ->
+                            True
+
+                id =
+                    value
+                        |> List.head
+                        |> Maybe.withDefault -1
+            in
+            [ Html.div
+                [ Attr.style "width" "100%"
+                , Attr.style "padding" "0.5rem"
+                , Attr.style "margin" "0.25rem"
+                , Attr.style "position" "relative"
+                , Html.Events.onClick
+                    (if solved || List.isEmpty value then
+                        None
+
+                     else
+                        DropTarget
+                    )
+                , A11y_Role.button
+                , A11y_Key.onKeyDown
+                    (if solved || List.isEmpty value then
+                        []
+
+                     else
+                        [ A11y_Key.enter DropTarget
+                        , A11y_Key.space DropTarget
+                        ]
+                    )
+                , Attr.tabindex <|
+                    if List.isEmpty value then
+                        0
+
+                    else
+                        -1
+                , Attr.style "border"
+                    (if highlight then
+                        "5px dotted #888"
+
+                     else
+                        "3px dotted #888"
+                    )
+                , Attr.style "border-radius" "5px"
+                ]
+                [ quiz.options
+                    |> List.Extra.getAt id
+                    |> Maybe.map
+                        (viewer config
+                            >> List.map (Html.map Script)
+                            >> Html.div
+                                [ Attr.style "border" "3px dotted #888"
+                                , Attr.style "padding" "1rem"
+                                , Attr.style "cursor" "pointer"
+                                , Attr.style "background-color" "#f9f9f9"
+                                , Attr.style "border-radius" "4px"
+                                , Attr.style "display" "flex"
+                                , Attr.style "justify-content" "center"
+                                , Attr.style "display" "flex"
+                                , Attr.draggable <|
+                                    if solved then
+                                        "false"
+
+                                    else
+                                        "true"
+                                , Html.Events.on "dragend"
+                                    (JD.succeed
+                                        (if solved then
+                                            None
+
+                                         else
+                                            DropData id
+                                        )
+                                    )
+                                , Html.Events.on "dragstart"
+                                    (JD.succeed
+                                        (if solved then
+                                            None
+
+                                         else
+                                            DropStart
+                                        )
+                                    )
+                                , A11y_Role.button
+                                , Attr.tabindex 0
+                                ]
+                        )
+                    |> Maybe.withDefault
+                        (dropHere
+                            [ Attr.style "height" "4rem"
+                            , Attr.style "display" "flex"
+                            , Attr.style "font-size" "4rem" -- fallback
+                            , Attr.style "font-size" "min(10vw, 4rem)" -- scales with viewport
+                            , Attr.style "line-height" "1"
+                            ]
+                        )
+                , Html.div
+                    [ Html.Events.on "dragenter"
+                        (JD.succeed
+                            (if solved then
+                                None
+
+                             else
+                                DropEnter True
+                            )
+                        )
+                    , Html.Events.on "dragleave"
+                        (JD.succeed
+                            (if solved then
+                                None
+
+                             else
+                                DropEnter False
+                            )
+                        )
+                    , Attr.style "height" "100%"
+                    , Attr.style "width" "100%"
+                    , Attr.style "position" "absolute"
+                    , Attr.style "top" "0"
+                    , Attr.style "left" "0"
+                    , Attr.style "z-index" "10"
+
+                    --, Attr.style "background-color" "rgba(100, 0, 0, 0.1)"
+                    , Attr.style "display"
+                        (if active then
+                            "block"
+
+                         else
+                            "none"
+                        )
+                    ]
+                    []
+                ]
+            , quiz.options
+                |> List.indexedMap
+                    (\i a ->
+                        if i == id then
+                            Nothing
+
+                        else
+                            viewer config a
+                                |> List.map (Html.map Script)
+                                |> Html.span
+                                    [ Attr.style "border" "3px dotted #888"
+                                    , Attr.style "margin" "0.25rem"
+                                    , Attr.style "padding" "1rem"
+                                    , Attr.style "cursor" "pointer"
+                                    , Attr.style "background-color" "#f9f9f9"
+                                    , Attr.style "border-radius" "4px"
+                                    , Attr.draggable <|
+                                        if solved then
+                                            "false"
+
+                                        else
+                                            "true"
+                                    , Html.Events.on "dragend"
+                                        (JD.succeed
+                                            (if solved then
+                                                None
+
+                                             else
+                                                DropData i
+                                            )
+                                        )
+                                    , Html.Events.on "dragstart"
+                                        (JD.succeed <|
+                                            if solved then
+                                                None
+
+                                            else
+                                                DropStart
+                                        )
+                                    , Html.Events.onClick
+                                        (if solved then
+                                            None
+
+                                         else
+                                            DropSource i
+                                        )
+                                    , A11y_Key.onKeyDown
+                                        (if solved then
+                                            []
+
+                                         else
+                                            [ A11y_Key.enter (DropSource i)
+                                            , A11y_Key.space (DropSource i)
+                                            ]
+                                        )
+                                    , Attr.style "display" "inline-flex"
+                                    , A11y_Role.button
+                                    , Attr.tabindex 0
+                                    ]
+                                |> Just
+                    )
+                |> List.filterMap identity
+                |> shuffle randomize
+                |> Html.div
+                    [ Attr.style "display" "flex"
+                    , Attr.style "flex-wrap" "wrap"
+                    , Attr.style "gap" "0.5rem"
+                    , Attr.style "align-items" "flex-start"
+                    , Attr.style "margin" "1rem 0px"
+                    ]
             ]
 
 
@@ -74,8 +294,8 @@ text solution state =
         []
 
 
-select : Config sub -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
-select config solution open options i =
+select : Config sub -> Maybe (List Int) -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
+select config randomize solution open options i =
     let
         active =
             Solution.isOpen solution
@@ -123,6 +343,7 @@ select config solution open options i =
             ]
         , options
             |> List.indexedMap (option config (open && active))
+            |> shuffle randomize
             |> Html.div
                 (deactivate (not (open || active))
                     [ Attr.class "lia-dropdown__options"

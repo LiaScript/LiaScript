@@ -117,22 +117,20 @@ customElements.define(
 
       // Load the Markdown document defined by the src attribute
       if (typeof this.courseURL === 'string') {
-        this.app = new LiaScript(
-          new Connector(),
-          false, // allowSync
-          this.debug,
-          this.courseURL,
-          null
-        )
+        this.app = new LiaScript(new Connector(), {
+          allowSync: false, // allowSync
+          debug: this.debug,
+          courseUrl: this.courseURL,
+          script: null,
+        })
       } // Load the Content from within the web component
       else {
-        this.app = new LiaScript(
-          new Connector(),
-          false, // allowSync
-          this.debug,
-          null,
-          this.innerHTML.trimStart()
-        )
+        this.app = new LiaScript(new Connector(), {
+          allowSync: false, // allowSync
+          debug: this.debug,
+          courseUrl: null,
+          script: this.innerHTML.trimStart(),
+        })
       }
     }
 

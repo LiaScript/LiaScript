@@ -49,13 +49,27 @@ export class LiaScript {
 
   constructor(
     connector: Connector,
-    allowSync: boolean = false,
-    debug: boolean = false,
-    courseUrl: string | null = null,
-    script: string | null = null,
-    hideURL: boolean = false
+    {
+      allowSync = false,
+      debug = false,
+      courseUrl = null,
+      script = null,
+      hideURL = false,
+      hasShareAPI = undefined,
+    }: {
+      allowSync?: boolean
+      debug?: boolean
+      courseUrl?: string | null
+      script?: string | null
+      hideURL?: boolean
+      hasShareAPI?: boolean
+    } = {}
   ) {
     window.LIA.debug = debug
+
+    if (hasShareAPI === undefined) {
+      hasShareAPI = Share.isSupported()
+    }
 
     this.app = Elm.Main.init({
       //node: elem,
@@ -68,7 +82,7 @@ export class LiaScript {
           width: window.innerWidth,
           height: window.innerHeight,
         },
-        hasShareAPI: Share.isSupported(),
+        hasShareAPI,
         isFullscreen: !!document.fullscreenElement,
         hasIndex: connector.hasIndex(),
         sync: {

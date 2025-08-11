@@ -10,6 +10,7 @@ module Lia.Markdown.Quiz.Block.Types exposing
 type State
     = Text String
     | Select Bool (List Int)
+    | Drop Bool Bool (List Int)
 
 
 type alias Quiz opt =
@@ -27,18 +28,37 @@ initState state =
         Select _ _ ->
             Select False [ -1 ]
 
+        Drop _ _ _ ->
+            Drop False False []
 
-comp : Quiz opt -> State -> Bool
-comp quiz state =
-    case ( quiz.solution, state ) of
-        ( Text str1, Text str2 ) ->
+
+comp : Maybe Int -> Quiz opt -> State -> Bool
+comp id quiz state =
+    case ( id, quiz.solution, state ) of
+        ( _, Text str1, Text str2 ) ->
             str1 == str2
 
-        ( Select _ list, Select _ [ i ] ) ->
+        ( _, Select _ list, Select _ [ i ] ) ->
             list
                 |> List.filter ((==) i)
                 |> List.isEmpty
                 |> not
+
+        ( Nothing, Drop _ _ list, Drop _ _ [ i ] ) ->
+            list
+                |> List.filter ((==) i)
+                |> List.isEmpty
+                |> not
+
+        ( Just i, Drop _ _ list, Drop _ _ [ j, k ] ) ->
+            if i == j then
+                list
+                    |> List.filter ((==) k)
+                    |> List.isEmpty
+                    |> not
+
+            else
+                False
 
         _ ->
             False
@@ -52,3 +72,6 @@ getClass state =
 
         Select _ _ ->
             "select"
+
+        Drop _ _ _ ->
+            "drop"

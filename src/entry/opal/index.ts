@@ -7,7 +7,11 @@ import('../../typescript/connectors/Base/index').then(function (Base) {
     debug = true
   }
 
-  var app = new Lia.LiaScript(new Base.Connector(), { allowSync: false, debug })
+  var app = new Lia.LiaScript(new Base.Connector(), {
+    allowSync: false,
+    debug,
+    hasShareAPI: false,
+  })
 
   window.addEventListener('message', (event) => {
     // IMPORTANT: check the origin of the data!
