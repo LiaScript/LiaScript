@@ -31,10 +31,7 @@ class Connector extends Base.Connector {
   private inited: boolean = false
   private startMs: number = 0
   private commitTimer: number | null = null
-
-  /** Small write buffer for frequent SetValue calls */
-  private pending: Array<[CMIElement, string]> = []
-  private flushTimer: number | null = null
+  private totalCount: number = 0
 
   /** State mirrors */
   private db: { quiz: any[][]; survey: any[][]; task: any[][] }
@@ -60,6 +57,12 @@ class Connector extends Base.Connector {
         // @ts-ignore
         this.db.quiz = window.config_.quiz || [[]]
         LOG(' ... done')
+
+        for (let i = 0; i < this.db.quiz.length; i++) {
+          for (let j = 0; j < this.db.quiz[i].length; j++) {
+            this.totalCount += this.db.quiz[i][j].score
+          }
+        }
       } catch (e) {
         WARN('... failed', e)
       }
@@ -133,7 +136,7 @@ class Connector extends Base.Connector {
 
   setSettings = (data: Lia.Settings) => {
     if (this.active && this.scorm) {
-      this.writeBuffered('cmi.suspend_data', JSON.stringify(data))
+      this.write('cmi.suspend_data', JSON.stringify(data))
     } else {
       WARN('cannot write to "cmi.suspend_data"')
     }
@@ -192,38 +195,6 @@ class Connector extends Base.Connector {
         this.scorm.GetDiagnostic(e)
       )
     }
-  }
-
-  private flushPendingNow() {
-    if (!this.scorm || !this.active) return
-    if (this.pending.length === 0) return
-
-    for (const [u, d] of this.pending) {
-      if (this.scorm.SetValue(u, d) === 'false') {
-        const e = this.scorm.GetLastError()
-        WARN(
-          'SetValue error',
-          u,
-          d,
-          e,
-          this.scorm.GetErrorString(e),
-          this.scorm.GetDiagnostic(e)
-        )
-      }
-    }
-    this.pending = []
-    this.commit()
-  }
-
-  private writeBuffered(uri: CMIElement, data: string) {
-    if (!this.scorm || !this.active) return
-    this.pending.push([uri, data])
-    if (this.flushTimer) return
-
-    this.flushTimer = window.setTimeout(() => {
-      this.flushTimer = null
-      this.flushPendingNow()
-    }, 300)
   }
 
   /** Direct SetValue + immediate commit (critical updates) */
@@ -326,9 +297,6 @@ class Connector extends Base.Connector {
 
   finish(suspend: boolean) {
     if (!this.scorm || !this.inited) return
-
-    // ensure pending writes are flushed
-    this.flushPendingNow()
 
     // set session time
     const dur = this.isoDuration(Date.now() - this.startMs)
@@ -446,7 +414,6 @@ class Connector extends Base.Connector {
    * Compute score/progress for UI *always*; write to LMS only when active.
    */
   score(): void {
-    let total = 0
     let solved = 0
     let finished = 0
     let count = 0
@@ -454,7 +421,7 @@ class Connector extends Base.Connector {
     for (let i = 0; i < this.db.quiz.length; i++) {
       for (let j = 0; j < this.db.quiz[i].length; j++) {
         count = this.db.quiz[i][j].score
-        total += count
+
         switch (this.db.quiz[i][j].solved) {
           case 1:
             solved += count
@@ -466,8 +433,9 @@ class Connector extends Base.Connector {
       }
     }
 
-    const score = total === 0 ? 0 : solved / total
-    const progress = total === 0 ? 0 : (solved + finished) / total
+    const score = this.totalCount === 0 ? 0 : solved / this.totalCount
+    const progress =
+      this.totalCount === 0 ? 0 : (solved + finished) / this.totalCount
 
     // Always update UI-visible score
     ;(window as any)['SCORE'] = score
@@ -478,7 +446,7 @@ class Connector extends Base.Connector {
 
     // LMS writes
     this.write('cmi.score.min', '0')
-    this.write('cmi.score.max', JSON.stringify(total))
+    this.write('cmi.score.max', JSON.stringify(this.totalCount))
     this.write('cmi.score.scaled', JSON.stringify(score))
     this.write('cmi.score.raw', JSON.stringify(solved))
     this.write('cmi.progress_measure', JSON.stringify(progress))
@@ -487,7 +455,7 @@ class Connector extends Base.Connector {
       if (score >= this.scaled_passing_score) {
         this.write('cmi.success_status', 'passed')
         this.write('cmi.completion_status', 'completed')
-      } else if (finished + solved === total && total > 0) {
+      } else if (finished + solved === this.totalCount && this.totalCount > 0) {
         this.write('cmi.success_status', 'failed')
         this.write('cmi.completion_status', 'completed')
       } else {
@@ -497,7 +465,7 @@ class Connector extends Base.Connector {
     } else {
       // No mastery available → success unknown; completion from progress
       this.write('cmi.success_status', 'unknown')
-      if (finished + solved === total && total > 0) {
+      if (finished + solved === this.totalCount && this.totalCount > 0) {
         this.write('cmi.completion_status', 'completed')
       } else {
         this.write('cmi.completion_status', 'incomplete')
@@ -507,7 +475,7 @@ class Connector extends Base.Connector {
 
   slide(id: number) {
     this.location = id
-    this.writeBuffered('cmi.location', JSON.stringify(id))
+    this.write('cmi.location', JSON.stringify(id))
   }
 
   setInteraction(id: number, content: string) {
@@ -534,10 +502,26 @@ class Connector extends Base.Connector {
 
   updateInteraction(id: number, state: any): void {
     // use buffer: this can be frequent
-    this.writeBuffered(
-      ('cmi.interactions.' + id + '.learner_response') as CMIElement,
+    this.write(
+      `cmi.interactions.${id}.learner_response`,
       Utils.encodeJSON(state)
     )
+
+    // Only write timestamp if it hasn't been set before
+    if (!this.scorm?.GetValue(`cmi.interactions.${id}.timestamp`)) {
+      var date = new Date()
+      var timestamp = new Date(
+        date.getTime() - date.getTimezoneOffset() * 60000
+      )
+        .toISOString()
+        .slice(0, -5)
+
+      this.write(`cmi.interactions.${id}.timestamp`, timestamp)
+    }
+
+    // set session time
+    const dur = this.isoDuration(Date.now() - this.startMs)
+    this.write(`cmi.interactions.${id}.latency`, dur)
   }
 
   getInteraction(id: number): any | null {
