@@ -31,7 +31,7 @@ class Connector extends Base.Connector {
   private inited: boolean = false
   private startMs: number = 0
   private commitTimer: number | null = null
-  private totalCount: number = 0
+  private totalScore: number = 0
 
   /** State mirrors */
   private db: { quiz: any[][]; survey: any[][]; task: any[][] }
@@ -60,7 +60,7 @@ class Connector extends Base.Connector {
 
         for (let i = 0; i < this.db.quiz.length; i++) {
           for (let j = 0; j < this.db.quiz[i].length; j++) {
-            this.totalCount += this.db.quiz[i][j].score
+            this.totalScore += this.db.quiz[i][j].score
           }
         }
       } catch (e) {
@@ -383,10 +383,10 @@ class Connector extends Base.Connector {
     // Always recompute SCORE for UI even in preview/no-credit
     switch (record.table) {
       case 'quiz':
+      case 'survey':
         this.storeHelper(record)
         this.score()
         break
-      case 'survey':
       case 'task':
         this.storeHelper(record)
         break
@@ -402,6 +402,7 @@ class Connector extends Base.Connector {
         )
         // mirror in memory
         this.db[record.table][record.id][i] = record.data[i]
+
         // mark quiz results if available
         if (record.table === 'quiz') {
           this.updateQuiz(this.id[record.table][record.id][i], record.data[i])
@@ -433,29 +434,60 @@ class Connector extends Base.Connector {
       }
     }
 
-    const score = this.totalCount === 0 ? 0 : solved / this.totalCount
+    let surveyCount = 0
+    let surveySubmitted = 0
+    for (let i = 0; i < this.db.survey.length; i++) {
+      for (let j = 0; j < this.db.survey[i].length; j++) {
+        surveyCount += 1
+
+        if (this.db.survey[i][j].submitted) {
+          surveySubmitted += 1
+        }
+      }
+    }
+
+    const score = this.totalScore === 0 ? 0 : solved / this.totalScore
     const progress =
-      this.totalCount === 0 ? 0 : (solved + finished) / this.totalCount
+      this.totalScore === 0 ? 0 : (solved + finished) / this.totalScore
+
+    // Check if all surveys are completed
+    const allSurveysCompleted =
+      surveyCount === 0 || surveyCount === surveySubmitted
 
     // Always update UI-visible score
     ;(window as any)['SCORE'] = score
-    LOG('SCORE updated =>', score, 'progress =>', progress)
+    LOG(
+      'SCORE updated =>',
+      score,
+      'progress =>',
+      progress,
+      'surveys =>',
+      `${surveySubmitted}/${surveyCount}`
+    )
 
     // If not active (preview or no-credit), stop here.
     if (!this.scorm || !this.active) return
 
     // LMS writes
     this.write('cmi.score.min', '0')
-    this.write('cmi.score.max', JSON.stringify(this.totalCount))
+    this.write('cmi.score.max', JSON.stringify(this.totalScore))
     this.write('cmi.score.scaled', JSON.stringify(score))
     this.write('cmi.score.raw', JSON.stringify(solved))
+
     this.write('cmi.progress_measure', JSON.stringify(progress))
 
     if (this.scaled_passing_score != null) {
-      if (score >= this.scaled_passing_score) {
+      if (
+        (score >= this.scaled_passing_score || this.totalScore === 0) &&
+        allSurveysCompleted
+      ) {
         this.write('cmi.success_status', 'passed')
         this.write('cmi.completion_status', 'completed')
-      } else if (finished + solved === this.totalCount && this.totalCount > 0) {
+      } else if (
+        finished + solved === this.totalScore &&
+        this.totalScore > 0 &&
+        allSurveysCompleted
+      ) {
         this.write('cmi.success_status', 'failed')
         this.write('cmi.completion_status', 'completed')
       } else {
@@ -465,7 +497,12 @@ class Connector extends Base.Connector {
     } else {
       // No mastery available → success unknown; completion from progress
       this.write('cmi.success_status', 'unknown')
-      if (finished + solved === this.totalCount && this.totalCount > 0) {
+      if (
+        (finished + solved === this.totalScore &&
+          this.totalScore > 0 &&
+          allSurveysCompleted) ||
+        (this.totalScore === 0 && allSurveysCompleted && surveyCount > 0)
+      ) {
         this.write('cmi.completion_status', 'completed')
       } else {
         this.write('cmi.completion_status', 'incomplete')
@@ -512,6 +549,11 @@ class Connector extends Base.Connector {
         `cmi.interactions.${id}.weighting`,
         JSON.stringify(state.score)
       )
+    }
+
+    // For surveys, track submission status
+    if (state.submitted) {
+      this.write(`cmi.interactions.${id}.result`, 'neutral')
     }
 
     // Only write timestamp if it hasn't been set before
