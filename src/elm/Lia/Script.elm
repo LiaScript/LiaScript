@@ -34,7 +34,6 @@ import Lia.Model exposing (loadResource)
 import Lia.Parser.Parser as Parser
 import Lia.Section as Section exposing (Sections)
 import Lia.Settings.Update as Settings
-import Lia.Sync.Types as Sync
 import Lia.Update exposing (Msg(..))
 import Lia.Utils exposing (checkFalse, checkPersistency, urlBasePath, urlQuery)
 import Lia.View
@@ -301,11 +300,7 @@ init_script model script =
                                         Nothing
 
                                     _ ->
-                                        if Sync.isSupported model.sync then
-                                            Nothing
-
-                                        else
-                                            settings.hasShareApi
+                                        settings.hasShareApi
                             , sync =
                                 case
                                     definition.macro
@@ -439,7 +434,7 @@ searchIndex index str =
 -}
 init :
     { seed : Int
-    , hasShareApi : Bool
+    , hasShareApi : Maybe Bool
     , openTOC : Bool
     , isFullscreen : Bool
     , settings : JE.Value

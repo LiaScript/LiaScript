@@ -64,7 +64,7 @@ init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( Lia.Script.init
         { seed = 0
-        , hasShareApi = False
+        , hasShareApi = Just False
         , openTOC = True
         , isFullscreen = False
         , settings = JE.null
@@ -126,7 +126,7 @@ update msg model =
                         lia =
                             Lia.Script.init
                                 { seed = 0
-                                , hasShareApi = False
+                                , hasShareApi = Just False
                                 , openTOC = True
                                 , isFullscreen = False
                                 , settings = JE.null
