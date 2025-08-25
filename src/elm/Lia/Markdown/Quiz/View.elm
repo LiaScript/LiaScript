@@ -326,17 +326,18 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
         )
         body
     , Html.div [ Attr.class "lia-quiz__control" ]
-        [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz)
+        [ viewMainButton config state.trial state.deactivated state.solved (Check quiz.id quiz.quiz)
         , viewSolutionButton
             { config = config
             , solution = state.solved
             , msg = ShowSolution quiz.id quiz.quiz
             , hidden = state.trial < state.opt.showResolveAt
+            , deactivated = state.deactivated
             }
         , viewHintButton
             { id = quiz.id
             , show = (quiz.hints /= []) && (state.trial >= state.opt.showHintsAt)
-            , active = Solution.Open == state.solved && state.hint < List.length quiz.hints
+            , active = Solution.Open == state.solved && state.hint < List.length quiz.hints && not state.deactivated
             , title = Translations.quizHint config.lang
             }
         ]
@@ -412,12 +413,12 @@ viewFeedback lang state =
 {-| **private:** Show the solution button only if the quiz has not been solved
 yet.
 -}
-viewSolutionButton : { config : Config sub, hidden : Bool, solution : Solution, msg : Msg sub } -> Html (Msg sub)
-viewSolutionButton { config, hidden, solution, msg } =
+viewSolutionButton : { config : Config sub, hidden : Bool, solution : Solution, msg : Msg sub, deactivated : Bool } -> Html (Msg sub)
+viewSolutionButton { config, hidden, solution, msg, deactivated } =
     btnIcon
         { title = quizSolution config.lang
         , msg =
-            if solution == Solution.Open then
+            if solution == Solution.Open && not deactivated then
                 Just msg
 
             else
@@ -436,12 +437,12 @@ viewSolutionButton { config, hidden, solution, msg } =
 {-| **private:** Show the main check-button to compare the current state of the
 quiz with the solution state. The number of trials is automatically added.
 -}
-viewMainButton : Config sub -> Int -> Solution -> Msg sub -> Html (Msg sub)
-viewMainButton config trials solution msg =
+viewMainButton : Config sub -> Int -> Bool -> Solution -> Msg sub -> Html (Msg sub)
+viewMainButton config trials isDeactivated solution msg =
     btn
         { title = ""
         , msg =
-            if solution == Solution.Open then
+            if solution == Solution.Open && not isDeactivated then
                 Just msg
 
             else

@@ -76,6 +76,7 @@ update sync sectionID scripts msg vector =
 
                         Just scriptID ->
                             vector
+                                |> Array.set id { e | deactivated = True }
                                 |> Return.val
                                 |> Return.batchEvents
                                     (case
@@ -277,19 +278,24 @@ evalEventDecoder json =
             -- TODO:
             -- Eval.decode json
             Service.Script.decode json
+
+        activate e =
+            { e | deactivated = False }
     in
-    if eval.ok then
-        if eval.result == "true" then
-            isSolved Nothing Solution.Solved >> Return.val
+    Return.val
+        << (if eval.ok then
+                if eval.result == "true" then
+                    isSolved Nothing Solution.Solved >> activate
 
-        else if String.startsWith "LIA:" eval.result then
-            Return.val
+                else if String.startsWith "LIA:" eval.result then
+                    identity
 
-        else
-            isSolved Nothing Solution.Open >> Return.val
+                else
+                    isSolved Nothing Solution.Open >> activate
 
-    else
-        \e -> Return.val { e | error_msg = eval.result }
+            else
+                \e -> { e | error_msg = eval.result, deactivated = False }
+           )
 
 
 isSolved : Maybe (Type Markdown.Block) -> Solution -> Element -> Element
