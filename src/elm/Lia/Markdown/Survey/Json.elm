@@ -36,6 +36,11 @@ encode survey =
                 , JE.list Inline.encode elements
                 )
 
+            DragAndDrop elements ->
+                ( "Drop"
+                , JE.list Inline.encode elements
+                )
+
             Vector bool options _ ->
                 ( "Vector"
                 , JE.object
@@ -95,6 +100,12 @@ fromState state =
                   )
                 ]
 
+            DragAndDrop_State _ _ i ->
+                [ ( "Drop"
+                  , JE.int i
+                  )
+                ]
+
             Vector_State single vector ->
                 [ ( if single then
                         "SingleChoice"
@@ -145,6 +156,8 @@ toState =
             |> JD.map Text_State
         , JD.field "Select" JD.int
             |> JD.map (Select_State False)
+        , JD.field "Drop" JD.int
+            |> JD.map (DragAndDrop_State False False)
         , JD.field "SingleChoice" (JD.dict JD.bool)
             |> JD.map (Vector_State True)
         , JD.field "MultipleChoice" (JD.dict JD.bool)

@@ -1,5 +1,6 @@
 module Lia.Markdown.Survey.Model exposing
     ( getErrorMessage
+    , get_drop_state
     , get_matrix_state
     , get_select_state
     , get_submission_state
@@ -55,6 +56,16 @@ get_select_state vector id =
 
         _ ->
             ( False, -1 )
+
+
+get_drop_state : Vector -> Int -> ( Bool, Bool, Int )
+get_drop_state vector id =
+    case Array.get id vector |> Maybe.map .state of
+        Just (DragAndDrop_State highlight active value) ->
+            ( highlight, active, value )
+
+        _ ->
+            ( False, False, -1 )
 
 
 get_matrix_state : Vector -> Int -> Int -> String -> Bool

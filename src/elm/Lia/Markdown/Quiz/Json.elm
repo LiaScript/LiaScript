@@ -109,24 +109,31 @@ toElement =
 
                 _ ->
                     JD.succeed Solution.ReSolved
+
+        set solved state trial hint error_msg =
+            Element
+                solved
+                state
+                trial
+                hint
+                error_msg
+                Nothing
+                { randomize = Nothing
+                , maxTrials = Nothing
+                , score = Nothing
+                , showResolveAt = 0
+                , showHintsAt = 0
+                , showPartialSolution = False
+                }
+                Array.empty
+                True
     in
-    JD.map8 Element
+    JD.map5 set
         (JD.field "solved" JD.int |> JD.andThen solved_decoder)
         (JD.field "state" toState)
         (JD.field "trial" JD.int)
         (JD.field "hint" JD.int)
         (JD.field "error_msg" JD.string)
-        (JD.succeed Nothing)
-        (JD.succeed
-            { randomize = Nothing
-            , maxTrials = Nothing
-            , score = Nothing
-            , showResolveAt = 0
-            , showHintsAt = 0
-            , showPartialSolution = False
-            }
-        )
-        (JD.succeed Array.empty)
 
 
 toState : JD.Decoder State

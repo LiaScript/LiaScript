@@ -59,7 +59,11 @@ comp2 quiz state =
         list2 =
             Array.toList state
     in
-    List.map2 Block.comp list1 list2
+    List.map2 Tuple.pair list1 list2
+        |> List.indexedMap
+            (\i ( x, y ) ->
+                Block.comp (Just i) x y
+            )
 
 
 comp : Quiz block inline -> State -> Bool

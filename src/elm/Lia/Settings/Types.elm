@@ -66,7 +66,7 @@ type Audio
     | Rate String
 
 
-init : Bool -> Bool -> Mode -> Settings
+init : Maybe Bool -> Bool -> Mode -> Settings
 init hasShareApi isFullscreen mode =
     { table_of_contents = True
     , support_menu = False
@@ -80,7 +80,7 @@ init hasShareApi isFullscreen mode =
     , action = Nothing
     , speaking = False
     , initialized = False
-    , hasShareApi = Just hasShareApi
+    , hasShareApi = hasShareApi
     , translateWithGoogle = Just False
     , customTheme = Nothing
     , tooltips = False

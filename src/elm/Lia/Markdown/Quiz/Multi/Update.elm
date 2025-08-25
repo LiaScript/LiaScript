@@ -6,6 +6,7 @@ module Lia.Markdown.Quiz.Multi.Update exposing
     )
 
 import Array
+import I18n.Translations exposing (Lang(..))
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script
@@ -63,6 +64,98 @@ update msg state =
                             state
                                 |> Return.val
 
+                ( "dragstart", Ok id ) ->
+                    case Array.get id state of
+                        Just (Block.Drop highlight _ option) ->
+                            state
+                                |> Array.set id
+                                    (Block.Drop
+                                        highlight
+                                        True
+                                        option
+                                    )
+                                |> Return.val
+
+                        _ ->
+                            state
+                                |> Return.val
+
+                ( "dragenter", Ok id ) ->
+                    case Array.get id state of
+                        Just (Block.Drop _ _ option) ->
+                            state
+                                |> Array.set id
+                                    (Block.Drop
+                                        (param
+                                            |> decodeValue JD.bool
+                                            |> Result.withDefault False
+                                        )
+                                        False
+                                        option
+                                    )
+                                |> Return.val
+
+                        _ ->
+                            state
+                                |> Return.val
+
+                ( "dragend", _ ) ->
+                    let
+                        pos =
+                            decodeList param
+                    in
+                    state
+                        |> Array.map
+                            (\block ->
+                                case block of
+                                    Block.Drop False _ pp ->
+                                        Block.Drop False
+                                            False
+                                            (if pos == pp then
+                                                []
+
+                                             else
+                                                pp
+                                            )
+
+                                    Block.Drop True _ _ ->
+                                        Block.Drop False False pos
+
+                                    _ ->
+                                        block
+                            )
+                        |> Return.val
+
+                ( "dragtarget", Ok id ) ->
+                    state
+                        |> Array.indexedMap
+                            (\i block ->
+                                case block of
+                                    Block.Drop _ _ pp ->
+                                        Block.Drop False (i == id) pp
+
+                                    _ ->
+                                        block
+                            )
+                        |> Return.val
+
+                ( "dragsource", _ ) ->
+                    let
+                        pos =
+                            decodeList param
+                    in
+                    state
+                        |> Array.indexedMap
+                            (\i block ->
+                                case block of
+                                    Block.Drop _ True _ ->
+                                        Block.Drop False False pos
+
+                                    _ ->
+                                        block
+                            )
+                        |> Return.val
+
                 _ ->
                     state
                         |> Return.val
@@ -71,6 +164,13 @@ update msg state =
             state
                 |> Return.val
                 |> Return.script sub
+
+
+decodeList : JD.Value -> List Int
+decodeList =
+    decodeValue (JD.list JD.int)
+        >> Result.toMaybe
+        >> Maybe.withDefault []
 
 
 toString : State -> String

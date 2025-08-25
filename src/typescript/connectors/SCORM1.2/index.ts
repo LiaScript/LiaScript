@@ -201,8 +201,8 @@ Have fun ;-)`
   }
 
   /**
-   * This method currently only scores quizzes if a score was defined by the
-   * creator.
+   * This method scores quizzes if a score was defined by the creator
+   * and also considers surveys for course completion.
    */
   score(): void {
     if (!this.active || !this.score) return
@@ -229,6 +229,23 @@ Have fun ;-)`
       }
     }
 
+    // Count surveys and track how many have been submitted
+    let surveyCount = 0
+    let surveySubmitted = 0
+    for (let i = 0; i < this.db.survey.length; i++) {
+      for (let j = 0; j < this.db.survey[i].length; j++) {
+        surveyCount += 1
+
+        if (this.db.survey[i][j].submitted) {
+          surveySubmitted += 1
+        }
+      }
+    }
+
+    // Check if all surveys are completed
+    const allSurveysCompleted =
+      surveyCount === 0 || surveyCount === surveySubmitted
+
     const score = solved === 0 ? 0 : solved / total
 
     this.write('cmi.core.score.min', '0')
@@ -240,17 +257,33 @@ Have fun ;-)`
     )
 
     if (masteryScore == null) {
-      this.write('cmi.core.lesson_status', 'not attempted')
+      // If there are surveys but no quizzes, mark as passed when all surveys are submitted
+      if (total === 0 && surveyCount > 0 && allSurveysCompleted) {
+        this.write('cmi.core.lesson_status', 'completed')
+      } else {
+        this.write('cmi.core.lesson_status', 'not attempted')
+      }
     } else {
-      if (score >= masteryScore / 100) {
+      // Consider both quizzes and surveys for course completion
+      if ((score >= masteryScore / 100 || total === 0) && allSurveysCompleted) {
         this.write('cmi.core.lesson_status', 'passed')
-      } else if (finished + solved === total) {
+      } else if (
+        finished + solved === total &&
+        total > 0 &&
+        allSurveysCompleted
+      ) {
         this.write('cmi.core.lesson_status', 'failed')
       } else {
         this.write('cmi.core.lesson_status', 'incomplete')
       }
     }
 
+    LOG(
+      'SCORE updated =>',
+      score,
+      'surveys =>',
+      `${surveySubmitted}/${surveyCount}`
+    )
     window['SCORE'] = score
   }
 
@@ -422,11 +455,11 @@ Have fun ;-)`
 
     switch (record.table) {
       case 'quiz':
+      case 'survey':
         this.storeHelper(record)
         this.score()
         break
 
-      case 'survey':
       case 'task':
         this.storeHelper(record)
         break
@@ -449,6 +482,10 @@ Have fun ;-)`
         // mark quizzes if possible
         if (record.table == 'quiz') {
           this.updateQuiz(this.id[record.table][record.id][i], record.data[i])
+        }
+        // mark surveys if submitted
+        else if (record.table == 'survey' && record.data[i].submitted) {
+          this.updateSurvey(this.id[record.table][record.id][i], record.data[i])
         }
       }
     }
@@ -476,6 +513,19 @@ Have fun ;-)`
         this.write(`cmi.objectives.${id}.status`, 'incomplete')
         break
       }
+    }
+  }
+
+  /**
+   * Mark surveys as completed when they are submitted
+   * @param id - sequential objective id
+   * @param state - of the survey
+   */
+  updateSurvey(id: number, state: any): void {
+    if (!this.active) return
+
+    if (state.submitted) {
+      this.write(`cmi.objectives.${id}.status`, 'completed')
     }
   }
 }

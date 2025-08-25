@@ -203,6 +203,9 @@ toSelect (Sync s) =
         Survey.Select_State _ i ->
             Just i
 
+        Survey.DragAndDrop_State _ _ i ->
+            Just i
+
         _ ->
             Nothing
 
