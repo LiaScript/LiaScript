@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.4] - 25/08/2025
+
+- improve(Quiz): script evaluation will deactivate the control buttons
+- fix: text input styling now centered vertically
+- fix: QR-code for sharing is visible again
+- fix(SCORM): surveys will trigger a session close to (earlier only quizzes were taken into account)
+- improve(SCORM): Add timestamps to activities
+
 ## [0.17.3] - 23/06/2025
 
 - improve: Images in links are now not zoomable anymore

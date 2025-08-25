@@ -1,4 +1,12 @@
-module Lia.Parser.Input exposing (add, getPermission, isIdentified, isInput, pop, setGroupPermission, setPermission)
+module Lia.Parser.Input exposing
+    ( add
+    , getPermission
+    , isIdentified
+    , isInput
+    , pop
+    , setGroupPermission
+    , setPermission
+    )
 
 import Array
 import Combine
@@ -53,7 +61,7 @@ setGroupPermission enable attr =
                     { input
                         | isEnabled = False
                         , grouping =
-                            if Params.isSet "data-quiz-group" attr then
+                            if Params.isSet "data-group" attr then
                                 True
 
                             else

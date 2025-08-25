@@ -15,12 +15,18 @@ import Lia.Markdown.Inline.View exposing (dropHere, viewer)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Utils exposing (blockKeydown, deactivate, icon)
+import Lia.Utils exposing (blockKeydown, deactivate, icon, shuffle)
 import List.Extra
 
 
-view : Config sub -> Solution.State -> Quiz Inlines -> State -> List (Html (Msg sub))
-view config solution quiz state =
+view :
+    Config sub
+    -> Maybe (List Int)
+    -> Solution.State
+    -> Quiz Inlines
+    -> State
+    -> List (Html (Msg sub))
+view config randomize solution quiz state =
     case state of
         Text str ->
             [ text solution str
@@ -51,7 +57,7 @@ view config solution quiz state =
             [ value
                 |> List.head
                 |> Maybe.withDefault -1
-                |> select config solution open quiz.options
+                |> select config randomize solution open quiz.options
             ]
 
         Drop highlight active value ->
@@ -99,12 +105,12 @@ view config solution quiz state =
                         -1
                 , Attr.style "border"
                     (if highlight then
-                        "3px dashed #ccc"
+                        "5px dotted #888"
 
                      else
-                        "1px dashed #ccc"
+                        "3px dotted #888"
                     )
-                , Attr.style "border-radius" "4px"
+                , Attr.style "border-radius" "5px"
                 ]
                 [ quiz.options
                     |> List.Extra.getAt id
@@ -112,7 +118,7 @@ view config solution quiz state =
                         (viewer config
                             >> List.map (Html.map Script)
                             >> Html.div
-                                [ Attr.style "border" "1px dashed green"
+                                [ Attr.style "border" "3px dotted #888"
                                 , Attr.style "padding" "1rem"
                                 , Attr.style "cursor" "pointer"
                                 , Attr.style "background-color" "#f9f9f9"
@@ -204,7 +210,7 @@ view config solution quiz state =
                             viewer config a
                                 |> List.map (Html.map Script)
                                 |> Html.span
-                                    [ Attr.style "border" "1px dashed green"
+                                    [ Attr.style "border" "3px dotted #888"
                                     , Attr.style "margin" "0.25rem"
                                     , Attr.style "padding" "1rem"
                                     , Attr.style "cursor" "pointer"
@@ -256,6 +262,7 @@ view config solution quiz state =
                                 |> Just
                     )
                 |> List.filterMap identity
+                |> shuffle randomize
                 |> Html.div
                     [ Attr.style "display" "flex"
                     , Attr.style "flex-wrap" "wrap"
@@ -287,8 +294,8 @@ text solution state =
         []
 
 
-select : Config sub -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
-select config solution open options i =
+select : Config sub -> Maybe (List Int) -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
+select config randomize solution open options i =
     let
         active =
             Solution.isOpen solution
@@ -336,6 +343,7 @@ select config solution open options i =
             ]
         , options
             |> List.indexedMap (option config (open && active))
+            |> shuffle randomize
             |> Html.div
                 (deactivate (not (open || active))
                     [ Attr.class "lia-dropdown__options"

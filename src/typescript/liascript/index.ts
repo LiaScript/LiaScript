@@ -62,7 +62,7 @@ export class LiaScript {
       courseUrl?: string | null
       script?: string | null
       hideURL?: boolean
-      hasShareAPI?: boolean
+      hasShareAPI?: boolean | null
     } = {}
   ) {
     window.LIA.debug = debug

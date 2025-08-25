@@ -36,7 +36,7 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (blockKeydown, noTranslate)
+import Lia.Utils exposing (blockKeydown, noTranslate, shuffle)
 import List.Extra
 import QRCode
 
@@ -159,14 +159,22 @@ view config element =
 viewQuiz : Config sub -> ( String, Int ) -> Parameters -> Html (Msg sub)
 viewQuiz config ( length, id ) attr =
     let
-        highlight a =
+        randomize =
+            config.input.randomize
+                |> Maybe.andThen (Array.get id)
+
+        isPartiallyCorrect =
             if config.input.active then
                 config.input.partiallyCorrect
                     |> Array.get id
-                    |> highlightPartialSolution a
 
             else
-                a
+                Nothing
+
+        highlight a =
+            isPartiallyCorrect
+                |> Maybe.map (highlightPartialSolution a)
+                |> Maybe.withDefault a
     in
     case Array.get id config.input.state of
         Just (Text text) ->
@@ -177,13 +185,14 @@ viewQuiz config ( length, id ) attr =
                     |> List.append
                         [ Attr.type_ "text"
                         , Attr.class "lia-input lia-quiz__input"
-                        , Attr.style "padding" "0.1rem 0.5rem"
+                        , Attr.style "padding" "0.2rem 0.5rem"
                         , Attr.style "text-align" "center"
                         , Attr.placeholder "?"
                         , Attr.style "width" length
                         , Attr.style "font-weight" "inherit"
                         , Attr.style "text-decoration" "inherit"
                         , Attr.style "font-style" "inherit"
+                        , Attr.style "vertical-align" "middle"
                         , Attr.value text
                         , if config.input.active then
                             Attr.attribute "oninput" (config.input.on "input" id "this.value")
@@ -264,6 +273,7 @@ viewQuiz config ( length, id ) attr =
                     ]
                 , options
                     |> List.indexedMap (showOption config id)
+                    |> shuffle randomize
                     |> Html.div
                         [ Attr.class "lia-dropdown__options"
                         , Attr.class <|
@@ -283,12 +293,25 @@ viewQuiz config ( length, id ) attr =
                         |> Maybe.andThen (List.Extra.getAt i)
             in
             Html.span
-                (List.append (toAttribute attr)
+                (List.append
+                    (attr
+                        |> toAttribute
+                        |> highlight
+                    )
                     [ Attr.style "padding" "1rem"
                     , Attr.style "margin" "0.25rem"
                     , Attr.style "position" "relative"
-                    , Attr.style "border" "3px dashed #ccc"
-                    , Attr.style "border-radius" "4px"
+                    , Attr.style "border" <|
+                        case isPartiallyCorrect of
+                            Nothing ->
+                                "3px dotted #888"
+
+                            Just True ->
+                                "3px dotted green"
+
+                            Just False ->
+                                "3px dotted red"
+                    , Attr.style "border-radius" "5px"
                     , Attr.style "display" "inline-block"
                     , Attr.style "vertical-align" "middle"
                     ]
@@ -323,11 +346,23 @@ viewQuiz config ( length, id ) attr =
                     , Attr.style "margin" "0.25rem"
                     , Attr.style "position" "relative"
                     , Attr.style "border"
-                        (if highlighted then
-                            "3px dashed #ccc"
+                        ((if highlighted then
+                            "5px"
 
-                         else
-                            "1px dashed #ccc"
+                          else
+                            "3px"
+                         )
+                            ++ " dotted "
+                            ++ (case isPartiallyCorrect of
+                                    Nothing ->
+                                        "#888"
+
+                                    Just True ->
+                                        "green"
+
+                                    Just False ->
+                                        "red"
+                               )
                         )
                     , Attr.style "border-radius" "4px"
                     , Attr.style "display" "inline-block"
@@ -397,7 +432,7 @@ viewQuizDrops config =
                                     else
                                         viewer config o
                                             |> Html.span
-                                                ([ Attr.style "border" "1px dashed green"
+                                                ([ Attr.style "border" "3px dotted #888"
                                                  , Attr.style "margin" "0.25rem"
                                                  , Attr.style "padding" "1rem"
                                                  , Attr.style "background-color" "#f9f9f9"
@@ -490,21 +525,17 @@ keyDownEvent msg =
         ("if(event.key===' '||event.key==='Enter')" ++ msg)
 
 
-highlightPartialSolution : List (Attribute msg) -> Maybe Bool -> List (Attribute msg)
+highlightPartialSolution : List (Attribute msg) -> Bool -> List (Attribute msg)
 highlightPartialSolution attr partiallyCorrect =
-    case partiallyCorrect of
-        Just True ->
-            Attr.class "is-success"
-                :: A11y_Aria.invalid False
-                :: attr
+    if partiallyCorrect then
+        Attr.class "is-success"
+            :: A11y_Aria.invalid False
+            :: attr
 
-        Just False ->
-            Attr.class "is-failure"
-                :: A11y_Aria.invalid True
-                :: attr
-
-        Nothing ->
-            attr
+    else
+        Attr.class "is-failure"
+            :: A11y_Aria.invalid True
+            :: attr
 
 
 

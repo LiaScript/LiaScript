@@ -102,5 +102,8 @@ toString withQuotes state =
         Select _ [ i ] ->
             String.fromInt i
 
+        Drop _ _ [ i ] ->
+            String.fromInt i
+
         _ ->
-            ""
+            "-1"

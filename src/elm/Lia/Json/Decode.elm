@@ -44,7 +44,7 @@ toModel seed pane sync =
                     |> JD.map2 (|>) (JD.succeed readme)
                     |> andMap "origin" JD.string
                     |> andMap "str_title" JD.string
-                    |> JD.map2 (|>) (JD.succeed (Settings.init False False Settings.Slides))
+                    |> JD.map2 (|>) (JD.succeed (Settings.init (Just False) False Settings.Slides))
                     |> JD.map2 (|>) (JD.succeed Nothing)
                     |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap (Section.init seed)))
                     |> andMap "section_active" JD.int
