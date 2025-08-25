@@ -53,13 +53,12 @@ window['LiaScript'] = class LiaScript {
       ? import('../../typescript/connectors/Browser/index')
       : import('../../typescript/connectors/Base/index'))
 
-    this.app = new Base(
-      new Connector(),
-      this.allowSync,
-      this.debug,
-      url,
-      code,
-      this.hideURL
-    )
+    this.app = new Base(new Connector(), {
+      allowSync: this.allowSync,
+      debug: this.debug,
+      courseUrl: url,
+      script: code,
+      hideURL: this.hideURL,
+    })
   }
 }

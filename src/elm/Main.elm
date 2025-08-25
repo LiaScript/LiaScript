@@ -62,7 +62,7 @@ type alias Flags =
     , script : Maybe String
     , settings : JE.Value
     , screen : Screen
-    , hasShareAPI : Bool
+    , hasShareAPI : Maybe Bool
     , isFullscreen : Bool
     , hasIndex : Bool
     , seed : Int
@@ -98,7 +98,7 @@ init flags url key =
                 Nothing
                 Index.init
                 Nothing
-                (Session flags.hasShareAPI key flags.screen url_)
+                (Session (Maybe.withDefault False flags.hasShareAPI) key flags.screen url_)
                 state_
                 (Lia.Script.init
                     { seed = flags.seed

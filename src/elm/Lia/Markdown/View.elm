@@ -39,7 +39,7 @@ import Lia.Markdown.Types exposing (Block(..), Blocks)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (modal)
+import Lia.Utils exposing (modal, shuffle)
 import Lia.Voice as Voice
 import MD5
 import SvgBob
@@ -667,9 +667,22 @@ svgFigure config caption svg =
 viewQuiz : Config Msg -> Maybe String -> Parameters -> Quiz.Quiz Block -> Maybe ( Blocks, Int ) -> Html Msg
 viewQuiz config labeledBy attr quiz solution =
     case Quizzes.maybeConfig config.main quiz config.section.quiz_vector of
-        Just ( main, md ) ->
+        Just ( main, md, randomize ) ->
+            let
+                mainConfig =
+                    Config.setMain main config
+            in
             Html.div []
-                [ view_block (Config.setMain main config) md
+                [ view_block mainConfig md
+                , Inline.viewQuizDrops mainConfig.main
+                    |> shuffle randomize
+                    |> Html.div
+                        [ Attr.style "display" "flex"
+                        , Attr.style "flex-wrap" "wrap"
+                        , Attr.style "gap" "0.5rem"
+                        , Attr.style "align-items" "flex-start"
+                        ]
+                    |> Html.map Script
                 , quizControl config labeledBy attr quiz solution
                 ]
 

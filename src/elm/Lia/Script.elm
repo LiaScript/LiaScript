@@ -434,7 +434,7 @@ searchIndex index str =
 -}
 init :
     { seed : Int
-    , hasShareApi : Bool
+    , hasShareApi : Maybe Bool
     , openTOC : Bool
     , isFullscreen : Bool
     , settings : JE.Value

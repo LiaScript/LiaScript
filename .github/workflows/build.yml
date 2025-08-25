@@ -42,14 +42,24 @@ jobs:
           make
           cd ..
           rm -rf elm-stuff .parcel-cache
-      - name: LiaScript - build
+
+      - name: LiaScript - build (PWA)
         run: |
           cd LiaScript
           make all2
 
-      - name: Create ZIP artifact
+      - name: Create ZIP artifact (PWA)
         run: |
-          zip -r WWW.zip LiaScript/dist
+          zip -r pwa-build.zip LiaScript/dist/*
+
+      - name: LiaScript - build (OPAL)
+        run: |
+          cd LiaScript
+          npm run build:opal
+
+      - name: Create ZIP artifact (OPAL)
+        run: |
+          zip -r opal-build.zip LiaScript/dist/*
 
       - name: Create Release
         id: create_release
@@ -62,12 +72,22 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload ZIP Asset
+      - name: Upload ZIP Asset (PWA)
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: WWW.zip
-          asset_name: WWW.zip
+          asset_path: pwa-build.zip
+          asset_name: pwa-build.zip
+          asset_content_type: application/zip
+
+      - name: Upload ZIP Asset (Opal)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: opal-build.zip
+          asset_name: opal-build.zip
           asset_content_type: application/zip
