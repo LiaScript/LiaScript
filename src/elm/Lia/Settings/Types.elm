@@ -58,6 +58,7 @@ type Mode
     = Slides -- Underline Comments and Effects
     | Presentation -- Only effects
     | Textbook -- Render Comments and Effects at ones
+    | Full
 
 
 type Audio

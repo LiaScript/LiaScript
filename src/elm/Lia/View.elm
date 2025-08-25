@@ -276,11 +276,24 @@ viewPanes screen model =
             viewConfig
             (model.sections
                 |> Array.toIndexedList
-                |> List.map (showSection model screen)
+                |> List.map
+                    (\( i, sec ) ->
+                        showSection
+                            { model
+                                | section_active =
+                                    if model.settings.mode == Full then
+                                        i
+
+                                    else
+                                        model.section_active
+                            }
+                            screen
+                            ( i, sec )
+                    )
                 |> Html.div
                     [ Attr.style "width" "100%"
                     , Attr.style "overflow-y" "auto"
-                    , Attr.style "display" "flex"
+                    , Attr.style "display" "block"
                     , Attr.style "justify-content" "center"
                     , Attr.class "lia-slide__container"
                     , Attr.style "margin-top" "0px"
@@ -317,7 +330,8 @@ initConfig screen model =
 showSection : Model -> Screen -> ( Int, Section ) -> Html Msg
 showSection model screen ( id, section ) =
     initConfig screen model section
-        |> Markdown.view (model.section_active /= id) (Maybe.withDefault model.persistent section.persistent)
+        |> Markdown.view (model.section_active /= id)
+            (Maybe.withDefault model.persistent section.persistent)
         |> Html.map UpdateMarkdown
 
 

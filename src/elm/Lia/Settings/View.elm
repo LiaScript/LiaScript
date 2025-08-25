@@ -83,6 +83,9 @@ design model =
 
             Slides ->
                 "lia-mode--slides"
+
+            Full ->
+                "lia-mode--textbook"
     ]
 
 
@@ -267,6 +270,15 @@ viewModes grouping lang tabbable settings =
         "lia-mode-slides"
         "icon-slides"
         ""
+    , viewMode
+        grouping
+        lang
+        tabbable
+        Full
+        settings.mode
+        "lia-mode-full"
+        "icon-full"
+        ""
     ]
 
 
@@ -300,6 +312,9 @@ modeToString show =
 
         Textbook ->
             Trans.modeTextbook
+
+        Full ->
+            always "TODO"
 
 
 viewSizing : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Int -> Html Msg
@@ -837,6 +852,9 @@ menuMode lang tabbable settings =
 
                 Textbook ->
                     ( "icon-book", Trans.modeTextbook lang )
+
+                Full ->
+                    ( "icon-book", "TODO" )
     in
     [ actionBtn
         { grouping = grouping
