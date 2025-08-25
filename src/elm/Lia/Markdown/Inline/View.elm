@@ -185,13 +185,14 @@ viewQuiz config ( length, id ) attr =
                     |> List.append
                         [ Attr.type_ "text"
                         , Attr.class "lia-input lia-quiz__input"
-                        , Attr.style "padding" "0.1rem 0.5rem"
+                        , Attr.style "padding" "0.2rem 0.5rem"
                         , Attr.style "text-align" "center"
                         , Attr.placeholder "?"
                         , Attr.style "width" length
                         , Attr.style "font-weight" "inherit"
                         , Attr.style "text-decoration" "inherit"
                         , Attr.style "font-style" "inherit"
+                        , Attr.style "vertical-align" "middle"
                         , Attr.value text
                         , if config.input.active then
                             Attr.attribute "oninput" (config.input.on "input" id "this.value")
