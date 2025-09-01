@@ -354,11 +354,55 @@ function liaExecCode(event: Lia.Event) {
 
     try {
       const result = eval(event.message.param.code)
-
       send.lia(result === undefined ? 'LIA: stop' : result)
     } catch (e: any) {
-      log.error('exec => ', e.message)
+      // Enhanced error output: print code with line numbers and highlight error position
+      const code = event.message.param.code || ''
+      let line = e.lineNumber || e.line || null
+      let column = e.columnNumber || e.column || null
+      // Try to extract line/column from error.stack if not present
+      if ((!line || !column) && e.stack) {
+        const match = e.stack.match(/<anonymous>:(\d+):(\d+)/)
+        if (match) {
+          line = parseInt(match[1], 10)
+          column = parseInt(match[2], 10)
+        }
+      }
 
+      const codeLines = code.split('\n')
+      let formatted = '\n--- JS Error ---\n'
+      let styles: string[] = []
+      let args: any[] = []
+      codeLines.forEach((l, idx) => {
+        const ln = idx + 1
+        // Line number in gray, code in default
+        formatted += '%c' + ln + ':%c ' + l + '\n'
+        styles.push('color: gray; font-family: monospace;')
+        styles.push('color: white; font-family: monospace;')
+        if (line && ln === line) {
+          // Caret and error message in red
+          formatted +=
+            '%c' +
+            '    ' +
+            ' '.repeat(column ? column - 1 : 0) +
+            '^' +
+            e.message +
+            '\n'
+          styles.push('color: red; font-weight: bold; font-family: monospace;')
+        }
+      })
+      formatted += '--- End ---\n'
+      if (typeof window !== 'undefined' && window.console && console.error) {
+        console.error(
+          '%cexec => ' + e.message,
+          'color: red; font-weight: bold;'
+        )
+        // Use spread for styles
+        console.error(formatted, ...styles)
+      } else {
+        log.error('exec =>', e.message)
+        log.error(formatted)
+      }
       send.lia(e.message, false, [])
     }
   }, event.message.param.delay)
