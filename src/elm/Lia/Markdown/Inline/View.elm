@@ -706,6 +706,7 @@ viewMedia config inline =
                     [ Html.img
                         (Attr.src url_
                             :: onError "img" url_
+                            :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
                             :: toAttribute attr
                             |> CList.addIf
                                 (config.media
@@ -715,7 +716,6 @@ viewMedia config inline =
                                 )
                                 (load url_)
                             |> CList.addWhen (title config title_)
-                            |> CList.addWhen (alt config alt_)
                         )
                         []
                     ]
@@ -787,6 +787,7 @@ img config attr alt_ url_ title_ width =
         (Attr.src url_
             :: Attr.attribute "loading" "lazy"
             :: onError "img" url_
+            :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
             :: (if List.isEmpty attr && config.image_zoom then
                     [ Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") ]
 
@@ -795,7 +796,6 @@ img config attr alt_ url_ title_ width =
                )
             |> CList.addIf (width == Nothing) (load url_)
             |> CList.addWhen (title config title_)
-            |> CList.addWhen (alt config alt_)
         )
         []
 
