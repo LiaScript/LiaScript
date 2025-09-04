@@ -53,31 +53,4 @@ workbox.routing.setCatchHandler(({ event }) => {
   return Response.error()
 })
 
-// Cache JS, CSS, and image files from any origin, by destination or file extension
-workbox.routing.registerRoute(
-  ({ request, url }) => {
-    // Match by destination (for browser-initiated requests)
-    if (
-      request.destination === 'script' ||
-      request.destination === 'style' ||
-      request.destination === 'image'
-    ) {
-      return true
-    }
-    // Match by file extension (for fetch requests)
-    return /\.(js|css|png|jpe?g|gif|svg|webp|ico|bmp|mjs|map)$/i.test(
-      url.pathname
-    )
-  },
-  new workbox.strategies.StaleWhileRevalidate({
-    cacheName: 'assets-js-css-images',
-    plugins: [
-      new workbox.expiration.ExpirationPlugin({
-        maxEntries: 500,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
-      }),
-    ],
-  })
-)
-
 workbox.precaching.precacheAndRoute(self.__WB_MANIFEST)
