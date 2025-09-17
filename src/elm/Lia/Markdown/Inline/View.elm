@@ -706,6 +706,7 @@ viewMedia config inline =
                     [ Html.img
                         (Attr.src url_
                             :: onError "img" url_
+                            :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
                             :: toAttribute attr
                             |> CList.addIf
                                 (config.media
@@ -715,7 +716,6 @@ viewMedia config inline =
                                 )
                                 (load url_)
                             |> CList.addWhen (title config title_)
-                            |> CList.addWhen (alt config alt_)
                         )
                         []
                     ]
@@ -786,9 +786,10 @@ img config attr alt_ url_ title_ width =
     Html.img
         (Attr.src url_
             :: Attr.attribute "loading" "lazy"
+            :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
             :: onError "img" url_
             :: (-- double-click event is always added to the image
-                if isEmpty attr && config.image_zoom then
+                if List.isEmpty attr && config.image_zoom then
                     [ Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") ]
 
                 else
@@ -796,18 +797,8 @@ img config attr alt_ url_ title_ width =
                )
             |> CList.addIf (width == Nothing) (load url_)
             |> CList.addWhen (title config title_)
-            |> CList.addWhen (alt config alt_)
         )
         []
-
-
-{-| Internal helper function that checks if alle elements within the editor-branch do only contain
-double-click events for navigation. In this case the modal functionality is also applied to
-the image element.
--}
-isEmpty : Parameters -> Bool
-isEmpty =
-    List.all (Tuple.first >> (==) "ondblclick")
 
 
 load : String -> Attribute msg

@@ -1,4 +1,5 @@
 import './types/globals'
+import packageJson from '../../../package.json'
 
 export function initGlobals() {
   if (!window.LIA) {
@@ -7,7 +8,7 @@ export function initGlobals() {
   }
 
   if (!window.LIA.version) {
-    window.LIA.version = '0.17.4'
+    window.LIA.version = packageJson.version
   }
 
   if (!window.LIA.eventSemaphore) {
