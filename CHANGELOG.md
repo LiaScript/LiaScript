@@ -4,6 +4,36 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.5] - 17/09/202
+
+- improve: Copy to Clipboard error message
+- fix(Table): Aria sorting information
+
+  Aria sorting will now only be applied to the column that is used for
+  sorting. Before that all columns had an indicator for sort ascending or
+  descending.
+
+- fix: alt attribute for images
+
+  The alt text is now set to an empty string "" when the image shall be
+  ignored, this is now done for logo, icons and Markdown images without
+  alt-text
+
+  `![](img)`
+
+  [Issue: 241]
+
+- improve(Chart): script evaluation with better output error
+- feat(Script): improved debugging with code output
+
+  If `window.LIA.debug` is set to true, then every error that occurs
+  during script execution will be printed to the console with the
+  corresponding code that caused the error.
+
+  ```javascript
+  window.LIA.debug = true
+  ```
+
 ## [0.17.4] - 25/08/2025
 
 - improve(Quiz): script evaluation will deactivate the control buttons
