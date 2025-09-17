@@ -159,6 +159,7 @@ modify_State scriptID attr q =
                                 id
                         , opt = getOptions q.quiz seed attr
                         , partiallySolved = Array.empty
+                        , deactivated = False
                         }
                         s.quiz_vector
                 , effect_model =

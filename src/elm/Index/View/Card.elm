@@ -116,6 +116,7 @@ logo url =
             [ Attr.class "lia-card__logo"
             , Attr.src url
             , Attr.attribute "loading" "lazy"
+            , Attr.alt ""
             ]
             []
 

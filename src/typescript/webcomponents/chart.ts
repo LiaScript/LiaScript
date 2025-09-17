@@ -2,6 +2,8 @@ import ResizeObserver from 'resize-observer-polyfill'
 
 import * as pdf from 'pdfast'
 
+import { evalError } from '../liascript/service/Script'
+
 // @ts-ignore
 import * as echarts from 'echarts'
 import 'echarts-wordcloud'
@@ -94,9 +96,9 @@ customElements.define(
         }
 
         try {
-          return eval('option=' + option)
-        } catch (e) {
-          console.warn('lia-chart: could not eval option => ', e.message)
+          return eval('option = ' + option)
+        } catch (err) {
+          evalError('lia-chart', option, err)
         }
       }
 
