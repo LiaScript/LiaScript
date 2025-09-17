@@ -822,7 +822,7 @@ view_head2 lang sortable viewer id format state =
                     }
                     |> Html.th
                         (Attr.class "lia-table__header"
-                            :: (if i == id then
+                            :: (if i == id && state.column == i then
                                     if state.dir then
                                         A11y_Aria.sortAscending
 

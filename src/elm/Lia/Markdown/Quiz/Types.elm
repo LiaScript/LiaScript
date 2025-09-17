@@ -41,6 +41,7 @@ type alias Element =
     , scriptID : Maybe Int
     , opt : Options
     , partiallySolved : Array Bool
+    , deactivated : Bool
     }
 
 

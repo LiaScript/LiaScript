@@ -185,13 +185,14 @@ viewQuiz config ( length, id ) attr =
                     |> List.append
                         [ Attr.type_ "text"
                         , Attr.class "lia-input lia-quiz__input"
-                        , Attr.style "padding" "0.1rem 0.5rem"
+                        , Attr.style "padding" "0.2rem 0.5rem"
                         , Attr.style "text-align" "center"
                         , Attr.placeholder "?"
                         , Attr.style "width" length
                         , Attr.style "font-weight" "inherit"
                         , Attr.style "text-decoration" "inherit"
                         , Attr.style "font-style" "inherit"
+                        , Attr.style "vertical-align" "middle"
                         , Attr.value text
                         , if config.input.active then
                             Attr.attribute "oninput" (config.input.on "input" id "this.value")
@@ -705,6 +706,7 @@ viewMedia config inline =
                     [ Html.img
                         (Attr.src url_
                             :: onError "img" url_
+                            :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
                             :: toAttribute attr
                             |> CList.addIf
                                 (config.media
@@ -714,7 +716,6 @@ viewMedia config inline =
                                 )
                                 (load url_)
                             |> CList.addWhen (title config title_)
-                            |> CList.addWhen (alt config alt_)
                         )
                         []
                     ]
@@ -786,6 +787,7 @@ img config attr alt_ url_ title_ width =
         (Attr.src url_
             :: Attr.attribute "loading" "lazy"
             :: onError "img" url_
+            :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
             :: (if List.isEmpty attr && config.image_zoom then
                     [ Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") ]
 
@@ -794,7 +796,6 @@ img config attr alt_ url_ title_ width =
                )
             |> CList.addIf (width == Nothing) (load url_)
             |> CList.addWhen (title config title_)
-            |> CList.addWhen (alt config alt_)
         )
         []
 
