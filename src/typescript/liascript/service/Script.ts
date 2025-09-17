@@ -356,7 +356,9 @@ function liaExecCode(event: Lia.Event) {
       const result = eval(event.message.param.code)
       send.lia(result === undefined ? 'LIA: stop' : result)
     } catch (e: any) {
-      evalError('exec', event.message.param.code, e)
+      if (window.LIA.debug) {
+        evalError('exec', event.message.param.code, e)
+      }
       send.lia(e.message, false, [])
     }
   }, event.message.param.delay)
