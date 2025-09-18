@@ -75,18 +75,29 @@ update sync sectionID scripts msg vector =
                                 |> doSync sync sectionID (Just id)
 
                         Just scriptID ->
+                            let
+                                code =
+                                    scripts
+                                        |> Array.get scriptID
+                                        |> Maybe.map .script
+                            in
                             vector
-                                |> Array.set id { e | deactivated = True }
+                                |> Array.set id
+                                    { e
+                                        | deactivated =
+                                            case code of
+                                                Nothing ->
+                                                    False
+
+                                                _ ->
+                                                    True
+                                    }
                                 |> Return.val
                                 |> Return.batchEvents
-                                    (case
-                                        scripts
-                                            |> Array.get scriptID
-                                            |> Maybe.map .script
-                                     of
-                                        Just code ->
+                                    (case code of
+                                        Just c ->
                                             [ [ toString e.state ]
-                                                |> Service.Script.eval code (outputs scripts)
+                                                |> Service.Script.eval c (outputs scripts)
                                                 |> Event.pushWithId "eval" id
                                             ]
 
@@ -287,8 +298,11 @@ evalEventDecoder json =
                 if eval.result == "true" then
                     isSolved Nothing Solution.Solved >> activate
 
-                else if String.startsWith "LIA:" eval.result then
+                else if String.startsWith "LIA: wait" eval.result then
                     identity
+
+                else if String.startsWith "LIA:" eval.result then
+                    identity >> activate
 
                 else
                     isSolved Nothing Solution.Open >> activate
@@ -382,6 +396,7 @@ mergeMap sID body =
     { body
         | scriptID = sID.scriptID
         , opt = sID.opt
+        , deactivated = False
         , state =
             -- if the quiz is set to random and is not solved yet,
             -- then it is reset on every load
