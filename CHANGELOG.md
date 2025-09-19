@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.6] - 19/10/2025
+
+- Custom quizzes can now return an array of booleans to indicate which parts are correct. This will allow to show partial solutions for compound quizzes, such as matrix quizzes and gap-texts.
+
+  ```markdown
+  <!-- data-show-partial-solution -->
+  ..[[1]] ... [[2]] ... [[3]]
+  <script>
+  [true, false, true]
+  </script>
+  ```
+
+- Code block macros will be used without indentation, which will allow to embed webcomponents or more complex HTML structures with an indentation, listing, etc.
+
 ## [0.17.5] - 17/09/202
 
 - improve: Copy to Clipboard error message

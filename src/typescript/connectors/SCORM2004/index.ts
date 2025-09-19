@@ -22,7 +22,7 @@ class Connector extends Base.Connector {
   private active: boolean
 
   /** Stored currently active slide number */
-  private location: number | null
+  private location: number | null = null
 
   /** Passing threshold in [0,1] */
   private scaled_passing_score: number | null
@@ -32,6 +32,14 @@ class Connector extends Base.Connector {
   private startMs: number = 0
   private commitTimer: number | null = null
   private totalScore: number = 0
+  private pendingCommit: number | null = null
+
+  /** Cache last written values to avoid redundant LMS traffic */
+  private lastValues: Record<string, string> = {}
+
+  /** Throttle per-interaction latency writes */
+  private lastLatencyAt: Map<number, number> = new Map()
+  private lastWriteAt: Map<string, number> = new Map()
 
   /** State mirrors */
   private db: { quiz: any[][]; survey: any[][]; task: any[][] }
@@ -197,11 +205,21 @@ class Connector extends Base.Connector {
     }
   }
 
-  /** Direct SetValue + immediate commit (critical updates) */
-  private write(uri: CMIElement, data: string): void {
+  /**
+   * Buffered SetValue. Avoids duplicate writes and batches Commit calls.
+   * Use flush=true for critical updates (e.g., finish/exit).
+   */
+  private write(uri: CMIElement, data: string, flush: boolean = false): void {
     if (!this.scorm || !this.active) return
 
     LOG('write: ', uri, data)
+
+    // Skip duplicate writes
+    if (this.lastValues[uri] === data) {
+      if (flush) this.commit()
+      return
+    }
+    this.lastValues[uri] = data
 
     if (this.scorm.SetValue(uri, data) === 'false') {
       WARN('error occurred for', uri, data)
@@ -215,7 +233,32 @@ class Connector extends Base.Connector {
       }
     }
 
-    this.commit()
+    if (flush) {
+      this.commit()
+    } else {
+      // debounce commit burst
+      if (this.pendingCommit) {
+        clearTimeout(this.pendingCommit)
+      }
+      this.pendingCommit = window.setTimeout(() => {
+        this.pendingCommit = null
+        this.commit()
+      }, 750)
+    }
+  }
+
+  /** Throttled write to avoid spamming LMS for fast-changing fields */
+  private writeThrottled(
+    uri: CMIElement,
+    data: string,
+    intervalMs: number = 300
+  ): void {
+    const now = Date.now()
+    const last = this.lastWriteAt.get(uri) || 0
+    if (now - last >= intervalMs || this.lastValues[uri] !== data) {
+      this.lastWriteAt.set(uri, now)
+      this.write(uri, data)
+    }
   }
 
   init() {
@@ -255,6 +298,10 @@ class Connector extends Base.Connector {
       if (!cs) {
         this.write('cmi.completion_status', 'incomplete')
       }
+
+      // set static score bounds once
+      this.write('cmi.score.min', '0')
+      this.write('cmi.score.max', JSON.stringify(this.totalScore))
 
       // restore location/bookmark
       const entry = this.scorm.GetValue('cmi.entry')
@@ -305,6 +352,11 @@ class Connector extends Base.Connector {
     // bookmark or close attempt
     this.scorm.SetValue('cmi.exit', suspend ? 'suspend' : '')
 
+    // ensure all pending data is flushed now
+    if (this.pendingCommit) {
+      clearTimeout(this.pendingCommit)
+      this.pendingCommit = null
+    }
     this.commit()
 
     const ok = this.scorm.Terminate('')
@@ -394,18 +446,16 @@ class Connector extends Base.Connector {
   }
 
   storeHelper(record: Base.Record) {
-    for (let i = 0; i < this.db[record.table][record.id].length; i++) {
-      if (Utils.neq(record.data[i], this.db[record.table][record.id][i])) {
-        this.updateInteraction(
-          this.id[record.table][record.id][i],
-          record.data[i]
-        )
+    const table = record.table as 'quiz' | 'survey' | 'task'
+    for (let i = 0; i < this.db[table][record.id].length; i++) {
+      if (Utils.neq(record.data[i], this.db[table][record.id][i])) {
+        this.updateInteraction(this.id[table][record.id][i], record.data[i])
         // mirror in memory
-        this.db[record.table][record.id][i] = record.data[i]
+        this.db[table][record.id][i] = record.data[i]
 
         // mark quiz results if available
-        if (record.table === 'quiz') {
-          this.updateQuiz(this.id[record.table][record.id][i], record.data[i])
+        if (table === 'quiz') {
+          this.updateQuiz(this.id[table][record.id][i], record.data[i])
         }
       }
     }
@@ -468,13 +518,11 @@ class Connector extends Base.Connector {
     // If not active (preview or no-credit), stop here.
     if (!this.scorm || !this.active) return
 
-    // LMS writes
-    this.write('cmi.score.min', '0')
-    this.write('cmi.score.max', JSON.stringify(this.totalScore))
-    this.write('cmi.score.scaled', JSON.stringify(score))
+    // LMS writes (min/max already set at init)
+    const round = (v: number) => Math.round(v * 10000) / 10000
+    this.write('cmi.score.scaled', JSON.stringify(round(score)))
     this.write('cmi.score.raw', JSON.stringify(solved))
-
-    this.write('cmi.progress_measure', JSON.stringify(progress))
+    this.write('cmi.progress_measure', JSON.stringify(round(progress)))
 
     if (this.scaled_passing_score != null) {
       if (
@@ -539,9 +587,10 @@ class Connector extends Base.Connector {
 
   updateInteraction(id: number, state: any): void {
     // use buffer: this can be frequent
-    this.write(
+    this.writeThrottled(
       `cmi.interactions.${id}.learner_response`,
-      Utils.encodeJSON(state)
+      Utils.encodeJSON(state),
+      300
     )
 
     if (state.score) {
@@ -568,9 +617,14 @@ class Connector extends Base.Connector {
       this.write(`cmi.interactions.${id}.timestamp`, timestamp)
     }
 
-    // set session time
-    const dur = this.isoDuration(Date.now() - this.startMs)
-    this.write(`cmi.interactions.${id}.latency`, dur)
+    // set latency (throttled per interaction)
+    const now = Date.now()
+    const last = this.lastLatencyAt.get(id) || 0
+    if (now - last > 5000 || state.solved !== 0 || state.submitted) {
+      const dur = this.isoDuration(now - this.startMs)
+      this.write(`cmi.interactions.${id}.latency`, dur)
+      this.lastLatencyAt.set(id, now)
+    }
   }
 
   getInteraction(id: number): any | null {
@@ -591,11 +645,11 @@ class Connector extends Base.Connector {
 }
 
 function LOG(...args: any[]) {
-  console.log('SCORM2004: ', ...args)
+  if (window.LIA.debug) console.log('SCORM2004: ', ...args)
 }
 
 function WARN(...args: any[]) {
-  console.log('SCORM2004: ', ...args)
+  if (window.LIA.debug) console.log('SCORM2004: ', ...args)
 }
 
 export { Connector }
