@@ -304,6 +304,38 @@ evalEventDecoder json =
                 else if String.startsWith "LIA:" eval.result then
                     identity >> activate
 
+                else if String.startsWith "[" eval.result || String.contains "," eval.result then
+                    let
+                        array =
+                            eval.result
+                                |> String.split ","
+                                |> List.filterMap
+                                    (\bool ->
+                                        case String.trim bool of
+                                            "true" ->
+                                                Just True
+
+                                            "false" ->
+                                                Just False
+
+                                            _ ->
+                                                Nothing
+                                    )
+                    in
+                    \e ->
+                        { e
+                            | partiallySolved = Array.fromList array
+                            , deactivated = False
+                        }
+                            |> isSolved Nothing
+                                (if List.all identity array then
+                                    Solution.Solved
+
+                                 else
+                                    Solution.Open
+                                )
+                            |> activate
+
                 else
                     isSolved Nothing Solution.Open >> activate
 
@@ -321,7 +353,11 @@ isSolved solution state e =
                     comp2 e.opt.showPartialSolution quiz e.state
 
                 _ ->
-                    Array.empty
+                    if e.opt.showPartialSolution then
+                        e.partiallySolved
+
+                    else
+                        Array.empty
     in
     case ( e.opt.maxTrials, e.solved ) of
         ( Nothing, Solution.Open ) ->
