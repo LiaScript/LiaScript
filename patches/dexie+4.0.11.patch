@@ -1,0 +1,75 @@
+diff --git a/node_modules/dexie/dist/dexie.mjs b/node_modules/dexie/dist/dexie.mjs
+index 4cc4c71..e9e7072 100644
+--- a/node_modules/dexie/dist/dexie.mjs
++++ b/node_modules/dexie/dist/dexie.mjs
+@@ -5630,6 +5630,70 @@ try {
+         indexedDB: _global.indexedDB || _global.mozIndexedDB || _global.webkitIndexedDB || _global.msIndexedDB,
+         IDBKeyRange: _global.IDBKeyRange || _global.webkitIDBKeyRange
+     };
++
++    function ask(op, dbName) {
++        const msg = [
++            "A script is requesting permission to use IndexedDB.",
++            "",
++            `• Operation: ${op}`,
++            dbName ? `• Database: ${dbName}` : "",
++            "",
++            "Do you want to allow this?"
++        ].join("\n");
++        return window.confirm(msg);
++    }
++
++    const _idb = _global.indexedDB || _global.mozIndexedDB || _global.webkitIndexedDB || _global.msIndexedDB;
++
++    // lay a proxy over IDBFactory
++    const guarded = new Proxy(_idb, {
++        get(target, prop, receiver) {
++            if (prop === "open") {
++                return function (name, version) {
++                    if (!ask("open", name)) {
++                        throw new DOMException("Blocked by policy", "SecurityError");
++                    }
++                    return _idb.open(name, version);
++                };
++            }
++            if (prop === "deleteDatabase") {
++                return function (name) {
++                    if (!ask("deleteDatabase", name)) {
++                        throw new DOMException("Blocked by policy", "SecurityError");
++                    }
++                    return _idb.deleteDatabase(name);
++                };
++            }
++            if (prop === "databases") {
++                return function (...args) {
++                    if (!ask("databases", "(all)")) {
++                        throw new DOMException("Blocked by policy", "SecurityError");
++                    }
++                    return _idb.databases(...args);
++                };
++            }
++            if (prop === "cmp") {
++                return function (a, b) {
++                    if (!ask("cmp", "(keys)")) {
++                        throw new DOMException("Blocked by policy", "SecurityError");
++                    }
++                    return _idb.cmp(a, b);
++                };
++            }
++            // leave everything as it is
++            const v = Reflect.get(target, prop, receiver);
++            return typeof v === "function" ? v.bind(target) : v;
++        }
++    });
++
++    // activate monkey-patch
++    for (const prop of ["indexedDB", "webkitIndexedDB", "mozIndexedDB", "msIndexedDB"]) {
++        Object.defineProperty(window, prop, {
++            value: guarded,
++            writable: false,
++            configurable: false
++        });
++    }
+ }
+ catch (e) {
+     domDeps = { indexedDB: null, IDBKeyRange: null };
