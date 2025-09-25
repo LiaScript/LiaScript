@@ -80,7 +80,7 @@ const modes: {
   // !--------------------------------------
 
   c: 'c_cpp',
-  h: 'c_pp',
+  h: 'c_cpp',
   /* ------------------------------------- */
   c9search: 'c9search',
   c9search_results: 'c9search',
@@ -145,6 +145,8 @@ const modes: {
   csv: 'csv',
   /* ------------------------------------- */
   curly: 'curly',
+  /* ------------------------------------- */
+  cuttlefish: 'cuttlefish',
 
   // !--------------------------------------
   // ! D
@@ -175,6 +177,8 @@ const modes: {
   cmd: 'batchfile',
   batchfile: 'batchfile',
   /* ------------------------------------- */
+  prql: 'prql',
+  /* ------------------------------------- */
   drools: 'drools',
   drl: 'drools',
   /* ------------------------------------- */
@@ -202,6 +206,8 @@ const modes: {
   erlang: 'erlang',
   erl: 'erlang',
   hrl: 'erlang',
+  /* ------------------------------------- */
+  eex: 'html_elixir',
 
   // !--------------------------------------
   // ! F
@@ -243,6 +249,7 @@ const modes: {
   feature: 'gherkin',
   /* ------------------------------------- */
   gitignore: 'gitignore',
+  '.gitignore': 'gitignore',
   /* ------------------------------------- */
   glsl: 'glsl',
   frag: 'glsl',
@@ -301,8 +308,8 @@ const modes: {
   conf: 'ini',
   cfg: 'ini',
   prefs: 'ini',
-
-  toml: 'toml',
+  /* ------------------------------------- */
+  // (makefile variants defined in section M)
   /* ------------------------------------- */
   io: 'io',
   ion: 'ion',
@@ -325,6 +332,9 @@ const modes: {
   jsx: 'jsx',
   cjs: 'javascript',
   mjs: 'javascript',
+  mts: 'typescript',
+  cts: 'typescript',
+  str: 'typescript',
   /* ------------------------------------- */
   jexl: 'jexl',
   /* ------------------------------------- */
@@ -360,6 +370,7 @@ const modes: {
   latex: 'latex',
   ltx: 'latex',
   tex: 'tex',
+  // duplicate bib mapping omitted to avoid conflict (bib -> bibtex above)
   /* ------------------------------------- */
   latte: 'latte',
   /* ------------------------------------- */
@@ -436,6 +447,7 @@ const modes: {
   /* ------------------------------------- */
   nginx: 'nginx',
   nginxconf: 'nginx',
+  nas: 'nasal',
   /* ------------------------------------- */
   nim: 'nim',
   /* ------------------------------------- */
@@ -447,10 +459,9 @@ const modes: {
   /* ------------------------------------- */
   nunjucks: 'nunjucks',
   nunjs: 'nunjucks',
-  nj: 'nunjacks',
-  njk: 'nunjacks',
-
-  // !--------------------------------------
+  nj: 'nunjucks',
+  njk: 'nunjucks',
+  // makefile variants removed here (kept in section M)
   // ! O
   // !--------------------------------------
 
@@ -497,6 +508,7 @@ const modes: {
   module: 'php',
   /* ------------------------------------- */
   php_laravel_blade: 'php_laravel_blade',
+  'blade.php': 'php_laravel_blade',
   /* ------------------------------------- */
   pig: 'pig',
   /* ------------------------------------- */
@@ -539,6 +551,7 @@ const modes: {
   py: 'python',
   gyp: 'python',
   ipython: 'python',
+  pyi: 'python',
 
   // !--------------------------------------
   // ! Q
@@ -554,6 +567,11 @@ const modes: {
   r: 'r',
   /* ------------------------------------- */
   raku: 'raku',
+  rakumod: 'raku',
+  rakutest: 'raku',
+  p6: 'raku',
+  pl6: 'raku',
+  pm6: 'raku',
   /* ------------------------------------- */
   razor: 'razor',
   /* ------------------------------------- */
@@ -576,6 +594,8 @@ const modes: {
   irb: 'ruby',
   podspec: 'ruby',
   guardfile: 'ruby',
+  rakefile: 'ruby',
+  gemfile: 'ruby',
   rb: 'ruby',
   thor: 'ruby',
   /* ------------------------------------- */
@@ -598,6 +618,7 @@ const modes: {
   sm: 'scheme',
   rkt: 'scheme',
   oak: 'scheme',
+  logic: 'logiql',
   /* ------------------------------------- */
   scrypt: 'scrypt',
   /* ------------------------------------- */
@@ -632,6 +653,10 @@ const modes: {
   styl: 'stylus',
   /* ------------------------------------- */
   swift: 'swift',
+  /* ------------------------------------- */
+  // scad duplicate removed; defined earlier near openscad
+  /* ------------------------------------- */
+  snippets: 'snippets',
 
   // !--------------------------------------
   // ! T
@@ -656,6 +681,7 @@ const modes: {
   /* ------------------------------------- */
   typescript: 'typescript',
   ts: 'typescript',
+  // mts/cts/str defined earlier with JS block
   /* ------------------------------------- */
   tsv: 'tsv',
   /* ------------------------------------- */
