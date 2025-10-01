@@ -69,6 +69,17 @@ $btn-height: 3.6rem;
     background-color: rgb(var(--color-background));
     border: 1px solid rgb(var(--color-highlight));
 
+    @at-root html.lia-variant-dark & {
+      border-color: rgb(
+        from rgb(var(--color-highlight)) calc(r * 2.2) calc(g * 2.2)
+          calc(b * 2.2)
+      );
+      color: rgb(
+        from rgb(var(--color-highlight)) calc(r * 2.5) calc(g * 2.5)
+          calc(b * 2.5)
+      );
+    }
+
     &.lia-btn--warning {
       background-color: transparent;
       border-color: rgb(var(--lia-yellow));
@@ -99,6 +110,10 @@ $btn-height: 3.6rem;
     background-color: transparent !important;
     border: none;
     color: currentColor;
+
+    @at-root html.lia-variant-dark & {
+      filter: brightness(1.8) contrast(1.1);
+    }
   }
 
   > .lia-btn__icon {
