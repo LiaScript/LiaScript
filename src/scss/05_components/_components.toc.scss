@@ -121,6 +121,7 @@
 
         &:before {
           content: '';
+          background-color: rgb(var(--color-highlight));
           position: absolute;
           left: 0;
           top: 0px;
