@@ -1,4 +1,4 @@
-all: patch-elm patch-dexie
+all: patch-elm
 
 patch-elm:
 	cd elm-patch && make all
