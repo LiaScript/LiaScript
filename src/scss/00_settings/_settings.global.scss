@@ -29,15 +29,15 @@ $global-media-direction: min; // min / max — default is min (mobile first)
 $global-breakpoints: (
   // "default": "",
   // 480px
-  "xs": 30em,
+  'xs': 30em,
   // 768px
-  "sm": 48em,
+  'sm': 48em,
   // 1024px
-  "md": 64em,
+  'md': 64em,
   // 1440px
-  "lg": 90em,
+  'lg': 90em,
   // 1680px
-  "xl": 105em,
+  'xl': 105em
 );
 
 /* --------------------------------------------------
@@ -50,7 +50,7 @@ $global-outline: 3px !default;
 
 $global-transition-property: all !default;
 $global-transition-speed: 250ms !default;
-$global-transition-timing-function: ease-in-out !default;
+$global-transition-timing-function: ease-out !default;
 $global-transition-delay: 0ms !default;
 
 $global-transition: $global-transition-property $global-transition-speed
@@ -65,6 +65,6 @@ $global-transition: $global-transition-property $global-transition-speed
 $global-font-size: 1.5rem !default; // 15px
 $global-line-height: 1.47 !default;
 
-$global-font-family: "LiaSourceSansPro";
-$global-font-mono: "LiaSourceCodePro";
-$global-font-headline: "LiaSourceSerifPro";
+$global-font-family: 'LiaSourceSansPro';
+$global-font-mono: 'LiaSourceCodePro';
+$global-font-headline: 'LiaSourceSerifPro';

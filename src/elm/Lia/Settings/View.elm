@@ -248,7 +248,7 @@ viewModes grouping lang tabbable settings =
         settings.mode
         "lia-mode-textbook"
         "icon-book"
-        "mb-1"
+        ""
     , viewMode
         grouping
         lang
@@ -257,7 +257,7 @@ viewModes grouping lang tabbable settings =
         settings.mode
         "lia-mode-presentation"
         "icon-presentation"
-        "mb-1"
+        ""
     , viewMode
         grouping
         lang
@@ -599,14 +599,13 @@ viewTranslations lang tabbable =
 
 submenu : (List (Attribute Msg) -> List (Attribute Msg)) -> Bool -> List (Html Msg) -> Html Msg
 submenu grouping isActive =
-    [ Attr.class "lia-support-menu__submenu"
+    [ Attr.class "lia-support-menu__submenu flow"
     , Attr.class <|
         if isActive then
             "active"
 
         else
             ""
-
     -- , A11y_Aria.checked (Just isActive)
     , A11y_Role.radioGroup
     , A11y_Aria.labeledBy "lia-mode-menu-button"
@@ -1178,7 +1177,7 @@ header { online, active, lang, screen, settings, logo, progress, buttons } =
                                 (fn lang tabbable settings)
                         )
                     |> Html.ul
-                        [ Attr.class "nav lia-support-menu__nav"
+                        [ Attr.class "nav lia-support-menu__nav flow"
                         , A11y_Role.menuBar
                         , A11y_Key.tabbable False
                         ]

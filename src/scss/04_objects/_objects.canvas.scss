@@ -78,7 +78,10 @@ $slide-margin-left-textbook: 19rem !default;
   @include tools.breakpoint('sm') {
     &.lia-toc--visible {
       left: $toc-width-desktop;
-      width: calc(100% - #{$toc-width-desktop});
+
+      @include tools.breakpoint('md') {
+        width: 100%;
+      }
 
       [dir='rtl'] & {
         left: -$toc-width-desktop;
@@ -99,12 +102,20 @@ $slide-margin-left-textbook: 19rem !default;
       // right: 0;
       width: calc(100% - #{$support-width-desktop});
 
+      @include tools.breakpoint('md') {
+        width: 100%;
+      }
+
       .lia-header {
         right: #{$support-width-desktop};
 
         [dir='rtl'] & {
           left: #{$support-width-desktop};
           right: 0;
+
+          @include tools.breakpoint('md') {
+            left: 0;
+          }
         }
       }
     }

@@ -2,7 +2,7 @@
 @use '../00_settings/settings.global';
 @use '../01_tools/tools.breakpoints';
 @use '../03_elements/elements.button';
-@use '../04_objects/object.canvas';
+@use '../04_objects/objects.canvas' as canvas;
 @use 'components.header';
 
 .lia-support-menu {
@@ -22,7 +22,7 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  width: object.$support-width-mobile;
+  width: canvas.$support-width-mobile;
   z-index: 100;
 
   [dir='rtl'] & {
@@ -47,7 +47,7 @@
   }
 
   @include tools.breakpoint('sm') {
-    width: object.$support-width-desktop;
+    width: canvas.$support-width-desktop;
     padding-top: 0rem;
   }
 
@@ -59,6 +59,12 @@
 
     &--closed {
       transform: translateX(0);
+
+      [dir='rtl'] & {
+        .lia-support-menu__nav {
+          transform: translateX(100%);
+        }
+      }
 
       .lia-support-menu__toggler {
         transform: translate(-6.5rem, -50%);
@@ -132,6 +138,8 @@
     }
 
     @include tools.breakpoint('md') {
+      --flow-space: 0;
+
       align-items: center;
       display: flex;
       flex-direction: row;
@@ -146,7 +154,7 @@
     color: rgb(var(--color-highlight));
     display: flex;
     flex-direction: column;
-    padding: 1.8rem 0;
+    padding: 1em 0 0;
 
     &:not(:first-child) {
       border-top: settings.$global-border;
@@ -172,10 +180,6 @@
       width: max-content;
     }
 
-    @include tools.breakpoint('sm') {
-      padding: 1.8rem 0.75rem;
-    }
-
     @include tools.breakpoint('md') {
       padding: 0 0.75rem;
 
@@ -191,7 +195,8 @@
   }
 
   &__submenu {
-    align-items: flex-start;
+    --flow-space: 1em;
+
     background-color: rgb(var(--color-background));
     box-shadow: none;
     color: rgb(var(--color-text));
@@ -202,7 +207,7 @@
     position: relative;
     right: 0;
     top: 0;
-    width: max-content;
+    width: 100%;
 
     [dir='rtl'] & {
       right: auto;
@@ -235,15 +240,20 @@
       align-items: flex-start;
     }
 
+    @include tools.breakpoint('sm') {
+      align-items: flex-start;
+    }
+
     @include tools.breakpoint('md') {
       border-radius: settings.$global-radius;
       box-shadow: 0 0 1rem rgba(128, 128, 128, 0.2);
       display: none;
-      max-width: 30rem;
       padding: 1.4rem;
       position: absolute;
       top: 5.9rem;
       z-index: 100;
+      max-width: 30rem;
+      width: max-content;
 
       &.active {
         display: flex;

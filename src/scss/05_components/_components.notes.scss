@@ -1,6 +1,6 @@
 @use '../00_settings/settings.global';
 @use '../01_tools/tools.breakpoints';
-@use '../04_objects/object.canvas';
+@use '../04_objects/objects.canvas' as canvas;
 
 .lia-notes {
   background-color: rgb(var(--lia-grey-light));
@@ -11,7 +11,7 @@
   max-width: 144rem;
   overflow: auto;
   position: relative;
-  width: object.$notes-width-mobile;
+  width: canvas.$notes-width-mobile;
 
   @at-root html.lia-variant-dark & {
     background-color: rgb(var(--lia-anthracite));
@@ -77,6 +77,6 @@
   @include tools.breakpoint('lg') {
     border-left: settings.$global-border;
     border-inline-start: settings.$global-border;
-    max-width: object.$notes-width-desktop;
+    max-width: canvas.$notes-width-desktop;
   }
 }

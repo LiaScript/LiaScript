@@ -1,16 +1,17 @@
 @use '../00_settings/settings.global';
-@use '../01_tools/tools.breakpoints';
+@use '../01_tools/tools.breakpoints' as b;
+@use '../01_tools/tools.transition' as t;
 
 .lia-pagination {
   display: inline-block;
   width: 100%;
 
-  @include tools.breakpoint('md') {
+  @include b.breakpoint('md') {
     margin-bottom: 2rem;
     margin-block-end: 2rem;
     width: auto;
   }
-  @include tools.breakpoint('lg') {
+  @include b.breakpoint('lg') {
     margin-bottom: 0;
     margin-block-end: 0;
     margin-right: 2rem;
@@ -29,9 +30,16 @@
     font-weight: 700;
     justify-content: space-between;
 
-    @include tools.breakpoint('md') {
+    @include b.breakpoint('md') {
       border-radius: settings.$global-radius;
       width: 15rem;
+    }
+
+    [dir='rtl'] & {
+      .lia-btn__icon {
+        transform: scaleX(-1);
+        @include t.transition(transform, 0.3s, ease-out);
+      }
     }
   }
 

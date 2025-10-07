@@ -38,9 +38,10 @@
 @use '03_elements/elements.textarea' as elements14;
 
 // Objects
-@use '04_objects/objects.animations';
-@use '04_objects/object.canvas';
-@use '04_objects/objects.preview-grid' as objects2;
+@use '04_objects/objects.animations' as animations;
+@use '04_objects/objects.canvas' as canvas;
+@use '04_objects/objects.preview-grid' as grid;
+@use '04_objects/objects.flow' as flow;
 
 // Components
 @use '05_components/components.accordion';

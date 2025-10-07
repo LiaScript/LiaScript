@@ -2,7 +2,7 @@
 @use '../00_settings/settings.global';
 @use '../01_tools/tools.breakpoints';
 @use '../03_elements/elements.button';
-@use '../04_objects/object.canvas';
+@use '../04_objects/objects.canvas' as canvas;
 @use 'components.header';
 
 .lia-toc {
@@ -17,7 +17,7 @@
   position: fixed;
   transition: settings.$global-transition;
   transition-property: left, width, transform;
-  width: object.$toc-width-mobile;
+  width: canvas.$toc-width-mobile;
   z-index: 200;
 
   [dir='rtl'] & {
@@ -65,7 +65,7 @@
   }
 
   @include tools.breakpoint('sm') {
-    width: object.$toc-width-desktop;
+    width: canvas.$toc-width-desktop;
   }
 
   &--closed {
@@ -100,7 +100,7 @@
       padding-inline-start: 3rem;
       padding-right: 3.75rem;
       padding-inline-end: 3.75rem;
-      transition: left 250ms ease-in-out;
+      transition: left 250ms ease-out;
     }
 
     .icon-search {
