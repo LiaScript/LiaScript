@@ -1,7 +1,7 @@
-@use "sass:string";
+@use 'sass:string';
 // replace substring with another string
 // credits: https://css-tricks.com/snippets/sass/str-replace-function/
-@function str-replace($string, $search, $replace: "") {
+@function str-replace($string, $search, $replace: '') {
   $index: string.index($string, $search);
   @if $index {
     @return string.slice($string, 1, $index - 1) + $replace +

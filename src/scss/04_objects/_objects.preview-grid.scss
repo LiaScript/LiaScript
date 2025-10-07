@@ -1,4 +1,4 @@
-@use "../01_tools/tools.breakpoints";
+@use '../01_tools/tools.breakpoints';
 
 .preview-grid {
   margin: 2rem 0;
@@ -6,11 +6,11 @@
   grid-gap: 2rem;
   grid-template-columns: 1fr;
 
-  @include tools.breakpoint("md") {
+  @include tools.breakpoint('md') {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  @include tools.breakpoint("lg") {
+  @include tools.breakpoint('lg') {
     grid-template-columns: repeat(auto-fill, minmax(41.6rem, 1fr));
   }
 }

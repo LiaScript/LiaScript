@@ -1,13 +1,15 @@
-@use "sass:color";
-@use "sass:map";
-@use "sass:math";
-@use "tools.str-replace";
+@use 'sass:color';
+@use 'sass:map';
+@use 'sass:math';
+@use 'tools.str-replace';
 
 // Calculeate brightness of a given color.
 @function brightness($color) {
   @return (
-      (color.red($color) * 0.299) + (color.green($color) * 0.587) + (color.blue($color) * 0.114)
-    ) / 255 * 100%;
+      (color.red($color) * 0.299) + (color.green($color) * 0.587) +
+        (color.blue($color) * 0.114)
+    ) /
+    255 * 100%;
 }
 
 // Compares contrast of a given color to the light/dark arguments and returns whichever is most "contrasty"
@@ -29,10 +31,10 @@
 }
 
 @function darkness($color, $darknessMultiplier) {
-  $color: tools.str-replace($color, "var(");
-  $color: tools.str-replace($color, ")");
-  $color-h: var(#{$color + "-h"});
-  $color-s: var(#{$color + "-s"});
-  $color-l: var(#{$color + "-l"});
+  $color: tools.str-replace($color, 'var(');
+  $color: tools.str-replace($color, ')');
+  $color-h: var(#{$color + '-h'});
+  $color-s: var(#{$color + '-s'});
+  $color-l: var(#{$color + '-l'});
   @return hsl($color-h, $color-s, calc(#{$color-l} * #{$darknessMultiplier}));
 }

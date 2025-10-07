@@ -1,4 +1,4 @@
-@use "../00_settings/settings.colors";
+@use '../00_settings/settings.colors';
 
 @each $colorName, $colorValue in settings.$global-colors {
   .bg-#{$colorName} {

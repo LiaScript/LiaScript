@@ -1,7 +1,7 @@
-@use "sass:map";
-@use "sass:math";
-@use "../00_settings/settings.global";
-@use "tools.px-em-calc";
+@use 'sass:map';
+@use 'sass:math';
+@use '../00_settings/settings.global';
+@use 'tools.px-em-calc';
 
 /* --------------------------------------------------
    Breakpoint Mixin
@@ -11,7 +11,7 @@
 @mixin breakpoint($breakpoint, $direction: settings.$global-media-direction) {
   // check if value is a preconfigured breakpoint
   @if map.has-key(settings.$global-breakpoints, $breakpoint) {
-    @if $direction == "max" {
+    @if $direction == 'max' {
       @media screen and (max-width: #{map.get(settings.$global-breakpoints, $breakpoint) - tools.calc-em(1, 16)}) {
         @content;
       }

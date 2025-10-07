@@ -1,5 +1,5 @@
-@use "../00_settings/settings.global";
-@use "../01_tools/tools.breakpoints";
+@use '../00_settings/settings.global';
+@use '../01_tools/tools.breakpoints';
 
 $responsive-voice-hight: 7rem;
 
@@ -20,7 +20,7 @@ $responsive-voice-hight: 7rem;
     justify-content: space-between;
     width: 100%;
 
-    @include tools.breakpoint("xs") {
+    @include tools.breakpoint('xs') {
       justify-content: flex-start;
       width: auto;
     }
@@ -34,14 +34,14 @@ $responsive-voice-hight: 7rem;
     background-color: rgb(var(--lia-anthracite));
   }
 
-  @include tools.breakpoint("xs") {
+  @include tools.breakpoint('xs') {
     align-items: center;
     height: 7rem;
     flex-direction: row;
     padding: 0;
   }
 
-  @include tools.breakpoint("md") {
+  @include tools.breakpoint('md') {
     border-top-left-radius: settings.$global-radius;
     border-top-right-radius: settings.$global-radius;
   }
