@@ -12,7 +12,6 @@
     position: relative;
 
     > *:not(:last-child) {
-      margin-bottom: 1rem;
       margin-block-end: 1rem;
     }
   }
@@ -23,7 +22,6 @@
     align-self: flex-start;
 
     > *:not(:last-child) {
-      margin-right: 1rem;
       margin-inline-end: 1rem;
     }
 
@@ -72,7 +70,6 @@
   &-multiple-choice,
   &-select {
     > *:not(:last-child) {
-      margin-bottom: 2rem;
       margin-block-end: 2rem;
     }
   }
@@ -87,14 +84,12 @@
     }
 
     > .lia-quiz__control {
-      margin-right: 1rem;
       margin-inline-end: 1rem;
     }
   }
 
   // make sure that any kind of list has no indenting
   [class^='lia-list'] {
-    margin-left: 0;
     margin-inline-start: 0;
   }
 }

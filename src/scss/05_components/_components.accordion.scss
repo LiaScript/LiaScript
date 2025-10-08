@@ -3,14 +3,11 @@
 @use '../00_settings/settings.global';
 
 .lia-accordion {
-  &__item {
-  }
-
   &__header {
     background-color: rgb(var(--color-highlight));
     display: flex;
     align-items: center;
-    padding-left: 0.25rem;
+    padding-inline-start: 0.25rem;
   }
 
   &__headline {
@@ -19,11 +16,6 @@
     font-size: 1.5rem;
     font-family: settings.$global-font-family;
   }
-
-  &__content {
-    //
-  }
-
   &__toggle {
     color: rgb(var(--lia-white));
     font-size: 2rem;

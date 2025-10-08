@@ -426,7 +426,7 @@ slider name title message maximum grouping tabbable value =
             [ Attr.class "lia-label"
             , A11y_Aria.hidden (not tabbable)
             , Attr.style "width" "50px"
-            , Attr.style "margin-right" "10px"
+            , Attr.style "margin-inline-end" "10px"
             ]
             [ Html.text name ]
         , Html.input
@@ -443,7 +443,7 @@ slider name title message maximum grouping tabbable value =
             )
             []
         , Html.span
-            [ Attr.style "margin-left" "10px"
+            [ Attr.style "margin-inline-start" "10px"
             , Attr.style "width" "40px"
             , Attr.style "text-align" "right"
             ]
@@ -779,7 +779,7 @@ btnSupport lang open =
 btnChat : { lang : Lang, tabbable : Bool, hide : Bool, chat : { show : Bool, updates : Bool } } -> Html Msg
 btnChat { lang, tabbable, hide, chat } =
     if hide then
-        Html.span [ Attr.style "margin-right" "4rem" ] []
+        Html.span [ Attr.style "margin-inline-end" "4rem" ] []
 
     else
         btnIcon
@@ -810,7 +810,7 @@ btnChat { lang, tabbable, hide, chat } =
             , Attr.class "lia-btn lia-btn--transparent"
             , A11y_Aria.hasMenuPopUp
             , A11y_Aria.expanded chat.show
-            , Attr.style "margin-right" "1rem"
+            , Attr.style "margin-inline-end" "1rem"
             , Attr.class <|
                 if chat.updates && not chat.show then
                     "shake"
@@ -1025,7 +1025,7 @@ menuEdit url lang tabbable _ =
         ]
         [ icon "icon-edit" []
         , Html.span
-            [ Attr.style "margin-left" "1rem"
+            [ Attr.style "margin-inline-start" "1rem"
             , Attr.class " hide-md-up"
             ]
             [ lang

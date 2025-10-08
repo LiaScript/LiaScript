@@ -58,7 +58,6 @@ input[type='search']::-webkit-search-results-decoration {
 }
 
 .lia-form-check .lia-checkbox {
-  margin-right: 0.75rem;
   margin-inline-end: 0.75rem;
 }
 
@@ -220,7 +219,6 @@ input[type='search']::-webkit-search-results-decoration {
 .lia-radio-group {
   // custom styling for submenu theme color picker
   &.lia-settings-theme-colors {
-    margin-left: 0.4rem;
     margin-inline-start: 0.4rem;
     display: flex;
     padding: 0.4rem 0;
@@ -228,7 +226,6 @@ input[type='search']::-webkit-search-results-decoration {
     justify-content: space-evenly;
 
     > *:not(:last-child) {
-      margin-right: 0.75rem;
       margin-inline-end: 0.75rem;
     }
 
@@ -378,7 +375,6 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
   &::-webkit-slider-thumb {
     @include thumb;
     -webkit-appearance: none;
-    margin-top: - math.div($thumb-height, 2);
     margin-block-start: - math.div($thumb-height, 2);
   }
 
@@ -426,7 +422,7 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
 
   &::-ms-thumb {
     @include thumb;
-    margin-top: math.div($track-height, 4);
+    margin-block-start: math.div($track-height, 4);
   }
 
   &:disabled {

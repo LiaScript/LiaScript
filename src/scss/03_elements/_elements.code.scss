@@ -40,7 +40,6 @@
     padding: 0 0.5rem;
 
     &__action {
-      margin-right: auto;
       margin-inline-end: auto;
     }
 
@@ -49,7 +48,6 @@
       align-items: center;
 
       > *:not(:last-child) {
-        margin-right: 0.5rem;
         margin-inline-end: 0.5rem;
       }
     }

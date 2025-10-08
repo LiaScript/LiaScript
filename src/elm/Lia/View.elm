@@ -261,7 +261,7 @@ viewPanes screen model =
                     , Attr.style "display" "flex"
                     , Attr.style "justify-content" "center"
                     , Attr.class "lia-slide__container"
-                    , Attr.style "margin-top" "0px"
+                    , Attr.style "margin-block-start" "0px"
                     ]
             )
             (Chat.view model.translation (initConfig screen model) model.chat
@@ -800,7 +800,7 @@ showModal model =
                     , Attr.style "max-height" "800px"
                     , Attr.style "width" "80%"
                     , Attr.style "max-width" "800px"
-                    , Attr.style "margin-top" "calc(100vh * 0.08)"
+                    , Attr.style "margin-block-start" "calc(100vh * 0.08)"
                     ]
                     [ model.url
                         |> Settings.qrCodeView model.translation True True Nothing

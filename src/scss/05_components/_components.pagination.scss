@@ -7,14 +7,11 @@
   width: 100%;
 
   @include b.breakpoint('md') {
-    margin-bottom: 2rem;
     margin-block-end: 2rem;
     width: auto;
   }
   @include b.breakpoint('lg') {
-    margin-bottom: 0;
     margin-block-end: 0;
-    margin-right: 2rem;
     margin-inline-end: 2rem;
     width: auto;
   }

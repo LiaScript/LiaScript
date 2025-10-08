@@ -87,7 +87,6 @@
   }
 
   @include tools.breakpoint('sm', 'max') {
-    padding-top: 6rem;
     padding-block-start: 6rem;
   }
 
@@ -98,9 +97,7 @@
 
     input {
       background-color: rgba(var(--lia-grey-light), 0.1);
-      padding-left: 3rem;
       padding-inline-start: 3rem;
-      padding-right: 3.75rem;
       padding-inline-end: 3.75rem;
       transition: left 250ms ease-out;
     }
@@ -145,7 +142,6 @@
     display: flex;
     flex-direction: column;
     overflow: auto;
-    margin-bottom: auto;
     margin-inline-end: auto;
 
     a {
@@ -185,7 +181,6 @@
         &2 {
           font-weight: 600;
           font-size: calc(1.7rem * var(--font-size-multiplier));
-          padding-left: settings.$global-font-size + 3rem;
           padding-inline-start: settings.$global-font-size + 3rem;
           position: relative;
 
@@ -203,22 +198,18 @@
         }
 
         &3 {
-          padding-left: 2 * settings.$global-font-size + 3rem;
           padding-inline-start: 2 * settings.$global-font-size + 3rem;
         }
 
         &4 {
-          padding-left: 3 * settings.$global-font-size + 3rem;
           padding-inline-start: 3 * settings.$global-font-size + 3rem;
         }
 
         &5 {
-          padding-left: 4 * settings.$global-font-size + 3rem;
           padding-inline-start: 4 * settings.$global-font-size + 3rem;
         }
 
         &6 {
-          padding-left: 5 * settings.$global-font-size + 3rem;
           padding-inline-start: 5 * settings.$global-font-size + 3rem;
         }
       }
@@ -226,7 +217,6 @@
   }
 
   &__bottom {
-    margin-top: 1rem;
     margin-block-start: 1rem;
     padding: 1rem 0 0 3rem;
     position: relative;

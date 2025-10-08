@@ -7,7 +7,6 @@
   flex-direction: column;
   position: relative;
   color: rgb(var(--color-text));
-  margin-top: 2rem;
   margin-block-start: 2rem;
 
   &__logo {
@@ -33,10 +32,8 @@
     padding: 2rem 0 1rem 0;
 
     @include tools.breakpoint-only('sm', 'md') {
-      margin-top: 4rem;
       margin-block-start: 4rem;
       height: auto;
-      padding-top: 0;
       padding-block-start: 0;
     }
   }
@@ -52,7 +49,6 @@
     }
 
     > *:not(:last-child) {
-      margin-right: 1rem;
       margin-inline-end: 1rem;
     }
 
@@ -103,7 +99,6 @@
     }
 
     > *:not(:last-child) {
-      margin-right: 1rem;
       margin-inline-end: 1rem;
 
       &:hover {
@@ -112,7 +107,6 @@
     }
 
     > *:last-child {
-      margin-left: auto;
       margin-inline-start: auto;
 
       &:hover {
@@ -128,7 +122,6 @@
 
   &__body {
     padding: 0 2.4rem;
-    margin-bottom: 1rem;
     margin-block-end: 1rem;
 
     @media (max-width: 240px) {

@@ -64,7 +64,7 @@ definition fn ( key, val ) =
     Html.tr []
         [ Html.td
             [ Attr.attribute "valign" "top"
-            , Attr.style "padding-right" "10px"
+            , Attr.style "padding-inline-end" "10px"
             ]
             [ Html.p [ Attr.id <| by key ] [ braces key ] ]
         , Html.td

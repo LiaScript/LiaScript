@@ -8,7 +8,7 @@
 
 .lia-svg {
   $horiz: map.get(settings.$global-spacing, spacing-normal);
-  padding-left: $horiz;
-  padding-right: $horiz;
+  padding-inline-start: $horiz;
+  padding-inline-end: $horiz;
   overflow: auto;
 }

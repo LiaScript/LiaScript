@@ -127,7 +127,7 @@ icon via =
             P2PT _ ->
                 "icon-p2pt icon-xs"
         )
-        [ Attr.style "padding-right" "5px"
+        [ Attr.style "padding-inline-end" "5px"
         , Attr.style "vertical-align" "middle"
         , Attr.style "font-size" "inherit"
         ]
@@ -206,7 +206,7 @@ box =
     Html.p
         [ Attr.style "padding" "5px 15px 5px 15px"
         , Attr.style "border" "1px solid white"
-        , Attr.style "margin-top" "2rem"
+        , Attr.style "margin-block-start" "2rem"
         ]
 
 
@@ -510,7 +510,7 @@ input { active, msg, label, type_, value, placeholder, autocomplete } =
     Html.label []
         [ Html.span
             [ Attr.class "lia-label"
-            , Attr.style "margin-top" "2rem"
+            , Attr.style "margin-block-start" "2rem"
             ]
             [ label ]
         , Html.input
@@ -542,7 +542,7 @@ checkbox :
     }
     -> Html msg
 checkbox { active, msg, label, value } =
-    Html.label [ Attr.style "margin-top" "2rem", Attr.class "lia-label" ]
+    Html.label [ Attr.style "margin-block-start" "2rem", Attr.class "lia-label" ]
         [ Html.input
             [ if active then
                 Event.onClick msg

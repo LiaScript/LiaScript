@@ -115,7 +115,7 @@ viewError message =
 
         Just msg ->
             Html.div
-                [ Attr.style "margin-top" "2rem", Attr.style "font-weight" "bold" ]
+                [ Attr.style "margin-block-start" "2rem", Attr.style "font-weight" "bold" ]
                 [ Html.text <| "Error: " ++ msg ]
 
 
@@ -206,7 +206,7 @@ button settings =
                         Just Connect
                 , tabbable = True
                 }
-                [ Attr.style "margin-top" "2rem" ]
+                [ Attr.style "margin-block-start" "2rem" ]
                 [ Html.text "connect" ]
 
         Connected _ ->
@@ -215,7 +215,7 @@ button settings =
                 , msg = Just Disconnect
                 , tabbable = True
                 }
-                [ Attr.style "margin-top" "2rem" ]
+                [ Attr.style "margin-block-start" "2rem" ]
                 [ Html.text "disconnect" ]
 
         Pending ->
@@ -224,5 +224,5 @@ button settings =
                 , msg = Nothing
                 , tabbable = False
                 }
-                [ Attr.style "margin-top" "2rem" ]
+                [ Attr.style "margin-block-start" "2rem" ]
                 [ Html.text "pending" ]
