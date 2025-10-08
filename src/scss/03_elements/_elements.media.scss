@@ -7,7 +7,6 @@ img {
 }
 
 figure {
-  margin-bottom: 2rem;
   margin-block-end: 2rem;
 
   figcaption {
@@ -20,7 +19,7 @@ figure {
 .lia-video-wrapper,
 .lia-iframe-wrapper {
   position: relative;
-  padding-bottom: 56.25%;
+  padding-block-end: 56.25%;
   height: 0;
 }
 

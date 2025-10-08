@@ -419,7 +419,7 @@ slider name title message maximum grouping tabbable value =
     Html.div
         [ Attr.style "display" "flex"
         , Attr.style "align-items" "center"
-        , Attr.style "margin-bottom" "10px"
+        , Attr.style "margin-block-end" "10px"
         , Attr.title title
         ]
         [ Html.label
@@ -661,7 +661,7 @@ viewEditorTheme grouping lang tabbable theme =
     in
     Html.div [ Attr.class "lia-settings-editor" ]
         [ Html.label [ Attr.class "lia-label", A11y_Aria.hidden (not tabbable) ]
-            [ Html.div [ Attr.style "margin-bottom" "0.4rem" ] [ Html.text <| Trans.baseEditor lang ++ ":" ]
+            [ Html.div [ Attr.style "margin-block-end" "0.4rem" ] [ Html.text <| Trans.baseEditor lang ++ ":" ]
             , Html.select
                 (grouping
                     [ Attr.class "lia-select"

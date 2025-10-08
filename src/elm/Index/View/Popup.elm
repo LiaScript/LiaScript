@@ -42,7 +42,7 @@ view { escape, text, action } =
         [ Html.p
             [ Group.id groupID
             , Group.blur (always escape)
-            , Attr.style "margin-bottom" "16px"
+            , Attr.style "margin-block-end" "16px"
             , Attr.style "font-size" "16px"
             , Attr.style "color" "#333"
             ]

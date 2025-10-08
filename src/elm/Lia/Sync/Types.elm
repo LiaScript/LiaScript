@@ -255,7 +255,7 @@ title sync =
         Connected _ ->
             Html.span []
                 [ Html.text "Classroom ("
-                , icon "icon-person icon-sm" [ Attr.style "padding-right" "4px" ]
+                , icon "icon-person icon-sm" [ Attr.style "padding-inline-end" "4px" ]
                 , sync.peers
                     |> Set.size
                     |> String.fromInt

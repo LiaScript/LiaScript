@@ -8,7 +8,6 @@
 
   &-responsive {
     display: block;
-    margin-bottom: 3rem;
     margin-block-end: 3rem;
     max-height: 80vh;
     overflow: auto;
@@ -277,7 +276,6 @@
   }
 
   &__sort {
-    margin-left: auto;
     margin-inline-start: auto;
     position: absolute;
     right: 2px;

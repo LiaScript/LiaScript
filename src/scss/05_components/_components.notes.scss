@@ -42,7 +42,6 @@
     }
 
     @include tools.breakpoint('lg') {
-      padding-top: 2.3rem;
       padding-block-start: 2.3rem;
     }
 
@@ -51,7 +50,6 @@
     }
 
     &:last-child {
-      padding-bottom: 2.3rem !important;
       padding-block-end: 2.3rem !important;
     }
 
@@ -60,7 +58,6 @@
     }
 
     > *:last-child {
-      margin-bottom: 0;
       margin-block-end: 0;
     }
   }
@@ -70,7 +67,6 @@
     border-block-end: 1px solid rgb(var(--lia-grey));
     color: rgb(var(--lia-grey));
     display: inline-block;
-    margin-bottom: 0.5rem;
     margin-block-end: 0.5rem;
   }
 

@@ -15,7 +15,6 @@ dl,
 ol,
 ul,
 fieldset {
-  margin-bottom: map.get(settings.$global-spacing, spacing-normal);
   margin-block-end: map.get(settings.$global-spacing, spacing-normal);
 }
 
