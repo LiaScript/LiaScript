@@ -54,6 +54,7 @@
     }
 
     @include tools.breakpoint('md', 'max') {
+    @include tools.breakpoint('md', 'max') {
       top: calc(
         (#{components.$header-height-mobile} / 2) +
           (
@@ -84,6 +85,7 @@
     }
   }
 
+  @include tools.breakpoint('sm', 'max') {
   @include tools.breakpoint('sm', 'max') {
     padding-top: 6rem;
     padding-block-start: 6rem;
@@ -159,9 +161,11 @@
         &:before {
           bottom: 0.5rem;
           content: '';
+          background-color: rgb(var(--color-highlight));
           position: absolute;
           left: 0;
-          top: 0.5rem;
+          top: 0px;
+          bottom: 0px;
           width: 5px;
           background-color: rgb(var(--color-highlight));
 
@@ -186,6 +190,7 @@
           position: relative;
 
           &:after {
+            content: '';
             content: '';
             background-color: rgb(var(--lia-grey-light));
             display: inline-block;
@@ -232,6 +237,7 @@
 
     &:after {
       content: '';
+      content: '';
       background-color: rgb(var(--lia-grey-light));
       display: inline-block;
       height: 1px;
@@ -246,10 +252,12 @@
 /* Theming */
 
 html:not([class*='lia-theme-default']) {
+html:not([class*='lia-theme-default']) {
   .lia-toc--visible {
     #lia-btn-toc {
       color: rgb(var(--lia-white));
 
+      @include tools.breakpoint('sm') {
       @include tools.breakpoint('sm') {
         color: rgb(var(--color-highlight));
       }
@@ -302,6 +310,9 @@ html:not([class*='lia-theme-default']) {
         &.lia-active,
         &.lia-active > * {
           color: rgb(var(--color-highlight-menu));
+          font-weight: 700;
+          background-color: rgba(var(--color-highlight-menu), 0.1);
+          border-radius: 0.3rem;
 
           &:before {
             background-color: rgb(var(--color-highlight-menu));

@@ -64,7 +64,13 @@ import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
 import Lia.Markdown.Types as Markdown
 import Lia.Sync.Types as Sync
-import Lia.Utils exposing (btn, btnIcon, percentage)
+import Lia.Utils
+    exposing
+        ( btn
+        , btnIcon
+        , percentage
+        , shuffle
+        )
 import List.Extra
 
 
@@ -89,7 +95,7 @@ view config labeledBy quiz vector =
             ( Nothing, [] )
 
 
-maybeConfig : Config sub -> Quiz Markdown.Block -> Vector -> Maybe ( Config sub, Markdown.Block )
+maybeConfig : Config sub -> Quiz Markdown.Block -> Vector -> Maybe ( Config sub, Markdown.Block, Maybe (List Int) )
 maybeConfig config quiz vector =
     case ( Array.get quiz.id vector, quiz.quiz ) of
         ( Just elem, Multi_Type q ) ->
@@ -103,10 +109,11 @@ maybeConfig config quiz vector =
                             , partiallyCorrect = elem.partiallySolved
                             , quiz = q
                             , state = state
+                            , randomize = elem.opt.randomize
                             }
                     of
                         ( newConfig, Just block ) ->
-                            Just ( newConfig, block )
+                            Just ( newConfig, block, elem.opt.randomize )
 
                         _ ->
                             Nothing
@@ -255,7 +262,7 @@ viewState config elem quiz =
         ( Block_State s, Block_Type q ) ->
             ( []
             , s
-                |> Block.view config ( elem.solved, elem.trial ) q
+                |> Block.view config elem.opt.randomize ( elem.solved, elem.trial ) q
                 |> List.map (Html.map (Block_Update quiz.id))
             )
 
@@ -289,19 +296,6 @@ viewState config elem quiz =
             ( [], [] )
 
 
-shuffle : Maybe (List Int) -> List x -> List x
-shuffle randomize rows =
-    case randomize of
-        Nothing ->
-            rows
-
-        Just order ->
-            rows
-                |> List.map2 Tuple.pair order
-                |> List.sortBy Tuple.first
-                |> List.map Tuple.second
-
-
 {-| **private:** Return the current quiz as List of elements that contains:
 
 1.  maybe an error message (that originates from the external application of
@@ -332,17 +326,18 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
         )
         body
     , Html.div [ Attr.class "lia-quiz__control" ]
-        [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz)
+        [ viewMainButton config state.trial state.deactivated state.solved (Check quiz.id quiz.quiz)
         , viewSolutionButton
             { config = config
             , solution = state.solved
             , msg = ShowSolution quiz.id quiz.quiz
             , hidden = state.trial < state.opt.showResolveAt
+            , deactivated = state.deactivated
             }
         , viewHintButton
             { id = quiz.id
             , show = (quiz.hints /= []) && (state.trial >= state.opt.showHintsAt)
-            , active = Solution.Open == state.solved && state.hint < List.length quiz.hints
+            , active = Solution.Open == state.solved && state.hint < List.length quiz.hints && not state.deactivated
             , title = Translations.quizHint config.lang
             }
         ]
@@ -418,12 +413,12 @@ viewFeedback lang state =
 {-| **private:** Show the solution button only if the quiz has not been solved
 yet.
 -}
-viewSolutionButton : { config : Config sub, hidden : Bool, solution : Solution, msg : Msg sub } -> Html (Msg sub)
-viewSolutionButton { config, hidden, solution, msg } =
+viewSolutionButton : { config : Config sub, hidden : Bool, solution : Solution, msg : Msg sub, deactivated : Bool } -> Html (Msg sub)
+viewSolutionButton { config, hidden, solution, msg, deactivated } =
     btnIcon
         { title = quizSolution config.lang
         , msg =
-            if solution == Solution.Open then
+            if solution == Solution.Open && not deactivated then
                 Just msg
 
             else
@@ -442,12 +437,12 @@ viewSolutionButton { config, hidden, solution, msg } =
 {-| **private:** Show the main check-button to compare the current state of the
 quiz with the solution state. The number of trials is automatically added.
 -}
-viewMainButton : Config sub -> Int -> Solution -> Msg sub -> Html (Msg sub)
-viewMainButton config trials solution msg =
+viewMainButton : Config sub -> Int -> Bool -> Solution -> Msg sub -> Html (Msg sub)
+viewMainButton config trials isDeactivated solution msg =
     btn
         { title = ""
         , msg =
-            if solution == Solution.Open then
+            if solution == Solution.Open && not isDeactivated then
                 Just msg
 
             else

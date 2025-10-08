@@ -1,10 +1,13 @@
 module Lia.Markdown.Survey.Update exposing
-    ( Msg(..)
+    ( DropMsg(..)
+    , Msg(..)
+    , SelectMsg(..)
     , handle
     , update
     )
 
 import Array
+import Browser exposing (element)
 import Dict
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
@@ -13,37 +16,49 @@ import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Sync as Sync
 import Lia.Markdown.Survey.Types exposing (Element, State(..), Vector, toString)
+import Process
 import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Script
+import Task
+
+
+type DropMsg
+    = Target
+    | Drop Int
+    | Start
+    | Enter Bool
+    | Source Int
+    | Exit
+
+
+type SelectMsg
+    = Choose
+    | Update Int
 
 
 type Msg sub
     = TextUpdate Int String
-    | SelectUpdate Int Int
-    | SelectChose Int
+    | SelectUpdate Int SelectMsg
+    | DropUpdate Int DropMsg
     | VectorUpdate Int String
     | MatrixUpdate Int Int String
     | Submit Int
-      --| KeyDown Int Int
     | Handle Event
     | Script (Script.Msg sub)
+    | None
 
 
-update : Bool -> Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector msg sub
+update : Bool -> Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector (Msg sub) sub
 update sync sectionID scripts msg vector =
     case msg of
         TextUpdate idx str ->
             update_text vector idx str
                 |> Return.val
 
-        SelectUpdate id value ->
-            update_select vector id value
-                |> Return.val
-
-        SelectChose id ->
-            update_select_chose vector id
+        SelectUpdate id event ->
+            update_select vector id event
                 |> Return.val
 
         VectorUpdate idx var ->
@@ -53,6 +68,19 @@ update sync sectionID scripts msg vector =
         MatrixUpdate idx row var ->
             update_matrix vector idx row var
                 |> Return.val
+
+        DropUpdate idx event ->
+            update_drop vector idx event
+                |> Return.val
+                |> Return.cmd
+                    (case event of
+                        Enter False ->
+                            Process.sleep 1
+                                |> Task.attempt (always <| DropUpdate idx Exit)
+
+                        _ ->
+                            Cmd.none
+                    )
 
         --KeyDown id char ->
         --    if char == 13 then
@@ -168,6 +196,9 @@ update sync sectionID scripts msg vector =
                 _ ->
                     Return.val vector
 
+        None ->
+            Return.val vector
+
 
 update_ :
     Int
@@ -241,21 +272,63 @@ update_text vector idx str =
             vector
 
 
-update_select : Vector -> Int -> Int -> Vector
-update_select vector id value =
+update_select : Vector -> Int -> SelectMsg -> Vector
+update_select vector id event =
     case Array.get id vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
-        Just ( False, Select_State _ _, element ) ->
-            set_state vector id { element | state = Select_State False value }
+        Just ( False, Select_State b value, element ) ->
+            set_state vector
+                id
+                { element
+                    | state =
+                        case event of
+                            Choose ->
+                                Select_State (not b) value
+
+                            Update newValue ->
+                                Select_State False newValue
+                }
 
         _ ->
             vector
 
 
-update_select_chose : Vector -> Int -> Vector
-update_select_chose vector id =
+update_drop : Vector -> Int -> DropMsg -> Vector
+update_drop vector id event =
     case Array.get id vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
-        Just ( False, Select_State b value, element ) ->
-            set_state vector id { element | state = Select_State (not b) value }
+        Just ( False, DragAndDrop_State highlight active value, element ) ->
+            set_state vector
+                id
+                { element
+                    | state =
+                        case event of
+                            Start ->
+                                DragAndDrop_State highlight True value
+
+                            Drop idx ->
+                                if highlight then
+                                    DragAndDrop_State False False idx
+
+                                else if not highlight && idx == value then
+                                    DragAndDrop_State False False -1
+
+                                else
+                                    DragAndDrop_State highlight False value
+
+                            Enter True ->
+                                DragAndDrop_State True active value
+
+                            Exit ->
+                                DragAndDrop_State False False -1
+
+                            Target ->
+                                DragAndDrop_State highlight False -1
+
+                            Source idx ->
+                                DragAndDrop_State False False idx
+
+                            _ ->
+                                DragAndDrop_State highlight active value
+                }
 
         _ ->
             vector
@@ -351,6 +424,9 @@ submittable vector idx =
             state /= ""
 
         Just ( False, Select_State _ state ) ->
+            state /= -1
+
+        Just ( False, DragAndDrop_State _ _ state ) ->
             state /= -1
 
         Just ( False, Vector_State _ state ) ->

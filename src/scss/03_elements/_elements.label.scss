@@ -8,4 +8,10 @@
     margin-inline-end: 1rem;
     min-width: 2.4rem;
   }
+
+  @at-root html.lia-variant-dark & {
+    color: rgb(
+      from rgb(var(--color-highlight)) calc(r * 1.8) calc(g * 1.8) calc(b * 1.8)
+    );
+  }
 }

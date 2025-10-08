@@ -1130,6 +1130,7 @@ header { online, active, lang, screen, settings, logo, progress, buttons } =
         [ Html.img
             [ Attr.src logo
             , Attr.class "lia_header__logo"
+            , Attr.alt ""
             ]
             []
         ]

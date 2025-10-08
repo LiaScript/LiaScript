@@ -62,7 +62,7 @@ export class LiaScript {
       courseUrl?: string | null
       script?: string | null
       hideURL?: boolean
-      hasShareAPI?: boolean
+      hasShareAPI?: boolean | null
     } = {}
   ) {
     window.LIA.debug = debug
@@ -97,7 +97,7 @@ export class LiaScript {
       try {
         navigator.clipboard.writeText(text)
       } catch (e) {
-        console.warn('Failed to copy: ', e.message)
+        console.warn('Failed to copy: ', e instanceof Error ? e.message : e)
       }
     })
 

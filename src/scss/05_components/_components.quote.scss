@@ -21,6 +21,13 @@
     font-weight: 600;
     font-size: 1.6rem;
     text-align: center;
+
+    @at-root html.lia-variant-dark & {
+      color: rgb(
+        from rgb(var(--color-highlight-dark)) calc(r * 4.8) calc(g * 4.8)
+          calc(b * 4.8)
+      );
+    }
   }
 
   &__cite {

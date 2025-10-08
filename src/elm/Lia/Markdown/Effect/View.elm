@@ -220,7 +220,7 @@ inline_playback : Config sub -> Effect Inline -> Html msg
 inline_playback config e =
     if config.speaking == Just e.id then
         Html.button
-            [ Attr.class "lia-btn lia-btn--transparent icon icon-stop-circle mx-1"
+            [ Attr.class "lia-btn lia-btn--transparent icon icon-stop-circle mx-1 py-0"
             , Service.TTS.cancel
                 |> Event.pushWithId "playback" e.id
                 |> Event.pushWithId "effect" config.slide
@@ -237,7 +237,7 @@ inline_playback config e =
         case config.translations |> Maybe.andThen (Voice.getVoiceFor e.voice) of
             Nothing ->
                 Html.button
-                    [ Attr.class "lia-btn lia-btn--transparent icon icon-play-circle mx-1"
+                    [ Attr.class "lia-btn lia-btn--transparent icon icon-play-circle mx-1 py-0"
                     , playBackAttr
                         e.id
                         e.voice
@@ -254,7 +254,7 @@ inline_playback config e =
 
             Just { translated, lang, name } ->
                 Html.button
-                    [ Attr.class "lia-btn lia-btn--transparent icon icon-play-circle mx-1"
+                    [ Attr.class "lia-btn lia-btn--transparent icon icon-play-circle mx-1 py-0"
                     , playBackAttr
                         e.id
                         name

@@ -12,6 +12,23 @@ $btn-height: 3.6rem;
   line-height: settings.$global-line-height;
   padding: 0.5rem 0.6rem;
 
+  &:focus,
+  &:focus-visible {
+    outline: 3px solid rgba(var(--color-highlight), 0.3);
+    box-shadow:
+      // Inner shadow (inset)
+      inset 0 0 0 2px rgba(255, 255, 255, 0.8),
+      // Outer shadow (around the outline)
+      0 0 0 0.25rem rgba(var(--color-highlight), 0.3),
+      0 0 8px rgba(var(--color-highlight), 0.4) !important;
+  }
+
+  // Hide focus outline for mouse users while keeping it for keyboard users
+  &:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none !important;
+  }
+
   &--warning {
     background-color: rgb(var(--lia-yellow));
     color: rgb(var(--lia-white));
@@ -52,6 +69,17 @@ $btn-height: 3.6rem;
     background-color: rgb(var(--color-background));
     border: 1px solid rgb(var(--color-highlight));
 
+    @at-root html.lia-variant-dark & {
+      border-color: rgb(
+        from rgb(var(--color-highlight)) calc(r * 2.2) calc(g * 2.2)
+          calc(b * 2.2)
+      );
+      color: rgb(
+        from rgb(var(--color-highlight)) calc(r * 2.5) calc(g * 2.5)
+          calc(b * 2.5)
+      );
+    }
+
     &.lia-btn--warning {
       background-color: transparent;
       border-color: rgb(var(--lia-yellow));
@@ -82,6 +110,10 @@ $btn-height: 3.6rem;
     background-color: transparent !important;
     border: none;
     color: currentColor;
+
+    @at-root html.lia-variant-dark & {
+      filter: brightness(1.8) contrast(1.1);
+    }
   }
 
   > .lia-btn__icon {

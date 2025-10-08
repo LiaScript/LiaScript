@@ -10,7 +10,7 @@ import('../../typescript/connectors/Base/index').then(function (Base) {
   var app = new Lia.LiaScript(new Base.Connector(), {
     allowSync: false,
     debug,
-    hasShareAPI: false,
+    hasShareAPI: null,
   })
 
   window.addEventListener('message', (event) => {

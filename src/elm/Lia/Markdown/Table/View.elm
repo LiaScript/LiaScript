@@ -6,7 +6,6 @@ module Lia.Markdown.Table.View exposing (view)
 
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Live as A11y_Live
-import Accessibility.Role as A11y_Role
 import Array
 import Const
 import Dict
@@ -657,9 +656,7 @@ viewTable sticky attr body =
             ]
         , A11y_Live.polite
         ]
-        [ Html.table
-            (A11y_Role.grid :: A11y_Aria.readOnly True :: Param.annotation "lia-table" attr)
-            body
+        [ Html.table (Param.annotation "lia-table" attr) body
         ]
 
 
@@ -678,13 +675,7 @@ toggleBtn id ( name, title ) =
             else
                 "switch to visualization in mode " ++ title
         ]
-        [ --Html.img
-          -- [ Attr.height 16
-          -- , Attr.width 16
-          -- , Attr.src <| "img/" ++ icon ++ ".png"
-          -- ]
-          -- []
-          icon ("icon-" ++ name) []
+        [ icon ("icon-" ++ name) []
         , Html.span [ Attr.class "lia-btn__text" ]
             [ Html.text title
             ]
@@ -698,12 +689,12 @@ unformatted lang sortable viewer rows id state =
             tail
                 |> List.map
                     (List.map (\e -> Html.td (Attr.class "lia-table__data" :: Param.toAttribute e.attr) (viewer e.inlines))
-                        >> Html.tr [ Attr.class "lia-table__row", A11y_Role.row ]
+                        >> Html.tr [ Attr.class "lia-table__row" ]
                     )
                 |> (::)
                     (head
                         |> view_head1 lang sortable viewer id state
-                        |> Html.tr [ Attr.class "lia-table__row", A11y_Role.row ]
+                        |> Html.tr [ Attr.class "lia-table__row" ]
                     )
 
         [] ->
@@ -714,7 +705,7 @@ formatted : Lang -> Bool -> (Inlines -> List (Html Msg)) -> List ( Parameters, I
 formatted lang sortable viewer head format rows id state =
     [ head
         |> view_head2 lang sortable viewer id format state
-        |> Html.tr [ A11y_Role.row ]
+        |> Html.tr []
         |> List.singleton
         |> Html.thead [ Attr.class "lia-table__head" ]
     , rows
@@ -729,15 +720,6 @@ formatted lang sortable viewer head format rows id state =
                                 |> Param.toAttribute
                                 |> (::) (Attr.class "lia-table__data")
                                 |> (::) (Attr.class f)
-                                |> (if i == 0 then
-                                        List.append
-                                            [ A11y_Role.rowHeader
-                                            , Attr.scope "row"
-                                            ]
-
-                                    else
-                                        (::) A11y_Role.gridCell
-                                   )
                             )
                             (viewer e.inlines)
                         )
@@ -745,7 +727,7 @@ formatted lang sortable viewer head format rows id state =
                     format
                 >> List.unzip
                 >> Tuple.mapFirst String.concat
-                >> Tuple.mapSecond (Html.tr [ Attr.class "lia-table__row", A11y_Role.row ])
+                >> Tuple.mapSecond (Html.tr [ Attr.class "lia-table__row" ])
             )
         |> Keyed.node "tbody" [ Attr.class "lia-table__body" ]
     ]
@@ -822,7 +804,7 @@ view_head2 lang sortable viewer id format state =
                     }
                     |> Html.th
                         (Attr.class "lia-table__header"
-                            :: (if i == id then
+                            :: (if i == id && state.column == i then
                                     if state.dir then
                                         A11y_Aria.sortAscending
 
@@ -830,10 +812,8 @@ view_head2 lang sortable viewer id format state =
                                         A11y_Aria.sortDescending
 
                                 else
-                                    Attr.class ""
+                                    A11y_Aria.sortNone
                                )
-                            :: Attr.scope "col"
-                            :: A11y_Role.columnHeader
                             :: Attr.class f
                             :: Param.toAttribute a
                         )

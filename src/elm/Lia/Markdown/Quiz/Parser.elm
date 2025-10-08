@@ -90,6 +90,23 @@ randomize typeOf seed =
                     seed
                 )
 
+        Block_Type vec ->
+            Just
+                (PseudoRandom.integerSequence
+                    (List.length vec.options)
+                    seed
+                )
+
+        Multi_Type vec ->
+            Just
+                (PseudoRandom.integerSequence
+                    (vec.options
+                        |> Array.map List.length
+                        |> Array.foldl (+) 0
+                    )
+                    seed
+                )
+
         _ ->
             Nothing
 
@@ -142,6 +159,7 @@ modify_State scriptID attr q =
                                 id
                         , opt = getOptions q.quiz seed attr
                         , partiallySolved = Array.empty
+                        , deactivated = False
                         }
                         s.quiz_vector
                 , effect_model =

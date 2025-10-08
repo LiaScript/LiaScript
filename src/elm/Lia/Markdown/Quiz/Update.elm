@@ -48,20 +48,20 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Bool -> Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector msg sub
+update : Bool -> Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector (Msg sub) sub
 update sync sectionID scripts msg vector =
     case msg of
         Block_Update id _ ->
-            update_ id vector (state_ msg)
+            update_ id vector (state_ id msg)
 
         Multi_Update id _ ->
-            update_ id vector (state_ msg)
+            update_ id vector (state_ id msg)
 
         Vector_Update id _ ->
-            update_ id vector (state_ msg)
+            update_ id vector (state_ id msg)
 
         Matrix_Update id _ ->
-            update_ id vector (state_ msg)
+            update_ id vector (state_ id msg)
 
         Check id solution ->
             case Array.get id vector of
@@ -75,17 +75,29 @@ update sync sectionID scripts msg vector =
                                 |> doSync sync sectionID (Just id)
 
                         Just scriptID ->
+                            let
+                                code =
+                                    scripts
+                                        |> Array.get scriptID
+                                        |> Maybe.map .script
+                            in
                             vector
+                                |> Array.set id
+                                    { e
+                                        | deactivated =
+                                            case code of
+                                                Nothing ->
+                                                    False
+
+                                                _ ->
+                                                    True
+                                    }
                                 |> Return.val
                                 |> Return.batchEvents
-                                    (case
-                                        scripts
-                                            |> Array.get scriptID
-                                            |> Maybe.map .script
-                                     of
-                                        Just code ->
+                                    (case code of
+                                        Just c ->
                                             [ [ toString e.state ]
-                                                |> Service.Script.eval code (outputs scripts)
+                                                |> Service.Script.eval c (outputs scripts)
                                                 |> Event.pushWithId "eval" id
                                             ]
 
@@ -237,13 +249,14 @@ update_ idx vector fn =
             Return.val vector
 
 
-state_ : Msg sub -> Element -> Return Element msg sub
-state_ msg e =
+state_ : Int -> Msg sub -> Element -> Return Element (Msg sub) sub
+state_ i msg e =
     case ( msg, e.state ) of
         ( Block_Update _ m, Block_State s ) ->
             s
                 |> Block.update m
                 |> Return.mapVal (setState e Block_State)
+                |> Return.mapCmd (Block_Update i)
 
         ( Vector_Update _ m, Vector_State s ) ->
             s
@@ -276,19 +289,59 @@ evalEventDecoder json =
             -- TODO:
             -- Eval.decode json
             Service.Script.decode json
+
+        activate e =
+            { e | deactivated = False }
     in
-    if eval.ok then
-        if eval.result == "true" then
-            isSolved Nothing Solution.Solved >> Return.val
+    Return.val
+        << (if eval.ok then
+                if eval.result == "true" then
+                    isSolved Nothing Solution.Solved >> activate
 
-        else if String.startsWith "LIA:" eval.result then
-            Return.val
+                else if String.startsWith "LIA: wait" eval.result then
+                    identity
 
-        else
-            isSolved Nothing Solution.Open >> Return.val
+                else if String.startsWith "LIA:" eval.result then
+                    identity >> activate
 
-    else
-        \e -> Return.val { e | error_msg = eval.result }
+                else if String.startsWith "[" eval.result || String.contains "," eval.result then
+                    let
+                        array =
+                            eval.result
+                                |> String.split ","
+                                |> List.filterMap
+                                    (\bool ->
+                                        case String.trim bool of
+                                            "true" ->
+                                                Just True
+
+                                            "false" ->
+                                                Just False
+
+                                            _ ->
+                                                Nothing
+                                    )
+                    in
+                    \e ->
+                        { e
+                            | partiallySolved = Array.fromList array
+                            , deactivated = False
+                        }
+                            |> isSolved Nothing
+                                (if List.all identity array then
+                                    Solution.Solved
+
+                                 else
+                                    Solution.Open
+                                )
+                            |> activate
+
+                else
+                    isSolved Nothing Solution.Open >> activate
+
+            else
+                \e -> { e | error_msg = eval.result, deactivated = False }
+           )
 
 
 isSolved : Maybe (Type Markdown.Block) -> Solution -> Element -> Element
@@ -300,7 +353,11 @@ isSolved solution state e =
                     comp2 e.opt.showPartialSolution quiz e.state
 
                 _ ->
-                    Array.empty
+                    if e.opt.showPartialSolution then
+                        e.partiallySolved
+
+                    else
+                        Array.empty
     in
     case ( e.opt.maxTrials, e.solved ) of
         ( Nothing, Solution.Open ) ->
@@ -375,6 +432,7 @@ mergeMap sID body =
     { body
         | scriptID = sID.scriptID
         , opt = sID.opt
+        , deactivated = False
         , state =
             -- if the quiz is set to random and is not solved yet,
             -- then it is reset on every load

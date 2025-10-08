@@ -16,6 +16,7 @@ module Lia.Utils exposing
     , onKeyDown
     , percentage
     , scheduleFocus
+    , shuffle
     , string2Color
     , toEscapeString
     , urlBasePath
@@ -355,3 +356,16 @@ urlQuery =
     String.split "?"
         >> List.tail
         >> Maybe.andThen List.Extra.last
+
+
+shuffle : Maybe (List Int) -> List x -> List x
+shuffle randomize rows =
+    case randomize of
+        Nothing ->
+            rows
+
+        Just order ->
+            rows
+                |> List.map2 Tuple.pair order
+                |> List.sortBy Tuple.first
+                |> List.map Tuple.second

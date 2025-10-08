@@ -34,14 +34,25 @@ parse parse_inlines =
 
 pattern : (Context -> String -> opt) -> Parser Context ( Int, Quiz opt )
 pattern parse_inlines =
-    string "[["
-        |> keep (string1Till (string "]]"))
-        |> map
-            (\s context ->
-                split parse_inlines s context
-                    |> map (Tuple.pair (String.length s))
-            )
-        |> andThen withState
+    or
+        (string "[["
+            |> keep (string1Till (string "]]"))
+            |> map
+                (\s context ->
+                    split parse_inlines s context
+                        |> map (Tuple.pair (String.length s))
+                )
+            |> andThen withState
+        )
+        (string "[->["
+            |> keep (string1Till (string "]]"))
+            |> map
+                (\s context ->
+                    splitDrop parse_inlines s context
+                        |> map (Tuple.pair (String.length s))
+                )
+            |> andThen withState
+        )
 
 
 string1Till : Parser s p -> Parser s String
@@ -105,6 +116,29 @@ split parse_inlines str state =
                 |> toSelect
 
 
+splitDrop : (Context -> String -> opt) -> String -> Context -> Parser Context (Quiz opt)
+splitDrop parse_inlines str state =
+    case splitAtUnescapedPipe str of
+        [ solution ] ->
+            let
+                option =
+                    String.trim solution
+            in
+            [ if String.startsWith "(" option && String.endsWith ")" option then
+                option
+
+              else
+                "(" ++ option ++ ")"
+            ]
+                |> List.indexedMap (check parse_inlines state)
+                |> toDrop
+
+        options ->
+            options
+                |> List.indexedMap (check parse_inlines state)
+                |> toDrop
+
+
 check : (Context -> String -> opt) -> Context -> Int -> String -> ( Int, opt )
 check parse_inlines state id str =
     let
@@ -138,5 +172,15 @@ toSelect list =
         |> List.filter (Tuple.first >> (<=) 0)
         |> List.map Tuple.first
         |> Select False
+        |> Quiz (List.map Tuple.second list)
+        |> succeed
+
+
+toDrop : List ( Int, opt ) -> Parser Context (Quiz opt)
+toDrop list =
+    list
+        |> List.filter (Tuple.first >> (<=) 0)
+        |> List.map Tuple.first
+        |> Drop False False
         |> Quiz (List.map Tuple.second list)
         |> succeed
