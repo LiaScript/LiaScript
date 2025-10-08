@@ -216,6 +216,10 @@
     }
   }
 
+  &__link {
+    --focus-ring-offset: -0.25lh;
+  }
+
   &__bottom {
     margin-block-start: 1rem;
     padding: 1rem 0 0 3rem;

@@ -68,3 +68,8 @@ $global-line-height: 1.47 !default;
 $global-font-family: 'LiaSourceSansPro';
 $global-font-mono: 'LiaSourceCodePro';
 $global-font-headline: 'LiaSourceSerifPro';
+
+$global-focus-ring-width: 2px;
+$global-focus-ring-color: var(--color-highlight, currentColor);
+$global-focus-ring-offset: 0.25lh;
+$global-focus-ring-style: solid;

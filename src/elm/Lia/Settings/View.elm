@@ -231,11 +231,12 @@ viewTheme grouping lang tabbable theme hasCustom =
             )
         |> Html.div
             [ Attr.class "lia-radio-group lia-settings-theme-colors"
+            , Attr.attribute "style" "--focus-ring-offset: 0.4lh"
             , A11y_Role.radioGroup
             , lang
                 |> Trans.cSchema
                 |> A11y_Aria.label
-            ]
+            ]   
 
 
 viewModes : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Settings -> List (Html Msg)

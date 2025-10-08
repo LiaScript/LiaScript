@@ -40,6 +40,10 @@
     }
   }
 
+  .lia-btn {
+    --focus-ring-offset: -0.25lh;
+  }
+
   &__current {
     margin: 0 1rem;
   }
