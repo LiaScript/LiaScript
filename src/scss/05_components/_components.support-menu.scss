@@ -91,6 +91,7 @@
             (#{elements.$btn-height} / 4)
         )
     );
+    transition: transform 250ms ease-out;
 
     [dir='rtl'] & {
       left: auto;

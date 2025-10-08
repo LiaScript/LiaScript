@@ -54,14 +54,15 @@
     }
 
     @include tools.breakpoint('md', 'max') {
-    @include tools.breakpoint('md', 'max') {
-      top: calc(
-        (#{components.$header-height-mobile} / 2) +
-          (
-            2 * #{map.get(settings.$global-spacing, spacing-small)} -
-              (#{elements.$btn-height} / 4)
-          )
-      );
+      @include tools.breakpoint('md', 'max') {
+        top: calc(
+          (#{components.$header-height-mobile} / 2) +
+            (
+              2 * #{map.get(settings.$global-spacing, spacing-small)} -
+                (#{elements.$btn-height} / 4)
+            )
+        );
+      }
     }
   }
 
@@ -85,7 +86,6 @@
     }
   }
 
-  @include tools.breakpoint('sm', 'max') {
   @include tools.breakpoint('sm', 'max') {
     padding-top: 6rem;
     padding-block-start: 6rem;
@@ -252,12 +252,10 @@
 /* Theming */
 
 html:not([class*='lia-theme-default']) {
-html:not([class*='lia-theme-default']) {
   .lia-toc--visible {
     #lia-btn-toc {
       color: rgb(var(--lia-white));
 
-      @include tools.breakpoint('sm') {
       @include tools.breakpoint('sm') {
         color: rgb(var(--color-highlight));
       }

@@ -64,22 +64,34 @@ $slide-margin-left-textbook: 19rem !default;
   @include tools.breakpoint('sm', 'max') {
     /* push support-menu-toggler to the right if toc is open,
        prevent that buttons overlay each other */
-    &.lia-toc--visible #lia-btn-support {
+    &.lia-toc--visible .lia-support-menu__toggler {
       transform: translate(0, -50%);
+
+      [dir='rtl'] & {
+        transform: translate(0, -50%);
+      }
     }
 
     /* push toc-menu-toggler to the left if support-menu is open,
        prevent that buttons overlay each other */
     &.lia-support--visible #lia-btn-toc {
       transform: translate(0, -50%);
+
+      [dir='rtl'] & {
+        transform: translate(0, -50%);
+      }
     }
 
-    /* in case both menus are visible on mobile screens, 
+    /* in case both menus are visible on mobile screens,
        this pushes the buttons to their original positions */
     &.lia-toc--visible.lia-support--visible {
       #lia-btn-toc,
-      #lia-btn-support {
+      .lia-support-menu__toggler {
         transform: translate(-3rem, -50%);
+
+        [dir='rtl'] & {
+          transform: translate(3rem, -50%);
+        }
       }
     }
   }
@@ -90,6 +102,7 @@ $slide-margin-left-textbook: 19rem !default;
 
       @include tools.breakpoint('md') {
         width: 100%;
+        width: calc(100% - #{$toc-width-desktop});
       }
 
       [dir='rtl'] & {
