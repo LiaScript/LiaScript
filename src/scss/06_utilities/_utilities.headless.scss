@@ -2,11 +2,11 @@
 @use '../00_settings/settings.global';
 
 .headless {
-  border-top-left-radius: map.get(
+  border-start-start-radius: map.get(
     settings.$global-spacing,
     spacing-small
   ) !important;
-  border-top-right-radius: map.get(
+  border-start-end-radius: map.get(
     settings.$global-spacing,
     spacing-small
   ) !important;

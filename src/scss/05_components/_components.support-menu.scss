@@ -7,7 +7,6 @@
 
 .lia-support-menu {
   background-color: rgb(var(--color-background));
-  border-left: settings.$global-border;
   border-inline-start: settings.$global-border;
   display: flex;
   flex-direction: column;
@@ -165,7 +164,7 @@
     }
 
     &:not(:first-child) {
-      border-top: settings.$global-border;
+      border-block-start: settings.$global-border;
     }
 
     > .icon {
@@ -191,7 +190,7 @@
       padding: 0 0.75rem;
 
       &:not(:first-child) {
-        border-top: none;
+        border-block-start: none;
       }
 
       > .icon {

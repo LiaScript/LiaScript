@@ -93,9 +93,7 @@
     &.has-first-col-sticky {
       .lia-table__data {
         &:first-child {
-          border-left: settings.$global-border;
           border-inline-start: settings.$global-border;
-          border-right: settings.$global-border;
           border-inline-end: settings.$global-border;
           left: 0;
           position: -webkit-sticky;
@@ -137,14 +135,11 @@
     &.has-last-col-sticky {
       .lia-table__data {
         &:first-child {
-          border-right: settings.$global-border;
           border-inline-end: settings.$global-border;
         }
 
         &:last-child {
-          border-left: settings.$global-border;
           border-inline-start: settings.$global-border;
-          border-right: settings.$global-border;
           border-inline-end: settings.$global-border;
           right: 0;
           position: -webkit-sticky;
@@ -185,7 +180,7 @@
   }
 
   &__head {
-    border-bottom: settings.$global-border;
+    border-block-end: settings.$global-border;
 
     th {
       background-color: rgb(var(--color-background));
@@ -198,11 +193,11 @@
     }
 
     &:first-of-type > td {
-      border-top: 0;
+      border-block-start: 0;
     }
 
     &:last-child > td {
-      border-bottom: settings.$global-border;
+      border-block-end: settings.$global-border;
     }
 
     &:hover {
@@ -216,53 +211,39 @@
 
   &__header {
     position: relative;
-    border-top: settings.$global-border;
     border-inline-start: settings.$global-border;
-    border-left: settings.$global-border;
     border-inline-start: settings.$global-border;
-    border-bottom: settings.$global-border;
     border-block-end: settings.$global-border;
-    border-right: 0;
     border-inline-end: 0;
     padding: 1.3rem 3.2rem 1.3rem 1.6rem;
 
     &:first-child {
-      border-left: settings.$global-border;
       border-inline-start: settings.$global-border;
-      border-right: settings.$global-border;
       border-inline-end: settings.$global-border;
     }
 
     &:nth-child(2) {
-      border-left: 0;
       border-inline-start: 0;
     }
 
     &:last-child {
-      border-right: settings.$global-border;
       border-inline-end: settings.$global-border;
     }
   }
 
   &__data {
-    border-top: settings.$global-border;
     border-block-start: settings.$global-border;
-    border-left: settings.$global-border;
     border-inline-start: settings.$global-border;
-    border-bottom: 0;
     border-block-end: 0;
-    border-right: 0;
     border-inline-end: 0;
     padding: 1rem 3.2rem 1rem 1.6rem;
 
     &:last-child {
-      border-right: settings.$global-border;
       border-inline-end: settings.$global-border;
     }
 
     .has-first-col-sticky {
       &:nth-child(2) {
-        border-left: 0;
         border-inline-start: 0;
       }
     }

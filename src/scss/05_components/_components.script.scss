@@ -18,15 +18,11 @@
 
   &__refresh {
     background-color: rgb(var(--lia-grey-light));
-    border-bottom: 0;
-    border-block-end: 0;
-    border-left: 0;
-    border-inline-start: 0;
-    border-radius: 0;
-    border-right: 1px solid rgb(var(--color-highlight));
-    border-inline-end: 1px solid rgb(var(--color-highlight));
-    border-top: 0;
     border-block-start: 0;
+    border-block-end: 0;
+    border-inline-start: 0;
+    border-inline-end: 1px solid rgb(var(--color-highlight));
+    border-radius: 0;
     color: rgb(var(--lia-anthracite));
   }
 
@@ -73,7 +69,6 @@
   output {
     align-items: center;
     background-color: rgb(var(--lia-anthracite));
-    border-left: 1px solid rgb(var(--color-highlight));
     border-inline-start: 1px solid rgb(var(--color-highlight));
     color: rgb(var(--lia-white));
     display: flex;

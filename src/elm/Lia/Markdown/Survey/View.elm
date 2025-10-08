@@ -502,7 +502,7 @@ textBlock str =
     Html.div
         [ Attr.style "white-space" "pre"
         , Attr.style "background-color" "rgb(179 179 179)"
-        , Attr.style "border-bottom" "2px dashed #666"
+        , Attr.style "border-block-end" "2px dashed #666"
         , Attr.style "padding" "0.8rem"
         ]
         [ Html.text str ]

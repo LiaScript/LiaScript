@@ -43,7 +43,6 @@
     $bg: color.mix(map.get($theme, background), $info, 90%);
     $fg: tools.color-contrast($bg);
 
-    border-left-color: $info;
     border-inline-start-color: $info;
     background: $bg;
     color: $fg;

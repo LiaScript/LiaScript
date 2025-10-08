@@ -42,7 +42,7 @@ $responsive-voice-hight: 7rem;
   }
 
   @include tools.breakpoint('md') {
-    border-top-left-radius: settings.$global-radius;
-    border-top-right-radius: settings.$global-radius;
+    border-start-start-radius: settings.$global-radius;
+    border-start-end-radius: settings.$global-radius;
   }
 }

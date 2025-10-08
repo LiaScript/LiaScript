@@ -6,14 +6,14 @@
   max-width: 100%;
   width: 100%;
   border: none;
-  transition: border-bottom-color 0.5s ease-out 0s;
+  transition: border-block-end-color 0.5s ease-out 0s;
 
   &:not([disabled]) {
-    border-bottom: 1.5px solid;
+    border-block-end: 1.5px solid;
   }
 
   &[disabled] {
-    border-bottom: 1.5px dotted;
+    border-block-end: 1.5px dotted;
   }
 }
 
@@ -26,16 +26,16 @@
 
     &:not([disabled]) {
       color: $fg;
-      border-bottom-color: color.mix($bg, $fg, 50%);
+      border-block-end-color: color.mix($bg, $fg, 50%);
     }
 
     &[disabled] {
       color: rgba($fg, 0.38);
-      border-bottom-color: color.mix($bg, $fg, 50%);
+      border-block-end-color: color.mix($bg, $fg, 50%);
     }
 
     &:focus {
-      border-bottom-color: map.get($theme, primary);
+      border-block-end-color: map.get($theme, primary);
     }
   }
 }
