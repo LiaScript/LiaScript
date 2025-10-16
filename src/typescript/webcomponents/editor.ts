@@ -936,7 +936,9 @@ customElements.define(
             // navigation bindings like 'Up' / 'Down'.
             if (/Enter/i.test(keyDesc)) {
               try {
-                editor.insert('\n')
+                if (name !== 'Ctrl-Enter') {
+                  editor.insert('\n')
+                }
               } catch (e) {
                 // ignore errors
               }
