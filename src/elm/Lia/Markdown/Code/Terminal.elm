@@ -6,7 +6,6 @@ module Lia.Markdown.Code.Terminal exposing
     , view
     )
 
-import Accessibility.Key exposing (enter)
 import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -21,12 +20,21 @@ type alias Terminal =
     , history : Array String
     , history_value : Int
     , enter : Bool
+    , cursor : Editor.Cursor
+    , cursorToEnd : Bool
     }
 
 
 init : Terminal
 init =
-    Terminal "" "" Array.empty 0 False
+    { input = ""
+    , backup = ""
+    , history = Array.empty
+    , history_value = 0
+    , enter = False
+    , cursor = Editor.emptyCursor
+    , cursorToEnd = False
+    }
 
 
 
@@ -38,18 +46,43 @@ type Msg
     | History Bool
     | Enter
     | Input String
+    | Cursor Editor.Cursor
 
 
 update : Msg -> Terminal -> ( Terminal, Maybe String )
-update msg terminal =
+update msg term =
+    let
+        terminal =
+            { term | cursorToEnd = False }
+    in
     case msg of
         Enter ->
             ( print_to { terminal | enter = True }
             , Just <| terminal.input ++ "\n"
             )
 
-        History up ->
-            ( restore_input up terminal
+        History True ->
+            ( if terminal.cursor.position.row == 0 then
+                restore_input True terminal
+
+              else
+                terminal
+            , Nothing
+            )
+
+        History False ->
+            ( if
+                terminal.cursor.position.row
+                    == (terminal.input
+                            |> String.lines
+                            |> List.length
+                            |> (+) -1
+                       )
+              then
+                restore_input False terminal
+
+              else
+                terminal
             , Nothing
             )
 
@@ -63,6 +96,11 @@ update msg terminal =
                         str
                 , enter = False
               }
+            , Nothing
+            )
+
+        Cursor cur ->
+            ( { terminal | cursor = cur }
             , Nothing
             )
 
@@ -87,7 +125,26 @@ view terminal =
             , Attr.style "min-height" "3.4rem"
             , Attr.style "max-height" "3.4rem"
             , Editor.readOnly False
-            , Editor.value terminal.input
+            , if terminal.cursorToEnd then
+                let
+                    lines =
+                        terminal.input |> String.lines
+
+                    row =
+                        lines |> List.length
+
+                    column =
+                        case List.reverse lines |> List.head of
+                            Just line ->
+                                String.length line + 1
+
+                            Nothing ->
+                                1
+                in
+                Editor.valueAndCursor terminal.input { row = row, column = column }
+
+              else
+                Editor.value terminal.input
             , Editor.showCursor True
             , Editor.highlightActiveLine True
             , Editor.mode "js"
@@ -112,6 +169,8 @@ view terminal =
             , Editor.onKeyBinding "terminalHistoryUp" (History True)
             , Editor.onKeyBinding "terminalHistoryDown" (History False)
             , Editor.onKeyBinding "terminalEnlarge" Ignore
+            , Editor.catchCursorUpdates True
+            , Editor.onChangeCursor Cursor
             ]
             []
         ]
@@ -143,25 +202,26 @@ print_to terminal =
 restore_input : Bool -> Terminal -> Terminal
 restore_input up terminal =
     let
-        new_hist =
+        ( new_hist, cursor_to_end ) =
             if up then
                 if terminal.history_value > 0 then
-                    terminal.history_value - 1
+                    ( terminal.history_value - 1, True )
 
                 else
-                    0
+                    ( 0, False )
 
             else if terminal.history_value < Array.length terminal.history then
-                terminal.history_value + 1
+                ( terminal.history_value + 1, True )
 
             else
-                terminal.history_value
+                ( terminal.history_value, False )
     in
     case Array.get new_hist terminal.history of
         Just str ->
             { terminal
                 | input = str
                 , history_value = new_hist
+                , cursorToEnd = cursor_to_end
                 , backup =
                     if terminal.history_value == Array.length terminal.history then
                         terminal.input
@@ -174,4 +234,5 @@ restore_input up terminal =
             { terminal
                 | input = terminal.backup
                 , history_value = new_hist
+                , cursorToEnd = cursor_to_end
             }

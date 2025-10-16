@@ -669,12 +669,20 @@ customElements.define(
       this.blockUpdate = false
     }
 
-    set value(value: string) {
-      if (this.model.value !== value) {
-        this.setValue(value)
+    set value(value: string | [string, { column: number; row: number }]) {
+      if (typeof value === 'string') {
+        if (this.model.value !== value) {
+          this.setValue(value)
+        }
+      } else {
+        const [text, position] = value
+        if (this.model.value !== text) {
+          this.setValue(text).then(() => {
+            this._editor.moveCursorToPosition(position)
+          })
+        }
       }
     }
-
     get blockUpdate() {
       //console.warn('Getting block of ->', this._blockUpdate)
       return this._blockUpdate
@@ -859,6 +867,43 @@ customElements.define(
     }
 
     /**
+     * Return the current cursor position { row, column } or null if editor not ready
+     */
+    get cursorPos(): Position | null {
+      if (!this._editor) return null
+
+      try {
+        return this._editor.getCursorPosition()
+      } catch (e) {
+        return null
+      }
+    }
+
+    /**
+     * Move the cursor to the provided position { row, column }.
+     * If the editor is not yet initialized this is a no-op.
+     */
+    set cursorPos(position: Position) {
+      if (!this._editor || !position) return
+
+      console.log('Moving cursor to:', position)
+      try {
+        // focus the editor so the move is visible
+        try {
+          this._editor.focus()
+        } catch (e) {}
+
+        // move cursor and clear any selection
+        this._editor.moveCursorToPosition(position)
+        try {
+          this._editor.clearSelection()
+        } catch (e) {}
+      } catch (e) {
+        // swallow errors; best-effort cursor move
+      }
+    }
+
+    /**
      * Apply all configured key bindings to the editor
      */
     private applyKeyBindings() {
@@ -895,6 +940,35 @@ customElements.define(
               } catch (e) {
                 // ignore errors
               }
+            } else if (/Up/i.test(keyDesc)) {
+              try {
+                const cur = editor.getCursorPosition()
+                const newRow = Math.max(0, cur.row - 1)
+                let newCol = cur.column
+                try {
+                  const line = editor.getSession().getLine(newRow) || ''
+                  newCol = Math.min(newCol, line.length)
+                } catch (e) {}
+                editor.moveCursorToPosition({ row: newRow, column: newCol })
+                try {
+                  editor.clearSelection()
+                } catch (e) {}
+              } catch (e) {}
+            } else if (/Down/i.test(keyDesc)) {
+              try {
+                const cur = editor.getCursorPosition()
+                const maxRow = Math.max(0, editor.getSession().getLength() - 1)
+                const newRow = Math.min(maxRow, cur.row + 1)
+                let newCol = cur.column
+                try {
+                  const line = editor.getSession().getLine(newRow) || ''
+                  newCol = Math.min(newCol, line.length)
+                } catch (e) {}
+                editor.moveCursorToPosition({ row: newRow, column: newCol })
+                try {
+                  editor.clearSelection()
+                } catch (e) {}
+              } catch (e) {}
             }
           },
           readOnly: false,
@@ -961,6 +1035,35 @@ customElements.define(
             if (/Enter/i.test(keyDesc)) {
               try {
                 editor.insert('\n')
+              } catch (e) {}
+            } else if (/Up/i.test(keyDesc)) {
+              try {
+                const cur = editor.getCursorPosition()
+                const newRow = Math.max(0, cur.row - 1)
+                let newCol = cur.column
+                try {
+                  const line = editor.getSession().getLine(newRow) || ''
+                  newCol = Math.min(newCol, line.length)
+                } catch (e) {}
+                editor.moveCursorToPosition({ row: newRow, column: newCol })
+                try {
+                  editor.clearSelection()
+                } catch (e) {}
+              } catch (e) {}
+            } else if (/Down/i.test(keyDesc)) {
+              try {
+                const cur = editor.getCursorPosition()
+                const maxRow = Math.max(0, editor.getSession().getLength() - 1)
+                const newRow = Math.min(maxRow, cur.row + 1)
+                let newCol = cur.column
+                try {
+                  const line = editor.getSession().getLine(newRow) || ''
+                  newCol = Math.min(newCol, line.length)
+                } catch (e) {}
+                editor.moveCursorToPosition({ row: newRow, column: newCol })
+                try {
+                  editor.clearSelection()
+                } catch (e) {}
               } catch (e) {}
             }
           },

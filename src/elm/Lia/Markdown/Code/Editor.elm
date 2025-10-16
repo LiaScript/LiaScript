@@ -5,8 +5,10 @@ module Lia.Markdown.Code.Editor exposing
     , annotations
     , blockUpdate
     , catchCursorUpdates
+    , cursorPosition
     , decodeCursor
     , editor
+    , emptyCursor
     , enableBasicAutocompletion
     , enableKeyboardAccessibility
     , enableLiveAutocompletion
@@ -41,6 +43,7 @@ module Lia.Markdown.Code.Editor exposing
     , useSoftTabs
     , useWrapMode
     , value
+    , valueAndCursor
     )
 
 import Array exposing (Array)
@@ -64,6 +67,13 @@ type alias Cursor =
         , column : Int
         }
     , selection : List Int
+    }
+
+
+emptyCursor : Cursor
+emptyCursor =
+    { position = { row = 0, column = 0 }
+    , selection = []
     }
 
 
@@ -225,6 +235,18 @@ onBlur msg =
 value : String -> Html.Attribute msg
 value =
     JE.string >> Attr.property "value"
+
+
+valueAndCursor : String -> { row : Int, column : Int } -> Html.Attribute msg
+valueAndCursor str pos =
+    JE.list identity
+        [ JE.string str
+        , JE.object
+            [ ( "row", JE.int pos.row )
+            , ( "column", JE.int pos.column )
+            ]
+        ]
+        |> Attr.property "value"
 
 
 firstLineNumber : Int -> Html.Attribute msg
@@ -396,3 +418,12 @@ onKeyBinding : String -> msg -> Html.Attribute msg
 onKeyBinding eventName msg =
     JD.succeed msg
         |> Html.Events.on eventName
+
+
+cursorPosition : { row : Int, column : Int } -> Html.Attribute msg
+cursorPosition { row, column } =
+    JE.object
+        [ ( "row", JE.int row )
+        , ( "column", JE.int column )
+        ]
+        |> Attr.property "cursorPos"
