@@ -7,6 +7,10 @@
   max-width: 100%;
   width: 100%;
 
+  @at-root html.lia-variant-dark & {
+    filter: brightness(1.8) contrast(1.1);
+  }
+
   &.is-failure {
     border-color: rgb(var(--lia-red));
   }

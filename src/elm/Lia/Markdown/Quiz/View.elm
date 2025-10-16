@@ -341,7 +341,7 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
             , title = Translations.quizHint config.lang
             }
         ]
-    , viewFeedback config.lang state
+    , viewFeedback config state
     , viewHints config state.hint quiz.hints
     ]
 
@@ -374,8 +374,8 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
 -}
 
 
-viewFeedback : Lang -> Element -> Html msg
-viewFeedback lang state =
+viewFeedback : Config sub -> Element -> Html (Msg sub)
+viewFeedback config state =
     if state.error_msg /= "" then
         Html.div [ Attr.class "lia-quiz__feedback text-error", A11y_Live.polite ]
             [ Html.text state.error_msg
@@ -386,16 +386,18 @@ viewFeedback lang state =
             Solution.Solved ->
                 Html.div [ Attr.class "lia-quiz__feedback text-success", A11y_Live.polite ]
                     -- TODO: maybe lable success, failure, ... locale independend
-                    [ lang
-                        |> quizAnswerSuccess
-                        |> Html.text
+                    [ showCustomFeedback
+                        config
+                        state.opt.text_solved
+                        quizAnswerSuccess
                     ]
 
             Solution.ReSolved ->
                 Html.div [ Attr.class "lia-quiz__feedback text-disabled", A11y_Live.polite ]
-                    [ lang
-                        |> quizAnswerResolved
-                        |> Html.text
+                    [ showCustomFeedback
+                        config
+                        state.opt.text_resolved
+                        quizAnswerResolved
                     ]
 
             Solution.Open ->
@@ -404,10 +406,26 @@ viewFeedback lang state =
 
                 else
                     Html.div [ Attr.class "lia-quiz__feedback text-error", A11y_Live.polite ]
-                        [ lang
-                            |> quizAnswerError
-                            |> Html.text
+                        [ showCustomFeedback
+                            config
+                            state.opt.text_failed
+                            quizAnswerError
                         ]
+
+
+showCustomFeedback : Config sub -> Maybe Inlines -> (Lang -> String) -> Html (Msg sub)
+showCustomFeedback config custom default =
+    custom
+        |> Maybe.map
+            (viewer config
+                >> Html.div []
+                >> Html.map Script
+            )
+        |> Maybe.withDefault
+            (config.lang
+                |> default
+                |> Html.text
+            )
 
 
 {-| **private:** Show the solution button only if the quiz has not been solved
