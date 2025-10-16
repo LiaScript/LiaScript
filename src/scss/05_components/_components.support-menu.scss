@@ -1,9 +1,9 @@
-@use "sass:map";
-@use "../00_settings/settings.global";
-@use "../01_tools/tools.breakpoints";
-@use "../03_elements/elements.button";
-@use "../04_objects/object.canvas";
-@use "components.header";
+@use 'sass:map';
+@use '../00_settings/settings.global';
+@use '../01_tools/tools.breakpoints';
+@use '../03_elements/elements.button';
+@use '../04_objects/object.canvas';
+@use 'components.header';
 
 .lia-support-menu {
   background-color: rgb(var(--color-background));
@@ -62,7 +62,10 @@
     visibility: visible;
     top: calc(
       (#{components.$header-height-mobile} / 2) +
-        (2 * #{map.get(settings.$global-spacing, spacing-small)} - (#{elements.$btn-height} / 4))
+        (
+          2 * #{map.get(settings.$global-spacing, spacing-small)} - (#{elements.$btn-height} /
+                4)
+        )
     );
 
     @include tools.breakpoint('sm', 'max') {
@@ -112,6 +115,13 @@
     display: flex;
     flex-direction: column;
     padding: 1.8rem 0;
+
+    @at-root html.lia-variant-dark & {
+      color: rgb(
+        from rgb(var(--color-highlight)) calc(r * 1.8) calc(g * 1.8)
+          calc(b * 1.8)
+      );
+    }
 
     &:not(:first-child) {
       border-top: settings.$global-border;

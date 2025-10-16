@@ -103,7 +103,7 @@ script config withStyling attr id node =
                                 []
                         )
                     |> CList.addIf (node.modify /= No) (onEdit True id)
-                    |> CList.addIf (isError result) (Attr.style "color" "red")
+                    |> CList.addIf (isError result) (Attr.style "color" "#dc0000")
                     |> CList.addIf
                         (case node.input.type_ of
                             Nothing ->
