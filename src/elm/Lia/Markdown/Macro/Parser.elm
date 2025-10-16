@@ -83,9 +83,9 @@ macro : Parser Context ()
 macro =
     many1
         (choice
-            [ uid_macro |> andThen inject_macro
-            , simple_macro |> andThen inject_macro
-            , reference_macro |> andThen inject_macro
+            [ uid_macro |> andThen (inject_macro False)
+            , simple_macro |> andThen (inject_macro False)
+            , reference_macro |> andThen (inject_macro False)
             , macro_listing
             ]
         )
@@ -171,20 +171,20 @@ macro_listing =
                     |> andThen
                         (\params ->
                             map (List.append params) (code_block backticks)
-                                |> andThen (\p -> inject_macro ( name, p ))
+                                |> andThen (\p -> inject_macro True ( name, p ))
                         )
             )
 
 
-inject_macro : ( ( String, Bool ), List String ) -> Parser Context ()
-inject_macro ( ( name, escape ), params ) =
+inject_macro : Bool -> ( ( String, Bool ), List String ) -> Parser Context ()
+inject_macro ignore_indentation ( ( name, escape ), params ) =
     let
         inject state =
             case get name state.defines of
                 Just ( isDebug, deepDebug, code ) ->
                     let
                         code_ =
-                            if state.indentation == [] then
+                            if ignore_indentation || state.indentation == [] then
                                 code
 
                             else

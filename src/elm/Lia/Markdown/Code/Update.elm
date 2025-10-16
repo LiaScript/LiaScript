@@ -215,7 +215,18 @@ update sync sectionID scripts msg model =
                         -- preserve previous logging by setting ok to false
                         "LIA: terminal" ->
                             model
-                                |> maybe_project id (\p -> { p | terminal = Just <| Terminal.init })
+                                |> maybe_project id
+                                    (\p ->
+                                        { p
+                                            | terminal =
+                                                p.file
+                                                    |> Array.get 0
+                                                    |> Maybe.map .lang
+                                                    |> Maybe.withDefault "sh"
+                                                    |> Terminal.init
+                                                    |> Just
+                                        }
+                                    )
                                 |> maybe_update id model
 
                         _ ->

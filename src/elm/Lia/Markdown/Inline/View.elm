@@ -930,7 +930,13 @@ reference config ref attr =
                                     viewer config sub
 
                                 Nothing ->
-                                    [ Html.a [ Attr.href url, Attr.target "blank_" ] [ Html.text url ] ]
+                                    [ Html.a
+                                        [ Attr.href url
+                                        , Attr.target "blank_"
+                                        , Attr.class "lia-link"
+                                        ]
+                                        [ Html.text url ]
+                                    ]
                         ]
                     ]
                 ]

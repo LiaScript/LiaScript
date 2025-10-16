@@ -139,6 +139,9 @@ customElements.define(
     private _cursors: Cursor[] = []
     private _catchCursorUpdates: boolean = false
     private cursorPosition?: Position
+    private _keyBindings: {
+      [key: string]: { bindKey: any; eventName: string }
+    } = {}
 
     private model: {
       value: string
@@ -171,6 +174,14 @@ customElements.define(
 
       this._focus = false
       this._ariaLabel = 'editor'
+
+      // Set up default key bindings (maintaining backward compatibility)
+      this._keyBindings = {
+        'Ctrl-Enter': {
+          bindKey: { win: 'Ctrl-Enter', mac: 'Command-Enter' },
+          eventName: 'editorCtrlEnter',
+        },
+      }
 
       this.model = {
         value: '',
@@ -317,15 +328,8 @@ customElements.define(
         this._editor.on('change', runDispatch)
         this._editor.session.selection.on('changeCursor', cursorDispatch)
 
-        const self = this
-        this._editor.commands.addCommand({
-          name: 'Ctrl-Enter',
-          bindKey: { win: 'Ctrl-Enter', mac: 'Command-Enter' },
-          exec: function (editor) {
-            self.dispatchEvent(new CustomEvent('editorCtrlEnter'))
-          },
-          readOnly: false, // false if this command should not apply in readOnly mode
-        })
+        // Apply any configured key bindings
+        this.applyKeyBindings()
 
         input.setAttribute(
           'aria-label',
@@ -666,12 +670,20 @@ customElements.define(
       this.blockUpdate = false
     }
 
-    set value(value: string) {
-      if (this.model.value !== value) {
-        this.setValue(value)
+    set value(value: string | [string, { column: number; row: number }]) {
+      if (typeof value === 'string') {
+        if (this.model.value !== value) {
+          this.setValue(value)
+        }
+      } else {
+        const [text, position] = value
+        if (this.model.value !== text) {
+          this.setValue(text).then(() => {
+            this._editor.moveCursorToPosition(position)
+          })
+        }
       }
     }
-
     get blockUpdate() {
       //console.warn('Getting block of ->', this._blockUpdate)
       return this._blockUpdate
@@ -833,6 +845,18 @@ customElements.define(
       }
     }
 
+    set addKeyBindingProp(value: {
+      name: string
+      bindKey: any
+      eventName: string
+    }) {
+      this.addKeyBinding(value.name, value.bindKey, value.eventName)
+    }
+
+    set removeKeyBindingProp(name: string) {
+      this.removeKeyBinding(name)
+    }
+
     setFocus() {
       if (!this._editor) return
 
@@ -840,6 +864,229 @@ customElements.define(
         this._editor.focus()
       } catch (e) {
         console.log('Problem Ace: focus => ', e.toString())
+      }
+    }
+
+    /**
+     * Return the current cursor position { row, column } or null if editor not ready
+     */
+    get cursorPos(): Position | null {
+      if (!this._editor) return null
+
+      try {
+        return this._editor.getCursorPosition()
+      } catch (e) {
+        return null
+      }
+    }
+
+    /**
+     * Move the cursor to the provided position { row, column }.
+     * If the editor is not yet initialized this is a no-op.
+     */
+    set cursorPos(position: Position) {
+      if (!this._editor || !position) return
+
+      console.log('Moving cursor to:', position)
+      try {
+        // focus the editor so the move is visible
+        try {
+          this._editor.focus()
+        } catch (e) {}
+
+        // move cursor and clear any selection
+        this._editor.moveCursorToPosition(position)
+        try {
+          this._editor.clearSelection()
+        } catch (e) {}
+      } catch (e) {
+        // swallow errors; best-effort cursor move
+      }
+    }
+
+    /**
+     * Apply all configured key bindings to the editor
+     */
+    private applyKeyBindings() {
+      if (!this._editor || this.model.readOnly) return
+
+      const self = this
+
+      Object.entries(this._keyBindings).forEach(([name, config]) => {
+        this._editor.commands.addCommand({
+          name: name,
+          bindKey: config.bindKey,
+          exec: function (editor: any) {
+            // dispatch the custom event for the binding
+            self.dispatchEvent(new CustomEvent(config.eventName))
+
+            // determine the key descriptor string (win or mac)
+            let keyDesc = ''
+            if (typeof config.bindKey === 'string') {
+              keyDesc = config.bindKey
+            } else if (
+              config.bindKey &&
+              (config.bindKey.win || config.bindKey.mac)
+            ) {
+              // prefer win descriptor, fallback to mac
+              keyDesc = config.bindKey.win || config.bindKey.mac || ''
+            }
+
+            // Only insert a newline when the binding is an Enter variant
+            // (e.g. 'Enter', 'Shift-Enter'). This avoids adding newlines for
+            // navigation bindings like 'Up' / 'Down'.
+            if (/Enter/i.test(keyDesc)) {
+              try {
+                if (name !== 'Ctrl-Enter') {
+                  editor.insert('\n')
+                }
+              } catch (e) {
+                // ignore errors
+              }
+            } else if (/Up/i.test(keyDesc)) {
+              try {
+                const cur = editor.getCursorPosition()
+                const newRow = Math.max(0, cur.row - 1)
+                let newCol = cur.column
+                try {
+                  const line = editor.getSession().getLine(newRow) || ''
+                  newCol = Math.min(newCol, line.length)
+                } catch (e) {}
+                editor.moveCursorToPosition({ row: newRow, column: newCol })
+                try {
+                  editor.clearSelection()
+                } catch (e) {}
+              } catch (e) {}
+            } else if (/Down/i.test(keyDesc)) {
+              try {
+                const cur = editor.getCursorPosition()
+                const maxRow = Math.max(0, editor.getSession().getLength() - 1)
+                const newRow = Math.min(maxRow, cur.row + 1)
+                let newCol = cur.column
+                try {
+                  const line = editor.getSession().getLine(newRow) || ''
+                  newCol = Math.min(newCol, line.length)
+                } catch (e) {}
+                editor.moveCursorToPosition({ row: newRow, column: newCol })
+                try {
+                  editor.clearSelection()
+                } catch (e) {}
+              } catch (e) {}
+            }
+          },
+          readOnly: false,
+        })
+      })
+    }
+
+    /**
+     * Get the current key bindings configuration
+     */
+    get keyBindings() {
+      return { ...this._keyBindings }
+    }
+
+    /**
+     * Set key bindings. Format:
+     * {
+     *   'commandName': {
+     *     bindKey: { win: 'Ctrl-Enter', mac: 'Command-Enter' },
+     *     eventName: 'editorCtrlEnter'
+     *   }
+     * }
+     */
+    set keyBindings(bindings: {
+      [key: string]: { bindKey: any; eventName: string }
+    }) {
+      this._keyBindings = { ...bindings }
+
+      if (this._editor && !this.model.readOnly) {
+        // Remove old commands and apply new ones
+        Object.keys(bindings).forEach((name) => {
+          try {
+            this._editor.commands.removeCommand(name)
+          } catch (e) {
+            // Command might not exist, ignore
+          }
+        })
+
+        this.applyKeyBindings()
+      }
+    }
+
+    /**
+     * Add a single key binding
+     */
+    addKeyBinding(name: string, bindKey: any, eventName: string) {
+      this._keyBindings[name] = { bindKey, eventName }
+
+      if (this._editor && !this.model.readOnly) {
+        const self = this
+        this._editor.commands.addCommand({
+          name: name,
+          bindKey: bindKey,
+          exec: function (editor: any) {
+            self.dispatchEvent(new CustomEvent(eventName))
+
+            let keyDesc = ''
+            if (typeof bindKey === 'string') {
+              keyDesc = bindKey
+            } else if (bindKey && (bindKey.win || bindKey.mac)) {
+              keyDesc = bindKey.win || bindKey.mac || ''
+            }
+
+            if (/Enter/i.test(keyDesc)) {
+              try {
+                editor.insert('\n')
+              } catch (e) {}
+            } else if (/Up/i.test(keyDesc)) {
+              try {
+                const cur = editor.getCursorPosition()
+                const newRow = Math.max(0, cur.row - 1)
+                let newCol = cur.column
+                try {
+                  const line = editor.getSession().getLine(newRow) || ''
+                  newCol = Math.min(newCol, line.length)
+                } catch (e) {}
+                editor.moveCursorToPosition({ row: newRow, column: newCol })
+                try {
+                  editor.clearSelection()
+                } catch (e) {}
+              } catch (e) {}
+            } else if (/Down/i.test(keyDesc)) {
+              try {
+                const cur = editor.getCursorPosition()
+                const maxRow = Math.max(0, editor.getSession().getLength() - 1)
+                const newRow = Math.min(maxRow, cur.row + 1)
+                let newCol = cur.column
+                try {
+                  const line = editor.getSession().getLine(newRow) || ''
+                  newCol = Math.min(newCol, line.length)
+                } catch (e) {}
+                editor.moveCursorToPosition({ row: newRow, column: newCol })
+                try {
+                  editor.clearSelection()
+                } catch (e) {}
+              } catch (e) {}
+            }
+          },
+          readOnly: false,
+        })
+      }
+    }
+
+    /**
+     * Remove a key binding
+     */
+    removeKeyBinding(name: string) {
+      delete this._keyBindings[name]
+
+      if (this._editor) {
+        try {
+          this._editor.commands.removeCommand(name)
+        } catch (e) {
+          // Command might not exist, ignore
+        }
       }
     }
   }

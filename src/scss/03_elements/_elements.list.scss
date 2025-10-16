@@ -12,33 +12,69 @@
   }
 
   &--unordered {
-    list-style-type: none;
+    list-style-type: disc;
 
     > li {
-      &:before {
-        content: '\EA28';
+      &::marker {
         color: rgb(var(--color-highlight-dark));
-        font-family: 'icon';
-        left: 0;
-        position: absolute;
+        @at-root html.lia-variant-dark & {
+          color: rgb(
+            from rgb(var(--color-highlight-dark)) calc(r * 2.5) calc(g * 2.5)
+              calc(b * 2.5)
+          );
+        }
       }
-
       > p {
         display: block;
       }
     }
 
     ul li {
-      //padding-left: 1rem;
-      &:before {
-        content: '\EA29';
+      &::marker {
+        color: rgb(var(--color-highlight-dark));
+
+        @at-root html.lia-variant-dark & {
+          color: rgb(
+            from rgb(var(--color-highlight-dark)) calc(r * 2.5) calc(g * 2.5)
+              calc(b * 2.5)
+          );
+        }
       }
+      list-style-type: circle;
     }
 
     ul li ul li {
+      &::marker {
+        color: rgb(var(--color-highlight-dark));
+
+        @at-root html.lia-variant-dark & {
+          color: rgb(
+            from rgb(var(--color-highlight-dark)) calc(r * 2.5) calc(g * 2.5)
+              calc(b * 2.5)
+          );
+        }
+      }
+      list-style-type: square;
+    }
+
+    ul li ul li ul li {
       //padding-left: 1rem;
+      list-style-type: none;
+      position: relative;
+
       &:before {
-        content: '\EA2A';
+        content: '–'; // Em dash
+        color: rgb(var(--color-highlight-dark));
+        position: absolute;
+        left: -1em;
+        font-weight: bold;
+
+        @at-root html.lia-variant-dark & {
+          color: rgb(
+            from rgb(var(--color-highlight-dark)) calc(r * 2.5) calc(g * 2.5)
+              calc(b * 2.5)
+          );
+        }
       }
     }
   }
@@ -47,6 +83,13 @@
     > li {
       &::marker {
         color: rgb(var(--color-highlight-dark));
+
+        @at-root html.lia-variant-dark & {
+          color: rgb(
+            from rgb(var(--color-highlight-dark)) calc(r * 2.5) calc(g * 2.5)
+              calc(b * 2.5)
+          );
+        }
       }
 
       > * {
