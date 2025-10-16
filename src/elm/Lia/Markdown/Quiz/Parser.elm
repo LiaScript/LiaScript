@@ -157,7 +157,7 @@ modify_State scriptID attr q =
 
                             else
                                 id
-                        , opt = getOptions q.quiz seed attr
+                        , opt = getOptions s q.quiz seed attr
                         , partiallySolved = Array.empty
                         , deactivated = False
                         }
@@ -197,8 +197,8 @@ setScriptToHidden effect_model scriptID =
             effect_model
 
 
-getOptions : Type x -> Int -> Parameters -> Options
-getOptions quiz seed attr =
+getOptions : Context -> Type x -> Int -> Parameters -> Options
+getOptions state quiz seed attr =
     { randomize =
         if Attributes.isSet "data-randomize" attr then
             randomize quiz seed
@@ -226,6 +226,9 @@ getOptions quiz seed attr =
     , showPartialSolution =
         Attributes.isSet "data-show-partial-solution" attr
             || Attributes.isSet "data-show-partials" attr
+    , text_solved = attr |> Attributes.get "data-text-solved" |> Maybe.map (parse_inlines state)
+    , text_failed = attr |> Attributes.get "data-text-failed" |> Maybe.map (parse_inlines state)
+    , text_resolved = attr |> Attributes.get "data-text-resolved" |> Maybe.map (parse_inlines state)
     }
 
 

@@ -1,10 +1,10 @@
 # oEmbed Service Providers
 
-__date__: 04/06/2025
+__date__: 25/09/2025
 
 __23HQ:__ https://www.23hq.com
 
-23 is easy photo sharing. Share private or public with photo albums, tags, storage, slideshow, photoblog, subscriptions, send photos and much more
+Mit 23 ist das Veröffentlichen von Fotos kinderleicht. Veröffentliche deine Fotos privat oder öffentlich in Alben, Fotogruppen, Diashows und Fotoblogs oder versende Sie einfach per E-Mail.
 
 ![logo](https://www.23hq.com/resources/um-style/void.gif)
 
@@ -32,14 +32,6 @@ Acast Embed Player (377a84a64c1c2ad341d434d7b5fd740d87cc6381)
 
 ---
 
-__ActBlue:__ https://secure.actblue.com
-
-raised online since 2004
-
-![logo](https://s3.amazonaws.com/actblue-img/fbmetatagimg.png)
-
----
-
 __Adilo:__ https://adilo.bigcommand.com
 
 Adilo
@@ -52,15 +44,11 @@ __afreecaTV:__ https://www.afreecatv.com
 
 ---
 
-__afreecaTV:__ https://www.sooplive.co.kr
-
----
-
 __Altium LLC:__ https://altium.com
 
-The best PCB design software and high-powered tools for PCB designers. Industry-leading schematic capture, layout and prototyping tools. EDA / CAD
+Altium connects design, collaboration, and manufacturing in one platform, helping engineers build tomorrow’s technology with 35+ years of expertise.
 
-![logo](https://www.altium.com/resources/Facebook-cover%20%282%29_11.png)
+![logo](https://cdn.files.altium.com/sites/default/files/2025-09/Altium%20-%20Facebook.jpg?VersionId=yjkMv89YMCxg_pyEKebv1klyRqDVVfUr)
 
 ---
 
@@ -68,7 +56,7 @@ __Altru:__ https://www.altrulabs.com
 
 Learn how the iCIMS leading enterprise recruiting software and applicant tracking system empowers employers to attract, engage, hire, and advance today's top talent.
 
-![logo](https://www.icims.com/wp-content/uploads/2025/05/next-homepage.png)
+![logo](https://www.icims.com/wp-content/themes/icims4/src/img/icims-logo-r.svg)
 
 ---
 
@@ -150,7 +138,7 @@ __Audiomack:__ https://audiomack.com
 
 Audiomack is a youth-driven, artist-first music streaming platform that allows creators to share unlimited music and podcast content for free.
 
-![logo](/images/og-image.png)
+![logo](https://audiomack.com//images/og-image.png?width=1200)
 
 ---
 
@@ -174,7 +162,7 @@ __Balsamiq Cloud:__ https://balsamiq.cloud/
 
 Fast, Approachable, Collaborative Wireframing
 
-![logo](/static/cloud/landing/20250603141356/images/e9fe917dc627cf702023.png)
+![logo](/static/cloud/landing/20250923074246/images/40df73300fe6f3aff76b.png)
 
 ---
 
@@ -188,7 +176,7 @@ Artificial intelligence for safety risk management.
 
 __Beautiful.AI:__ https://www.beautiful.ai/
 
-Beautiful.ai is the best AI-powered presentation software for teams. Stay on brand, level up and automate presentation design, and collaborate from anywhere.
+The AI presentation maker built for speed and polish. Beautiful.ai helps you create professional, client-ready decks in minutes. Try it free for 14 days.
 
 ![logo](https://cdn.prod.website-files.com/59deb588800ae30001ec19c9/679345319c7f2f3d2301228b_Open%20Graph_final.jpg)
 
@@ -196,13 +184,25 @@ Beautiful.ai is the best AI-powered presentation software for teams. Stay on bra
 
 __Behance:__ https://www.behance.net
 
-Behance
+Behance is the world's largest creative network for showcasing and discovering creative work
+
+![logo](https://a5.behance.net/c2f0572404743eaa0a533bcc235d8cef8454ca39/img/search/homepage-seo-image.webp)
+
+---
+
+__biqnetwork:__ https://biqapp.com/
+
+Error
+
+![logo](https://biqapp.com//images/illustrations/characters/5.png)
 
 ---
 
 __Bitchute:__ https://bitchute.com/
 
-This website is using a security service to protect itself from online attacks. The action you just performed triggered the security solution. There are several actions that could trigger this block including submitting a certain word or phrase, a SQL command or malformed data.
+Bitchute is a video service that prioritizes creators and champions users' freedoms and privacy.
+
+![logo](https://bcfiles.bitchute.com/img/share/bc-sharing.webp)
 
 ---
 
@@ -210,15 +210,13 @@ __Blackfire.io:__ https://blackfire.io
 
 Blackfire's continuous observability solution empowers developers to monitor their applications' real-time behavior and proactively identify existing bottlenecks or the consequences of upcoming changes before they reach production.
 
-![logo](https://blackfire.io/static/45e937da487824b371a107682e51541b/7abc6/blackfire-logo-negative.svg)
+![logo](https://blackfire.io/static/d97495398b54666962fcf6463e4bfed7/7abc6/blackfire-logo-negative.svg)
 
 ---
 
 __Blogcast:__ https://blogcast.host/
 
-Create realistic voice overs for blogs, videos, podcasts and more from your content using AI text-to-speech software.
-
-![logo](https://www.facebook.com/tr?id=2079356315537757&ev=PageView&noscript=1)
+Access to this resource on the server is denied!
 
 ---
 
@@ -234,7 +232,7 @@ __Bookingmood:__ https://www.bookingmood.com
 
 Attract & manage bookings with our flexible booking software that integrates with any website
 
-![logo](https://www.bookingmood.com/en-US/opengraph-image?54bba67e7dc61cda)
+![logo](https://www.bookingmood.com/en-US/opengraph-image?790e440fc4694c8e)
 
 ---
 
@@ -270,9 +268,9 @@ Hop on bunny.net and speed up your web presence with the next-generation Content
 
 __Buttondown:__ https://buttondown.email/
 
-Newsletter software for people like you.
+Buttondown is the last email platform you'll migrate to. We're focused on your success, not on bleeding you dry.
 
-![logo](/next-assets/img/banner.png)
+![logo](https://buttondown.email//_next/image?url=%2Ficon%4072.png&w=96&q=75)
 
 ---
 
@@ -287,6 +285,14 @@ Create diagrams online with a collaborative online diagramming tool. Join the 39
 __Canva:__ https://www.canva.com
 
 Just a moment...
+
+---
+
+__Carbon:__ https://carbon.music/
+
+Explore underground electronic music. Discover curated underground techno, house, and ambient tracks.
+
+![logo](https://carbon.music/assets/carbon_full.png)
 
 ---
 
@@ -314,7 +320,7 @@ Create a Microsite for free from anything you designed in Google Drive, Microsof
 
 __Ceros:__ https://www.ceros.com/
 
-Ceros provides tools and services that empower companies to create interactive content with unparalleled ease and efficiency, driving customer engagement to new levels.
+Create no-code interactive content that earns attention and drives action. Ceros helps marketers and designers build immersive digital experiences that convert.
 
 ![logo](https://ceros-webadmin-data.s3.us-east-1.amazonaws.com/ceros-stage/54b84177-20d3-4157-a358-2da438ff0c5e.png)
 
@@ -410,12 +416,6 @@ Explore a random selection of the top coubs! Create recoubs, repost and share!
 
 ---
 
-__Crowd Ranking:__ https://crowdranking.com
-
-The issue has been logged for investigation. Please try again later.
-
----
-
 __Crumb.sh:__ https://crumb.sh
 
 Code crumbs are small, runnable, editable pieces of code that aid in learning a programming language.
@@ -426,7 +426,7 @@ Code crumbs are small, runnable, editable pieces of code that aid in learning a 
 
 __Cueup DJ Booking:__ https://cueup.io
 
-Cueup is an online platform connecting DJs and event organizers - the easiest way for you to book a great DJ for your event.  Just tell us about your event, and within 1 day you will receive non-binding offers from DJs near you.
+Cueup is the easiest way to get a great music act for your event. Find a DJ or Band, listen to their music, review prices, and book in minutes.
 
 ![logo](https://cueup.io/images/default.png)
 
@@ -434,17 +434,15 @@ Cueup is an online platform connecting DJs and event organizers - the easiest wa
 
 __Curated:__ https://curated.co/
 
-![logo](https://cdn.prod.website-files.com/654bab65ef556fcf34761463/654bab65ef556fcf34761477_curated-a05f7683c39fa9689e68e028003638c5906155098f2bddee222b17ec84ed0073.png)
+Curated is like a custom-tailored suit: so perfectly fitted to its task that you can never see any other option the same way again. Every part of the platform — from the article collection and management to the email template formatting — makes the creation and management process completely intuitiv..
 
----
-
-__CustomerDB:__ https://customerdb.com/
+![logo](https://curated.co/images/654bab65ef556fcf34761477_curated-a05f7683c39fa9689e68e028003638c5906155098f2bddee222b17ec84ed0073.png)
 
 ---
 
 __dadan:__ https://www.dadan.io
 
-Record, edit, and collaborate with video messages. 10X your content and productivity with Dadan's browser-based video creation platform.
+Record, edit, host and collaborate with videos. 10X your content and productivity with Dadan's online video creation platform.
 
 ![logo](https://www.dadan.io/wp-content/uploads/chrome.svg)
 
@@ -458,7 +456,7 @@ Dailymotion
 
 __DALEXNI:__ https://dalexni.com/
 
-This website is using a security service to protect itself from online attacks. The action you just performed triggered the security solution. There are several actions that could trigger this block including submitting a certain word or phrase, a SQL command or malformed data.
+We're currently performing some scheduled maintenance.
 
 ---
 
@@ -564,9 +562,23 @@ Live stream events easily, using a mobile device. It works on iOS as well as And
 
 __everviz:__ https://everviz.com
 
-Beautiful visualizations on all platforms. everviz empowers digital publishers to craft engaging interactive charts and maps. Easily publish your visuals everviz is a tool for data visualization and engaging storytelling. Sharing your data through attractive, interactive charts and maps is now simpl..
+Beautiful visualizations on all platforms. everviz makes data storytelling simple. Build once, publish anywhere, and keep every visualization on brand. everviz is a tool for data visualization and engaging storytelling. Sharing your data through attractive, interactive charts and maps is now simpler..
 
 ![logo](https://www-dev.everviz.com/wp-content/uploads/2023/07/icon-general.svg)
+
+---
+
+__Everwall:__ https://everwall.com
+
+Encourage high event engagement & memorable experiences with our live social media wall for events. Harness the power of social interaction with Everwall!
+
+![logo](https://everwall.com/wp-content/uploads/social/Twitter-Summary-Card.jpg)
+
+---
+
+__Ex.Co:__ https://ex.co
+
+403 Forbidden
 
 ---
 
@@ -588,9 +600,17 @@ Enjoy thousands of hours of Christian movies, shows, and biblical teaching on Fa
 
 __Figma:__ https://www.figma.com
 
-Figma is the leading collaborative design tool for building meaningful products. Seamlessly design, prototype, develop, and collect feedback in a single platform.
+Figma is the leading collaborative design platform for building meaningful products. Design, prototype, and build products faster—while gathering feedback all in one place.
 
 ![logo](https://cdn.sanity.io/images/599r6htc/regionalized/1adfa5a99040c80af7b4b5e3e2cf845315ea2367-2400x1260.png?w=1200&q=70&fit=max&auto=format)
+
+---
+
+__Filestage:__ https://filestage.io/
+
+Take control of your review and approval process with online proofing software. Designed for creative and marketing teams in regulated industries.
+
+![logo](https://filestage.io/wp-content/uploads/2022/11/filestage_logo@2x-1-155x25-c-default.webp)
 
 ---
 
@@ -604,7 +624,7 @@ Transform your online and offline shopping experience with Firework's leading vi
 
 __FITE:__ https://www.fite.tv/
 
-✓ 1,000+ live events per year ✓ 7M strong fan community ✓ Watch: BKFC 75 Albuquerque: David Mundell vs Donald Sanchez, GCW: Tournament of Survival X, TNA: Against All Odds 2025, Armored MMA 2025: Medieval Cage Fighting Championship, Hall of Fame Village, A7FL 2025 Playoffs: Las Vegas Insomniacs vs S..
+✓ 1,000+ live events per year ✓ 7M strong fan community ✓ Watch: AEW 2025 PPV: Pack #2 (All Out & WrestleDream), AEW: All Out 2025, GCW: Josh Barnett's Bloodsport XV, TNA: Victory Road 2025, UIM F1H2O World Championship 2025: Grand Prix of Shanghai, China, Day 2 - Race, World Downhill Skateboarding ..
 
 ![logo](https://www.trillertv.com/static/img/home-trillertv.png)
 
@@ -650,9 +670,17 @@ See more reviews of All
 
 ---
 
+__Form-Data:__ https://form-data.com
+
+Build and publish forms in under a minute with Form-Data – the AI-powered form builder with spam filtering, notifications, and integrations.
+
+![logo](https://form-data.com/assets/formdata/formdata-social-card.png)
+
+---
+
 __FOX SPORTS Australia:__ https://www.foxsports.com.au
 
-Reference #18.87851502.1749040903.d7f5aee
+Reference #18.f171202.1758813544.1c6afe8
 
 ---
 
@@ -660,11 +688,15 @@ __Framatube:__ https://framatube.org/
 
 PeerTube instance dedicated to Framasoft's videos.
 
+![logo](https://framatube.org/lazy-static/avatars/59e98d0f-7b0f-4ab5-bbe7-e4454b4c68f1.png)
+
 ---
 
 __FrameBuzz:__ https://framebuzz.com/
 
-This website is using a security service to protect itself from online attacks. The action you just performed triggered the security solution. There are several actions that could trigger this block including submitting a certain word or phrase, a SQL command or malformed data.
+Find your domain name at HugeDomains. Start using this domain right away.
+
+![logo](https://static.HugeDomains.com/images/hdv3-img/og_hugedomains.png)
 
 ---
 
@@ -672,7 +704,7 @@ __Framer:__ https://www.framer.com
 
 Build a free website with Framer—enjoy full design freedom, powerful CMS, built-in SEO, and real-time collaboration. Create professional, fully custom sites with the no-code builder loved by designers and high-performing teams.
 
-![logo](https://framerusercontent.com/images/ZXV4KtE6NwHb7TgmfSLsobIO0.webp)
+![logo](https://framerusercontent.com/images/yyBL8MFizGZKUd27rQGHp30fyc.jpg)
 
 ---
 
@@ -680,7 +712,7 @@ __Geograph Britain and Ireland:__ https://www.geograph.org.uk/
 
 Geograph Britain and Ireland is a web-based project to collect and reference geographically representative images of every square kilometre of the British Isles.
 
-![logo](https://s0.geograph.org.uk/geophotos/07/35/15/7351537_f386e9cd.jpg)
+![logo](https://s0.geograph.org.uk/geophotos/06/90/96/6909663_c59e18ff.jpg)
 
 ---
 
@@ -728,9 +760,9 @@ Build your Metaverse in minutes with GMetriXR - Join thousands of creators lever
 
 __Gong:__ https://www.gong.io/
 
-Gong captures customer interactions then delivers insights at scale, empowering teams to make decisions based on data instead of opinions.
+The Gong Revenue AI Platform helps your entire GTM organization win. Drive growth with multimodal revenue signal processing, specialized AI agents, and purpose-built applications.
 
-![logo](https://www.gong.io/wp-content/uploads/2023/02/Gong_new-OG-Image.webp)
+![logo](https://cdn.sanity.io/images/ww20clc6/production/4daccf5b483d9f1802171fb7d967e9e678c8501d-1200x628.webp)
 
 ---
 
@@ -758,6 +790,14 @@ Transform your website's media delivery with Gumlet. Optimize images and videos 
 
 ---
 
+__GW2 Fashions:__ https://gw2fashions.com/
+
+An API driven tool to easily create and share Guild Wars 2 fashion templates!
+
+![logo](https://gw2fashions.com//img/reddit.png)
+
+---
+
 __Gyazo:__ https://gyazo.com
 
 Gyazo is the easiest way to record screenshots & videos you can share instantly. Save time with async visual communication that's effortless and engaging.
@@ -776,7 +816,9 @@ Integrate live data, construct ontologies, and create shared understanding in a 
 
 __hearthis.at:__ https://hearthis.at/
 
-This website is using a security service to protect itself from online attacks. The action you just performed triggered the security solution. There are several actions that could trigger this block including submitting a certain word or phrase, a SQL command or malformed data.
+Stream your mixes, tracks and sounds on hearthis.at - lossless audio streaming and unlimited uploads. Sell directly & get paid instantly.
+
+![logo](https://hearthis.at/apple-touch-icon.png)
 
 ---
 
@@ -806,15 +848,21 @@ __Homey:__ https://homey.app
 
 Mit Homey wird Ihr Smart Home noch smarter. Die Steuerung, Überwachung und Automatisierung Ihres gesamten Zuhauses findet von einem einzigen Gerät aus statt. Homey unterstützt über 50.000 Geräte Tausender Hersteller.
 
-![logo](https://etc.athom.com/logo/white/256.png)
+![logo](https://homey.app/img/pages/home/og-home.png)
 
 ---
 
 __Hopvue:__ https://www.hopvue.com
 
-Hopvue
+Let users choose their view
 
-![logo](http://static1.squarespace.com/static/61b6c547523efa51953bb439/t/61c15615fd961a77e80b4b90/1640060437163/HOPVUE_FINAL_.png?format=1500w)
+---
+
+__HuffDuffer:__ https://huffduffer.com
+
+Create your own podcast: find links to audio files on the Web; huffduff the links (add them to your podcast); subscribe to podcasts of other found sounds.
+
+![logo](https://huffduffer.com/images/huffduffer.svg)
 
 ---
 
@@ -842,6 +890,12 @@ Ideamapper is a mind mapping and writing tool, developed to help individuals go 
 
 ---
 
+__Idomoo:__ https://idomoo.com/
+
+403 Forbidden
+
+---
+
 __iFixit:__ https://www.iFixit.com
 
 iFixit is a global community of people helping each other repair things. Let's fix the world, one device at a time. Troubleshoot with experts in the Answers forum—and build your own how-to guides to share with the world. Fix your Apple and Android devices—and buy all the parts and tools needed for y..
@@ -854,7 +908,7 @@ __IFTTT:__ https://www.ifttt.com/
 
 Get started with IFTTT, the easiest way to automate your favorite apps and devices for free. Make your home more relaxing. Make your work more productive. We...
 
-![logo](//web-assets.ifttt.com/packs/media/shared/ifttt-banner-287889aa7d44e76a8d08.png)
+![logo](https://web-assets.ifttt.com/builds/assets/ifttt-banner-BdwHPmXv.png)
 
 ---
 
@@ -894,7 +948,7 @@ __Infogram:__ https://infogram.com/
 
 Infogram is an easy-to-use, AI-powered tool for creating stunning infographics, charts, dashboards, maps, and more. Effortlessly design and share interactive data visualizations across various platforms.
 
-![logo](https://cdn.jifo.co/js/dist/35e36ad5717a3089b2246e91c9cf72e6.png)
+![logo](https://cdn.jifo.co/js/dist/f248da3747f83ee2a1a6a8768140ce82.png)
 
 ---
 
@@ -944,17 +998,9 @@ Create an account or log in to Instagram - Share what you're into with the peopl
 
 __Insticator Inc:__ https://www.insticator.com/
 
-Home - Publisher Experiences
+We help publishers build & grow their online communities by driving acquisition, engagement and unique experiences for users
 
 ![logo](https://cool.co/publisher-experiences/wp-content/uploads/sites/6/2025/04/Logo.svg)
-
----
-
-__Issuu:__ https://issuu.com/
-
-Issuu converts PDFs and documents into an interactive flipbook and marketing assets. Embed flipbooks onto your website and distribute online. Create yours with Issuu.
-
-![logo](https://issuu.com//publisher-space/assets/_next/static/media/CardRead.8c26536d.png)
 
 ---
 
@@ -992,27 +1038,11 @@ Just a moment...
 
 ---
 
-__Kidoju:__ https://www.kidoju.com/
-
-一键科学上网不限设备不限速不限流量的无日志高速机场，小牛让你安全私密地摆脱束缚，匿名浏览喜爱的内容网站和应用。立即下载 2024 最稳定免费加速器！
-
-![logo](images/favicon.ico)
-
----
-
 __Kit:__ https://kit.co/
 
 {{SEO.description}}
 
 ![logo]({{SEO.image}})
-
----
-
-__Knacki:__ https://jdr.knacki.info
-
-H2R Archives - Login
-
-![logo](https://jdr.knacki.info/public/img/logo.svg)
 
 ---
 
@@ -1026,9 +1056,19 @@ __Kooapp:__ https://kooapp.com
 
 ---
 
+__Kubit:__ https://kubit.ai
+
+Kubit delivers enterprise-grade customer journey analytics—directly from your existing data warehouse. Enable every team with self-service insights, driving faster, data-driven decisions with minimal engineering overhead or data movement.​
+
+![logo](https://kubit.ai/wp-content/uploads/2025/06/VIDEO-–-Home-Page-–-Kubit-Analytics-Overview.gif)
+
+---
+
 __Kurozora:__ https://kurozora.app/
 
-This website is using a security service to protect itself from online attacks. The action you just performed triggered the security solution. There are several actions that could trigger this block including submitting a certain word or phrase, a SQL command or malformed data.
+A community for anime fans with an extensive library of anime, manga, music, games, movies, specials, OVA, and ONA. Only on Kurozora, the largest, free online anime, manga, game & music database in the world. Track, share and discover anime with friends.
+
+![logo](https://kurozora.app/images/static/promotional/social_preview_icon_only.webp)
 
 ---
 
@@ -1058,7 +1098,7 @@ LINE PLACEは2024年6月3日をもちまして、サービスを終了いたし�
 
 __Linkstackz:__ https://www.linkstackz.com/
 
-This website is using a security service to protect itself from online attacks. The action you just performed triggered the security solution. There are several actions that could trigger this block including submitting a certain word or phrase, a SQL command or malformed data.
+Just a moment...
 
 ---
 
@@ -1082,7 +1122,7 @@ __LottieFiles:__ https://lottiefiles.com/
 
 Effortlessly bring the smallest, free, ready-to-use motion graphics for the web, app, social, and designs. Create, edit, test, collaborate, and ship Lottie animations in no time!
 
-![logo](https://stp-v4-cdn.lottiefiles.com/cdn-cgi/image/width=1200,quality=80,format=auto/t_T_Wh_OP_1_Y_Rph_K4_Rl_HC_Zj_LR_Ie_I5qk_Y6_Wbb2h_A_Hio_NX_0164244cad.png)
+![logo](https://stp-v4-cdn.lottiefiles.com/ogimage_Homepage_b5840ac00c.png)
 
 ---
 
@@ -1096,9 +1136,9 @@ Ludus is an advanced presentation tool for creative professionals. It's like Ske
 
 __Lumiere:__ https://latd.com
 
-Our AI-propelled video knowledge platform, Lumiere, helps you better understand audiences and users, to unlock the true power of your content.
+Create Your Biggest Fans. Latitude is a creative research agency powered by our video insights engine, Lumiere.
 
-![logo](/og-lumiere.jpeg)
+![logo](https://framerusercontent.com/images/dVAEN61dR0WsuMrtgfOzAtXto.png)
 
 ---
 
@@ -1110,11 +1150,19 @@ Explore data and build apps seamlessly with marimo, a next-generation Python not
 
 ---
 
+__MathEmbed:__ https://mathembed.com
+
+Providing a surprisingly human shopping experience. Trusted and secure. Millions of domains to choose from.
+
+![logo](https://static.hugedomains.com/images/hdv3-img/og_hugedomains.png)
+
+---
+
 __Matterport:__ https://matterport.com/
 
 Our 3D cameras and virtual tour software platform help you digitize your building, automatically create 3D tours, 4K print quality photos, schematic f
 
-![logo](https://images.ctfassets.net/icnj41gkyohw/67mLL6CjL8paRGaSaYxqCV/61f8bd21b62cad099d6b7ec6c3a988ec/General_socialmeta_0.png)
+![logo](https://images.ctfassets.net/icnj41gkyohw/67mLL6CjL8paRGaSaYxqCV/a9103a26dacd41fcbba7c276da2ddef2/MTTR_Share_Image_-_1600x900.png)
 
 ---
 
@@ -1134,19 +1182,13 @@ Boost your audio and video strategy with Platform. The easiest way to create, di
 
 __Medienarchiv der Künste - Zürcher Hochschule der Künste:__ https://medienarchiv.zhdk.ch/
 
-![logo](https://analytics.zhdk.ch/piwik.php?idsite=174&rec=1)
-
----
-
-__Mermaid Ink:__ https://mermaid.ink
-
-![logo](https://img.shields.io/github/issues/jihchi/mermaid.ink)
+Just a moment...
 
 ---
 
 __Microsoft Stream:__ https://stream.microsoft.com
 
-Microsoft Stream bringt Videos in Ihre täglichen Arbeits-Apps, damit Sie überzeugend kommunizieren sowie Sachverhalte erklären, lernen und in Hybridteams zusammenarbeiten können.
+Clipchamp ist der neue Video-Editor in Microsoft 365, der Ihnen die Bearbeitung von Videoclips erleichtert. Damit können Sie zu Hause ganz leicht hochqualitative Videos gestalten.
 
 ![logo](https://uhf.microsoft.com/images/microsoft/RE1Mu3b.png)
 
@@ -1156,7 +1198,7 @@ __Miro:__ https://miro.com/
 
 Miro is the innovation workspace where teams manage projects, design products, and build the future together. Join 90M+ users from around the world.
 
-![logo](https://mirostatic.com/website/1748959784252/assets/images/miro.png)
+![logo](https://mirostatic.com/website/1758790174376/assets/images/miro.png)
 
 ---
 
@@ -1164,15 +1206,15 @@ __MixCloud:__ https://mixcloud.com/
 
 Join a global community where creators craft a deeper listening experience.
 
-![logo](https://www.mixcloud.com/assets/mx-DKMPz7Iy-mixcloud-og-image.jpg)
+![logo](https://www.mixcloud.com/assets/mix-DKMPz7Iy-mixcloud-og-image.jpg)
 
 ---
 
 __Mixpanel:__ https://mixpanel.com/
 
-Mixpanel is a powerful, self-serve digital analytics platform that helps teams analyze user behavior in real time to make faster, data-informed decisions.
+Get a complete view of your customers with Mixpanel digital analytics. Track, analyze, and act on user behavior to drive acquisition, growth, and retention.
 
-![logo](https://cdn.mxpnl.com/marketing-site/static/image/external/og/mixpanel-social-sharing.png)
+![logo](https://framerusercontent.com/assets/KHyJwfBzTDm8CBtgWokK94nAuQ.png)
 
 ---
 
@@ -1189,6 +1231,14 @@ __Music Box Maniacs:__ https://musicboxmaniacs.com/
 It's all about music boxes. Online music box melody editor, music box melody gallery and a lot of cool people.
 
 ![logo](https://www.facebook.com/tr?id=1759389744131978&ev=PageView&noscript=1)
+
+---
+
+__myBeweeg:__ https://mybeweeg.com
+
+More than 10000 personal trainers and 1000 gyms are on FITAPP.pro register for FREE today and manage your customers, workouts, finances and much more
+
+![logo](https://fitapp.pro/img/shareFacebook.png)
 
 ---
 
@@ -1229,6 +1279,12 @@ __Natural Atlas:__ https://naturalatlas.com/
 Explore the outdoors on Natural Atlas – campgrounds, trails, waterfalls, hot springs, and more. Browse a one-of-a-kind map, record your next outdoor adventure with the Natural Atlas iOS App, and more.
 
 ![logo](https://static.naturalatlas.com/og/cover-og-1.jpg)
+
+---
+
+__Naver Clip:__ https://m.naver.com/shorts
+
+네이버 모바일 메인에서 다양한 정보와 유용한 컨텐츠를 만나 보세요
 
 ---
 
@@ -1284,7 +1340,7 @@ __Observable:__ https://observablehq.com
 
 Observable's collaborative data canvas helps you explore data, perform analysis, and build expressive charts and dashboards.
 
-![logo](https://static.observablehq.com/assets/marketing/meta/og-image-250414.png)
+![logo](https://static.observablehq.com/assets/marketing/meta/og-image-250804.png)
 
 ---
 
@@ -1314,8 +1370,6 @@ __Official FM:__ https://official.fm
 
 Official.fm has done an incredible job at creating a community that brings together different artists and listeners in a very creative and dynamic way.
 
-![logo](https://official.fm/wp-content/uploads/2018/06/OfficialFM_forDarkBG_medium.png)
-
 ---
 
 __Omniscope:__ https://omniscope.me/
@@ -1344,7 +1398,7 @@ Upload photos from any device to the cloud and get 360 degree presentations. Eas
 
 __Origits:__ https://origits.com/
 
-Make your videos perform where it matters. Origits turns website videos into conversion tools, keeping customers engaged and ready to buy.
+Video Hosting Platform Built for Conversion . Origits turns website videos into conversion tools, keeping customers engaged and ready to buy.
 
 ![logo](https://static.origits.com/uploads/og_main_d11e7becab.png)
 
@@ -1362,7 +1416,7 @@ __Overflow:__ https://overflow.io
 
 Create interactive user flows and stunning design presentations to engage your audience in synchronous or asynchronous design critique.
 
-![logo](https://overflow.io/assets/images/social/homepage.png?v=1736240147689)
+![logo](https://overflow.io/assets/images/social/homepage.png?v=1758716291507)
 
 ---
 
@@ -1384,7 +1438,7 @@ Beautiful boards and canvases for visual thinkers and learners. Used by 40 milli
 
 __Panda Video:__ https://pandavideo.com/
 
-Boost your digital sales and ensure secure hosting for courses with Panda Video. The ideal solution to efficiently and reliably propel your business forward.
+Secure, ad-free video hosting for online courses, VSLs and EdTechs. Panda Video is the best solution to boost your business and your video marketing goals.
 
 ![logo](https://cdn.prod.website-files.com/65cf5ecc681ee26a21deb856/65e21aa99bdc2c7ddc6db0c0_OG-image.webp)
 
@@ -1417,6 +1471,10 @@ __Pikasso:__ https://builder.pikasso.xyz
 ---
 
 __PingVP:__ https://www.pingvp.com/
+
+The power of smart video offers unparalleled opportunities. With the right strategy and data-driven approach for maximum results.
+
+![logo](https://en.pingvp.com/wp-content/uploads/2025/05/professional_woman_collage-1.jpg)
 
 ---
 
@@ -1454,9 +1512,9 @@ __Pixdor:__ https://www.pixdor.com/
 
 __Plusdocs:__ https://plusdocs.com
 
-Stop making presentations the old way. Try Plus AI presentation maker for free to make PowerPoint and Google Slides presentations in minutes.
+Create stunning presentations in minutes with Plus AI, the top-rated AI presentation maker for PowerPoint and Google Slides. Built for pros. Start your free 7-day trial today.
 
-![logo](https://cdn.prod.website-files.com/622ffb3448f15ce7a33c6a2b/66e87e13710938ddde0670c1_og%20-%20Plus%20AI%20presentation%20maker%20(1).avif)
+![logo](/622ffb3448f15ce7a33c6a2b/66e87e13710938ddde0670c1_og%20-%20Plus%20AI%20presentation%20maker%20(1).avif)
 
 ---
 
@@ -1472,23 +1530,23 @@ __Poll Daddy:__ https://polldaddy.com
 
 Create flexible surveys, polls, quizzes and ratings with Crowdsignal.
 
-![logo](https://crowdsignal.com/wp-content/uploads/2018/10/cropped-crowdsignal_favion-0112.png?w=200)
+![logo](https://s0.wp.com/_si/?t=eyJpbWciOiJodHRwczpcL1wvY3Jvd2RzaWduYWwuY29tXC93cC1jb250ZW50XC91cGxvYWRzXC8yMDE4XC8xMFwvY3JvcHBlZC1jcm93ZHNpZ25hbF9mYXZpb24tMDExMi5wbmc_dz0yMDAiLCJ0eHQiOiJDcm93ZHNpZ25hbCIsInRlbXBsYXRlIjoiZWRnZSIsImZvbnQiOiIiLCJibG9nX2lkIjoxNTA0OTcyMzd9.cl7WpCP851M3lUZF-LmT2mNkp25WuKqMuirgXYyKfwEMQ)
 
 ---
 
 __Portfolium:__ https://portfolium.com
 
-Discover Instructure’s innovative learning solutions—Canvas LMS, Mastery, and more—empowering educators and learners from K–12 to career.
+Empower learning with Instructure’s LMS and edtech solutions for K–12, higher education, and businesses. Discover Canvas, Impact, and Mastery to drive success.
 
-![logo](https://www.instructure.com/sites/default/files/image/2024-10/2024_Instructure_Thumbnail_Image.png)
+![logo](https://www.instructure.com/sites/default/files/image/2025-07/2025-Meta-OG-thumb-ENG_0.jpg)
 
 ---
 
 __Prezi Video:__ https://prezi.com/
 
-Welcome to Prezi, the presentation software that helps you stand out, bring your ideas to life, and create interactive presentations easier than ever.
+Use Prezi AI, the ultimate AI presentation maker, to create engaging presentations in seconds. Try Prezi AI today!
 
-![logo](https://assets.prezicdn.net/assets-versioned/staticpages-versioned/5917-8b46d6d/staticpages/webflow/images/Hero-06-2x.png)
+![logo](https://assets.prezicdn.net/assets-versioned/staticpages-versioned/6134-d08cbf7/staticpages/webflow/images/Hero-06-2x.png)
 
 ---
 
@@ -1508,11 +1566,15 @@ Financial research products serving millions of end-users, transforming the way 
 
 ---
 
+__QuellenSuche:__ https://quellensuche.de
+
+---
+
 __Quiz.biz:__ https://www.quiz.biz/
 
 Discover thousands of Trivia Games, Quizzes and Personality Tests related to general knowledge, movies, TV shows, music, geography, etc... and create your own quizzes simply and for free.
 
-![logo](https://www.quiz.biz/images//logo-105.png)
+![logo](https://www.quiz.biz/images/logo-105.png)
 
 ---
 
@@ -1520,7 +1582,7 @@ __Quizz.biz:__ https://www.quizz.biz/
 
 Quizz.biz, premier site de Quiz et Tests en France ! Découvrez des milliers de Quiz et Tests de personnalité sur la culture générale, ciné, séries télé, musique, histoire géo, etc... et créez vos propres quiz simplement et gratuitement.
 
-![logo](https://www.quizz.biz/images//logo-105.png)
+![logo](https://www.quizz.biz/images/logo-105.png)
 
 ---
 
@@ -1584,21 +1646,13 @@ __ReverbNation:__ https://www.reverbnation.com/
 
 ReverbNation helps Artists grow lasting careers by introducing them to music industry partners, exposing them to fans, and building innovative tools to promote their success.
 
-![logo](https://d16o2fplq2wi4c.cloudfront.net/20250513151540/images/main_page/open_graph/rn-logo_1200x630.png)
-
----
-
-__Roomshare:__ https://roomshare.jp
-
-ルームシェアジャパン - 無料ルームシェア・シェアハウス募集サイト
-
-![logo](https://roomshare.jp/images/banner_200x200.png)
+![logo](https://d16o2fplq2wi4c.cloudfront.net/20250915133535/images/main_page/open_graph/rn-logo_1200x630.png)
 
 ---
 
 __RoosterTeeth:__ https://roosterteeth.com
 
-This website is using a security service to protect itself from online attacks. The action you just performed triggered the security solution. There are several actions that could trigger this block including submitting a certain word or phrase, a SQL command or malformed data.
+We're verifying your browser
 
 ---
 
@@ -1614,7 +1668,7 @@ __Saooti:__ https://octopus.saooti.com
 
 The SAOOTI solution to produce, host, distribute and monetize your audio content
 
-![logo](https://octopus.saooti.com/img/logo_saooti_play_black.webp)
+![logo](https://octopus.saooti.com/img/logo_saooti_play_black.svg)
 
 ---
 
@@ -1744,7 +1798,7 @@ Udgiv dine videoproduktioner her
 
 __SlideShare:__ https://www.slideshare.net/
 
-Discover, Share, and Present presentations and infographics with the world’s largest professional content sharing community.
+Discover, Share, and Present presentations and infographics with the world's largest professional content sharing community.
 
 ![logo]([object Object])
 
@@ -1772,6 +1826,10 @@ __SocialExplorer:__ https://www.socialexplorer.com/
 Cloud-native AI-powered spatial analytics and data intelligence software, backed by the world’s largest data library. Unlock insights and make smarter choices.
 
 ![logo](https://cdn.prod.website-files.com/6748cffe058d8f161084d931/6748d496c615dd6fc02363e6_se-logo%20color%20-%20v3.svg)
+
+---
+
+__SOOP:__ https://www.sooplive.co.kr
 
 ---
 
@@ -1817,9 +1875,9 @@ Discover a world of captivating podcasts and immersive audio experiences on Spre
 
 __SproutVideo:__ https://sproutvideo.com
 
-Grow your business with SproutVideo’s enterprise-worthy video marketing, analytics, and privacy tools. Start sharing your videos and live streams today.
+Grow your business with SproutVideo's enterprise-worthy video marketing, analytics, and privacy tools. Start sharing your videos and live streams today.
 
-![logo](https://sproutvideo.com/assets/SV_opengraph-13d115e6110629dd4cc6097bdf4712f098b7fd0833380920f1ecbaba90110689.png)
+![logo](https://sproutvideo.com/assets/SV_opengraph-c57d2148c0e121e228071b2e5f13d5422816f534662933d864a0a67f8d5a770b.png)
 
 ---
 
@@ -1847,7 +1905,7 @@ Upload your video in seconds on Streamable. We accept a variety of video formats
 
 __Streamio:__ https://www.streamio.com
 
-Streamio is the GDPR-compliant online video platform (OVP) for organizations that wants a platform for managing and publishing online videos.
+Streamio provides secure, GDPR-compliant video hosting and live streaming on EU-based servers. Manage VOD and broadcast live events. Get a free account.
 
 ![logo](https://www.streamio.com/wp-content/uploads/2016/01/Streamio_logo-1.png)
 
@@ -1867,7 +1925,7 @@ Sudomemo: Share your Flipnotes with the world! For Nintendo DSi and 3DS.
 
 ---
 
-__Supercut:__ https://supercut.video/
+__Supercut:__ https://supercut.ai/
 
 Blazing fast, branded screen recording for busy teams that want to look pro.
 
@@ -1887,7 +1945,7 @@ __Sway:__ https://www.sway.com
 
 Create and share interactive reports, presentations, personal stories, and more. Sway is an easy-to-use digital storytelling app for creating interactive reports, presentations, personal stories and more. Its built-in design engine helps you create professional designs in minutes. With Sway, your im..
 
-![logo](https://weu-www.sway-cdn.com/161882940101_Content/SocialMedia_Logo_Sway_400x400x32.png)
+![logo](https://weu-cdn.sway.static.microsoft/161930540101_Content/SocialMedia_Logo_Sway_400x400x32.png)
 
 ---
 
@@ -1895,7 +1953,7 @@ __Sway Office:__ https://sway.office.com
 
 Create and share interactive reports, presentations, personal stories, and more. Sway is an easy-to-use digital storytelling app for creating interactive reports, presentations, personal stories and more. Its built-in design engine helps you create professional designs in minutes. With Sway, your im..
 
-![logo](https://weu-www.sway-cdn.com/161882940101_Content/SocialMedia_Logo_Sway_400x400x32.png)
+![logo](https://weu-cdn.sway.static.microsoft/161930540101_Content/SocialMedia_Logo_Sway_400x400x32.png)
 
 ---
 
@@ -1935,7 +1993,9 @@ Live news, investigations, opinion, photos and video by the journalists of The N
 
 __They Said So:__ https://theysaidso.com/
 
-This website is using a security service to protect itself from online attacks. The action you just performed triggered the security solution. There are several actions that could trigger this block including submitting a certain word or phrase, a SQL command or malformed data.
+They Said So
+
+![logo](https://theysaidso.com//branding/theysaidso.50x50.png)
 
 ---
 
@@ -1993,9 +2053,7 @@ Trinity Audio's AI-driven solutions help you create a world of smart audio exper
 
 __Tumblr:__ https://www.tumblr.com
 
-Join over 100 million people using Tumblr to find their communities and make friends.
-
-![logo](https://assets.tumblr.com/pop/src/assets/images/labs/communities/browse-585339b9.jpg)
+Explore trending topics on Tumblr. See all of the GIFs, fan art, and general conversation about the internet’s favorite things.
 
 ---
 
@@ -2009,9 +2067,9 @@ Info for efficiency
 
 __tvcf:__ https://tvcf.co.kr
 
-Fruto del País
+놀라운 영감을 주는 최고의 크리에이티브
 
-![logo](https://tvcf.co.kr/images/RenewV1.1/logo.svg)
+![logo](http://localhost:3000/public/svg/icons/tvcfLogo.svg)
 
 ---
 
@@ -2023,7 +2081,9 @@ Twinmotion Cloud enables easily sharing content created in Twinmotion, providing
 
 __Twitter:__ https://www.twitter.com/
 
-Please switch to a supported browser to continue using x.com. You can see a list of supported browsers in our Help Center.
+We’ve detected that JavaScript is disabled in this browser. Please enable JavaScript or switch to a supported browser to continue using x.com. You can see a list of supported browsers in our Help Center.
+
+![logo](https://abs-0.twimg.com/emoji/v2/svg/26a0.svg)
 
 ---
 
@@ -2079,6 +2139,14 @@ IBM Video Streaming
 
 ---
 
+__uStudio, Inc.:__ https://www.ustudio.com
+
+uStudio Private Podcasting - uStudio
+
+![logo](https://ustudio.com/wp-content/uploads/2021/05/icon-Podcasting.png)
+
+---
+
 __VEVO:__ https://www.vevo.com/
 
 Vevo is the world’s leading music video network, connecting an ever-growing global audience to high quality music video content for more than a decade.
@@ -2113,7 +2181,7 @@ __Vimeo:__ https://vimeo.com/
 
 The video platform trusted by 287 million creatives, entrepreneurs, and businesses. Everything you need to create, manage, and share stunning videos.
 
-![logo](https://f.vimeocdn.com/cms/images/vimeo-logo-blue.png)
+![logo](https://f.vimeocdn.com/cms/images/vimeo-logo-black.png)
 
 ---
 
@@ -2145,7 +2213,7 @@ __Vlipsy:__ https://vlipsy.com/
 
 Discover, share, and create the best short-form video clips with Vlipsy. Perfect for reactions, memes, and expressions on social media platforms like X, YouTube, TikTok, and more. Join our community to access a vast archive of viral videos and contribute your own content
 
-![logo](https://vlipsy.com//images/vlipsy-icon.svg)
+![logo](https://static.vlipsy.com/logos/vlipsy-icon.svg)
 
 ---
 
@@ -2157,9 +2225,9 @@ __VLIVE:__ https://www.vlive.tv
 
 __Vouch:__ https://www.vouchfor.com/
 
-See why recruitment and TA teams love Vouch, the AI Content Platform to help you hit hiring goals. Loved by Cisco, Amazon, Canva, Nike and thousands more.
+Vouch is an AI-enabled workspace for hiring managers, recruiters, and brand teams to work together. Loved by Ericsson, Aldi, Canva, Culture Amp and thousands more.
 
-![logo](https://cdn.prod.website-files.com/64ee7f88404c3add06cf7d4c/6577b3341587cb00da4ad814_OG_main.png)
+![logo](https://cdn.prod.website-files.com/682bb2f6ef2157b198f6cac8/682bb58105a4cefe7a5c7eec_9865f90993000cd79b878dd64e322d23_Vouch-Opengraph.jpg)
 
 ---
 
@@ -2205,7 +2273,7 @@ __wecandeo:__ https://www.wecandeo.com/
 
 __Whimsical:__ https://www.whimsical.com
 
-From brainstorm to launch—plan, create, manage, and communicate in one workspace. Experience the difference of calm, focused work for you and your team.
+Whimsical is the all-in-one workspace for fast-moving teams—combine flowcharts, wireframes, docs, projects, and posts to plan and build visually, together.
 
 ![logo](https://whimsical.com/_next_public/cards/default_2025-05-22.png)
 
@@ -2243,7 +2311,7 @@ Cloud access to the Wolfram Language.
 
 __WordPress.com:__ https://wordpress.com/
 
-Build a site, sell online, earn with your content, and more
+Create your WordPress website with built-in hosting, premium themes, and powerful tools. No technical setup required. Start building today—free plan available.
 
 ![logo](https://s1.wp.com/i/featured/hp-2024-jul.jpg)
 
@@ -2251,7 +2319,9 @@ Build a site, sell online, earn with your content, and more
 
 __X:__ https://www.x.com/
 
-Please switch to a supported browser to continue using x.com. You can see a list of supported browsers in our Help Center.
+We’ve detected that JavaScript is disabled in this browser. Please enable JavaScript or switch to a supported browser to continue using x.com. You can see a list of supported browsers in our Help Center.
+
+![logo](https://abs-0.twimg.com/emoji/v2/svg/26a0.svg)
 
 ---
 
@@ -2289,10 +2359,6 @@ Log in or Sign up to receive access to purchasing, custom web IDE, premium demos
 
 __ZnipeTV:__ https://www.znipe.tv/
 
-Discover pro player POVs and more esport related content right here on Znipe Tv.
-
-![logo](https://assets.znipe.tv/thumbnails/generic-social-card-2.jpg)
-
 ---
 
 __Zoomable:__ https://zoomable.ca/
@@ -2305,6 +2371,16 @@ Create Zoomable Image Instantly! Upload now or create from your desktop.
 
 ## Broken sites
 
+__ActBlue:__ https://secure.actblue.com
+
+```
+{'connection': 'keep-alive', 'content-length': '146', 'accept-ranges': 'bytes', 'x-timer': 'S1758813358.477519,VS0,VE716', 'via': '1.1 varnish, 1.1 varnish', 'content-type': 'text/html', 'date': 'Thu, 25 Sep 2025 15:15:59 GMT', 'vary': 'Accept-Encoding', 'strict-transport-security': 'max-age=31536000; includeSubDomains', 'status': '403'}
+
+b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n'
+```
+
+---
+
 __Archivos:__ https://app.archivos.digital
 
 ```
@@ -2312,10 +2388,13 @@ Unable to find the server at app.archivos.digital```
 
 ---
 
-__biqnetwork:__ https://biqapp.com/
+__Beta QuellenSuche:__ https://beta.quellensuche.de
 
 ```
-timed out```
+{'date': 'Thu, 25 Sep 2025 15:16:26 GMT', 'content-type': 'text/plain; charset=UTF-8', 'content-length': '15', 'connection': 'keep-alive', 'cache-control': 'private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0', 'expires': 'Thu, 01 Jan 1970 00:00:01 GMT', 'referrer-policy': 'same-origin', 'x-frame-options': 'SAMEORIGIN', 'server': 'cloudflare', 'cf-ray': '984b7b816d0b87d9-LHR', 'status': '502'}
+
+b'error code: 502'
+```
 
 ---
 
@@ -2329,7 +2408,7 @@ Unable to find the server at view.briovr.com```
 __Byzart Project:__ https://cmc.byzart.eu
 
 ```
-{'server': 'CloudFront', 'date': 'Wed, 04 Jun 2025 12:40:15 GMT', 'content-length': '0', 'connection': 'keep-alive', 'retry-after': '3600', 'x-cache': 'Error from cloudfront', 'via': '1.1 8ba5a7db0f86d152bf852f67ddf89e84.cloudfront.net (CloudFront)', 'x-amz-cf-pop': 'TXL50-P1', 'x-amz-cf-id': 'IZ6XoJJjlsoSFXIyZlzfTnxVdcRsGrycASOsAMXGemH8YGvBWVgBWg==', 'x-xss-protection': '1; mode=block', 'x-frame-options': 'SAMEORIGIN', 'referrer-policy': 'strict-origin-when-cross-origin', 'x-content-type-options': 'nosniff', 'strict-transport-security': 'max-age=31536000', 'status': '429'}
+{'server': 'CloudFront', 'date': 'Thu, 25 Sep 2025 15:16:42 GMT', 'content-length': '0', 'connection': 'keep-alive', 'retry-after': '3600', 'x-cache': 'Error from cloudfront', 'via': '1.1 8ba5a7db0f86d152bf852f67ddf89e84.cloudfront.net (CloudFront)', 'x-amz-cf-pop': 'TXL50-P1', 'x-amz-cf-id': 'UP4KO9l7MzpQB9WlGV3eqwxCNeEJFs8xUIYo7LET4XFb6BdrPeC_og==', 'x-xss-protection': '1; mode=block', 'x-frame-options': 'SAMEORIGIN', 'referrer-policy': 'strict-origin-when-cross-origin', 'x-content-type-options': 'nosniff', 'strict-transport-security': 'max-age=31536000', 'status': '429'}
 
 b''
 ```
@@ -2364,6 +2443,20 @@ timed out```
 
 ---
 
+__Crowd Ranking:__ https://crowdranking.com
+
+```
+timed out```
+
+---
+
+__CustomerDB:__ https://customerdb.com/
+
+```
+[SSL: TLSV1_UNRECOGNIZED_NAME] tlsv1 unrecognized name (_ssl.c:1007)```
+
+---
+
 __Dotsub:__ https://dotsub.com/
 
 ```
@@ -2378,20 +2471,10 @@ __EgliseInfo:__ https://egliseinfo.catholique.fr/
 
 ---
 
-__Ex.Co:__ https://ex.co
-
-```
-{'date': 'Wed, 04 Jun 2025 12:41:30 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'cf-cache-status': 'DYNAMIC', 'set-cookie': '__cf_bm=aTaDzBeTQuED89xY0yBkDP35plxrEbKheD.N9CGbmwg-1749040890-1.0.1.1-TWczhxOod09dLgcE1Nlcb8pk1EP20NWfxmdnAa9j.XMtmennegCRq9pQ0bfZH6V9BFB75p9.Ed3CYa0yf6BbC.heC271iv4UsTC4XvBhYZs; path=/; expires=Wed, 04-Jun-25 13:11:30 GMT; domain=.ex.co; HttpOnly; Secure; SameSite=None', 'server': 'cloudflare', 'cf-ray': '94a78138bea4e525-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
-
-b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n'
-```
-
----
-
 __Eyrie:__ https://eyrie.io/
 
 ```
-{'server': 'awselb/2.0', 'date': 'Wed, 04 Jun 2025 12:41:31 GMT', 'content-type': 'text/html', 'content-length': '122', 'connection': 'keep-alive', 'set-cookie': 'AWSALB=I7NBWy8IQxWZNhDMTFzQOFsz+yt6yLQ4aDkY5ppHNalOkOPU5oCYyCmbfy/4e/+I2Ms0Ub7NKSQtTf+/dRq+5jF0PbNzGybn9T2fCRU1mwzKLxsoaw6snsmgS669; Expires=Wed, 11 Jun 2025 12:41:31 GMT; Path=/, AWSALBCORS=I7NBWy8IQxWZNhDMTFzQOFsz+yt6yLQ4aDkY5ppHNalOkOPU5oCYyCmbfy/4e/+I2Ms0Ub7NKSQtTf+/dRq+5jF0PbNzGybn9T2fCRU1mwzKLxsoaw6snsmgS669; Expires=Wed, 11 Jun 2025 12:41:31 GMT; Path=/; SameSite=None; Secure', 'status': '502'}
+{'server': 'awselb/2.0', 'date': 'Thu, 25 Sep 2025 15:18:47 GMT', 'content-type': 'text/html', 'content-length': '122', 'connection': 'keep-alive', 'set-cookie': 'AWSALB=0sqeVbMizDdiLNQu56c7v4vHgfmXNgzlWb3pmRvlu/ujM0gtqJ6qO0mBsIZLFcDlvBEvEPTR5dnqVC1XHap57+KRODXU2I9hfENFlPI0Jen1Kx9xnRpQV7+8AWOJ; Expires=Thu, 02 Oct 2025 15:18:47 GMT; Path=/, AWSALBCORS=0sqeVbMizDdiLNQu56c7v4vHgfmXNgzlWb3pmRvlu/ujM0gtqJ6qO0mBsIZLFcDlvBEvEPTR5dnqVC1XHap57+KRODXU2I9hfENFlPI0Jen1Kx9xnRpQV7+8AWOJ; Expires=Thu, 02 Oct 2025 15:18:47 GMT; Path=/; SameSite=None; Secure', 'status': '502'}
 
 b'<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n</body>\r\n</html>\r\n'
 ```
@@ -2401,17 +2484,14 @@ b'<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1
 __Fader:__ https://app.getfader.com
 
 ```
-{'server': 'keycdn', 'date': 'Wed, 04 Jun 2025 12:41:31 GMT', 'content-length': '0', 'connection': 'keep-alive', 'status': '451'}
-
-b''
-```
+Unable to find the server at app.getfader.com```
 
 ---
 
 __Geograph Channel Islands:__ https://channel-islands.geograph.org/
 
 ```
-{'server': 'nginx', 'date': 'Wed, 04 Jun 2025 12:41:47 GMT', 'content-type': 'text/html; charset=iso-8859-1', 'content-length': '199', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'status': '403'}
+{'server': 'nginx', 'date': 'Thu, 25 Sep 2025 15:19:08 GMT', 'content-type': 'text/html; charset=iso-8859-1', 'content-length': '199', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'status': '403'}
 
 b'<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">\n<html><head>\n<title>403 Forbidden</title>\n</head><body>\n<h1>Forbidden</h1>\n<p>You don\'t have permission to access this resource.</p>\n</body></html>\n'
 ```
@@ -2425,23 +2505,6 @@ Unable to find the server at helenenglish.education```
 
 ---
 
-__HuffDuffer:__ https://huffduffer.com
-
-```
-timed out```
-
----
-
-__Idomoo:__ https://idomoo.com/
-
-```
-{'date': 'Wed, 04 Jun 2025 12:42:37 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'access-control-allow-origin': '*', 'content-security-policy': "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'", 'referrer-policy': 'origin', 'strict-transport-security': 'max-age=63072000; includeSubDomains; preload', 'x-content-type-options': 'nosniff', 'cf-cache-status': 'DYNAMIC', 'set-cookie': '__cf_bm=v31DAtZfe216YJqkREz1LCoShtiB09aqSXXgR4KZbQM-1749040957-1.0.1.1-GP4U3T9EEcVgynEJpcZsJsijvREG8i2OXHXEtP50c2Qwaace5rLTy7jxrePK9JNVCvnGbY8bmD29w8B7iqwNVXdEAmWQQt.KQhNVoWdJCro; path=/; expires=Wed, 04-Jun-25 13:12:37 GMT; domain=.idomoo.com; HttpOnly; Secure; SameSite=None', 'server': 'cloudflare', 'cf-ray': '94a782de9ad9e517-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
-
-b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n'
-```
-
----
-
 __Incredible:__ https://incredible.dev
 
 ```
@@ -2449,10 +2512,27 @@ Unable to find the server at incredible.dev```
 
 ---
 
+__Issuu:__ https://issuu.com/
+
+```
+{'connection': 'close', 'content-length': '43', 'server': 'Varnish', 'retry-after': '0', 'accept-ranges': 'bytes', 'date': 'Thu, 25 Sep 2025 15:19:42 GMT', 'via': '1.1 varnish', 'x-served-by': 'cache-fra-etou8220061-FRA', 'x-cache': 'MISS', 'x-cache-hits': '0', 'x-timer': 'S1758813583.507742,VS0,VE0', 'strict-transport-security': 'max-age=300', 'x-frame-options': 'SAMEORIGIN', 'status': '403'}
+
+b'You are not allowed to access this resource'
+```
+
+---
+
+__Kidoju:__ https://www.kidoju.com/
+
+```
+Unable to find the server at www.kidoju.com```
+
+---
+
 __Kirim.Email:__ https://kirim.email/
 
 ```
-{'date': 'Wed, 04 Jun 2025 12:42:57 GMT', 'content-type': 'text/html; charset=UTF-8', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'cf-ray': '94a783564b61c3ad-WAW', 'server': 'cloudflare', 'alt-svc': 'h3=":443"; ma=86400', 'x-powered-by': 'PHP/8.3.13', 'cf-cache-status': 'DYNAMIC', 'report-to': '{"endpoints":[{"url":"https:\\/\\/a.nel.cloudflare.com\\/report\\/v4?s=w42Yjedq6ZNwUMgjaYd8lgu%2BNS0KVD4vUx9NftjeEA9rbPEogojk8Yh%2BSfjAMaOksDCduO2pjmFZSd%2FDRN8LN4CO5Qs9BKtJir5E7TtojFm3FQpfl7k30oMF0mDmI9uIi92lQQY3DWzrfA%3D%3D"}],"group":"cf-nel","max_age":604800}', 'nel': '{"success_fraction":0,"report_to":"cf-nel","max_age":604800}', 'x-content-type-options': 'nosniff', 'server-timing': 'cfL4;desc="?proto=TCP&rtt=28974&min_rtt=28965&rtt_var=10880&sent=5&recv=6&lost=0&retrans=0&sent_bytes=2381&recv_bytes=731&delivery_rate=92837&cwnd=242&unsent_bytes=0&cid=1f5df10567983831&ts=957&x=0"', 'status': '403', 'content-length': '0', '-content-encoding': 'gzip'}
+{'date': 'Thu, 25 Sep 2025 15:19:49 GMT', 'content-type': 'text/html; charset=UTF-8', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'alt-svc': 'h3=":443"; ma=86400', 'server': 'cloudflare', 'x-powered-by': 'PHP/8.3.21', 'cf-cache-status': 'DYNAMIC', 'nel': '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}', 'x-content-type-options': 'nosniff', 'report-to': '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=QjIe4WlnN9FNdg2ZhwiTGeDQgZBfN1kg%2FS%2B9uUFcYakWQ9J0%2F8MtsaQeWmzKCUPb0VlMJ%2BPcBa4Oo5llRk%2B8nUA2z794OyHneV1tckMvDZPKHp151RwW"}]}', 'cf-ray': '984b80810ecb0b68-AMS', 'status': '403', 'content-length': '0', '-content-encoding': 'gzip'}
 
 b''
 ```
@@ -2462,7 +2542,7 @@ b''
 __Kitchenbowl:__ https://www.kitchenbowl.com
 
 ```
-[Errno 111] Connection refused```
+timed out```
 
 ---
 
@@ -2473,20 +2553,27 @@ Unable to find the server at kmdr.sh```
 
 ---
 
-__LeMans.Pod:__ https://umotion-test.univ-lemans.fr/
+__Knacki:__ https://jdr.knacki.info
 
 ```
-{'cache-control': 'no-cache', 'content-type': 'text/html', 'status': '403'}
-
-b'<html><body><h1>403 Forbidden</h1>\r\n<p>Request forbidden.</p>\r\n</body></html>\r\n\r\n'
-```
+timed out```
 
 ---
 
-__MathEmbed:__ https://mathembed.com
+__LeMans.Pod:__ https://umotion-test.univ-lemans.fr/
 
 ```
-Unable to find the server at mathembed.com```
+Unable to find the server at umotion-test.univ-lemans.fr```
+
+---
+
+__Mermaid Ink:__ https://mermaid.ink
+
+```
+{'date': 'Thu, 25 Sep 2025 15:21:24 GMT', 'content-length': '0', 'connection': 'keep-alive', 'server': 'cloudflare', 'cache-control': 'private, no-store', 'cf-cache-status': 'DYNAMIC', 'nel': '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}', 'server-timing': 'cfCacheStatus;desc="DYNAMIC", cfEdge;dur=19331,cfOrigin;dur=0', 'report-to': '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=wubSApRFYEp5l%2F70BNP8imTW4LU0IDOQK2TVOD03UMdfdZAUZT%2BwYADZsUL3rcSZGUu4C%2BxdRPRbpLDEaMyfNPud33VD9zU8ZgtvXbxGIiY1KHb2O%2B5k"}]}', 'set-cookie': 'cf_use_ob=443; Expires=Thu, 25 Sep 2025 15:21:54 GMT, cf_ob_info=522:984b8261ec646539:LHR; Expires=Thu, 25 Sep 2025 15:21:54 GMT', 'cf-ray': '984b8261ec646539-LHR', 'alt-svc': 'h3=":443"; ma=86400', 'status': '522'}
+
+b''
+```
 
 ---
 
@@ -2494,13 +2581,6 @@ __Minerva:__ https://www.minervaknows.com
 
 ```
 Unable to find the server at www.minervaknows.com```
-
----
-
-__myBeweeg:__ https://mybeweeg.com
-
-```
-The read operation timed out```
 
 ---
 
@@ -2521,9 +2601,16 @@ Unable to find the server at www.picturelfy.com```
 __Present:__ https://present.do
 
 ```
-{'cache-control': 'public, max-age=0, must-revalidate', 'content-length': '107', 'content-type': 'text/plain; charset=utf-8', 'date': 'Wed, 04 Jun 2025 12:45:13 GMT', 'server': 'Vercel', 'strict-transport-security': 'max-age=63072000', 'x-vercel-error': 'DEPLOYMENT_NOT_FOUND', 'x-vercel-id': 'fra1::rq5bm-1749041113030-d1fc1bcb5d6b', 'status': '404'}
+Unable to find the server at present.do```
 
-b'The deployment could not be found on Vercel.\n\nDEPLOYMENT_NOT_FOUND\n\nfra1::rq5bm-1749041113030-d1fc1bcb5d6b\n'
+---
+
+__Roomshare:__ https://roomshare.jp
+
+```
+{'date': 'Thu, 25 Sep 2025 15:22:51 GMT', 'content-length': '0', 'status': '410'}
+
+b''
 ```
 
 ---
@@ -2531,14 +2618,14 @@ b'The deployment could not be found on Vercel.\n\nDEPLOYMENT_NOT_FOUND\n\nfra1::
 __Rumble:__ https://rumble.com/
 
 ```
-Remote end closed connection without response```
+Redirected more times than redirection_limit allows.```
 
 ---
 
 __Screenr:__ https://www.screenr.com/
 
 ```
-{'date': 'Wed, 04 Jun 2025 12:45:36 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'cf-cache-status': 'DYNAMIC', 'server': 'cloudflare', 'cf-ray': '94a7873beb646a76-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
+{'date': 'Thu, 25 Sep 2025 15:23:07 GMT', 'content-type': 'text/html', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'cf-cache-status': 'DYNAMIC', 'set-cookie': '__cf_bm=hto5nweCRVmUlTG0CrcK2Qe9qNsSSoRt1KfeJpqWN6U-1758813787-1.0.1.1-00K1QpewxllKo3mVqO8NzG6wjs_dxJvNDAz3JKGwvEyOwE9zpqzu0N47kyZnysR9JTnEE5E2caLdAnY00sH9WYde_t7okxwZUunhuBQcp0Q; path=/; expires=Thu, 25-Sep-25 15:53:07 GMT; domain=.www.articulate.com; HttpOnly; Secure; SameSite=None', 'server': 'cloudflare', 'cf-ray': '984b855b2f71207f-TXL', 'alt-svc': 'h3=":443"; ma=86400', 'status': '403', 'content-length': '146', '-content-encoding': 'gzip'}
 
 b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n'
 ```
@@ -2569,9 +2656,9 @@ __Smeme:__ https://smeme.com
 __Smrthi:__ https://www.smrthi.com
 
 ```
-{'cache-control': 'public, max-age=0, must-revalidate', 'content-length': '78', 'content-type': 'text/plain; charset=utf-8', 'date': 'Wed, 04 Jun 2025 12:45:56 GMT', 'server': 'Vercel', 'strict-transport-security': 'max-age=63072000', 'x-vercel-error': 'DEPLOYMENT_DISABLED', 'x-vercel-id': 'fra1::vlh4h-1749041156513-53ec8861cd95', 'status': '402'}
+{'cache-control': 'public, max-age=0, must-revalidate', 'content-length': '78', 'content-type': 'text/plain; charset=utf-8', 'date': 'Thu, 25 Sep 2025 15:23:31 GMT', 'server': 'Vercel', 'strict-transport-security': 'max-age=63072000', 'x-vercel-error': 'DEPLOYMENT_DISABLED', 'x-vercel-id': 'fra1::skr7w-1758813811163-f77efe643731', 'status': '402'}
 
-b'Payment required\n\nDEPLOYMENT_DISABLED\n\nfra1::vlh4h-1749041156513-53ec8861cd95\n'
+b'Payment required\n\nDEPLOYMENT_DISABLED\n\nfra1::skr7w-1758813811163-f77efe643731\n'
 ```
 
 ---
@@ -2580,16 +2667,6 @@ __Trackspace:__ https://trackspace.upitup.com/
 
 ```
 timed out```
-
----
-
-__uStudio, Inc.:__ https://www.ustudio.com
-
-```
-{'server': 'nginx', 'date': 'Wed, 04 Jun 2025 12:47:21 GMT', 'content-type': 'text/html', 'content-length': '146', 'connection': 'keep-alive', 'keep-alive': 'timeout=20', 'vary': 'Accept-Encoding', 'status': '403'}
-
-b'<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n'
-```
 
 ---
 
