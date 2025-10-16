@@ -12,6 +12,7 @@ import Html.Attributes as Attr
 import I18n.Translations exposing (Lang(..))
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Effect.Script.Types exposing (Msg(..))
+import Lia.Utils exposing (btnIcon)
 
 
 type alias Terminal =
@@ -121,7 +122,13 @@ view terminal =
     Html.div
         [ Attr.class "lia-code-terminal__input"
         ]
-        [ Html.i [ Attr.class "icon icon-chevron-double-right" ] []
+        [ btnIcon
+            { icon = "icon-chevron-double-right"
+            , msg = Just Enter
+            , tabbable = True
+            , title = "Send to terminal"
+            }
+            [ Attr.class "lia-btn--transparent" ]
         , Editor.editor
             [ Editor.onChange Input
             , Attr.style "min-height" "3.4rem"
