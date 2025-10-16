@@ -1,4 +1,4 @@
-@use "../00_settings/settings.global";
+@use '../00_settings/settings.global';
 
 .lia-code {
   font-family: settings.$global-font-mono;
@@ -16,6 +16,17 @@
     margin-bottom: 0;
     padding: 0 0.5rem;
     word-break: break-word;
+
+    @at-root html.lia-variant-dark & {
+      border-color: rgb(
+        from rgb(var(--color-highlight)) calc(r * 2.2) calc(g * 2.2)
+          calc(b * 2.2)
+      );
+      color: rgb(
+        from rgb(var(--color-highlight)) calc(r * 2.5) calc(g * 2.5)
+          calc(b * 2.5)
+      );
+    }
   }
 
   &-control {
