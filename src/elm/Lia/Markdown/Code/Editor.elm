@@ -1,6 +1,7 @@
 module Lia.Markdown.Code.Editor exposing
     ( Cursor
     , Event
+    , addKeyBinding
     , annotations
     , blockUpdate
     , catchCursorUpdates
@@ -16,6 +17,7 @@ module Lia.Markdown.Code.Editor exposing
     , focusing
     , fontSize
     , highlightActiveLine
+    , keyBindings
     , marker
     , maxLines
     , mode
@@ -27,7 +29,9 @@ module Lia.Markdown.Code.Editor exposing
     , onChangeEvent2
     , onCtrlEnter
     , onFocus
+    , onKeyBinding
     , readOnly
+    , removeKeyBinding
     , setCursors
     , showCursor
     , showGutter
@@ -331,3 +335,64 @@ boolean prop =
 focusing : Html.Attribute msg
 focusing =
     boolean "focusing" True
+
+
+{-| Set multiple key bindings at once
+Example:
+keyBindings
+[ ( "execute", { win = "Ctrl-Enter", mac = "Command-Enter" }, "editorExecute" )
+, ( "save", { win = "Ctrl-S", mac = "Command-S" }, "editorSave" )
+]
+-}
+keyBindings : List ( String, { win : String, mac : String }, String ) -> Html.Attribute msg
+keyBindings bindings =
+    bindings
+        |> List.map
+            (\( name, bindKey, eventName ) ->
+                ( name
+                , JE.object
+                    [ ( "bindKey"
+                      , JE.object
+                            [ ( "win", JE.string bindKey.win )
+                            , ( "mac", JE.string bindKey.mac )
+                            ]
+                      )
+                    , ( "eventName", JE.string eventName )
+                    ]
+                )
+            )
+        |> JE.object
+        |> Attr.property "keyBindings"
+
+
+{-| Add a single key binding
+-}
+addKeyBinding : String -> { win : String, mac : String } -> String -> Html.Attribute msg
+addKeyBinding name bindKey eventName =
+    JE.object
+        [ ( "name", JE.string name )
+        , ( "bindKey"
+          , JE.object
+                [ ( "win", JE.string bindKey.win )
+                , ( "mac", JE.string bindKey.mac )
+                ]
+          )
+        , ( "eventName", JE.string eventName )
+        ]
+        |> Attr.property "addKeyBindingProp"
+
+
+{-| Remove a key binding by name
+-}
+removeKeyBinding : String -> Html.Attribute msg
+removeKeyBinding name =
+    JE.string name
+        |> Attr.property "removeKeyBindingProp"
+
+
+{-| Listen for custom key binding events
+-}
+onKeyBinding : String -> msg -> Html.Attribute msg
+onKeyBinding eventName msg =
+    JD.succeed msg
+        |> Html.Events.on eventName
