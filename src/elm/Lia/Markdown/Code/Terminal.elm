@@ -22,11 +22,12 @@ type alias Terminal =
     , enter : Bool
     , cursor : Editor.Cursor
     , cursorToEnd : Bool
+    , mode : String
     }
 
 
-init : Terminal
-init =
+init : String -> Terminal
+init mode =
     { input = ""
     , backup = ""
     , history = Array.empty
@@ -34,6 +35,7 @@ init =
     , enter = False
     , cursor = Editor.emptyCursor
     , cursorToEnd = False
+    , mode = mode
     }
 
 
@@ -123,7 +125,6 @@ view terminal =
         , Editor.editor
             [ Editor.onChange Input
             , Attr.style "min-height" "3.4rem"
-            , Attr.style "max-height" "3.4rem"
             , Editor.readOnly False
             , if terminal.cursorToEnd then
                 let
@@ -147,10 +148,10 @@ view terminal =
                 Editor.value terminal.input
             , Editor.showCursor True
             , Editor.highlightActiveLine True
-            , Editor.mode "js"
+            , Editor.mode terminal.mode
             , Attr.style "width" "100%"
             , Editor.showGutter False
-            , Editor.theme "twilight"
+            , Editor.theme "gob"
             , Editor.showPrintMargin False
             , Editor.maxLines 10
             , Attr.style "min-height" <|
