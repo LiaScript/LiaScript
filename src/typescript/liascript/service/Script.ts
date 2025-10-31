@@ -301,6 +301,11 @@ function liaEvalCode(code: string, send: Script.SendEval) {
       table: (data: any, config: any) => {
         return send.log('html', '\n', [htmlTableLog(data, config)])
       },
+      assert: (condition: boolean, ...args: any) => {
+        if (!condition) {
+          send.log('error', '\n', ['Assertion failed:', ...args])
+        }
+      },
       clear: () => send.lia('LIA: clear'),
     }
 
