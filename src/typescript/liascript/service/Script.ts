@@ -279,6 +279,7 @@ function liaEvalCode(code: string, send: Script.SendEval) {
   }
 
   try {
+    const counter: { [key: string]: number } = {}
     const console = {
       debug: (...args: any) => {
         return send.log('debug', '\n', args)
@@ -305,6 +306,13 @@ function liaEvalCode(code: string, send: Script.SendEval) {
         if (!condition) {
           send.log('error', '\n', ['Assertion failed:', ...args])
         }
+      },
+      count: (identifier: any) => {
+        const id = identifier === undefined ? 'default' : identifier
+
+        counter[id] = (counter[id] || 0) + 1
+
+        send.log('debug', '\n', [id + ':', counter[id]])
       },
       clear: () => send.lia('LIA: clear'),
     }
