@@ -1,6 +1,7 @@
 import log from '../log'
 
 import Script from './Script.d'
+import { htmlTableLog } from './helper/htmlTableLog'
 
 export enum JS {
   exec = 'exec',
@@ -296,6 +297,9 @@ function liaEvalCode(code: string, send: Script.SendEval) {
       },
       html: (...args: any) => {
         return send.log('html', '\n', args)
+      },
+      table: (data: any, config: any) => {
+        return send.log('html', '\n', [htmlTableLog(data, config)])
       },
       clear: () => send.lia('LIA: clear'),
     }
