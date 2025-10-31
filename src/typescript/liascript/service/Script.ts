@@ -280,6 +280,8 @@ function liaEvalCode(code: string, send: Script.SendEval) {
 
   try {
     const counter: { [key: string]: number } = {}
+    const timer: { [key: string]: number } = {}
+
     const console = {
       debug: (...args: any) => {
         return send.log('debug', '\n', args)
@@ -307,19 +309,33 @@ function liaEvalCode(code: string, send: Script.SendEval) {
           send.log('error', '\n', ['Assertion failed:', ...args])
         }
       },
-      count: (identifier: any) => {
-        const id = identifier === undefined ? 'default' : identifier
-
+      count: (id = 'default') => {
         counter[id] = (counter[id] || 0) + 1
-
         send.log('debug', '\n', [id + ':', counter[id]])
       },
-      countReset: (identifier: any) => {
-        const id = identifier === undefined ? 'default' : identifier
-
+      countReset: (id = 'default') => {
         counter[id] = 0
-
         send.log('debug', '\n', [id + ':', counter[id]])
+      },
+      time: (id = 'default') => {
+        timer[id] = performance.now()
+      },
+      timeLog: (id = 'default', ...args: any[]) => {
+        if (timer[id]) {
+          const duration = performance.now() - timer[id]
+          send.log('debug', '\n', [`${id}: ${duration.toFixed(2)} ms`, ...args])
+        } else {
+          send.log('warn', '\n', [`No such timer: ${id}`])
+        }
+      },
+      timeEnd: (id = 'default') => {
+        if (timer[id]) {
+          const duration = performance.now() - timer[id]
+          send.log('debug', '\n', [`${id}: ${duration.toFixed(2)} ms`])
+          delete timer[id]
+        } else {
+          send.log('warn', '\n', [`No such timer: ${id}`])
+        }
       },
       clear: () => send.lia('LIA: clear'),
     }
