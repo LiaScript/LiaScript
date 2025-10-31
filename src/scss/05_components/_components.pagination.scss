@@ -21,14 +21,15 @@
     color: white;
     display: flex;
     flex-direction: row-reverse;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    white-space: nowrap;
     font-size: 1.8rem;
     font-weight: 700;
     justify-content: space-between;
 
     @include tools.breakpoint("md") {
       border-radius: settings.$global-radius;
-      width: 15rem;
+      width: auto;
     }
   }
 
