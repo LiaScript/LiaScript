@@ -314,6 +314,13 @@ function liaEvalCode(code: string, send: Script.SendEval) {
 
         send.log('debug', '\n', [id + ':', counter[id]])
       },
+      countReset: (identifier: any) => {
+        const id = identifier === undefined ? 'default' : identifier
+
+        counter[id] = 0
+
+        send.log('debug', '\n', [id + ':', counter[id]])
+      },
       clear: () => send.lia('LIA: clear'),
     }
 
