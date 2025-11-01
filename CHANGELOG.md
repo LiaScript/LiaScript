@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.17.8] - 31/10/2025
+
+- fix(CSS): bottom navigation does not break on to many effects
+- feat(Code): Add more console functions to JS execution, performance measurements.
+
+  - `console.table`
+  - `console.assert`
+  - `console.count`
+  - `console.countReset`
+  - `console.time`
+  - `console.timeLog`
+  - `console.timeEnd`
+
 ## [0.17.7] - 16/10/2025
 
 - feat: The code terminal now supports multiline input, which can be entered with
