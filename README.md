@@ -16,7 +16,6 @@ comment:  Main LiaScript Parser project, written in elm.
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/liascript/liascript)
 ![GitHub repo size](https://img.shields.io/github/repo-size/liascript/liascript)
 
-
 # LiaScript📝🚀
 
 **Create fully interactive, offline-capable online courses using Markdown – perfect for educators, NGOs, and developers.**
