@@ -4,7 +4,45 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.17.6] - 19/10/2025
+
+## [0.17.8] - 31/10/2025
+
+- fix(CSS): bottom navigation does not break on to many effects
+- feat(Code): Add more console functions to JS execution, performance measurements.
+
+  - `console.table`
+  - `console.assert`
+  - `console.count`
+  - `console.countReset`
+  - `console.time`
+  - `console.timeLog`
+  - `console.timeEnd`
+
+## [0.17.7] - 16/10/2025
+
+- feat: The code terminal now supports multiline input, which can be entered with
+  <kbd>Shift</kbd>+<kbd>Enter</kbd>. The terminal will automatically detect
+  the programming language based on the file extension of the code block.
+
+  Additionally, a button was introduced to send the code via clicking.
+
+- feat(Quiz):
+
+  ``` markdown
+  How is this project called?
+
+  <!--
+  data-text-solved="This was a __Very__ hard quiz"
+  data-text-failed="Try again!"
+  data-text-resolved="Next time it will be better"
+  -->
+  [[LiaScript]]
+  ```
+
+- improve(CSS): Better styling with better color contrasts.
+- improved(a11y): For tables
+
+## [0.17.6] - 19/09/2025
 
 - Custom quizzes can now return an array of booleans to indicate which parts are correct. This will allow to show partial solutions for compound quizzes, such as matrix quizzes and gap-texts.
 
