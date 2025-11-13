@@ -139,16 +139,22 @@ export class LiaScript {
     window.LIA.showFootnote = (key: string) => {
       self.app.ports.footnote.send(key)
     }
+
+    let SLIDE = -1
     window.LIA.goto = (slide: number) => {
-      sender({
-        reply: true,
-        track: [['goto', -1]],
-        service: '',
-        message: {
-          cmd: 'goto',
-          param: slide,
-        },
-      })
+      if (slide !== SLIDE) {
+        SLIDE = slide
+
+        sender({
+          reply: true,
+          track: [['goto', -1]],
+          service: '',
+          message: {
+            cmd: 'goto',
+            param: slide,
+          },
+        })
+      }
     }
 
     window.LIA.gotoNext = () => {
