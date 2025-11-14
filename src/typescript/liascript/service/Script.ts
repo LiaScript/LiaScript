@@ -11,6 +11,7 @@ export enum JS {
 export type Eval = {
   type: JS.eval
   code: string
+  delay: number
   send: Script.SendEval
 }
 
@@ -231,7 +232,7 @@ function getLineNumber(error: Error): number | null {
 }
 
 function liaEval(event: Lia.Event) {
-  liaEvalCode(event.message.param, {
+  liaEvalCode(event.message.param.code, event.message.param.delay, {
     lia: (result: string, details = [], ok = true) => {
       event.message.cmd = 'eval'
       event.message.param = {
@@ -264,11 +265,12 @@ function sendReply(event: Lia.Event) {
   }
 }
 
-function liaEvalCode(code: string, send: Script.SendEval) {
+function liaEvalCode(code: string, delay: number, send: Script.SendEval) {
   if (window.LIA.eventSemaphore > 0) {
     lia_queue.push({
       type: JS.eval,
       code: code,
+      delay: delay,
       send: send,
     })
 
@@ -278,76 +280,81 @@ function liaEvalCode(code: string, send: Script.SendEval) {
     return
   }
 
-  try {
-    const counter: { [key: string]: number } = {}
-    const timer: { [key: string]: number } = {}
+  setTimeout(() => {
+    try {
+      const counter: { [key: string]: number } = {}
+      const timer: { [key: string]: number } = {}
 
-    const console = {
-      debug: (...args: any) => {
-        return send.log('debug', '\n', args)
-      },
-      log: (...args: any) => {
-        return send.log('info', '\n', args)
-      },
-      warn: (...args: any) => {
-        return send.log('warn', '\n', args)
-      },
-      error: (...args: any) => {
-        return send.log('error', '\n', args)
-      },
-      stream: (...args: any) => {
-        return send.log('stream', '', args)
-      },
-      html: (...args: any) => {
-        return send.log('html', '\n', args)
-      },
-      table: (data: any, config: any) => {
-        return send.log('html', '\n', [htmlTableLog(data, config)])
-      },
-      assert: (condition: boolean, ...args: any) => {
-        if (!condition) {
-          send.log('error', '\n', ['Assertion failed:', ...args])
-        }
-      },
-      count: (id = 'default') => {
-        counter[id] = (counter[id] || 0) + 1
-        send.log('debug', '\n', [id + ':', counter[id]])
-      },
-      countReset: (id = 'default') => {
-        counter[id] = 0
-        send.log('debug', '\n', [id + ':', counter[id]])
-      },
-      time: (id = 'default') => {
-        timer[id] = performance.now()
-      },
-      timeLog: (id = 'default', ...args: any[]) => {
-        if (timer[id]) {
-          const duration = performance.now() - timer[id]
-          send.log('debug', '\n', [`${id}: ${duration.toFixed(2)} ms`, ...args])
-        } else {
-          send.log('warn', '\n', [`No such timer: ${id}`])
-        }
-      },
-      timeEnd: (id = 'default') => {
-        if (timer[id]) {
-          const duration = performance.now() - timer[id]
-          send.log('debug', '\n', [`${id}: ${duration.toFixed(2)} ms`])
-          delete timer[id]
-        } else {
-          send.log('warn', '\n', [`No such timer: ${id}`])
-        }
-      },
-      clear: () => send.lia('LIA: clear'),
-    }
+      const console = {
+        debug: (...args: any) => {
+          return send.log('debug', '\n', args)
+        },
+        log: (...args: any) => {
+          return send.log('info', '\n', args)
+        },
+        warn: (...args: any) => {
+          return send.log('warn', '\n', args)
+        },
+        error: (...args: any) => {
+          return send.log('error', '\n', args)
+        },
+        stream: (...args: any) => {
+          return send.log('stream', '', args)
+        },
+        html: (...args: any) => {
+          return send.log('html', '\n', args)
+        },
+        table: (data: any, config: any) => {
+          return send.log('html', '\n', [htmlTableLog(data, config)])
+        },
+        assert: (condition: boolean, ...args: any) => {
+          if (!condition) {
+            send.log('error', '\n', ['Assertion failed:', ...args])
+          }
+        },
+        count: (id = 'default') => {
+          counter[id] = (counter[id] || 0) + 1
+          send.log('debug', '\n', [id + ':', counter[id]])
+        },
+        countReset: (id = 'default') => {
+          counter[id] = 0
+          send.log('debug', '\n', [id + ':', counter[id]])
+        },
+        time: (id = 'default') => {
+          timer[id] = performance.now()
+        },
+        timeLog: (id = 'default', ...args: any[]) => {
+          if (timer[id]) {
+            const duration = performance.now() - timer[id]
+            send.log('debug', '\n', [
+              `${id}: ${duration.toFixed(2)} ms`,
+              ...args,
+            ])
+          } else {
+            send.log('warn', '\n', [`No such timer: ${id}`])
+          }
+        },
+        timeEnd: (id = 'default') => {
+          if (timer[id]) {
+            const duration = performance.now() - timer[id]
+            send.log('debug', '\n', [`${id}: ${duration.toFixed(2)} ms`])
+            delete timer[id]
+          } else {
+            send.log('warn', '\n', [`No such timer: ${id}`])
+          }
+        },
+        clear: () => send.lia('LIA: clear'),
+      }
 
-    send.lia(String(eval(code + '\n'))) //, send, console)))
-  } catch (e: any) {
-    if (e instanceof LiaError) {
-      send.lia(e.message, e.details, false)
-    } else {
-      send.lia(e.message, [], false)
+      send.lia(String(eval(code + '\n'))) //, send, console)))
+    } catch (e: any) {
+      if (e instanceof LiaError) {
+        send.lia(e.message, e.details, false)
+      } else {
+        send.lia(e.message, [], false)
+      }
     }
-  }
+  }, delay)
 }
 
 export function liaExec(event: Lia.Event) {
@@ -493,7 +500,7 @@ function delayExecution() {
     while ((event = lia_queue.shift())) {
       switch (event.type) {
         case JS.eval: {
-          liaEvalCode(event.code, event.send)
+          liaEvalCode(event.code, event.delay, event.send)
           break
         }
         case JS.exec: {

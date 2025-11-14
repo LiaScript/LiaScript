@@ -97,7 +97,7 @@ update sync sectionID scripts msg vector =
                                     (case code of
                                         Just c ->
                                             [ [ toString e.state ]
-                                                |> Service.Script.eval c (outputs scripts)
+                                                |> Service.Script.eval Nothing c (outputs scripts)
                                                 |> Event.pushWithId "eval" id
                                             ]
 

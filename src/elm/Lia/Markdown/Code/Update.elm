@@ -55,7 +55,7 @@ runAll sectionID scripts model =
             (\_ ( id, return ) ->
                 let
                     ret =
-                        execute Array.empty sectionID scripts return.value id
+                        execute (Just (id * 1000)) Array.empty sectionID scripts return.value id
                 in
                 ( id + 1
                 , ret
@@ -99,7 +99,7 @@ update : Array Sync -> Maybe Int -> Scripts a -> Msg -> Model -> Return Model ms
 update sync sectionID scripts msg model =
     case msg of
         Eval idx ->
-            execute sync sectionID scripts model idx
+            execute Nothing sync sectionID scripts model idx
 
         --|> Return.sync (PEvent.initWithId "eval" idx JE.null)
         Update id_1 id_2 code_str ->
@@ -499,8 +499,8 @@ update_terminal msg project =
             ( project, Nothing )
 
 
-eval : Array Sync -> Int -> Scripts a -> Project -> Return Project msg sub
-eval sync id scripts project =
+eval : Maybe Int -> Array Sync -> Int -> Scripts a -> Project -> Return Project msg sub
+eval delay sync id scripts project =
     (if project.syncMode then
         { project | running = True, syncLog = Log.empty }
 
@@ -508,7 +508,7 @@ eval sync id scripts project =
         { project | running = True, log = Log.empty }
     )
         |> Return.val
-        |> Return.batchEvent (Event.eval sync id scripts project)
+        |> Return.batchEvent (Event.eval delay sync id scripts project)
 
 
 maybe_project : Int -> (Project -> x) -> Model -> Maybe (Return x cmd sub)
@@ -692,10 +692,10 @@ flipHigh model id_1 id_2 =
         |> Return.val
 
 
-execute : Array Sync -> Maybe Int -> Scripts a -> Model -> Int -> Return Model msg sub
-execute sync sectionID scripts model id =
+execute : Maybe Int -> Array Sync -> Maybe Int -> Scripts a -> Model -> Int -> Return Model msg sub
+execute delay sync sectionID scripts model id =
     model
-        |> maybe_project id (eval sync id scripts)
+        |> maybe_project id (eval delay sync id scripts)
         |> Maybe.map (.value >> is_version_new sectionID id)
         |> maybe_update id model
 

@@ -401,7 +401,7 @@ update session msg model =
                                         5000
 
                                      else
-                                        100
+                                        1000
                                     )
                                     False
                                 <|

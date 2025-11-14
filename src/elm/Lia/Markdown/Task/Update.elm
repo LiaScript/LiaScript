@@ -69,7 +69,7 @@ update sectionID scripts msg vector =
 
                                         Just code ->
                                             [ toString element ]
-                                                |> Service.Script.eval code (outputs scripts)
+                                                |> Service.Script.eval Nothing code (outputs scripts)
                                                 |> Event.pushWithId "eval" x
                                     )
                                 |> store sectionID

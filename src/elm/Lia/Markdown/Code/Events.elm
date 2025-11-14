@@ -35,8 +35,8 @@ input projectID value =
         |> toProject projectID
 
 
-eval : Array Sync -> Int -> Scripts a -> Project -> Event
-eval sync projectID scripts project =
+eval : Maybe Int -> Array Sync -> Int -> Scripts a -> Project -> Event
+eval delay sync projectID scripts project =
     let
         files =
             if project.syncMode then
@@ -49,7 +49,7 @@ eval sync projectID scripts project =
     in
     files
         |> Array.toList
-        |> Service.Script.eval project.evaluation (outputs scripts)
+        |> Service.Script.eval delay project.evaluation (outputs scripts)
         -- navigate the evaluation within the Code module
         |> toProject projectID
 

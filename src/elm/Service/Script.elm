@@ -12,6 +12,7 @@ module Service.Script exposing
     , stop
     )
 
+import Html exposing (del)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Utils exposing (toEscapeString)
@@ -166,8 +167,8 @@ input string =
     which is used to replace numbered input macros => `@input(id)`
 
 -}
-eval : String -> List ( String, String ) -> List String -> Event
-eval code scripts inputs =
+eval : Maybe Int -> String -> List ( String, String ) -> List String -> Event
+eval delay code scripts inputs =
     let
         -- the first input parameter is also used as the default
         -- one to replace the `@input` without parenthesis
@@ -182,11 +183,20 @@ eval code scripts inputs =
         code_ =
             List.foldl replace_inputKey code scripts
     in
-    inputs
-        |> List.indexedMap Tuple.pair
-        |> List.foldl replace_inputID code_
-        |> replace_input default
-        |> JE.string
+    [ ( "code"
+      , inputs
+            |> List.indexedMap Tuple.pair
+            |> List.foldl replace_inputID code_
+            |> replace_input default
+            |> JE.string
+      )
+    , ( "delay"
+      , delay
+            |> Maybe.withDefault 0
+            |> JE.int
+      )
+    ]
+        |> JE.object
         |> event "eval"
 
 

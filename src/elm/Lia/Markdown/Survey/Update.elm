@@ -122,7 +122,7 @@ update sync sectionID scripts msg vector =
                                      of
                                         Just code ->
                                             [ toString element.state ]
-                                                |> Service.Script.eval code (outputs scripts)
+                                                |> Service.Script.eval Nothing code (outputs scripts)
                                                 |> Event.pushWithId "eval" id
 
                                         Nothing ->
