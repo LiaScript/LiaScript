@@ -4,11 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.17.9] - 17/11/2025
+## [0.17.10] - 17/11/2025
 
 - fix(CSS): Drag & Drop quizzes in dark mode
 - fix(CSS): Inlining of solution for Matrix-Quizzes
 - fix: Two GoTos at the initialization phase now work as expected
+- chore: npm update ace, caniuse-lite, sass, katex
+- fix: Katex css loading error
 
 ## [0.17.8] - 31/10/2025
 
