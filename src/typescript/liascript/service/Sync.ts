@@ -30,6 +30,7 @@ const Service = {
     'gun',
     //'jitsi',
     //'matrix',
+    'ipfs',
     'mqtt',
     'nostr',
     'pubnub',
@@ -108,6 +109,7 @@ const Service = {
               )
               break
 
+            case 'ipfs':
             case 'mqtt':
             case 'nostr':
             case 'torrent': {
@@ -120,7 +122,7 @@ const Service = {
               }
 
               sync = new Trystero.Sync(
-                backend as 'mqtt' | 'nostr' | 'torrent',
+                backend as 'mqtt' | 'nostr' | 'torrent' | 'ipfs',
                 cbConnection,
                 elmSend,
                 onConnect,
