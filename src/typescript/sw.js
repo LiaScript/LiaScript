@@ -1,7 +1,7 @@
 console.log('service-worker.js')
 // advanced config for injectManifest approach
 importScripts(
-  'https://storage.googleapis.com/workbox-cdn/releases/7.1.0/workbox-sw.js'
+  'https://storage.googleapis.com/workbox-cdn/releases/7.4.0/workbox-sw.js'
 )
 // Detailed logging is very useful during development
 workbox.setConfig({
