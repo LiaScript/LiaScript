@@ -93,6 +93,7 @@
     "p2pt": "^1.5.1",
     "parcel": "^2.8.3",
     "parcel-reporter-static-files-copy": "^1.5.3",
+    "patch-package": "^8.0.1",
     "path-browserify": "^1.0.1",
     "pdfast": "^0.2.0",
     "process": "^0.11.10",
@@ -122,7 +123,6 @@
     "test": "tests"
   },
   "dependencies": {
-    "pako": "^2.1.0",
-    "patch-package": "^8.0.0"
+    "pako": "^2.1.0"
   }
 }
