@@ -4,20 +4,22 @@ var joinRoom: {
   nostr: any
   mqtt: any
   torrent: any
+  ipfs: any
 } = {
   nostr: null,
   mqtt: null,
   torrent: null,
+  ipfs: null,
 }
 
 export class Sync extends Base.Sync {
   private connection?: any
   private pub?: any
   private sub?: any
-  private backend: 'nostr' | 'mqtt' | 'torrent'
+  private backend: 'nostr' | 'mqtt' | 'torrent' | 'ipfs'
 
   constructor(
-    backend: 'nostr' | 'mqtt' | 'torrent',
+    backend: 'nostr' | 'mqtt' | 'torrent' | 'ipfs',
     cbConnection: (topic: string, msg: string) => void,
     cbRelay: (data: Lia.Event) => void,
     onConnect: () => void,
@@ -97,17 +99,17 @@ export class Sync extends Base.Sync {
         break
       }
 
-      //       case 'ipfs': {
-      //         eval(`import('./trystero-ipfs.min.js')
-      // .then((e) => {
-      //   joinRoom.torrent = e.joinRoom
-      //   this.init(true)
-      // })
-      // .catch((e) => {
-      //   this.init(false, e.message)
-      // })`)
-      //         break
-      //       }
+      case 'ipfs': {
+        import('./trystero-ipfs.min.js')
+          .then((e) => {
+            joinRoom.ipfs = e.joinRoom
+            this.init(true)
+          })
+          .catch((e) => {
+            this.init(false, e.message)
+          })
+        break
+      }
     }
   }
 
