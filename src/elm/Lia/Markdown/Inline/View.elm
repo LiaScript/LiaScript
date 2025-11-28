@@ -364,6 +364,7 @@ viewQuiz config ( length, id ) attr =
                                         "red"
                                )
                         )
+                    , Attr.style "background-color" "#88888822"
                     , Attr.style "border-radius" "4px"
                     , Attr.style "display" "inline-block"
                     , Attr.style "vertical-align" "middle"
@@ -435,7 +436,7 @@ viewQuizDrops config =
                                                 ([ Attr.style "border" "3px dotted #888"
                                                  , Attr.style "margin" "0.25rem"
                                                  , Attr.style "padding" "1rem"
-                                                 , Attr.style "background-color" "#f9f9f9"
+                                                 , Attr.style "background-color" "#88888822"
                                                  , Attr.style "border-radius" "4px"
                                                  , Attr.style "display" "inline-block"
                                                  , A11y_Role.button

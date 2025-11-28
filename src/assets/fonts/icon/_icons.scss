@@ -400,212 +400,217 @@ $icon-info: "\EA25";
   content: $icon-info
 }
 
-$icon-lightmode: "\EA26";
+$icon-ipfs: "\EA26";
+.icon-ipfs:before {
+  content: $icon-ipfs
+}
+
+$icon-lightmode: "\EA27";
 .icon-lightmode:before {
   content: $icon-lightmode
 }
 
-$icon-lineplot: "\EA27";
+$icon-lineplot: "\EA28";
 .icon-lineplot:before {
   content: $icon-lineplot
 }
 
-$icon-list-1: "\EA28";
+$icon-list-1: "\EA29";
 .icon-list-1:before {
   content: $icon-list-1
 }
 
-$icon-list-2: "\EA29";
+$icon-list-2: "\EA2A";
 .icon-list-2:before {
   content: $icon-list-2
 }
 
-$icon-list-3: "\EA2A";
+$icon-list-3: "\EA2B";
 .icon-list-3:before {
   content: $icon-list-3
 }
 
-$icon-login: "\EA2B";
+$icon-login: "\EA2C";
 .icon-login:before {
   content: $icon-login
 }
 
-$icon-mail: "\EA2C";
+$icon-mail: "\EA2D";
 .icon-mail:before {
   content: $icon-mail
 }
 
-$icon-map: "\EA2D";
+$icon-map: "\EA2E";
 .icon-map:before {
   content: $icon-map
 }
 
-$icon-minus: "\EA2E";
+$icon-minus: "\EA2F";
 .icon-minus:before {
   content: $icon-minus
 }
 
-$icon-more: "\EA2F";
+$icon-more: "\EA30";
 .icon-more:before {
   content: $icon-more
 }
 
-$icon-mqtt: "\EA30";
+$icon-mqtt: "\EA31";
 .icon-mqtt:before {
   content: $icon-mqtt
 }
 
-$icon-nostr: "\EA31";
+$icon-nostr: "\EA32";
 .icon-nostr:before {
   content: $icon-nostr
 }
 
-$icon-p2pt: "\EA32";
+$icon-p2pt: "\EA33";
 .icon-p2pt:before {
   content: $icon-p2pt
 }
 
-$icon-parallel: "\EA33";
+$icon-parallel: "\EA34";
 .icon-parallel:before {
   content: $icon-parallel
 }
 
-$icon-pencil: "\EA34";
+$icon-pencil: "\EA35";
 .icon-pencil:before {
   content: $icon-pencil
 }
 
-$icon-person: "\EA35";
+$icon-person: "\EA36";
 .icon-person:before {
   content: $icon-person
 }
 
-$icon-piechart: "\EA36";
+$icon-piechart: "\EA37";
 .icon-piechart:before {
   content: $icon-piechart
 }
 
-$icon-play-circle: "\EA37";
+$icon-play-circle: "\EA38";
 .icon-play-circle:before {
   content: $icon-play-circle
 }
 
-$icon-plus: "\EA38";
+$icon-plus: "\EA39";
 .icon-plus:before {
   content: $icon-plus
 }
 
-$icon-presentation: "\EA39";
+$icon-presentation: "\EA3A";
 .icon-presentation:before {
   content: $icon-presentation
 }
 
-$icon-pubnub: "\EA3A";
+$icon-pubnub: "\EA3B";
 .icon-pubnub:before {
   content: $icon-pubnub
 }
 
-$icon-radar: "\EA3B";
+$icon-radar: "\EA3C";
 .icon-radar:before {
   content: $icon-radar
 }
 
-$icon-refresh: "\EA3C";
+$icon-refresh: "\EA3D";
 .icon-refresh:before {
   content: $icon-refresh
 }
 
-$icon-resolve: "\EA3D";
+$icon-resolve: "\EA3E";
 .icon-resolve:before {
   content: $icon-resolve
 }
 
-$icon-sankey: "\EA3E";
+$icon-sankey: "\EA3F";
 .icon-sankey:before {
   content: $icon-sankey
 }
 
-$icon-scatterplot: "\EA3F";
+$icon-scatterplot: "\EA40";
 .icon-scatterplot:before {
   content: $icon-scatterplot
 }
 
-$icon-search: "\EA40";
+$icon-search: "\EA41";
 .icon-search:before {
   content: $icon-search
 }
 
-$icon-send: "\EA41";
+$icon-send: "\EA42";
 .icon-send:before {
   content: $icon-send
 }
 
-$icon-settings: "\EA42";
+$icon-settings: "\EA43";
 .icon-settings:before {
   content: $icon-settings
 }
 
-$icon-slides: "\EA43";
+$icon-slides: "\EA44";
 .icon-slides:before {
   content: $icon-slides
 }
 
-$icon-social: "\EA44";
+$icon-social: "\EA45";
 .icon-social:before {
   content: $icon-social
 }
 
-$icon-sort-asc: "\EA45";
+$icon-sort-asc: "\EA46";
 .icon-sort-asc:before {
   content: $icon-sort-asc
 }
 
-$icon-sort-desc: "\EA46";
+$icon-sort-desc: "\EA47";
 .icon-sort-desc:before {
   content: $icon-sort-desc
 }
 
-$icon-sound-off: "\EA47";
+$icon-sound-off: "\EA48";
 .icon-sound-off:before {
   content: $icon-sound-off
 }
 
-$icon-sound-on: "\EA48";
+$icon-sound-on: "\EA49";
 .icon-sound-on:before {
   content: $icon-sound-on
 }
 
-$icon-stop-circle: "\EA49";
+$icon-stop-circle: "\EA4A";
 .icon-stop-circle:before {
   content: $icon-stop-circle
 }
 
-$icon-table: "\EA4A";
+$icon-table: "\EA4B";
 .icon-table:before {
   content: $icon-table
 }
 
-$icon-torrent: "\EA4B";
+$icon-torrent: "\EA4C";
 .icon-torrent:before {
   content: $icon-torrent
 }
 
-$icon-trash: "\EA4C";
+$icon-trash: "\EA4D";
 .icon-trash:before {
   content: $icon-trash
 }
 
-$icon-warning: "\EA4D";
+$icon-warning: "\EA4E";
 .icon-warning:before {
   content: $icon-warning
 }
 
-$icon-zoom-out: "\EA4E";
+$icon-zoom-out: "\EA4F";
 .icon-zoom-out:before {
   content: $icon-zoom-out
 }
 
-$icon-zoom: "\EA4F";
+$icon-zoom: "\EA50";
 .icon-zoom:before {
   content: $icon-zoom
 }
