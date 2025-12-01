@@ -223,7 +223,7 @@ const Service = {
             window.LIA.settings.table_of_contents = false
           } else {
             window.LIA.settings.table_of_contents = true
-            scrollIntoView('focusedToc', 300)
+            scrollIntoView('focusedToc', 500)
             setTimeout(() => {
               const link = document.getElementById('focusedToc')
               link?.focus()
