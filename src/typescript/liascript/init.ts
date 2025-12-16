@@ -7,6 +7,10 @@ export function initGlobals() {
     window.LIA = {}
   }
 
+  if (!window.LIA.fetch) {
+    injectFetch()
+  }
+
   if (!window.LIA.version) {
     window.LIA.version = packageJson.version
   }
@@ -99,4 +103,55 @@ const img = {
       }
     }
   },
+}
+
+function injectFetch() {
+  const originalFetch = window.fetch.bind(window)
+
+  // 1) Query contains a direct URL (without key=value)
+  const rawQuery = window.location.search.slice(1)
+  let queryURL = null
+
+  try {
+    // Accept any protocol (ipfs, https, http, ...)
+    queryURL = rawQuery ? new URL(rawQuery) : null
+  } catch {
+    queryURL = null
+  }
+
+  // 2) Base for "relative to the last path" (directory of the query URL)
+  const queryBaseDir = queryURL ? new URL('.', queryURL) : null
+
+  // 3) Base for "/foo" => Root of the current page (any protocol)
+  // new URL("/x", location.href) automatically uses the current scheme/authority
+  const pageRootBase = new URL('/', window.location.href)
+
+  const isAbsoluteUrl = (s: string) => /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(s)
+
+  window.LIA.fetch = function (resource, options) {
+    // String-URL
+    if (typeof resource === 'string') {
+      // a) "/..." => Root of the current page (same protocol/host/port as page)
+      if (resource.startsWith('/')) {
+        const resolved = new URL(resource, pageRootBase).toString()
+        return originalFetch(resolved, options)
+      }
+
+      // b) "images/..." => relative to the query URL (if present)
+      // (But do not touch absolute URLs like "ipfs://...")
+      if (queryBaseDir && !isAbsoluteUrl(resource)) {
+        const resolved = new URL(resource, queryBaseDir).toString()
+        return originalFetch(resolved, options)
+      }
+
+      // c) otherwise normal
+      return originalFetch(resource, options)
+    }
+
+    // Request object
+    // Note: Request("images/x") is already resolved by the browser relative to the page,
+    // i.e., we can no longer reliably reconstruct the original relative form.
+    // Therefore, we let Requests pass through unchanged.
+    return originalFetch(resource, options)
+  }
 }
