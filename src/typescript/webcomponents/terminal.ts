@@ -51,6 +51,7 @@ customElements.define(
 
     private cleanup() {
       if (this.resizeObserver) {
+        this.resizeObserver.unobserve(this)
         this.resizeObserver.disconnect()
         this.resizeObserver = undefined
       }
