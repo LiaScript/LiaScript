@@ -269,7 +269,7 @@ chart lang width isFormatted attr mode class matrix =
                         |> List.indexedMap
                             (\y_ row ->
                                 row
-                                    |> List.indexedMap (\x_ cell -> ( x_, y_, cell.float ))
+                                    |> List.indexedMap (\x_ cell -> ( y_, x_, cell.float ))
                             )
                 , orientation = orientation
                 }
