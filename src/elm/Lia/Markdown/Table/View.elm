@@ -251,6 +251,7 @@ chart lang width isFormatted attr mode class matrix =
                         |> Matrix.column 0
                         |> Maybe.withDefault []
                         |> List.map .string
+                        |> List.reverse
 
                 x =
                     head
@@ -269,6 +270,7 @@ chart lang width isFormatted attr mode class matrix =
                         |> List.indexedMap
                             (\y_ row ->
                                 row
+                                    |> List.reverse
                                     |> List.indexedMap (\x_ cell -> ( y_, x_, cell.float ))
                             )
                 , orientation = orientation
