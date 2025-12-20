@@ -1,5 +1,6 @@
 import './types/globals'
 import packageJson from '../../../package.json'
+import { allowedProtocol } from '../helper'
 
 export function initGlobals() {
   if (!window.LIA) {
@@ -106,52 +107,60 @@ const img = {
 }
 
 function injectFetch() {
-  const originalFetch = window.fetch.bind(window)
-
-  // 1) Query contains a direct URL (without key=value)
+  // 1) Query contains a direct URL ?http://... or ipfs://... data:
   const rawQuery = window.location.search.slice(1)
   let queryURL = null
 
-  try {
-    // Accept any protocol (ipfs, https, http, ...)
-    queryURL = rawQuery ? new URL(rawQuery) : null
-  } catch {
-    queryURL = null
+  // Accept any protocol (ipfs, https, http, ...)
+  if (
+    allowedProtocol(rawQuery) &&
+    !rawQuery.startsWith('data:') &&
+    !rawQuery.startsWith('blob:')
+  ) {
+    queryURL = rawQuery
   }
 
-  // 2) Base for "relative to the last path" (directory of the query URL)
-  const queryBaseDir = queryURL ? new URL('.', queryURL) : null
+  try {
+    // 2) Base for "relative to the last path" (directory of the query URL)
+    const queryBaseDir = queryURL ? new URL('.', queryURL) : null
 
-  // 3) Base for "/foo" => Root of the current page (any protocol)
-  // new URL("/x", location.href) automatically uses the current scheme/authority
-  const pageRootBase = new URL('/', window.location.href)
+    // 3) Base for "/foo" => Root of the current page (any protocol)
+    // new URL("/x", location.href) automatically uses the current scheme/authority
+    const pageRootBase = new URL('/', window.location.href)
 
-  const isAbsoluteUrl = (s: string) => /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(s)
+    const isAbsoluteUrl = (s: string) => /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(s)
+    window.LIA.fetch = function (resource, options) {
+      try {
+        // String-URL
+        if (typeof resource === 'string') {
+          // a) "/..." => Root of the current page (same protocol/host/port as page)
+          if (resource.startsWith('/')) {
+            const resolved = new URL(resource, pageRootBase).toString()
+            return window.fetch(resolved, options)
+          }
 
-  window.LIA.fetch = function (resource, options) {
-    // String-URL
-    if (typeof resource === 'string') {
-      // a) "/..." => Root of the current page (same protocol/host/port as page)
-      if (resource.startsWith('/')) {
-        const resolved = new URL(resource, pageRootBase).toString()
-        return originalFetch(resolved, options)
+          // b) "images/..." => relative to the query URL (if present)
+          // (But do not touch absolute URLs like "ipfs://...")
+          if (queryBaseDir && !isAbsoluteUrl(resource)) {
+            const resolved = new URL(resource, queryBaseDir).toString()
+            return window.fetch(resolved, options)
+          }
+
+          // c) otherwise normal
+          return window.fetch(resource, options)
+        }
+      } catch (err: any) {
+        console.error('window.LIA.fetch =>', (err as Error).message)
       }
-
-      // b) "images/..." => relative to the query URL (if present)
-      // (But do not touch absolute URLs like "ipfs://...")
-      if (queryBaseDir && !isAbsoluteUrl(resource)) {
-        const resolved = new URL(resource, queryBaseDir).toString()
-        return originalFetch(resolved, options)
-      }
-
-      // c) otherwise normal
-      return originalFetch(resource, options)
+      // Request object
+      // Note: Request("images/x") is already resolved by the browser relative to the page,
+      // i.e., we can no longer reliably reconstruct the original relative form.
+      // Therefore, we let Requests pass through unchanged.
+      return window.fetch(resource, options)
     }
+  } catch (err: any) {
+    console.error('Error in URL resolution bases', err.message)
 
-    // Request object
-    // Note: Request("images/x") is already resolved by the browser relative to the page,
-    // i.e., we can no longer reliably reconstruct the original relative form.
-    // Therefore, we let Requests pass through unchanged.
-    return originalFetch(resource, options)
+    window.LIA.fetch = window.fetch
   }
 }
