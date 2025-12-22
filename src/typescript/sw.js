@@ -22,10 +22,23 @@ workbox.routing.registerRoute(
 // workbox.googleAnalytics.initialize();
 workbox.routing.registerRoute(
   // Match all navigation requests, except those for URLs whose
-  // path starts with '/admin/'
+  // path starts with '/LiveEditor/'
   ({ request, url }) =>
     request.mode === 'navigate' && !url.pathname.startsWith('/LiveEditor/'),
-  new workbox.strategies.NetworkFirst()
+  new workbox.strategies.NetworkFirst({
+    cacheName: 'navigation',
+    plugins: [
+      new workbox.cacheableResponse.CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
+        purgeOnQuotaError: true,
+      }),
+    ],
+    networkTimeoutSeconds: 3, // Quick fallback to cache when offline
+  })
 )
 //workbox.routing.registerRoute(/\/*/, new workbox.strategies.NetworkFirst())
 workbox.routing.registerRoute(
