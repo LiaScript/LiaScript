@@ -10,6 +10,36 @@ workbox.setConfig({
 // Updating SW lifecycle to update the app after user triggered refresh
 self.skipWaiting()
 workbox.core.clientsClaim()
+
+// Custom strategy that immediately returns cache when offline
+class NetworkFirstOfflineImmediate extends workbox.strategies.NetworkFirst {
+  async _handle(request, handler) {
+    try {
+      // Safely check if we're offline
+      // navigator.onLine is not 100% reliable but gives a good hint
+      const isOnline =
+        typeof self.navigator !== 'undefined' &&
+        typeof self.navigator.onLine !== 'undefined'
+          ? self.navigator.onLine
+          : true
+
+      if (!isOnline) {
+        // Try cache first when offline
+        const cachedResponse = await handler.cacheMatch(request)
+        if (cachedResponse) {
+          return cachedResponse
+        }
+      }
+    } catch (error) {
+      // If checking online status fails, continue to normal behavior
+      console.warn('Error checking online status:', error)
+    }
+
+    // Online, no cache, or error: use normal NetworkFirst behavior
+    return super._handle(request, handler)
+  }
+}
+
 // data-uris shall not be cached and also work offline
 workbox.routing.registerRoute(
   ({ url }) => url.search.startsWith('?data:text'),
@@ -25,7 +55,7 @@ workbox.routing.registerRoute(
   // path starts with '/LiveEditor/'
   ({ request, url }) =>
     request.mode === 'navigate' && !url.pathname.startsWith('/LiveEditor/'),
-  new workbox.strategies.NetworkFirst({
+  new NetworkFirstOfflineImmediate({
     cacheName: 'navigation',
     plugins: [
       new workbox.cacheableResponse.CacheableResponsePlugin({
@@ -46,11 +76,11 @@ workbox.routing.registerRoute(
   new workbox.strategies.NetworkFirst()
 )
 
-// Cache external images with StaleWhileRevalidate strategy
+// Cache external images with NetworkFirst strategy
 workbox.routing.registerRoute(
   ({ request, url }) =>
     request.destination === 'image' && url.origin !== self.location.origin,
-  new workbox.strategies.StaleWhileRevalidate({
+  new NetworkFirstOfflineImmediate({
     cacheName: 'external-images',
     plugins: [
       new workbox.cacheableResponse.CacheableResponsePlugin({
@@ -62,14 +92,15 @@ workbox.routing.registerRoute(
         purgeOnQuotaError: true,
       }),
     ],
+    networkTimeoutSeconds: 5, // Fallback to cache if network is slow
   })
 )
 
-// Cache external videos with CacheFirst strategy
+// Cache external videos with NetworkFirst strategy
 workbox.routing.registerRoute(
   ({ request, url }) =>
     request.destination === 'video' && url.origin !== self.location.origin,
-  new workbox.strategies.CacheFirst({
+  new NetworkFirstOfflineImmediate({
     cacheName: 'external-videos',
     plugins: [
       new workbox.cacheableResponse.CacheableResponsePlugin({
@@ -82,14 +113,15 @@ workbox.routing.registerRoute(
       }),
       new workbox.rangeRequests.RangeRequestsPlugin(),
     ],
+    networkTimeoutSeconds: 10, // Longer timeout for videos
   })
 )
 
-// Cache external audio with CacheFirst strategy
+// Cache external audio with NetworkFirst strategy
 workbox.routing.registerRoute(
   ({ request, url }) =>
     request.destination === 'audio' && url.origin !== self.location.origin,
-  new workbox.strategies.CacheFirst({
+  new NetworkFirstOfflineImmediate({
     cacheName: 'external-audio',
     plugins: [
       new workbox.cacheableResponse.CacheableResponsePlugin({
@@ -102,14 +134,15 @@ workbox.routing.registerRoute(
       }),
       new workbox.rangeRequests.RangeRequestsPlugin(),
     ],
+    networkTimeoutSeconds: 8, // Timeout for audio
   })
 )
 
-// Cache external CSS with StaleWhileRevalidate
+// Cache external CSS with NetworkFirst
 workbox.routing.registerRoute(
   ({ request, url }) =>
     request.destination === 'style' && url.origin !== self.location.origin,
-  new workbox.strategies.StaleWhileRevalidate({
+  new NetworkFirstOfflineImmediate({
     cacheName: 'external-css',
     plugins: [
       new workbox.cacheableResponse.CacheableResponsePlugin({
@@ -121,14 +154,15 @@ workbox.routing.registerRoute(
         purgeOnQuotaError: true,
       }),
     ],
+    networkTimeoutSeconds: 3,
   })
 )
 
-// Cache external JavaScript with StaleWhileRevalidate
+// Cache external JavaScript with NetworkFirst
 workbox.routing.registerRoute(
   ({ request, url }) =>
     request.destination === 'script' && url.origin !== self.location.origin,
-  new workbox.strategies.StaleWhileRevalidate({
+  new NetworkFirstOfflineImmediate({
     cacheName: 'external-scripts',
     plugins: [
       new workbox.cacheableResponse.CacheableResponsePlugin({
@@ -140,14 +174,15 @@ workbox.routing.registerRoute(
         purgeOnQuotaError: true,
       }),
     ],
+    networkTimeoutSeconds: 3,
   })
 )
 
-// Cache external fonts with CacheFirst strategy
+// Cache external fonts with NetworkFirst strategy
 workbox.routing.registerRoute(
   ({ request, url }) =>
     request.destination === 'font' && url.origin !== self.location.origin,
-  new workbox.strategies.CacheFirst({
+  new NetworkFirstOfflineImmediate({
     cacheName: 'external-fonts',
     plugins: [
       new workbox.cacheableResponse.CacheableResponsePlugin({
@@ -159,6 +194,7 @@ workbox.routing.registerRoute(
         purgeOnQuotaError: true,
       }),
     ],
+    networkTimeoutSeconds: 3,
   })
 )
 
@@ -170,7 +206,7 @@ workbox.routing.registerRoute(
     (url.pathname.endsWith('.md') ||
       url.pathname.includes('README') ||
       url.pathname.endsWith('.markdown')),
-  new workbox.strategies.NetworkFirst({
+  new NetworkFirstOfflineImmediate({
     cacheName: 'external-documents',
     plugins: [
       new workbox.cacheableResponse.CacheableResponsePlugin({
