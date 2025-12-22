@@ -32,13 +32,160 @@ workbox.routing.registerRoute(
   /https:\/\/code\.responsivevoice\.org/,
   new workbox.strategies.NetworkFirst()
 )
+
+// Cache external images with StaleWhileRevalidate strategy
 workbox.routing.registerRoute(
-  'https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-sw.js',
-  new workbox.strategies.CacheFirst()
+  ({ request, url }) =>
+    request.destination === 'image' && url.origin !== self.location.origin,
+  new workbox.strategies.StaleWhileRevalidate({
+    cacheName: 'external-images',
+    plugins: [
+      new workbox.cacheableResponse.CacheableResponsePlugin({
+        statuses: [0, 200], // Cache opaque responses (0) and successful responses (200)
+      }),
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 500,
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+        purgeOnQuotaError: true,
+      }),
+    ],
+  })
 )
+
+// Cache external videos with CacheFirst strategy
+workbox.routing.registerRoute(
+  ({ request, url }) =>
+    request.destination === 'video' && url.origin !== self.location.origin,
+  new workbox.strategies.CacheFirst({
+    cacheName: 'external-videos',
+    plugins: [
+      new workbox.cacheableResponse.CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+        purgeOnQuotaError: true,
+      }),
+      new workbox.rangeRequests.RangeRequestsPlugin(),
+    ],
+  })
+)
+
+// Cache external audio with CacheFirst strategy
+workbox.routing.registerRoute(
+  ({ request, url }) =>
+    request.destination === 'audio' && url.origin !== self.location.origin,
+  new workbox.strategies.CacheFirst({
+    cacheName: 'external-audio',
+    plugins: [
+      new workbox.cacheableResponse.CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 100,
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+        purgeOnQuotaError: true,
+      }),
+      new workbox.rangeRequests.RangeRequestsPlugin(),
+    ],
+  })
+)
+
+// Cache external CSS with StaleWhileRevalidate
+workbox.routing.registerRoute(
+  ({ request, url }) =>
+    request.destination === 'style' && url.origin !== self.location.origin,
+  new workbox.strategies.StaleWhileRevalidate({
+    cacheName: 'external-css',
+    plugins: [
+      new workbox.cacheableResponse.CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 100,
+        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
+        purgeOnQuotaError: true,
+      }),
+    ],
+  })
+)
+
+// Cache external JavaScript with StaleWhileRevalidate
+workbox.routing.registerRoute(
+  ({ request, url }) =>
+    request.destination === 'script' && url.origin !== self.location.origin,
+  new workbox.strategies.StaleWhileRevalidate({
+    cacheName: 'external-scripts',
+    plugins: [
+      new workbox.cacheableResponse.CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 100,
+        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
+        purgeOnQuotaError: true,
+      }),
+    ],
+  })
+)
+
+// Cache external fonts with CacheFirst strategy
+workbox.routing.registerRoute(
+  ({ request, url }) =>
+    request.destination === 'font' && url.origin !== self.location.origin,
+  new workbox.strategies.CacheFirst({
+    cacheName: 'external-fonts',
+    plugins: [
+      new workbox.cacheableResponse.CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 365 * 24 * 60 * 60, // 1 year
+        purgeOnQuotaError: true,
+      }),
+    ],
+  })
+)
+
+// Cache README.md files and other documents from external sources
+// Using NetworkFirst to always try to get the latest version
+workbox.routing.registerRoute(
+  ({ request, url }) =>
+    url.origin !== self.location.origin &&
+    (url.pathname.endsWith('.md') ||
+      url.pathname.includes('README') ||
+      url.pathname.endsWith('.markdown')),
+  new workbox.strategies.NetworkFirst({
+    cacheName: 'external-documents',
+    plugins: [
+      new workbox.cacheableResponse.CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 200,
+        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
+        purgeOnQuotaError: true,
+      }),
+    ],
+    networkTimeoutSeconds: 5, // Fallback to cache if network is slow
+  })
+)
+
 // Add error handling for fetch operations
-workbox.routing.setCatchHandler(({ event }) => {
-  console.error(`Failed to handle fetch: ${event.request.url}`)
+workbox.routing.setCatchHandler(async ({ event, url }) => {
+  console.error(`Failed to handle fetch: ${url}`)
+
+  // Return a cached response if available
+  const cache = await caches.open('external-images')
+  const cachedResponse = await cache.match(event.request)
+  if (cachedResponse) {
+    return cachedResponse
+  }
+
+  // Otherwise return error
   return Response.error()
 })
+
 workbox.precaching.precacheAndRoute(self.__WB_MANIFEST)
