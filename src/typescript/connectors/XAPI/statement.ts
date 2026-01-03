@@ -115,7 +115,16 @@ export function generateAnsweredStatement(
       objectType: 'Activity',
       definition: {
         type: 'http://adlnet.gov/expapi/activities/question',
-        name: { 'en-US': `${quizType} Question ${quizId}` },
+        name: {
+          'en-US':
+            quizType !== 'unknown'
+              ? `Slide ${slideId} - ${quizType} ${quizId}`
+              : `Slide ${slideId} - Quiz ${quizId}`,
+        },
+        description: {
+          'en-US':
+            quizType !== 'unknown' ? `${quizType} Question` : 'Quiz Question',
+        },
         extensions: {
           'http://liascript.github.io/extensions/slideId': slideId,
           'http://liascript.github.io/extensions/quizIndex': quizId,

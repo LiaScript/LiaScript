@@ -602,6 +602,15 @@ export class Connector extends Base.Connector {
           this.maxScore += quiz.score
         }
 
+        // Extract quiz type from state object (e.g., "Text", "SingleChoice", "MultipleChoice", etc.)
+        let quizType = 'unknown'
+        if (quiz.state && typeof quiz.state === 'object') {
+          const stateKeys = Object.keys(quiz.state)
+          if (stateKeys.length > 0) {
+            quizType = stateKeys[0] // The first key is the quiz type
+          }
+        }
+
         // Send answered statement with full quiz state
         const statement = Statement.generateAnsweredStatement(
           this.actor,
@@ -609,7 +618,7 @@ export class Connector extends Base.Connector {
           this.courseTitle,
           id,
           i,
-          quiz.type || 'unknown',
+          quizType,
           quiz.input || quiz.answer || '',
           quiz.solved === 1, // success
           quiz.solved === 1 ? quiz.score || 1 : 0, // score
