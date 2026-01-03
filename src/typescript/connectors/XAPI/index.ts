@@ -23,10 +23,10 @@ export class Connector extends Base.Connector {
   private totalScore: number
   private maxScore: number
   private visitedSlides: Set<number>
+  private lastVisitedSlide: number
   private totalSlides: number
   private quizStates: Record<number, Record<number, any>>
   private startTime: number
-  private lastActivityTime: number
   private completionSent: boolean
   private progressThreshold: number
 
@@ -52,6 +52,7 @@ export class Connector extends Base.Connector {
     this.totalScore = 0
     this.maxScore = 0
     this.visitedSlides = new Set()
+    this.lastVisitedSlide = 0
     this.totalSlides = 0
     this.quizStates = {}
     this.startTime = Date.now()
@@ -244,9 +245,10 @@ export class Connector extends Base.Connector {
       // Process statements to restore state
       // Keep track of latest statement per quiz (by timestamp)
       const latestQuizStatements: Record<string, any> = {}
+      let latestSlideStatement: any = null
 
       for (const stmt of response.statements) {
-        // Restore slide visits (experienced verb)
+        // Restore slide visits (experienced verb) - track the most recent one
         if (stmt.verb.id === 'http://adlnet.gov/expapi/verbs/experienced') {
           const slideId =
             stmt.object.definition?.extensions?.[
@@ -254,6 +256,16 @@ export class Connector extends Base.Connector {
             ]
           if (slideId !== undefined) {
             this.visitedSlides.add(slideId)
+
+            // Track the most recent slide visit by timestamp
+            const timestamp = new Date(stmt.timestamp).getTime()
+            if (
+              !latestSlideStatement ||
+              new Date(latestSlideStatement.timestamp).getTime() < timestamp
+            ) {
+              latestSlideStatement = stmt
+            }
+
             if (this.debug) {
               console.log('Restored slide visit:', slideId)
             }
@@ -292,6 +304,17 @@ export class Connector extends Base.Connector {
           if (this.debug) {
             console.log('Found completion statement')
           }
+        }
+      }
+
+      // Set the last visited slide from the most recent experienced statement
+      if (latestSlideStatement) {
+        this.lastVisitedSlide =
+          latestSlideStatement.object.definition?.extensions?.[
+            'http://liascript.github.io/extensions/slideId'
+          ] || 0
+        if (this.debug) {
+          console.log('Last visited slide:', this.lastVisitedSlide)
         }
       }
 
@@ -374,6 +397,7 @@ export class Connector extends Base.Connector {
       if (this.debug) {
         console.log('State restoration complete:', {
           visitedSlides: this.visitedSlides.size,
+          lastVisitedSlide: this.lastVisitedSlide,
           quizStates: Object.keys(this.quizStates).length,
           totalScore: this.totalScore,
           maxScore: this.maxScore,
@@ -503,8 +527,9 @@ export class Connector extends Base.Connector {
     // Update activity time
     this.lastActivityTime = Date.now()
 
-    // Add to visited slides
+    // Add to visited slides and track as last visited
     this.visitedSlides.add(id)
+    this.lastVisitedSlide = id
 
     // Get slide title if available
     let slideTitle = `Slide ${id}`
@@ -668,6 +693,7 @@ export class Connector extends Base.Connector {
     this.totalScore = 0
     this.maxScore = 0
     this.visitedSlides.clear()
+    this.lastVisitedSlide = 0
     this.quizStates = {}
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
