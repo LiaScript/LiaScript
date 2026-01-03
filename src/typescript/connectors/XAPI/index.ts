@@ -68,9 +68,7 @@ export class Connector extends Base.Connector {
     }
 
     // Set course ID and title
-    const base = window.location.origin
-    this.courseId = config.courseId || new URL(window.location.href, base).href
-
+    this.courseId = config.courseId || window.location.href
     this.courseTitle =
       config.courseTitle || document.title || 'LiaScript Course'
 
@@ -87,16 +85,15 @@ export class Connector extends Base.Connector {
         }
 
         const quizConfig = windowAny.config_.quiz || [[]]
-        // Convert array of arrays to our Record<slideId, Record<quizIndex, state>> structure
-        for (let slideId = 0; slideId < quizConfig.length; slideId++) {
-          if (quizConfig[slideId] && quizConfig[slideId].length > 0) {
+        // Convert array of arrays to Record<slideId, Record<quizIndex, state>> structure
+        quizConfig.forEach((slideQuizzes: any[], slideId: number) => {
+          if (slideQuizzes?.length > 0) {
             this.quizStates[slideId] = {}
-            // Store the actual quiz state objects from config
-            for (let i = 0; i < quizConfig[slideId].length; i++) {
-              this.quizStates[slideId][i] = quizConfig[slideId][i]
-            }
+            slideQuizzes.forEach((quiz, i) => {
+              this.quizStates[slideId][i] = quiz
+            })
           }
-        }
+        })
 
         if (this.debug) {
           console.log(
@@ -245,6 +242,9 @@ export class Connector extends Base.Connector {
       }
 
       // Process statements to restore state
+      // Keep track of latest statement per quiz (by timestamp)
+      const latestQuizStatements: Record<string, any> = {}
+
       for (const stmt of response.statements) {
         // Restore slide visits (experienced verb)
         if (stmt.verb.id === 'http://adlnet.gov/expapi/verbs/experienced') {
@@ -260,7 +260,7 @@ export class Connector extends Base.Connector {
           }
         }
 
-        // Restore quiz answers (answered verb)
+        // Collect quiz answers (answered verb) - will process latest only
         if (stmt.verb.id === 'http://adlnet.gov/expapi/verbs/answered') {
           const slideId =
             stmt.object.definition?.extensions?.[
@@ -272,50 +272,16 @@ export class Connector extends Base.Connector {
             ]
 
           if (slideId !== undefined && quizIndex !== undefined) {
-            // Ensure quiz state structure exists for this slide
-            if (!this.quizStates[slideId]) {
-              this.quizStates[slideId] = {}
-            }
+            const key = `${slideId}-${quizIndex}`
+            const timestamp = new Date(stmt.timestamp).getTime()
 
-            // Reconstruct quiz state from statement
-            const result = stmt.result || {}
-            const extensions = result.extensions || {}
-
-            const quizState: any = {
-              solved: result.success ? 1 : result.success === false ? -1 : 0,
-              state:
-                extensions['http://liascript.github.io/extensions/state'] || [],
-              trial:
-                extensions['http://liascript.github.io/extensions/trial'] || 0,
-              hint:
-                extensions['http://liascript.github.io/extensions/hint'] || 0,
-              error_msg: '',
-              score: result.score?.raw || 0,
-            }
-
-            // Add response/input if available
-            if (result.response) {
-              quizState.input = result.response
-            }
-
-            // Update the quiz state (replacing null or existing state)
-            this.quizStates[slideId][quizIndex] = quizState
-
-            if (this.debug) {
-              console.log(
-                `Restored quiz state: slide ${slideId}, quiz ${quizIndex}`,
-                quizState
-              )
-            }
-
-            // Update scores
-            if (result.score?.raw !== undefined) {
-              if (result.success) {
-                this.totalScore += result.score.raw
-              }
-              if (result.score.max !== undefined) {
-                this.maxScore += result.score.max
-              }
+            // Keep only the most recent statement for each quiz
+            if (
+              !latestQuizStatements[key] ||
+              new Date(latestQuizStatements[key].timestamp).getTime() <
+                timestamp
+            ) {
+              latestQuizStatements[key] = stmt
             }
           }
         }
@@ -325,6 +291,82 @@ export class Connector extends Base.Connector {
           this.completionSent = true
           if (this.debug) {
             console.log('Found completion statement')
+          }
+        }
+      }
+
+      // Now process the latest quiz statements only
+      for (const key in latestQuizStatements) {
+        const stmt = latestQuizStatements[key]
+        const slideId =
+          stmt.object.definition?.extensions?.[
+            'http://liascript.github.io/extensions/slideId'
+          ]
+        const quizIndex =
+          stmt.object.definition?.extensions?.[
+            'http://liascript.github.io/extensions/quizIndex'
+          ]
+
+        // Ensure quiz state structure exists for this slide
+        if (!this.quizStates[slideId]) {
+          this.quizStates[slideId] = {}
+        }
+
+        // Reconstruct quiz state from statement
+        const result = stmt.result || {}
+        const extensions = result.extensions || {}
+
+        const trial =
+          extensions['http://liascript.github.io/extensions/trial'] || 0
+
+        // Determine solved status:
+        // solved: 1 = correctly solved (got the right answer)
+        // solved: -1 = resolved (clicked resolve button to show solution)
+        // solved: 0 = still trying (has attempts but not resolved)
+        let solved = 0
+        if (result.success === true) {
+          solved = 1 // Successfully answered correctly
+        } else if (result.success === false) {
+          // Check if resolved (completion=true) vs still trying
+          if (result.completion === true) {
+            solved = -1 // Resolved (showed solution)
+          } else {
+            solved = 0 // Still trying (failed attempts)
+          }
+        }
+
+        const quizState: any = {
+          solved,
+          state:
+            extensions['http://liascript.github.io/extensions/state'] || [],
+          trial,
+          hint: extensions['http://liascript.github.io/extensions/hint'] || 0,
+          error_msg: '',
+          score: result.score?.raw || 0,
+        }
+
+        // Add response/input if available
+        if (result.response) {
+          quizState.input = result.response
+        }
+
+        // Update the quiz state (replacing null or existing state)
+        this.quizStates[slideId][quizIndex] = quizState
+
+        if (this.debug) {
+          console.log(
+            `Restored quiz state: slide ${slideId}, quiz ${quizIndex}`,
+            quizState
+          )
+        }
+
+        // Update scores
+        if (result.score?.raw !== undefined) {
+          if (result.success) {
+            this.totalScore += result.score.raw
+          }
+          if (result.score.max !== undefined) {
+            this.maxScore += result.score.max
           }
         }
       }
@@ -349,29 +391,19 @@ export class Connector extends Base.Connector {
    * @returns True if course is complete
    */
   private checkCompletion(): boolean {
-    // Course is complete if:
-    // 1. We have visited enough slides (based on threshold)
-    // 2. All quizzes have been answered (if there are any)
+    if (this.totalSlides === 0) return false
 
-    let slideProgress = 0
-    if (this.totalSlides > 0) {
-      slideProgress = this.visitedSlides.size / this.totalSlides
-    }
+    const slideProgress = this.visitedSlides.size / this.totalSlides
+    const slideComplete = slideProgress >= this.progressThreshold
 
-    let quizComplete = true
-    if (this.maxScore > 0) {
-      quizComplete = Object.values(this.quizStates).every((slideQuizzes) =>
-        Object.values(slideQuizzes).every((quiz) => quiz.solved !== undefined)
-      )
-    }
+    // If no quizzes, just check slides
+    if (this.maxScore === 0) return slideComplete
 
-    // If we have quizzes, both conditions must be met
-    // If no quizzes, just check slide progress
-    if (this.maxScore > 0) {
-      return slideProgress >= this.progressThreshold && quizComplete
-    } else {
-      return slideProgress >= this.progressThreshold
-    }
+    // With quizzes, check both slides and all quizzes answered
+    const quizComplete = Object.values(this.quizStates).every((slideQuizzes) =>
+      Object.values(slideQuizzes).every((quiz) => quiz.solved !== undefined)
+    )
+    return slideComplete && quizComplete
   }
 
   /**
@@ -423,6 +455,15 @@ export class Connector extends Base.Connector {
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
     this.completionSent = false
+
+    // Get total slide count from LiaScript course structure
+    const windowAny = window as any
+    if (windowAny.LIA?.course?.slides) {
+      this.totalSlides = windowAny.LIA.course.slides.length
+      if (this.debug) {
+        console.log('Total slides in course:', this.totalSlides)
+      }
+    }
 
     // State restoration now happens in constructor
     // This ensures load() has access to restored state
@@ -530,35 +571,18 @@ export class Connector extends Base.Connector {
   load(record: Base.Record) {
     const { table, id } = record
 
-    if (this.debug) {
-      console.log(`Load called for table=${table}, id=${id}`)
-      console.log('Available quiz states:', Object.keys(this.quizStates))
-    }
-
-    // Return quiz state if available (like SCORM does)
-    if (table === 'quiz') {
-      if (this.quizStates[id]) {
-        // Convert object to array format expected by LiaScript
-        const quizArray: any[] = []
-        for (const quizIndex in this.quizStates[id]) {
-          const idx = parseInt(quizIndex)
-          quizArray[idx] = this.quizStates[id][idx]
-        }
-
-        if (this.debug) {
-          console.log(`Returning quiz array for slide ${id}:`, quizArray)
-        }
-
-        return quizArray
-      } else {
-        if (this.debug) {
-          console.log(`No quiz state found for slide ${id}`)
-        }
+    if (table === 'quiz' && this.quizStates[id]) {
+      // Convert object to array format expected by LiaScript
+      const quizArray: any[] = []
+      for (const quizIndex in this.quizStates[id]) {
+        quizArray[parseInt(quizIndex)] = this.quizStates[id][quizIndex]
       }
-    }
 
-    // For survey and task, we would need to add similar logic
-    // when we implement support for those types
+      if (this.debug) {
+        console.log(`Load quiz[${id}]:`, quizArray.length, 'items')
+      }
+      return quizArray
+    }
 
     return undefined
   }
@@ -568,80 +592,60 @@ export class Connector extends Base.Connector {
    * @param record Record to store
    */
   store(record: Base.Record) {
-    if (!this.active || !this.lrs) return
+    if (!this.active || !this.lrs || record.table !== 'quiz' || !record.data)
+      return
 
-    // Update activity time
     this.lastActivityTime = Date.now()
+    const { id, data } = record
 
-    const { table, id, data } = record
-
-    // Handle quiz data
-    if (table === 'quiz' && data) {
-      // Initialize quiz state for this slide if not exists
-      if (!this.quizStates[id]) {
-        this.quizStates[id] = {}
-      }
-
-      // Process each quiz on the slide
-      for (let i = 0; i < data.length; i++) {
-        const quiz = data[i]
-
-        // Skip if no quiz data
-        if (!quiz) continue
-
-        // Track quiz state
-        this.quizStates[id][i] = quiz
-
-        // Handle quiz score
-        if (quiz.score !== undefined) {
-          // Update total score
-          if (quiz.solved === 1) {
-            // Correct answer
-            this.totalScore += quiz.score
-          }
-          this.maxScore += quiz.score
-        }
-
-        // Extract quiz type from state object (e.g., "Text", "SingleChoice", "MultipleChoice", etc.)
-        let quizType = 'unknown'
-        if (quiz.state && typeof quiz.state === 'object') {
-          const stateKeys = Object.keys(quiz.state)
-          if (stateKeys.length > 0) {
-            quizType = stateKeys[0] // The first key is the quiz type
-          }
-        }
-
-        // Send answered statement with full quiz state
-        const statement = Statement.generateAnsweredStatement(
-          this.actor,
-          this.courseId,
-          this.courseTitle,
-          id,
-          i,
-          quizType,
-          quiz.input || quiz.answer || '',
-          quiz.solved === 1, // success
-          quiz.solved === 1 ? quiz.score || 1 : 0, // score
-          quiz.score || 1, // maxScore
-          quiz, // pass full quiz state for extensions
-          this.registration
-        )
-
-        this.lrs
-          .sendStatement(statement)
-          .then((responseId) => {
-            if (this.debug) {
-              console.log('Sent answered statement, ID:', responseId)
-            }
-
-            // Check if course is complete after answering quiz
-            this.sendCompletionIfNeeded()
-          })
-          .catch((err) => {
-            console.error('Failed to send answered statement:', err)
-          })
-      }
+    if (!this.quizStates[id]) {
+      this.quizStates[id] = {}
     }
+
+    // Process each quiz on the slide
+    data.forEach((quiz: any, i: number) => {
+      if (!quiz) return
+
+      this.quizStates[id][i] = quiz
+
+      // Update scores
+      if (quiz.score !== undefined) {
+        if (quiz.solved === 1) this.totalScore += quiz.score
+        this.maxScore += quiz.score
+      }
+
+      // Extract quiz type from state object
+      const quizType =
+        quiz.state && typeof quiz.state === 'object'
+          ? Object.keys(quiz.state)[0] || 'unknown'
+          : 'unknown'
+
+      // Send answered statement
+      const statement = Statement.generateAnsweredStatement(
+        this.actor,
+        this.courseId,
+        this.courseTitle,
+        id,
+        i,
+        quizType,
+        quiz.input || quiz.answer || '',
+        quiz.solved === 1,
+        quiz.solved === 1 ? quiz.score || 1 : 0,
+        quiz.score || 1,
+        quiz,
+        this.registration
+      )
+
+      this.lrs
+        .sendStatement(statement)
+        .then(() => {
+          if (this.debug) console.log(`Sent answer: slide ${id}, quiz ${i}`)
+          this.sendCompletionIfNeeded()
+        })
+        .catch((err) =>
+          console.error('Failed to send answered statement:', err)
+        )
+    })
   }
 
   /**
@@ -650,27 +654,8 @@ export class Connector extends Base.Connector {
    * @param fn Update function
    */
   update(record: Base.Record, fn: (a: any) => any) {
-    // Call store after update
     super.update(record, fn)
     this.store(record)
-  }
-
-  /**
-   * Get settings
-   * @returns Settings object
-   */
-  getSettings() {
-    // Use base implementation
-    return super.getSettings()
-  }
-
-  /**
-   * Set settings
-   * @param data Settings data
-   */
-  setSettings(data: Lia.Settings) {
-    // Use base implementation
-    super.setSettings(data)
   }
 
   /**

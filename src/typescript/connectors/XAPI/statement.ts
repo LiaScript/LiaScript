@@ -3,6 +3,31 @@
  */
 
 /**
+ * Helper: Create course activity object
+ */
+function createCourseActivity(courseId: string, courseTitle: string) {
+  return {
+    id: courseId,
+    objectType: 'Activity' as const,
+    definition: {
+      type: 'http://adlnet.gov/expapi/activities/course',
+      name: { 'en-US': courseTitle },
+    },
+  }
+}
+
+/**
+ * Helper: Add registration to context
+ */
+function addRegistration(statement: any, registration?: string) {
+  if (registration) {
+    statement.context = statement.context || {}
+    statement.context.registration = registration
+  }
+  return statement
+}
+
+/**
  * Generate an initialized statement for course start
  */
 export function generateInitializedStatement(
@@ -11,28 +36,18 @@ export function generateInitializedStatement(
   courseTitle: string,
   registration?: string
 ) {
-  const statement: any = {
-    actor: actor,
-    verb: {
-      id: 'http://adlnet.gov/expapi/verbs/initialized',
-      display: { 'en-US': 'initialized' },
-    },
-    object: {
-      id: courseId,
-      objectType: 'Activity',
-      definition: {
-        type: 'http://adlnet.gov/expapi/activities/course',
-        name: { 'en-US': courseTitle },
+  return addRegistration(
+    {
+      actor,
+      verb: {
+        id: 'http://adlnet.gov/expapi/verbs/initialized',
+        display: { 'en-US': 'initialized' },
       },
+      object: createCourseActivity(courseId, courseTitle),
+      timestamp: new Date().toISOString(),
     },
-    timestamp: new Date().toISOString(),
-  }
-
-  if (registration) {
-    statement.context = { registration }
-  }
-
-  return statement
+    registration
+  )
 }
 
 /**
@@ -46,45 +61,33 @@ export function generateExperiencedStatement(
   slideName: string,
   registration?: string
 ) {
-  const statement: any = {
-    actor: actor,
-    verb: {
-      id: 'http://adlnet.gov/expapi/verbs/experienced',
-      display: { 'en-US': 'experienced' },
-    },
-    object: {
-      id: `${courseId}/slides/${slideId}`,
-      objectType: 'Activity',
-      definition: {
-        type: 'http://adlnet.gov/expapi/activities/module',
-        name: { 'en-US': slideName || `Slide ${slideId}` },
-        extensions: {
-          'http://liascript.github.io/extensions/slideId': slideId,
+  return addRegistration(
+    {
+      actor,
+      verb: {
+        id: 'http://adlnet.gov/expapi/verbs/experienced',
+        display: { 'en-US': 'experienced' },
+      },
+      object: {
+        id: `${courseId}/slides/${slideId}`,
+        objectType: 'Activity',
+        definition: {
+          type: 'http://adlnet.gov/expapi/activities/module',
+          name: { 'en-US': slideName || `Slide ${slideId}` },
+          extensions: {
+            'http://liascript.github.io/extensions/slideId': slideId,
+          },
         },
       },
-    },
-    context: {
-      contextActivities: {
-        parent: [
-          {
-            id: courseId,
-            objectType: 'Activity',
-            definition: {
-              type: 'http://adlnet.gov/expapi/activities/course',
-              name: { 'en-US': courseTitle },
-            },
-          },
-        ],
+      context: {
+        contextActivities: {
+          parent: [createCourseActivity(courseId, courseTitle)],
+        },
       },
+      timestamp: new Date().toISOString(),
     },
-    timestamp: new Date().toISOString(),
-  }
-
-  if (registration) {
-    statement.context.registration = registration
-  }
-
-  return statement
+    registration
+  )
 }
 
 /**
@@ -198,39 +201,29 @@ export function generateCompletedStatement(
   duration: string,
   registration?: string
 ) {
-  const statement: any = {
-    actor: actor,
-    verb: {
-      id: 'http://adlnet.gov/expapi/verbs/completed',
-      display: { 'en-US': 'completed' },
-    },
-    object: {
-      id: courseId,
-      objectType: 'Activity',
-      definition: {
-        type: 'http://adlnet.gov/expapi/activities/course',
-        name: { 'en-US': courseTitle },
+  return addRegistration(
+    {
+      actor,
+      verb: {
+        id: 'http://adlnet.gov/expapi/verbs/completed',
+        display: { 'en-US': 'completed' },
       },
-    },
-    result: {
-      success: success,
-      completion: true,
-      score: {
-        scaled: maxScore > 0 ? score / maxScore : 0,
-        raw: score,
-        min: 0,
-        max: maxScore,
+      object: createCourseActivity(courseId, courseTitle),
+      result: {
+        success,
+        completion: true,
+        score: {
+          scaled: maxScore > 0 ? score / maxScore : 0,
+          raw: score,
+          min: 0,
+          max: maxScore,
+        },
+        duration,
       },
-      duration: duration,
+      timestamp: new Date().toISOString(),
     },
-    timestamp: new Date().toISOString(),
-  }
-
-  if (registration) {
-    statement.context = { registration }
-  }
-
-  return statement
+    registration
+  )
 }
 
 /**
@@ -243,32 +236,33 @@ export function generateProgressedStatement(
   progress: number,
   registration?: string
 ) {
-  const statement: any = {
-    actor: actor,
-    verb: {
-      id: 'http://adlnet.gov/expapi/verbs/progressed',
-      display: { 'en-US': 'progressed' },
-    },
-    object: {
-      id: courseId,
-      objectType: 'Activity',
-      definition: {
-        type: 'http://adlnet.gov/expapi/activities/course',
-        name: { 'en-US': courseTitle },
+  return addRegistration(
+    {
+      actor,
+      verb: {
+        id: 'http://adlnet.gov/expapi/verbs/progressed',
+        display: { 'en-US': 'progressed' },
       },
+      object: createCourseActivity(courseId, courseTitle),
+      result: {
+        completion: progress >= 1.0,
+        score: {
+          scaled: progress, // 0.0 to 1.0
+          raw: Math.round(progress * 100),
+          min: 0,
+          max: 100,
+        },
+        extensions: {
+          'http://liascript.github.io/extensions/progress': progress,
+          'http://liascript.github.io/extensions/progressPercent': Math.round(
+            progress * 100
+          ),
+        },
+      },
+      timestamp: new Date().toISOString(),
     },
-    result: {
-      completion: progress >= 1.0,
-      progress: progress,
-    },
-    timestamp: new Date().toISOString(),
-  }
-
-  if (registration) {
-    statement.context = { registration }
-  }
-
-  return statement
+    registration
+  )
 }
 
 /**
@@ -281,31 +275,19 @@ export function generateTerminatedStatement(
   duration: string,
   registration?: string
 ) {
-  const statement: any = {
-    actor: actor,
-    verb: {
-      id: 'http://adlnet.gov/expapi/verbs/terminated',
-      display: { 'en-US': 'terminated' },
-    },
-    object: {
-      id: courseId,
-      objectType: 'Activity',
-      definition: {
-        type: 'http://adlnet.gov/expapi/activities/course',
-        name: { 'en-US': courseTitle },
+  return addRegistration(
+    {
+      actor,
+      verb: {
+        id: 'http://adlnet.gov/expapi/verbs/terminated',
+        display: { 'en-US': 'terminated' },
       },
+      object: createCourseActivity(courseId, courseTitle),
+      result: { duration },
+      timestamp: new Date().toISOString(),
     },
-    result: {
-      duration: duration,
-    },
-    timestamp: new Date().toISOString(),
-  }
-
-  if (registration) {
-    statement.context = { registration }
-  }
-
-  return statement
+    registration
+  )
 }
 
 /**
