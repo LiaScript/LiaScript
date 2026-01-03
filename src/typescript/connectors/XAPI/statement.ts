@@ -8,9 +8,10 @@
 export function generateInitializedStatement(
   actor: any,
   courseId: string,
-  courseTitle: string
+  courseTitle: string,
+  registration?: string
 ) {
-  return {
+  const statement: any = {
     actor: actor,
     verb: {
       id: 'http://adlnet.gov/expapi/verbs/initialized',
@@ -26,6 +27,12 @@ export function generateInitializedStatement(
     },
     timestamp: new Date().toISOString(),
   }
+
+  if (registration) {
+    statement.context = { registration }
+  }
+
+  return statement
 }
 
 /**
@@ -36,9 +43,10 @@ export function generateExperiencedStatement(
   courseId: string,
   courseTitle: string,
   slideId: number,
-  slideName: string
+  slideName: string,
+  registration?: string
 ) {
-  return {
+  const statement: any = {
     actor: actor,
     verb: {
       id: 'http://adlnet.gov/expapi/verbs/experienced',
@@ -50,6 +58,9 @@ export function generateExperiencedStatement(
       definition: {
         type: 'http://adlnet.gov/expapi/activities/module',
         name: { 'en-US': slideName || `Slide ${slideId}` },
+        extensions: {
+          'http://liascript.github.io/extensions/slideId': slideId,
+        },
       },
     },
     context: {
@@ -68,6 +79,12 @@ export function generateExperiencedStatement(
     },
     timestamp: new Date().toISOString(),
   }
+
+  if (registration) {
+    statement.context.registration = registration
+  }
+
+  return statement
 }
 
 /**
@@ -83,9 +100,11 @@ export function generateAnsweredStatement(
   response: any,
   success: boolean,
   score: number,
-  maxScore: number
+  maxScore: number,
+  quizState?: any,
+  registration?: string
 ) {
-  return {
+  const statement: any = {
     actor: actor,
     verb: {
       id: 'http://adlnet.gov/expapi/verbs/answered',
@@ -97,6 +116,10 @@ export function generateAnsweredStatement(
       definition: {
         type: 'http://adlnet.gov/expapi/activities/question',
         name: { 'en-US': `${quizType} Question ${quizId}` },
+        extensions: {
+          'http://liascript.github.io/extensions/slideId': slideId,
+          'http://liascript.github.io/extensions/quizIndex': quizId,
+        },
       },
     },
     result: {
@@ -104,7 +127,7 @@ export function generateAnsweredStatement(
       completion: true,
       response: JSON.stringify(response),
       score: {
-        scaled: score / maxScore,
+        scaled: maxScore > 0 ? score / maxScore : 0,
         raw: score,
         min: 0,
         max: maxScore,
@@ -135,6 +158,22 @@ export function generateAnsweredStatement(
     },
     timestamp: new Date().toISOString(),
   }
+
+  // Add registration if provided
+  if (registration) {
+    statement.context.registration = registration
+  }
+
+  // Add quiz state extensions if provided
+  if (quizState) {
+    statement.result.extensions = {
+      'http://liascript.github.io/extensions/state': quizState.state || [],
+      'http://liascript.github.io/extensions/trial': quizState.trial || 0,
+      'http://liascript.github.io/extensions/hint': quizState.hint || 0,
+    }
+  }
+
+  return statement
 }
 
 /**
@@ -147,9 +186,10 @@ export function generateCompletedStatement(
   success: boolean,
   score: number,
   maxScore: number,
-  duration: string
+  duration: string,
+  registration?: string
 ) {
-  return {
+  const statement: any = {
     actor: actor,
     verb: {
       id: 'http://adlnet.gov/expapi/verbs/completed',
@@ -176,6 +216,12 @@ export function generateCompletedStatement(
     },
     timestamp: new Date().toISOString(),
   }
+
+  if (registration) {
+    statement.context = { registration }
+  }
+
+  return statement
 }
 
 /**
@@ -185,9 +231,10 @@ export function generateProgressedStatement(
   actor: any,
   courseId: string,
   courseTitle: string,
-  progress: number
+  progress: number,
+  registration?: string
 ) {
-  return {
+  const statement: any = {
     actor: actor,
     verb: {
       id: 'http://adlnet.gov/expapi/verbs/progressed',
@@ -207,6 +254,12 @@ export function generateProgressedStatement(
     },
     timestamp: new Date().toISOString(),
   }
+
+  if (registration) {
+    statement.context = { registration }
+  }
+
+  return statement
 }
 
 /**
@@ -216,9 +269,10 @@ export function generateTerminatedStatement(
   actor: any,
   courseId: string,
   courseTitle: string,
-  duration: string
+  duration: string,
+  registration?: string
 ) {
-  return {
+  const statement: any = {
     actor: actor,
     verb: {
       id: 'http://adlnet.gov/expapi/verbs/terminated',
@@ -237,6 +291,12 @@ export function generateTerminatedStatement(
     },
     timestamp: new Date().toISOString(),
   }
+
+  if (registration) {
+    statement.context = { registration }
+  }
+
+  return statement
 }
 
 /**
