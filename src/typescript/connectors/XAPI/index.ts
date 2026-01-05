@@ -26,9 +26,13 @@ export class Connector extends Base.Connector {
   private lastVisitedSlide: number
   private totalSlides: number
   private quizStates: Record<number, Record<number, any>>
+  private surveyStates: Record<number, Record<number, any>>
+  private taskStates: Record<number, Record<number, any>>
   private startTime: number
+  private lastActivityTime: number
   private completionSent: boolean
   private progressThreshold: number
+  private stateRestored: Promise<void>
 
   /**
    * Create a new xAPI connector
@@ -55,6 +59,8 @@ export class Connector extends Base.Connector {
     this.lastVisitedSlide = 0
     this.totalSlides = 0
     this.quizStates = {}
+    this.surveyStates = {}
+    this.taskStates = {}
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
     this.completionSent = false
@@ -73,20 +79,20 @@ export class Connector extends Base.Connector {
     this.courseTitle =
       config.courseTitle || document.title || 'LiaScript Course'
 
-    // Initialize quiz structure from course configuration (like SCORM does)
-    // This loads the initial quiz state objects directly
+    // Initialize quiz, survey, and task structures from course configuration (like SCORM does)
+    // This loads the initial state objects directly
     try {
       const windowAny = window as any
       if (windowAny.config_) {
         if (this.debug) {
           console.log(
-            'Initializing quiz structure from config...',
+            'Initializing structures from config...',
             JSON.stringify(windowAny.config_)
           )
         }
 
+        // Initialize quizzes
         const quizConfig = windowAny.config_.quiz || [[]]
-        // Convert array of arrays to Record<slideId, Record<quizIndex, state>> structure
         quizConfig.forEach((slideQuizzes: any[], slideId: number) => {
           if (slideQuizzes?.length > 0) {
             this.quizStates[slideId] = {}
@@ -96,16 +102,39 @@ export class Connector extends Base.Connector {
           }
         })
 
+        // Initialize surveys
+        const surveyConfig = windowAny.config_.survey || [[]]
+        surveyConfig.forEach((slideSurveys: any[], slideId: number) => {
+          if (slideSurveys?.length > 0) {
+            this.surveyStates[slideId] = {}
+            slideSurveys.forEach((survey, i) => {
+              this.surveyStates[slideId][i] = survey
+            })
+          }
+        })
+
+        // Initialize tasks
+        const taskConfig = windowAny.config_.task || [[]]
+        taskConfig.forEach((slideTasks: any[], slideId: number) => {
+          if (slideTasks?.length > 0) {
+            this.taskStates[slideId] = {}
+            slideTasks.forEach((task, i) => {
+              this.taskStates[slideId][i] = task
+            })
+          }
+        })
+
         if (this.debug) {
-          console.log(
-            'Initialized quiz structure from config:',
-            Object.keys(this.quizStates)
-          )
+          console.log('Initialized structures from config:', {
+            quizzes: Object.keys(this.quizStates).length,
+            surveys: Object.keys(this.surveyStates).length,
+            tasks: Object.keys(this.taskStates).length,
+          })
         }
       }
     } catch (e) {
       if (this.debug) {
-        console.warn('Could not load quiz config:', e)
+        console.warn('Could not load config:', e)
       }
     }
 
@@ -130,12 +159,14 @@ export class Connector extends Base.Connector {
         // Set up window unload event to send terminated statement
         window.addEventListener('beforeunload', this.handleUnload.bind(this))
 
-        // Restore state from LRS immediately (async, runs in background)
-        // This ensures load() calls have the restored state available
-        this.restoreState().catch((err) => {
+        // Restore state from LRS immediately (async)
+        // Store the promise so load() can wait for restoration to complete
+        this.stateRestored = this.restoreState().catch((err) => {
           if (this.debug) {
             console.warn('Could not restore state from LRS:', err)
           }
+          // Even on error, resolve the promise so load() doesn't block forever
+          return Promise.resolve()
         })
       } catch (e) {
         console.error('Failed to initialize LRS connection:', e)
@@ -144,6 +175,8 @@ export class Connector extends Base.Connector {
     } else {
       console.warn('No LRS endpoint provided, xAPI tracking will be disabled')
       this.lrs = null
+      // No state to restore, resolve immediately
+      this.stateRestored = Promise.resolve()
     }
   }
 
@@ -243,8 +276,10 @@ export class Connector extends Base.Connector {
       }
 
       // Process statements to restore state
-      // Keep track of latest statement per quiz (by timestamp)
+      // Keep track of latest statement per quiz/survey/task (by timestamp)
       const latestQuizStatements: Record<string, any> = {}
+      const latestSurveyStatements: Record<string, any> = {}
+      const latestTaskStatements: Record<string, any> = {}
       let latestSlideStatement: any = null
 
       for (const stmt of response.statements) {
@@ -282,6 +317,10 @@ export class Connector extends Base.Connector {
             stmt.object.definition?.extensions?.[
               'http://liascript.github.io/extensions/quizIndex'
             ]
+          const surveyIndex =
+            stmt.object.definition?.extensions?.[
+              'http://liascript.github.io/extensions/surveyIndex'
+            ]
 
           if (slideId !== undefined && quizIndex !== undefined) {
             const key = `${slideId}-${quizIndex}`
@@ -294,6 +333,44 @@ export class Connector extends Base.Connector {
                 timestamp
             ) {
               latestQuizStatements[key] = stmt
+            }
+          } else if (slideId !== undefined && surveyIndex !== undefined) {
+            const key = `${slideId}-${surveyIndex}`
+            const timestamp = new Date(stmt.timestamp).getTime()
+
+            // Keep only the most recent statement for each survey
+            if (
+              !latestSurveyStatements[key] ||
+              new Date(latestSurveyStatements[key].timestamp).getTime() <
+                timestamp
+            ) {
+              latestSurveyStatements[key] = stmt
+            }
+          }
+        }
+
+        // Collect task interactions (interacted verb) - will process latest only
+        if (stmt.verb.id === 'http://adlnet.gov/expapi/verbs/interacted') {
+          const slideId =
+            stmt.object.definition?.extensions?.[
+              'http://liascript.github.io/extensions/slideId'
+            ]
+          const taskIndex =
+            stmt.object.definition?.extensions?.[
+              'http://liascript.github.io/extensions/taskIndex'
+            ]
+
+          if (slideId !== undefined && taskIndex !== undefined) {
+            const key = `${slideId}-${taskIndex}`
+            const timestamp = new Date(stmt.timestamp).getTime()
+
+            // Keep only the most recent statement for each task
+            if (
+              !latestTaskStatements[key] ||
+              new Date(latestTaskStatements[key].timestamp).getTime() <
+                timestamp
+            ) {
+              latestTaskStatements[key] = stmt
             }
           }
         }
@@ -394,11 +471,81 @@ export class Connector extends Base.Connector {
         }
       }
 
+      // Now process the latest survey statements
+      for (const key in latestSurveyStatements) {
+        const stmt = latestSurveyStatements[key]
+        const slideId =
+          stmt.object.definition?.extensions?.[
+            'http://liascript.github.io/extensions/slideId'
+          ]
+        const surveyIndex =
+          stmt.object.definition?.extensions?.[
+            'http://liascript.github.io/extensions/surveyIndex'
+          ]
+
+        if (!this.surveyStates[slideId]) {
+          this.surveyStates[slideId] = {}
+        }
+
+        const result = stmt.result || {}
+        const extensions = result.extensions || {}
+
+        const surveyState: any = {
+          submitted: result.completion || false,
+          state:
+            extensions['http://liascript.github.io/extensions/state'] || {},
+        }
+
+        this.surveyStates[slideId][surveyIndex] = surveyState
+
+        if (this.debug) {
+          console.log(
+            `Restored survey state: slide ${slideId}, survey ${surveyIndex}`,
+            surveyState
+          )
+        }
+      }
+
+      // Now process the latest task statements
+      for (const key in latestTaskStatements) {
+        const stmt = latestTaskStatements[key]
+        const slideId =
+          stmt.object.definition?.extensions?.[
+            'http://liascript.github.io/extensions/slideId'
+          ]
+        const taskIndex =
+          stmt.object.definition?.extensions?.[
+            'http://liascript.github.io/extensions/taskIndex'
+          ]
+
+        if (!this.taskStates[slideId]) {
+          this.taskStates[slideId] = {}
+        }
+
+        const result = stmt.result || {}
+        const extensions = result.extensions || {}
+
+        // Tasks are simple boolean arrays
+        const taskState =
+          extensions['http://liascript.github.io/extensions/state'] || []
+
+        this.taskStates[slideId][taskIndex] = taskState
+
+        if (this.debug) {
+          console.log(
+            `Restored task state: slide ${slideId}, task ${taskIndex}`,
+            taskState
+          )
+        }
+      }
+
       if (this.debug) {
         console.log('State restoration complete:', {
           visitedSlides: this.visitedSlides.size,
           lastVisitedSlide: this.lastVisitedSlide,
           quizStates: Object.keys(this.quizStates).length,
+          surveyStates: Object.keys(this.surveyStates).length,
+          taskStates: Object.keys(this.taskStates).length,
           totalScore: this.totalScore,
           maxScore: this.maxScore,
           completionSent: this.completionSent,
@@ -590,10 +737,14 @@ export class Connector extends Base.Connector {
   /**
    * Load data from memory (quiz, survey, task)
    * Returns the cached state that was restored from LRS
+   * Blocks until state restoration from LRS is complete
    * @param record Record to load
    * @returns Stored data for the record
    */
-  load(record: Base.Record) {
+  async load(record: Base.Record) {
+    // Wait for state restoration to complete before returning data
+    await this.stateRestored
+
     const { table, id } = record
 
     if (table === 'quiz' && this.quizStates[id]) {
@@ -609,6 +760,32 @@ export class Connector extends Base.Connector {
       return quizArray
     }
 
+    if (table === 'survey' && this.surveyStates[id]) {
+      // Convert object to array format expected by LiaScript
+      const surveyArray: any[] = []
+      for (const surveyIndex in this.surveyStates[id]) {
+        surveyArray[parseInt(surveyIndex)] = this.surveyStates[id][surveyIndex]
+      }
+
+      if (this.debug) {
+        console.log(`Load survey[${id}]:`, surveyArray.length, 'items')
+      }
+      return surveyArray
+    }
+
+    if (table === 'task' && this.taskStates[id]) {
+      // Convert object to array format expected by LiaScript
+      const taskArray: any[] = []
+      for (const taskIndex in this.taskStates[id]) {
+        taskArray[parseInt(taskIndex)] = this.taskStates[id][taskIndex]
+      }
+
+      if (this.debug) {
+        console.log(`Load task[${id}]:`, taskArray.length, 'items')
+      }
+      return taskArray
+    }
+
     return undefined
   }
 
@@ -617,60 +794,140 @@ export class Connector extends Base.Connector {
    * @param record Record to store
    */
   store(record: Base.Record) {
-    if (!this.active || !this.lrs || record.table !== 'quiz' || !record.data)
-      return
+    if (!this.active || !this.lrs || !record.data) return
 
     this.lastActivityTime = Date.now()
-    const { id, data } = record
+    const { table, id, data } = record
 
-    if (!this.quizStates[id]) {
-      this.quizStates[id] = {}
-    }
-
-    // Process each quiz on the slide
-    data.forEach((quiz: any, i: number) => {
-      if (!quiz) return
-
-      this.quizStates[id][i] = quiz
-
-      // Update scores
-      if (quiz.score !== undefined) {
-        if (quiz.solved === 1) this.totalScore += quiz.score
-        this.maxScore += quiz.score
+    // Handle quizzes
+    if (table === 'quiz') {
+      if (!this.quizStates[id]) {
+        this.quizStates[id] = {}
       }
 
-      // Extract quiz type from state object
-      const quizType =
-        quiz.state && typeof quiz.state === 'object'
-          ? Object.keys(quiz.state)[0] || 'unknown'
-          : 'unknown'
+      // Process each quiz on the slide
+      data.forEach((quiz: any, i: number) => {
+        if (!quiz) return
 
-      // Send answered statement
-      const statement = Statement.generateAnsweredStatement(
-        this.actor,
-        this.courseId,
-        this.courseTitle,
-        id,
-        i,
-        quizType,
-        quiz.input || quiz.answer || '',
-        quiz.solved === 1,
-        quiz.solved === 1 ? quiz.score || 1 : 0,
-        quiz.score || 1,
-        quiz,
-        this.registration
-      )
+        this.quizStates[id][i] = quiz
 
-      this.lrs
-        .sendStatement(statement)
-        .then(() => {
-          if (this.debug) console.log(`Sent answer: slide ${id}, quiz ${i}`)
-          this.sendCompletionIfNeeded()
-        })
-        .catch((err) =>
-          console.error('Failed to send answered statement:', err)
+        // Update scores
+        if (quiz.score !== undefined) {
+          if (quiz.solved === 1) this.totalScore += quiz.score
+          this.maxScore += quiz.score
+        }
+
+        // Extract quiz type from state object
+        const quizType =
+          quiz.state && typeof quiz.state === 'object'
+            ? Object.keys(quiz.state)[0] || 'unknown'
+            : 'unknown'
+
+        // Send answered statement
+        const statement = Statement.generateAnsweredStatement(
+          this.actor,
+          this.courseId,
+          this.courseTitle,
+          id,
+          i,
+          quizType,
+          quiz.input || quiz.answer || '',
+          quiz.solved === 1,
+          quiz.solved === 1 ? quiz.score || 1 : 0,
+          quiz.score || 1,
+          quiz,
+          this.registration
         )
-    })
+
+        this.lrs
+          .sendStatement(statement)
+          .then(() => {
+            if (this.debug) console.log(`Sent answer: slide ${id}, quiz ${i}`)
+            this.sendCompletionIfNeeded()
+          })
+          .catch((err) =>
+            console.error('Failed to send answered statement:', err)
+          )
+      })
+      return
+    }
+
+    // Handle surveys
+    if (table === 'survey') {
+      if (!this.surveyStates[id]) {
+        this.surveyStates[id] = {}
+      }
+
+      // Process each survey on the slide
+      data.forEach((survey: any, i: number) => {
+        if (!survey) return
+
+        this.surveyStates[id][i] = survey
+
+        // Send answered statement for survey
+        const statement = Statement.generateAnsweredStatement(
+          this.actor,
+          this.courseId,
+          this.courseTitle,
+          id,
+          i,
+          'Survey',
+          JSON.stringify(survey.state),
+          survey.submitted,
+          0, // Surveys don't have scores
+          0,
+          survey,
+          this.registration,
+          i, // Use surveyIndex instead of quizIndex
+          true // isSurvey flag
+        )
+
+        this.lrs
+          .sendStatement(statement)
+          .then(() => {
+            if (this.debug)
+              console.log(`Sent survey answer: slide ${id}, survey ${i}`)
+          })
+          .catch((err) =>
+            console.error('Failed to send survey statement:', err)
+          )
+      })
+      return
+    }
+
+    // Handle tasks
+    if (table === 'task') {
+      if (!this.taskStates[id]) {
+        this.taskStates[id] = {}
+      }
+
+      // Process each task on the slide
+      data.forEach((task: any, i: number) => {
+        if (!task) return
+
+        this.taskStates[id][i] = task
+
+        // Send interacted statement for task
+        const statement = Statement.generateTaskStatement(
+          this.actor,
+          this.courseId,
+          this.courseTitle,
+          id,
+          i,
+          task,
+          this.registration
+        )
+
+        this.lrs
+          .sendStatement(statement)
+          .then(() => {
+            if (this.debug)
+              console.log(`Sent task interaction: slide ${id}, task ${i}`)
+          })
+          .catch((err) => console.error('Failed to send task statement:', err))
+      })
+      return
+    }
   }
 
   /**
@@ -695,6 +952,8 @@ export class Connector extends Base.Connector {
     this.visitedSlides.clear()
     this.lastVisitedSlide = 0
     this.quizStates = {}
+    this.surveyStates = {}
+    this.taskStates = {}
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
     this.completionSent = false
