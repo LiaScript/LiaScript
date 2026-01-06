@@ -1,6 +1,6 @@
 {
   "name": "@liascript/editor",
-  "version": "1.1.40--1.0.0",
+  "version": "1.1.41--1.0.0",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -23,7 +23,6 @@
     "https://github.com/LiaScript/docs/README.md"
   ],
   "scripts": {
-    "postinstall": "patch-package",
     "clean": "rm -rf dist .parcel-cache",
     "sw": "npx workbox injectManifest workbox-config.js",
     "translate": "elm-i18n-gen lia-localization/locale src/elm/Translations.elm",
