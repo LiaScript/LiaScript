@@ -30,6 +30,7 @@ const Service = {
     //'gun',
     //'jitsi',
     //'matrix',
+    //'ipfs',
     //'mqtt',
     //'nostr',
     //'pubnub',
@@ -109,7 +110,8 @@ const Service = {
                 false
               )
               break
-            */
+
+            case 'ipfs':
             case 'mqtt':
             case 'nostr':
             case 'torrent': {
@@ -123,7 +125,7 @@ const Service = {
               }
 
               sync = new Trystero.Sync(
-                backend as 'mqtt' | 'nostr' | 'torrent',
+                backend as 'mqtt' | 'nostr' | 'torrent' | 'ipfs',
                 cbConnection,
                 elmSend,
                 onConnect,
@@ -132,10 +134,10 @@ const Service = {
               )
 
               break
-            */
             }
+            */
 
-            // case 'jitsi':
+            case 'jitsi':
             //   if (!Jitsi) {
             //     import('../../sync/Jitsi/index').then((e) => {
             //       Jitsi = e
@@ -184,7 +186,7 @@ const Service = {
               )
               break
             */
-            case 'p2pt':
+            //case 'p2pt':
             /*
               if (!P2PT) {
                 import('../../sync/P2PT/index').then((e) => {

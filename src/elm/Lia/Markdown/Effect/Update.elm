@@ -94,8 +94,9 @@ update main sound msg model =
             Send event ->
                 let
                     events =
-                        Service.Slide.scrollIntoView "focused" 350
-                            :: Service.Slide.scrollIntoView "lia-notes-active" 350
+                        Service.Slide.scrollIntoView "focusedToc" 500
+                            :: Service.Slide.scrollIntoView "focused" 750
+                            :: Service.Slide.scrollIntoView "lia-notes-active" 500
                             :: event
                 in
                 model
