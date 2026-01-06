@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 06/01/2026
+
+- Upgrade to node 24 lts
+- Connector: add H5P dummy support
+- Connector: xAPI support for LMS integration
+- Upgrade Service Worker for better caching and offline support
+- chore: npm update ace, caniuse-lite, sass, katex, dexie, yjs, workbox, typescript
+- fix(Table): Heatmap now mirroring the real data
+- feat: Add window.LIA.fetch for fetching relative URLs
+- Update: oEmbed endpoints
+- improve: scrolling into view
+- updated tooltips api to wikimedia
+
 ## [0.17.10] - 17/11/2025
 
 - fix(CSS): Drag & Drop quizzes in dark mode
