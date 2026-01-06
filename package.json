@@ -23,7 +23,6 @@
     "https://github.com/LiaScript/docs/README.md"
   ],
   "scripts": {
-    "postinstall": "patch-package",
     "clean": "rm -rf dist .parcel-cache",
     "sw": "npx workbox injectManifest workbox-config.js",
     "translate": "elm-i18n-gen lia-localization/locale src/elm/Translations.elm",
