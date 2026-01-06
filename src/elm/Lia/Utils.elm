@@ -373,7 +373,7 @@ shuffle randomize rows =
                 |> List.map Tuple.second
 
 
-urlDecodeIfEncoded : String -> String
+urlDecodeIfEncoded : String -> Maybe String
 urlDecodeIfEncoded input =
     let
         decoded =
@@ -387,7 +387,7 @@ urlDecodeIfEncoded input =
     cleanupVscodeSimpleBrowserUrl decoded
 
 
-cleanupVscodeSimpleBrowserUrl : String -> String
+cleanupVscodeSimpleBrowserUrl : String -> Maybe String
 cleanupVscodeSimpleBrowserUrl url =
     let
         hasVscodeReqId : Bool
@@ -435,10 +435,12 @@ cleanupVscodeSimpleBrowserUrl url =
                         leftPart
     in
     if isParamOnly && hasVscodeReqId then
-        ""
-
-    else if hasVscodeReqId then
-        cutBeforeVscodeParams url
+        Nothing
 
     else
-        url
+        Just <|
+            if hasVscodeReqId then
+                cutBeforeVscodeParams url
+
+            else
+                url
