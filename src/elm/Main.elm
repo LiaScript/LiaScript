@@ -126,15 +126,7 @@ init flags url key =
             { url
                 | query =
                     url.query
-                        |> Maybe.map Utils.urlDecodeIfEncoded
-                        |> (\s ->
-                                case s of
-                                    Just "" ->
-                                        Nothing
-
-                                    _ ->
-                                        s
-                           )
+                        |> Maybe.andThen Utils.urlDecodeIfEncoded
                         |> Maybe.map link
             }
 
