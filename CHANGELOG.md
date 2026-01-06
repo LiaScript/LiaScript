@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [1.0.0] - 06/01/2026
 
+- feat: Add simple-browser support for VSCode extension
 - Upgrade to node 24 lts
 - Connector: add H5P dummy support
 - Connector: xAPI support for LMS integration
