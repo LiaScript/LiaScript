@@ -27,6 +27,7 @@ type Backend
       --| Jitsi String
       --| Matrix { baseURL : String, userId : String, accessToken : String }
     | P2PT String
+    | IPFS
     | PubNub { pubKey : String, subKey : String }
       -- Trystero
     | NoStr
@@ -48,6 +49,9 @@ toString full via =
 
         Torrent ->
             "Torrent"
+
+        IPFS ->
+            "IPFS"
 
         GUN { urls, persistent } ->
             "GUN"
@@ -117,6 +121,9 @@ icon via =
             Torrent ->
                 "icon-torrent icon-xs"
 
+            IPFS ->
+                "icon-ipfs icon-xs"
+
             -- Jitsi _ ->
             --     "icon-jitsi icon-xs"
             -- Matrix _ ->
@@ -144,6 +151,9 @@ fromString via =
 
         [ "mqtt" ] ->
             Just MQTT
+
+        [ "ipfs" ] ->
+            Just IPFS
 
         [ "torrent" ] ->
             Just Torrent
@@ -295,6 +305,17 @@ infoOn supported about =
                 , Html.text ". By checking \"persistent storage\" you can ensure that the chat messages and the modified code will be accessible over a longer time period, otherwise the state is deleted."
                 , Html.text " However, since this is a free service, we cannot give guarantees that your messages will be stored forever and that the GunDB server might be offline."
                 , Html.text " If you want to be certain, you can host your own instance of a GunDB server and change the URL appropriately."
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
+                ]
+
+            ( IPFS, _ ) ->
+                [ link "IPFS (InterPlanetary File System)" "https://ipfs.io"
+                , Html.text " is a peer-to-peer hypermedia protocol designed to make the web faster, safer, and more open. "
+                , Html.text "It enables users to host and share content in a decentralized manner, eliminating the need for traditional centralized servers. "
+                , Html.text "In the context of browser-based Pub/Sub (Publish/Subscribe) messaging, IPFS can facilitate real-time communication by allowing browsers to publish messages to specific topics and subscribe to receive messages from those topics. "
+                , Html.text "This decentralized approach enhances data availability and resilience, making it suitable for applications like chat or live streaming."
                 , Html.br [] []
                 , Html.br [] []
                 , allowScripts

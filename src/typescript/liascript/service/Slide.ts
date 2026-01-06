@@ -33,7 +33,7 @@ const Service = {
 
         // if it exists and is not in the viewport it is moved into it
         if (link && !link.getAttribute('aria-hidden') && !isInViewport(link)) {
-          scrollIntoView('focusedToc', 0)
+          scrollIntoView('focusedToc', 500)
         }
 
         break
