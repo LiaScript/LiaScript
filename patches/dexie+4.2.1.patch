@@ -1,8 +1,8 @@
 diff --git a/node_modules/dexie/dist/dexie.mjs b/node_modules/dexie/dist/dexie.mjs
-index 4cc4c71..e9e7072 100644
+index beac2a2..9bb4ed9 100644
 --- a/node_modules/dexie/dist/dexie.mjs
 +++ b/node_modules/dexie/dist/dexie.mjs
-@@ -5630,6 +5630,70 @@ try {
+@@ -5708,6 +5708,70 @@ try {
          indexedDB: _global.indexedDB || _global.mozIndexedDB || _global.webkitIndexedDB || _global.msIndexedDB,
          IDBKeyRange: _global.IDBKeyRange || _global.webkitIDBKeyRange
      };

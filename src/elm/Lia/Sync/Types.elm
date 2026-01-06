@@ -96,6 +96,7 @@ init supportedBackends =
 
             --, Via.Jitsi Const.jitsi_Domain
             --, Via.Matrix { baseURL = "", userId = "", accessToken = "" }
+            , Via.IPFS
             , Via.MQTT
             , Via.NoStr
             , Via.P2PT Const.webTorrent_TrackerURLs

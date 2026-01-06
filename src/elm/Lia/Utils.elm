@@ -20,6 +20,7 @@ module Lia.Utils exposing
     , string2Color
     , toEscapeString
     , urlBasePath
+    , urlDecodeIfEncoded
     , urlQuery
     )
 
@@ -36,6 +37,7 @@ import Json.Decode as JD
 import List.Extra
 import Process
 import Task
+import Url
 
 
 {-| Convert common JavaScript string escapes elm escapes:
@@ -369,3 +371,74 @@ shuffle randomize rows =
                 |> List.map2 Tuple.pair order
                 |> List.sortBy Tuple.first
                 |> List.map Tuple.second
+
+
+urlDecodeIfEncoded : String -> String
+urlDecodeIfEncoded input =
+    let
+        decoded =
+            if String.startsWith "http" input then
+                Url.percentDecode input
+                    |> Maybe.withDefault input
+
+            else
+                input
+    in
+    cleanupVscodeSimpleBrowserUrl decoded
+
+
+cleanupVscodeSimpleBrowserUrl : String -> String
+cleanupVscodeSimpleBrowserUrl url =
+    let
+        hasVscodeReqId : Bool
+        hasVscodeReqId =
+            String.contains "vscodeBrowserReqId=" url
+
+        -- If it looks like we only got params (no scheme/host/path),
+        -- treat it as "missing file" and return empty string.
+        isParamOnly : Bool
+        isParamOnly =
+            (String.startsWith "id=" url || String.startsWith "vscodeBrowserReqId=" url)
+                && not (String.contains "://" url)
+                && not (String.contains "/" url)
+
+        cutBeforeVscodeParams : String -> String
+        cutBeforeVscodeParams s =
+            let
+                needles =
+                    [ "&vscodeBrowserReqId="
+                    , "?vscodeBrowserReqId="
+                    , "&id="
+                    , "?id="
+                    ]
+
+                firstIndex : Maybe Int
+                firstIndex =
+                    needles
+                        |> List.filterMap (\n -> String.indexes n s |> List.head)
+                        |> List.sort
+                        |> List.head
+            in
+            case firstIndex of
+                Nothing ->
+                    s
+
+                Just i ->
+                    let
+                        leftPart =
+                            String.left i s
+                    in
+                    if String.endsWith "=" leftPart then
+                        String.dropRight 1 leftPart
+
+                    else
+                        leftPart
+    in
+    if isParamOnly && hasVscodeReqId then
+        ""
+
+    else if hasVscodeReqId then
+        cutBeforeVscodeParams url
+
+    else
+        url

@@ -279,6 +279,7 @@ function liaEvalCode(code: string, send: Script.SendEval) {
   }
 
   try {
+    const fetch = window.LIA.fetch
     const counter: { [key: string]: number } = {}
     const timer: { [key: string]: number } = {}
 
@@ -391,6 +392,8 @@ function liaExecCode(event: Lia.Event) {
         execute_response(event)('LIASCRIPT: ' + msg)
       },
     }
+
+    const fetch = window.LIA.fetch
 
     try {
       const result = eval(event.message.param.code)

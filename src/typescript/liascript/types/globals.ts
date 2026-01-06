@@ -134,6 +134,15 @@ declare global {
        */
       scrollUpOnMain: boolean
 
+      /** A fetch implementation that can be overwritten to provide custom
+       * fetching capabilities, e.g. for environments that do not provide a
+       * native fetch implementation.
+       */
+      fetch: (
+        resource: RequestInfo | URL,
+        options?: RequestInit
+      ) => Promise<Response>
+
       /** To send log information to other functions, this function can be
        * overwritten. All debug-messages will then be passed to this function
        * as well. (window.LIA.debug has to be set to true)
