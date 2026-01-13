@@ -399,6 +399,43 @@ export function generateTerminatedStatement(
 }
 
 /**
+ * Generate a suspended statement for incomplete course exit
+ */
+export function generateSuspendedStatement(
+  actor: any,
+  courseId: string,
+  courseTitle: string,
+  duration: string,
+  lastSlide: number,
+  progress: number,
+  registration?: string
+) {
+  return addRegistration(
+    {
+      actor,
+      verb: {
+        id: 'http://adlnet.gov/expapi/verbs/suspended',
+        display: { 'en-US': 'suspended' },
+      },
+      object: createCourseActivity(courseId, courseTitle),
+      result: {
+        completion: false,
+        duration,
+        extensions: {
+          'http://liascript.github.io/extensions/lastSlide': lastSlide,
+          'http://liascript.github.io/extensions/progress': progress,
+          'http://liascript.github.io/extensions/progressPercent': Math.round(
+            progress * 100
+          ),
+        },
+      },
+      timestamp: new Date().toISOString(),
+    },
+    registration
+  )
+}
+
+/**
  * Format duration in ISO8601 format
  * @param milliseconds Duration in milliseconds
  * @returns ISO8601 formatted duration string

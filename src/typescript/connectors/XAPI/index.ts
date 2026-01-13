@@ -195,21 +195,40 @@ export class Connector extends Base.Connector {
   }
 
   /**
-   * Handle window unload event to send terminated statement
+   * Handle window unload event to send terminated or suspended statement
    */
   private handleUnload() {
     if (!this.active || !this.lrs) return
 
     const duration = Statement.formatDuration(Date.now() - this.startTime)
 
-    // Send terminated statement
-    const statement = Statement.generateTerminatedStatement(
-      this.actor,
-      this.courseId,
-      this.courseTitle,
-      duration,
-      this.registration
-    )
+    // Determine which statement to send based on completion status
+    let statement: any
+
+    if (this.completionSent) {
+      // Course is complete - send terminated statement
+      statement = Statement.generateTerminatedStatement(
+        this.actor,
+        this.courseId,
+        this.courseTitle,
+        duration,
+        this.registration
+      )
+    } else {
+      // Course is incomplete - send suspended statement with progress
+      const progress =
+        this.totalSlides > 0 ? this.visitedSlides.size / this.totalSlides : 0
+
+      statement = Statement.generateSuspendedStatement(
+        this.actor,
+        this.courseId,
+        this.courseTitle,
+        duration,
+        this.lastVisitedSlide,
+        progress,
+        this.registration
+      )
+    }
 
     // Use sendBeacon for more reliable delivery during page unload
     if (navigator.sendBeacon && this.lrs.endpoint) {
