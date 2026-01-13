@@ -260,6 +260,7 @@ maybeJS =
                             , ( "default", "undefined" )
                             ]
                         )
+                    |> ignore spaces
                     |> map Tuple.second
                     |> ignore newline
                 )
