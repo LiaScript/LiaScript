@@ -552,6 +552,11 @@ allowedLine =
                 [ regex "[ \t]*\n"
                 , regex "\\*\\*\\*+\n"
                 , string "[[?]]"
+                , string "+ "
+                , string "- "
+                , string "* "
+                , string "```"
+                , regex "\\d+\\. "
                 ]
             )
             |> andThen
