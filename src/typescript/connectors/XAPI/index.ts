@@ -30,6 +30,7 @@ export class Connector extends Base.Connector {
   private taskStates: Record<number, Record<number, any>>
   private startTime: number
   private lastActivityTime: number
+  private accumulatedTime: number // Time from previous sessions in milliseconds
   private completionSent: boolean
   private progressThreshold: number
   private masteryScore: number
@@ -66,6 +67,7 @@ export class Connector extends Base.Connector {
     this.taskStates = {}
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
+    this.accumulatedTime = 0 // No previous session time yet
     this.completionSent = false
     this.progressThreshold = 0.9 // 90% of slides visited is considered complete
     this.masteryScore = 0.8 // 80% score required to pass (matching SCORM default)
@@ -204,7 +206,7 @@ export class Connector extends Base.Connector {
   private handleUnload() {
     if (!this.active || !this.lrs) return
 
-    const duration = Statement.formatDuration(Date.now() - this.startTime)
+    const duration = Statement.formatDuration(this.getTotalDuration())
 
     // Determine which statement to send based on completion status
     let statement: any
@@ -304,6 +306,7 @@ export class Connector extends Base.Connector {
       const latestSurveyStatements: Record<string, any> = {}
       const latestTaskStatements: Record<string, any> = {}
       let latestSlideStatement: any = null
+      let latestProgressStatement: any = null // Track most recent progressed/suspended/completed for time
 
       for (const stmt of response.statements) {
         // Restore slide visits (experienced verb) - track the most recent one
@@ -403,6 +406,21 @@ export class Connector extends Base.Connector {
           this.completionSent = true
           if (this.debug) {
             console.log('Found completion statement')
+          }
+        }
+
+        // Track the latest statement with duration for time accumulation
+        if (
+          stmt.verb.id === 'http://adlnet.gov/expapi/verbs/progressed' ||
+          stmt.verb.id === 'http://adlnet.gov/expapi/verbs/suspended' ||
+          stmt.verb.id === 'http://adlnet.gov/expapi/verbs/completed'
+        ) {
+          const timestamp = new Date(stmt.timestamp).getTime()
+          if (
+            !latestProgressStatement ||
+            new Date(latestProgressStatement.timestamp).getTime() < timestamp
+          ) {
+            latestProgressStatement = stmt
           }
         }
       }
@@ -562,6 +580,22 @@ export class Connector extends Base.Connector {
         }
       }
 
+      // Restore accumulated time from the latest statement with duration
+      if (latestProgressStatement?.result?.duration) {
+        this.accumulatedTime = this.parseDuration(
+          latestProgressStatement.result.duration
+        )
+        if (this.debug) {
+          console.log(
+            'Restored accumulated time:',
+            this.accumulatedTime,
+            'ms (',
+            Math.round(this.accumulatedTime / 1000),
+            'seconds)'
+          )
+        }
+      }
+
       if (this.debug) {
         console.log('State restoration complete:', {
           visitedSlides: this.visitedSlides.size,
@@ -572,12 +606,40 @@ export class Connector extends Base.Connector {
           totalScore: this.totalScore,
           maxScore: this.maxScore,
           completionSent: this.completionSent,
+          accumulatedTime: this.accumulatedTime,
         })
       }
     } catch (err) {
       console.error('Error restoring state from LRS:', err)
       throw err
     }
+  }
+
+  /**
+   * Parse ISO8601 duration string to milliseconds
+   * @param duration ISO8601 duration string (e.g., "PT1H30M15S")
+   * @returns Duration in milliseconds
+   */
+  private parseDuration(duration: string): number {
+    // Format: PT[hours]H[minutes]M[seconds]S
+    const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/
+    const matches = duration.match(regex)
+
+    if (!matches) return 0
+
+    const hours = parseInt(matches[1] || '0', 10)
+    const minutes = parseInt(matches[2] || '0', 10)
+    const seconds = parseFloat(matches[3] || '0')
+
+    return (hours * 3600 + minutes * 60 + seconds) * 1000
+  }
+
+  /**
+   * Get total duration including previous sessions
+   * @returns Total duration in milliseconds
+   */
+  private getTotalDuration(): number {
+    return this.accumulatedTime + (Date.now() - this.startTime)
   }
 
   /**
@@ -670,7 +732,7 @@ export class Connector extends Base.Connector {
       })
     }
 
-    const duration = Statement.formatDuration(Date.now() - this.startTime)
+    const duration = Statement.formatDuration(this.getTotalDuration())
     const progress =
       this.totalSlides > 0 ? this.visitedSlides.size / this.totalSlides : 0
 
@@ -846,8 +908,8 @@ export class Connector extends Base.Connector {
       slideTitle = windowAny.LIA.course.slides[id].title || slideTitle
     }
 
-    // Calculate duration since start
-    const duration = Statement.formatDuration(Date.now() - this.startTime)
+    // Calculate total duration including previous sessions
+    const duration = Statement.formatDuration(this.getTotalDuration())
 
     // Send experienced statement
     const statement = Statement.generateExperiencedStatement(
@@ -1100,6 +1162,7 @@ export class Connector extends Base.Connector {
     this.taskStates = {}
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
+    this.accumulatedTime = 0
     this.completionSent = false
 
     // Call base implementation
