@@ -109,7 +109,7 @@ export function generateAnsweredStatement(
   quizId: number,
   quizType: string,
   response: any,
-  success: boolean,
+  success: boolean | null,
   score: number,
   maxScore: number,
   quizState?: any,
@@ -353,7 +353,9 @@ export function generateProgressedStatement(
   registration?: string,
   duration?: string,
   totalScore?: number,
-  maxScore?: number
+  maxScore?: number,
+  completion?: boolean,
+  success?: boolean
 ) {
   const statement: any = {
     actor,
@@ -363,7 +365,8 @@ export function generateProgressedStatement(
     },
     object: createCourseActivity(courseId, courseTitle),
     result: {
-      completion: progress >= 1.0, // True when 100% complete
+      // Use provided completion status if available, otherwise default to progress >= 1.0
+      completion: completion !== undefined ? completion : progress >= 1.0,
       score: {
         scaled: progress, // 0.0 to 1.0 for slide progress
         raw: Math.round(progress * 100),
@@ -378,6 +381,11 @@ export function generateProgressedStatement(
       },
     },
     timestamp: new Date().toISOString(),
+  }
+
+  // Add success if provided (for pass/fail tracking)
+  if (success !== undefined) {
+    statement.result.success = success
   }
 
   // Add duration if provided

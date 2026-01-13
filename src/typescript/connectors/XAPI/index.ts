@@ -52,6 +52,8 @@ export class Connector extends Base.Connector {
   ) {
     super()
 
+    window['SCORE'] = 0
+
     this.active = false
     this.debug = config.debug || false
     this.totalScore = 0
@@ -593,9 +595,15 @@ export class Connector extends Base.Connector {
 
     // With quizzes, check both slides and all quizzes answered
     const quizComplete = Object.values(this.quizStates).every((slideQuizzes) =>
-      Object.values(slideQuizzes).every((quiz) => quiz.solved !== undefined)
+      Object.values(slideQuizzes).every((quiz) => quiz.solved !== 0)
     )
-    return slideComplete && quizComplete
+
+    // With quizzes, check both slides and all quizzes answered
+    const surveysComplete = Object.values(this.surveyStates).every(
+      (slideSurveys) =>
+        Object.values(slideSurveys).every((survey) => survey.submitted === true)
+    )
+    return slideComplete && quizComplete && surveysComplete
   }
 
   /**
@@ -605,12 +613,58 @@ export class Connector extends Base.Connector {
   private sendCompletionIfNeeded() {
     if (!this.active || !this.lrs) return
 
+    let total = 0
+    let solved = 0
+    let finished = 0
+    let count = 0
+
+    for (const slideId in this.quizStates) {
+      for (const quizIndex in this.quizStates[slideId]) {
+        const quiz = this.quizStates[slideId][quizIndex]
+        count = quiz.score || 0
+
+        total += count
+
+        switch (quiz.solved) {
+          case 1: {
+            solved += count
+            break
+          }
+          case -1: {
+            finished += count
+            break
+          }
+        }
+      }
+    }
+
+    // Count surveys and track how many have been submitted
+    let surveyCount = 0
+    let surveySubmitted = 0
+    for (const slideId in this.surveyStates) {
+      for (const surveyIndex in this.surveyStates[slideId]) {
+        surveyCount += 1
+
+        if (this.surveyStates[slideId][surveyIndex].submitted) {
+          surveySubmitted += 1
+        }
+      }
+    }
+
+    // Check if all surveys are completed
+    const allSurveysCompleted =
+      surveyCount === 0 || surveyCount === surveySubmitted
+
+    const score = solved === 0 ? 0 : solved / total
+
+    window['SCORE'] = score
+
     if (this.debug) {
       console.log('Checking completion...', {
         totalSlides: this.totalSlides,
         visitedSlides: this.visitedSlides.size,
-        maxScore: this.maxScore,
-        totalScore: this.totalScore,
+        maxScore: total,
+        totalScore: solved,
         quizStates: Object.keys(this.quizStates).length,
         completionSent: this.completionSent,
       })
@@ -620,33 +674,72 @@ export class Connector extends Base.Connector {
     const progress =
       this.totalSlides > 0 ? this.visitedSlides.size / this.totalSlides : 0
 
-    // Check if course is complete
-    const isComplete = this.checkCompletion()
+    // COMPLETION: Use checkCompletion() to determine if course is complete
+    // This checks slides visited, all quizzes answered, and all surveys submitted
+    const completionStatus = this.checkCompletion()
 
-    if (isComplete && !this.completionSent) {
-      // Send completed statement only once when 100% done
-      // Calculate success like SCORM does:
-      // - If no quizzes: automatically passed
-      // - If quizzes exist: score must be >= masteryScore (80% by default)
-      let success = true
+    // SUCCESS: Based on quiz/survey performance (assessment mastery)
+    let success: boolean | undefined = undefined
 
-      if (this.maxScore > 0) {
-        const scoreRatio = this.totalScore / this.maxScore
-        success = scoreRatio >= this.masteryScore
+    if (this.masteryScore == null) {
+      // No mastery score defined - success is not applicable
+      success = undefined
+    } else {
+      // Mastery score is defined - determine success based on quiz/survey performance
+      if ((score >= this.masteryScore || total === 0) && allSurveysCompleted) {
+        // Passed: achieved mastery score and completed all surveys
+        success = true
+      } else if (
+        finished + solved === total &&
+        total > 0 &&
+        allSurveysCompleted
+      ) {
+        // Failed: finished all quizzes and surveys but didn't achieve mastery
+        success = false
+      } else {
+        // Still in progress: not all assessments completed yet
+        success = undefined
+      }
+    }
+
+    const progressStatement = Statement.generateProgressedStatement(
+      this.actor,
+      this.courseId,
+      this.courseTitle,
+      progress,
+      this.registration,
+      duration,
+      solved,
+      total,
+      completionStatus,
+      success
+    )
+
+    this.lrs
+      .sendStatement(progressStatement)
+      .then(() => {
         if (this.debug) {
           console.log(
-            `Success calculation: ${this.totalScore}/${this.maxScore} = ${scoreRatio} >= ${this.masteryScore} = ${success}`
+            `Sent progressed statement: ${
+              progress * 100
+            }% complete, score: ${solved}/${total}, completion: ${completionStatus}, success: ${success}`
           )
         }
-      }
+      })
+      .catch((err) => {
+        console.error('Failed to send progressed statement:', err)
+      })
+
+    if (completionStatus && !this.completionSent) {
+      // Send completed statement only once when course completion criteria met
 
       const statement = Statement.generateCompletedStatement(
         this.actor,
         this.courseId,
         this.courseTitle,
-        success,
-        this.totalScore,
-        this.maxScore,
+        success || false,
+        solved,
+        total,
         duration,
         this.registration
       )
@@ -661,34 +754,6 @@ export class Connector extends Base.Connector {
         })
         .catch((err) => {
           console.error('Failed to send completed statement:', err)
-        })
-    } else if (!this.completionSent) {
-      // Send progressed statement to show current state (like SCORM continuous updates)
-      // This ensures SCORM Cloud can see ongoing progress, score, and time
-      const progressStatement = Statement.generateProgressedStatement(
-        this.actor,
-        this.courseId,
-        this.courseTitle,
-        progress,
-        this.registration,
-        duration,
-        this.totalScore,
-        this.maxScore
-      )
-
-      this.lrs
-        .sendStatement(progressStatement)
-        .then(() => {
-          if (this.debug) {
-            console.log(
-              `Sent progressed statement: ${progress * 100}% complete, score: ${
-                this.totalScore
-              }/${this.maxScore}`
-            )
-          }
-        })
-        .catch((err) => {
-          console.error('Failed to send progressed statement:', err)
         })
     }
   }
@@ -887,6 +952,8 @@ export class Connector extends Base.Connector {
 
         this.quizStates[id][i] = quiz
 
+        console.warn('Storing quiz:', id, i, quiz)
+
         // Update scores
         if (quiz.score !== undefined) {
           if (quiz.solved === 1) this.totalScore += quiz.score
@@ -908,8 +975,8 @@ export class Connector extends Base.Connector {
           i,
           quizType,
           quiz.input || quiz.answer || '',
-          quiz.solved === 1,
-          quiz.solved === 1 ? quiz.score || 1 : 0,
+          quiz.solved === 1 ? true : quiz.solved === -1 ? false : null,
+          quiz.score || 1,
           quiz.score || 1,
           quiz,
           this.registration
