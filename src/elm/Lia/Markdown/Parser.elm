@@ -549,7 +549,8 @@ allowedLine =
     lookAhead
         (maybe
             (choice
-                [ regex "\\*\\*\\*+\n"
+                [ regex "[ \t]*\n"
+                , regex "\\*\\*\\*+\n"
                 , string "[[?]]"
                 ]
             )
