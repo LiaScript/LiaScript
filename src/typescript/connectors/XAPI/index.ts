@@ -32,6 +32,7 @@ export class Connector extends Base.Connector {
   private lastActivityTime: number
   private completionSent: boolean
   private progressThreshold: number
+  private masteryScore: number
   private stateRestored: Promise<void>
 
   /**
@@ -65,6 +66,7 @@ export class Connector extends Base.Connector {
     this.lastActivityTime = this.startTime
     this.completionSent = false
     this.progressThreshold = 0.9 // 90% of slides visited is considered complete
+    this.masteryScore = 0.8 // 80% score required to pass (matching SCORM default)
     this.registration = config.registration || this.generateUUID()
 
     // Default actor if none provided
@@ -597,15 +599,46 @@ export class Connector extends Base.Connector {
   }
 
   /**
-   * Send completion statement if course is complete
+   * Send progress/completion statement to track current state
+   * Like SCORM, this sends updates continuously, not just at the end
    */
   private sendCompletionIfNeeded() {
-    if (this.completionSent || !this.active || !this.lrs) return
+    if (!this.active || !this.lrs) return
 
-    if (this.checkCompletion()) {
-      const success =
-        this.maxScore > 0 ? this.totalScore / this.maxScore >= 0.7 : true
-      const duration = Statement.formatDuration(Date.now() - this.startTime)
+    if (this.debug) {
+      console.log('Checking completion...', {
+        totalSlides: this.totalSlides,
+        visitedSlides: this.visitedSlides.size,
+        maxScore: this.maxScore,
+        totalScore: this.totalScore,
+        quizStates: Object.keys(this.quizStates).length,
+        completionSent: this.completionSent,
+      })
+    }
+
+    const duration = Statement.formatDuration(Date.now() - this.startTime)
+    const progress =
+      this.totalSlides > 0 ? this.visitedSlides.size / this.totalSlides : 0
+
+    // Check if course is complete
+    const isComplete = this.checkCompletion()
+
+    if (isComplete && !this.completionSent) {
+      // Send completed statement only once when 100% done
+      // Calculate success like SCORM does:
+      // - If no quizzes: automatically passed
+      // - If quizzes exist: score must be >= masteryScore (80% by default)
+      let success = true
+
+      if (this.maxScore > 0) {
+        const scoreRatio = this.totalScore / this.maxScore
+        success = scoreRatio >= this.masteryScore
+        if (this.debug) {
+          console.log(
+            `Success calculation: ${this.totalScore}/${this.maxScore} = ${scoreRatio} >= ${this.masteryScore} = ${success}`
+          )
+        }
+      }
 
       const statement = Statement.generateCompletedStatement(
         this.actor,
@@ -628,6 +661,34 @@ export class Connector extends Base.Connector {
         })
         .catch((err) => {
           console.error('Failed to send completed statement:', err)
+        })
+    } else if (!this.completionSent) {
+      // Send progressed statement to show current state (like SCORM continuous updates)
+      // This ensures SCORM Cloud can see ongoing progress, score, and time
+      const progressStatement = Statement.generateProgressedStatement(
+        this.actor,
+        this.courseId,
+        this.courseTitle,
+        progress,
+        this.registration,
+        duration,
+        this.totalScore,
+        this.maxScore
+      )
+
+      this.lrs
+        .sendStatement(progressStatement)
+        .then(() => {
+          if (this.debug) {
+            console.log(
+              `Sent progressed statement: ${progress * 100}% complete, score: ${
+                this.totalScore
+              }/${this.maxScore}`
+            )
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to send progressed statement:', err)
         })
     }
   }
@@ -652,6 +713,12 @@ export class Connector extends Base.Connector {
       this.totalSlides = windowAny.LIA.course.slides.length
       if (this.debug) {
         console.log('Total slides in course:', this.totalSlides)
+      }
+    } else {
+      if (this.debug) {
+        console.warn(
+          'Could not get total slides - LIA.course.slides not available'
+        )
       }
     }
 
@@ -681,6 +748,12 @@ export class Connector extends Base.Connector {
     if (slide !== undefined) {
       this.slide(slide)
     }
+
+    // Check if course was already completed (from restored state)
+    // This handles the case where user returns to an already-finished course
+    if (!this.completionSent) {
+      this.sendCompletionIfNeeded()
+    }
   }
 
   /**
@@ -708,6 +781,9 @@ export class Connector extends Base.Connector {
       slideTitle = windowAny.LIA.course.slides[id].title || slideTitle
     }
 
+    // Calculate duration since start
+    const duration = Statement.formatDuration(Date.now() - this.startTime)
+
     // Send experienced statement
     const statement = Statement.generateExperiencedStatement(
       this.actor,
@@ -715,7 +791,8 @@ export class Connector extends Base.Connector {
       this.courseTitle,
       id,
       slideTitle,
-      this.registration
+      this.registration,
+      duration
     )
 
     this.lrs
@@ -724,33 +801,13 @@ export class Connector extends Base.Connector {
         if (this.debug) {
           console.log('Sent experienced statement, ID:', responseId)
         }
+        // Send progress/completion update after slide experience
+        // This provides continuous tracking like SCORM does
+        this.sendCompletionIfNeeded()
       })
       .catch((err) => {
         console.error('Failed to send experienced statement:', err)
       })
-
-    // Send progress statement if we know the total slides
-    if (this.totalSlides > 0) {
-      const progress = this.visitedSlides.size / this.totalSlides
-
-      const progressStatement = Statement.generateProgressedStatement(
-        this.actor,
-        this.courseId,
-        this.courseTitle,
-        progress,
-        this.registration
-      )
-
-      this.lrs
-        .sendStatement(progressStatement)
-        .then(() => {
-          // Check if course is complete after updating progress
-          this.sendCompletionIfNeeded()
-        })
-        .catch((err) => {
-          console.error('Failed to send progress statement:', err)
-        })
-    }
   }
 
   /**
@@ -862,6 +919,7 @@ export class Connector extends Base.Connector {
           .sendStatement(statement)
           .then(() => {
             if (this.debug) console.log(`Sent answer: slide ${id}, quiz ${i}`)
+            // Send progress update after quiz answer (like SCORM continuous updates)
             this.sendCompletionIfNeeded()
           })
           .catch((err) =>

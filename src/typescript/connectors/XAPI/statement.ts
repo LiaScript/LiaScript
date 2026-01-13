@@ -44,6 +44,9 @@ export function generateInitializedStatement(
         display: { 'en-US': 'initialized' },
       },
       object: createCourseActivity(courseId, courseTitle),
+      result: {
+        completion: false,
+      },
       timestamp: new Date().toISOString(),
     },
     registration
@@ -59,35 +62,40 @@ export function generateExperiencedStatement(
   courseTitle: string,
   slideId: number,
   slideName: string,
-  registration?: string
+  registration?: string,
+  duration?: string
 ) {
-  return addRegistration(
-    {
-      actor,
-      verb: {
-        id: 'http://adlnet.gov/expapi/verbs/experienced',
-        display: { 'en-US': 'experienced' },
-      },
-      object: {
-        id: `${courseId}/slides/${slideId}`,
-        objectType: 'Activity',
-        definition: {
-          type: 'http://adlnet.gov/expapi/activities/module',
-          name: { 'en-US': slideName || `Slide ${slideId}` },
-          extensions: {
-            'http://liascript.github.io/extensions/slideId': slideId,
-          },
-        },
-      },
-      context: {
-        contextActivities: {
-          parent: [createCourseActivity(courseId, courseTitle)],
-        },
-      },
-      timestamp: new Date().toISOString(),
+  const statement: any = {
+    actor,
+    verb: {
+      id: 'http://adlnet.gov/expapi/verbs/experienced',
+      display: { 'en-US': 'experienced' },
     },
-    registration
-  )
+    object: {
+      id: `${courseId}/slides/${slideId}`,
+      objectType: 'Activity',
+      definition: {
+        type: 'http://adlnet.gov/expapi/activities/module',
+        name: { 'en-US': slideName || `Slide ${slideId}` },
+        extensions: {
+          'http://liascript.github.io/extensions/slideId': slideId,
+        },
+      },
+    },
+    context: {
+      contextActivities: {
+        parent: [createCourseActivity(courseId, courseTitle)],
+      },
+    },
+    timestamp: new Date().toISOString(),
+  }
+
+  // Add duration if provided
+  if (duration) {
+    statement.result = { duration }
+  }
+
+  return addRegistration(statement, registration)
 }
 
 /**
@@ -342,35 +350,52 @@ export function generateProgressedStatement(
   courseId: string,
   courseTitle: string,
   progress: number,
-  registration?: string
+  registration?: string,
+  duration?: string,
+  totalScore?: number,
+  maxScore?: number
 ) {
-  return addRegistration(
-    {
-      actor,
-      verb: {
-        id: 'http://adlnet.gov/expapi/verbs/progressed',
-        display: { 'en-US': 'progressed' },
-      },
-      object: createCourseActivity(courseId, courseTitle),
-      result: {
-        completion: progress >= 1.0,
-        score: {
-          scaled: progress, // 0.0 to 1.0
-          raw: Math.round(progress * 100),
-          min: 0,
-          max: 100,
-        },
-        extensions: {
-          'http://liascript.github.io/extensions/progress': progress,
-          'http://liascript.github.io/extensions/progressPercent': Math.round(
-            progress * 100
-          ),
-        },
-      },
-      timestamp: new Date().toISOString(),
+  const statement: any = {
+    actor,
+    verb: {
+      id: 'http://adlnet.gov/expapi/verbs/progressed',
+      display: { 'en-US': 'progressed' },
     },
-    registration
-  )
+    object: createCourseActivity(courseId, courseTitle),
+    result: {
+      completion: progress >= 1.0, // True when 100% complete
+      score: {
+        scaled: progress, // 0.0 to 1.0 for slide progress
+        raw: Math.round(progress * 100),
+        min: 0,
+        max: 100,
+      },
+      extensions: {
+        'http://liascript.github.io/extensions/progress': progress,
+        'http://liascript.github.io/extensions/progressPercent': Math.round(
+          progress * 100
+        ),
+      },
+    },
+    timestamp: new Date().toISOString(),
+  }
+
+  // Add duration if provided
+  if (duration) {
+    statement.result.duration = duration
+  }
+
+  // Override score with quiz scores if provided (for course-level tracking)
+  if (maxScore !== undefined && maxScore > 0) {
+    statement.result.score = {
+      scaled: totalScore! / maxScore,
+      raw: totalScore!,
+      min: 0,
+      max: maxScore,
+    }
+  }
+
+  return addRegistration(statement, registration)
 }
 
 /**
