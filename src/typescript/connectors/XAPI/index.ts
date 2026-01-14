@@ -699,10 +699,6 @@ export class Connector extends Base.Connector {
     const completedItems =
       this.visitedSlides.size + completedQuizzes + completedSurveys
 
-    if (totalItems === 0) return false
-
-    const completionRatio = completedItems / totalItems
-
     if (this.debug) {
       console.log('Completion check:', {
         visitedSlides: this.visitedSlides.size,
@@ -713,11 +709,13 @@ export class Connector extends Base.Connector {
         totalSurveys,
         completedItems,
         totalItems,
-        completionRatio,
         progressThreshold: this.progressThreshold,
-        isComplete: completionRatio >= this.progressThreshold,
       })
     }
+
+    if (totalItems === 0) return false
+
+    const completionRatio = completedItems / totalItems
 
     return completionRatio >= this.progressThreshold
   }
@@ -754,23 +752,6 @@ export class Connector extends Base.Connector {
       }
     }
 
-    // Count surveys and track how many have been submitted
-    let surveyCount = 0
-    let surveySubmitted = 0
-    for (const slideId in this.surveyStates) {
-      for (const surveyIndex in this.surveyStates[slideId]) {
-        surveyCount += 1
-
-        if (this.surveyStates[slideId][surveyIndex].submitted) {
-          surveySubmitted += 1
-        }
-      }
-    }
-
-    // Check if all surveys are completed
-    const allSurveysCompleted =
-      surveyCount === 0 || surveyCount === surveySubmitted
-
     const score = solved === 0 ? 0 : solved / total
 
     window['SCORE'] = score
@@ -801,21 +782,36 @@ export class Connector extends Base.Connector {
       // No mastery score defined - success is not applicable
       success = undefined
     } else {
-      // Mastery score is defined - determine success based on quiz/survey performance
-      if ((score >= this.masteryScore || total === 0) && allSurveysCompleted) {
+      // Check if all quizzes have been completed (either solved or failed)
+      const allQuizzesCompleted = finished + solved === total && total > 0
+
+      if (score >= this.masteryScore || total === 0) {
         // Passed: achieved mastery score and completed all surveys
         success = true
-      } else if (
-        finished + solved === total &&
-        total > 0 &&
-        allSurveysCompleted
-      ) {
-        // Failed: finished all quizzes and surveys but didn't achieve mastery
-        success = false
+      } else if (allQuizzesCompleted) {
+        // All quizzes and surveys are done - determine pass/fail
+        if (score >= this.masteryScore) {
+          success = true
+        } else {
+          success = false
+        }
       } else {
         // Still in progress: not all assessments completed yet
         success = undefined
       }
+    }
+
+    if (this.debug) {
+      console.log('Success calculation:', {
+        masteryScore: this.masteryScore,
+        score,
+        solved,
+        finished,
+        total,
+        allQuizzesCompleted: finished + solved === total,
+
+        success,
+      })
     }
 
     const progressStatement = Statement.generateProgressedStatement(
@@ -890,15 +886,15 @@ export class Connector extends Base.Connector {
 
     // Get total slide count from LiaScript course structure
     const windowAny = window as any
-    if (windowAny.LIA?.course?.slides) {
-      this.totalSlides = windowAny.LIA.course.slides.length
+    if (windowAny.config_?.totalSlides) {
+      this.totalSlides = windowAny.config_.totalSlides
       if (this.debug) {
         console.log('Total slides in course:', this.totalSlides)
       }
     } else {
       if (this.debug) {
         console.warn(
-          'Could not get total slides - LIA.course.slides not available'
+          'Could not get total slides - config_.totalSlides not available'
         )
       }
     }
