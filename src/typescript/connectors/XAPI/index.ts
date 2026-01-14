@@ -69,8 +69,8 @@ export class Connector extends Base.Connector {
     this.lastActivityTime = this.startTime
     this.accumulatedTime = 0 // No previous session time yet
     this.completionSent = false
-    this.progressThreshold = 0.9 // 90% of slides visited is considered complete
-    this.masteryScore = 0.8 // 80% score required to pass (matching SCORM default)
+    this.progressThreshold = window.config_.progressThreshold ?? 0.9 // 90% of slides visited is considered complete
+    this.masteryScore = window.config_.masteryThreshold ?? 0.8 // 80% score required to pass (matching SCORM default)
     this.registration = config.registration || this.generateUUID()
 
     // Default actor if none provided
