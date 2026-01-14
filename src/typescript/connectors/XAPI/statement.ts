@@ -311,35 +311,37 @@ export function generateCompletedStatement(
   actor: any,
   courseId: string,
   courseTitle: string,
-  success: boolean,
+  success: boolean | undefined,
   score: number,
   maxScore: number,
   duration: string,
   registration?: string
 ) {
-  return addRegistration(
-    {
-      actor,
-      verb: {
-        id: 'http://adlnet.gov/expapi/verbs/completed',
-        display: { 'en-US': 'completed' },
-      },
-      object: createCourseActivity(courseId, courseTitle),
-      result: {
-        success,
-        completion: true,
-        score: {
-          scaled: maxScore > 0 ? score / maxScore : 0,
-          raw: score,
-          min: 0,
-          max: maxScore,
-        },
-        duration,
-      },
-      timestamp: new Date().toISOString(),
+  const statement: any = {
+    actor,
+    verb: {
+      id: 'http://adlnet.gov/expapi/verbs/completed',
+      display: { 'en-US': 'completed' },
     },
-    registration
-  )
+    object: createCourseActivity(courseId, courseTitle),
+    result: {
+      completion: true,
+      score: {
+        scaled: maxScore > 0 ? score / maxScore : 0,
+        raw: score,
+        min: 0,
+        max: maxScore,
+      },
+      duration,
+    },
+    timestamp: new Date().toISOString(),
+  }
+
+  if (success !== undefined) {
+    statement.result.success = success
+  }
+
+  return addRegistration(statement, registration)
 }
 
 /**

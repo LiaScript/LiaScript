@@ -32,8 +32,8 @@ export class Connector extends Base.Connector {
   private lastActivityTime: number
   private accumulatedTime: number // Time from previous sessions in milliseconds
   private completionSent: boolean
-  private progressThreshold: number
-  private masteryScore: number
+  private progressThreshold: number = 0
+  private masteryScore: number = 0
   private stateRestored: Promise<void>
 
   /**
@@ -849,7 +849,7 @@ export class Connector extends Base.Connector {
         this.actor,
         this.courseId,
         this.courseTitle,
-        success || false,
+        success,
         solved,
         total,
         duration,
