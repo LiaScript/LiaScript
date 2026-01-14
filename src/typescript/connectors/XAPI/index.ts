@@ -49,6 +49,8 @@ export class Connector extends Base.Connector {
       courseTitle?: string
       registration?: string
       debug?: boolean
+      masteryThreshold?: number
+      progressThreshold?: number
     } = {}
   ) {
     super()
@@ -69,8 +71,6 @@ export class Connector extends Base.Connector {
     this.lastActivityTime = this.startTime
     this.accumulatedTime = 0 // No previous session time yet
     this.completionSent = false
-    this.progressThreshold = window.config_.progressThreshold ?? 0.9 // 90% of slides visited is considered complete
-    this.masteryScore = window.config_.masteryThreshold ?? 0.8 // 80% score required to pass (matching SCORM default)
     this.registration = config.registration || this.generateUUID()
 
     // Default actor if none provided
@@ -95,6 +95,20 @@ export class Connector extends Base.Connector {
             'Initializing structures from config...',
             JSON.stringify(windowAny.config_)
           )
+        }
+
+        // Load thresholds from window.config_ (set by config.js in xAPI export)
+        // Falls back to constructor config, then to defaults
+        this.progressThreshold =
+          windowAny.config_.progressThreshold ?? config.progressThreshold ?? 0.9
+        this.masteryScore =
+          windowAny.config_.masteryThreshold ?? config.masteryThreshold ?? 0.8
+
+        if (this.debug) {
+          console.log('Loaded thresholds:', {
+            progressThreshold: this.progressThreshold,
+            masteryScore: this.masteryScore,
+          })
         }
 
         // Initialize quizzes
@@ -137,6 +151,10 @@ export class Connector extends Base.Connector {
             tasks: Object.keys(this.taskStates).length,
           })
         }
+      } else {
+        // No window.config_ available, use defaults from constructor parameter
+        this.progressThreshold = config.progressThreshold ?? 0.9
+        this.masteryScore = config.masteryThreshold ?? 0.8
       }
     } catch (e) {
       if (this.debug) {
@@ -644,28 +662,64 @@ export class Connector extends Base.Connector {
 
   /**
    * Check if course is complete based on progress
+   * Calculates combined completion ratio across slides, quizzes, and surveys
    * @returns True if course is complete
    */
   private checkCompletion(): boolean {
     if (this.totalSlides === 0) return false
 
-    const slideProgress = this.visitedSlides.size / this.totalSlides
-    const slideComplete = slideProgress >= this.progressThreshold
+    // Count completed quizzes
+    let completedQuizzes = 0
+    let totalQuizzes = 0
+    for (const slideId in this.quizStates) {
+      for (const quizIndex in this.quizStates[slideId]) {
+        totalQuizzes++
+        const quiz = this.quizStates[slideId][quizIndex]
+        if (quiz.solved !== 0) {
+          completedQuizzes++
+        }
+      }
+    }
 
-    // If no quizzes, just check slides
-    if (this.maxScore === 0) return slideComplete
+    // Count completed surveys
+    let completedSurveys = 0
+    let totalSurveys = 0
+    for (const slideId in this.surveyStates) {
+      for (const surveyIndex in this.surveyStates[slideId]) {
+        totalSurveys++
+        const survey = this.surveyStates[slideId][surveyIndex]
+        if (survey.submitted === true) {
+          completedSurveys++
+        }
+      }
+    }
 
-    // With quizzes, check both slides and all quizzes answered
-    const quizComplete = Object.values(this.quizStates).every((slideQuizzes) =>
-      Object.values(slideQuizzes).every((quiz) => quiz.solved !== 0)
-    )
+    // Calculate combined completion ratio
+    const totalItems = this.totalSlides + totalQuizzes + totalSurveys
+    const completedItems =
+      this.visitedSlides.size + completedQuizzes + completedSurveys
 
-    // With quizzes, check both slides and all quizzes answered
-    const surveysComplete = Object.values(this.surveyStates).every(
-      (slideSurveys) =>
-        Object.values(slideSurveys).every((survey) => survey.submitted === true)
-    )
-    return slideComplete && quizComplete && surveysComplete
+    if (totalItems === 0) return false
+
+    const completionRatio = completedItems / totalItems
+
+    if (this.debug) {
+      console.log('Completion check:', {
+        visitedSlides: this.visitedSlides.size,
+        totalSlides: this.totalSlides,
+        completedQuizzes,
+        totalQuizzes,
+        completedSurveys,
+        totalSurveys,
+        completedItems,
+        totalItems,
+        completionRatio,
+        progressThreshold: this.progressThreshold,
+        isComplete: completionRatio >= this.progressThreshold,
+      })
+    }
+
+    return completionRatio >= this.progressThreshold
   }
 
   /**
