@@ -549,8 +549,14 @@ allowedLine =
     lookAhead
         (maybe
             (choice
-                [ regex "\\*\\*\\*+\n"
+                [ regex "[ \t]*\n"
+                , regex "\\*\\*\\*+\n"
                 , string "[[?]]"
+                , string "+ "
+                , string "- "
+                , string "* "
+                , string "```"
+                , regex "\\d+\\. "
                 ]
             )
             |> andThen
