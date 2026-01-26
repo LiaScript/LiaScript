@@ -494,7 +494,7 @@ quote =
         >> ignore (regex "> ?")
         >> ignore (Indent.push "> ?")
         >> ignore Indent.skip
-        >> andMap (sepBy newlineWithIndentation blocks)
+        >> andMap (sepBy (many newlineWithIndentation) blocks)
         >> ignore Indent.pop
 
 
@@ -556,6 +556,7 @@ allowedLine =
                 , string "- "
                 , string "* "
                 , string "```"
+                , string ">"
                 , regex "\\d+\\. "
                 ]
             )
