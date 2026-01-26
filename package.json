@@ -33,9 +33,11 @@
     "watch": "npm run watch:dev",
     "build": "npm run build:app",
     "build:android": "npm run build:indexeddb && npx cap copy",
+    "build:apk": "npm run build:indexeddb && npx cap sync android && cd android && ./gradlew assembleDebug",
+    "build:apk:release": "npm run build:indexeddb && npx cap sync android && cd android && ./gradlew assembleRelease",
     "build:app": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/app/index.html && npm run sw",
     "watch:app": "npx parcel serve src/entry/app/index.html --open",
-    "build:indexeddb": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/indexeddb/index.html",
+    "build:indexeddb": "npm run clean && npx parcel build --no-source-maps --no-optimize --public-url . src/entry/indexeddb/index.html",
     "watch:indexeddb": "npx parcel serve src/entry/indexeddb/index.html --open",
     "watch:base": "npx parcel serve src/entry/base/index.html",
     "build:base": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/base/index.html",
@@ -61,7 +63,7 @@
     "minify:js": "find dist -name \"*.js\" -print0 | xargs -0 -P 4 -I {} sh -c 'before=$(wc -c < {}); if npx minify {} > {}.min 2>/dev/null; then after=$(wc -c < {}.min); if [ ${after} -lt ${before} ]; then mv {}.min {}; reduction=$((${before}-${after})); percent=$(awk \"BEGIN {printf \\\"%.2f\\\", ${reduction}/${before}*100}\"); echo \"{} reduced from ${before} to ${after} bytes (${percent}% reduction)\"; else rm {}.min; echo \"{} no reduction achieved, file size unchanged\"; fi; else echo \"{} minification failed, skipping\"; fi'"
   },
   "devDependencies": {
-    "@capacitor/cli": "^3.4.1",
+    "@capacitor/cli": "^8.0.0",
     "capacitor-resources": "^2.0.5",
     "@convergencelabs/ace-collab-ext": "^0.6.0",
     "@parcel/packager-raw-url": "^2.8.3",
@@ -116,6 +118,9 @@
   "browserslist": [
     "cover 95.0%"
   ],
+  "alias": {
+    "bittorrent-tracker/websocket-tracker": "bittorrent-tracker/lib/client/websocket-tracker.js"
+  },
   "staticFiles": [
     {
       "staticPath": "static"
@@ -128,9 +133,9 @@
     "test": "tests"
   },
   "dependencies": {
-    "@capacitor-community/text-to-speech": "^1.1.2",
-    "@capacitor/android": "^3.4.1",
-    "@capacitor/core": "^3.4.1",
+    "@capacitor-community/text-to-speech": "^6.1.0",
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
     "pako": "^2.1.0",
     "patch-package": "^8.0.0"
   }
