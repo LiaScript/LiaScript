@@ -118,7 +118,12 @@ init flags url key =
                 )
 
         courseUrl =
-            { url | query = Maybe.map link url.query }
+            { url
+                | query =
+                    url.query
+                        |> Maybe.andThen Utils.urlDecodeIfEncoded
+                        |> Maybe.map link
+            }
 
         openTableOfContents =
             flags.screen.width > Const.globalBreakpoints.sm

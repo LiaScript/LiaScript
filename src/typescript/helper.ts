@@ -83,7 +83,8 @@ export function allowedProtocol(url: string) {
     url.startsWith('dat://') ||
     url.startsWith('ipfs://') ||
     url.startsWith('ipns://') ||
-    url.startsWith('blob:')
+    url.startsWith('blob:') ||
+    url.startsWith('data:')
   )
 }
 

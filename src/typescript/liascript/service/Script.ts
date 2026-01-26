@@ -42,7 +42,7 @@ class LiaError extends Error {
     msg: string,
     type: Script.ErrType,
     line: number,
-    column?: number
+    column?: number,
   ) {
     this.details[fileId].push({
       row: line,
@@ -282,6 +282,7 @@ function liaEvalCode(code: string, delay: number, send: Script.SendEval) {
 
   setTimeout(() => {
     try {
+      const fetch = window.LIA.fetch
       const counter: { [key: string]: number } = {}
       const timer: { [key: string]: number } = {}
 
@@ -399,6 +400,8 @@ function liaExecCode(event: Lia.Event) {
       },
     }
 
+    const fetch = window.LIA.fetch
+
     try {
       const result = eval(event.message.param.code)
       send.lia(result === undefined ? 'LIA: stop' : result)
@@ -449,7 +452,7 @@ export function evalError(customIdentifier: string, code: string, err: any) {
   formatted += '--- End ---\n'
   console.error(
     '%c' + customIdentifier + ' => ' + err.message,
-    'color: red; font-weight: bold;'
+    'color: red; font-weight: bold;',
   )
 
   console.error(formatted, ...styles)
