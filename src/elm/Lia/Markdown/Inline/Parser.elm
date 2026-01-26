@@ -88,7 +88,7 @@ everything within --- three dashed lines...
 ignore_comment : Parser s (List a)
 ignore_comment =
     string "<!---"
-        |> ignore (manyTill anyChar (string "--->"))
+        |> ignore (manyTill anyChar (string "-->"))
         |> keep (succeed [])
 
 
@@ -97,7 +97,6 @@ comments =
     choice
         [ ignore_comment |> skip
         , Effect.hidden_comment
-        , ignore_comment |> skip
         ]
         |> many
         |> skip
