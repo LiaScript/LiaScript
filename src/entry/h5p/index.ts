@@ -1,6 +1,6 @@
 import * as Lia from '../../typescript/liascript/index'
 
-import('../../typescript/connectors/XAPI/index').then(function (xAPI) {
+import('../../typescript/connectors/H5P/index').then(function (H5P) {
   const ua = window.navigator.userAgent
 
   if (ua.indexOf('Trident/') > 0 || ua.indexOf('MSIE ') > 0) {
@@ -13,10 +13,10 @@ import('../../typescript/connectors/XAPI/index').then(function (xAPI) {
       debug = true
     }
 
-    // Try to load config from URL parameters or localStorage
-    let xAPIConfig: any = null
+    // Try to load config from multiple sources
+    let h5pConfig: any = null
 
-    // Method 1: Check URL parameters for SCORM Cloud launch data
+    // Method 1: Check URL parameters for xAPI/LRS launch data
     const urlParams = new URLSearchParams(window.location.search)
     const endpoint = urlParams.get('endpoint')
     const actor = urlParams.get('actor')
@@ -54,19 +54,17 @@ import('../../typescript/connectors/XAPI/index').then(function (xAPI) {
         }
 
         // Fix SCORM Cloud's non-standard account field name
-        // xAPI spec uses "homePage" but SCORM Cloud passes "accountServiceHomePage"
         if (parsedActor.account && parsedActor.account.accountServiceHomePage) {
           parsedActor.account.homePage =
             parsedActor.account.accountServiceHomePage
           delete parsedActor.account.accountServiceHomePage
         }
-        // Also normalize "accountName" to "name" for the account object
         if (parsedActor.account && parsedActor.account.accountName) {
           parsedActor.account.name = parsedActor.account.accountName
           delete parsedActor.account.accountName
         }
 
-        xAPIConfig = {
+        h5pConfig = {
           endpoint: endpoint,
           auth: urlParams.get('auth') || '',
           actor: parsedActor,
@@ -76,32 +74,32 @@ import('../../typescript/connectors/XAPI/index').then(function (xAPI) {
           debug: false,
         }
 
-        console.log('xAPI launch parameters detected:', {
-          endpoint: xAPIConfig.endpoint,
-          actor: xAPIConfig.actor,
-          registration: xAPIConfig.registration,
-          courseId: xAPIConfig.courseId,
+        console.log('H5P xAPI launch parameters detected:', {
+          endpoint: h5pConfig.endpoint,
+          actor: h5pConfig.actor,
+          registration: h5pConfig.registration,
+          courseId: h5pConfig.courseId,
         })
       } catch (e) {
-        console.warn('Failed to parse launch parameters:', e)
+        console.warn('Failed to parse H5P launch parameters:', e)
       }
     }
 
     // Method 2: Try localStorage for standalone testing
-    if (!xAPIConfig) {
+    if (!h5pConfig) {
       try {
-        const storedConfig = localStorage.getItem('xapi-config')
+        const storedConfig = localStorage.getItem('h5p-config')
         if (storedConfig) {
-          xAPIConfig = JSON.parse(storedConfig)
+          h5pConfig = JSON.parse(storedConfig)
         }
       } catch (e) {
-        console.error('Error loading xAPI config from localStorage:', e)
+        console.error('Error loading H5P config from localStorage:', e)
       }
     }
 
-    // Fall back to window config or defaults
-    if (!xAPIConfig) {
-      xAPIConfig = (window as any)['xAPIConfig'] || {
+    // Method 3: Fall back to window.h5pConfig
+    if (!h5pConfig) {
+      h5pConfig = (window as any)['h5pConfig'] || {
         endpoint: '',
         auth: '',
         actor: {
@@ -111,36 +109,36 @@ import('../../typescript/connectors/XAPI/index').then(function (xAPI) {
         },
         courseId: '',
         courseTitle: '',
+        registration: '',
         debug: false,
       }
     }
 
     // Enable debug mode if in development
     if (debug) {
-      xAPIConfig.debug = true
+      h5pConfig.debug = true
     }
 
     // Log final configuration for debugging
-    if (debug || !xAPIConfig.endpoint) {
-      console.log('xAPI Configuration:', {
-        endpoint: xAPIConfig.endpoint || '(not set)',
-        hasAuth: !!xAPIConfig.auth,
-        actor: xAPIConfig.actor,
-        courseId: xAPIConfig.courseId || '(not set)',
-        registration: xAPIConfig.registration || '(not set)',
+    if (debug || !h5pConfig.endpoint) {
+      console.log('H5P Configuration:', {
+        endpoint: h5pConfig.endpoint || '(not set - H5P events only)',
+        hasAuth: !!h5pConfig.auth,
+        actor: h5pConfig.actor,
+        courseId: h5pConfig.courseId || '(not set)',
+        registration: h5pConfig.registration || '(not set)',
       })
     }
 
-    // Show warning if no endpoint configured
-    if (!xAPIConfig.endpoint) {
-      console.warn(
-        'No LRS endpoint configured. xAPI statements will not be tracked. ' +
-          'Launch parameters: ' +
-          window.location.search
+    // Show info if no endpoint configured
+    if (!h5pConfig.endpoint && debug) {
+      console.info(
+        'No LRS endpoint configured. H5P will capture xAPI events but not send to LRS. ' +
+          'To enable LRS tracking, provide endpoint via URL params or window.h5pConfig.'
       )
     }
 
-    const app = new Lia.LiaScript(new xAPI.Connector(xAPIConfig), {
+    const app = new Lia.LiaScript(new H5P.Connector(h5pConfig), {
       allowSync: false,
       debug,
       courseUrl: null,
