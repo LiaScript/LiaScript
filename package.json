@@ -64,7 +64,6 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^8.0.0",
-    "capacitor-resources": "^2.0.5",
     "@convergencelabs/ace-collab-ext": "^0.6.0",
     "@parcel/packager-raw-url": "^2.8.3",
     "@parcel/reporter-bundle-analyzer": "^2.8.3",
@@ -80,9 +79,9 @@
     "abortcontroller-polyfill": "^1.7.8",
     "ace-builds": "^1.43.5",
     "caniuse-lite": "^1.0.30001764",
+    "capacitor-resources": "^2.0.5",
     "crypto-browserify": "^3.5.1",
     "dexie": "^4.2.1",
-    "easy-speech": "^2.4.0",
     "echarts": "^5.6.0",
     "echarts-wordcloud": "^2.1.0",
     "elm": "^0.19.1-5",
@@ -115,9 +114,6 @@
     "y-utility": "^0.1.4",
     "yjs": "^13.6.27"
   },
-  "browserslist": [
-    "cover 95.0%"
-  ],
   "alias": {
     "bittorrent-tracker/websocket-tracker": "bittorrent-tracker/lib/client/websocket-tracker.js"
   },
@@ -133,7 +129,7 @@
     "test": "tests"
   },
   "dependencies": {
-    "@capacitor-community/text-to-speech": "^6.1.0",
+    "@capacitor-community/text-to-speech": "git+https://github.com/capacitor-community/text-to-speech.git#v8.0.0",
     "@capacitor/android": "^8.0.0",
     "@capacitor/core": "^8.0.0",
     "pako": "^2.1.0",

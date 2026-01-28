@@ -1,8 +1,36 @@
 import log from '../log'
 import '../types/responsiveVoice'
+import { registerPlugin } from '@capacitor/core'
 
-// @ts-ignore
-import EasySpeech from 'easy-speech/dist/EasySpeech'
+// Type definitions für Capacitor Text-to-Speech
+interface SpeechSynthesisVoice {
+  default: boolean
+  lang: string
+  localService: boolean
+  name: string
+  voiceURI: string
+}
+
+interface TTSOptions {
+  text: string
+  lang?: string
+  rate?: number
+  pitch?: number
+  volume?: number
+  voice?: number
+}
+
+interface TextToSpeechPlugin {
+  speak(options: TTSOptions): Promise<void>
+  stop(): Promise<void>
+  getSupportedLanguages(): Promise<{ languages: string[] }>
+  getSupportedVoices(): Promise<{ voices: SpeechSynthesisVoice[] }>
+  isLanguageSupported(options: {
+    lang: string
+  }): Promise<{ supported: boolean }>
+}
+
+const TextToSpeech = registerPlugin<TextToSpeechPlugin>('TextToSpeech')
 
 enum Gender {
   Female,
@@ -11,7 +39,7 @@ enum Gender {
 }
 
 var useBrowserTTS: null | boolean = null
-var browserVoices = {}
+var browserVoices: Record<string, any> = {}
 
 var firstSpeak = true
 
@@ -24,8 +52,6 @@ const VIDEO = 'lia-tts-videos'
 
 export const Service = {
   PORT: 'tts',
-
-  easySpeechSettings: null,
 
   init: function (elmSend_: Lia.Send) {
     elmSend = elmSend_
@@ -41,16 +67,9 @@ export const Service = {
       }
     }, 2000)
 
-    this.easySpeechSettings = EasySpeech.detect()
-
-    EasySpeech.init({ maxTimeout: 5000, interval: 250 })
-      .then(() => {
-        useBrowserTTS = true
-        sendEnabledTTS('browserTTS')
-      })
-      .catch((e) => {
-        console.warn(e)
-      })
+    // Capacitor Text-to-Speech ist immer verfügbar (Web Fallback included)
+    useBrowserTTS = true
+    sendEnabledTTS('browserTTS')
   },
 
   mute: function () {
@@ -234,20 +253,20 @@ function read(event: Lia.Event) {
                 video.load()
               }
             })
-          })
+          }),
         )
           .then((durations) => {
             // Calculate total video duration
             const totalVideoDuration = durations.reduce(
               (total, duration) => total + duration,
-              0
+              0,
             )
 
             // Estimate TTS duration based on text length and speech rate
             const estimatedTTSDuration = estimateTTSDuration(
               text,
               lang,
-              options.rate
+              options.rate,
             )
 
             // Calculate adjusted playback rate if video is shorter than TTS
@@ -257,10 +276,10 @@ function read(event: Lia.Event) {
               const MIN_RATE = 0.5 // Most browsers support down to 0.5x speed
               options.videoRate = Math.max(
                 MIN_RATE,
-                (totalVideoDuration / estimatedTTSDuration) * originalRate
+                (totalVideoDuration / estimatedTTSDuration) * originalRate,
               )
               console.log(
-                `Adjusting video playback rate to ${options.videoRate} to match estimated TTS duration`
+                `Adjusting video playback rate to ${options.videoRate} to match estimated TTS duration`,
               )
             } else {
               options.videoRate = originalRate
@@ -427,8 +446,8 @@ function read(event: Lia.Event) {
     } else if (hasAudioURLs) {
       let audioUrls: HTMLMediaElement[] = Array.from(
         document.getElementsByClassName(
-          AUDIO
-        ) as HTMLCollectionOf<HTMLMediaElement>
+          AUDIO,
+        ) as HTMLCollectionOf<HTMLMediaElement>,
       )
       let currentIndex = 0
 
@@ -470,7 +489,7 @@ function read(event: Lia.Event) {
           if (window.LIA.fetchError) {
             window.LIA.fetchError(
               'audio',
-              source.src.replace(window.location.origin, '')
+              source.src.replace(window.location.origin, ''),
             )
             return
           }
@@ -553,7 +572,7 @@ export function inject(key: string) {
 function cancel() {
   try {
     const audioRecordings = document.getElementsByClassName(
-      AUDIO
+      AUDIO,
     ) as HTMLCollectionOf<HTMLMediaElement>
 
     for (let i = 0; i < audioRecordings.length; i++) {
@@ -577,7 +596,7 @@ function cancel() {
   }
 
   try {
-    EasySpeech.cancel()
+    TextToSpeech.stop()
   } catch (e) {}
 
   if (window.responsiveVoice) {
@@ -585,7 +604,7 @@ function cancel() {
   }
 }
 
-function speak(
+async function speak(
   text: string,
   voice: string,
   lang: string,
@@ -600,7 +619,7 @@ function speak(
       onStop: () => void
       onError: (error: any) => void
     }
-  }
+  },
 ) {
   const customHandlers = event.handlers || {
     onStart: () => sendResponse(event, 'start'),
@@ -612,11 +631,11 @@ function speak(
   }
 
   if (useBrowserTTS) {
-    const syncVoice = getVoice(lang, voice)
+    const syncVoice = await getVoice(lang, voice)
 
     // there was a voice
     if (syncVoice) {
-      easySpeak(text, syncVoice, options, customHandlers)
+      await easySpeak(text, syncVoice, options, customHandlers)
     }
     // try responsive-voice
     else if (window.responsiveVoice) {
@@ -625,13 +644,13 @@ function speak(
     // if everything fails get the first voice from the browser
     // and use it as the default voice
     else {
-      const defaultVoice = getDefaultVoice()
+      const defaultVoice = await getDefaultVoice()
 
       if (defaultVoice) {
         // store as default for the next run
         browserVoices[toKey(lang, voice)] = defaultVoice
 
-        easySpeak(text, defaultVoice, options, customHandlers)
+        await easySpeak(text, defaultVoice, options, customHandlers)
       } else {
         customHandlers.onError('no TTS support')
       }
@@ -639,15 +658,15 @@ function speak(
   } else if (window.responsiveVoice) {
     // fix for responsiveVoice not working with German
     if (voice.startsWith('German')) {
-      voice.replace('German', 'Deutsch')
+      voice = voice.replace('German', 'Deutsch')
     }
     responsiveSpeak(text, voice, options, customHandlers)
   }
 }
 
-function easySpeak(
+async function easySpeak(
   text: string,
-  syncVoice: string,
+  syncVoice: any,
   options: {
     rate: number
     pitch: number
@@ -656,17 +675,22 @@ function easySpeak(
     onStart: () => void
     onStop: () => void
     onError: (error: any) => void
-  }
+  },
 ) {
-  EasySpeech.speak({
-    text: text,
-    voice: syncVoice,
-    start: handlers.onStart,
-    end: handlers.onStop,
-    error: handlers.onError,
-    pitch: options.pitch,
-    rate: options.rate,
-  })
+  try {
+    handlers.onStart()
+    await TextToSpeech.speak({
+      text: text,
+      voice: syncVoice?.voiceIndex,
+      lang: syncVoice?.lang || 'en-US',
+      rate: options.rate,
+      pitch: options.pitch,
+      volume: 1.0,
+    })
+    handlers.onStop()
+  } catch (error) {
+    handlers.onError(error)
+  }
 }
 
 function responsiveSpeak(
@@ -677,7 +701,7 @@ function responsiveSpeak(
     onStart: () => void
     onStop: () => void
     onError: (error: any) => void
-  }
+  },
 ) {
   if (window.responsiveVoice)
     window.responsiveVoice.speak(text, voice, {
@@ -692,31 +716,33 @@ function responsiveSpeak(
 function sendResponse(
   event: Lia.Event,
   cmd: string,
-  param: string | null = 'browser'
+  param: string | null = 'browser',
 ) {
   event.message.cmd = cmd
   event.message.param = param
   sendReply(event)
 }
 
-function getDefaultVoice() {
-  const voices = EasySpeech.voices()
-
-  if (!voices) {
-    return null
+async function getDefaultVoice() {
+  try {
+    const result = await TextToSpeech.getSupportedVoices()
+    if (result.voices && result.voices.length > 0) {
+      return { ...result.voices[0], voiceIndex: 0 }
+    }
+  } catch (e) {
+    console.warn('Failed to get voices:', e)
   }
-
-  return voices[0]
+  return null
 }
 
 function toKey(lang: string, voice: string) {
   return lang + ' - ' + voice
 }
 
-function getVoice(lang: string, voice: string) {
+async function getVoice(lang: string, voice: string) {
   // fix for browserTTS not working with Deutsch
   if (voice.startsWith('Deutsch')) {
-    voice.replace('Deutsch', 'German')
+    voice = voice.replace('Deutsch', 'German')
   }
 
   const key = toKey(lang, voice)
@@ -725,36 +751,43 @@ function getVoice(lang: string, voice: string) {
     return browserVoices[key]
   }
 
-  const voices = EasySpeech.voices()
+  try {
+    const result = await TextToSpeech.getSupportedVoices()
+    const voices = result.voices
 
-  if (!voices) {
-    return null
-  }
-
-  let gender = detectGender(voice)
-
-  let temp
-  let bestFit
-
-  for (let i = 0; i < voices.length; i++) {
-    temp = voices[i]
-
-    if (
-      temp.lang.startsWith(lang) &&
-      gender === detectGender(temp.name + temp.voiceURI)
-    ) {
-      bestFit = temp
-      break
+    if (!voices || voices.length === 0) {
+      return null
     }
 
-    if (temp.lang.startsWith(lang) && !bestFit) {
-      bestFit = temp
-    }
-  }
+    let gender = detectGender(voice)
+    let temp
+    let bestFit
+    let bestFitIndex = -1
 
-  if (bestFit) {
-    browserVoices[key] = bestFit
-    return bestFit
+    for (let i = 0; i < voices.length; i++) {
+      temp = voices[i]
+
+      if (
+        temp.lang.startsWith(lang) &&
+        gender === detectGender(temp.name + (temp.voiceURI || ''))
+      ) {
+        bestFit = { ...temp, voiceIndex: i }
+        bestFitIndex = i
+        break
+      }
+
+      if (temp.lang.startsWith(lang) && !bestFit) {
+        bestFit = { ...temp, voiceIndex: i }
+        bestFitIndex = i
+      }
+    }
+
+    if (bestFit) {
+      browserVoices[key] = bestFit
+      return bestFit
+    }
+  } catch (e) {
+    console.warn('Failed to get voice:', e)
   }
 
   return null
@@ -818,7 +851,7 @@ function storeBackgroundVideo(player: HTMLElement, video: HTMLVideoElement) {
     } else {
       player.parentElement?.insertBefore(
         background,
-        player.parentElement.firstChild
+        player.parentElement.firstChild,
       )
     }
   } catch (e) {
