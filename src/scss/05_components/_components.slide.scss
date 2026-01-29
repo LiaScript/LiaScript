@@ -46,6 +46,7 @@
     justify-content: center;
 
     padding-top: calc(#{settings.$global-top-offset} / 3);
+    padding-bottom: 32px;
   }
 
   &__content {
