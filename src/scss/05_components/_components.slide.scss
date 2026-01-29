@@ -1,5 +1,6 @@
-@use "../01_tools/tools.breakpoints";
-@use "components.header";
+@use '../00_settings/settings.global';
+@use '../01_tools/tools.breakpoints';
+@use 'components.header';
 
 .lia-slide {
   display: flex;
@@ -36,6 +37,15 @@
     @include tools.breakpoint('md') {
       margin-top: calc(#{components.$header-height-desktop});
     }
+  }
+
+  &__main {
+    width: 100%;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+
+    margin-top: settings.$global-top-offset;
   }
 
   &__content {

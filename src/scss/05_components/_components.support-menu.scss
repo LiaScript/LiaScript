@@ -10,11 +10,11 @@
   border-left: settings.$global-border;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: calc(100% - settings.$global-top-offset);
   padding-top: 6rem;
   position: fixed;
   right: 0;
-  top: 0;
+  top: settings.$global-top-offset;
   transition: settings.$global-transition;
   transition-property: width, transform;
   -webkit-user-select: none;
@@ -45,6 +45,7 @@
 
     &--closed {
       transform: translateX(0);
+      top: 0;
 
       .lia-support-menu__toggler {
         transform: translate(-6.5rem, -50%);
@@ -63,8 +64,8 @@
     top: calc(
       (#{components.$header-height-mobile} / 2) +
         (
-          2 * #{map.get(settings.$global-spacing, spacing-small)} - (#{elements.$btn-height} /
-                4)
+          2 * #{map.get(settings.$global-spacing, spacing-small)} -
+            (#{elements.$btn-height} / 4)
         )
     );
 

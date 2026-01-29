@@ -10,7 +10,7 @@
   border-right: settings.$global-border;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: calc(100% - settings.$global-top-offset);
   left: 0;
   padding: 3rem 0 1rem 0;
   position: fixed;
@@ -18,6 +18,7 @@
   transition-property: left, width, transform;
   width: object.$toc-width-mobile;
   z-index: 200;
+  top: settings.$global-top-offset;
 
   #lia-btn-toc {
     color: rgb(var(--color-highlight));
@@ -26,8 +27,8 @@
     top: calc(
       (#{components.$header-height-desktop} / 2) +
         (
-          2 * #{map.get(settings.$global-spacing, spacing-small)} - (#{elements.$btn-height} /
-                4)
+          2 * #{map.get(settings.$global-spacing, spacing-small)} -
+            (#{elements.$btn-height} / 4)
         )
     );
     right: 0;
@@ -42,8 +43,8 @@
       top: calc(
         (#{components.$header-height-mobile} / 2) +
           (
-            2 * #{map.get(settings.$global-spacing, spacing-small)} - (#{elements.$btn-height} /
-                  4)
+            2 * #{map.get(settings.$global-spacing, spacing-small)} -
+              (#{elements.$btn-height} / 4)
           )
       );
     }

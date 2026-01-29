@@ -256,12 +256,8 @@ viewPanes screen model =
                 |> Array.toIndexedList
                 |> List.map (showSection model screen)
                 |> Html.div
-                    [ Attr.style "width" "100%"
-                    , Attr.style "overflow-y" "auto"
-                    , Attr.style "display" "flex"
-                    , Attr.style "justify-content" "center"
-                    , Attr.class "lia-slide__container"
-                    , Attr.style "margin-top" "0px"
+                    [ Attr.class "lia-slide__container"
+                    , Attr.class "lia-slide__main"
                     ]
             )
             (Chat.view model.translation (initConfig screen model) model.chat
