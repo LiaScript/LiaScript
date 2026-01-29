@@ -45,7 +45,7 @@
     display: flex;
     justify-content: center;
 
-    margin-top: settings.$global-top-offset;
+    padding-top: calc(#{settings.$global-top-offset} / 3);
   }
 
   &__content {
