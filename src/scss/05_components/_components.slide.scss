@@ -3,9 +3,10 @@
 @use 'components.header';
 
 .lia-slide {
+  margin-top: settings.$global-top-offset;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100dvh - settings.$global-top-offset);
   position: relative;
   width: 100%;
 
@@ -37,16 +38,6 @@
     @include tools.breakpoint('md') {
       margin-top: calc(#{components.$header-height-desktop});
     }
-  }
-
-  &__main {
-    width: 100%;
-    overflow-y: auto;
-    display: flex;
-    justify-content: center;
-
-    padding-top: calc(#{settings.$global-top-offset} / 3);
-    height: calc(100% - #{settings.$global-top-offset} - 30px);
   }
 
   &__content {
