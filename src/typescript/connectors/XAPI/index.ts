@@ -30,8 +30,10 @@ export class Connector extends Base.Connector {
   private taskStates: Record<number, Record<number, any>>
   private startTime: number
   private lastActivityTime: number
+  private accumulatedTime: number // Time from previous sessions in milliseconds
   private completionSent: boolean
-  private progressThreshold: number
+  private progressThreshold: number = 0
+  private masteryScore: number = 0
   private stateRestored: Promise<void>
 
   /**
@@ -47,9 +49,13 @@ export class Connector extends Base.Connector {
       courseTitle?: string
       registration?: string
       debug?: boolean
+      masteryThreshold?: number
+      progressThreshold?: number
     } = {}
   ) {
     super()
+
+    window['SCORE'] = 0
 
     this.active = false
     this.debug = config.debug || false
@@ -63,8 +69,8 @@ export class Connector extends Base.Connector {
     this.taskStates = {}
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
+    this.accumulatedTime = 0 // No previous session time yet
     this.completionSent = false
-    this.progressThreshold = 0.9 // 90% of slides visited is considered complete
     this.registration = config.registration || this.generateUUID()
 
     // Default actor if none provided
@@ -89,6 +95,20 @@ export class Connector extends Base.Connector {
             'Initializing structures from config...',
             JSON.stringify(windowAny.config_)
           )
+        }
+
+        // Load thresholds from window.config_ (set by config.js in xAPI export)
+        // Falls back to constructor config, then to defaults
+        this.progressThreshold =
+          windowAny.config_.progressThreshold ?? config.progressThreshold ?? 0.9
+        this.masteryScore =
+          windowAny.config_.masteryThreshold ?? config.masteryThreshold ?? 0.8
+
+        if (this.debug) {
+          console.log('Loaded thresholds:', {
+            progressThreshold: this.progressThreshold,
+            masteryScore: this.masteryScore,
+          })
         }
 
         // Initialize quizzes
@@ -131,6 +151,10 @@ export class Connector extends Base.Connector {
             tasks: Object.keys(this.taskStates).length,
           })
         }
+      } else {
+        // No window.config_ available, use defaults from constructor parameter
+        this.progressThreshold = config.progressThreshold ?? 0.9
+        this.masteryScore = config.masteryThreshold ?? 0.8
       }
     } catch (e) {
       if (this.debug) {
@@ -195,21 +219,40 @@ export class Connector extends Base.Connector {
   }
 
   /**
-   * Handle window unload event to send terminated statement
+   * Handle window unload event to send terminated or suspended statement
    */
   private handleUnload() {
     if (!this.active || !this.lrs) return
 
-    const duration = Statement.formatDuration(Date.now() - this.startTime)
+    const duration = Statement.formatDuration(this.getTotalDuration())
 
-    // Send terminated statement
-    const statement = Statement.generateTerminatedStatement(
-      this.actor,
-      this.courseId,
-      this.courseTitle,
-      duration,
-      this.registration
-    )
+    // Determine which statement to send based on completion status
+    let statement: any
+
+    if (this.completionSent) {
+      // Course is complete - send terminated statement
+      statement = Statement.generateTerminatedStatement(
+        this.actor,
+        this.courseId,
+        this.courseTitle,
+        duration,
+        this.registration
+      )
+    } else {
+      // Course is incomplete - send suspended statement with progress
+      const progress =
+        this.totalSlides > 0 ? this.visitedSlides.size / this.totalSlides : 0
+
+      statement = Statement.generateSuspendedStatement(
+        this.actor,
+        this.courseId,
+        this.courseTitle,
+        duration,
+        this.lastVisitedSlide,
+        progress,
+        this.registration
+      )
+    }
 
     // Use sendBeacon for more reliable delivery during page unload
     if (navigator.sendBeacon && this.lrs.endpoint) {
@@ -281,6 +324,7 @@ export class Connector extends Base.Connector {
       const latestSurveyStatements: Record<string, any> = {}
       const latestTaskStatements: Record<string, any> = {}
       let latestSlideStatement: any = null
+      let latestProgressStatement: any = null // Track most recent progressed/suspended/completed for time
 
       for (const stmt of response.statements) {
         // Restore slide visits (experienced verb) - track the most recent one
@@ -380,6 +424,21 @@ export class Connector extends Base.Connector {
           this.completionSent = true
           if (this.debug) {
             console.log('Found completion statement')
+          }
+        }
+
+        // Track the latest statement with duration for time accumulation
+        if (
+          stmt.verb.id === 'http://adlnet.gov/expapi/verbs/progressed' ||
+          stmt.verb.id === 'http://adlnet.gov/expapi/verbs/suspended' ||
+          stmt.verb.id === 'http://adlnet.gov/expapi/verbs/completed'
+        ) {
+          const timestamp = new Date(stmt.timestamp).getTime()
+          if (
+            !latestProgressStatement ||
+            new Date(latestProgressStatement.timestamp).getTime() < timestamp
+          ) {
+            latestProgressStatement = stmt
           }
         }
       }
@@ -539,6 +598,22 @@ export class Connector extends Base.Connector {
         }
       }
 
+      // Restore accumulated time from the latest statement with duration
+      if (latestProgressStatement?.result?.duration) {
+        this.accumulatedTime = this.parseDuration(
+          latestProgressStatement.result.duration
+        )
+        if (this.debug) {
+          console.log(
+            'Restored accumulated time:',
+            this.accumulatedTime,
+            'ms (',
+            Math.round(this.accumulatedTime / 1000),
+            'seconds)'
+          )
+        }
+      }
+
       if (this.debug) {
         console.log('State restoration complete:', {
           visitedSlides: this.visitedSlides.size,
@@ -549,6 +624,7 @@ export class Connector extends Base.Connector {
           totalScore: this.totalScore,
           maxScore: this.maxScore,
           completionSent: this.completionSent,
+          accumulatedTime: this.accumulatedTime,
         })
       }
     } catch (err) {
@@ -558,43 +634,224 @@ export class Connector extends Base.Connector {
   }
 
   /**
+   * Parse ISO8601 duration string to milliseconds
+   * @param duration ISO8601 duration string (e.g., "PT1H30M15S")
+   * @returns Duration in milliseconds
+   */
+  private parseDuration(duration: string): number {
+    // Format: PT[hours]H[minutes]M[seconds]S
+    const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/
+    const matches = duration.match(regex)
+
+    if (!matches) return 0
+
+    const hours = parseInt(matches[1] || '0', 10)
+    const minutes = parseInt(matches[2] || '0', 10)
+    const seconds = parseFloat(matches[3] || '0')
+
+    return (hours * 3600 + minutes * 60 + seconds) * 1000
+  }
+
+  /**
+   * Get total duration including previous sessions
+   * @returns Total duration in milliseconds
+   */
+  private getTotalDuration(): number {
+    return this.accumulatedTime + (Date.now() - this.startTime)
+  }
+
+  /**
    * Check if course is complete based on progress
+   * Calculates combined completion ratio across slides, quizzes, and surveys
    * @returns True if course is complete
    */
   private checkCompletion(): boolean {
     if (this.totalSlides === 0) return false
 
-    const slideProgress = this.visitedSlides.size / this.totalSlides
-    const slideComplete = slideProgress >= this.progressThreshold
+    // Count completed quizzes
+    let completedQuizzes = 0
+    let totalQuizzes = 0
+    for (const slideId in this.quizStates) {
+      for (const quizIndex in this.quizStates[slideId]) {
+        totalQuizzes++
+        const quiz = this.quizStates[slideId][quizIndex]
+        if (quiz.solved !== 0) {
+          completedQuizzes++
+        }
+      }
+    }
 
-    // If no quizzes, just check slides
-    if (this.maxScore === 0) return slideComplete
+    // Count completed surveys
+    let completedSurveys = 0
+    let totalSurveys = 0
+    for (const slideId in this.surveyStates) {
+      for (const surveyIndex in this.surveyStates[slideId]) {
+        totalSurveys++
+        const survey = this.surveyStates[slideId][surveyIndex]
+        if (survey.submitted === true) {
+          completedSurveys++
+        }
+      }
+    }
 
-    // With quizzes, check both slides and all quizzes answered
-    const quizComplete = Object.values(this.quizStates).every((slideQuizzes) =>
-      Object.values(slideQuizzes).every((quiz) => quiz.solved !== undefined)
-    )
-    return slideComplete && quizComplete
+    // Calculate combined completion ratio
+    const totalItems = this.totalSlides + totalQuizzes + totalSurveys
+    const completedItems =
+      this.visitedSlides.size + completedQuizzes + completedSurveys
+
+    if (this.debug) {
+      console.log('Completion check:', {
+        visitedSlides: this.visitedSlides.size,
+        totalSlides: this.totalSlides,
+        completedQuizzes,
+        totalQuizzes,
+        completedSurveys,
+        totalSurveys,
+        completedItems,
+        totalItems,
+        progressThreshold: this.progressThreshold,
+      })
+    }
+
+    if (totalItems === 0) return false
+
+    const completionRatio = completedItems / totalItems
+
+    return completionRatio >= this.progressThreshold
   }
 
   /**
-   * Send completion statement if course is complete
+   * Send progress/completion statement to track current state
+   * Like SCORM, this sends updates continuously, not just at the end
    */
   private sendCompletionIfNeeded() {
-    if (this.completionSent || !this.active || !this.lrs) return
+    if (!this.active || !this.lrs) return
 
-    if (this.checkCompletion()) {
-      const success =
-        this.maxScore > 0 ? this.totalScore / this.maxScore >= 0.7 : true
-      const duration = Statement.formatDuration(Date.now() - this.startTime)
+    let total = 0
+    let solved = 0
+    let finished = 0
+    let count = 0
+
+    for (const slideId in this.quizStates) {
+      for (const quizIndex in this.quizStates[slideId]) {
+        const quiz = this.quizStates[slideId][quizIndex]
+        count = quiz.score || 0
+
+        total += count
+
+        switch (quiz.solved) {
+          case 1: {
+            solved += count
+            break
+          }
+          case -1: {
+            finished += count
+            break
+          }
+        }
+      }
+    }
+
+    const score = solved === 0 ? 0 : solved / total
+
+    window['SCORE'] = score
+
+    if (this.debug) {
+      console.log('Checking completion...', {
+        totalSlides: this.totalSlides,
+        visitedSlides: this.visitedSlides.size,
+        maxScore: total,
+        totalScore: solved,
+        quizStates: Object.keys(this.quizStates).length,
+        completionSent: this.completionSent,
+      })
+    }
+
+    const duration = Statement.formatDuration(this.getTotalDuration())
+    const progress =
+      this.totalSlides > 0 ? this.visitedSlides.size / this.totalSlides : 0
+
+    // COMPLETION: Use checkCompletion() to determine if course is complete
+    // This checks slides visited, all quizzes answered, and all surveys submitted
+    const completionStatus = this.checkCompletion()
+
+    // SUCCESS: Based on quiz/survey performance (assessment mastery)
+    let success: boolean | undefined = undefined
+
+    if (this.masteryScore == null) {
+      // No mastery score defined - success is not applicable
+      success = undefined
+    } else {
+      // Check if all quizzes have been completed (either solved or failed)
+      const allQuizzesCompleted = finished + solved === total && total > 0
+
+      if (score >= this.masteryScore || total === 0) {
+        // Passed: achieved mastery score and completed all surveys
+        success = true
+      } else if (allQuizzesCompleted) {
+        // All quizzes and surveys are done - determine pass/fail
+        if (score >= this.masteryScore) {
+          success = true
+        } else {
+          success = false
+        }
+      } else {
+        // Still in progress: not all assessments completed yet
+        success = undefined
+      }
+    }
+
+    if (this.debug) {
+      console.log('Success calculation:', {
+        masteryScore: this.masteryScore,
+        score,
+        solved,
+        finished,
+        total,
+        allQuizzesCompleted: finished + solved === total,
+
+        success,
+      })
+    }
+
+    const progressStatement = Statement.generateProgressedStatement(
+      this.actor,
+      this.courseId,
+      this.courseTitle,
+      progress,
+      this.registration,
+      duration,
+      solved,
+      total,
+      completionStatus,
+      success
+    )
+
+    this.lrs
+      .sendStatement(progressStatement)
+      .then(() => {
+        if (this.debug) {
+          console.log(
+            `Sent progressed statement: ${
+              progress * 100
+            }% complete, score: ${solved}/${total}, completion: ${completionStatus}, success: ${success}`
+          )
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to send progressed statement:', err)
+      })
+
+    if (completionStatus && !this.completionSent) {
+      // Send completed statement only once when course completion criteria met
 
       const statement = Statement.generateCompletedStatement(
         this.actor,
         this.courseId,
         this.courseTitle,
         success,
-        this.totalScore,
-        this.maxScore,
+        solved,
+        total,
         duration,
         this.registration
       )
@@ -629,10 +886,16 @@ export class Connector extends Base.Connector {
 
     // Get total slide count from LiaScript course structure
     const windowAny = window as any
-    if (windowAny.LIA?.course?.slides) {
-      this.totalSlides = windowAny.LIA.course.slides.length
+    if (windowAny.config_?.totalSlides) {
+      this.totalSlides = windowAny.config_.totalSlides
       if (this.debug) {
         console.log('Total slides in course:', this.totalSlides)
+      }
+    } else {
+      if (this.debug) {
+        console.warn(
+          'Could not get total slides - config_.totalSlides not available'
+        )
       }
     }
 
@@ -662,6 +925,12 @@ export class Connector extends Base.Connector {
     if (slide !== undefined) {
       this.slide(slide)
     }
+
+    // Check if course was already completed (from restored state)
+    // This handles the case where user returns to an already-finished course
+    if (!this.completionSent) {
+      this.sendCompletionIfNeeded()
+    }
   }
 
   /**
@@ -689,6 +958,9 @@ export class Connector extends Base.Connector {
       slideTitle = windowAny.LIA.course.slides[id].title || slideTitle
     }
 
+    // Calculate total duration including previous sessions
+    const duration = Statement.formatDuration(this.getTotalDuration())
+
     // Send experienced statement
     const statement = Statement.generateExperiencedStatement(
       this.actor,
@@ -696,7 +968,8 @@ export class Connector extends Base.Connector {
       this.courseTitle,
       id,
       slideTitle,
-      this.registration
+      this.registration,
+      duration
     )
 
     this.lrs
@@ -705,33 +978,13 @@ export class Connector extends Base.Connector {
         if (this.debug) {
           console.log('Sent experienced statement, ID:', responseId)
         }
+        // Send progress/completion update after slide experience
+        // This provides continuous tracking like SCORM does
+        this.sendCompletionIfNeeded()
       })
       .catch((err) => {
         console.error('Failed to send experienced statement:', err)
       })
-
-    // Send progress statement if we know the total slides
-    if (this.totalSlides > 0) {
-      const progress = this.visitedSlides.size / this.totalSlides
-
-      const progressStatement = Statement.generateProgressedStatement(
-        this.actor,
-        this.courseId,
-        this.courseTitle,
-        progress,
-        this.registration
-      )
-
-      this.lrs
-        .sendStatement(progressStatement)
-        .then(() => {
-          // Check if course is complete after updating progress
-          this.sendCompletionIfNeeded()
-        })
-        .catch((err) => {
-          console.error('Failed to send progress statement:', err)
-        })
-    }
   }
 
   /**
@@ -811,6 +1064,8 @@ export class Connector extends Base.Connector {
 
         this.quizStates[id][i] = quiz
 
+        console.warn('Storing quiz:', id, i, quiz)
+
         // Update scores
         if (quiz.score !== undefined) {
           if (quiz.solved === 1) this.totalScore += quiz.score
@@ -832,8 +1087,8 @@ export class Connector extends Base.Connector {
           i,
           quizType,
           quiz.input || quiz.answer || '',
-          quiz.solved === 1,
-          quiz.solved === 1 ? quiz.score || 1 : 0,
+          quiz.solved === 1 ? true : quiz.solved === -1 ? false : null,
+          quiz.score || 1,
           quiz.score || 1,
           quiz,
           this.registration
@@ -843,6 +1098,7 @@ export class Connector extends Base.Connector {
           .sendStatement(statement)
           .then(() => {
             if (this.debug) console.log(`Sent answer: slide ${id}, quiz ${i}`)
+            // Send progress update after quiz answer (like SCORM continuous updates)
             this.sendCompletionIfNeeded()
           })
           .catch((err) =>
@@ -956,6 +1212,7 @@ export class Connector extends Base.Connector {
     this.taskStates = {}
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
+    this.accumulatedTime = 0
     this.completionSent = false
 
     // Call base implementation
