@@ -58,8 +58,28 @@ function googleTranslateElementInit() {
     },
     // this defines the `id` of the HTML element that will be replaced by
     // the google-drop-down field for selection languages
-    'google_translate_element'
+    'google_translate_element',
   )
+}
+
+/**
+ * Polyfill for Performance API to prevent errors in older browsers.
+ * Google Translate uses performance.measure() which may fail on older browsers.
+ */
+function polyfillPerformanceAPI() {
+  if (typeof performance !== 'undefined') {
+    const originalMeasure = performance.measure?.bind(performance)
+    if (originalMeasure) {
+      performance.measure = function (name, startMark, endMark) {
+        try {
+          return originalMeasure(name, startMark, endMark)
+        } catch (e) {
+          // Silently fail if marks don't exist
+          return undefined as any
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -68,13 +88,16 @@ function googleTranslateElementInit() {
 function injectGoogleTranslate() {
   // inject the google translator
   if (!googleTranslate) {
+    // Apply polyfill before loading Google Translate
+    polyfillPerformanceAPI()
+
     // TODO:
     // the general URL without protocol needs to be checked with other
     // protocols IPFS, Hyper, etc.
     RESOURCE.loadScript(
       'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit',
       false,
-      false
+      false,
     )
 
     // Setup the global init function, this function is called by google as a
@@ -110,7 +133,18 @@ const Service = {
       mutations.forEach(function (mutation) {
         changeGoogleStyles()
 
-        let displayNames = new Intl.DisplayNames(['en'], { type: 'language' })
+        let langCode = document.documentElement.lang
+        let langName
+        if (
+          typeof Intl !== 'undefined' &&
+          typeof Intl.DisplayNames === 'function'
+        ) {
+          let displayNames = new Intl.DisplayNames(['en'], { type: 'language' })
+          langName = displayNames.of(langCode)
+        } else {
+          // Fallback: just use the language code if DisplayNames is not supported
+          langName = langCode
+        }
 
         elmSend({
           reply: true,
@@ -118,10 +152,7 @@ const Service = {
           service: Port,
           message: {
             cmd: 'lang',
-            param: [
-              document.documentElement.lang,
-              displayNames.of(document.documentElement.lang),
-            ],
+            param: [langCode, langName],
           },
         })
       })
