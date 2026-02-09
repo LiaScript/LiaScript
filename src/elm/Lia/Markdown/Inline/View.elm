@@ -30,7 +30,7 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribut
 import Lia.Markdown.HTML.Types exposing (Node)
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Config as Config exposing (Config)
-import Lia.Markdown.Inline.Multimedia exposing (website)
+import Lia.Markdown.Inline.Multimedia exposing (reverseMovie, website)
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), combine)
 import Lia.Markdown.Quiz.Block.Types exposing (State(..))
@@ -884,7 +884,13 @@ reference config ref attr =
                 ]
 
         Movie alt_ ( tube, url_ ) title_ ->
-            Html.a [ Attr.href url_ ]
+            Html.a
+                [ url_
+                    |> reverseMovie
+                    |> Maybe.withDefault url_
+                    |> Attr.href
+                , Attr.target "_blank"
+                ]
                 [ if tube then
                     figure config title_ Nothing "iframe" <|
                         Html.div [ Attr.class "lia-iframe-wrapper" ]
@@ -895,6 +901,7 @@ reference config ref attr =
                                  )
                                     :: Attr.attribute "allowfullscreen" ""
                                     -- :: Attr.attribute "loading" "lazy"
+                                    :: Attr.style "pointer-events" "none"
                                     :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                                     :: toAttribute attr
                                     |> CList.addWhen (title config title_)
