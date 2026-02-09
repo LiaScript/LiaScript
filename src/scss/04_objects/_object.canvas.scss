@@ -30,7 +30,7 @@ $slide-margin-left-textbook: 19rem !default;
   transition: settings.$global-transition;
   transition-property: left, right, width;
   width: 100vw;
-  overflow-x: hidden;
+  overflow: hidden;
 
   .lia-skip-nav {
     position: absolute;
