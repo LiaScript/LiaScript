@@ -410,7 +410,10 @@ update session msg model =
                                         ++ ")"
 
                              else
-                                Event.none
+                                Service.Script.exec
+                                    5000
+                                    False
+                                    "console.log('__RENDER_DONE__')"
                             )
 
                 ( JumpToFragment id, Just sec ) ->
