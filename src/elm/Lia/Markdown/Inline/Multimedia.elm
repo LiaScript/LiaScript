@@ -9,7 +9,7 @@ import Lia.Parser.UrlPattern.Generic exposing (root)
 
 
 website =
-    { youtube = "https://www.youtube-nocookie.com/embed/"
+    { youtube = "https://www.youtube.com/embed/"
     }
 
 
