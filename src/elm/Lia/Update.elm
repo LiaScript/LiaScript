@@ -413,7 +413,7 @@ update session msg model =
                                 Service.Script.exec
                                     5000
                                     False
-                                    "window.console.log('__RENDER_DONE__')"
+                                    "window.dispatchEvent( new CustomEvent(\"puppeteer:ready\", { detail: { status: \"done\", ts: Date.now() }}))"
                             )
 
                 ( JumpToFragment id, Just sec ) ->
