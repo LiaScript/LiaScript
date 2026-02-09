@@ -147,6 +147,16 @@ update session msg model =
                                     }
                             }
                         )
+                        |> Return.batchEvent
+                            (if idx == Array.length model.sections - 1 then
+                                Service.Script.exec
+                                    5000
+                                    False
+                                    "console.log(\"__RENDER_DONE__\"); window.dispatchEvent( new CustomEvent(\"puppeteer:ready\", { detail: { status: \"done\", ts: Date.now() }}));"
+
+                             else
+                                Event.none
+                            )
 
                 else
                     { model
@@ -410,10 +420,7 @@ update session msg model =
                                         ++ ")"
 
                              else
-                                Service.Script.exec
-                                    5000
-                                    False
-                                    "window.dispatchEvent( new CustomEvent(\"puppeteer:ready\", { detail: { status: \"done\", ts: Date.now() }}))"
+                                Event.none
                             )
 
                 ( JumpToFragment id, Just sec ) ->
