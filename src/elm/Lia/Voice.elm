@@ -157,11 +157,11 @@ getVoice male voice =
 
 isMale : String -> Maybe Bool
 isMale voice =
-    case String.split " " voice of
-        [ _, "Male" ] ->
+    case voice |> String.split " " |> List.reverse of
+        "Male" :: _ ->
             Just True
 
-        [ _, "Female" ] ->
+        "Female" :: _ ->
             Just False
 
         _ ->
@@ -183,7 +183,7 @@ isMale voice =
     --> Just { translated = True, lang = "de", name = "Deutsch Male" }
 
 -}
-getVoiceFor : String -> { x | old : String, new : String } -> Maybe Voice
+getVoiceFor : String -> { x | name : Maybe String, old : String, new : String } -> Maybe Voice
 getVoiceFor voice lang =
     if lang.old == lang.new then
         -- Nothing has changed
@@ -198,10 +198,42 @@ getVoiceFor voice lang =
 
     else if getLang voice == Just lang.old then
         -- the old voice needs to be translated too
-        voice
-            |> isMale
-            |> getVoiceFromLang lang.new
-            |> Maybe.map (Voice True lang.new)
+        let
+            newVoice =
+                voice
+                    |> isMale
+                    |> getVoiceFromLang lang.new
+        in
+        case ( newVoice, lang.name ) of
+            ( Just newName, _ ) ->
+                Just
+                    { translated = True
+                    , lang = lang.new
+                    , name = newName
+                    }
+
+            ( Nothing, Just langName ) ->
+                let
+                    gender =
+                        case isMale voice of
+                            Just True ->
+                                " Male"
+
+                            Just False ->
+                                " Female"
+
+                            Nothing ->
+                                ""
+                in
+                Just
+                    { translated = True
+                    , lang = lang.new
+                    , name = langName ++ gender
+                    }
+
+            _ ->
+                Nothing
+        --|> Maybe.withDefault (Voice True lang.new lang.name)
 
     else
         -- the voice
