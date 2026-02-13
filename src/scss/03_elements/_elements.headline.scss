@@ -34,7 +34,8 @@ h3 {
 }
 
 h4,
-h5 {
+h5,
+h6 {
   font-family: settings.$global-font-family;
   line-height: 1.38;
 }
@@ -68,6 +69,7 @@ h3 {
 }
 
 h4,
-h5 {
+h5,
+h6 {
   font-size: calc(#{$h4-mobile} * var(--font-size-multiplier));
 }
