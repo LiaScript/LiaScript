@@ -52,9 +52,6 @@ fromMode _ =
     -}
     JE.string "Textbook"
 
-            Full ->
-                "Full"
-
 
 settings :
     Settings
