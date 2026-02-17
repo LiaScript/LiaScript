@@ -218,25 +218,23 @@ inlines =
 
 inlines2 : Parser Context Inline
 inlines2 =
-    lazy <|
-        \() ->
-            Macro.macro
-                |> keep
-                    ([ code
-                     , Footnote.inline parse_inlines
-                     , input
-                     , reference
-                     , formula
-                     , inlines
-                        |> Effect.inline
-                        |> map EInline
-                     , stringExceptions
-                     , strings
-                     ]
-                        |> choice
-                        |> andMap (Macro.macro |> keep annotations)
-                        |> or (eScript [] |> map (\( attr, id ) -> Script id attr))
-                    )
+    Macro.macro
+        |> keep
+            ([ code
+             , Footnote.inline parse_inlines
+             , input
+             , reference
+             , formula
+             , inlines
+                |> Effect.inline
+                |> map EInline
+             , stringExceptions
+             , strings
+             ]
+                |> choice
+                |> andMap (Macro.macro |> keep annotations)
+                |> or (eScript [] |> map (\( attr, id ) -> Script id attr))
+            )
 
 
 input : Parser Context (Parameters -> Inline)
