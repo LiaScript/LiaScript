@@ -511,26 +511,24 @@ toContainer inline_list =
 
 strings : Parser Context (Parameters -> Inline)
 strings =
-    lazy <|
-        \() ->
-            Context.checkAbort
-                |> keep
-                    (choice
-                        [ inline_url
-                        , ellipsis
-                        , stringBase
-                        , arrows
-                        , dashes
-                        , smileys
-                        , stringEscape
-                        , stringWithStyle
-                        , stringSpaces
-                        , HTML.parse inlines |> map IHTML
-                        , stringCharacters
-                        , lineBreak
-                        , stringBase2
-                        ]
-                    )
+    Context.checkAbort
+        |> keep
+            (choice
+                [ inline_url
+                , ellipsis
+                , stringBase
+                , arrows
+                , dashes
+                , smileys
+                , stringEscape
+                , stringWithStyle
+                , stringSpaces
+                , HTML.parse inlines |> map IHTML
+                , stringCharacters
+                , lineBreak
+                , stringBase2
+                ]
+            )
 
 
 
