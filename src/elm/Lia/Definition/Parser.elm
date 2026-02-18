@@ -8,7 +8,6 @@ import Combine
         , choice
         , ignore
         , keep
-        , lazy
         , many1
         , map
         , maybe
@@ -69,14 +68,12 @@ inline_parser defines str =
 
 definition : Parser Context ()
 definition =
-    lazy <|
-        \() ->
-            whitespace
-                |> keep defs
-                |> many1
-                |> ignore whitespace
-                |> comment
-                |> skip
+    whitespace
+        |> keep defs
+        |> many1
+        |> ignore whitespace
+        |> comment
+        |> skip
 
 
 store : ( String, String ) -> Parser Context ()

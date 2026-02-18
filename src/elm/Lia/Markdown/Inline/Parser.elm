@@ -88,7 +88,7 @@ everything within --- three dashed lines...
 ignore_comment : Parser s (List a)
 ignore_comment =
     string "<!---"
-        |> ignore (manyTill anyChar (string "--->"))
+        |> ignore (manyTill anyChar (string "-->"))
         |> keep (succeed [])
 
 
@@ -97,7 +97,6 @@ comments =
     choice
         [ ignore_comment |> skip
         , Effect.hidden_comment
-        , ignore_comment |> skip
         ]
         |> many
         |> skip
@@ -272,25 +271,23 @@ doubleClick pos =
 
 inlines2 : Parser Context Inline
 inlines2 =
-    lazy <|
-        \() ->
-            Macro.macro
-                |> keep
-                    ([ code
-                     , Footnote.inline parse_inlines
-                     , input
-                     , reference
-                     , formula
-                     , inlines
-                        |> Effect.inline
-                        |> map EInline
-                     , stringExceptions
-                     , strings
-                     ]
-                        |> choice
-                        |> andMap (Macro.macro |> keep annotations)
-                        |> or (eScript [] |> map (\( attr, id ) -> Script id attr))
-                    )
+    Macro.macro
+        |> keep
+            ([ code
+             , Footnote.inline parse_inlines
+             , input
+             , reference
+             , formula
+             , inlines
+                |> Effect.inline
+                |> map EInline
+             , stringExceptions
+             , strings
+             ]
+                |> choice
+                |> andMap (Macro.macro |> keep annotations)
+                |> or (eScript [] |> map (\( attr, id ) -> Script id attr))
+            )
 
 
 input : Parser Context (Parameters -> Inline)
@@ -565,26 +562,24 @@ toContainer inline_list =
 
 strings : Parser Context (Parameters -> Inline)
 strings =
-    lazy <|
-        \() ->
-            Context.checkAbort
-                |> keep
-                    (choice
-                        [ inline_url
-                        , ellipsis
-                        , stringBase
-                        , arrows
-                        , dashes
-                        , smileys
-                        , stringEscape
-                        , stringWithStyle
-                        , stringSpaces
-                        , HTML.parse inlines |> map IHTML
-                        , stringCharacters
-                        , lineBreak
-                        , stringBase2
-                        ]
-                    )
+    Context.checkAbort
+        |> keep
+            (choice
+                [ inline_url
+                , ellipsis
+                , stringBase
+                , arrows
+                , dashes
+                , smileys
+                , stringEscape
+                , stringWithStyle
+                , stringSpaces
+                , HTML.parse inlines |> map IHTML
+                , stringCharacters
+                , lineBreak
+                , stringBase2
+                ]
+            )
 
 
 

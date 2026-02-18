@@ -73,7 +73,7 @@ import('../../typescript/connectors/XAPI/index').then(function (xAPI) {
           courseId: activity_id || '',
           courseTitle: '',
           registration: registration || '',
-          debug: true, // Enable debug to see what's happening
+          debug: false,
         }
 
         console.log('xAPI launch parameters detected:', {
