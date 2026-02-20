@@ -641,7 +641,7 @@ scriptBody =
              , regex "'([^']*|\\\\'|\\\\)*'"
              , regex "`([^`]*|\n|\\\\`|\\\\)*`"
              , regex "<(?!/)"
-             , regex "//[^\n]*"
+             , regex "//[^<\n]*"
              , string "/"
              ]
                 |> choice
