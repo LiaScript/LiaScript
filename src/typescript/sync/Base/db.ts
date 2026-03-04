@@ -1,11 +1,9 @@
 import * as Y from 'yjs'
+import * as awarenessProtocol from 'y-protocols/awareness'
 import * as State from './state'
 import * as helper from '../../helper'
 
 import { YKeyValue } from 'y-utility/y-keyvalue'
-
-const PEERS = 'peers'
-const CURSORS = 'cursors'
 
 const QUIZ = 'q'
 const SURVEY = 's'
@@ -15,22 +13,22 @@ export class CRDT {
   protected callback: (event: any, origin: null | string) => void
   public doc: Y.Doc
 
+  // Used by legacy manual-sync providers (Trystero, PubNub, P2PT) as a
+  // rough causal tiebreaker. Not needed by the GenericProvider path.
   public timestamp: number = Date.now()
-  public initialized: boolean = false
-  public initPromise: Promise<void> | null = null
 
-  protected peers: Y.Map<boolean>
-  protected cursors: Y.Map<State.Cursor>
+  protected awareness?: awarenessProtocol.Awareness
   protected codes: Y.Map<Y.Text>
-  protected quizzes: YKeyValue<State.Data>
-  protected surveys: YKeyValue<State.Data>
+  // Flat Y.Map with composite key = JSON.stringify([sectionId, questionIdx, peerID]).
+  // Each peer owns exactly one key per question — no two peers ever write the
+  // same key, so there is no last-writer-wins collision whatsoever.
+  protected quizzes: Y.Map<any>
+  protected surveys: Y.Map<any>
   protected chat: YKeyValue<{ message: String; color: String; user: String }>
 
   protected length: number
   protected peerID: string
   protected color?: string
-
-  protected initState: any
 
   constructor(
     peerID: string,
@@ -46,96 +44,202 @@ export class CRDT {
     this.length = 0
     this.peerID = peerID
 
-    this.peers = this.doc.getMap(PEERS)
-    this.cursors = this.doc.getMap(CURSORS)
     this.codes = this.doc.getMap(CODE)
 
-    this.quizzes = new YKeyValue(this.doc.getArray(QUIZ))
-    this.surveys = new YKeyValue(this.doc.getArray(SURVEY))
+    this.quizzes = this.doc.getMap<any>(QUIZ)
+    this.surveys = this.doc.getMap<any>(SURVEY)
     this.chat = new YKeyValue(this.doc.getArray('chat'))
   }
 
   init(data: State.Vector) {
-    // Create a promise for initialization
-    this.initPromise = new Promise<void>((resolve) => {
-      this.initState = data
-      this.length = Math.max(this.length, data.length)
-      const self = this
+    this.length = Math.max(this.length, data.length)
 
-      this.doc.transact(() => {
-        for (let i = 0; i < data.length; i++) {
-          self.initMap(this.quizzes, i, data[i][QUIZ])
-          self.initMap(this.surveys, i, data[i][SURVEY])
-          self.initText(i, data[i][CODE])
-        }
+    this.doc.transact(() => {
+      for (let i = 0; i < data.length; i++) {
+        this.initMap(this.quizzes, i, data[i][QUIZ])
+        this.initMap(this.surveys, i, data[i][SURVEY])
+        this.initText(i, data[i][CODE])
+      }
+    }, this.peerID)
 
-        self.peers.set(self.peerID, true)
-      }, this.peerID)
+    this.registerCallbacks()
 
-      this.registerCallbacks()
+    // Observers are registered AFTER the transact above, so they never fire
+    // for data that was just written (own answers) or data that already existed
+    // in the CRDT from a sync that completed before init() was called.
+    // Explicitly dispatch the current CRDT state to LiaScript once.
+    this.fireInitialState()
+  }
 
-      // Mark as initialized and resolve promise
-      this.initialized = true
-      resolve()
-    })
+  protected fireInitialState() {
+    // Peers
+    const peers = this.getPeers()
+    if (peers.length > 0) {
+      this.callback(peers, 'peer')
+    }
 
-    return this.initPromise
+    // Cursors (awareness-based, fire alongside peers)
+    const cursors = this.getCursors()
+    if (cursors.length > 0) {
+      this.callback(cursors, 'cursor')
+    }
+
+    // Quizzes — collect all section IDs that have any entries
+    const quizIds = new Set<number>()
+    for (const key of this.quizzes.keys()) {
+      try {
+        const [id] = JSON.parse(key)
+        quizIds.add(id)
+      } catch {}
+    }
+    if (quizIds.size > 0) {
+      this.callback(
+        [...quizIds].map((id) => ({
+          id,
+          data: this.getMaps(id, this.quizzes),
+        })),
+        'quiz',
+      )
+    }
+
+    // Surveys
+    const surveyIds = new Set<number>()
+    for (const key of this.surveys.keys()) {
+      try {
+        const [id] = JSON.parse(key)
+        surveyIds.add(id)
+      } catch {}
+    }
+    if (surveyIds.size > 0) {
+      this.callback(
+        [...surveyIds].map((id) => ({
+          id,
+          data: this.getMaps(id, this.surveys),
+        })),
+        'survey',
+      )
+    }
+
+    // Code editors
+    const codeIds = new Set<number>()
+    for (const key of this.codes.keys()) {
+      try {
+        const [id] = JSON.parse(key)
+        codeIds.add(id)
+      } catch {}
+    }
+    if (codeIds.size > 0) {
+      this.callback(this.getCode(codeIds), 'code')
+    }
+
+    // Chat — iterate YKeyValue's internal map (sorted by timestamp key)
+    const chatMessages: any[] = []
+    for (const [key, entry] of (this.chat as any).map as Map<
+      string,
+      { key: string; val: any }
+    >) {
+      const obj = { ...entry.val, id: parseInt(key) }
+      chatMessages.push(obj)
+    }
+    if (chatMessages.length > 0) {
+      chatMessages.sort((a, b) => a.id - b.id)
+      this.callback(chatMessages, 'chat')
+    }
+  }
+
+  setAwareness(awareness: awarenessProtocol.Awareness) {
+    this.awareness = awareness
+    // Announce own presence
+    awareness.setLocalState({ peerID: this.peerID, color: this.getColor() })
+
+    awareness.on(
+      'change',
+      (_: { added: number[]; updated: number[]; removed: number[] }) => {
+        const peers = this.getPeers()
+        this.callback(peers, 'peer')
+        const cursors = this.getCursors()
+        if (cursors.length > 0) this.callback(cursors, 'cursor')
+      },
+    )
   }
 
   registerCallbacks() {
-    this.peers.observe((event: Y.YMapEvent<boolean>) => {
-      const peers = this.getPeers()
-      this.callback(peers, 'peer')
-    })
-
-    this.cursors.observe((event: Y.YMapEvent<State.Cursor>) => {
-      const peers = this.getPeers()
-      this.callback(this.getCursors(peers), 'cursor')
-    })
-
-    this.quizzes.on('change', (changes) => {
-      const updates = this.getUpdates(this.quizzes, changes)
-
-      if (updates) {
-        this.callback(updates, 'quiz')
+    // The map is flat so a shallow observe is sufficient — no nesting.
+    this.quizzes.observe((event: Y.YMapEvent<any>) => {
+      const ids = new Set<number>()
+      event.keysChanged.forEach((key) => {
+        try {
+          const [id] = JSON.parse(key)
+          ids.add(id)
+        } catch {}
+      })
+      if (ids.size > 0) {
+        this.callback(
+          [...ids].map((id) => ({ id, data: this.getMaps(id, this.quizzes) })),
+          'quiz',
+        )
       }
     })
 
-    this.surveys.on('change', (changes) => {
-      const updates = this.getUpdates(this.surveys, changes)
-
-      if (updates) {
-        this.callback(updates, 'survey')
+    this.surveys.observe((event: Y.YMapEvent<any>) => {
+      const ids = new Set<number>()
+      event.keysChanged.forEach((key) => {
+        try {
+          const [id] = JSON.parse(key)
+          ids.add(id)
+        } catch {}
+      })
+      if (ids.size > 0) {
+        this.callback(
+          [...ids].map((id) => ({ id, data: this.getMaps(id, this.surveys) })),
+          'survey',
+        )
       }
     })
 
-    this.chat.on('change', (changes) => {
-      const vector: any[] = []
+    this.chat.on(
+      'change',
+      (
+        changes: Map<
+          string,
+          | { action: 'add'; newValue: any }
+          | { action: 'update'; newValue: any; oldValue: any }
+          | { action: 'delete'; oldValue: any }
+        >,
+      ) => {
+        const vector: any[] = []
 
-      let obj
-      for (let [id, op] of changes) {
-        if (op.action === 'add') {
-          obj = op.newValue
-          obj['id'] = parseInt(id)
-          vector.push(obj)
+        let obj
+        for (let [id, op] of changes) {
+          if (op.action === 'add') {
+            obj = op.newValue
+            obj['id'] = parseInt(id)
+            vector.push(obj)
+          }
         }
-      }
 
-      if (vector.length > 0) this.callback(vector, 'chat')
-    })
+        if (vector.length > 0) this.callback(vector, 'chat')
+      },
+    )
 
-    this.codes.observeDeep((events: Y.YEvent<Y.Text>[]) => {
+    this.codes.observeDeep((events: Y.YEvent<any>[]) => {
       const ids: Set<number> = new Set()
 
       for (const event of events) {
-        // @ts-ignore
-        const keys = event.currentTarget.keys()
-
-        for (const key of keys) {
+        if (event.target === this.codes) {
+          // A Y.Text was added/removed from the codes map.
+          ;(event as Y.YMapEvent<any>).keysChanged.forEach((key) => {
+            try {
+              const [id] = JSON.parse(key)
+              ids.add(id)
+            } catch {}
+          })
+        } else {
+          // A Y.Text content changed. event.path = [codesMapName, '[id,i,j]']
           try {
-            const [id] = JSON.parse(key)
+            const [id] = JSON.parse(event.path[1] as string)
             ids.add(id)
-          } catch (e) {}
+          } catch {}
         }
       }
 
@@ -143,8 +247,6 @@ export class CRDT {
         this.callback(this.getCode(ids), 'code')
       }
     })
-
-    this.peers.set(this.peerID, true)
   }
 
   encode() {
@@ -157,7 +259,9 @@ export class CRDT {
 
   log() {
     console.warn('*********** PEERS ***********')
-    console.warn(this.peers.toJSON())
+    console.warn(this.getPeers())
+    console.warn('*********** CURSORS ***********')
+    console.warn(this.getCursors())
     console.warn('*********** STATE ***********')
     console.warn(this.doc.toJSON())
     /*console.warn('*********** DATA ************')
@@ -165,37 +269,22 @@ export class CRDT {
     */
   }
 
-  protected initMap(
-    map: YKeyValue<State.Data>,
-    id: number,
-    data: State.Data[],
-  ) {
+  protected initMap(map: Y.Map<any>, id: number, data: State.Data[]) {
     if (data.length === 0) return
 
     for (let i = 0; i < data.length; i++) {
-      // Nothing to contribute from local state for this entry — skip entirely.
-      // Calling map.set() with an empty object would delete the existing
-      // Y.Array entry (YKeyValue.set deletes before appending) and replace it
-      // with {}, destroying any remote peer data that already arrived.
-      if (Object.keys(data[i]).length === 0) continue
+      // Only write our own answer. LiaScript's join payload includes other
+      // peers' answers from its local cache — we must never write those, as
+      // each peer is the sole owner of their composite key.
+      const ownValue = data[i][this.peerID]
+      if (ownValue === undefined) continue
 
-      // Read current CRDT state. If synced before init(), this already contains
-      // remote peers' answers and we must not overwrite them.
-      const state = map.get(this.id(id, i)) || {}
+      // Composite key = [sectionId, questionIdx, peerID] — globally unique per peer.
+      const key = JSON.stringify([id, i, this.peerID])
 
-      // Only fill in keys that are missing from the remote state.
-      // This ensures: (a) other peers' data is never overwritten, and
-      // (b) map.set() is only called when there is actually something new.
-      let changed = false
-      for (const key in data[i]) {
-        if (state[key] === undefined) {
-          state[key] = data[i][key]
-          changed = true
-        }
-      }
-
-      if (changed) {
-        map.set(this.id(id, i), state)
+      // Skip if we already have a live answer in the CRDT (e.g. rejoining).
+      if (!map.has(key)) {
+        map.set(key, ownValue)
       }
     }
   }
@@ -210,10 +299,6 @@ export class CRDT {
     }
   }
 
-  diff(state: Uint8Array) {
-    return Y.encodeStateAsUpdate(this.doc, state)
-  }
-
   getCode(ids: Set<number>): { id: number; data: string[][] }[] {
     let vector: { id: number; data: string[][] }[] = []
 
@@ -224,39 +309,34 @@ export class CRDT {
     return vector
   }
 
-  getCursors(keys: string[]) {
+  getCursors(): State.Cursor[] {
+    if (!this.awareness) return []
     const cursors: State.Cursor[] = []
-    const json = this.cursors.toJSON()
-
-    for (let key of keys) {
-      if (key === this.peerID || json[key] === undefined) continue
-
-      cursors.push(json[key])
+    for (const [, state] of this.awareness.getStates()) {
+      if (state?.cursor && state?.peerID && state.peerID !== this.peerID) {
+        cursors.push(state.cursor)
+      }
     }
-
     return cursors
   }
 
   getPeers(): string[] {
-    const peers = this.peers.toJSON()
-
-    if (peers) {
-      return Object.entries(peers)
-        .filter(([_, value]) => value)
-        .map(([key, _]) => key)
+    if (!this.awareness) return []
+    const peers: string[] = []
+    for (const [, state] of this.awareness.getStates()) {
+      if (state?.peerID) peers.push(state.peerID)
     }
-
-    return []
+    return peers
   }
 
   removePeer(peerID?: string) {
-    this.doc.transact(() => {
-      this.peers.set(peerID || this.peerID, false)
-    })
-
     if (peerID === undefined) {
+      // Remove own presence from awareness so remote peers see us leave.
+      this.awareness?.setLocalState(null)
       this.callback(this.encode(), 'exit')
     }
+    // Removing a specific remote peer is not needed — awareness automatically
+    // clears their state when they disconnect from the transport.
   }
 
   id(id1: number, id2: number, id3?: number) {
@@ -267,35 +347,29 @@ export class CRDT {
     return JSON.stringify([id1, id2, id3])
   }
 
-  getMap(key: string, id: number, i: number): Y.Map<any> {
-    return this.doc.getMap(this.id(id, i))
-  }
+  getMaps(id: number, map: Y.Map<any>): State.Data[] {
+    // Prefix check avoids JSON.parse for keys belonging to other sections.
+    const prefix = `[${id},`
+    const result: State.Data[] = []
 
-  getAllMaps(map: YKeyValue<State.Data>): State.Data[][][] {
-    const vector: State.Data[][][] = []
-
-    for (let i = 0; i < this.length; i++) {
-      let sub = []
-      for (let j = 0; map.has(this.id(i, j)); j++) {
-        // @ts-ignore
-        sub.push(map.get(this.id(i, j)))
-      }
-      vector.push(sub)
+    for (const [key, value] of map) {
+      if (!key.startsWith(prefix)) continue
+      try {
+        const parsed = JSON.parse(key)
+        if (parsed.length !== 3) continue
+        const qi: number = parsed[1]
+        const peer: string = parsed[2]
+        if (!result[qi]) result[qi] = {}
+        result[qi][peer] = value
+      } catch {}
     }
 
-    return vector
-  }
-
-  getMaps(id: number, map: YKeyValue<State.Data>): State.Data[][] {
-    const vector: State.Data[][] = []
-
-    for (let i = 0; map.has(this.id(id, i)); i++) {
-      // @ts-ignore
-
-      vector.push(map.get(this.id(id, i)))
+    // Fill sparse holes (questions with no answers yet) with empty objects.
+    for (let i = 0; i < result.length; i++) {
+      if (!result[i]) result[i] = {}
     }
 
-    return vector
+    return result
   }
 
   getAllTexts(id: number): string[][] {
@@ -325,18 +399,9 @@ export class CRDT {
     this.addRecord(this.surveys, id, i, value)
   }
 
-  addRecord(map: YKeyValue<State.Data>, id: number, i: number, value: any) {
-    let record = map.get(this.id(id, i))
-
-    if (!record) {
-      record = {}
-    }
-
-    //if (record[this.peerID] == undefined) {
-    record[this.peerID] = value
-    //}
-
-    map.set(this.id(id, i), record)
+  addRecord(map: Y.Map<any>, id: number, i: number, value: any) {
+    // Composite key guarantees each peer owns a unique slot — pure CRDT.
+    map.set(JSON.stringify([id, i, this.peerID]), value)
   }
 
   initCode(id: number, i: number, j: number, value: string) {
@@ -414,59 +479,17 @@ export class CRDT {
       }
     },
   ) {
-    this.doc.transact(() => {
-      this.cursors.set(this.peerID, {
-        id: this.peerID,
-        section: section,
-        project: cursor.project,
-        file: cursor.file,
-        state: cursor.state,
-        color: this.getColor(),
-      })
-    }, 'cursor')
+    this.awareness?.setLocalStateField('cursor', {
+      id: this.peerID,
+      section,
+      project: cursor.project,
+      file: cursor.file,
+      state: cursor.state,
+      color: this.getColor(),
+    })
   }
 
   removeCursor() {
-    this.cursors.delete(this.peerID)
-  }
-
-  getUpdates(maps, changes): { id: number; data: State.Data[][] }[] | null {
-    const ids: Set<number> = new Set()
-    const updates: [string, any][] = []
-
-    for (const [id, data] of changes) {
-      switch (data.action) {
-        case 'update': {
-          if (
-            JSON.stringify(Object.keys(data.oldValue).sort()) !==
-            JSON.stringify(Object.keys(data.newValue).sort())
-          ) {
-            updates.push([id, { ...data.oldValue, ...data.newValue }])
-            continue
-          }
-        }
-        case 'add': {
-          try {
-            const [key] = JSON.parse(id)
-            ids.add(key)
-          } catch (e) {}
-        }
-      }
-    }
-
-    const vector: { id: number; data: State.Data[][] }[] = []
-    for (const id of ids) {
-      vector.push({ id: id, data: this.getMaps(id, maps) })
-    }
-
-    for (const [id, value] of updates) {
-      maps.set(id, value)
-    }
-
-    if (vector.length > 0) {
-      return vector
-    }
-
-    return null
+    this.awareness?.setLocalStateField('cursor', null)
   }
 }
