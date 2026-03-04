@@ -138,15 +138,6 @@ export class Sync {
                   this.sync('update', { cmd: 'chat', param: event })
                   break
                 }
-                case 'exit': {
-                  try {
-                    origin = null
-
-                    this.broadcast(true, event)
-                    this.destroy()
-                  } catch (e) {}
-                  break
-                }
                 default: {
                   console.warn('Sync unknown origin', origin)
                 }
@@ -258,13 +249,7 @@ export class Sync {
   }
 
   pubsubSend(topic: string, message: any) {
-    const stringifiedObject = JSON.stringify({ topic, message })
-    const encoder = new TextEncoder()
-    this.broadcast(false, encoder.encode(stringifiedObject))
-
-    if (this.replyOnReceive) {
-      this.onReceive?.(topic, message)
-    }
+    console.warn('pubsubSend needs to be implemented', topic, message)
   }
 
   pubsubReceive(data: Uint8Array) {
@@ -278,10 +263,6 @@ export class Sync {
     } catch (e) {
       console.warn('Sync: pubsubReceive', e.message)
     }
-  }
-
-  broadcast(state: boolean, data: Uint8Array) {
-    console.warn('broadcast needs to be implemented')
   }
 
   /** __At first, make sure that the resource has not been loaded before!__ And
@@ -340,6 +321,7 @@ export class Sync {
   }
 
   publish(event: Lia.Event) {
+    console.warn('publish needs to be implemented', event)
     switch (event.message.cmd) {
       case 'update': {
         break
@@ -419,10 +401,6 @@ export class Sync {
           this.db.setCursor(event.track[0][1], event.message.param)
         }
         break
-      }
-
-      case 'broadcast': {
-        this.broadcast(true, event.message.param)
       }
 
       default: {

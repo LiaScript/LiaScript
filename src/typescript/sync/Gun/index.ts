@@ -177,8 +177,4 @@ export class Sync extends Base.Sync {
       }
     }
   }
-
-  broadcast(_state: boolean, _data: null | Uint8Array): void {
-    // GenericProvider handles all sync automatically via the transport.
-  }
 }

@@ -135,10 +135,6 @@ export class Sync extends Base.Sync {
       }
     }
   }
-
-  broadcast(_state: boolean, _data: Uint8Array | null): void {
-    // GenericProvider handles CRDT sync automatically; pubsub goes via pubsubSend
-  }
 }
 
 async function hashID(id: string): Promise<string> {

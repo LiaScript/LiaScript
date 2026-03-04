@@ -331,14 +331,9 @@ export class CRDT {
     return peers
   }
 
-  removePeer(peerID?: string) {
-    if (peerID === undefined) {
-      // Remove own presence from awareness so remote peers see us leave.
-      this.awareness?.setLocalState(null)
-      this.callback(this.encode(), 'exit')
-    }
-    // Removing a specific remote peer is not needed — awareness automatically
-    // clears their state when they disconnect from the transport.
+  removePeer() {
+    // Remove own presence from awareness so remote peers see us leave.
+    this.awareness?.setLocalState(null)
   }
 
   id(id1: number, id2: number, id3?: number) {
