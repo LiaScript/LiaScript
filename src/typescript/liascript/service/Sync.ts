@@ -10,6 +10,7 @@ var PubNub
 var Gun
 var P2PT
 var Trystero
+var WebSocket_
 
 function hasRTCPeerConnection() {
   return !!(
@@ -36,6 +37,7 @@ const Service = {
     'pubnub',
     hasRTCPeerConnection() ? 'p2pt' : '',
     'torrent',
+    'websocket',
   ],
 
   init: function (elmSend_: Lia.Send) {
@@ -86,7 +88,7 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                true
+                true,
               )
 
               break
@@ -105,7 +107,7 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                false
+                false,
               )
               break
 
@@ -127,7 +129,7 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                true
+                true,
               )
 
               break
@@ -179,7 +181,7 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                true
+                true,
               )
               break
 
@@ -197,7 +199,25 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                true
+                true,
+              )
+              break
+
+            case 'websocket':
+              if (!WebSocket_) {
+                import('../../sync/WebSocket/index').then((e) => {
+                  WebSocket_ = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new WebSocket_.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                false,
               )
               break
 
@@ -258,7 +278,7 @@ var CALLBACK: {
 
 function publish(topic: string, message: any) {
   console.warn(
-    'Classroom: not connected, cannot publish topic => ' + { topic, message }
+    'Classroom: not connected, cannot publish topic => ' + { topic, message },
   )
 }
 

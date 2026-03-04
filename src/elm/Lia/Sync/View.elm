@@ -156,6 +156,7 @@ select editable sync =
                         []
                     ]
                 , sync.support
+                    |> Debug.log "WWWWWWWWWWWWWWWWW"
                     |> List.map (Just >> option)
                     |> (::) (option Nothing)
                     |> Html.div

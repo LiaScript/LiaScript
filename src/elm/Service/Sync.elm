@@ -71,6 +71,11 @@ connect param =
                             |> String.split ","
                             |> JE.list (String.trim >> JE.string)
 
+                    Via.WebSocket { url } ->
+                        JE.object
+                            [ ( "url", JE.string url )
+                            ]
+
                     _ ->
                         JE.null
               )

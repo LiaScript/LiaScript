@@ -99,10 +99,12 @@ init supportedBackends =
             , Via.IPFS
             , Via.MQTT
             , Via.NoStr
-            , Via.P2PT Const.webTorrent_TrackerURLs
+
+            --, Via.P2PT Const.webTorrent_TrackerURLs
             , Via.PubNub { pubKey = "", subKey = "" }
             , Via.Torrent
             , Via.Edrys
+            , Via.WebSocket { url = "" }
             ]
                 |> List.map (isMember supported)
         , select = Nothing

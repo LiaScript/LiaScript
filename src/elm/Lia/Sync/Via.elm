@@ -33,6 +33,7 @@ type Backend
     | NoStr
     | MQTT
     | Torrent
+    | WebSocket { url : String }
 
 
 toString : Bool -> Backend -> String
@@ -101,6 +102,15 @@ toString full via =
                         ""
                    )
 
+        WebSocket { url } ->
+            "WebSocket"
+                ++ (if full then
+                        "|" ++ url
+
+                    else
+                        ""
+                   )
+
 
 icon : Backend -> Html msg
 icon via =
@@ -133,6 +143,9 @@ icon via =
 
             P2PT _ ->
                 "icon-p2pt icon-xs"
+
+            WebSocket _ ->
+                "icon-websocket icon-xs"
         )
         [ Attr.style "padding-right" "5px"
         , Attr.style "vertical-align" "middle"
@@ -196,6 +209,12 @@ fromString via =
 
         [ "pubnub", pub, sub ] ->
             Just <| PubNub { pubKey = pub, subKey = sub }
+
+        [ "websocket" ] ->
+            Just (WebSocket { url = "" })
+
+        [ "websocket", url ] ->
+            Just (WebSocket { url = url })
 
         _ ->
             Nothing
@@ -390,6 +409,21 @@ infoOn supported about =
                 , allowScripts
                 ]
 
+            ( WebSocket _, _ ) ->
+                [ link "WebSocket" "https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"
+                , Html.text " provides full-duplex communication over a single TCP connection. "
+                , Html.text "To use this backend, you need a WebSocket server that supports the y-websocket protocol. "
+                , Html.text "You can host your own server using "
+                , link "y-websocket" "https://github.com/yjs/y-websocket"
+                , Html.text " or any compatible implementation. "
+                , Html.text "Provide the full WebSocket URL, e.g. "
+                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://your-server.example.com" ]
+                , Html.text "."
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
+                ]
+
             ( P2PT _, _ ) ->
                 [ Html.text "The "
                 , link "P2PT" "https://github.com/subins2000/p2pt"
@@ -513,6 +547,17 @@ view editable backend =
                 , autocomplete = Just "websocket-urls"
                 }
 
+        WebSocket { url } ->
+            input
+                { active = editable
+                , type_ = "text"
+                , msg = InputWebSocket
+                , value = url
+                , placeholder = "wss://your-server.example.com"
+                , label = Html.text "server URL"
+                , autocomplete = Just "websocket-url"
+                }
+
         _ ->
             Html.text ""
 
@@ -592,6 +637,7 @@ type Msg
       --| InputMatrix String String
       --| InputJitsi String
     | InputP2PT String
+    | InputWebSocket String
 
 
 update : Msg -> Backend -> Backend
@@ -620,6 +666,9 @@ update msg backend =
         ( InputP2PT urls, P2PT _ ) ->
             P2PT urls
 
+        ( InputWebSocket url, WebSocket _ ) ->
+            WebSocket { url = url }
+
         _ ->
             backend
 
@@ -638,6 +687,9 @@ eq a b =
         -- ( Jitsi _, Jitsi _ ) ->
         --     True
         ( P2PT _, P2PT _ ) ->
+            True
+
+        ( WebSocket _, WebSocket _ ) ->
             True
 
         _ ->
