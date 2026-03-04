@@ -1,32 +1,39 @@
-import { Gun } from './gun.d'
 import * as Base from '../Base/index'
-import { Crypto } from '../Crypto'
+import { GunTransport } from '../../../../node_modules/y-generic/dist/providers/gun/index'
+import { GenericProvider } from 'y-generic'
 
 // Working solution to deal with GunDB i.map(...).flat is not a function
 // https://stackoverflow.com/questions/50993498/flat-is-not-a-function-whats-wrong
 Object.defineProperty(Array.prototype, 'flat', {
   value: function (depth = 1) {
-    return this.reduce(function (flat, toFlatten) {
+    return (this as Array<any>).reduce(function (
+      flat: any[],
+      toFlatten: any,
+    ): any[] {
       return flat.concat(
         Array.isArray(toFlatten) && depth > 1
           ? toFlatten.flat(depth - 1)
-          : toFlatten
+          : toFlatten,
       )
     }, [])
   },
 })
 
 export class Sync extends Base.Sync {
-  private gun?: Gun
+  private transport?: GunTransport
   private store: string = ''
   private gunServer: string[] = []
   private persistent: boolean = false
+  private syncFallbackTimer: ReturnType<typeof setTimeout> | null = null
 
   destroy() {
-    this.gunServer = []
-    delete this.gun
-
+    if (this.syncFallbackTimer !== null) {
+      clearTimeout(this.syncFallbackTimer)
+      this.syncFallbackTimer = null
+    }
     super.destroy()
+    this.gunServer = []
+    this.provider?.disconnect()
   }
 
   uniqueID(): string | null {
@@ -52,96 +59,84 @@ export class Sync extends Base.Sync {
     if (window.Gun) {
       this.init(true)
     } else {
-      this.load(
-        [
-          'https://cdn.jsdelivr.net/npm/gun/gun.js',
-          //'https://cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/gun.min.js',
-          //'//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/axe.min.js',
-          //'//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/sea.min.js',
-          Crypto.url,
-        ],
-        this
-      )
+      this.load(['https://cdn.jsdelivr.net/npm/gun/gun.js'], this)
     }
   }
 
   init(ok: boolean, error?: string) {
     if (this.gunServer.length == 0) {
       return this.sendDisconnectError(
-        'You have to provide at least one relay server.'
+        'You have to provide at least one relay server.',
       )
     }
 
     const id = this.uniqueID()
 
     if (ok && window.Gun && id) {
-      this.gun = window.Gun({ peers: this.gunServer })
-
+      this.transport = new GunTransport({
+        gun: window.Gun,
+        peers: this.gunServer,
+        debug: false,
+        batchInterval: 200,
+        gunOptions: {
+          localStorage: false,
+          radisk: false,
+        },
+      })
       this.store = id
 
-      Crypto.init(this.password)
+      this.provider = new GenericProvider(this.db.doc, this.transport)
 
-      let self = this
-      if (this.persistent) {
-        this.gun.get(this.store).once((data) => {
-          if (data && data.msg) {
-            try {
-              const [_, message] = Crypto.decode(data.msg)
+      // sendConnect() must only be called once, after the Yjs state-vector
+      // exchange is complete so that db.init() (triggered by LiaScript's
+      // 'join' response) reads a fully populated CRDT.
+      //
+      // Two cases:
+      //  A) First peer in an empty room: 'synced' is never emitted because
+      //     there is no remote peer to send SyncStep2. The fallback timer
+      //     fires after 2 s and proceeds immediately (nothing to sync anyway).
+      //  B) Joining peer: 'synced' fires as soon as the full state-vector
+      //     diff arrives from an existing peer — well before the timer.
+      //
+      // The syncedOnce flag ensures only one path fires sendConnect().
+      let syncedOnce = false
 
-              setTimeout(function () {
-                self.gun?.get(self.store).put({
-                  msg: Crypto.encode(['', message]),
-                })
-              }, 1000)
-            } catch (e) {
-              console.warn('GunDB:', e.message)
-            }
-          }
-        })
+      const doConnect = () => {
+        if (syncedOnce) return
+        syncedOnce = true
+        if (this.syncFallbackTimer !== null) {
+          clearTimeout(this.syncFallbackTimer)
+          this.syncFallbackTimer = null
+        }
+        this.sendConnect()
       }
 
-      this.gun
-        .get(this.store)
-        .on(function (data: { msg: string }, key: string) {
-          try {
-            const [token, message, timestamp] = Crypto.decode(data.msg)
+      this.provider.on('synced', (event: any) => {
+        console.log('Document synchronized', event.synced)
+        doConnect()
+      })
 
-            if (token != self.token && message != null) {
-              if (timestamp == self.db.timestamp) {
-                self.applyUpdate(Base.base64_to_unit8(message))
-              } else if (timestamp > self.db.timestamp) {
-                self.broadcast(true, self.db.encode())
-              } else {
-                self.applyUpdate(Base.base64_to_unit8(message), true)
-                self.db.timestamp = timestamp
-              }
-            }
-          } catch (e) {
-            console.warn('GunDB', e.message)
-          }
-        })
+      this.provider.on('status', (event: any) => {
+        const status = event.state
+        console.log(`Status changed: ${status}`, 'info')
 
-      // store for realtime messages
-      this.gun
-        .get(this.store + 'pubsub')
-        .on(function (data: { msg: string }, key: string) {
-          try {
-            const [token, message, timestamp] = Crypto.decode(data.msg)
+        if (status === 'connected') {
+          // Start the fallback timer for the first-peer case.
+          // Cleared immediately if 'synced' fires first.
+          this.syncFallbackTimer = setTimeout(() => {
+            console.log(
+              'Sync fallback: no remote peers, proceeding as first peer',
+            )
+            doConnect()
+          }, 2000)
+        } else if (status === 'disconnected') {
+          console.warn('Disconnected from GunDB relay server')
+        } else {
+          console.warn(`GunDB status: ${status}`)
+        }
+      })
 
-            if (token != self.token && message != null) {
-              self.pubsubReceive(Base.base64_to_unit8(message))
-            }
-          } catch (e) {
-            console.warn('GunDB', e.message)
-          }
-        })
-
-      if (!this.persistent) {
-        this.broadcast(true, null)
-        this.broadcast(false, null)
-      }
-
-      this.sendConnect()
+      this.provider.connect({ room: this.store })
     } else {
       let message = 'GunDB unknown error'
 
@@ -152,16 +147,6 @@ export class Sync extends Base.Sync {
       }
 
       this.sendDisconnectError(message)
-    }
-  }
-
-  broadcast(state: boolean, data: null | Uint8Array): void {
-    if (this.gun) {
-      const message = data == null ? null : Base.uint8_to_base64(data)
-
-      this.gun
-        .get(this.store + (state ? '' : 'pubsub'))
-        .put({ msg: Crypto.encode(['', message]) })
     }
   }
 }

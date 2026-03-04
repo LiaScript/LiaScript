@@ -1,5 +1,5 @@
 import Lia from '../../liascript/types/lia.d'
-
+import { GenericProvider } from 'y-generic/providers/generic/index'
 import * as helper from '../../helper'
 import { CRDT } from './db'
 
@@ -27,44 +27,6 @@ function random(length: number = 16) {
   }
 
   return str
-}
-
-function dynamicGossip(self: Sync) {
-  let timerID: number | null = null
-
-  function delay() {
-    // Only use longer delay if actually initialized
-    return (
-      (self.db.getPeers().length + 1) * 200 +
-      (self.db.initialized ? 5000 : 1000)
-    )
-  }
-
-  function publish() {
-    if (!self.isConnected) return
-    try {
-      self.broadcast(true, self.db.encode())
-      timerID = window.setTimeout(publish, delay())
-    } catch (e) {
-      console.warn('Gossip error:', e)
-      timerID = null
-    }
-  }
-
-  return () => {
-    if (timerID) {
-      window.clearTimeout(timerID)
-    }
-
-    // Start immediately if initialized, otherwise wait
-    if (self.db.initialized) {
-      publish()
-    } else if (self.db.initPromise) {
-      self.db.initPromise.then(publish)
-    } else {
-      timerID = window.setTimeout(publish, delay())
-    }
-  }
 }
 
 export class Sync {
@@ -101,7 +63,7 @@ export class Sync {
   protected replyOnReceive: boolean = false
 
   public db: CRDT
-  public gossip: () => void
+  public provider?: GenericProvider
 
   /** To initialize the communication, two callbacks are required. While the
    * first is used to send configuration messages about successful join or
@@ -118,7 +80,7 @@ export class Sync {
     onConnect: () => void,
     onReceive: (topic: string, message: any) => void,
     replyOnReceive: boolean = false,
-    useInternalCallback: boolean = true
+    useInternalCallback: boolean = true,
   ) {
     let token
 
@@ -145,13 +107,6 @@ export class Sync {
     this.replyOnReceive = replyOnReceive
 
     const self = this
-
-    const gossip = dynamicGossip(self)
-    this.gossip = gossip
-    const throttleBroadcast = helper.throttle(() => {
-      self.broadcast(true, self.db.encode())
-      gossip()
-    }, 1000)
 
     this.db = new CRDT(
       token,
@@ -196,11 +151,9 @@ export class Sync {
                   console.warn('Sync unknown origin', origin)
                 }
               }
-
-              if (origin) throttleBroadcast()
             }
           }
-        : undefined
+        : undefined,
     )
   }
 
@@ -386,8 +339,6 @@ export class Sync {
       }
       case 'join': {
         this.db.init(event.message.param)
-
-        this.gossip()
         break
       }
 
@@ -401,7 +352,7 @@ export class Sync {
           this.db.addQuiz(
             event.track[0][1],
             event.track[1][1],
-            event.message.param
+            event.message.param,
           )
         } else {
           console.warn('SyncTX wrong event ->', event)
@@ -415,7 +366,7 @@ export class Sync {
           this.db.addSurvey(
             event.track[0][1],
             event.track[1][1],
-            event.message.param
+            event.message.param,
           )
         } else {
           console.warn('SyncTX wrong event ->', event)
@@ -430,7 +381,7 @@ export class Sync {
             event.track[0][1],
             event.track[1][1],
             event.message.param.j,
-            event.message.param.msg
+            event.message.param.msg,
           )
         } else {
           console.warn('SyncTX wrong event ->', event)
@@ -446,7 +397,7 @@ export class Sync {
                 event.track[0][1],
                 i,
                 j,
-                event.message.param[i][j]
+                event.message.param[i][j],
               )
             }
           }
@@ -471,9 +422,5 @@ export class Sync {
         console.warn('SyncTX unknown command:', event.message)
       }
     }
-  }
-
-  applyUpdate(data: Uint8Array, force: boolean = false) {
-    this.db.applyUpdate(data, force)
   }
 }

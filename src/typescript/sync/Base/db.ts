@@ -34,7 +34,7 @@ export class CRDT {
 
   constructor(
     peerID: string,
-    callback?: (event: any, origin: null | string) => void
+    callback?: (event: any, origin: null | string) => void,
   ) {
     this.doc = new Y.Doc()
     this.callback =
@@ -155,29 +155,6 @@ export class CRDT {
     this.doc.destroy()
   }
 
-  applyUpdate(update: Uint8Array, force: boolean = false) {
-    this.doc.transact(() => {
-      if (force) {
-        this.doc.destroy()
-        this.doc = new Y.Doc()
-
-        Y.applyUpdate(this.doc, update)
-
-        this.peers = this.doc.getMap(PEERS)
-        this.cursors = this.doc.getMap(CURSORS)
-        this.codes = this.doc.getMap(CODE)
-
-        this.quizzes = new YKeyValue(this.doc.getArray(QUIZ))
-        this.surveys = new YKeyValue(this.doc.getArray(SURVEY))
-        this.chat = new YKeyValue(this.doc.getArray('chat'))
-
-        this.init(this.initState)
-      } else {
-        Y.applyUpdate(this.doc, update)
-      }
-    })
-  }
-
   log() {
     console.warn('*********** PEERS ***********')
     console.warn(this.peers.toJSON())
@@ -191,24 +168,35 @@ export class CRDT {
   protected initMap(
     map: YKeyValue<State.Data>,
     id: number,
-    data: State.Data[]
+    data: State.Data[],
   ) {
     if (data.length === 0) return
 
-    let state
-
     for (let i = 0; i < data.length; i++) {
-      state = map.get(this.id(id, i))
+      // Nothing to contribute from local state for this entry — skip entirely.
+      // Calling map.set() with an empty object would delete the existing
+      // Y.Array entry (YKeyValue.set deletes before appending) and replace it
+      // with {}, destroying any remote peer data that already arrived.
+      if (Object.keys(data[i]).length === 0) continue
 
-      if (!state) {
-        state = {}
-      }
+      // Read current CRDT state. If synced before init(), this already contains
+      // remote peers' answers and we must not overwrite them.
+      const state = map.get(this.id(id, i)) || {}
 
+      // Only fill in keys that are missing from the remote state.
+      // This ensures: (a) other peers' data is never overwritten, and
+      // (b) map.set() is only called when there is actually something new.
+      let changed = false
       for (const key in data[i]) {
-        state[key] = data[i][key]
+        if (state[key] === undefined) {
+          state[key] = data[i][key]
+          changed = true
+        }
       }
 
-      map.set(this.id(id, i), state)
+      if (changed) {
+        map.set(this.id(id, i), state)
+      }
     }
   }
 
@@ -381,7 +369,7 @@ export class CRDT {
       action: 'insert' | 'remove'
       index: number
       content: string
-    }>
+    }>,
   ) {
     if (this.codes.has(this.id(id, i, j))) {
       this.doc.transact(() => {
@@ -424,7 +412,7 @@ export class CRDT {
         position: { row: number; column: number }
         selection: [] | [number, number, number, number]
       }
-    }
+    },
   ) {
     this.doc.transact(() => {
       this.cursors.set(this.peerID, {

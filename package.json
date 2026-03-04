@@ -107,6 +107,7 @@
     "uint8-to-base64": "^0.2.1",
     "util": "^0.12.5",
     "workbox-cli": "^7.4.0",
+    "y-generic": "github:andre-dietrich/y-generic",
     "y-utility": "^0.1.4",
     "yjs": "^13.6.27"
   },
