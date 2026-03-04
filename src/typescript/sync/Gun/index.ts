@@ -149,6 +149,10 @@ export class Sync extends Base.Sync {
         }
       })
 
+      this.provider.pubsub.subscribe('*', (message: any, topic: string) => {
+        this.onReceive?.(topic, message)
+      })
+
       this.provider.connect({ room: this.store })
     } else {
       let message = 'GunDB unknown error'
@@ -163,5 +167,18 @@ export class Sync extends Base.Sync {
 
       this.sendDisconnectError(message)
     }
+  }
+
+  pubsubSend(topic: string, message: any): void {
+    if (this.provider) {
+      this.provider.pubsub.publish(topic, message)
+      if (this.replyOnReceive) {
+        this.onReceive?.(topic, message)
+      }
+    }
+  }
+
+  broadcast(_state: boolean, _data: null | Uint8Array): void {
+    // GenericProvider handles all sync automatically via the transport.
   }
 }

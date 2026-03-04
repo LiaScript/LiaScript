@@ -110,6 +110,10 @@ export class Sync extends Base.Sync {
           }
         })
 
+        this.provider.pubsub.subscribe('*', (message: any, topic: string) => {
+          this.onReceive?.(topic, message)
+        })
+
         this.provider.connect({
           room: id,
           ...(this.password ? { password: this.password } : {}),
@@ -121,6 +125,19 @@ export class Sync extends Base.Sync {
       else if (!window['Peer']) message = 'Could not load PeerJS library'
       this.sendDisconnectError(message)
     }
+  }
+
+  pubsubSend(topic: string, message: any): void {
+    if (this.provider) {
+      this.provider.pubsub.publish(topic, message)
+      if (this.replyOnReceive) {
+        this.onReceive?.(topic, message)
+      }
+    }
+  }
+
+  broadcast(_state: boolean, _data: Uint8Array | null): void {
+    // GenericProvider handles CRDT sync automatically; pubsub goes via pubsubSend
   }
 }
 

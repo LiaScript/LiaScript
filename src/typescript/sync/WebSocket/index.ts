@@ -83,6 +83,10 @@ export class Sync extends Base.Sync {
         }
       })
 
+      this.provider.pubsub.subscribe('*', (message: any, topic: string) => {
+        this.onReceive?.(topic, message)
+      })
+
       this.provider.connect({
         serverUrl: this.serverUrl!,
         room: id,
@@ -91,6 +95,15 @@ export class Sync extends Base.Sync {
       let message = 'WebSocket unknown error'
       if (error) message = 'Could not connect: ' + error
       this.sendDisconnectError(message)
+    }
+  }
+
+  pubsubSend(topic: string, message: any): void {
+    if (this.provider) {
+      this.provider.pubsub.publish(topic, message)
+      if (this.replyOnReceive) {
+        this.onReceive?.(topic, message)
+      }
     }
   }
 
