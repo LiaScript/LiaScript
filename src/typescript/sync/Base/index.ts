@@ -186,6 +186,7 @@ export class Sync {
 
   disconnect() {
     this.db.removePeer()
+    this.destroy()
   }
 
   /** Sometimes it might be required to generate a unique room ID for different
@@ -249,7 +250,12 @@ export class Sync {
   }
 
   pubsubSend(topic: string, message: any) {
-    console.warn('pubsubSend needs to be implemented', topic, message)
+    const stringifiedObject = JSON.stringify({ topic, message })
+    const encoder = new TextEncoder()
+    //this.broadcast(false, encoder.encode(stringifiedObject))
+    if (this.replyOnReceive) {
+      this.onReceive?.(topic, message)
+    }
   }
 
   pubsubReceive(data: Uint8Array) {
