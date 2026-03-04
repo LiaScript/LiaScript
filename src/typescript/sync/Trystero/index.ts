@@ -1,11 +1,10 @@
 import * as Base from '../Base/index'
+import { TrysteroTransport } from '../../../../node_modules/y-generic/dist/providers/trystero/index'
+import { GenericProvider } from 'y-generic'
 
-var joinRoom: {
-  nostr: any
-  mqtt: any
-  torrent: any
-  ipfs: any
-} = {
+type Backend = 'nostr' | 'mqtt' | 'torrent' | 'ipfs'
+
+const joinRoomFns: Record<Backend, any> = {
   nostr: null,
   mqtt: null,
   torrent: null,
@@ -13,19 +12,18 @@ var joinRoom: {
 }
 
 export class Sync extends Base.Sync {
-  private connection?: any
-  private pub?: any
-  private sub?: any
-  private backend: 'nostr' | 'mqtt' | 'torrent' | 'ipfs'
+  private transport?: TrysteroTransport
+  private backend: Backend
+  private syncFallbackTimer: ReturnType<typeof setTimeout> | null = null
 
   constructor(
-    backend: 'nostr' | 'mqtt' | 'torrent' | 'ipfs',
+    backend: Backend,
     cbConnection: (topic: string, msg: string) => void,
     cbRelay: (data: Lia.Event) => void,
     onConnect: () => void,
     onReceive: (topic: string, message: any) => void,
     replyOnReceive: boolean = false,
-    useInternalCallback: boolean = true
+    useInternalCallback: boolean = true,
   ) {
     super(
       cbConnection,
@@ -33,17 +31,18 @@ export class Sync extends Base.Sync {
       onConnect,
       onReceive,
       replyOnReceive,
-      useInternalCallback
+      useInternalCallback,
     )
     this.backend = backend
   }
 
   destroy() {
-    if (this.connection) {
-      this.connection.leave()
+    if (this.syncFallbackTimer !== null) {
+      clearTimeout(this.syncFallbackTimer)
+      this.syncFallbackTimer = null
     }
-
     super.destroy()
+    this.provider?.disconnect()
   }
 
   async connect(data: {
@@ -54,62 +53,33 @@ export class Sync extends Base.Sync {
   }) {
     super.connect(data)
 
-    if (joinRoom[this.backend]) {
+    if (joinRoomFns[this.backend]) {
       this.init(true)
       return
     }
 
+    const load = (module: Promise<any>) => {
+      module
+        .then((e) => {
+          joinRoomFns[this.backend] = e.joinRoom
+          this.init(true)
+        })
+        .catch((e) => this.init(false, e.message))
+    }
+
     switch (this.backend) {
-      case 'nostr': {
-        import('./trystero-nostr.min.js')
-          .then((e) => {
-            joinRoom.nostr = e.joinRoom
-            this.init(true)
-          })
-          .catch((e) => {
-            this.init(false, e.message)
-          })
-
+      case 'nostr':
+        load(import('./trystero-nostr.min.js'))
         break
-      }
-
-      case 'mqtt': {
-        import('./trystero-mqtt.min.js')
-          .then((e) => {
-            joinRoom.mqtt = e.joinRoom
-            this.init(true)
-          })
-          .catch((e) => {
-            this.init(false, e.message)
-          })
-
+      case 'mqtt':
+        load(import('./trystero-mqtt.min.js'))
         break
-      }
-
-      case 'torrent': {
-        import('./trystero-torrent.min.js')
-          .then((e) => {
-            joinRoom.torrent = e.joinRoom
-            this.init(true)
-          })
-          .catch((e) => {
-            this.init(false, e.message)
-          })
-
+      case 'torrent':
+        load(import('./trystero-torrent.min.js'))
         break
-      }
-
-      case 'ipfs': {
-        import('./trystero-ipfs.min.js')
-          .then((e) => {
-            joinRoom.ipfs = e.joinRoom
-            this.init(true)
-          })
-          .catch((e) => {
-            this.init(false, e.message)
-          })
+      case 'ipfs':
+        load(import('./trystero-ipfs.min.js'))
         break
-      }
     }
   }
 
@@ -117,73 +87,65 @@ export class Sync extends Base.Sync {
     const id = this.uniqueID()
 
     if (ok && id) {
-      const config = { appId: 'liascript' }
-
-      if (this.password) {
-        config['password'] = this.password
-      }
-
       const stun = JSON.parse(process.env.STUN_SERVER || 'null')
-      if (stun) {
-        config['rtcConfig'] = stun
+
+      this.transport = new TrysteroTransport({
+        joinRoom: joinRoomFns[this.backend],
+        appId: 'liascript',
+        password: this.password,
+        ...(stun ? { rtcConfig: stun } : {}),
+      })
+
+      this.provider = new GenericProvider(this.db.doc, this.transport)
+
+      // Wire awareness for ephemeral peer presence and cursors.
+      this.db.setAwareness(this.provider.awareness)
+
+      // Same two-path connect as Gun:
+      //  A) First peer: 'synced' never fires (no remote to exchange SyncStep2).
+      //     Fallback timer fires after 2 s.
+      //  B) Joining peer: 'synced' fires as soon as state-vector diff arrives.
+      let syncedOnce = false
+
+      const doConnect = () => {
+        if (syncedOnce) return
+        syncedOnce = true
+        if (this.syncFallbackTimer !== null) {
+          clearTimeout(this.syncFallbackTimer)
+          this.syncFallbackTimer = null
+        }
+        this.sendConnect()
       }
 
-      this.connection = joinRoom[this.backend](config, id)
+      this.provider.on('synced', (event: any) => {
+        console.log('Trystero: document synchronized', event.synced)
+        doConnect()
+      })
 
-      this.connection.onPeerJoin((peerId) => console.log(`${peerId} joined`))
+      this.provider.on('status', (event: any) => {
+        const status = event.state
+        console.log(`Trystero status: ${status}`)
 
-      this.connection.onPeerLeave((peerId) => console.log(`${peerId} left`))
-
-      const [pub, sub] = this.connection.makeAction('message')
-
-      this.pub = pub
-      this.sub = sub
-
-      const self = this
-      this.sub((data, peerID) => {
-        if (data) {
-          try {
-            const [state, message, timestamp] = data
-
-            if (state) {
-              if (message === null) return
-
-              if (timestamp == self.db.timestamp) {
-                self.applyUpdate(Base.base64_to_unit8(message))
-              } else if (timestamp > self.db.timestamp) {
-                self.broadcast(true, self.db.encode())
-              } else {
-                self.db.timestamp = timestamp
-                self.applyUpdate(Base.base64_to_unit8(message), true)
-              }
-            } else {
-              self.pubsubReceive(Base.base64_to_unit8(message))
-            }
-          } catch (e) {
-            console.warn(self.backend, e.message)
-          }
+        if (status === 'connected') {
+          this.syncFallbackTimer = setTimeout(() => {
+            console.log('Trystero: sync fallback, proceeding as first peer')
+            doConnect()
+          }, 2000)
+        } else if (status === 'disconnected') {
+          console.warn('Trystero: disconnected')
         }
       })
 
-      this.sendConnect()
+      this.provider.connect({ room: id })
     } else {
       let message = this.backend + ' unknown error'
-
-      if (error) {
-        message = 'Could not load resource: ' + error
-      }
-
+      if (error) message = 'Could not load resource: ' + error
       this.sendDisconnectError(message)
     }
   }
 
-  broadcast(state: boolean, data: null | Uint8Array): void {
-    if (!this.publish) {
-      return
-    }
-
-    const message = data == null ? null : Base.uint8_to_base64(data)
-
-    this.pub([state, message, this.db.timestamp])
+  broadcast(_state: boolean, _data: null | Uint8Array): void {
+    // GenericProvider handles all sync automatically via the transport.
+    // This override intentionally left empty.
   }
 }
