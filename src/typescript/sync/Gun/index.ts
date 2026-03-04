@@ -56,10 +56,17 @@ export class Sync extends Base.Sync {
     this.gunServer = data.config?.urls || []
     this.persistent = data.config?.persistent || false
 
-    if (window.Gun) {
+    if (window.Gun && (window as any).Gun?.SEA) {
       this.init(true)
     } else {
-      this.load(['https://cdn.jsdelivr.net/npm/gun/gun.js'], this)
+      // gun.js must be loaded before sea.js — sea.js extends the Gun object.
+      this.load(
+        [
+          'https://cdn.jsdelivr.net/npm/gun/gun.js',
+          'https://cdn.jsdelivr.net/npm/gun/sea.js',
+        ],
+        this,
+      )
     }
   }
 
@@ -75,6 +82,7 @@ export class Sync extends Base.Sync {
     if (ok && window.Gun && id) {
       this.transport = new GunTransport({
         gun: window.Gun,
+        sea: (window as any).Gun?.SEA,
         peers: this.gunServer,
         debug: false,
         batchInterval: 200,
@@ -82,6 +90,7 @@ export class Sync extends Base.Sync {
           localStorage: false,
           radisk: false,
         },
+        password: this.password,
       })
       this.store = id
 
@@ -148,6 +157,8 @@ export class Sync extends Base.Sync {
         message = 'Could not load resource: ' + error
       } else if (!window.Gun) {
         message = 'Could not load GunDB interface'
+      } else if (!window.Gun?.SEA) {
+        message = 'Could not load GunDB SEA security module'
       }
 
       this.sendDisconnectError(message)
