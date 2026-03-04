@@ -37,7 +37,7 @@ const Service = {
     'mqtt',
     'nostr',
     'pubnub',
-    hasRTCPeerConnection() ? 'p2pt' : '',
+    // hasRTCPeerConnection() ? 'p2pt' : '',
     hasRTCPeerConnection() ? 'peerjs' : '',
     hasRTCPeerConnection() ? 'simplepeer' : '',
     'torrent',
@@ -188,7 +188,7 @@ const Service = {
                 true,
               )
               break
-
+            /*
             case 'p2pt':
               if (!P2PT) {
                 import('../../sync/P2PT/index').then((e) => {
@@ -206,7 +206,7 @@ const Service = {
                 true,
               )
               break
-
+*/
             case 'peerjs':
               if (!PeerJS_) {
                 import('../../sync/PeerJS/index').then((e) => {
