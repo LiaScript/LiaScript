@@ -235,9 +235,11 @@ export class CRDT {
             } catch {}
           })
         } else {
-          // A Y.Text content changed. event.path = [codesMapName, '[id,i,j]']
+          // A Y.Text content changed.
+          // event.path is relative to `codes`, so path[0] is the key of the
+          // Y.Text in the map: '[id, i, j]'.
           try {
-            const [id] = JSON.parse(event.path[1] as string)
+            const [id] = JSON.parse(event.path[0] as string)
             ids.add(id)
           } catch {}
         }
