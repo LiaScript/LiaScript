@@ -1,11 +1,10 @@
 import * as Base from '../Base/index'
-import { PubNubTransport } from '../../../../node_modules/y-generic/dist/providers/pubnub/index'
+import { WebSocketTransport } from '../../../../node_modules/y-generic/dist/providers/websocket/index'
 import { GenericProvider } from 'y-generic'
 
 export class Sync extends Base.Sync {
-  private transport?: PubNubTransport
-  private publishKey?: string
-  private subscribeKey?: string
+  private transport?: WebSocketTransport
+  private serverUrl?: string
   private syncFallbackTimer: ReturnType<typeof setTimeout> | null = null
 
   destroy() {
@@ -21,33 +20,35 @@ export class Sync extends Base.Sync {
     course: string
     room: string
     password?: string
-    config?: any
+    config?: { url: string }
   }) {
     super.connect(data)
 
-    this.publishKey = data.config?.publishKey
-    this.subscribeKey = data.config?.subscribeKey
+    console.warn(
+      'WebSocket sync is experimental. Please report any issues you encounter.',
+      data.config,
+    )
 
-    if (window['PubNub']) {
-      this.init(true)
-    } else {
-      this.load(['//cdn.pubnub.com/sdk/javascript/pubnub.10.2.7.min.js'], this)
-    }
-  }
+    this.serverUrl = data.config?.url
 
-  init(ok: boolean, error?: string) {
-    if (!this.publishKey || !this.subscribeKey) {
+    if (!this.serverUrl) {
       return this.sendDisconnectError(
-        'You have to provide a valid pair of keys',
+        'You have to provide a WebSocket server URL.',
       )
     }
 
-    const id = this.uniqueID()
+    this.init(true)
+  }
 
-    if (ok && window['PubNub'] && id) {
-      this.transport = new PubNubTransport()
+  init(ok: boolean, error?: string) {
+    const id = this.uniqueID(this.password)
 
-      this.provider = new GenericProvider(this.db.doc, this.transport)
+    if (ok && id) {
+      this.transport = new WebSocketTransport()
+
+      this.provider = new GenericProvider(this.db.doc, this.transport, {
+        verifyUpdates: false,
+      })
 
       this.db.setAwareness(this.provider.awareness)
 
@@ -64,35 +65,36 @@ export class Sync extends Base.Sync {
       }
 
       this.provider.on('synced', (event: any) => {
-        console.log('PubNub: document synchronized', event.synced)
+        console.log('WebSocket: document synchronized', event.synced)
         doConnect()
       })
 
       this.provider.on('status', (event: any) => {
         const status = event.state
-        console.log(`PubNub status: ${status}`)
+        console.log(`WebSocket status: ${status}`)
 
         if (status === 'connected') {
           this.syncFallbackTimer = setTimeout(() => {
-            console.log('PubNub: sync fallback, proceeding as first peer')
+            console.log('WebSocket: sync fallback, proceeding as first peer')
             doConnect()
           }, 2000)
         } else if (status === 'disconnected') {
-          console.warn('PubNub: disconnected')
+          console.warn('WebSocket: disconnected')
         }
       })
 
       this.provider.connect({
+        serverUrl: this.serverUrl!,
         room: id,
-        publishKey: this.publishKey,
-        subscribeKey: this.subscribeKey,
-        ...(this.password ? { cipherKey: this.password } : {}),
-      } as any)
+      })
     } else {
-      let message = 'PubNub unknown error'
-      if (error) message = 'Could not load resource: ' + error
-      else if (!window['PubNub']) message = 'Could not load PubNub SDK'
+      let message = 'WebSocket unknown error'
+      if (error) message = 'Could not connect: ' + error
       this.sendDisconnectError(message)
     }
+  }
+
+  broadcast(_state: boolean, _data: null | Uint8Array): void {
+    // GenericProvider handles all sync automatically via the transport.
   }
 }

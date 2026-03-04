@@ -203,27 +203,34 @@ export class Sync {
    *
    * @returns null if now room and course has been defined, otherwise a string
    */
-  uniqueID(): string | null {
+  uniqueID(salt?: string): string | null {
     // used for literal room names, defined by the user
+    let uid = null
+
     if (
       typeof this.room === 'string' &&
       ((this.room.startsWith('"') && this.room.endsWith('"')) ||
         (this.room.startsWith("'") && this.room.endsWith("'")))
     ) {
-      return this.room
+      uid = this.room
     }
 
     // otherwise a combination of course-url and room-name are used
     if (this.course && this.room) {
-      return JSON.stringify({
+      uid = JSON.stringify({
         course: this.course,
         room: this.room,
         pw: helper.getHashCode(this.password || ''), // prevent delete from wrong passwords
       })
     }
 
-    console.warn('Sync: no uniqueID')
-    return null
+    if (salt && uid) {
+      uid = helper.getHashCode(uid + salt).toString()
+    }
+
+    if (!uid) console.warn('Sync: no uniqueID')
+
+    return uid
   }
 
   /** Not like in the common sense, this method provides and interface to the

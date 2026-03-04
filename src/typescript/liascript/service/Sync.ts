@@ -11,6 +11,8 @@ var Gun
 var P2PT
 var Trystero
 var WebSocket_
+var PeerJS_
+var SimplePeer_
 
 function hasRTCPeerConnection() {
   return !!(
@@ -36,6 +38,8 @@ const Service = {
     'nostr',
     'pubnub',
     hasRTCPeerConnection() ? 'p2pt' : '',
+    hasRTCPeerConnection() ? 'peerjs' : '',
+    hasRTCPeerConnection() ? 'simplepeer' : '',
     'torrent',
     'websocket',
   ],
@@ -200,6 +204,42 @@ const Service = {
                 onConnect,
                 onReceive,
                 true,
+              )
+              break
+
+            case 'peerjs':
+              if (!PeerJS_) {
+                import('../../sync/PeerJS/index').then((e) => {
+                  PeerJS_ = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new PeerJS_.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                false,
+              )
+              break
+
+            case 'simplepeer':
+              if (!SimplePeer_) {
+                import('../../sync/SimplePeer/index').then((e) => {
+                  SimplePeer_ = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new SimplePeer_.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                false,
               )
               break
 

@@ -105,6 +105,8 @@ init supportedBackends =
             , Via.Torrent
             , Via.Edrys
             , Via.WebSocket { url = "" }
+            , Via.PeerJS { host = "", port_ = "", path = "", iceServers = "" }
+            , Via.SimplePeer { signaling = "", iceServers = "" }
             ]
                 |> List.map (isMember supported)
         , select = Nothing
