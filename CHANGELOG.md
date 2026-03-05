@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 18/02/2026
+
+- fix: onload macro with `;` separator was not working as expected, now the onload macros are separated by a `;\n` to ensure that they are executed in the correct order and that they are properly separated.
+- feat: styled details & summary tags
+
+## [1.0.2] - 18/02/2026
+
+- improve: Better nested HTML parsing.
+- improve: Speed due to reduction of obsolete lazy parsing.
+- improve: CSS for better header styling.
+- fix: Add multiple fallback-servers to GunDB.
+- improve: lazy loading only in textbook mode, which will improve the loading in other modes.
+- fix: Multiple fixes for ancient browsers.
+- improve: TTS for unknown languages, if the operating system supports it, will now be used instead of the browser-based TTS, which relies on responsive voice and thus only supports a limited number of languages.
+
 ## [1.0.1] - 20/01/2026
 
 - improve: Markdown standard compliance for nested lists and less greedy paragraph parsing.

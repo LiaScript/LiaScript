@@ -1,6 +1,6 @@
 {
   "name": "liascript",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -94,7 +94,6 @@
     "logger.ts": "^1.0.5",
     "minify": "^9.2.0",
     "node-elm-compiler": "^5.0.6",
-    "p2pt": "^1.5.1",
     "parcel": "^2.8.3",
     "parcel-reporter-static-files-copy": "^1.5.3",
     "patch-package": "^8.0.1",
@@ -109,6 +108,7 @@
     "uint8-to-base64": "^0.2.1",
     "util": "^0.12.5",
     "workbox-cli": "^7.4.0",
+    "y-generic": "github:andre-dietrich/y-generic",
     "y-utility": "^0.1.4",
     "yjs": "^13.6.27"
   },
