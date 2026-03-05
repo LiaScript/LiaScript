@@ -1,5 +1,5 @@
 import Lia from '../../liascript/types/lia.d'
-
+import { GenericProvider } from 'y-generic/providers/generic/index'
 import * as helper from '../../helper'
 import { CRDT } from './db'
 
@@ -27,44 +27,6 @@ function random(length: number = 16) {
   }
 
   return str
-}
-
-function dynamicGossip(self: Sync) {
-  let timerID: number | null = null
-
-  function delay() {
-    // Only use longer delay if actually initialized
-    return (
-      (self.db.getPeers().length + 1) * 200 +
-      (self.db.initialized ? 5000 : 1000)
-    )
-  }
-
-  function publish() {
-    if (!self.isConnected) return
-    try {
-      self.broadcast(true, self.db.encode())
-      timerID = window.setTimeout(publish, delay())
-    } catch (e) {
-      console.warn('Gossip error:', e)
-      timerID = null
-    }
-  }
-
-  return () => {
-    if (timerID) {
-      window.clearTimeout(timerID)
-    }
-
-    // Start immediately if initialized, otherwise wait
-    if (self.db.initialized) {
-      publish()
-    } else if (self.db.initPromise) {
-      self.db.initPromise.then(publish)
-    } else {
-      timerID = window.setTimeout(publish, delay())
-    }
-  }
 }
 
 export class Sync {
@@ -101,7 +63,7 @@ export class Sync {
   protected replyOnReceive: boolean = false
 
   public db: CRDT
-  public gossip: () => void
+  public provider?: GenericProvider
 
   /** To initialize the communication, two callbacks are required. While the
    * first is used to send configuration messages about successful join or
@@ -118,7 +80,7 @@ export class Sync {
     onConnect: () => void,
     onReceive: (topic: string, message: any) => void,
     replyOnReceive: boolean = false,
-    useInternalCallback: boolean = true
+    useInternalCallback: boolean = true,
   ) {
     let token
 
@@ -145,13 +107,6 @@ export class Sync {
     this.replyOnReceive = replyOnReceive
 
     const self = this
-
-    const gossip = dynamicGossip(self)
-    this.gossip = gossip
-    const throttleBroadcast = helper.throttle(() => {
-      self.broadcast(true, self.db.encode())
-      gossip()
-    }, 1000)
 
     this.db = new CRDT(
       token,
@@ -183,24 +138,13 @@ export class Sync {
                   this.sync('update', { cmd: 'chat', param: event })
                   break
                 }
-                case 'exit': {
-                  try {
-                    origin = null
-
-                    this.broadcast(true, event)
-                    this.destroy()
-                  } catch (e) {}
-                  break
-                }
                 default: {
                   console.warn('Sync unknown origin', origin)
                 }
               }
-
-              if (origin) throttleBroadcast()
             }
           }
-        : undefined
+        : undefined,
     )
   }
 
@@ -242,6 +186,7 @@ export class Sync {
 
   disconnect() {
     this.db.removePeer()
+    this.destroy()
   }
 
   /** Sometimes it might be required to generate a unique room ID for different
@@ -250,27 +195,34 @@ export class Sync {
    *
    * @returns null if now room and course has been defined, otherwise a string
    */
-  uniqueID(): string | null {
+  uniqueID(salt?: string): string | null {
     // used for literal room names, defined by the user
+    let uid = null
+
     if (
       typeof this.room === 'string' &&
       ((this.room.startsWith('"') && this.room.endsWith('"')) ||
         (this.room.startsWith("'") && this.room.endsWith("'")))
     ) {
-      return this.room
+      uid = this.room
     }
 
     // otherwise a combination of course-url and room-name are used
     if (this.course && this.room) {
-      return JSON.stringify({
+      uid = JSON.stringify({
         course: this.course,
         room: this.room,
         pw: helper.getHashCode(this.password || ''), // prevent delete from wrong passwords
       })
     }
 
-    console.warn('Sync: no uniqueID')
-    return null
+    if (salt && uid) {
+      uid = helper.getHashCode(uid + salt).toString()
+    }
+
+    if (!uid) console.warn('Sync: no uniqueID')
+
+    return uid
   }
 
   /** Not like in the common sense, this method provides and interface to the
@@ -300,8 +252,7 @@ export class Sync {
   pubsubSend(topic: string, message: any) {
     const stringifiedObject = JSON.stringify({ topic, message })
     const encoder = new TextEncoder()
-    this.broadcast(false, encoder.encode(stringifiedObject))
-
+    //this.broadcast(false, encoder.encode(stringifiedObject))
     if (this.replyOnReceive) {
       this.onReceive?.(topic, message)
     }
@@ -318,10 +269,6 @@ export class Sync {
     } catch (e) {
       console.warn('Sync: pubsubReceive', e.message)
     }
-  }
-
-  broadcast(state: boolean, data: Uint8Array) {
-    console.warn('broadcast needs to be implemented')
   }
 
   /** __At first, make sure that the resource has not been loaded before!__ And
@@ -380,14 +327,13 @@ export class Sync {
   }
 
   publish(event: Lia.Event) {
+    console.warn('publish needs to be implemented', event)
     switch (event.message.cmd) {
       case 'update': {
         break
       }
       case 'join': {
         this.db.init(event.message.param)
-
-        this.gossip()
         break
       }
 
@@ -401,7 +347,7 @@ export class Sync {
           this.db.addQuiz(
             event.track[0][1],
             event.track[1][1],
-            event.message.param
+            event.message.param,
           )
         } else {
           console.warn('SyncTX wrong event ->', event)
@@ -415,7 +361,7 @@ export class Sync {
           this.db.addSurvey(
             event.track[0][1],
             event.track[1][1],
-            event.message.param
+            event.message.param,
           )
         } else {
           console.warn('SyncTX wrong event ->', event)
@@ -430,7 +376,7 @@ export class Sync {
             event.track[0][1],
             event.track[1][1],
             event.message.param.j,
-            event.message.param.msg
+            event.message.param.msg,
           )
         } else {
           console.warn('SyncTX wrong event ->', event)
@@ -446,7 +392,7 @@ export class Sync {
                 event.track[0][1],
                 i,
                 j,
-                event.message.param[i][j]
+                event.message.param[i][j],
               )
             }
           }
@@ -463,17 +409,9 @@ export class Sync {
         break
       }
 
-      case 'broadcast': {
-        this.broadcast(true, event.message.param)
-      }
-
       default: {
         console.warn('SyncTX unknown command:', event.message)
       }
     }
-  }
-
-  applyUpdate(data: Uint8Array, force: boolean = false) {
-    this.db.applyUpdate(data, force)
   }
 }

@@ -218,25 +218,23 @@ inlines =
 
 inlines2 : Parser Context Inline
 inlines2 =
-    lazy <|
-        \() ->
-            Macro.macro
-                |> keep
-                    ([ code
-                     , Footnote.inline parse_inlines
-                     , input
-                     , reference
-                     , formula
-                     , inlines
-                        |> Effect.inline
-                        |> map EInline
-                     , stringExceptions
-                     , strings
-                     ]
-                        |> choice
-                        |> andMap (Macro.macro |> keep annotations)
-                        |> or (eScript [] |> map (\( attr, id ) -> Script id attr))
-                    )
+    Macro.macro
+        |> keep
+            ([ code
+             , Footnote.inline parse_inlines
+             , input
+             , reference
+             , formula
+             , inlines
+                |> Effect.inline
+                |> map EInline
+             , stringExceptions
+             , strings
+             ]
+                |> choice
+                |> andMap (Macro.macro |> keep annotations)
+                |> or (eScript [] |> map (\( attr, id ) -> Script id attr))
+            )
 
 
 input : Parser Context (Parameters -> Inline)
@@ -511,26 +509,24 @@ toContainer inline_list =
 
 strings : Parser Context (Parameters -> Inline)
 strings =
-    lazy <|
-        \() ->
-            Context.checkAbort
-                |> keep
-                    (choice
-                        [ inline_url
-                        , ellipsis
-                        , stringBase
-                        , arrows
-                        , dashes
-                        , smileys
-                        , stringEscape
-                        , stringWithStyle
-                        , stringSpaces
-                        , HTML.parse inlines |> map IHTML
-                        , stringCharacters
-                        , lineBreak
-                        , stringBase2
-                        ]
-                    )
+    Context.checkAbort
+        |> keep
+            (choice
+                [ inline_url
+                , ellipsis
+                , stringBase
+                , arrows
+                , dashes
+                , smileys
+                , stringEscape
+                , stringWithStyle
+                , stringSpaces
+                , HTML.parse inlines |> map IHTML
+                , stringCharacters
+                , lineBreak
+                , stringBase2
+                ]
+            )
 
 
 
@@ -641,11 +637,11 @@ scriptBody =
              , regex "\\s+"
              , string "@'"
              , string "@"
-             , regex "\"([^\"]*|\\\\\"|\\\\)*\""
-             , regex "'([^']*|\\\\'|\\\\)*'"
-             , regex "`([^`]*|\n|\\\\`|\\\\)*`"
+             , regex "\"([^\"\\\\]*|\\\\\"|\\\\)*\""
+             , regex "'([^'\\\\]*|\\\\'|\\\\)*'"
+             , regex "`([^`\\\\]*|\n|\\\\`|\\\\)*`"
              , regex "<(?!/)"
-             , regex "//[^\n]*"
+             , regex "//[^<\n]*"
              , string "/"
              ]
                 |> choice

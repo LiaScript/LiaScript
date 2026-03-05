@@ -268,7 +268,7 @@ closingTag name =
                             fail ("closing tag does not match opening tag: " ++ name)
                     )
     in
-    regex "\n*</[ \t]*"
+    regex "[ \t\n]*</[ \t]*"
         |> keep chompName
         |> ignore (regex "\\s*>")
 
