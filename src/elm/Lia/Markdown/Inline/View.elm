@@ -796,7 +796,7 @@ img config attr alt_ url_ title_ width =
                )
             |> CList.addIf (width == Nothing) (load url_)
             |> CList.addWhen (title config title_)
-            |> addLazyLoading config.visible
+         --|> addLazyLoading config.visible
         )
         []
 
@@ -865,7 +865,7 @@ reference config ref attr =
                                 :: annotation "lia-audio" attr
                                 |> CList.addWhen (title config title_)
                                 |> CList.addWhen (alt config alt_)
-                                |> addLazyLoading config.visible
+                             --|> addLazyLoading config.visible
                             )
                             []
 

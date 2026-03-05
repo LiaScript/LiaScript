@@ -206,7 +206,7 @@ const Service = {
                 true,
               )
               break
-*/
+
             case 'peerjs':
               if (!PeerJS_) {
                 import('../../sync/PeerJS/index').then((e) => {
