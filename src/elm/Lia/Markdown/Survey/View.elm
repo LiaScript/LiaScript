@@ -569,7 +569,7 @@ submit_button config submitted idx =
           else
             btn
                 { msg = Just <| Submit idx
-                , tabbable = False
+                , tabbable = True
                 , title = surveySubmit config.lang
                 }
                 [ Attr.class "lia-btn--outline lia-quiz__check"

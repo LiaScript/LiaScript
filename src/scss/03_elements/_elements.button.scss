@@ -12,6 +12,9 @@ $btn-height: 3.6rem;
   line-height: settings.$global-line-height;
   padding: 0.5rem 0.6rem;
 
+  &:focus {
+    outline: 3px solid rgb(var(--color-text));
+  }
   // Hide focus outline for mouse users while keeping it for keyboard users
   &:focus:not(:focus-visible) {
     outline: none;
@@ -96,9 +99,7 @@ $btn-height: 3.6rem;
   }
 
   &--transparent {
-    --focus-ring-offset: 0px;
-
-    background-color: transparent !important;
+    background-color: transparent;
     border: none;
     color: currentColor;
 

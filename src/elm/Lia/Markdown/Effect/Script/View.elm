@@ -1,5 +1,6 @@
 module Lia.Markdown.Effect.Script.View exposing (view)
 
+import Accessibility.Key as A11y_Key
 import Array
 import Conditional.List as CList
 import Html exposing (Html)
@@ -94,17 +95,16 @@ script config withStyling attr id node =
                     |> List.append
                         (case node.input.type_ of
                             Just (Input.Button_ _) ->
-                                [ Event.onClick (Click id) ]
-
-                            Just _ ->
-                                []
+                                [ Event.onClick (Click id)
+                                ]
 
                             _ ->
                                 []
                         )
+                    |> CList.addIf (node.modify /= No || node.input.type_ /= Nothing) (Attr.tabindex 0)
                     |> CList.addIf (node.modify /= No) (onEdit True id)
                     |> CList.addIf (isError result) (Attr.style "color" "#dc0000")
-                    |> CList.addIf
+                    |> CList.appendIf
                         (case node.input.type_ of
                             Nothing ->
                                 False
@@ -163,12 +163,11 @@ input config attr id node =
 
         Just (Input.Checkbox_ []) ->
             [ Html.input
-                [ Attr.class "lia-checkbox"
-                , Attr.checked (node.input.value == "true")
-                , Attr.type_ "checkbox"
-                , onActivate False id
-                , Attr.id "lia-focus"
-                , Event.onCheck
+                ([ Attr.class "lia-checkbox"
+                 , Attr.checked (node.input.value == "true")
+                 , Attr.type_ "checkbox"
+                 , Attr.id "lia-focus"
+                 , Event.onCheck
                     (\b ->
                         Value id node.input.updateOnChange <|
                             if b then
@@ -177,7 +176,9 @@ input config attr id node =
                             else
                                 "false"
                     )
-                ]
+                 ]
+                    |> List.append (onActivate False id)
+                )
                 []
             ]
                 |> Html.span [ Attr.class "flex items-center" ]
@@ -228,14 +229,15 @@ checkbox updateOnChange id value _ =
         (\o ->
             Html.label [ Attr.class "lia-label mr-1" ]
                 [ Html.input
-                    [ Attr.value o
-                    , Attr.type_ "checkbox"
-                    , Event.onCheck (always (Checkbox id updateOnChange o))
-                    , Attr.checked (List.member o list)
-                    , onActivate False id
-                    , Attr.autofocus True
-                    , Attr.class "lia-checkbox"
-                    ]
+                    ([ Attr.value o
+                     , Attr.type_ "checkbox"
+                     , Event.onCheck (always (Checkbox id updateOnChange o))
+                     , Attr.checked (List.member o list)
+                     , Attr.autofocus True
+                     , Attr.class "lia-checkbox"
+                     ]
+                        |> List.append (onActivate False id)
+                    )
                     []
                 , Html.text o
                 ]
@@ -249,14 +251,15 @@ radio updateOnChange id value _ =
         (\o ->
             Html.label [ Attr.class "lia-label mr-1" ]
                 [ Html.input
-                    [ Attr.value o
-                    , Attr.type_ "radio"
-                    , Event.onCheck (always (Radio id updateOnChange o))
-                    , Attr.checked (o == value)
-                    , onActivate False id
-                    , Attr.autofocus True
-                    , Attr.class "lia-radio"
-                    ]
+                    ([ Attr.value o
+                     , Attr.type_ "radio"
+                     , Event.onCheck (always (Radio id updateOnChange o))
+                     , Attr.checked (o == value)
+                     , Attr.autofocus True
+                     , Attr.class "lia-radio"
+                     ]
+                        |> List.append (onActivate False id)
+                    )
                     []
                 , Html.text o
                 ]
@@ -274,11 +277,11 @@ attributes updateOnChange id value =
     annotation ""
         >> List.append
             [ Event.onInput (Value id updateOnChange)
-            , onActivate False id
             , Attr.value value
             , Attr.id "lia-focus"
             , blockKeydown NoOp
             ]
+        >> List.append (onActivate False id)
 
 
 span : Config sub -> Parameters -> Int -> Script SubSection -> Html (Msg sub) -> Html (Msg sub)
@@ -297,6 +300,10 @@ reset id =
     Html.button
         [ Attr.class "lia-script__refresh icon icon-refresh"
         , Event.onClick (Reset id)
+        , A11y_Key.onKeyDown
+            [ A11y_Key.enter (Click id)
+            , A11y_Key.space (Click id)
+            ]
         ]
         []
 
@@ -332,26 +339,32 @@ base input_ id attr value =
                     |> Maybe.withDefault ""
                     |> Attr.class
                 , Attr.value value
-                , onActivate False id
                 , Attr.id "lia-focus"
                 , blockKeydown NoOp
                 , onEnter (Activate False id)
                 ]
+            |> List.append (onActivate False id)
         )
         []
 
 
-onActivate : Bool -> Int -> Html.Attribute (Msg sub)
-onActivate bool =
-    Activate bool
-        >> Delay 200
-        >> (if bool then
-                Event.onClick
+onActivate : Bool -> Int -> List (Html.Attribute (Msg sub))
+onActivate bool id =
+    if bool then
+        [ Event.onClick (Delay 200 (Activate True id))
+        , A11y_Key.onKeyDown
+            [ A11y_Key.enter (Delay 200 (Activate True id))
+            , A11y_Key.space (Delay 200 (Activate True id))
+            ]
+        ]
 
-            else
-                --JD.succeed >> Event.on "focusout"
-                Event.onBlur
-           )
+    else
+        --JD.succeed >> Event.on "focusout"
+        [ Event.onBlur (Delay 200 (Activate False id))
+        , A11y_Key.onKeyDown
+            [ A11y_Key.escape (Delay 200 (Activate False id))
+            ]
+        ]
 
 
 onEdit : Bool -> Int -> Html.Attribute (Msg sub)
