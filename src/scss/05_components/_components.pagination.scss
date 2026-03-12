@@ -42,7 +42,8 @@
   }
 
   .lia-btn {
-    --focus-ring-offset: -0.25lh;
+    --focus-ring-color: rgb(var(--lia-white));
+    --focus-ring-offset: 0.2rem;
   }
 
   &__current {

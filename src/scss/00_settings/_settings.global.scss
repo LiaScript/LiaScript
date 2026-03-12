@@ -70,6 +70,6 @@ $global-font-mono: 'LiaSourceCodePro';
 $global-font-headline: 'LiaSourceSerifPro';
 
 $global-focus-ring-width: 2px;
-$global-focus-ring-color: var(--color-highlight, currentColor);
+$global-focus-ring-color: var(--color-text, currentColor);
 $global-focus-ring-offset: 0.25lh;
 $global-focus-ring-style: solid;
