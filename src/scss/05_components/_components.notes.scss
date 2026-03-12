@@ -12,6 +12,7 @@
   overflow: auto;
   position: relative;
   width: canvas.$notes-width-mobile;
+  z-index: 100;
 
   @at-root html.lia-variant-dark & {
     background-color: rgb(var(--lia-anthracite));

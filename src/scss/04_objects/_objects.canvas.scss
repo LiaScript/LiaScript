@@ -181,6 +181,11 @@ $slide-margin-left-textbook: 19rem !default;
     @include tools.breakpoint('lg') {
       .lia-header {
         right: $notes-width-desktop;
+
+        [dir='rtl'] & {
+          left: #{$notes-width-desktop};
+          right: #{$toc-width-desktop};
+        }
       }
 
       .lia-slide {
