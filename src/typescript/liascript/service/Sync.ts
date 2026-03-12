@@ -10,6 +10,9 @@ var PubNub
 var Gun
 var P2PT
 var Trystero
+var WebSocket_
+var PeerJS_
+var SimplePeer_
 
 function hasRTCPeerConnection() {
   return !!(
@@ -30,11 +33,15 @@ const Service = {
     'gun',
     //'jitsi',
     //'matrix',
+    'ipfs',
     'mqtt',
     'nostr',
     'pubnub',
-    hasRTCPeerConnection() ? 'p2pt' : '',
+    // hasRTCPeerConnection() ? 'p2pt' : '',
+    hasRTCPeerConnection() ? 'peerjs' : '',
+    hasRTCPeerConnection() ? 'simplepeer' : '',
     'torrent',
+    'websocket',
   ],
 
   init: function (elmSend_: Lia.Send) {
@@ -85,7 +92,7 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                true
+                true,
               )
 
               break
@@ -104,10 +111,11 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                false
+                false,
               )
               break
 
+            case 'ipfs':
             case 'mqtt':
             case 'nostr':
             case 'torrent': {
@@ -120,12 +128,12 @@ const Service = {
               }
 
               sync = new Trystero.Sync(
-                backend as 'mqtt' | 'nostr' | 'torrent',
+                backend as 'mqtt' | 'nostr' | 'torrent' | 'ipfs',
                 cbConnection,
                 elmSend,
                 onConnect,
                 onReceive,
-                true
+                true,
               )
 
               break
@@ -177,10 +185,10 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                true
+                true,
               )
               break
-
+            /*
             case 'p2pt':
               if (!P2PT) {
                 import('../../sync/P2PT/index').then((e) => {
@@ -195,7 +203,61 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                true
+                true,
+              )
+              break
+*/
+            case 'peerjs':
+              if (!PeerJS_) {
+                import('../../sync/PeerJS/index').then((e) => {
+                  PeerJS_ = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new PeerJS_.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                false,
+              )
+              break
+
+            case 'simplepeer':
+              if (!SimplePeer_) {
+                import('../../sync/SimplePeer/index').then((e) => {
+                  SimplePeer_ = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new SimplePeer_.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                false,
+              )
+              break
+
+            case 'websocket':
+              if (!WebSocket_) {
+                import('../../sync/WebSocket/index').then((e) => {
+                  WebSocket_ = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new WebSocket_.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                false,
               )
               break
 
@@ -256,7 +318,7 @@ var CALLBACK: {
 
 function publish(topic: string, message: any) {
   console.warn(
-    'Classroom: not connected, cannot publish topic => ' + { topic, message }
+    'Classroom: not connected, cannot publish topic => ' + { topic, message },
   )
 }
 

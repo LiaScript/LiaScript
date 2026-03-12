@@ -1,6 +1,7 @@
 import log from '../log'
 
 import Script from './Script.d'
+import { htmlTableLog } from './helper/htmlTableLog'
 
 export enum JS {
   exec = 'exec',
@@ -278,6 +279,10 @@ function liaEvalCode(code: string, send: Script.SendEval) {
   }
 
   try {
+    const fetch = window.LIA.fetch
+    const counter: { [key: string]: number } = {}
+    const timer: { [key: string]: number } = {}
+
     const console = {
       debug: (...args: any) => {
         return send.log('debug', '\n', args)
@@ -296,6 +301,42 @@ function liaEvalCode(code: string, send: Script.SendEval) {
       },
       html: (...args: any) => {
         return send.log('html', '\n', args)
+      },
+      table: (data: any, config: any) => {
+        return send.log('html', '\n', [htmlTableLog(data, config)])
+      },
+      assert: (condition: boolean, ...args: any) => {
+        if (!condition) {
+          send.log('error', '\n', ['Assertion failed:', ...args])
+        }
+      },
+      count: (id = 'default') => {
+        counter[id] = (counter[id] || 0) + 1
+        send.log('debug', '\n', [id + ':', counter[id]])
+      },
+      countReset: (id = 'default') => {
+        counter[id] = 0
+        send.log('debug', '\n', [id + ':', counter[id]])
+      },
+      time: (id = 'default') => {
+        timer[id] = performance.now()
+      },
+      timeLog: (id = 'default', ...args: any[]) => {
+        if (timer[id]) {
+          const duration = performance.now() - timer[id]
+          send.log('debug', '\n', [`${id}: ${duration.toFixed(2)} ms`, ...args])
+        } else {
+          send.log('warn', '\n', [`No such timer: ${id}`])
+        }
+      },
+      timeEnd: (id = 'default') => {
+        if (timer[id]) {
+          const duration = performance.now() - timer[id]
+          send.log('debug', '\n', [`${id}: ${duration.toFixed(2)} ms`])
+          delete timer[id]
+        } else {
+          send.log('warn', '\n', [`No such timer: ${id}`])
+        }
       },
       clear: () => send.lia('LIA: clear'),
     }
@@ -351,6 +392,8 @@ function liaExecCode(event: Lia.Event) {
         execute_response(event)('LIASCRIPT: ' + msg)
       },
     }
+
+    const fetch = window.LIA.fetch
 
     try {
       const result = eval(event.message.param.code)

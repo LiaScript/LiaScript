@@ -124,6 +124,9 @@ toElement =
                 , showResolveAt = 0
                 , showHintsAt = 0
                 , showPartialSolution = False
+                , text_solved = Nothing
+                , text_failed = Nothing
+                , text_resolved = Nothing
                 }
                 Array.empty
                 True

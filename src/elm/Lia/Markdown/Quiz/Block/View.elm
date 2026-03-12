@@ -121,7 +121,7 @@ view config randomize solution quiz state =
                                 [ Attr.style "border" "3px dotted #888"
                                 , Attr.style "padding" "1rem"
                                 , Attr.style "cursor" "pointer"
-                                , Attr.style "background-color" "#f9f9f9"
+                                , Attr.style "background-color" "#88888822"
                                 , Attr.style "border-radius" "4px"
                                 , Attr.style "display" "flex"
                                 , Attr.style "justify-content" "center"
@@ -214,7 +214,7 @@ view config randomize solution quiz state =
                                     , Attr.style "margin" "0.25rem"
                                     , Attr.style "padding" "1rem"
                                     , Attr.style "cursor" "pointer"
-                                    , Attr.style "background-color" "#f9f9f9"
+                                    , Attr.style "background-color" "#88888822"
                                     , Attr.style "border-radius" "4px"
                                     , Attr.draggable <|
                                         if solved then

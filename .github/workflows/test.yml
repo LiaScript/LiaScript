@@ -1,0 +1,19 @@
+name: Deploy to Test Page
+
+on:
+    push:
+        branches:
+            - test # Only trigger when there is a push to the test branch
+
+jobs:
+    dispatch:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Send repository dispatch to trigger build
+              run: |
+                  curl -X POST \
+                    -H "Accept: application/vnd.github.v3+json" \
+                    -H "Authorization: Bearer ${{ secrets.PAT }}" \
+                    https://api.github.com/repos/liascript/test/dispatches \
+                    -d '{"event_type":"trigger-build"}' \
+                    -v  # Add verbose output for debugging

@@ -290,13 +290,14 @@ class PreviewLink extends HTMLElement {
             }
           )
         } else {
-          // Use the revised regex to detect Wikipedia links (which supports titles with parentheses)
-          const wikipediaRegex =
-            /\/\/([a-z]+)\.wikipedia\.org\/wiki\/([^#?\s]+(?:\([^#?\s]*\)[^#?\s]*)*)/i
-          const wikipediaMatch = this.sourceUrl.match(wikipediaRegex)
-          if (wikipediaMatch) {
-            let lang = wikipediaMatch[1]
-            let title = wikipediaMatch[2]
+          // Generalize to detect Wikimedia project links (Wikipedia, Wiktionary, Wikibooks, etc.)
+          const wikimediaRegex =
+            /\/\/([a-z]+)\.(wikipedia|wiktionary|wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wikimedia|wikidata)\.org\/wiki\/([^#?\s]+(?:\([^#?\s]*\)[^#?\s]*)*)/i
+          const wikimediaMatch = this.sourceUrl.match(wikimediaRegex)
+          if (wikimediaMatch) {
+            let lang = wikimediaMatch[1]
+            let project = wikimediaMatch[2]
+            let title = wikimediaMatch[3]
             // Decode first to avoid double encoding (e.g. '%28' becomes '(')
             try {
               title = decodeURIComponent(title)
@@ -304,12 +305,12 @@ class PreviewLink extends HTMLElement {
               console.error('Error decoding title:', e)
             }
             // Re-encode the title for a proper API request
-            let wikiApiUrl = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+            let apiUrl = `https://${lang}.${project}.org/api/rest_v1/page/summary/${encodeURIComponent(
               title
             )}`
 
             window
-              .fetch(wikiApiUrl, {
+              .fetch(apiUrl, {
                 headers: {
                   Accept: 'application/json',
                 },
@@ -322,7 +323,7 @@ class PreviewLink extends HTMLElement {
               })
               .then((data) => {
                 this.cache = toCard(
-                  this.sourceUrl, //data.content_urls.desktop.page,
+                  this.sourceUrl,
                   data.title,
                   data.extract,
                   data.thumbnail?.source,
@@ -331,7 +332,7 @@ class PreviewLink extends HTMLElement {
                 this.show()
               })
               .catch((error) => {
-                console.error('Wikipedia API error:', error)
+                console.error('Wikimedia API error:', error)
                 // Fallback: try using oEmbed or direct HTML parsing if the API fails
                 EMBED.extract(this.sourceUrl, {})
                   .then((data) => {

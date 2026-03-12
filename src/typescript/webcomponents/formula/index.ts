@@ -1,4 +1,3 @@
-import katexCssUrl from 'katex/dist/katex.min.css'
 import katex from 'katex'
 import renderA11yString from './render-a11y-strings'
 import 'katex/contrib/mhchem/mhchem.js'
@@ -11,7 +10,7 @@ customElements.define(
     private span: HTMLSpanElement
     private label: HTMLSpanElement
     private formula_: string
-    private macros_: { [key: string]: string }
+    private macros_: { [key: string]: string } = {}
 
     constructor() {
       super()
@@ -21,7 +20,6 @@ customElements.define(
       this.label.setAttribute('aria-hidden', 'true')
 
       this.formula_ = ''
-      this.macros = {}
     }
 
     connectedCallback() {
@@ -29,14 +27,9 @@ customElements.define(
         mode: 'open',
       })
 
-      let link = document.createElement('link')
-      link.rel = 'stylesheet'
-      link.href = katexCssUrl // 'katex.min.css'
-
       let style = document.createElement('style')
       style.textContent = this.extractKatexStyles()
 
-      shadowRoot.appendChild(link)
       shadowRoot.appendChild(style)
       shadowRoot.appendChild(this.span)
       this.appendChild(this.label)
@@ -48,8 +41,11 @@ customElements.define(
       if (macros) {
         try {
           this.macros_ = JSON.parse(macros)
-        } catch (e) {
-          console.warn('formula: reading macros ->', e.message)
+        } catch (err) {
+          console.warn(
+            'formula: reading macros ->',
+            err instanceof Error ? err.message : String(err)
+          )
         }
       }
 
@@ -78,7 +74,10 @@ customElements.define(
             }
           }
         } catch (e) {
-          console.warn('formula: cannot access stylesheets ->', e.message)
+          console.warn(
+            'formula: cannot access stylesheets ->',
+            e instanceof Error ? e.message : String(e)
+          )
         }
       }
 
@@ -132,7 +131,10 @@ customElements.define(
           try {
             label = renderA11yString(label)
           } catch (e) {
-            console.warn('formula: render a11y ->', e.message)
+            console.warn(
+              'formula: render a11y ->',
+              e instanceof Error ? e.message : String(e)
+            )
           }
 
           this.span.setAttribute('aria-label', label)

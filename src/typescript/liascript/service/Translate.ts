@@ -154,11 +154,34 @@ function googleTranslateElementInit() {
 }
 
 /**
+ * Polyfill for Performance API to prevent errors in older browsers.
+ * Google Translate uses performance.measure() which may fail on older browsers.
+ */
+function polyfillPerformanceAPI() {
+  if (typeof performance !== 'undefined') {
+    const originalMeasure = performance.measure?.bind(performance)
+    if (originalMeasure) {
+      performance.measure = function (name, startMark, endMark) {
+        try {
+          return originalMeasure(name, startMark, endMark)
+        } catch (e) {
+          // Silently fail if marks don't exist
+          return undefined as any
+        }
+      }
+    }
+  }
+}
+
+/**
  * Inject the Google translation API into the head of the document.
  */
 function injectGoogleTranslate() {
   // inject the google translator
   if (!googleTranslate) {
+    // Apply polyfill before loading Google Translate
+    polyfillPerformanceAPI()
+
     // TODO:
     // the general URL without protocol needs to be checked with other
     // protocols IPFS, Hyper, etc.
@@ -207,13 +230,24 @@ const Service = {
       mutations.forEach(function (mutation) {
         changeGoogleStyles()
 
+        let langCode = document.documentElement.lang
+        let langName
+        if (
+          typeof Intl !== 'undefined' &&
+          typeof Intl.DisplayNames === 'function'
+        ) {
+          let displayNames = new Intl.DisplayNames(['en'], { type: 'language' })
+          langName = displayNames.of(langCode)
+        } else {
+          // Fallback: just use the language code if DisplayNames is not supported
+          langName = langCode
+        }
+
         // Check for Google Translate direction classes
         checkGoogleTranslateDirection()
 
         // Update document direction based on the new language
-        updateDocumentDirection(document.documentElement.lang)
-
-        let displayNames = new Intl.DisplayNames(['en'], { type: 'language' })
+        updateDocumentDirection(langCode)
 
         elmSend({
           reply: true,
@@ -221,10 +255,7 @@ const Service = {
           service: Port,
           message: {
             cmd: 'lang',
-            param: [
-              document.documentElement.lang,
-              displayNames.of(document.documentElement.lang),
-            ],
+            param: [langCode, langName],
           },
         })
       })

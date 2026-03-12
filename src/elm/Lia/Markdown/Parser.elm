@@ -494,7 +494,7 @@ quote =
         >> ignore (regex "> ?")
         >> ignore (Indent.push "> ?")
         >> ignore Indent.skip
-        >> andMap (sepBy newlineWithIndentation blocks)
+        >> andMap (sepBy (many newlineWithIndentation) blocks)
         >> ignore Indent.pop
 
 
@@ -549,8 +549,15 @@ allowedLine =
     lookAhead
         (maybe
             (choice
-                [ regex "\\*\\*\\*+\n"
+                [ regex "[ \t]*\n"
+                , regex "\\*\\*\\*+\n"
                 , string "[[?]]"
+                , string "+ "
+                , string "- "
+                , string "* "
+                , string "```"
+                , string ">"
+                , regex "\\d+\\. "
                 ]
             )
             |> andThen

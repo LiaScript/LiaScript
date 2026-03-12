@@ -1,19 +1,20 @@
 import * as Base from '../Base/index'
-import log from '../../liascript/log'
+import { PubNubTransport } from '../../../../node_modules/y-generic/dist/providers/pubnub/index'
+import { GenericProvider } from 'y-generic'
 
 export class Sync extends Base.Sync {
-  private pubnub: any
-  private channel: string = ''
+  private transport?: PubNubTransport
   private publishKey?: string
   private subscribeKey?: string
+  private syncFallbackTimer: ReturnType<typeof setTimeout> | null = null
 
   destroy() {
-    if (this.pubnub) {
-      this.pubnub.unsubscribeAll()
-      this.pubnub.stop()
+    if (this.syncFallbackTimer !== null) {
+      clearTimeout(this.syncFallbackTimer)
+      this.syncFallbackTimer = null
     }
-
     super.destroy()
+    this.provider?.disconnect()
   }
 
   async connect(data: {
@@ -24,102 +25,74 @@ export class Sync extends Base.Sync {
   }) {
     super.connect(data)
 
-    this.publishKey = data.config.publishKey
-    this.subscribeKey = data.config.subscribeKey
+    this.publishKey = data.config?.publishKey
+    this.subscribeKey = data.config?.subscribeKey
 
     if (window['PubNub']) {
       this.init(true)
     } else {
-      this.load(['//cdn.pubnub.com/sdk/javascript/pubnub.4.33.1.min.js'], this)
+      this.load(['//cdn.pubnub.com/sdk/javascript/pubnub.10.2.7.min.js'], this)
     }
   }
 
   init(ok: boolean, error?: string) {
     if (!this.publishKey || !this.subscribeKey) {
       return this.sendDisconnectError(
-        'You have to provide a valid pair of keys'
+        'You have to provide a valid pair of keys',
       )
     }
 
     const id = this.uniqueID()
 
     if (ok && window['PubNub'] && id) {
-      this.channel = btoa(id)
+      this.transport = new PubNubTransport()
 
-      // @ts-ignore
-      this.pubnub = new PubNub({
+      this.provider = new GenericProvider(this.db.doc, this.transport)
+
+      this.db.setAwareness(this.provider.awareness)
+
+      let syncedOnce = false
+
+      const doConnect = () => {
+        if (syncedOnce) return
+        syncedOnce = true
+        if (this.syncFallbackTimer !== null) {
+          clearTimeout(this.syncFallbackTimer)
+          this.syncFallbackTimer = null
+        }
+        this.sendConnect()
+      }
+
+      this.provider.on('synced', (event: any) => {
+        console.log('PubNub: document synchronized', event.synced)
+        doConnect()
+      })
+
+      this.provider.on('status', (event: any) => {
+        const status = event.state
+        console.log(`PubNub status: ${status}`)
+
+        if (status === 'connected') {
+          this.syncFallbackTimer = setTimeout(() => {
+            console.log('PubNub: sync fallback, proceeding as first peer')
+            doConnect()
+          }, 2000)
+        } else if (status === 'disconnected') {
+          console.warn('PubNub: disconnected')
+        }
+      })
+
+      this.provider.connect({
+        room: id,
         publishKey: this.publishKey,
         subscribeKey: this.subscribeKey,
-        uuid: this.token,
-        heartbeatInterval: 30,
-        // logVerbosity: true,
-        // heartbeatInterval: 10,
-        // presenceTimeout: 30,
-        cipherKey: this.password,
-      })
-
-      this.pubnub.subscribe({
-        channels: [this.channel],
-        withPresence: true,
-        restore: false,
-      })
-
-      let self = this
-
-      this.pubnub.addListener({
-        status: function (statusEvent: any) {
-          log.info('PUBNUB status:', statusEvent)
-          if (statusEvent.category === 'PNConnectedCategory') {
-            self.sendConnect()
-          } else if (statusEvent.category === 'PNBadRequestCategory') {
-            self.sendDisconnectError(statusEvent.errorData.message)
-          }
-        },
-        message: function (event: any) {
-          // prevent return of self send messages
-          if (event.publisher !== self.token) {
-            //console.log('SUB:', JSON.stringify(event.message))
-            const [state, message, timestamp] = event.message
-
-            if (state) {
-              if (timestamp == self.db.timestamp) {
-                self.applyUpdate(Base.base64_to_unit8(message))
-              } else if (timestamp > self.db.timestamp) {
-                self.broadcast(true, self.db.encode())
-              } else {
-                self.db.timestamp = timestamp
-                self.applyUpdate(Base.base64_to_unit8(message), true)
-              }
-            } else {
-              self.pubsubReceive(Base.base64_to_unit8(message))
-            }
-          }
-        },
-        presence: function (event: any) {
-          // console.log('presence: ', event)
-          switch (event.action) {
-            case 'leave': {
-              self.db.removePeer(event.uuid)
-            }
-          }
-        },
-      })
-    }
-  }
-
-  broadcast(state: boolean, data: Uint8Array): void {
-    if (this.pubnub) {
-      //console.log('PUB: ', message.message)
-      this.pubnub.publish(
-        {
-          channel: this.channel,
-          message: [state, Base.uint8_to_base64(data), this.db.timestamp],
-          storeInHistory: false,
-        },
-        function (status: any, response: any) {
-          // console.log('PUBNUB publish', status, response)
-        }
-      )
+        ...(this.password ? { cipherKey: this.password } : {}),
+      } as any)
+    } else {
+      let message = 'PubNub unknown error'
+      if (error) message = 'Could not load resource: ' + error
+      else if (!window['PubNub']) message = 'Could not load PubNub SDK'
+      this.sendDisconnectError(message)
     }
   }
 }

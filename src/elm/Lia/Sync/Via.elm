@@ -27,11 +27,15 @@ type Backend
       --| Jitsi String
       --| Matrix { baseURL : String, userId : String, accessToken : String }
     | P2PT String
+    | IPFS
     | PubNub { pubKey : String, subKey : String }
       -- Trystero
     | NoStr
     | MQTT
     | Torrent
+    | WebSocket { url : String }
+    | PeerJS { host : String, port_ : String, path : String, iceServers : String }
+    | SimplePeer { signaling : String, iceServers : String }
 
 
 toString : Bool -> Backend -> String
@@ -48,6 +52,9 @@ toString full via =
 
         Torrent ->
             "Torrent"
+
+        IPFS ->
+            "IPFS"
 
         GUN { urls, persistent } ->
             "GUN"
@@ -97,6 +104,33 @@ toString full via =
                         ""
                    )
 
+        WebSocket { url } ->
+            "WebSocket"
+                ++ (if full then
+                        "|" ++ url
+
+                    else
+                        ""
+                   )
+
+        PeerJS { host, port_, path, iceServers } ->
+            "PeerJS"
+                ++ (if full then
+                        "|" ++ host ++ "|" ++ port_ ++ "|" ++ path ++ "|" ++ iceServers
+
+                    else
+                        ""
+                   )
+
+        SimplePeer { signaling, iceServers } ->
+            "SimplePeer"
+                ++ (if full then
+                        "|" ++ signaling ++ "|" ++ iceServers
+
+                    else
+                        ""
+                   )
+
 
 icon : Backend -> Html msg
 icon via =
@@ -117,6 +151,9 @@ icon via =
             Torrent ->
                 "icon-torrent icon-xs"
 
+            IPFS ->
+                "icon-ipfs icon-xs"
+
             -- Jitsi _ ->
             --     "icon-jitsi icon-xs"
             -- Matrix _ ->
@@ -126,6 +163,15 @@ icon via =
 
             P2PT _ ->
                 "icon-p2pt icon-xs"
+
+            WebSocket _ ->
+                "icon-websocket icon-xs"
+
+            PeerJS _ ->
+                "icon-peerjs icon-xs"
+
+            SimplePeer _ ->
+                "icon-simplepeer icon-xs"
         )
         [ Attr.style "padding-inline-end" "5px"
         , Attr.style "vertical-align" "middle"
@@ -144,6 +190,9 @@ fromString via =
 
         [ "mqtt" ] ->
             Just MQTT
+
+        [ "ipfs" ] ->
+            Just IPFS
 
         [ "torrent" ] ->
             Just Torrent
@@ -186,6 +235,30 @@ fromString via =
 
         [ "pubnub", pub, sub ] ->
             Just <| PubNub { pubKey = pub, subKey = sub }
+
+        [ "websocket" ] ->
+            Just (WebSocket { url = "" })
+
+        [ "websocket", url ] ->
+            Just (WebSocket { url = url })
+
+        [ "peerjs" ] ->
+            Just (PeerJS { host = "", port_ = "", path = "", iceServers = "" })
+
+        [ "peerjs", host ] ->
+            Just (PeerJS { host = host, port_ = "", path = "", iceServers = "" })
+
+        [ "peerjs", host, port_, path, iceServers ] ->
+            Just (PeerJS { host = host, port_ = port_, path = path, iceServers = iceServers })
+
+        [ "simplepeer" ] ->
+            Just (SimplePeer { signaling = "", iceServers = "" })
+
+        [ "simplepeer", signaling ] ->
+            Just (SimplePeer { signaling = signaling, iceServers = "" })
+
+        [ "simplepeer", signaling, iceServers ] ->
+            Just (SimplePeer { signaling = signaling, iceServers = iceServers })
 
         _ ->
             Nothing
@@ -300,6 +373,17 @@ infoOn supported about =
                 , allowScripts
                 ]
 
+            ( IPFS, _ ) ->
+                [ link "IPFS (InterPlanetary File System)" "https://ipfs.io"
+                , Html.text " is a peer-to-peer hypermedia protocol designed to make the web faster, safer, and more open. "
+                , Html.text "It enables users to host and share content in a decentralized manner, eliminating the need for traditional centralized servers. "
+                , Html.text "In the context of browser-based Pub/Sub (Publish/Subscribe) messaging, IPFS can facilitate real-time communication by allowing browsers to publish messages to specific topics and subscribe to receive messages from those topics. "
+                , Html.text "This decentralized approach enhances data availability and resilience, making it suitable for applications like chat or live streaming."
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
+                ]
+
             ( NoStr, _ ) ->
                 [ link "NoStr" "https://nostr.com"
                 , Html.text " is a decentralized protocol designed for creating a censorship-resistant global social network."
@@ -363,6 +447,68 @@ infoOn supported about =
                 , Html.text "After this, you can simply generate a new set of keys. "
                 , Html.text "The basic steps that are required, are described in more detail "
                 , link "here" "https://www.appypie.com/faqs/how-to-get-pubnub-publish-key-and-subscribe-key"
+                , Html.text "."
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
+                ]
+
+            ( WebSocket _, _ ) ->
+                [ link "WebSocket" "https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"
+                , Html.text " provides full-duplex communication over a single TCP connection. "
+                , Html.text "To use this backend, you need a WebSocket server that supports the y-websocket protocol. "
+                , Html.text "You can host your own server using "
+                , link "y-websocket" "https://github.com/yjs/y-websocket"
+                , Html.text " or any compatible implementation. "
+                , Html.text "Provide the full WebSocket URL, e.g. "
+                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://your-server.example.com" ]
+                , Html.text "."
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
+                ]
+
+            ( PeerJS _, _ ) ->
+                [ link "PeerJS" "https://peerjs.com"
+                , Html.text " simplifies WebRTC peer-to-peer data channel connections. "
+                , Html.text "By default it uses the free PeerJS Cloud signaling server — no setup required. "
+                , Html.text "For production use or larger groups you can host your own "
+                , link "PeerServer" "https://github.com/peers/peerjs-server"
+                , Html.text " and configure it with the fields below. "
+                , Html.text "All fields are optional. "
+                , Html.text "The \"ICE / TURN servers\" field accepts a JSON array of "
+                , link "RTCIceServer" "https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer"
+                , Html.text " objects (see "
+                , link "RTCPeerConnection config" "https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection"
+                , Html.text "), e.g. "
+                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "[{\"urls\":\"stun:stun.l.google.com:19302\"}]" ]
+                , Html.text ". Use TURN servers to improve connectivity in restricted networks. "
+                , Html.text "The implementation can be found "
+                , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/PeerJS"
+                , Html.text "."
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
+                ]
+
+            ( SimplePeer _, _ ) ->
+                [ link "SimplePeer" "https://github.com/feross/simple-peer"
+                , Html.text " is a minimal WebRTC library for direct peer-to-peer data connections in the browser. "
+                , Html.text "It uses a signaling server only for peer discovery; actual data flows directly between browsers. "
+                , Html.text "A signaling server URL is "
+                , Html.strong [] [ Html.text "required" ]
+                , Html.text " — the previously public default server is no longer available. "
+                , Html.text "Host your own using "
+                , link "y-webrtc" "https://github.com/yjs/y-webrtc"
+                , Html.text ", which includes a ready-to-use signaling server. "
+                , Html.text "You can provide multiple comma-separated URLs for redundancy. "
+                , Html.text "The \"ICE / TURN servers\" field accepts a JSON array of "
+                , link "RTCIceServer" "https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer"
+                , Html.text " objects (optional), e.g. "
+                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "[{\"urls\":\"stun:stun.l.google.com:19302\"}]" ]
+                , Html.text ". Use TURN servers to improve connectivity in restricted networks. "
+                , Html.text "The implementation can be found "
+                , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/SimplePeer"
                 , Html.text "."
                 , Html.br [] []
                 , Html.br [] []
@@ -492,6 +638,79 @@ view editable backend =
                 , autocomplete = Just "websocket-urls"
                 }
 
+        WebSocket { url } ->
+            input
+                { active = editable
+                , type_ = "text"
+                , msg = InputWebSocket
+                , value = url
+                , placeholder = "wss://your-server.example.com"
+                , label = Html.text "server URL"
+                , autocomplete = Just "websocket-url"
+                }
+
+        PeerJS { host, port_, path, iceServers } ->
+            Html.div []
+                [ input
+                    { active = editable
+                    , type_ = "text"
+                    , msg = InputPeerJS "host"
+                    , value = host
+                    , placeholder = "my-peerjs-server.example.com"
+                    , label = Html.text "server host (optional)"
+                    , autocomplete = Just "peerjs-host"
+                    }
+                , input
+                    { active = editable
+                    , type_ = "text"
+                    , msg = InputPeerJS "port"
+                    , value = port_
+                    , placeholder = "443"
+                    , label = Html.text "server port (optional)"
+                    , autocomplete = Just "peerjs-port"
+                    }
+                , input
+                    { active = editable
+                    , type_ = "text"
+                    , msg = InputPeerJS "path"
+                    , value = path
+                    , placeholder = "/"
+                    , label = Html.text "server path (optional)"
+                    , autocomplete = Just "peerjs-path"
+                    }
+                , input
+                    { active = editable
+                    , type_ = "text"
+                    , msg = InputPeerJS "ice"
+                    , value = iceServers
+                    , placeholder = "[{\"urls\":\"stun:stun.l.google.com:19302\"}]"
+                    , label = Html.text "ICE / TURN servers as JSON (optional)"
+                    , autocomplete = Just "peerjs-ice"
+                    }
+                ]
+
+        SimplePeer { signaling, iceServers } ->
+            Html.div []
+                [ input
+                    { active = editable
+                    , type_ = "text"
+                    , msg = InputSimplePeer "signaling"
+                    , value = signaling
+                    , placeholder = "wss://your-signaling-server.example.com"
+                    , label = Html.text "signaling server URLs (required, comma-separated)"
+                    , autocomplete = Just "simplepeer-signaling"
+                    }
+                , input
+                    { active = editable
+                    , type_ = "text"
+                    , msg = InputSimplePeer "ice"
+                    , value = iceServers
+                    , placeholder = "[{\"urls\":\"stun:stun.l.google.com:19302\"}]"
+                    , label = Html.text "ICE / TURN servers as JSON (optional)"
+                    , autocomplete = Just "simplepeer-ice"
+                    }
+                ]
+
         _ ->
             Html.text ""
 
@@ -571,6 +790,9 @@ type Msg
       --| InputMatrix String String
       --| InputJitsi String
     | InputP2PT String
+    | InputWebSocket String
+    | InputPeerJS String String
+    | InputSimplePeer String String
 
 
 update : Msg -> Backend -> Backend
@@ -599,6 +821,27 @@ update msg backend =
         ( InputP2PT urls, P2PT _ ) ->
             P2PT urls
 
+        ( InputWebSocket url, WebSocket _ ) ->
+            WebSocket { url = url }
+
+        ( InputPeerJS "host" v, PeerJS data ) ->
+            PeerJS { data | host = v }
+
+        ( InputPeerJS "port" v, PeerJS data ) ->
+            PeerJS { data | port_ = v }
+
+        ( InputPeerJS "path" v, PeerJS data ) ->
+            PeerJS { data | path = v }
+
+        ( InputPeerJS "ice" v, PeerJS data ) ->
+            PeerJS { data | iceServers = v }
+
+        ( InputSimplePeer "signaling" v, SimplePeer data ) ->
+            SimplePeer { data | signaling = v }
+
+        ( InputSimplePeer "ice" v, SimplePeer data ) ->
+            SimplePeer { data | iceServers = v }
+
         _ ->
             backend
 
@@ -617,6 +860,15 @@ eq a b =
         -- ( Jitsi _, Jitsi _ ) ->
         --     True
         ( P2PT _, P2PT _ ) ->
+            True
+
+        ( WebSocket _, WebSocket _ ) ->
+            True
+
+        ( PeerJS _, PeerJS _ ) ->
+            True
+
+        ( SimplePeer _, SimplePeer _ ) ->
             True
 
         _ ->

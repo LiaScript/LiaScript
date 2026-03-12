@@ -138,7 +138,7 @@ add_macros orig temp =
             String.trim
                 (orig.onload
                     ++ (if orig.onload /= temp.onload then
-                            "\n" ++ temp.onload
+                            ";\n" ++ temp.onload
 
                         else
                             ""

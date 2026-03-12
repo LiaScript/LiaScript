@@ -33,7 +33,7 @@ const Service = {
 
         // if it exists and is not in the viewport it is moved into it
         if (link && !link.getAttribute('aria-hidden') && !isInViewport(link)) {
-          scrollIntoView('focusedToc', 0)
+          scrollIntoView('focusedToc', 500)
         }
 
         break
@@ -52,7 +52,7 @@ const Service = {
         setTimeout(function () {
           const elem = document.getElementById(event.message.param.id)
 
-          if (elem) {
+          if (elem && elem.scrollTo) {
             elem.scrollTo({
               top: elem.scrollHeight,
               behavior: 'smooth',
@@ -66,13 +66,13 @@ const Service = {
         if (!document.fullscreenElement) {
           document.documentElement.requestFullscreen().catch((err) => {
             console.warn(
-              `Error attempting to enable fullscreen mode: ${err.message}`
+              `Error attempting to enable fullscreen mode: ${err.message}`,
             )
           })
         } else {
           document.exitFullscreen().catch((err) => {
             console.error(
-              `Error attempting to exit fullscreen mode: ${err.message}`
+              `Error attempting to exit fullscreen mode: ${err.message}`,
             )
           })
         }
@@ -94,8 +94,8 @@ export function scrollUp() {
   // every LiaScript slide consists of a main tag
   const main = document.querySelector('main:not([hidden=""])')
 
-  if (main) {
-    if (window.LIA.scrollUpOnMain) main.scrollTo(0, 0)
+  if (main && main.scrollTo) {
+    if (window.LIA.scrollUpOnMain) main?.scrollTo(0, 0)
 
     // The first element within a slide is in LiaScript the header, in order to
     // improve accessibility this element is put in focus to offer a general

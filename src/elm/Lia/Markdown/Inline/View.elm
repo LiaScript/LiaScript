@@ -364,6 +364,7 @@ viewQuiz config ( length, id ) attr =
                                         "red"
                                )
                         )
+                    , Attr.style "background-color" "#88888822"
                     , Attr.style "border-radius" "4px"
                     , Attr.style "display" "inline-block"
                     , Attr.style "vertical-align" "middle"
@@ -435,7 +436,7 @@ viewQuizDrops config =
                                                 ([ Attr.style "border" "3px dotted #888"
                                                  , Attr.style "margin" "0.25rem"
                                                  , Attr.style "padding" "1rem"
-                                                 , Attr.style "background-color" "#f9f9f9"
+                                                 , Attr.style "background-color" "#88888822"
                                                  , Attr.style "border-radius" "4px"
                                                  , Attr.style "display" "inline-block"
                                                  , A11y_Role.button
@@ -785,7 +786,6 @@ img : Config sub -> Parameters -> Inlines -> String -> Maybe Inlines -> Maybe In
 img config attr alt_ url_ title_ width =
     Html.img
         (Attr.src url_
-            :: Attr.attribute "loading" "lazy"
             :: onError "img" url_
             :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
             :: (if List.isEmpty attr && config.image_zoom then
@@ -796,8 +796,14 @@ img config attr alt_ url_ title_ width =
                )
             |> CList.addIf (width == Nothing) (load url_)
             |> CList.addWhen (title config title_)
+            |> addLazyLoading config.visible
         )
         []
+
+
+addLazyLoading : Maybe Int -> List (Html.Attribute msg) -> List (Html.Attribute msg)
+addLazyLoading visible =
+    CList.addIf (visible == Nothing) (Attr.attribute "loading" "lazy")
 
 
 load : String -> Attribute msg
@@ -854,13 +860,13 @@ reference config ref attr =
                     , if tube then
                         Html.iframe
                             (Attr.src url_
-                                :: Attr.attribute "loading" "lazy"
                                 :: Attr.attribute "allowfullscreen" ""
                                 :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                                 :: Attr.style "width" "100%"
                                 :: annotation "lia-audio" attr
                                 |> CList.addWhen (title config title_)
                                 |> CList.addWhen (alt config alt_)
+                                |> addLazyLoading config.visible
                             )
                             []
 
@@ -888,11 +894,11 @@ reference config ref attr =
                                 |> Attr.src
                              )
                                 :: Attr.attribute "allowfullscreen" ""
-                                :: Attr.attribute "loading" "lazy"
                                 :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                                 :: toAttribute attr
                                 |> CList.addWhen (title config title_)
                                 |> CList.addWhen (alt config alt_)
+                                |> addLazyLoading config.visible
                             )
                             (viewer config alt_)
                         ]

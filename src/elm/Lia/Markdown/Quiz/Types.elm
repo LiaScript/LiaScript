@@ -52,6 +52,9 @@ type alias Options =
     , showResolveAt : Int
     , showHintsAt : Int
     , showPartialSolution : Bool
+    , text_solved : Maybe Inlines
+    , text_failed : Maybe Inlines
+    , text_resolved : Maybe Inlines
     }
 
 

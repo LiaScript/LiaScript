@@ -1,11 +1,14 @@
 module Lia.Markdown.Code.Editor exposing
     ( Cursor
     , Event
+    , addKeyBinding
     , annotations
     , blockUpdate
     , catchCursorUpdates
+    , cursorPosition
     , decodeCursor
     , editor
+    , emptyCursor
     , enableBasicAutocompletion
     , enableKeyboardAccessibility
     , enableLiveAutocompletion
@@ -16,6 +19,7 @@ module Lia.Markdown.Code.Editor exposing
     , focusing
     , fontSize
     , highlightActiveLine
+    , keyBindings
     , marker
     , maxLines
     , mode
@@ -27,7 +31,9 @@ module Lia.Markdown.Code.Editor exposing
     , onChangeEvent2
     , onCtrlEnter
     , onFocus
+    , onKeyBinding
     , readOnly
+    , removeKeyBinding
     , setCursors
     , showCursor
     , showGutter
@@ -37,6 +43,7 @@ module Lia.Markdown.Code.Editor exposing
     , useSoftTabs
     , useWrapMode
     , value
+    , valueAndCursor
     )
 
 import Array exposing (Array)
@@ -60,6 +67,13 @@ type alias Cursor =
         , column : Int
         }
     , selection : List Int
+    }
+
+
+emptyCursor : Cursor
+emptyCursor =
+    { position = { row = 0, column = 0 }
+    , selection = []
     }
 
 
@@ -223,6 +237,18 @@ value =
     JE.string >> Attr.property "value"
 
 
+valueAndCursor : String -> { row : Int, column : Int } -> Html.Attribute msg
+valueAndCursor str pos =
+    JE.list identity
+        [ JE.string str
+        , JE.object
+            [ ( "row", JE.int pos.row )
+            , ( "column", JE.int pos.column )
+            ]
+        ]
+        |> Attr.property "value"
+
+
 firstLineNumber : Int -> Html.Attribute msg
 firstLineNumber =
     JE.int >> Attr.property "firstLineNumber"
@@ -331,3 +357,73 @@ boolean prop =
 focusing : Html.Attribute msg
 focusing =
     boolean "focusing" True
+
+
+{-| Set multiple key bindings at once
+Example:
+keyBindings
+[ ( "execute", { win = "Ctrl-Enter", mac = "Command-Enter" }, "editorExecute" )
+, ( "save", { win = "Ctrl-S", mac = "Command-S" }, "editorSave" )
+]
+-}
+keyBindings : List ( String, { win : String, mac : String }, String ) -> Html.Attribute msg
+keyBindings bindings =
+    bindings
+        |> List.map
+            (\( name, bindKey, eventName ) ->
+                ( name
+                , JE.object
+                    [ ( "bindKey"
+                      , JE.object
+                            [ ( "win", JE.string bindKey.win )
+                            , ( "mac", JE.string bindKey.mac )
+                            ]
+                      )
+                    , ( "eventName", JE.string eventName )
+                    ]
+                )
+            )
+        |> JE.object
+        |> Attr.property "keyBindings"
+
+
+{-| Add a single key binding
+-}
+addKeyBinding : String -> { win : String, mac : String } -> String -> Html.Attribute msg
+addKeyBinding name bindKey eventName =
+    JE.object
+        [ ( "name", JE.string name )
+        , ( "bindKey"
+          , JE.object
+                [ ( "win", JE.string bindKey.win )
+                , ( "mac", JE.string bindKey.mac )
+                ]
+          )
+        , ( "eventName", JE.string eventName )
+        ]
+        |> Attr.property "addKeyBindingProp"
+
+
+{-| Remove a key binding by name
+-}
+removeKeyBinding : String -> Html.Attribute msg
+removeKeyBinding name =
+    JE.string name
+        |> Attr.property "removeKeyBindingProp"
+
+
+{-| Listen for custom key binding events
+-}
+onKeyBinding : String -> msg -> Html.Attribute msg
+onKeyBinding eventName msg =
+    JD.succeed msg
+        |> Html.Events.on eventName
+
+
+cursorPosition : { row : Int, column : Int } -> Html.Attribute msg
+cursorPosition { row, column } =
+    JE.object
+        [ ( "row", JE.int row )
+        , ( "column", JE.int column )
+        ]
+        |> Attr.property "cursorPos"

@@ -4,7 +4,87 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.17.6] - 19/10/2025
+## [1.0.3] - 18/02/2026
+
+- fix: onload macro with `;` separator was not working as expected, now the onload macros are separated by a `;\n` to ensure that they are executed in the correct order and that they are properly separated.
+- feat: styled details & summary tags
+
+## [1.0.2] - 18/02/2026
+
+- improve: Better nested HTML parsing.
+- improve: Speed due to reduction of obsolete lazy parsing.
+- improve: CSS for better header styling.
+- fix: Add multiple fallback-servers to GunDB.
+- improve: lazy loading only in textbook mode, which will improve the loading in other modes.
+- fix: Multiple fixes for ancient browsers.
+- improve: TTS for unknown languages, if the operating system supports it, will now be used instead of the browser-based TTS, which relies on responsive voice and thus only supports a limited number of languages.
+
+## [1.0.1] - 20/01/2026
+
+- improve: Markdown standard compliance for nested lists and less greedy paragraph parsing.
+- fix: Quizzes with trailing spaces after scripts now work as expected.
+- chore: npm update caniuse-lite, katex/types
+
+## [1.0.0] - 06/01/2026
+
+- feat: Add simple-browser support for VSCode extension
+- Upgrade to node 24 lts
+- Connector: add H5P dummy support
+- Connector: xAPI support for LMS integration
+- Upgrade Service Worker for better caching and offline support
+- chore: npm update ace, caniuse-lite, sass, katex, dexie, yjs, workbox, typescript
+- fix(Table): Heatmap now mirroring the real data
+- feat: Add window.LIA.fetch for fetching relative URLs
+- Update: oEmbed endpoints
+- improve: scrolling into view
+- updated tooltips api to wikimedia
+
+## [0.17.10] - 17/11/2025
+
+- fix(CSS): Drag & Drop quizzes in dark mode
+- fix(CSS): Inlining of solution for Matrix-Quizzes
+- fix: Two GoTos at the initialization phase now work as expected
+- chore: npm update ace, caniuse-lite, sass, katex
+- fix: Katex css loading error
+
+## [0.17.8] - 31/10/2025
+
+- fix(CSS): bottom navigation does not break on to many effects
+- feat(Code): Add more console functions to JS execution, performance measurements.
+
+  - `console.table`
+  - `console.assert`
+  - `console.count`
+  - `console.countReset`
+  - `console.time`
+  - `console.timeLog`
+  - `console.timeEnd`
+
+## [0.17.7] - 16/10/2025
+
+- feat: The code terminal now supports multiline input, which can be entered with
+  <kbd>Shift</kbd>+<kbd>Enter</kbd>. The terminal will automatically detect
+  the programming language based on the file extension of the code block.
+
+  Additionally, a button was introduced to send the code via clicking.
+
+- feat(Quiz):
+
+  ``` markdown
+  How is this project called?
+
+  <!--
+  data-text-solved="This was a __Very__ hard quiz"
+  data-text-failed="Try again!"
+  data-text-resolved="Next time it will be better"
+  -->
+  [[LiaScript]]
+  ```
+
+- improve(CSS): Better styling with better color contrasts.
+- improved(a11y): For tables
+
+## [0.17.6] - 19/09/2025
 
 - Custom quizzes can now return an array of booleans to indicate which parts are correct. This will allow to show partial solutions for compound quizzes, such as matrix quizzes and gap-texts.
 
