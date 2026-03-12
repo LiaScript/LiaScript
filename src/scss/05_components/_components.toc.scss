@@ -141,7 +141,7 @@
     display: flex;
     flex-direction: column;
     overflow: auto;
-    margin-inline-end: auto;
+    //margin-inline-end: auto;
 
     a {
       width: 100%;
@@ -219,8 +219,8 @@
   }
 
   &__bottom {
-    margin-block-start: 1rem;
-    padding: 1rem 0 0 3rem;
+    margin: 0 3rem 0;
+    padding-top: 1rem;
     position: relative;
 
     > * {
@@ -232,9 +232,9 @@
       background-color: rgb(var(--lia-grey-light));
       display: inline-block;
       height: 1px;
-      left: 3rem;
+      left: 0px;
       position: absolute;
-      right: 3rem;
+      right: 0px;
       top: 0;
     }
   }
