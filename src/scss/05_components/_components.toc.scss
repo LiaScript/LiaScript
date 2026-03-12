@@ -175,6 +175,10 @@
         &1 {
           font-size: calc(2rem * var(--font-size-multiplier));
           font-weight: 700;
+          // fix: for better alignment h1 indexes
+          [dir='rtl'] & {
+            padding-inline-start: 3rem;
+          }
         }
 
         &2 {
