@@ -100,7 +100,7 @@ $slide-margin-left-textbook: 19rem !default;
     &.lia-toc--visible {
       left: $toc-width-desktop;
 
-      @include tools.breakpoint('md') {
+      @include tools.breakpoint('sm') {
         width: 100%;
         width: calc(100% - #{$toc-width-desktop});
       }
