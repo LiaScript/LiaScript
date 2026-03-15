@@ -35,7 +35,9 @@
     }
 
     &:focus {
-      border-block-end-color: map.get($theme, primary);
+      outline: 2px solid rgb(var(--color-text));
+      outline-offset: 2px;
+      box-shadow: 0 0 0 2px rgb(var(--color-background));
     }
   }
 }

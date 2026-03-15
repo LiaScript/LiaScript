@@ -13,7 +13,9 @@ $btn-height: 3.6rem;
   padding: 0.5rem 0.6rem;
 
   &:focus {
-    outline: 3px solid rgb(var(--color-text));
+    outline: 2px solid rgb(var(--color-text));
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgb(var(--color-background));
   }
   // Hide focus outline for mouse users while keeping it for keyboard users
   &:focus:not(:focus-visible) {
