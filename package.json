@@ -130,7 +130,7 @@
   },
   "dependencies": {
     "@capacitor-community/text-to-speech": "git+https://github.com/capacitor-community/text-to-speech.git#v8.0.0",
-    "@capacitor/android": "^8.0.0",
+    "@capacitor/android": "8.1.0",
     "@capacitor/core": "^8.0.0",
     "pako": "^2.1.0",
     "patch-package": "^8.0.0"
