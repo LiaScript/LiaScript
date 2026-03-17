@@ -65,9 +65,19 @@ update main msg model =
             case Event.destructure event of
                 ( Nothing, _, ( "init", settings ) ) ->
                     let
-                        newSettings =
+                        loaded =
                             settings
                                 |> load { model | initialized = True }
+
+                        newSettings =
+                            { loaded
+                                | mode =
+                                    loaded.documentMode
+                                        |> Maybe.withDefault loaded.mode
+                                , light =
+                                    loaded.documentLight
+                                        |> Maybe.withDefault loaded.light
+                            }
                     in
                     newSettings
                         |> no_log Nothing

@@ -35,6 +35,8 @@ type alias Settings =
     , audio : { pitch : String, rate : String }
     , fullscreen : Bool
     , edit : Maybe String
+    , documentMode : Maybe Mode
+    , documentLight : Maybe Bool
     }
 
 
@@ -98,6 +100,8 @@ init hasShareApi isFullscreen mode =
     , audio = { pitch = "1", rate = "1" }
     , fullscreen = isFullscreen
     , edit = Nothing
+    , documentMode = Nothing
+    , documentLight = Nothing
     }
 
 
