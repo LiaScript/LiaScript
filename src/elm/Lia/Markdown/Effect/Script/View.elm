@@ -96,6 +96,10 @@ script config withStyling attr id node =
                         (case node.input.type_ of
                             Just (Input.Button_ _) ->
                                 [ Event.onClick (Click id)
+                                , A11y_Key.onKeyDown
+                                    [ A11y_Key.enter (Click id)
+                                    , A11y_Key.space (Click id)
+                                    ]
                                 ]
 
                             _ ->
