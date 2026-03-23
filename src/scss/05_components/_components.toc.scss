@@ -260,6 +260,19 @@ html:not([class*='lia-theme-default']) {
   .lia-toc {
     background-color: rgb(var(--color-highlight));
     color: rgb(var(--lia-white));
+    --focus-ring-color: rgb(var(--color-highlight-menu));
+
+    #lia-btn-toc {
+      @include tools.breakpoint('sm') {
+        --focus-ring-color: rgb(var(--color-text));
+      }
+    }
+
+    &--closed {
+      #lia-btn-toc {
+        --focus-ring-color: rgb(var(--color-text));
+      }
+    }
 
     &__search {
       input {
