@@ -474,7 +474,7 @@ slideA11y { lang, light, tooltips, translations, mode, formulas, media, effect, 
                                 ]
                             |> Tuple.pair (String.fromInt id ++ "-/-" ++ String.fromInt counter)
                     )
-                |> Keyed.node "aside" (deactivate modalIsActive [ Attr.class "lia-notes" ])
+                |> Keyed.node "aside" (deactivate modalIsActive [ Attr.class "lia-notes", Attr.tabindex -1 ])
 
         _ ->
             Html.text ""
