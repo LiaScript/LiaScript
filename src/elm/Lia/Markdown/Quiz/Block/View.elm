@@ -308,25 +308,25 @@ select config randomize solution open options i =
 
           else
             Attr.disabled True
+        , Attr.tabindex <|
+            if active then
+                0
+
+            else
+                -1
+        , A11y_Aria.hidden False
+        , A11y_Role.button
+        , A11y_Aria.expanded open
+        , A11y_Aria.hasListBoxPopUp
+        , A11y_Key.onKeyDown <|
+            if active then
+                [ A11y_Key.enter Toggle, A11y_Key.space Toggle ]
+
+            else
+                []
         ]
         [ Html.span
             [ Attr.class "lia-dropdown__selected"
-            , A11y_Aria.hidden False
-            , A11y_Role.button
-            , A11y_Aria.expanded open
-            , A11y_Aria.hasListBoxPopUp
-            , A11y_Key.onKeyDown <|
-                if active then
-                    [ A11y_Key.enter Toggle, A11y_Key.space Toggle ]
-
-                else
-                    []
-            , Attr.tabindex <|
-                if active then
-                    0
-
-                else
-                    -1
             ]
             [ get_option config i options
             , Html.i
@@ -342,12 +342,13 @@ select config randomize solution open options i =
                 []
             ]
         , options
-            |> List.indexedMap (option config (open && active))
+            |> List.indexedMap (option config open active)
             |> shuffle randomize
             |> Html.div
                 (deactivate (not (open || active))
                     [ Attr.class "lia-dropdown__options"
                     , A11y_Aria.hidden (not (open && active))
+                    , Attr.tabindex -1
                     , A11y_Role.listBox
                     , Attr.class <|
                         if open then
@@ -360,8 +361,8 @@ select config randomize solution open options i =
         ]
 
 
-option : Config sub -> Bool -> Int -> Inlines -> Html (Msg sub)
-option config active id =
+option : Config sub -> Bool -> Bool -> Int -> Inlines -> Html (Msg sub)
+option config open active id =
     viewer config
         >> Html.div []
         >> Html.map Script
@@ -378,7 +379,7 @@ option config active id =
                 |> A11y_Key.onKeyDown
             , A11y_Role.listItem
             , Attr.tabindex <|
-                if active then
+                if open then
                     0
 
                 else
