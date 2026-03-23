@@ -416,38 +416,60 @@ slider :
     -> { maximum : String, minimum : String, step : String, value : String }
     -> Html Msg
 slider name title message grouping tabbable { maximum, minimum, step, value } =
-    Html.div
+    let
+        outputId =
+            "slider-value-"
+                ++ String.map
+                    (\c ->
+                        if Char.isAlphaNum c then
+                            c
+
+                        else
+                            '-'
+                    )
+                    name
+    in
+    Html.label
         [ Attr.style "display" "flex"
         , Attr.style "align-items" "center"
         , Attr.style "margin-block-end" "10px"
-        , Attr.title title
         ]
-        [ Html.label
+        [ Html.span
             [ Attr.class "lia-label"
-            , A11y_Aria.hidden (not tabbable)
             , Attr.style "width" "50px"
             , Attr.style "margin-inline-end" "10px"
             ]
             [ Html.text name ]
         , Html.input
             (grouping
-                [ Attr.type_ "range"
-                , A11y_Aria.hidden (not tabbable)
-                , Attr.min minimum
-                , Attr.max maximum
-                , Attr.step step
-                , Attr.value value
-                , onInput (message >> Change)
-                , Attr.style "flex-grow" "1"
-                ]
+                ([ Attr.type_ "range"
+                 , Attr.min minimum
+                 , Attr.max maximum
+                 , Attr.step step
+                 , Attr.value value
+                 , A11y_Aria.hidden (not tabbable)
+                 , Attr.attribute "aria-label" title
+                 , Attr.attribute "aria-describedby" outputId
+                 , Attr.attribute "aria-valuetext" (value ++ "× speed")
+                 , onInput (message >> Change)
+                 , Attr.style "flex-grow" "1"
+                 ]
+                    ++ (if tabbable then
+                            []
+
+                        else
+                            [ Attr.tabindex -1 ]
+                       )
+                )
             )
             []
-        , Html.span
-            [ Attr.style "margin-inline-start" "10px"
+        , Html.output
+            [ Attr.id outputId
+            , Attr.style "margin-inline-start" "10px"
             , Attr.style "width" "40px"
             , Attr.style "text-align" "right"
             ]
-            [ Html.text value ]
+            [ Html.text (value ++ " ×") ]
         ]
 
 
