@@ -1,6 +1,7 @@
 module Lia.Sync.View exposing (view)
 
 import Accessibility.Aria as A11y_Aria
+import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -134,11 +135,20 @@ select editable sync =
 
                   else
                     Attr.disabled True
+                , A11y_Key.onKeyDown
+                    [ not sync.open
+                        |> Open
+                        |> A11y_Key.enter
+                    , not sync.open
+                        |> Open
+                        |> A11y_Key.space
+                    ]
                 ]
                 [ Html.div
                     [ Attr.class "lia-dropdown__selected"
                     , A11y_Aria.hidden False
                     , A11y_Role.button
+                    , Attr.tabindex 0
                     , A11y_Aria.expanded sync.open
                     ]
                     [ maybeSelect sync.select
@@ -156,10 +166,16 @@ select editable sync =
                         []
                     ]
                 , sync.support
-                    |> List.map (Just >> option)
-                    |> (::) (option Nothing)
+                    |> (if sync.open then
+                            List.map (Just >> option)
+                                >> (::) (option Nothing)
+
+                        else
+                            always []
+                       )
                     |> Html.div
                         [ Attr.class "lia-dropdown__options"
+                        , Attr.tabindex -1
                         , Attr.class <|
                             if sync.open then
                                 "is-visible"
@@ -174,7 +190,15 @@ select editable sync =
 option : Maybe ( Bool, Backend ) -> Html SyncMsg
 option via =
     Html.div
-        [ Event.onClick (Select via) ]
+        [ Event.onClick (Select via)
+        , Attr.tabindex 0
+        , A11y_Key.onKeyDown
+            [ Select via
+                |> A11y_Key.enter
+            , Select via
+                |> A11y_Key.space
+            ]
+        ]
         [ maybeSelect via ]
 
 

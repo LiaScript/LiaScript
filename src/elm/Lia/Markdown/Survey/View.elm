@@ -606,6 +606,7 @@ view_select config options ( open, value ) id submitted =
                 |> List.indexedMap (option config id)
                 |> Html.div
                     [ Attr.class "lia-dropdown__options"
+                    , Attr.tabindex -1
                     , Attr.class <|
                         if open then
                             "is-visible"
