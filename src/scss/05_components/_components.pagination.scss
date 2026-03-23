@@ -3,6 +3,8 @@
 @use '../01_tools/tools.transition' as t;
 
 .lia-pagination {
+  --focus-ring-offset: -4px;
+  --focus-ring-color: white;
   display: inline-block;
   width: 100%;
 
