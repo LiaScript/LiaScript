@@ -137,20 +137,34 @@ export const Service = {
 
       case 'pause': {
         if (audioState.audio && !audioState.audio.paused) {
+          // external audio file
           audioState.audio.pause()
           stopProgressInterval()
           if (audioState.event) {
             sendResponse(audioState.event, 'paused', null)
           }
+        } else {
+          // browser TTS
+          try {
+            EasySpeech.pause()
+            sendResponse(event, 'paused', null)
+          } catch (e) {}
         }
         break
       }
 
       case 'resume': {
         if (audioState.audio && audioState.audio.paused && audioState.event) {
+          // external audio file
           audioState.audio.play()
           startProgressInterval(audioState.event)
           sendResponse(audioState.event, 'start', null)
+        } else {
+          // browser TTS
+          try {
+            EasySpeech.resume()
+            sendResponse(event, 'start', null)
+          } catch (e) {}
         }
         break
       }
