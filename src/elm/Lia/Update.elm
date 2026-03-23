@@ -148,6 +148,9 @@ update session msg model =
 
                                             else
                                                 settings.table_of_contents
+                                        , speaking = False
+                                        , paused = False
+                                        , audioProgress = Nothing
                                     }
                             }
                         )
@@ -163,6 +166,9 @@ update session msg model =
 
                                     else
                                         settings.table_of_contents
+                                , speaking = False
+                                , paused = False
+                                , audioProgress = Nothing
                             }
                     }
                         |> Return.val
