@@ -8,7 +8,8 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick)
+import Html.Events exposing (on, onClick)
+import Json.Decode as JD
 import Html.Keyed as Keyed
 import I18n.Translations as Trans exposing (Lang)
 import Lia.Chat.View as Chat
@@ -326,6 +327,7 @@ slideBottom { lang, tiny, settings, slide, effects } =
                     ]
                     [ Html.div [ Attr.class "lia-responsive-voice__control" ]
                         [ btnReplay lang sound settings
+                        , btnPause lang sound settings
                         , responsiveVoice
                             { lang = lang
                             , tiny = tiny
@@ -335,6 +337,7 @@ slideBottom { lang, tiny, settings, slide, effects } =
                             }
                         , btnStop lang settings
                         ]
+                    , audioProgressSlider sound settings
                     ]
         ]
 
@@ -365,6 +368,80 @@ btnReplay lang soundEnabled settings =
         [ Attr.id "lia-btn-sound"
         , Attr.class "lia-btn--transparent lia-responsive-voice__play"
         ]
+
+
+btnPause : Lang -> Bool -> Settings -> Html Msg
+btnPause _ soundEnabled settings =
+    if soundEnabled && settings.sound && (settings.speaking || settings.paused) then
+        Lia.Utils.btnIcon
+            { title =
+                if settings.paused then
+                    "Resume"
+
+                else
+                    "Pause"
+            , tabbable = True
+            , msg =
+                if settings.paused then
+                    Just TTSResume
+
+                else
+                    Just TTSPause
+            , icon =
+                if settings.paused then
+                    "icon-play-circle"
+
+                else
+                    "icon-pause-circle"
+            }
+            [ Attr.class "lia-btn--transparent" ]
+
+    else
+        Html.text ""
+
+
+audioProgressSlider : Bool -> Settings -> Html Msg
+audioProgressSlider soundEnabled settings =
+    case settings.audioProgress of
+        Just { current, total } ->
+            if soundEnabled && settings.sound && total > 0 then
+                Html.div [ Attr.class "lia-tts-progress" ]
+                    [ Html.input
+                        ([ Attr.type_ "range"
+                         , Attr.min "0"
+                         , Attr.max (String.fromFloat total)
+                         , Attr.step "0.1"
+                         , Attr.class "lia-tts-progress__slider"
+                         , on "mousedown" (JD.succeed TTSStartSeeking)
+                         , on "touchstart" (JD.succeed TTSStartSeeking)
+                         , on "change"
+                            (JD.map
+                                (\s ->
+                                    case String.toFloat s of
+                                        Just seconds ->
+                                            TTSSeek seconds
+
+                                        Nothing ->
+                                            TTSSeek current
+                                )
+                                (JD.at [ "target", "value" ] JD.string)
+                            )
+                         ]
+                            ++ (if settings.seeking then
+                                    []
+
+                                else
+                                    [ Attr.value (String.fromFloat current) ]
+                               )
+                        )
+                        []
+                    ]
+
+            else
+                Html.text ""
+
+        Nothing ->
+            Html.text ""
 
 
 btnStop : Lang -> Settings -> Html Msg

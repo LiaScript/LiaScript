@@ -17,6 +17,45 @@ var firstSpeak = true
 
 var elmSend: Lia.Send | null
 
+// Tracks the currently playing audio element for pause/resume/seek/progress
+var audioState: {
+  audio: HTMLMediaElement | null
+  event: Lia.Event | null
+  progressInterval: ReturnType<typeof setInterval> | null
+} = { audio: null, event: null, progressInterval: null }
+
+function stopProgressInterval() {
+  if (audioState.progressInterval !== null) {
+    clearInterval(audioState.progressInterval)
+    audioState.progressInterval = null
+  }
+}
+
+function clearAudioState() {
+  stopProgressInterval()
+  audioState.audio = null
+  audioState.event = null
+}
+
+function startProgressInterval(event: Lia.Event) {
+  stopProgressInterval()
+  let lastTime = -1
+  audioState.progressInterval = setInterval(() => {
+    const audio = audioState.audio
+    if (audio && !audio.paused && audio.duration > 0) {
+      const t = audio.currentTime
+      if (t !== lastTime) {
+        lastTime = t
+        sendResponse(
+          { ...event },
+          'progress',
+          JSON.stringify({ current: t, total: audio.duration })
+        )
+      }
+    }
+  }, 250)
+}
+
 const SETTINGS = 'settings'
 
 const AUDIO = 'lia-tts-recordings'
@@ -93,6 +132,46 @@ export const Service = {
 
       case 'playback': {
         playback(event)
+        break
+      }
+
+      case 'pause': {
+        if (audioState.audio && !audioState.audio.paused) {
+          audioState.audio.pause()
+          stopProgressInterval()
+          if (audioState.event) {
+            sendResponse(audioState.event, 'paused', null)
+          }
+        }
+        break
+      }
+
+      case 'resume': {
+        if (audioState.audio && audioState.audio.paused && audioState.event) {
+          audioState.audio.play()
+          startProgressInterval(audioState.event)
+          sendResponse(audioState.event, 'start', null)
+        }
+        break
+      }
+
+      case 'seek': {
+        if (audioState.audio) {
+          const seekTo = parseFloat(event.message.param)
+          if (!isNaN(seekTo)) {
+            audioState.audio.currentTime = seekTo
+            if (audioState.event) {
+              sendResponse(
+                audioState.event,
+                'progress',
+                JSON.stringify({
+                  current: seekTo,
+                  total: audioState.audio.duration,
+                })
+              )
+            }
+          }
+        }
         break
       }
 
@@ -434,6 +513,7 @@ function read(event: Lia.Event) {
 
       async function playNext() {
         if (currentIndex >= audioUrls.length) {
+          clearAudioState()
           sendResponse(event, 'stop')
           return
         }
@@ -482,6 +562,11 @@ function read(event: Lia.Event) {
         audio.onended = () => {
           audio.currentTime = 0
           currentIndex++
+          if (currentIndex >= audioUrls.length) {
+            clearAudioState()
+          } else {
+            audioState.audio = audioUrls[currentIndex]
+          }
           playNext()
         }
 
@@ -495,6 +580,10 @@ function read(event: Lia.Event) {
 
         audio.preservesPitch = true
         audio.playbackRate = options.rate
+
+        audioState.audio = audio
+        audioState.event = event
+
         const response = audio.play()
 
         if (response !== undefined) {
@@ -505,6 +594,7 @@ function read(event: Lia.Event) {
       }
 
       sendResponse(event, 'start')
+      startProgressInterval(event)
       playNext()
     } else if (text !== '' && element[0] !== undefined) {
       speak(text, voice, lang, options, event)
@@ -551,6 +641,8 @@ export function inject(key: string) {
 }
 
 function cancel() {
+  clearAudioState()
+
   try {
     const audioRecordings = document.getElementsByClassName(
       AUDIO

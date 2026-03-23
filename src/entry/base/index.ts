@@ -1,13 +1,13 @@
 import * as Lia from '../../typescript/liascript/index'
 
 import('../../typescript/connectors/Base/index').then(function (Base) {
-  let debug = false
+  /*let debug = false
 
   if (process.env.NODE_ENV === 'development') {
     debug = true
-  }
+  }*/
 
-  var app = new Lia.LiaScript(new Base.Connector(), { allowSync: false, debug })
+  var app = new Lia.LiaScript(new Base.Connector(), { allowSync: false, debug: true, courseUrl: 'https://raw.githubusercontent.com/LiaScript/docs/refs/heads/master/README.md' })
 
   window.addEventListener('message', (event) => {
     // IMPORTANT: check the origin of the data!

@@ -22,6 +22,9 @@ type alias Settings =
     , lang : String
     , action : Maybe Action
     , speaking : Bool
+    , paused : Bool
+    , seeking : Bool
+    , audioProgress : Maybe { current : Float, total : Float }
     , initialized : Bool
     , hasShareApi : Maybe Bool
     , translateWithGoogle : Maybe Bool
@@ -80,6 +83,9 @@ init hasShareApi isFullscreen mode =
     , lang = "default"
     , action = Nothing
     , speaking = False
+    , paused = False
+    , seeking = False
+    , audioProgress = Nothing
     , initialized = False
     , hasShareApi = hasShareApi
     , translateWithGoogle = Just False

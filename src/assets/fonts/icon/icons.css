@@ -423,120 +423,124 @@
   content: "\EA34"
 }
 
-.icon-pencil:before {
+.icon-pause-circle:before {
   content: "\EA35"
 }
 
-.icon-person:before {
+.icon-pencil:before {
   content: "\EA36"
 }
 
-.icon-piechart:before {
+.icon-person:before {
   content: "\EA37"
 }
 
-.icon-play-circle:before {
+.icon-piechart:before {
   content: "\EA38"
 }
 
-.icon-plus:before {
+.icon-play-circle:before {
   content: "\EA39"
 }
 
-.icon-presentation:before {
+.icon-plus:before {
   content: "\EA3A"
 }
 
-.icon-pubnub:before {
+.icon-presentation:before {
   content: "\EA3B"
 }
 
-.icon-radar:before {
+.icon-pubnub:before {
   content: "\EA3C"
 }
 
-.icon-refresh:before {
+.icon-radar:before {
   content: "\EA3D"
 }
 
-.icon-resolve:before {
+.icon-refresh:before {
   content: "\EA3E"
 }
 
-.icon-sankey:before {
+.icon-resolve:before {
   content: "\EA3F"
 }
 
-.icon-scatterplot:before {
+.icon-sankey:before {
   content: "\EA40"
 }
 
-.icon-search:before {
+.icon-scatterplot:before {
   content: "\EA41"
 }
 
-.icon-send:before {
+.icon-search:before {
   content: "\EA42"
 }
 
-.icon-settings:before {
+.icon-send:before {
   content: "\EA43"
 }
 
-.icon-slides:before {
+.icon-settings:before {
   content: "\EA44"
 }
 
-.icon-social:before {
+.icon-slides:before {
   content: "\EA45"
 }
 
-.icon-sort-asc:before {
+.icon-social:before {
   content: "\EA46"
 }
 
-.icon-sort-desc:before {
+.icon-sort-asc:before {
   content: "\EA47"
 }
 
-.icon-sound-off:before {
+.icon-sort-desc:before {
   content: "\EA48"
 }
 
-.icon-sound-on:before {
+.icon-sound-off:before {
   content: "\EA49"
 }
 
-.icon-stop-circle:before {
+.icon-sound-on:before {
   content: "\EA4A"
 }
 
-.icon-table:before {
+.icon-stop-circle:before {
   content: "\EA4B"
 }
 
-.icon-torrent:before {
+.icon-table:before {
   content: "\EA4C"
 }
 
-.icon-trash:before {
+.icon-torrent:before {
   content: "\EA4D"
 }
 
-.icon-warning:before {
+.icon-trash:before {
   content: "\EA4E"
 }
 
-.icon-websocket:before {
+.icon-warning:before {
   content: "\EA4F"
 }
 
-.icon-zoom-out:before {
+.icon-websocket:before {
   content: "\EA50"
 }
 
-.icon-zoom:before {
+.icon-zoom-out:before {
   content: "\EA51"
+}
+
+.icon-zoom:before {
+  content: "\EA52"
 }
 
 

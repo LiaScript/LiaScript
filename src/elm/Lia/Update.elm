@@ -30,6 +30,7 @@ import Service.Console
 import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Slide
+import Service.TTS
 import Session exposing (Session)
 
 
@@ -93,6 +94,10 @@ type Msg
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
     | TTSReplay Bool
+    | TTSPause
+    | TTSResume
+    | TTSStartSeeking
+    | TTSSeek Float
     | Media ( String, Maybe Int, Maybe Int )
     | Pane SplitPane.Msg
     | Focus
@@ -447,8 +452,59 @@ update session msg model =
                         Nothing ->
                             Return.val model
 
+                ( TTSPause, sec ) ->
+                    sendTTSEvent Service.TTS.pause model sec
+
+                ( TTSResume, sec ) ->
+                    sendTTSEvent Service.TTS.resume model sec
+
+                ( TTSStartSeeking, _ ) ->
+                    let
+                        settings =
+                            model.settings
+                    in
+                    Return.val { model | settings = { settings | seeking = True } }
+
+                ( TTSSeek seconds, sec ) ->
+                    let
+                        settings =
+                            model.settings
+
+                        updatedProgress =
+                            settings.audioProgress
+                                |> Maybe.map (\p -> { p | current = seconds })
+                    in
+                    case sec of
+                        Just s ->
+                            Return.val
+                                { model
+                                    | settings =
+                                        { settings
+                                            | seeking = False
+                                            , audioProgress = updatedProgress
+                                        }
+                                }
+                                |> Return.batchEvent
+                                    (Service.TTS.seek seconds
+                                        |> Event.pushWithId "settings" s.id
+                                    )
+
+                        Nothing ->
+                            Return.val model
+
                 _ ->
                     Return.val model
+
+
+sendTTSEvent : Event -> Model -> Maybe Section -> Return Model Msg Markdown.Msg
+sendTTSEvent ttsEvent model sec =
+    case sec of
+        Just s ->
+            Return.val model
+                |> Return.batchEvent (ttsEvent |> Event.pushWithId "settings" s.id)
+
+        Nothing ->
+            Return.val model
 
 
 getTitle : Model -> String

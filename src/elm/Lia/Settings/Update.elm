@@ -89,10 +89,20 @@ update main msg model =
                             no_log Nothing <|
                                 case Service.TTS.decode event of
                                     Service.TTS.Start ->
-                                        { model | speaking = True }
+                                        { model | speaking = True, paused = False }
 
                                     Service.TTS.Stop ->
-                                        { model | speaking = False }
+                                        { model | speaking = False, paused = False, audioProgress = Nothing }
+
+                                    Service.TTS.Paused ->
+                                        { model | paused = True }
+
+                                    Service.TTS.Progress current total ->
+                                        if model.seeking then
+                                            model
+
+                                        else
+                                            { model | audioProgress = Just { current = current, total = total } }
 
                                     Service.TTS.BrowserTTS support ->
                                         let
