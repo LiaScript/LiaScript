@@ -69,8 +69,8 @@ $global-font-family: 'LiaSourceSansPro';
 $global-font-mono: 'LiaSourceCodePro';
 $global-font-headline: 'LiaSourceSerifPro';
 
-$global-focus-ring-width: 3px;
+$global-focus-ring-width: $global-outline;
 $global-focus-ring-color: rgb(var(--color-text, 0, 0, 0));
-$global-focus-ring-offset: 3px;
+$global-focus-ring-offset: 2px;
 $global-focus-ring-style: solid;
 $global-focus-ring-radius: $global-radius;
