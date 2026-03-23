@@ -22,8 +22,9 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, stopPropagationOn)
 import I18n.Translations as Trans exposing (Lang)
+import Json.Decode as JD
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
@@ -47,7 +48,6 @@ import Lia.Utils
         , deactivate
         , icon
         , noTranslate
-        , percentage
         )
 import Library.Group as Group
 import QRCode
@@ -453,6 +453,7 @@ slider name title message grouping tabbable { maximum, minimum, step, value } =
                  , Attr.attribute "aria-valuetext" (value ++ "× speed")
                  , onInput (message >> Change)
                  , Attr.style "flex-grow" "1"
+                 , stopKeys
                  ]
                     ++ (if tabbable then
                             []
@@ -466,11 +467,17 @@ slider name title message grouping tabbable { maximum, minimum, step, value } =
         , Html.output
             [ Attr.id outputId
             , Attr.style "margin-inline-start" "10px"
-            , Attr.style "width" "40px"
+            , Attr.style "width" "60px"
             , Attr.style "text-align" "right"
             ]
             [ Html.text (value ++ " ×") ]
         ]
+
+
+stopKeys : Html.Attribute Msg
+stopKeys =
+    stopPropagationOn "keydown"
+        (JD.succeed ( Ignore, True ))
 
 
 fontButton : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Int -> Int -> String -> Html Msg
