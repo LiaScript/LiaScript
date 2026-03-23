@@ -236,7 +236,7 @@ viewTheme grouping lang tabbable theme hasCustom =
             , lang
                 |> Trans.cSchema
                 |> A11y_Aria.label
-            ]   
+            ]
 
 
 viewModes : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Settings -> List (Html Msg)
@@ -401,8 +401,8 @@ viewTTSSettings grouping lang tabbable audio tts =
             [ Attr.style "display" "flex"
             , Attr.style "flex-direction" "column"
             ]
-            [ slider "Rate" (Trans.commentRate lang) Rate "5" grouping tabbable audio.rate
-            , slider "Pitch" (Trans.commentPitch lang) Pitch "2" grouping tabbable audio.pitch
+            [ slider "Rate" (Trans.commentRate lang) Rate grouping tabbable { value = audio.rate, maximum = "1.5", minimum = "0.5", step = "0.25" }
+            , slider "Pitch" (Trans.commentPitch lang) Pitch grouping tabbable { value = audio.pitch, maximum = "2.0", minimum = "0.0", step = "0.25" }
             ]
         ]
 
@@ -411,12 +411,11 @@ slider :
     String
     -> String
     -> (String -> Audio)
-    -> String
     -> (List (Attribute Msg) -> List (Attribute Msg))
     -> Bool
-    -> String
+    -> { maximum : String, minimum : String, step : String, value : String }
     -> Html Msg
-slider name title message maximum grouping tabbable value =
+slider name title message grouping tabbable { maximum, minimum, step, value } =
     Html.div
         [ Attr.style "display" "flex"
         , Attr.style "align-items" "center"
@@ -434,9 +433,9 @@ slider name title message maximum grouping tabbable value =
             (grouping
                 [ Attr.type_ "range"
                 , A11y_Aria.hidden (not tabbable)
-                , Attr.min "0"
+                , Attr.min minimum
                 , Attr.max maximum
-                , Attr.step "0.1"
+                , Attr.step step
                 , Attr.value value
                 , onInput (message >> Change)
                 , Attr.style "flex-grow" "1"
@@ -607,6 +606,7 @@ submenu grouping isActive =
 
         else
             ""
+
     -- , A11y_Aria.checked (Just isActive)
     , A11y_Role.radioGroup
     , A11y_Aria.labeledBy "lia-mode-menu-button"
