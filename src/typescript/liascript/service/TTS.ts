@@ -17,39 +17,41 @@ var firstSpeak = true
 
 var elmSend: Lia.Send | null
 
-// Tracks the currently playing audio element for pause/resume/seek/progress
-var audioState: {
-  audio: HTMLMediaElement | null
+type MediaPlayerState = {
+  media: HTMLMediaElement | null
   event: Lia.Event | null
   progressInterval: ReturnType<typeof setInterval> | null
-} = { audio: null, event: null, progressInterval: null }
+}
 
-function stopProgressInterval() {
-  if (audioState.progressInterval !== null) {
-    clearInterval(audioState.progressInterval)
-    audioState.progressInterval = null
+var audioState: MediaPlayerState = { media: null, event: null, progressInterval: null }
+var videoState: MediaPlayerState = { media: null, event: null, progressInterval: null }
+
+function stopProgressInterval(state: MediaPlayerState) {
+  if (state.progressInterval !== null) {
+    clearInterval(state.progressInterval)
+    state.progressInterval = null
   }
 }
 
-function clearAudioState() {
-  stopProgressInterval()
-  audioState.audio = null
-  audioState.event = null
+function clearMediaState(state: MediaPlayerState) {
+  stopProgressInterval(state)
+  state.media = null
+  state.event = null
 }
 
-function startProgressInterval(event: Lia.Event) {
-  stopProgressInterval()
+function startProgressInterval(state: MediaPlayerState, event: Lia.Event) {
+  stopProgressInterval(state)
   let lastTime = -1
-  audioState.progressInterval = setInterval(() => {
-    const audio = audioState.audio
-    if (audio && !audio.paused && audio.duration > 0) {
-      const t = audio.currentTime
+  state.progressInterval = setInterval(() => {
+    const media = state.media
+    if (media && !media.paused && media.duration > 0) {
+      const t = media.currentTime
       if (t !== lastTime) {
         lastTime = t
         sendResponse(
-          { ...event },
+          event,
           'progress',
-          JSON.stringify({ current: t, total: audio.duration })
+          JSON.stringify({ current: t, total: media.duration })
         )
       }
     }
@@ -136,15 +138,19 @@ export const Service = {
       }
 
       case 'pause': {
-        if (audioState.audio && !audioState.audio.paused) {
-          // external audio file
-          audioState.audio.pause()
-          stopProgressInterval()
+        if (audioState.media && !audioState.media.paused) {
+          audioState.media.pause()
+          stopProgressInterval(audioState)
           if (audioState.event) {
             sendResponse(audioState.event, 'paused', null)
           }
+        } else if (videoState.media && !videoState.media.paused) {
+          videoState.media.pause()
+          stopProgressInterval(videoState)
+          if (videoState.event) {
+            sendResponse(videoState.event, 'paused', null)
+          }
         } else {
-          // browser TTS
           try {
             EasySpeech.pause()
             sendResponse(event, 'paused', null)
@@ -154,13 +160,19 @@ export const Service = {
       }
 
       case 'resume': {
-        if (audioState.audio && audioState.audio.paused && audioState.event) {
-          // external audio file
-          audioState.audio.play()
-          startProgressInterval(audioState.event)
+        if (audioState.media && audioState.media.paused && audioState.event) {
+          audioState.media.play()
+          startProgressInterval(audioState, audioState.event)
           sendResponse(audioState.event, 'start', null)
+        } else if (videoState.media && videoState.media.paused && videoState.event) {
+          videoState.media.play().catch((e: any) => {
+            if (e.name !== 'AbortError') {
+              console.warn('Failed to resume video:', e.message)
+            }
+          })
+          startProgressInterval(videoState, videoState.event)
+          sendResponse(videoState.event, 'start', null)
         } else {
-          // browser TTS
           try {
             EasySpeech.resume()
             sendResponse(event, 'start', null)
@@ -170,20 +182,16 @@ export const Service = {
       }
 
       case 'seek': {
-        if (audioState.audio) {
-          const seekTo = parseFloat(event.message.param)
-          if (!isNaN(seekTo)) {
-            audioState.audio.currentTime = seekTo
-            if (audioState.event) {
-              sendResponse(
-                audioState.event,
-                'progress',
-                JSON.stringify({
-                  current: seekTo,
-                  total: audioState.audio.duration,
-                })
-              )
-            }
+        const seekTo = parseFloat(event.message.param)
+        if (!isNaN(seekTo)) {
+          const state = audioState.media ? audioState : videoState.media ? videoState : null
+          if (state?.media && state.event) {
+            state.media.currentTime = seekTo
+            sendResponse(
+              state.event,
+              'progress',
+              JSON.stringify({ current: seekTo, total: state.media.duration })
+            )
           }
         }
         break
@@ -458,6 +466,7 @@ function read(event: Lia.Event) {
           if (!isEnding) {
             isEnding = true
             if (ttsFinished) {
+              clearMediaState(videoState)
               sendResponse(event, 'stop')
             }
           }
@@ -509,6 +518,10 @@ function read(event: Lia.Event) {
         // Always store the background video
         storeBackgroundVideo(player, video)
 
+        videoState.media = video
+        videoState.event = event
+        startProgressInterval(videoState, event)
+
         // Play the video
         const response = video.play()
         if (response && typeof response.then === 'function') {
@@ -527,7 +540,7 @@ function read(event: Lia.Event) {
 
       async function playNext() {
         if (currentIndex >= audioUrls.length) {
-          clearAudioState()
+          clearMediaState(audioState)
           sendResponse(event, 'stop')
           return
         }
@@ -577,9 +590,9 @@ function read(event: Lia.Event) {
           audio.currentTime = 0
           currentIndex++
           if (currentIndex >= audioUrls.length) {
-            clearAudioState()
+            clearMediaState(audioState)
           } else {
-            audioState.audio = audioUrls[currentIndex]
+            audioState.media = audioUrls[currentIndex]
           }
           playNext()
         }
@@ -595,7 +608,7 @@ function read(event: Lia.Event) {
         audio.preservesPitch = true
         audio.playbackRate = options.rate
 
-        audioState.audio = audio
+        audioState.media = audio
         audioState.event = event
 
         const response = audio.play()
@@ -608,7 +621,7 @@ function read(event: Lia.Event) {
       }
 
       sendResponse(event, 'start')
-      startProgressInterval(event)
+      startProgressInterval(audioState, event)
       playNext()
     } else if (text !== '' && element[0] !== undefined) {
       speak(text, voice, lang, options, event)
@@ -655,7 +668,8 @@ export function inject(key: string) {
 }
 
 function cancel() {
-  clearAudioState()
+  clearMediaState(audioState)
+  clearMediaState(videoState)
 
   try {
     const audioRecordings = document.getElementsByClassName(
