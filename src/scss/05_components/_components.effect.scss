@@ -30,7 +30,8 @@
       width: 1.8rem;
       height: 1.8rem;
       font-size: 1.2rem;
-      line-height: initial;
+      line-height: 1.8rem;
+      vertical-align: middle;
       transform: none;
 
       font-family: var(
@@ -45,10 +46,21 @@
 
   &--inline {
     display: inline-block;
+    vertical-align: baseline;
     border: 1px solid rgba(var(--color-highlight), 0.2);
     padding: 0.25rem 0.5rem;
     border-radius: 6px;
     transition: all 0.2s ease;
+
+    label {
+      display: inline-block;
+      vertical-align: middle;
+      margin: 0;
+    }
+
+    button {
+      vertical-align: middle;
+    }
 
     // Highlighted border when speaking
     &.lia-effect--speaking {
