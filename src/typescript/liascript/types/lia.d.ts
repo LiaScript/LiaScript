@@ -38,6 +38,7 @@ export type Settings = {
     rate: number
     pitch: number
   }
+  fromStorage?: boolean
 }
 
 export enum Mode {
