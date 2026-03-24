@@ -46,4 +46,42 @@
   &--inline {
     display: inline-block;
   }
+
+  // Floating centered playback button style
+  &--playback-float {
+    position: relative;
+    margin: 2.5rem 0 1rem;
+
+    > button:first-child {
+      background-color: rgb(var(--color-background)) !important;
+      border: 1px solid rgba(var(--color-highlight), 0.2);
+      padding: 0.25rem 1.5rem;
+      //border-radius: 50%;
+      position: absolute;
+      z-index: 1;
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    // Thicker border when speaking
+    &.lia-effect--speaking {
+      > button:first-child {
+        border: 1px solid rgb(var(--color-highlight));
+      }
+
+      .lia-effect__playback-content {
+        border: 1px solid rgb(var(--color-highlight));
+      }
+    }
+  }
+
+  &__playback-content {
+    border-radius: 8px;
+    padding: 2rem 1rem 1rem;
+    margin-top: 0;
+    position: relative;
+    border: 1px solid rgba(var(--color-highlight), 0.2);
+    text-align: initial;
+  }
 }

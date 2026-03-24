@@ -50,15 +50,29 @@ block config model attr e body =
                     ]
 
             PlayBack ->
-                Html.div [ Attr.class "lia-effect" ] <|
+                Html.div
+                    [ Attr.classList
+                        [ ( "lia-effect", True )
+                        , ( "lia-effect--playback-float", True )
+                        , ( "lia-effect--speaking", config.speaking == Just e.id )
+                        ]
+                    ]
+                <|
                     [ block_playback config e
-                    , Html.div (toAttribute attr) body
+                    , Html.div (annotation "lia-effect__playback-content" attr) body
                     ]
 
             PlayBackAnimation ->
-                Html.div [ Attr.class "lia-effect" ] <|
+                Html.div
+                    [ Attr.classList
+                        [ ( "lia-effect", True )
+                        , ( "lia-effect--playback-float", True )
+                        , ( "lia-effect--speaking", config.speaking == Just e.id )
+                        ]
+                    ]
+                <|
                     [ block_playback config e
-                    , Html.div []
+                    , Html.div [ Attr.class "lia-effect__playback-content" ]
                         [ circle e.begin
                         , Html.div (toAttribute attr) body
                         ]
@@ -86,22 +100,36 @@ block config model attr e body =
                         ]
 
             PlayBack ->
-                Html.div []
+                Html.div
+                    [ Attr.classList
+                        [ ( "lia-effect--playback-float", True )
+                        , ( "lia-effect--speaking", config.speaking == Just e.id )
+                        ]
+                    ]
+                <|
                     [ block_playback config e
-                    , Html.div (toAttribute attr) body
+                    , Html.div (annotation "lia-effect__playback-content" attr) body
                     ]
 
             PlayBackAnimation ->
                 Html.div [ Attr.hidden (not visible) ] <|
-                    [ block_playback config e
-                    , Html.div [ Attr.class "lia-effect", A11y_Live.polite, A11y_Role.alert ]
-                        [ circle e.begin
-                        , Html.div
-                            (attr
-                                |> annotation "lia-effect__content"
-                                |> CList.addIf (e.begin == model.visible) (Attr.id "focused")
-                            )
-                            body
+                    [ Html.div
+                        [ Attr.classList
+                            [ ( "lia-effect--playback-float", True )
+                            , ( "lia-effect--speaking", config.speaking == Just e.id )
+                            ]
+                        ]
+                      <|
+                        [ block_playback config e
+                        , Html.div [ Attr.class "lia-effect lia-effect__playback-content", A11y_Live.polite, A11y_Role.alert ]
+                            [ circle e.begin
+                            , Html.div
+                                (attr
+                                    |> annotation "lia-effect__content"
+                                    |> CList.addIf (e.begin == model.visible) (Attr.id "focused")
+                                )
+                                body
+                            ]
                         ]
                     ]
 
@@ -166,7 +194,7 @@ block_playback : Config sub -> Effect Block -> Html Msg
 block_playback config e =
     if config.speaking == Just e.id then
         Html.button
-            [ Attr.class "lia-btn lia-btn--transparent text-highlight icon icon-stop-circle"
+            [ Attr.class "lia-btn text-highlight icon icon-stop-circle"
             , A11y_Key.tabbable True
             , e.id
                 |> E.Mute
@@ -180,7 +208,7 @@ block_playback config e =
         case config.translations |> Maybe.andThen (Voice.getVoiceFor e.voice) of
             Nothing ->
                 Html.button
-                    [ Attr.class "lia-btn lia-btn--transparent text-highlight icon icon-play-circle"
+                    [ Attr.class "lia-btn text-highlight icon icon-play-circle"
                     , A11y_Key.tabbable True
                     , playBackAttr e.id
                         e.voice
@@ -196,7 +224,7 @@ block_playback config e =
 
             Just { translated, lang, name } ->
                 Html.button
-                    [ Attr.class "lia-btn lia-btn--transparent text-highlight icon icon-play-circle"
+                    [ Attr.class "lia-btn text-highlight icon icon-play-circle"
                     , A11y_Key.tabbable True
                     , playBackAttr e.id name lang config.slide "this.parentNode.childNodes[1]"
                     , A11y_Aria.label "Start playback"
