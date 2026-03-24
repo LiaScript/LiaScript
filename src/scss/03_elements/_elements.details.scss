@@ -93,9 +93,15 @@ summary {
     }
   }
 
-  // Hide focus outline for mouse users while keeping it for keyboard users
+  // Hide focus outline for mouse users
   &:focus:not(:focus-visible) {
     outline: none;
+    box-shadow: none;
+  }
+
+  // Show accessible outline for keyboard users, inset to avoid overflow:hidden clipping
+  &:focus-visible {
+    outline-offset: -3px;
     box-shadow: none;
   }
 }
