@@ -347,7 +347,10 @@ base input_ id attr value =
                 , Attr.value value
                 , Attr.id "lia-focus"
                 , blockKeydown NoOp
-                , onEnter (Activate False id)
+                , A11y_Key.onKeyUp
+                    [ A11y_Key.enter (Activate False id)
+                    , A11y_Key.escape (Reset id)
+                    ]
                 ]
             |> List.append (onActivate False id)
         )
@@ -358,7 +361,7 @@ onActivate : Bool -> Int -> List (Html.Attribute (Msg sub))
 onActivate bool id =
     if bool then
         [ Event.onClick (Delay 200 (Activate True id))
-        , A11y_Key.onKeyDown
+        , A11y_Key.onKeyUp
             [ A11y_Key.enter (Delay 200 (Activate True id))
             , A11y_Key.space (Delay 200 (Activate True id))
             ]
