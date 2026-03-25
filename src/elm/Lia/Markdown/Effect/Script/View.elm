@@ -1,5 +1,6 @@
 module Lia.Markdown.Effect.Script.View exposing (view)
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Array
 import Conditional.List as CList
@@ -106,7 +107,7 @@ script config withStyling attr id node =
                                 []
                         )
                     |> CList.addIf (node.modify /= No || node.input.type_ /= Nothing) (Attr.tabindex 0)
-                    |> CList.addIf (node.modify /= No) (onEdit True id)
+                    |> CList.appendIf (node.modify /= No) (onEdit True id)
                     |> CList.addIf (isError result) (Attr.style "color" "#dc0000")
                     |> CList.appendIf
                         (case node.input.type_ of
@@ -371,15 +372,36 @@ onActivate bool id =
         ]
 
 
-onEdit : Bool -> Int -> Html.Attribute (Msg sub)
-onEdit bool =
-    Edit bool
-        >> (if bool then
-                Event.onDoubleClick
+shiftEnter : msg -> A11y_Key.Event msg
+shiftEnter msg =
+    { keyCode = 13
+    , shiftKey = True
+    , msg = msg
+    }
 
-            else
-                Delay 300 >> Event.onBlur
-           )
+
+shiftSpace : msg -> A11y_Key.Event msg
+shiftSpace msg =
+    { keyCode = 32
+    , shiftKey = True
+    , msg = msg
+    }
+
+
+onEdit : Bool -> Int -> List (Html.Attribute (Msg sub))
+onEdit bool id =
+    if bool then
+        [ Event.onDoubleClick (Edit True id)
+        , A11y_Key.onKeyDown
+            [ shiftEnter (Edit True id)
+            , shiftSpace (Edit True id)
+            ]
+        , A11y_Aria.keyShortcuts [ "Shift+Enter" ]
+        ]
+
+    else
+        [ Delay 300 (Edit False id) |> Event.onBlur
+        ]
 
 
 editor : Maybe String -> String -> Int -> Maybe String -> String -> Html (Msg sub)
