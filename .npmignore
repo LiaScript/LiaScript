@@ -36,6 +36,7 @@ patches
 resources
 review
 parcel-bundle-reports
-
+.prettier*
+*.log
 !dist/up_/up_/assets/logo_192.png
 CITATION.cff
