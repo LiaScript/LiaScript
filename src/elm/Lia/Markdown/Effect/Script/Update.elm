@@ -201,6 +201,7 @@ update main msg scripts =
 
             else
                 reRun fn Cmd.none id scripts
+                    |> Return.cmd (focus NoOp ("lia-script-" ++ String.fromInt id))
 
         EditCode id str ->
             scripts

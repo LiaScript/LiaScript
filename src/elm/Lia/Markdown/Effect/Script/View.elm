@@ -107,6 +107,7 @@ script config withStyling attr id node =
                                 []
                         )
                     |> CList.addIf (node.modify /= No || node.input.type_ /= Nothing) (Attr.tabindex 0)
+                    |> CList.addIf (node.modify /= No) (Attr.id ("lia-script-" ++ String.fromInt id))
                     |> CList.appendIf (node.modify /= No) (onEdit True id)
                     |> CList.addIf (isError result) (Attr.style "color" "#dc0000")
                     |> CList.appendIf
