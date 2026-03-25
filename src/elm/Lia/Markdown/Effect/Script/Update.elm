@@ -123,7 +123,7 @@ update main msg scripts =
                                     , updated = False
                                 }
                             )
-                            Cmd.none
+                            (focus NoOp ("lia-script-" ++ String.fromInt id))
                             id
                             scripts
 
