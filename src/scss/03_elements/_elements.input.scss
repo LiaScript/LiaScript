@@ -1,7 +1,7 @@
-@use "sass:color";
-@use "../00_settings/settings.global";
+@use 'sass:color';
+@use '../00_settings/settings.global';
 
-@use "sass:math";
+@use 'sass:math';
 
 .lia-input {
   max-width: 100%;
@@ -29,22 +29,22 @@
 }
 
 /* clears the 'X' from Internet Explorer */
-input[type="search"]::-ms-clear {
+input[type='search']::-ms-clear {
   display: none;
   width: 0;
   height: 0;
 }
-input[type="search"]::-ms-reveal {
+input[type='search']::-ms-reveal {
   display: none;
   width: 0;
   height: 0;
 }
 
 /* clears the 'X' from Chrome */
-input[type="search"]::-webkit-search-decoration,
-input[type="search"]::-webkit-search-cancel-button,
-input[type="search"]::-webkit-search-results-button,
-input[type="search"]::-webkit-search-results-decoration {
+input[type='search']::-webkit-search-decoration,
+input[type='search']::-webkit-search-cancel-button,
+input[type='search']::-webkit-search-results-button,
+input[type='search']::-webkit-search-results-decoration {
   display: none;
 }
 
@@ -58,15 +58,15 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .lia-form-check .lia-checkbox {
-  margin-right: 0.75rem;
+  margin-inline-end: 0.75rem;
 }
 
 /* --------------------------------------------------
    Shared Attributes of Radiobutton & Checkbox 
    -------------------------------------------------- */
 
-.lia-checkbox[type="checkbox"],
-.lia-radio[type="radio"] {
+.lia-checkbox[type='checkbox'],
+.lia-radio[type='radio'] {
   -moz-appearance: none;
   -webkit-appearance: none;
   -webkit-print-color-adjust: exact;
@@ -79,7 +79,7 @@ input[type="search"]::-webkit-search-results-decoration {
   cursor: pointer;
   height: 2.4rem;
   position: relative;
-  transition: all 125ms ease-in-out;
+  transition: all 125ms ease-out;
   vertical-align: middle;
   width: 2.4rem;
 
@@ -106,13 +106,13 @@ input[type="search"]::-webkit-search-results-decoration {
    Checkbox
    -------------------------------------------------- */
 
-.lia-checkbox[type="checkbox"] {
+.lia-checkbox[type='checkbox'] {
   border-radius: settings.$global-radius;
 
   &:after {
     color: white;
-    content: "\EA0B";
-    font-family: "icon";
+    content: '\EA0B';
+    font-family: 'icon';
     left: 50%;
     opacity: 0;
     position: absolute;
@@ -169,7 +169,7 @@ input[type="search"]::-webkit-search-results-decoration {
    Radiobutton
    -------------------------------------------------- */
 
-.lia-radio[type="radio"] {
+.lia-radio[type='radio'] {
   border-radius: 100%;
 
   &:checked {
@@ -219,17 +219,17 @@ input[type="search"]::-webkit-search-results-decoration {
 .lia-radio-group {
   // custom styling for submenu theme color picker
   &.lia-settings-theme-colors {
-    margin-left: 0.4rem;
+    margin-inline-start: 0.4rem;
     display: flex;
     padding: 0.4rem 0;
     width: 100%;
     justify-content: space-evenly;
 
     > *:not(:last-child) {
-      margin-right: 0.75rem;
+      margin-inline-end: 0.75rem;
     }
 
-    .lia-radio[type="radio"] {
+    .lia-radio[type='radio'] {
       height: 1.8rem;
       width: 1.8rem;
       border: none;
@@ -261,7 +261,7 @@ input[type="search"]::-webkit-search-results-decoration {
 
       &:checked {
         &:before {
-          content: "";
+          content: '';
           border-radius: 100%;
           border: 1px solid black;
           height: 2.4rem;
@@ -312,7 +312,8 @@ $contrast: 5% !default;
 $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
 
 @mixin shadow($shadow-size, $shadow-blur, $shadow-color) {
-  box-shadow: $shadow-size $shadow-size $shadow-blur $shadow-color,
+  box-shadow:
+    $shadow-size $shadow-size $shadow-blur $shadow-color,
     0 0 $shadow-size color.adjust($shadow-color, $lightness: 5%);
 }
 
@@ -334,7 +335,7 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
   width: $thumb-width;
 }
 
-[type="range"],
+[type='range'],
 .lia-range {
   -webkit-appearance: none;
   background: transparent;
@@ -350,7 +351,7 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
   }
 
   &:focus {
-    outline: 0;
+    //outline: 2px solid rgb(var(--color-highlight));
 
     &::-webkit-slider-runnable-track {
       background: rgb(var(--color-highlight));
@@ -374,7 +375,7 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
   &::-webkit-slider-thumb {
     @include thumb;
     -webkit-appearance: none;
-    margin-top: - math.div($thumb-height, 2);
+    margin-block-start: - math.div($thumb-height, 2);
   }
 
   &::-moz-range-track {
@@ -421,7 +422,7 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
 
   &::-ms-thumb {
     @include thumb;
-    margin-top: math.div($track-height, 4);
+    margin-block-start: math.div($track-height, 4);
   }
 
   &:disabled {

@@ -131,7 +131,7 @@ showError error =
 note : Html msg
 note =
     Html.div []
-        [ Html.h3 [ Attr.style "padding-top" "2rem" ] [ Html.text "Note" ]
+        [ Html.h3 [ Attr.style "padding-block-start" "2rem" ] [ Html.text "Note" ]
         , Html.p []
             [ Html.text "Your project will be stored under the reference \"local://...\", followed by the hash value of the \"README.md\" file. "
             , Html.text "Therefore, loading the same course from different files will result in the same reference. "

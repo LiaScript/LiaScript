@@ -1,5 +1,5 @@
-@use "sass:map";
-@use "../00_settings/settings.global";
+@use 'sass:map';
+@use '../00_settings/settings.global';
 
 @keyframes rotating {
   100% {
@@ -43,12 +43,12 @@
 .fade-in {
   opacity: 1;
   animation: fade-in 2s;
-  transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.3s ease-out;
 }
 
 #lia-tts-videos video {
   opacity: 0;
-  transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.3s ease-out;
 }
 
 @keyframes fade-out {

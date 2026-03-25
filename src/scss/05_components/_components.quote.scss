@@ -11,7 +11,7 @@
   }
 
   > *:last-child {
-    margin-bottom: 0;
+    margin-block-end: 0;
   }
 
   &__text {
@@ -32,7 +32,7 @@
   &__cite {
     display: block;
     font-style: normal;
-    margin-top: 2rem;
+    margin-block-start: 2rem;
     text-align: center;
   }
 }
@@ -43,7 +43,7 @@
     $bg: color.mix(map.get($theme, background), $info, 90%);
     $fg: tools.color-contrast($bg);
 
-    border-left-color: $info;
+    border-inline-start-color: $info;
     background: $bg;
     color: $fg;
     box-shadow: 8px 7px 0px color.mix($fg, $bg, 20%);
