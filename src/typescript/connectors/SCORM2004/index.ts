@@ -164,6 +164,9 @@ class Connector extends Base.Connector {
     if (typeof data === 'string' && data !== '') {
       try {
         json = JSON.parse(data)
+        if (json) {
+          json.fromStorage = true
+        }
       } catch (e) {
         WARN('getSettings =>', e)
       }

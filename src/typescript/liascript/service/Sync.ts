@@ -10,6 +10,9 @@ var PubNub
 var Gun
 var P2PT
 var Trystero
+var WebSocket_
+var PeerJS_
+var SimplePeer_
 
 function hasRTCPeerConnection() {
   return !!(
@@ -34,8 +37,11 @@ const Service = {
     //'mqtt',
     //'nostr',
     //'pubnub',
-    //hasRTCPeerConnection() ? 'p2pt' : '',
+    // hasRTCPeerConnection() ? 'p2pt' : '',
+    //hasRTCPeerConnection() ? 'peerjs' : '',
+    //hasRTCPeerConnection() ? 'simplepeer' : '',
     //'torrent',
+    //'websocket',
   ],
 
   init: function (elmSend_: Lia.Send) {
@@ -87,7 +93,7 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                true
+                true,
               )
 
               break
@@ -107,7 +113,7 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                false
+                false,
               )
               break
 
@@ -130,7 +136,7 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                true
+                true,
               )
 
               break
@@ -182,12 +188,11 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                true
+                true,
               )
               break
-            */
-            //case 'p2pt':
-            /*
+
+            case 'p2pt':
               if (!P2PT) {
                 import('../../sync/P2PT/index').then((e) => {
                   P2PT = e
@@ -201,7 +206,62 @@ const Service = {
                 elmSend,
                 onConnect,
                 onReceive,
-                true
+                true,
+              )
+              break
+            
+            case 'peerjs':
+            
+              if (!PeerJS_) {
+                import('../../sync/PeerJS/index').then((e) => {
+                  PeerJS_ = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new PeerJS_.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                false,
+              )
+              break
+
+            case 'simplepeer':
+              if (!SimplePeer_) {
+                import('../../sync/SimplePeer/index').then((e) => {
+                  SimplePeer_ = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new SimplePeer_.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                false,
+              )
+              break
+
+            case 'websocket':
+              if (!WebSocket_) {
+                import('../../sync/WebSocket/index').then((e) => {
+                  WebSocket_ = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new WebSocket_.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                false,
               )
               break
             */
@@ -223,7 +283,7 @@ const Service = {
 
           window.LIA.classroom.publish = publish
           window.LIA.classroom.connected = false
-          CALLBACK.disconnect.forEach((cb) => cb())
+          CALLBACK.disconnect.forEach(cb => cb())
         }
 
         break
@@ -283,7 +343,7 @@ function subscribe(topic: string, callback: (message: any) => void): number {
 
 function unsubscribe(id: number) {
   for (const topic in SUBSCRIPTIONS) {
-    SUBSCRIPTIONS[topic] = SUBSCRIPTIONS[topic].filter((sub) => sub.id !== id)
+    SUBSCRIPTIONS[topic] = SUBSCRIPTIONS[topic].filter(sub => sub.id !== id)
   }
 }
 
@@ -315,7 +375,7 @@ function onReceive(topic: string, message: any) {
   BACKUP[topic] = message
 
   if (SUBSCRIPTIONS[topic]) {
-    SUBSCRIPTIONS[topic].forEach((sub) => sub.callback(message))
+    SUBSCRIPTIONS[topic].forEach(sub => sub.callback(message))
   }
 }
 
@@ -332,5 +392,5 @@ function onConnect() {
     }
   }
 
-  CALLBACK.connect.forEach((cb) => cb())
+  CALLBACK.connect.forEach(cb => cb())
 }

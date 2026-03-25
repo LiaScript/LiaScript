@@ -1,4 +1,4 @@
-@use "settings.global";
+@use 'settings.global';
 
 html {
   font-size: 62.5%;
@@ -8,7 +8,8 @@ body {
   background-color: rgb(var(--color-background));
   color: rgb(var(--color-text));
   font-size: calc(
-    var(--global-font-size, settings.$global-font-size) * var(--font-size-multiplier)
+    var(--global-font-size, settings.$global-font-size) *
+      var(--font-size-multiplier)
   );
   font-weight: 400;
   line-height: settings.$global-line-height;

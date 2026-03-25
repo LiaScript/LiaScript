@@ -99,10 +99,14 @@ init supportedBackends =
             , Via.IPFS
             , Via.MQTT
             , Via.NoStr
-            , Via.P2PT Const.webTorrent_TrackerURLs
+
+            --, Via.P2PT Const.webTorrent_TrackerURLs
             , Via.PubNub { pubKey = "", subKey = "" }
             , Via.Torrent
             , Via.Edrys
+            , Via.WebSocket { url = "" }
+            , Via.PeerJS { host = "", port_ = "", path = "", iceServers = "" }
+            , Via.SimplePeer { signaling = "", iceServers = "" }
             ]
                 |> List.map (isMember supported)
         , select = Nothing
@@ -256,7 +260,7 @@ title sync =
         Connected _ ->
             Html.span []
                 [ Html.text "Classroom ("
-                , icon "icon-person icon-sm" [ Attr.style "padding-right" "4px" ]
+                , icon "icon-person icon-sm" [ Attr.style "padding-inline-end" "4px" ]
                 , sync.peers
                     |> Set.size
                     |> String.fromInt

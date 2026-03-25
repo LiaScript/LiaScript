@@ -71,6 +71,25 @@ connect param =
                             |> String.split ","
                             |> JE.list (String.trim >> JE.string)
 
+                    Via.WebSocket { url } ->
+                        JE.object
+                            [ ( "url", JE.string url )
+                            ]
+
+                    Via.PeerJS { host, port_, path, iceServers } ->
+                        JE.object
+                            [ ( "host", JE.string host )
+                            , ( "port", JE.string port_ )
+                            , ( "path", JE.string path )
+                            , ( "iceServers", JE.string iceServers )
+                            ]
+
+                    Via.SimplePeer { signaling, iceServers } ->
+                        JE.object
+                            [ ( "signaling", JE.string signaling )
+                            , ( "iceServers", JE.string iceServers )
+                            ]
+
                     _ ->
                         JE.null
               )

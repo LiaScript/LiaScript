@@ -1,6 +1,6 @@
-@use "sass:math";
-@use "sass:meta";
-@use "../00_settings/settings.global";
+@use 'sass:math';
+@use 'sass:meta';
+@use '../00_settings/settings.global';
 
 @mixin transition(
   $property: settings.$global-transition-property,
