@@ -97,10 +97,14 @@ script config withStyling attr id node =
                         (case node.input.type_ of
                             Just (Input.Button_ _) ->
                                 [ Event.onClick (Click id)
-                                , A11y_Key.onKeyDown
-                                    [ A11y_Key.enter (Click id)
-                                    , A11y_Key.space (Click id)
-                                    ]
+                                , [ A11y_Key.enter (Click id)
+                                  , A11y_Key.space (Click id)
+                                  ]
+                                    |> CList.appendIf (node.modify /= No)
+                                        [ shiftEnter (Edit True id)
+                                        , shiftSpace (Edit True id)
+                                        ]
+                                    |> A11y_Key.onKeyDown
                                 ]
 
                             _ ->
