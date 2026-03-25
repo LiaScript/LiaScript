@@ -303,7 +303,14 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1, cursors } i
                         , ( "active", file.visible )
                         ]
                     ]
-                    [ Html.div [ Attr.class "lia-code__input" ]
+                    [ Html.div
+                        [ Attr.class "lia-code__input"
+                        , if file.visible then
+                            Attr.class ""
+
+                          else
+                            Attr.attribute "inert" "true"
+                        ]
                         [ if file.visible && isExecutable then
                             btnIcon
                                 { title =

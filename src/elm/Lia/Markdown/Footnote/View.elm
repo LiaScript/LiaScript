@@ -46,7 +46,7 @@ block fn model =
             |> List.map def
             |> Html.table
                 [ Attr.style "padding" "-10px"
-                , Attr.style "border-top" "2px solid black"
+                , Attr.style "border-block-start" "2px solid black"
                 , Attr.style "-ms-transform" "scale(0.8, 0.8)"
                 , Attr.style "-ms-transform-origin" "0 50%"
                 , Attr.style "-webkit-transform" "scale(0.8, 0.8)"
@@ -64,7 +64,7 @@ definition fn ( key, val ) =
     Html.tr []
         [ Html.td
             [ Attr.attribute "valign" "top"
-            , Attr.style "padding-right" "10px"
+            , Attr.style "padding-inline-end" "10px"
             ]
             [ Html.p [ Attr.id <| by key ] [ braces key ] ]
         , Html.td

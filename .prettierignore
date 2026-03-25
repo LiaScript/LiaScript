@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+dist/
+build/
+
+# Generated files
+*.min.js
+*.min.css
+*.bundle.js
+
+# Elm generated files
+src/elm/Main.elm.js
+
+# Package files
+package-lock.json
+yarn.lock
+
+# Documentation
+*.md
+!README.md
+
+# Configuration files
+*.config.js
+*.config.ts
+
+# Test files
+test-rtl.html
+RTL_IMPLEMENTATION.md
+
+# Other
+.git/
+.gitignore
+.DS_Store 

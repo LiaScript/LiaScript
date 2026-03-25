@@ -278,6 +278,8 @@ init_script model script =
                             , mode =
                                 definition.mode
                                     |> Maybe.withDefault settings.mode
+                            , documentLight = definition.lightMode
+                            , documentMode = definition.mode
                             , customTheme = Dict.get "custom" definition.macro
                             , translateWithGoogle =
                                 case

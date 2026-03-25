@@ -3,6 +3,12 @@ a,
   color: rgb(var(--color-highlight));
   word-break: break-word;
 
+  // Hide focus outline for mouse users while keeping it for keyboard users
+  &:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none !important;
+  }
+
   &:link,
   &:visited {
     color: rgb(var(--color-highlight));

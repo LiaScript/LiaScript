@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 25/03/2026
+
+- improve: RTL support for LiaScript that changes the direction of the text and the layout of the course to better support languages that are written from right to left, such as Arabic, Hebrew, Persian, etc. This includes changes to the CSS and the HTML structure of the course to ensure that the content is displayed correctly and that the navigation works as expected.
+- improve: Accessibility better focus-ring visibility and keyboard navigation.
+- improve: Classrooms with updated Yjs merging strategies and backends.
+- fix: onload macros with `;\n` separator were not working as expected, now the onload macros are separated by a `;\n` to ensure that they are executed in the correct order and that they are properly separated.
+
+
 ## [1.0.3] - 18/02/2026
 
 - fix: onload macro with `;` separator was not working as expected, now the onload macros are separated by a `;\n` to ensure that they are executed in the correct order and that they are properly separated.

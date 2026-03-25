@@ -605,12 +605,17 @@ $icon-warning: "\EA4E";
   content: $icon-warning
 }
 
-$icon-zoom-out: "\EA4F";
+$icon-websocket: "\EA4F";
+.icon-websocket:before {
+  content: $icon-websocket
+}
+
+$icon-zoom-out: "\EA50";
 .icon-zoom-out:before {
   content: $icon-zoom-out
 }
 
-$icon-zoom: "\EA50";
+$icon-zoom: "\EA51";
 .icon-zoom:before {
   content: $icon-zoom
 }

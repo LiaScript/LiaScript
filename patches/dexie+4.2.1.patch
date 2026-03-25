@@ -1,75 +1,125 @@
 diff --git a/node_modules/dexie/dist/dexie.mjs b/node_modules/dexie/dist/dexie.mjs
-index beac2a2..9bb4ed9 100644
+index beac2a2..f3052d3 100644
 --- a/node_modules/dexie/dist/dexie.mjs
 +++ b/node_modules/dexie/dist/dexie.mjs
-@@ -5708,6 +5708,70 @@ try {
+@@ -5708,6 +5708,120 @@ try {
          indexedDB: _global.indexedDB || _global.mozIndexedDB || _global.webkitIndexedDB || _global.msIndexedDB,
          IDBKeyRange: _global.IDBKeyRange || _global.webkitIDBKeyRange
      };
 +
++    // Whitelist of approved databases and initialization window
++    const approvedDatabases = new Set(['Index']); // Pre-approve Index database
++    const initializationWindow = 3000; // Auto-approve for first 3 seconds
++    const pageLoadTime = Date.now();
++
 +    function ask(op, dbName) {
++        // Auto-approve during initialization window (main app startup)
++        if (Date.now() - pageLoadTime < initializationWindow) {
++            if (dbName) approvedDatabases.add(dbName);
++            return true;
++        }
++        
++        // Auto-approve if database was already approved
++        if (dbName && approvedDatabases.has(dbName)) {
++            return true;
++        }
++        
++        // Auto-approve non-database operations if any database was approved
++        if ((op === "databases" || op === "cmp") && approvedDatabases.size > 0) {
++            return true;
++        }
++        
 +        const msg = [
-+            "A script is requesting permission to use IndexedDB.",
++            "An external script is requesting permission to use IndexedDB.",
 +            "",
 +            `• Operation: ${op}`,
 +            dbName ? `• Database: ${dbName}` : "",
 +            "",
 +            "Do you want to allow this?"
 +        ].join("\n");
-+        return window.confirm(msg);
++        
++        // Fallback if window.confirm is not available or fails
++        try {
++            const approved = window.confirm ? window.confirm(msg) : false;
++            if (approved && dbName) {
++                approvedDatabases.add(dbName);
++            }
++            return approved;
++        } catch (e) {
++            // If confirm fails, deny access to be safe
++            return false;
++        }
 +    }
 +
 +    const _idb = _global.indexedDB || _global.mozIndexedDB || _global.webkitIndexedDB || _global.msIndexedDB;
 +
-+    // lay a proxy over IDBFactory
-+    const guarded = new Proxy(_idb, {
-+        get(target, prop, receiver) {
-+            if (prop === "open") {
-+                return function (name, version) {
-+                    if (!ask("open", name)) {
-+                        throw new DOMException("Blocked by policy", "SecurityError");
++    // Only apply guard if Proxy is supported (mainly for KaiOS 2.x compatibility)
++    if (typeof Proxy !== 'undefined' && _idb) {
++        try {
++            // lay a proxy over IDBFactory
++            const guarded = new Proxy(_idb, {
++                get(target, prop, receiver) {
++                    if (prop === "open") {
++                        return function (name, version) {
++                            if (!ask("open", name)) {
++                                throw new DOMException("Blocked by policy", "SecurityError");
++                            }
++                            return _idb.open(name, version);
++                        };
 +                    }
-+                    return _idb.open(name, version);
-+                };
-+            }
-+            if (prop === "deleteDatabase") {
-+                return function (name) {
-+                    if (!ask("deleteDatabase", name)) {
-+                        throw new DOMException("Blocked by policy", "SecurityError");
++                    if (prop === "deleteDatabase") {
++                        return function (name) {
++                            if (!ask("deleteDatabase", name)) {
++                                throw new DOMException("Blocked by policy", "SecurityError");
++                            }
++                            return _idb.deleteDatabase(name);
++                        };
 +                    }
-+                    return _idb.deleteDatabase(name);
-+                };
-+            }
-+            if (prop === "databases") {
-+                return function (...args) {
-+                    if (!ask("databases", "(all)")) {
-+                        throw new DOMException("Blocked by policy", "SecurityError");
++                    if (prop === "databases") {
++                        return function (...args) {
++                            if (!ask("databases", "(all)")) {
++                                throw new DOMException("Blocked by policy", "SecurityError");
++                            }
++                            return _idb.databases(...args);
++                        };
 +                    }
-+                    return _idb.databases(...args);
-+                };
-+            }
-+            if (prop === "cmp") {
-+                return function (a, b) {
-+                    if (!ask("cmp", "(keys)")) {
-+                        throw new DOMException("Blocked by policy", "SecurityError");
++                    if (prop === "cmp") {
++                        return function (a, b) {
++                            if (!ask("cmp", "(keys)")) {
++                                throw new DOMException("Blocked by policy", "SecurityError");
++                            }
++                            return _idb.cmp(a, b);
++                        };
 +                    }
-+                    return _idb.cmp(a, b);
-+                };
-+            }
-+            // leave everything as it is
-+            const v = Reflect.get(target, prop, receiver);
-+            return typeof v === "function" ? v.bind(target) : v;
-+        }
-+    });
++                    // leave everything as it is
++                    const v = Reflect.get(target, prop, receiver);
++                    return typeof v === "function" ? v.bind(target) : v;
++                }
++            });
 +
-+    // activate monkey-patch
-+    for (const prop of ["indexedDB", "webkitIndexedDB", "mozIndexedDB", "msIndexedDB"]) {
-+        Object.defineProperty(window, prop, {
-+            value: guarded,
-+            writable: false,
-+            configurable: false
-+        });
++            // activate monkey-patch
++            for (const prop of ["indexedDB", "webkitIndexedDB", "mozIndexedDB", "msIndexedDB"]) {
++                try {
++                    Object.defineProperty(window, prop, {
++                        value: guarded,
++                        writable: false,
++                        configurable: false
++                    });
++                } catch (e) {
++                    // If property override fails, try writable version
++                    try {
++                        window[prop] = guarded;
++                    } catch (e2) {
++                        // Guard installation failed, continue without it
++                    }
++                }
++            }
++        } catch (e) {
++            // Guard setup failed, continue without protection
++        }
 +    }
++    // If Proxy is not supported or guard setup failed, skip the guard
++    // The app will work but won't block external scripts
  }
  catch (e) {
      domDeps = { indexedDB: null, IDBKeyRange: null };

@@ -527,12 +527,16 @@
   content: "\EA4E"
 }
 
-.icon-zoom-out:before {
+.icon-websocket:before {
   content: "\EA4F"
 }
 
-.icon-zoom:before {
+.icon-zoom-out:before {
   content: "\EA50"
+}
+
+.icon-zoom:before {
+  content: "\EA51"
 }
 
 
