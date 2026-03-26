@@ -52,7 +52,7 @@ $global-outline: 3px !default;
 
 $global-transition-property: all !default;
 $global-transition-speed: 250ms !default;
-$global-transition-timing-function: ease-in-out !default;
+$global-transition-timing-function: ease-out !default;
 $global-transition-delay: 0ms !default;
 
 $global-transition: $global-transition-property $global-transition-speed
@@ -72,3 +72,9 @@ $global-font-mono: 'LiaSourceCodePro';
 $global-font-headline: 'LiaSourceSerifPro';
 
 $global-top-offset: calc(env(safe-area-inset-top, 0)) !default;
+
+$global-focus-ring-width: $global-outline;
+$global-focus-ring-color: rgb(var(--color-text, 0, 0, 0));
+$global-focus-ring-offset: 2px;
+$global-focus-ring-style: solid;
+$global-focus-ring-radius: $global-radius;

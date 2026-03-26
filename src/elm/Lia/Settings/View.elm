@@ -22,8 +22,9 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, stopPropagationOn)
 import I18n.Translations as Trans exposing (Lang)
+import Json.Decode as JD
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
@@ -47,7 +48,6 @@ import Lia.Utils
         , deactivate
         , icon
         , noTranslate
-        , percentage
         )
 import Library.Group as Group
 import QRCode
@@ -231,6 +231,7 @@ viewTheme grouping lang tabbable theme hasCustom =
             )
         |> Html.div
             [ Attr.class "lia-radio-group lia-settings-theme-colors"
+            , Attr.attribute "style" "--focus-ring-offset: 0.4lh"
             , A11y_Role.radioGroup
             , lang
                 |> Trans.cSchema
@@ -248,7 +249,7 @@ viewModes grouping lang tabbable settings =
         settings.mode
         "lia-mode-textbook"
         "icon-book"
-        "mb-1"
+        ""
     , viewMode
         grouping
         lang
@@ -257,7 +258,7 @@ viewModes grouping lang tabbable settings =
         settings.mode
         "lia-mode-presentation"
         "icon-presentation"
-        "mb-1"
+        ""
     , viewMode
         grouping
         lang
@@ -400,8 +401,8 @@ viewTTSSettings grouping lang tabbable audio tts =
             [ Attr.style "display" "flex"
             , Attr.style "flex-direction" "column"
             ]
-            [ slider "Rate" (Trans.commentRate lang) Rate "5" grouping tabbable audio.rate
-            , slider "Pitch" (Trans.commentPitch lang) Pitch "2" grouping tabbable audio.pitch
+            [ slider "Rate" (Trans.commentRate lang) Rate grouping tabbable { value = audio.rate, maximum = "1.5", minimum = "0.5", step = "0.25" }
+            , slider "Pitch" (Trans.commentPitch lang) Pitch grouping tabbable { value = audio.pitch, maximum = "2.0", minimum = "0.0", step = "0.25" }
             ]
         ]
 
@@ -410,45 +411,73 @@ slider :
     String
     -> String
     -> (String -> Audio)
-    -> String
     -> (List (Attribute Msg) -> List (Attribute Msg))
     -> Bool
-    -> String
+    -> { maximum : String, minimum : String, step : String, value : String }
     -> Html Msg
-slider name title message maximum grouping tabbable value =
-    Html.div
+slider name title message grouping tabbable { maximum, minimum, step, value } =
+    let
+        outputId =
+            "slider-value-"
+                ++ String.map
+                    (\c ->
+                        if Char.isAlphaNum c then
+                            c
+
+                        else
+                            '-'
+                    )
+                    name
+    in
+    Html.label
         [ Attr.style "display" "flex"
         , Attr.style "align-items" "center"
-        , Attr.style "margin-bottom" "10px"
-        , Attr.title title
+        , Attr.style "margin-block-end" "10px"
         ]
-        [ Html.label
+        [ Html.span
             [ Attr.class "lia-label"
-            , A11y_Aria.hidden (not tabbable)
             , Attr.style "width" "50px"
-            , Attr.style "margin-right" "10px"
+            , Attr.style "margin-inline-end" "10px"
             ]
             [ Html.text name ]
         , Html.input
             (grouping
-                [ Attr.type_ "range"
-                , A11y_Aria.hidden (not tabbable)
-                , Attr.min "0"
-                , Attr.max maximum
-                , Attr.step "0.1"
-                , Attr.value value
-                , onInput (message >> Change)
-                , Attr.style "flex-grow" "1"
-                ]
+                ([ Attr.type_ "range"
+                 , Attr.min minimum
+                 , Attr.max maximum
+                 , Attr.step step
+                 , Attr.value value
+                 , A11y_Aria.hidden (not tabbable)
+                 , Attr.attribute "aria-label" title
+                 , Attr.attribute "aria-describedby" outputId
+                 , Attr.attribute "aria-valuetext" (value ++ "× speed")
+                 , onInput (message >> Change)
+                 , Attr.style "flex-grow" "1"
+                 , stopKeys
+                 ]
+                    ++ (if tabbable then
+                            []
+
+                        else
+                            [ Attr.tabindex -1 ]
+                       )
+                )
             )
             []
-        , Html.span
-            [ Attr.style "margin-left" "10px"
-            , Attr.style "width" "40px"
+        , Html.output
+            [ Attr.id outputId
+            , Attr.style "margin-inline-start" "10px"
+            , Attr.style "width" "60px"
             , Attr.style "text-align" "right"
             ]
-            [ Html.text value ]
+            [ Html.text (value ++ " ×") ]
         ]
+
+
+stopKeys : Html.Attribute Msg
+stopKeys =
+    stopPropagationOn "keydown"
+        (JD.succeed ( Ignore, True ))
 
 
 fontButton : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Int -> Int -> String -> Html Msg
@@ -599,7 +628,7 @@ viewTranslations lang tabbable =
 
 submenu : (List (Attribute Msg) -> List (Attribute Msg)) -> Bool -> List (Html Msg) -> Html Msg
 submenu grouping isActive =
-    [ Attr.class "lia-support-menu__submenu"
+    [ Attr.class "lia-support-menu__submenu flow"
     , Attr.class <|
         if isActive then
             "active"
@@ -662,7 +691,7 @@ viewEditorTheme grouping lang tabbable theme =
     in
     Html.div [ Attr.class "lia-settings-editor" ]
         [ Html.label [ Attr.class "lia-label", A11y_Aria.hidden (not tabbable) ]
-            [ Html.div [ Attr.style "margin-bottom" "0.4rem" ] [ Html.text <| Trans.baseEditor lang ++ ":" ]
+            [ Html.div [ Attr.style "margin-block-end" "0.4rem" ] [ Html.text <| Trans.baseEditor lang ++ ":" ]
             , Html.select
                 (grouping
                     [ Attr.class "lia-select"
@@ -780,7 +809,7 @@ btnSupport lang open =
 btnChat : { lang : Lang, tabbable : Bool, hide : Bool, chat : { show : Bool, updates : Bool } } -> Html Msg
 btnChat { lang, tabbable, hide, chat } =
     if hide then
-        Html.span [ Attr.style "margin-right" "4rem" ] []
+        Html.span [ Attr.style "margin-inline-end" "4rem" ] []
 
     else
         btnIcon
@@ -811,7 +840,7 @@ btnChat { lang, tabbable, hide, chat } =
             , Attr.class "lia-btn lia-btn--transparent"
             , A11y_Aria.hasMenuPopUp
             , A11y_Aria.expanded chat.show
-            , Attr.style "margin-right" "1rem"
+            , Attr.style "margin-inline-end" "1rem"
             , Attr.class <|
                 if chat.updates && not chat.show then
                     "shake"
@@ -1026,7 +1055,7 @@ menuEdit url lang tabbable _ =
         ]
         [ icon "icon-edit" []
         , Html.span
-            [ Attr.style "margin-left" "1rem"
+            [ Attr.style "margin-inline-start" "1rem"
             , Attr.class " hide-md-up"
             ]
             [ lang
@@ -1179,7 +1208,7 @@ header { online, active, lang, screen, settings, logo, progress, buttons } =
                                 (fn lang tabbable settings)
                         )
                     |> Html.ul
-                        [ Attr.class "nav lia-support-menu__nav"
+                        [ Attr.class "nav lia-support-menu__nav flow"
                         , A11y_Role.menuBar
                         , A11y_Key.tabbable False
                         ]

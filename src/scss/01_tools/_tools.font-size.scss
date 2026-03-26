@@ -1,6 +1,6 @@
-@use "sass:math";
-@use "sass:meta";
-@use "../00_settings/settings.global";
+@use 'sass:math';
+@use 'sass:meta';
+@use '../00_settings/settings.global';
 
 /* --------------------------------------------------
    Font Size
@@ -12,7 +12,7 @@
 
 @mixin font-size($font-size, $line-height: auto, $important: false) {
   @if (meta.type-of($font-size) == number) {
-    @if (math.unit($font-size) != "px") {
+    @if (math.unit($font-size) != 'px') {
       @error "`#{$font-size}` needs to be a pixel value.";
     }
   } @else {
@@ -31,19 +31,19 @@
   font-size: $font-size $important;
   font-size: ($font-size / settings.$global-font-size) * 1rem $important;
 
-  @if ($line-height == "auto") {
+  @if ($line-height == 'auto') {
     line-height: $line-height $important;
   } @else {
     @if (
       meta.type-of($line-height) ==
         number or
         $line-height ==
-        "inherit" or
+        'inherit' or
         $line-height ==
-        "normal"
+        'normal'
     ) {
       line-height: $line-height $important;
-    } @else if ($line-height != "none" and $line-height != false) {
+    } @else if ($line-height != 'none' and $line-height != false) {
       @error "D’oh! `#{$line-height}` is not a valid value for `$line-height`.";
     }
   }

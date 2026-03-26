@@ -39,7 +39,7 @@ enum Gender {
 }
 
 var useBrowserTTS: null | boolean = null
-var browserVoices: Record<string, any> = {}
+var browserVoices: Record<string, SpeechSynthesisVoice> = {}
 
 var firstSpeak = true
 
@@ -159,7 +159,7 @@ function innerText(node) {
 
   try {
     if (window.getComputedStyle(node).display !== 'none') {
-      node.childNodes.forEach((n) => {
+      node.childNodes.forEach(n => {
         text += innerText(n)
       })
     }
@@ -233,8 +233,8 @@ function read(event: Lia.Event) {
       if (translation && text.trim() !== '') {
         // For translation mode, preload videos to get their durations
         Promise.all(
-          videos.map((video) => {
-            return new Promise<number>((resolve) => {
+          videos.map(video => {
+            return new Promise<number>(resolve => {
               // If video is already loaded with duration
               if (video.readyState >= 2 && video.duration) {
                 resolve(video.duration)
@@ -253,20 +253,20 @@ function read(event: Lia.Event) {
                 video.load()
               }
             })
-          }),
+          })
         )
-          .then((durations) => {
+          .then(durations => {
             // Calculate total video duration
             const totalVideoDuration = durations.reduce(
               (total, duration) => total + duration,
-              0,
+              0
             )
 
             // Estimate TTS duration based on text length and speech rate
             const estimatedTTSDuration = estimateTTSDuration(
               text,
               lang,
-              options.rate,
+              options.rate
             )
 
             // Calculate adjusted playback rate if video is shorter than TTS
@@ -276,10 +276,10 @@ function read(event: Lia.Event) {
               const MIN_RATE = 0.5 // Most browsers support down to 0.5x speed
               options.videoRate = Math.max(
                 MIN_RATE,
-                (totalVideoDuration / estimatedTTSDuration) * originalRate,
+                (totalVideoDuration / estimatedTTSDuration) * originalRate
               )
               console.log(
-                `Adjusting video playback rate to ${options.videoRate} to match estimated TTS duration`,
+                `Adjusting video playback rate to ${options.videoRate} to match estimated TTS duration`
               )
             } else {
               options.videoRate = originalRate
@@ -320,7 +320,7 @@ function read(event: Lia.Event) {
                     isEnding = true
                   }
                 },
-                onError: (error) => {
+                onError: error => {
                   console.warn('TTS translation error:', error)
                   ttsFinished = true
                   if (!videos[currentIndex]?.played.length) {
@@ -333,7 +333,7 @@ function read(event: Lia.Event) {
               },
             })
           })
-          .catch((error) => {
+          .catch(error => {
             console.warn('Error calculating video durations:', error)
             // Fall back to original behavior if duration calculation fails
             speak(text, voice, lang, options, {
@@ -364,7 +364,7 @@ function read(event: Lia.Event) {
                     isEnding = true
                   }
                 },
-                onError: (error) => {
+                onError: error => {
                   console.warn('TTS translation error:', error)
                   ttsFinished = true
                   if (!videos[currentIndex]?.played.length) playNext()
@@ -438,7 +438,7 @@ function read(event: Lia.Event) {
         // Play the video
         const response = video.play()
         if (response && typeof response.then === 'function') {
-          response.catch((e) => {
+          response.catch(e => {
             console.warn('Failed to play video:', e.message)
           })
         }
@@ -446,8 +446,8 @@ function read(event: Lia.Event) {
     } else if (hasAudioURLs) {
       let audioUrls: HTMLMediaElement[] = Array.from(
         document.getElementsByClassName(
-          AUDIO,
-        ) as HTMLCollectionOf<HTMLMediaElement>,
+          AUDIO
+        ) as HTMLCollectionOf<HTMLMediaElement>
       )
       let currentIndex = 0
 
@@ -489,7 +489,7 @@ function read(event: Lia.Event) {
           if (window.LIA.fetchError) {
             window.LIA.fetchError(
               'audio',
-              source.src.replace(window.location.origin, ''),
+              source.src.replace(window.location.origin, '')
             )
             return
           }
@@ -517,7 +517,7 @@ function read(event: Lia.Event) {
         const response = audio.play()
 
         if (response !== undefined) {
-          response.catch((e) => error(e.message))
+          response.catch(e => error(e.message))
         } else {
           error("resource couldn't be played")
         }
@@ -572,7 +572,7 @@ export function inject(key: string) {
 function cancel() {
   try {
     const audioRecordings = document.getElementsByClassName(
-      AUDIO,
+      AUDIO
     ) as HTMLCollectionOf<HTMLMediaElement>
 
     for (let i = 0; i < audioRecordings.length; i++) {
@@ -619,12 +619,12 @@ async function speak(
       onStop: () => void
       onError: (error: any) => void
     }
-  },
+  }
 ) {
   const customHandlers = event.handlers || {
     onStart: () => sendResponse(event, 'start'),
     onStop: () => sendResponse(event, 'stop'),
-    onError: (e) => {
+    onError: e => {
       sendResponse(event, 'error', e.toString())
       console.warn('TTS playback failed:', e.toString())
     },
@@ -675,7 +675,7 @@ async function easySpeak(
     onStart: () => void
     onStop: () => void
     onError: (error: any) => void
-  },
+  }
 ) {
   try {
     handlers.onStart()
@@ -701,7 +701,7 @@ function responsiveSpeak(
     onStart: () => void
     onStop: () => void
     onError: (error: any) => void
-  },
+  }
 ) {
   if (window.responsiveVoice)
     window.responsiveVoice.speak(text, voice, {
@@ -716,7 +716,7 @@ function responsiveSpeak(
 function sendResponse(
   event: Lia.Event,
   cmd: string,
-  param: string | null = 'browser',
+  param: string | null = 'browser'
 ) {
   event.message.cmd = cmd
   event.message.param = param
@@ -851,7 +851,7 @@ function storeBackgroundVideo(player: HTMLElement, video: HTMLVideoElement) {
     } else {
       player.parentElement?.insertBefore(
         background,
-        player.parentElement.firstChild,
+        player.parentElement.firstChild
       )
     }
   } catch (e) {
@@ -916,7 +916,7 @@ function estimateTTSDuration(text: string, lang: string, rate: number): number {
   const adjustedWPM = baseWPM * rate
 
   // Count words (simple approximation)
-  const wordCount = text.split(/\s+/).filter((word) => word.length > 0).length
+  const wordCount = text.split(/\s+/).filter(word => word.length > 0).length
 
   // Add some padding (10%) for pauses and processing
   const durationSeconds = (wordCount / adjustedWPM) * 60 * 1.1

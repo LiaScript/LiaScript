@@ -475,7 +475,7 @@ slideA11y { lang, light, tooltips, translations, mode, formulas, media, effect, 
                                 ]
                             |> Tuple.pair (String.fromInt id ++ "-/-" ++ String.fromInt counter)
                     )
-                |> Keyed.node "aside" (deactivate modalIsActive [ Attr.class "lia-notes" ])
+                |> Keyed.node "aside" (deactivate modalIsActive [ Attr.class "lia-notes", Attr.tabindex -1 ])
 
         _ ->
             Html.text ""
@@ -801,7 +801,7 @@ showModal model =
                     , Attr.style "max-height" "800px"
                     , Attr.style "width" "80%"
                     , Attr.style "max-width" "800px"
-                    , Attr.style "margin-top" "calc(100vh * 0.08)"
+                    , Attr.style "margin-block-start" "calc(100vh * 0.08)"
                     ]
                     [ model.url
                         |> Settings.qrCodeView model.translation True True Nothing

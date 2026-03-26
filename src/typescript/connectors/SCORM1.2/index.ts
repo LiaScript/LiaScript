@@ -339,6 +339,9 @@ Have fun ;-)`
     if (typeof data === 'string') {
       try {
         json = JSON.parse(data)
+        if (json) {
+          json.fromStorage = true
+        }
       } catch (e) {
         WARN('getSettings =>', e)
       }

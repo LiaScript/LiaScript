@@ -12,21 +12,17 @@ $btn-height: 3.6rem;
   line-height: settings.$global-line-height;
   padding: 0.5rem 0.6rem;
 
-  &:focus,
-  &:focus-visible {
-    outline: 3px solid rgba(var(--color-highlight), 0.3);
-    box-shadow:
-      // Inner shadow (inset)
-      inset 0 0 0 2px rgba(255, 255, 255, 0.8),
-      // Outer shadow (around the outline)
-      0 0 0 0.25rem rgba(var(--color-highlight), 0.3),
-      0 0 8px rgba(var(--color-highlight), 0.4) !important;
-  }
-
   // Hide focus outline for mouse users while keeping it for keyboard users
   &:focus:not(:focus-visible) {
     outline: none;
     box-shadow: none !important;
+  }
+
+  &:focus-visible {
+    outline-color: var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+    outline-style: var(--focus-ring-style);
+    outline-width: var(--focus-ring-width);
   }
 
   &--warning {
@@ -107,7 +103,7 @@ $btn-height: 3.6rem;
   }
 
   &--transparent {
-    background-color: transparent !important;
+    background-color: transparent;
     border: none;
     color: currentColor;
 
@@ -122,7 +118,7 @@ $btn-height: 3.6rem;
   }
 
   > .lia-btn__text {
-    margin-left: 1rem;
+    margin-inline-start: 1rem;
     vertical-align: middle;
   }
 

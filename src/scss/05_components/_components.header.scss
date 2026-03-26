@@ -7,7 +7,7 @@ $header-height-mobile: 5.6rem;
 .lia-header {
   align-items: center;
   background-color: rgb(var(--color-background));
-  border-bottom: settings.$global-border;
+  border-block-end: settings.$global-border;
   display: flex;
   flex-direction: row;
   height: $header-height-mobile;

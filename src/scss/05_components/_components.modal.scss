@@ -1,4 +1,4 @@
-@use "../01_tools/tools.breakpoints";
+@use '../01_tools/tools.breakpoints';
 
 $controlHeight: 4rem;
 
@@ -6,6 +6,7 @@ $controlHeight: 4rem;
   --color-text: white;
   --color-background: var(--lia-grey-dark);
   --color-border: var(--lia-grey-light);
+  --focus-ring-color: white;
   align-items: center;
   color: var(--color-text);
   display: flex;
@@ -210,6 +211,6 @@ $controlHeight: 4rem;
   .lia-video-wrapper,
   .lia-iframe-wrapper {
     position: relative;
-    padding-bottom: 56.25%;
+    padding-block-end: 56.25%;
   }
 }
