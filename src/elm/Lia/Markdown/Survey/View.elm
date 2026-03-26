@@ -502,7 +502,7 @@ textBlock str =
     Html.div
         [ Attr.style "white-space" "pre"
         , Attr.style "background-color" "rgb(179 179 179)"
-        , Attr.style "border-bottom" "2px dashed #666"
+        , Attr.style "border-block-end" "2px dashed #666"
         , Attr.style "padding" "0.8rem"
         ]
         [ Html.text str ]
@@ -569,7 +569,7 @@ submit_button config submitted idx =
           else
             btn
                 { msg = Just <| Submit idx
-                , tabbable = False
+                , tabbable = True
                 , title = surveySubmit config.lang
                 }
                 [ Attr.class "lia-btn--outline lia-quiz__check"
@@ -606,6 +606,7 @@ view_select config options ( open, value ) id submitted =
                 |> List.indexedMap (option config id)
                 |> Html.div
                     [ Attr.class "lia-dropdown__options"
+                    , Attr.tabindex -1
                     , Attr.class <|
                         if open then
                             "is-visible"

@@ -1,19 +1,19 @@
-@use "sass:color";
-@use "sass:map";
-@use "../01_tools/tools.color";
+@use 'sass:color';
+@use 'sass:map';
+@use '../01_tools/tools.color';
 
 .lia-textarea {
   max-width: 100%;
   width: 100%;
   border: none;
-  transition: border-bottom-color 0.5s ease-out 0s;
+  transition: border-block-end-color 0.5s ease-out 0s;
 
   &:not([disabled]) {
-    border-bottom: 1.5px solid;
+    border-block-end: 1.5px solid;
   }
 
   &[disabled] {
-    border-bottom: 1.5px dotted;
+    border-block-end: 1.5px dotted;
   }
 }
 
@@ -26,16 +26,18 @@
 
     &:not([disabled]) {
       color: $fg;
-      border-bottom-color: color.mix($bg, $fg, 50%);
+      border-block-end-color: color.mix($bg, $fg, 50%);
     }
 
     &[disabled] {
       color: rgba($fg, 0.38);
-      border-bottom-color: color.mix($bg, $fg, 50%);
+      border-block-end-color: color.mix($bg, $fg, 50%);
     }
 
     &:focus {
-      border-bottom-color: map.get($theme, primary);
+      outline: 2px solid rgb(var(--color-text));
+      outline-offset: 2px;
+      box-shadow: 0 0 0 2px rgb(var(--color-background));
     }
   }
 }

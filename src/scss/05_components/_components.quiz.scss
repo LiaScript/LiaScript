@@ -1,4 +1,4 @@
-@use "../01_tools/tools.breakpoints";
+@use '../01_tools/tools.breakpoints';
 
 .lia-quiz {
   margin-bottom: 2rem;
@@ -12,7 +12,7 @@
     position: relative;
 
     > *:not(:last-child) {
-      margin-bottom: 1rem;
+      margin-block-end: 1rem;
     }
   }
 
@@ -22,7 +22,7 @@
     align-self: flex-start;
 
     > *:not(:last-child) {
-      margin-right: 1rem;
+      margin-inline-end: 1rem;
     }
 
     @include tools.breakpoint('md') {
@@ -53,7 +53,6 @@
     grid-column-start: 1;
   }
 
-
   &__feedback {
     display: flex;
     align-items: center;
@@ -71,7 +70,7 @@
   &-multiple-choice,
   &-select {
     > *:not(:last-child) {
-      margin-bottom: 2rem;
+      margin-block-end: 2rem;
     }
   }
 
@@ -85,7 +84,7 @@
     }
 
     > .lia-quiz__control {
-      margin-right: 1rem;
+      margin-inline-end: 1rem;
     }
 
     > .lia-quiz__solution {
@@ -96,6 +95,6 @@
 
   // make sure that any kind of list has no indenting
   [class^='lia-list'] {
-    margin-left: 0;
+    margin-inline-start: 0;
   }
 }

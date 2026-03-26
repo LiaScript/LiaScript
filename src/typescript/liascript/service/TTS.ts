@@ -11,7 +11,7 @@ enum Gender {
 }
 
 var useBrowserTTS: null | boolean = null
-var browserVoices = {}
+var browserVoices: Record<string, SpeechSynthesisVoice> = {}
 
 var firstSpeak = true
 
@@ -716,7 +716,7 @@ function toKey(lang: string, voice: string) {
 function getVoice(lang: string, voice: string) {
   // fix for browserTTS not working with Deutsch
   if (voice.startsWith('Deutsch')) {
-    voice.replace('Deutsch', 'German')
+    voice = voice.replace('Deutsch', 'German')
   }
 
   const key = toKey(lang, voice)

@@ -196,6 +196,7 @@ modal msgClose controls content =
         [ Attr.class "lia-modal"
         , A11y_Aria.modal True
         , A11y_Role.dialog
+        , A11y_Key.onKeyDown [ A11y_Key.escape msgClose ]
         ]
         [ Html.div [ Attr.class "lia-modal__inner" ]
             [ Html.div [ Attr.class "lia-modal__close" ]

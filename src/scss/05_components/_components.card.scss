@@ -7,7 +7,7 @@
   flex-direction: column;
   position: relative;
   color: rgb(var(--color-text));
-  margin-top: 2rem;
+  margin-block-start: 2rem;
 
   &__logo {
     @media (max-width: 240px) {
@@ -32,9 +32,9 @@
     padding: 2rem 0 1rem 0;
 
     @include tools.breakpoint-only('sm', 'md') {
-      margin-top: 4rem;
+      margin-block-start: 4rem;
       height: auto;
-      padding-top: 0;
+      padding-block-start: 0;
     }
   }
 
@@ -43,8 +43,13 @@
     left: 1rem;
     top: -1rem;
 
+    [dir='rtl'] & {
+      left: auto;
+      right: 1rem;
+    }
+
     > *:not(:last-child) {
-      margin-right: 1rem;
+      margin-inline-end: 1rem;
     }
 
     @media (max-width: 360px) {
@@ -94,7 +99,7 @@
     }
 
     > *:not(:last-child) {
-      margin-right: 1rem;
+      margin-inline-end: 1rem;
 
       &:hover {
         box-shadow: 0 0 1rem 0 rgba(0, 0, 0, 0.2);
@@ -102,7 +107,7 @@
     }
 
     > *:last-child {
-      margin-left: auto;
+      margin-inline-start: auto;
 
       &:hover {
         box-shadow: 0 0 1rem 0 rgba(0, 0, 0, 0.2);
@@ -117,7 +122,7 @@
 
   &__body {
     padding: 0 2.4rem;
-    margin-bottom: 1rem;
+    margin-block-end: 1rem;
 
     @media (max-width: 240px) {
       hyphens: auto;

@@ -17,6 +17,10 @@
     transform: translateX(-124%);
     width: 2rem;
 
+    [dir='rtl'] & {
+      transform: translateX(124%);
+    }
+
     &.animated {
       left: 2.5rem * -1.5;
     }
@@ -26,10 +30,13 @@
       width: 1.8rem;
       height: 1.8rem;
       font-size: 1.2rem;
-      line-height: initial;
+      line-height: 1.8rem;
+      vertical-align: middle;
       transform: none;
 
-      font-family: var(--global-font-family) !important; // this is necessary in ascii-art environment
+      font-family: var(
+        --global-font-family
+      ) !important; // this is necessary in ascii-art environment
 
       &.animated {
         left: 1.8rem * -1.5;
@@ -39,5 +46,64 @@
 
   &--inline {
     display: inline-block;
+    vertical-align: baseline;
+    border: 1px solid rgba(var(--color-highlight), 0.2);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+
+    label {
+      display: inline-block;
+      vertical-align: middle;
+      margin: 0;
+    }
+
+    button {
+      vertical-align: middle;
+    }
+
+    // Highlighted border when speaking
+    &.lia-effect--speaking {
+      border: 1px solid rgb(var(--color-highlight));
+      background: rgba(var(--color-highlight), 0.1);
+    }
+  }
+
+  // Floating centered playback button style
+  &--playback-float {
+    position: relative;
+    margin: 2.5rem 0 1rem;
+
+    > button:first-child {
+      background-color: rgb(var(--color-background)) !important;
+      border: 1px solid rgba(var(--color-highlight), 0.2);
+      padding: 0.25rem 1.5rem;
+      //border-radius: 50%;
+      position: absolute;
+      z-index: 1;
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    // Thicker border when speaking
+    &.lia-effect--speaking {
+      > button:first-child {
+        border: 1px solid rgb(var(--color-highlight));
+      }
+
+      .lia-effect__playback-content {
+        border: 1px solid rgb(var(--color-highlight));
+      }
+    }
+  }
+
+  &__playback-content {
+    border-radius: 8px;
+    padding: 2rem 1rem 1rem;
+    margin-top: 0;
+    position: relative;
+    border: 1px solid rgba(var(--color-highlight), 0.2);
+    text-align: initial;
   }
 }

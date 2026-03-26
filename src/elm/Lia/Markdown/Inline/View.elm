@@ -272,10 +272,11 @@ viewQuiz config ( length, id ) attr =
                         []
                     ]
                 , options
-                    |> List.indexedMap (showOption config id)
+                    |> List.indexedMap (showOption config open id)
                     |> shuffle randomize
                     |> Html.div
                         [ Attr.class "lia-dropdown__options"
+                        , Attr.tabindex -1
                         , Attr.class <|
                             if open then
                                 "is-visible"
@@ -1153,8 +1154,8 @@ getOption config id list =
             Html.span [] [ Html.text <| Translations.quizSelection config.lang ]
 
 
-showOption : Config sub -> Int -> Int -> Inlines -> Html (Msg sub)
-showOption config id1 id2 =
+showOption : Config sub -> Bool -> Int -> Int -> Inlines -> Html (Msg sub)
+showOption config open id1 id2 =
     viewer config
         >> Html.div []
         >> List.singleton
@@ -1162,6 +1163,11 @@ showOption config id1 id2 =
             [ Attr.class "lia-dropdown__option"
             , Attr.attribute "onclick" (config.input.on "choose" id1 (String.fromInt id2))
             , A11y_Role.listItem
-            , Attr.tabindex 0
+            , Attr.tabindex <|
+                if open then
+                    0
+
+                else
+                    -1
             , keyDownEvent (config.input.on "choose" id1 (String.fromInt id2))
             ]

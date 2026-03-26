@@ -2,18 +2,18 @@
 
 .lia-code {
   font-family: settings.$global-font-mono;
-  margin-bottom: 2rem;
+  margin-block-end: 2rem;
 
   &--block {
     > *:not(:last-child) {
-      margin-bottom: 1rem;
+      margin-block-end: 1rem;
     }
   }
 
   &--inline {
     border: 1px solid rgb(var(--color-highlight-dark));
     color: rgb(var(--color-highlight-dark));
-    margin-bottom: 0;
+    margin-block-end: 0;
     padding: 0 0.5rem;
     word-break: break-word;
 
@@ -37,7 +37,7 @@
     padding: 0 0.5rem;
 
     &__action {
-      margin-right: auto;
+      margin-inline-end: auto;
     }
 
     &__version {
@@ -45,7 +45,7 @@
       align-items: center;
 
       > *:not(:last-child) {
-        margin-right: 0.5rem;
+        margin-inline-end: 0.5rem;
       }
     }
   }
