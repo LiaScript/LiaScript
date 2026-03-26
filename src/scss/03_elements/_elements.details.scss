@@ -93,18 +93,15 @@ summary {
     }
   }
 
-  &:focus,
-  &:focus-visible {
-    outline: 3px solid rgba(var(--color-highlight), 0.3);
-    box-shadow:
-      inset 0 0 0 2px rgba(255, 255, 255, 0.8),
-      0 0 0 0.25rem rgba(var(--color-highlight), 0.3),
-      0 0 8px rgba(var(--color-highlight), 0.4);
-  }
-
-  // Hide focus outline for mouse users while keeping it for keyboard users
+  // Hide focus outline for mouse users
   &:focus:not(:focus-visible) {
     outline: none;
+    box-shadow: none;
+  }
+
+  // Show accessible outline for keyboard users, inset to avoid overflow:hidden clipping
+  &:focus-visible {
+    outline-offset: -3px;
     box-shadow: none;
   }
 }

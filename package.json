@@ -1,6 +1,6 @@
 {
   "name": "liascript",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -57,6 +57,7 @@
     "watch:xapi": "npx parcel serve src/entry/xapi/index.html",
     "build:h5p": "npm run clean && npx parcel build --no-source-maps --public-url . src/entry/h5p/index.html",
     "watch:h5p": "npx parcel serve src/entry/h5p/index.html",
+    "format:scss": "npx prettier --write 'src/scss/**/*.scss'",
     "minify:js": "find dist -name \"*.js\" -print0 | xargs -0 -P 4 -I {} sh -c 'before=$(wc -c < {}); if npx minify {} > {}.min 2>/dev/null; then after=$(wc -c < {}.min); if [ ${after} -lt ${before} ]; then mv {}.min {}; reduction=$((${before}-${after})); percent=$(awk \"BEGIN {printf \\\"%.2f\\\", ${reduction}/${before}*100}\"); echo \"{} reduced from ${before} to ${after} bytes (${percent}% reduction)\"; else rm {}.min; echo \"{} no reduction achieved, file size unchanged\"; fi; else echo \"{} minification failed, skipping\"; fi'"
   },
   "devDependencies": {
@@ -97,6 +98,7 @@
     "patch-package": "^8.0.1",
     "path-browserify": "^1.0.1",
     "pdfast": "^0.2.0",
+    "prettier": "^3.6.2",
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
     "sass": "^1.97.1",

@@ -31,6 +31,7 @@ export type Settings = {
   font_size: number
   sound: boolean
   lang: Lang
+  dir: 'ltr' | 'rtl'
   tooltips: boolean
   preferBrowserTTS: boolean
   hideVideoComments: boolean
@@ -38,6 +39,7 @@ export type Settings = {
     rate: number
     pitch: number
   }
+  fromStorage?: boolean
 }
 
 export enum Mode {

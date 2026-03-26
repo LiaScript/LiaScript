@@ -117,6 +117,23 @@ const Service = {
 
         if (document.documentElement.lang != param.definition.language) {
           document.documentElement.lang = param.definition.language
+
+          // Update document direction based on the new language
+          const isRTL = [
+            'ar',
+            'fa',
+            'he',
+            'ur',
+            'ps',
+            'sd',
+            'yi',
+            'ku',
+            'dv',
+            'ckb',
+          ].includes(param.definition.language.toLowerCase().split('-')[0])
+          const dirValue = isRTL ? 'rtl' : 'ltr'
+          document.documentElement.setAttribute('dir', dirValue)
+
           // Force recalculation of styles in Firefox
           let forceRecalc = window.getComputedStyle(document.body).direction
           document.body.style.display = 'none'
@@ -158,7 +175,7 @@ const Service = {
               const rs = getComputedStyle(r)
               const fontSettings = ['family', 'mono', 'headline']
 
-              fontSettings.forEach((val) => {
+              fontSettings.forEach(val => {
                 const key = '--global-font-' + val
 
                 r.style.setProperty(

@@ -1,5 +1,6 @@
 module Index.View.Popup exposing (..)
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
 import Html exposing (Html)
@@ -21,6 +22,8 @@ view { escape, text, action } =
     Html.div
         [ -- Use ARIA attributes to define the dialog.
           A11y_Role.dialog
+        , A11y_Aria.modal True
+        , A11y_Aria.label action.text
         , Attr.style "position" "absolute"
         , Attr.style "min-width" "250px"
         , Attr.style "background-color" "#fff"
@@ -42,7 +45,7 @@ view { escape, text, action } =
         [ Html.p
             [ Group.id groupID
             , Group.blur (always escape)
-            , Attr.style "margin-bottom" "16px"
+            , Attr.style "margin-block-end" "16px"
             , Attr.style "font-size" "16px"
             , Attr.style "color" "#333"
             ]
@@ -50,6 +53,7 @@ view { escape, text, action } =
         , Html.button
             [ Event.onClick action.msg
             , Attr.tabindex 0
+            , Attr.autofocus True
             , Group.id groupID
             , Group.blur (always escape)
             , Attr.style "padding" "10px 20px"
