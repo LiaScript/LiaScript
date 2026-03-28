@@ -9,16 +9,35 @@ var googleTranslate = false
  * List of RTL (right-to-left) language codes
  */
 const RTL_LANGUAGES = [
+  // Hauptsprachen (modern)
   'ar', // Arabic
-  'fa', // Persian/Farsi
+  'fa', // Persian (Farsi)
   'he', // Hebrew
+  'iw', // Hebrew (legacy)
+  'yi', // Yiddish
+  'ji', // Yiddish (legacy)
   'ur', // Urdu
   'ps', // Pashto
   'sd', // Sindhi
+  'ug', // Uyghur
+  'dv', // Divehi (Thaana)
   'yi', // Yiddish
-  'ku', // Kurdish
-  'dv', // Divehi
-  'ckb', // Central Kurdish
+  'ckb', // Central Kurdish (Sorani)
+  'prs', // Dari
+
+  // Historisch / liturgisch (klar RTL)
+  'arc', // Aramaic
+  'syr', // Syriac
+  'sam', // Samaritan Aramaic
+  'myz', // Mandaic
+  'phn', // Phoenician
+  'uga', // Ugaritic
+  'pal', // Middle Persian (Pahlavi)
+  'xpr', // Parthian
+  'heb', // Biblical Hebrew (ISO-639-2)
+
+  // Eigene RTL-Schriftsysteme
+  'nqo', // N’Ko
 ]
 
 /**
