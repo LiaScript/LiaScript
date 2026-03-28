@@ -76,6 +76,14 @@ $btn-height: 3.6rem;
       );
     }
 
+    @at-root {
+      html.lia-variant-dark &[disabled],
+      html.lia-variant-dark &.lia-btn--disabled {
+        border-color: rgb(var(--lia-grey));
+        color: rgb(var(--lia-grey));
+      }
+    }
+
     &.lia-btn--warning {
       background-color: transparent;
       border-color: rgb(var(--lia-yellow));
