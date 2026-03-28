@@ -110,6 +110,11 @@ $btn-height: 3.6rem;
     @at-root html.lia-variant-dark & {
       filter: brightness(1.8) contrast(1.1);
     }
+
+    &[disabled],
+    &.lia-btn--disabled {
+      background-color: transparent;
+    }
   }
 
   > .lia-btn__icon {
