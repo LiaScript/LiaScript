@@ -1,6 +1,6 @@
-@use "../00_settings/settings.global";
-@use "../01_tools/tools.breakpoints";
-@use "../04_objects/object.canvas";
+@use '../00_settings/settings.global';
+@use '../01_tools/tools.breakpoints';
+@use '../04_objects/objects.canvas' as canvas;
 
 .lia-notes {
   background-color: rgb(var(--lia-grey-light));
@@ -11,21 +11,25 @@
   max-width: 144rem;
   overflow: auto;
   position: relative;
-  width: object.$notes-width-mobile;
+  width: canvas.$notes-width-mobile;
+
+  @include tools.breakpoint('lg') {
+    z-index: 100;
+  }
 
   @at-root html.lia-variant-dark & {
     background-color: rgb(var(--lia-anthracite));
   }
 
-  @include tools.breakpoint("sm") {
+  @include tools.breakpoint('sm') {
     height: calc(14.2rem - 7rem);
   }
 
-  @include tools.breakpoint("md") {
+  @include tools.breakpoint('md') {
     margin: 0 3rem;
   }
 
-  @include tools.breakpoint("lg") {
+  @include tools.breakpoint('lg') {
     background-color: transparent;
     height: auto;
     margin: 0;
@@ -41,8 +45,8 @@
       background-color: rgb(var(--lia-anthracite));
     }
 
-    @include tools.breakpoint("lg") {
-      padding-top: 2.3rem;
+    @include tools.breakpoint('lg') {
+      padding-block-start: 2.3rem;
     }
 
     &:nth-child(2n) {
@@ -50,7 +54,7 @@
     }
 
     &:last-child {
-      padding-bottom: 2.3rem !important;
+      padding-block-end: 2.3rem !important;
     }
 
     &.active {
@@ -58,19 +62,19 @@
     }
 
     > *:last-child {
-      margin-bottom: 0;
+      margin-block-end: 0;
     }
   }
 
   &__counter {
-    border-bottom: 1px solid rgb(var(--lia-grey));
+    border-block-end: 1px solid rgb(var(--lia-grey));
     color: rgb(var(--lia-grey));
     display: inline-block;
-    margin-bottom: 0.5rem;
+    margin-block-end: 0.5rem;
   }
 
-  @include tools.breakpoint("lg") {
-    border-left: settings.$global-border;
-    max-width: object.$notes-width-desktop;
+  @include tools.breakpoint('lg') {
+    border-inline-start: settings.$global-border;
+    max-width: canvas.$notes-width-desktop;
   }
 }

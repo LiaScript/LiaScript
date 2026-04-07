@@ -70,14 +70,18 @@ update main msg model =
                                 |> load { model | initialized = True }
 
                         newSettings =
-                            { loaded
-                                | mode =
-                                    loaded.documentMode
-                                        |> Maybe.withDefault loaded.mode
-                                , light =
-                                    loaded.documentLight
-                                        |> Maybe.withDefault loaded.light
-                            }
+                            if loaded.fromStorage then
+                                loaded
+
+                            else
+                                { loaded
+                                    | mode =
+                                        loaded.documentMode
+                                            |> Maybe.withDefault loaded.mode
+                                    , light =
+                                        loaded.documentLight
+                                            |> Maybe.withDefault loaded.light
+                                }
                     in
                     newSettings
                         |> no_log Nothing

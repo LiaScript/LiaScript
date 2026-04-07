@@ -1,5 +1,7 @@
 module Index.View.Card exposing (card)
 
+import Accessibility.Aria as A11y_Aria
+import Accessibility.Role as A11y_Role
 import Array
 import Const
 import Dict exposing (Dict)
@@ -26,7 +28,10 @@ card hasShareAPI course =
 
 article : Bool -> Course -> Release -> Html Msg
 article hasShareAPI course { title, definition } =
-    Html.article [ Attr.class "lia-card" ]
+    Html.article
+        [ Attr.class "lia-card"
+        , A11y_Aria.label (stringify title)
+        ]
         [ versions course
         , definition.macro
             |> getIcon
@@ -92,7 +97,11 @@ versions course =
                     [ "V " ++ value |> Html.text
                     ]
             )
-        |> Html.div [ Attr.class "lia-card__version" ]
+        |> Html.div
+            [ Attr.class "lia-card__version"
+            , A11y_Role.group
+            , A11y_Aria.label "Course versions"
+            ]
 
 
 icon : String -> Html Msg
@@ -100,7 +109,7 @@ icon url =
     Html.img
         [ Attr.class "lia-card__icon"
         , Attr.src url
-        , Attr.alt "Logo"
+        , Attr.alt ""
         , Attr.attribute "loading" "lazy"
         ]
         []
@@ -133,7 +142,7 @@ header title macro =
                 (String.replace ";" " | "
                     >> Html.text
                     >> List.singleton
-                    >> Html.h4 [ Attr.class "lia-card__subtitle" ]
+                    >> Html.h3 [ Attr.class "lia-card__subtitle" ]
                 )
             |> Maybe.withDefault (Html.text "")
         ]
@@ -180,7 +189,11 @@ popup action open msg =
 
 controls : Bool -> Inlines -> Definition -> Course -> Html Msg
 controls hasShareAPI title definition course =
-    Html.div [ Attr.class "lia-card__controls" ]
+    Html.div
+        [ Attr.class "lia-card__controls"
+        , A11y_Role.group
+        , A11y_Aria.label "Course actions"
+        ]
         [ popup Popup_Delete course.popup (Delete True course.id)
         , popup Popup_Reset course.popup (Reset True course.id course.active)
         , btnIcon
@@ -238,8 +251,9 @@ controls hasShareAPI title definition course =
             , Attr.href <| "mailto:" ++ definition.email
             , Attr.classList [ ( "hide", String.isEmpty definition.email ) ]
             , Attr.title ("Send an email to: " ++ definition.email)
+            , A11y_Aria.label ("Send an email to: " ++ definition.email)
             ]
-            [ Html.i [ Attr.class "icon icon-mail" ] []
+            [ Html.i [ A11y_Aria.hidden True, Attr.class "icon icon-mail" ] []
             ]
         , case course.active of
             Nothing ->
@@ -248,8 +262,9 @@ controls hasShareAPI title definition course =
                     , Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 border-turquoise"
                     , Attr.title "Open this course"
                     , Attr.style "border" "2.5px solid"
+                    , A11y_Aria.label "Open this course"
                     ]
-                    [ Html.i [ Attr.class "icon icon-login text-turquoise" ] [] ]
+                    [ Html.i [ A11y_Aria.hidden True, Attr.class "icon icon-login text-turquoise" ] [] ]
 
             Just _ ->
                 btnIcon

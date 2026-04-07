@@ -40,6 +40,7 @@ type alias Settings =
     , edit : Maybe String
     , documentMode : Maybe Mode
     , documentLight : Maybe Bool
+    , fromStorage : Bool
     }
 
 
@@ -108,6 +109,7 @@ init hasShareApi isFullscreen mode =
     , edit = Nothing
     , documentMode = Nothing
     , documentLight = Nothing
+    , fromStorage = False
     }
 
 

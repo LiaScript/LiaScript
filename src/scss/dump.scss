@@ -1,5 +1,5 @@
-@use "sass:map";
-@use "00_settings/settings.global";
+@use 'sass:map';
+@use '00_settings/settings.global';
 
 /* --------------------------------------------------
    Dump for all CSS that has no particular function
@@ -8,7 +8,7 @@
 
 .lia-svg {
   $horiz: map.get(settings.$global-spacing, spacing-normal);
-  padding-left: $horiz;
-  padding-right: $horiz;
+  padding-inline-start: $horiz;
+  padding-inline-end: $horiz;
   overflow: auto;
 }

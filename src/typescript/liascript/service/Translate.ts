@@ -6,6 +6,116 @@ import * as RESOURCE from './Resource'
 var googleTranslate = false
 
 /**
+ * List of RTL (right-to-left) language codes
+ */
+const RTL_LANGUAGES = [
+  // Hauptsprachen (modern)
+  'ar', // Arabic
+  'fa', // Persian (Farsi)
+  'he', // Hebrew
+  'iw', // Hebrew (legacy)
+  'yi', // Yiddish
+  'ji', // Yiddish (legacy)
+  'ur', // Urdu
+  'ps', // Pashto
+  'sd', // Sindhi
+  'ug', // Uyghur
+  'dv', // Divehi (Thaana)
+  'yi', // Yiddish
+  'ckb', // Central Kurdish (Sorani)
+  'prs', // Dari
+
+  // Historisch / liturgisch (klar RTL)
+  'arc', // Aramaic
+  'syr', // Syriac
+  'sam', // Samaritan Aramaic
+  'myz', // Mandaic
+  'phn', // Phoenician
+  'uga', // Ugaritic
+  'pal', // Middle Persian (Pahlavi)
+  'xpr', // Parthian
+  'heb', // Biblical Hebrew (ISO-639-2)
+
+  // Eigene RTL-Schriftsysteme
+  'nqo', // N’Ko
+]
+
+/**
+ * Check if a language code represents an RTL language
+ * @param langCode - The language code to check
+ * @returns true if the language is RTL, false otherwise
+ */
+function isRTLLanguage(langCode: string): boolean {
+  if (!langCode) return false
+
+  // Convert to lowercase and get the base language code (before any region suffix)
+  const baseLang = langCode.toLowerCase().split('-')[0]
+  return RTL_LANGUAGES.includes(baseLang)
+}
+
+/**
+ * Update the dir attribute on the HTML element based on the current language
+ * @param langCode - The current language code
+ */
+function updateDocumentDirection(langCode: string): void {
+  try {
+    const isRTL = isRTLLanguage(langCode)
+    const dirValue = isRTL ? 'rtl' : 'ltr'
+
+    // Set the dir attribute on the document element
+    document.documentElement.setAttribute('dir', dirValue)
+
+    // Also update the settings if available
+    if (window.LIA?.settings) {
+      window.LIA.settings.dir = dirValue
+    }
+
+    if (window.LIA?.debug) {
+      log.info(
+        `Updated document direction to: ${dirValue} for language: ${langCode}`
+      )
+    }
+  } catch (err: any) {
+    console.warn('Failed to update document direction:', err.message)
+  }
+}
+
+/**
+ * Check for Google Translate direction classes and update accordingly
+ * Google Translate adds "translated-rtl" or "translated-ltr" classes to the HTML element
+ */
+function checkGoogleTranslateDirection(): void {
+  try {
+    const htmlElement = document.documentElement
+    const classList = htmlElement.classList
+
+    if (classList.contains('translated-rtl')) {
+      htmlElement.setAttribute('dir', 'rtl')
+      if (window.LIA?.settings) {
+        window.LIA.settings.dir = 'rtl'
+      }
+      if (window.LIA?.debug) {
+        log.info(
+          'Updated document direction to: rtl (from Google Translate class)'
+        )
+      }
+    } else if (classList.contains('translated-ltr')) {
+      htmlElement.setAttribute('dir', 'ltr')
+      if (window.LIA?.settings) {
+        window.LIA.settings.dir = 'ltr'
+      }
+      if (window.LIA?.debug) {
+        log.info(
+          'Updated document direction to: ltr (from Google Translate class)'
+        )
+      }
+    }
+  } catch (err: any) {
+    console.warn('Failed to check Google Translate direction:', err.message)
+  }
+}
+
+/**
  * This is required to hide the DOM elements that are injected by the
  * Google-translation API.
  */
@@ -58,7 +168,7 @@ function googleTranslateElementInit() {
     },
     // this defines the `id` of the HTML element that will be replaced by
     // the google-drop-down field for selection languages
-    'google_translate_element',
+    'google_translate_element'
   )
 }
 
@@ -97,7 +207,7 @@ function injectGoogleTranslate() {
     RESOURCE.loadScript(
       'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit',
       false,
-      false,
+      false
     )
 
     // Setup the global init function, this function is called by google as a
@@ -129,6 +239,12 @@ const Service = {
    * @param elmSend - callback function for reaching out LiaScript
    */
   init: function (elmSend: Lia.Send) {
+    // Set initial direction based on current language
+    updateDocumentDirection(document.documentElement.lang)
+
+    // Check for existing Google Translate direction classes
+    checkGoogleTranslateDirection()
+
     var observer = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {
         changeGoogleStyles()
@@ -146,6 +262,12 @@ const Service = {
           langName = langCode
         }
 
+        // Check for Google Translate direction classes
+        checkGoogleTranslateDirection()
+
+        // Update document direction based on the new language
+        updateDocumentDirection(langCode)
+
         elmSend({
           reply: true,
           track: [],
@@ -162,8 +284,8 @@ const Service = {
       attributes: true,
       childList: false,
       characterData: false,
-      // only observe changes of this specific attribute
-      attributeFilter: ['lang'],
+      // observe changes of lang attribute and classList for Google Translate classes
+      attributeFilter: ['lang', 'class'],
     })
   },
 

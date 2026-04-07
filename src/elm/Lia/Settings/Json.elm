@@ -65,8 +65,9 @@ settings :
     -> Bool
     -> Bool
     -> { pitch : String, rate : String }
+    -> Bool
     -> Settings
-settings model toc mode theme light editor font_size sound lang tooltips preferBrowserTTS hideVideoComments audio =
+settings model toc mode theme light editor font_size sound lang tooltips preferBrowserTTS hideVideoComments audio fromStorage =
     let
         tts =
             model.tts
@@ -84,6 +85,7 @@ settings model toc mode theme light editor font_size sound lang tooltips preferB
         , tts = { tts | preferBrowser = preferBrowserTTS }
         , hideVideoComments = hideVideoComments
         , audio = audio
+        , fromStorage = fromStorage
     }
 
 
@@ -110,6 +112,7 @@ toModel model =
                     |> JDP.required "rate" (JD.float |> JD.map String.fromFloat)
                 )
                 { pitch = "1", rate = "1" }
+            |> JDP.optional "fromStorage" JD.bool False
         )
 
 

@@ -1,100 +1,17 @@
 .lia-list {
   &--unordered,
   &--ordered {
-    margin-left: 2rem;
-    padding-left: 2rem;
-    position: relative;
+    padding-inline-start: 2rem;
 
-    ul,
-    ol {
-      margin-left: 0;
-    }
-  }
+    > li::marker {
+      padding-inline-start: 2rem;
+      color: rgb(var(--color-highlight-dark));
 
-  &--unordered {
-    list-style-type: disc;
-
-    > li {
-      &::marker {
-        color: rgb(var(--color-highlight-dark));
-        @at-root html.lia-variant-dark & {
-          color: rgb(
-            from rgb(var(--color-highlight-dark)) calc(r * 2.5) calc(g * 2.5)
-              calc(b * 2.5)
-          );
-        }
-      }
-      > p {
-        display: block;
-      }
-    }
-
-    ul li {
-      &::marker {
-        color: rgb(var(--color-highlight-dark));
-
-        @at-root html.lia-variant-dark & {
-          color: rgb(
-            from rgb(var(--color-highlight-dark)) calc(r * 2.5) calc(g * 2.5)
-              calc(b * 2.5)
-          );
-        }
-      }
-      list-style-type: circle;
-    }
-
-    ul li ul li {
-      &::marker {
-        color: rgb(var(--color-highlight-dark));
-
-        @at-root html.lia-variant-dark & {
-          color: rgb(
-            from rgb(var(--color-highlight-dark)) calc(r * 2.5) calc(g * 2.5)
-              calc(b * 2.5)
-          );
-        }
-      }
-      list-style-type: square;
-    }
-
-    ul li ul li ul li {
-      //padding-left: 1rem;
-      list-style-type: none;
-      position: relative;
-
-      &:before {
-        content: '–'; // Em dash
-        color: rgb(var(--color-highlight-dark));
-        position: absolute;
-        left: -1em;
-        font-weight: bold;
-
-        @at-root html.lia-variant-dark & {
-          color: rgb(
-            from rgb(var(--color-highlight-dark)) calc(r * 2.5) calc(g * 2.5)
-              calc(b * 2.5)
-          );
-        }
-      }
-    }
-  }
-
-  &--ordered {
-    > li {
-      &::marker {
-        color: rgb(var(--color-highlight-dark));
-
-        @at-root html.lia-variant-dark & {
-          color: rgb(
-            from rgb(var(--color-highlight-dark)) calc(r * 2.5) calc(g * 2.5)
-              calc(b * 2.5)
-          );
-        }
-      }
-
-      > * {
-        left: 1rem;
-        position: relative;
+      @at-root html.lia-variant-dark & {
+        color: rgb(
+          from rgb(var(--color-highlight-dark)) calc(r * 2.5) calc(g * 2.5)
+            calc(b * 2.5)
+        );
       }
     }
   }
