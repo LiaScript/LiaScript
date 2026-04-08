@@ -101,7 +101,7 @@
     "prettier": "^3.6.2",
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
-    "sass": "^1.97.1",
+    "sass": "^1.99.0",
     "svgo": "^3.3.2",
     "tsc": "^2.0.4",
     "typescript": "^5.9.3",
