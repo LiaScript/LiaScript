@@ -57,6 +57,7 @@ import Lia.Markdown.Quiz.Block.Types as Input
 import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (inlineCode, spaces)
 import Lia.Parser.Input as Context
+import Regex exposing (Regex)
 
 
 parse_inlines : Context -> String -> Inlines
@@ -307,8 +308,21 @@ input =
 
 url : Parser Context String
 url =
-    regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})[^ \\]\\)\t\n\"]*"
+    or (regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})(\\\\.|[^ \\]\\)\t\n\"])*")
+        (string "<"
+            |> keep (regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})[^>]*")
+            |> ignore (string ">")
+        )
+        |> map unescapeUrl
         |> andThen baseURL
+
+
+unescapeUrl : String -> String
+unescapeUrl str =
+    Regex.replace
+        (Regex.fromString "\\\\([()])" |> Maybe.withDefault Regex.never)
+        (\match -> match.submatches |> List.head |> Maybe.andThen identity |> Maybe.withDefault "")
+        str
 
 
 baseURL : String -> Parser Context String
@@ -336,6 +350,18 @@ ref_info =
         |> ignore (Context.addAbort "]")
         |> keep (manyTill inlines (string "]"))
         |> ignore Context.popAbort
+        |> map
+            -- remove links in the reference text, because they are not supported by markdown and can cause problems with the reference parsing
+            (List.map
+                (\element ->
+                    case element of
+                        Ref (Link [ Chars url_ [] ] _ Nothing) [] ->
+                            Chars url_ []
+
+                        _ ->
+                            element
+                )
+            )
         |> map combine
 
 
