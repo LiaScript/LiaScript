@@ -1,5 +1,8 @@
 import log from '../log'
 import '../types/responsiveVoice'
+import LANGUAGE_FALLBACKS, {
+  LEGACY_LANGUAGE_MAP,
+} from './helper/language-fallbacks'
 
 // @ts-ignore
 import EasySpeech from 'easy-speech/dist/EasySpeech'
@@ -48,7 +51,7 @@ export const Service = {
         useBrowserTTS = true
         sendEnabledTTS('browserTTS')
       })
-      .catch(e => {
+      .catch((e: any) => {
         console.warn(e)
       })
   },
@@ -140,11 +143,11 @@ function innerText(node) {
 
   try {
     if (window.getComputedStyle(node).display !== 'none') {
-      node.childNodes.forEach(n => {
+      node.childNodes.forEach((n: Node) => {
         text += innerText(n)
       })
     }
-  } catch (e) {
+  } catch (e: any) {
     console.warn('TTS: could not read innerText -->', e.message)
   }
 
@@ -560,7 +563,7 @@ function cancel() {
       audioRecordings[i].pause()
       audioRecordings[i].currentTime = 0
     }
-  } catch (e) {
+  } catch (e: any) {
     console.warn('TTS failed to cancel audioRecordings', e.message)
   }
 
@@ -572,7 +575,7 @@ function cancel() {
     for (let i = 0; i < videos.length; i++) {
       videos[i].pause()
     }
-  } catch (e) {
+  } catch (e: any) {
     console.warn('TTS failed to cancel videoRecordings', e.message)
   }
 
@@ -647,7 +650,7 @@ function speak(
 
 function easySpeak(
   text: string,
-  syncVoice: string,
+  syncVoice: SpeechSynthesisVoice,
   options: {
     rate: number
     pitch: number
@@ -713,51 +716,125 @@ function toKey(lang: string, voice: string) {
   return lang + ' - ' + voice
 }
 
+function baseLang(tag: string): string {
+  const base = tag.trim().split(/[-_]/)[0].toLowerCase()
+  return LEGACY_LANGUAGE_MAP[base] || base
+}
+
+function buildLanguageCandidates(lang: string): string[] {
+  const base = baseLang(lang)
+  const seen = new Set<string>()
+  const result: string[] = []
+  for (const candidate of [
+    lang,
+    base,
+    ...(LANGUAGE_FALLBACKS[base] || []),
+    'en',
+  ]) {
+    if (candidate && !seen.has(candidate)) {
+      seen.add(candidate)
+      result.push(candidate)
+    }
+  }
+  return result
+}
+
+function scoreVoice(
+  requestedLang: string,
+  requestedVoiceName: string,
+  voice: SpeechSynthesisVoice
+): number {
+  const reqBase = baseLang(requestedLang)
+  const voiceBase = baseLang(voice.lang)
+  const reqNorm = requestedLang.trim().toLowerCase().replace('_', '-')
+  const voiceNorm = voice.lang.trim().toLowerCase().replace('_', '-')
+
+  let score: number
+  if (reqNorm === voiceNorm) {
+    score = 1000 // exact match
+  } else if (reqBase === voiceBase) {
+    score = 900 // same language, different region
+  } else {
+    const idx = buildLanguageCandidates(requestedLang).indexOf(voiceBase)
+    if (idx < 0) return -Infinity
+    score = 700 - idx * 25
+  }
+
+  const reqGender = detectGender(requestedVoiceName)
+  const voiceGender = detectGender(`${voice.name} ${voice.voiceURI}`)
+  if (
+    reqGender !== Gender.Unknown &&
+    voiceGender !== Gender.Unknown &&
+    reqGender === voiceGender
+  ) {
+    score += 10
+  }
+  const wanted = requestedVoiceName.trim().toLowerCase()
+  const actual = `${voice.name} ${voice.voiceURI}`.trim().toLowerCase()
+  if (wanted && actual.includes(wanted)) score += 8
+  if (voice.default) score += 3
+  if (voice.localService) score += 2
+  return score
+}
+
 function getVoice(lang: string, voice: string) {
-  // fix for browserTTS not working with Deutsch
   if (voice.startsWith('Deutsch')) {
     voice = voice.replace('Deutsch', 'German')
   }
 
   const key = toKey(lang, voice)
-
   if (browserVoices[key]) {
     return browserVoices[key]
   }
 
   const voices = EasySpeech.voices()
-
-  if (!voices) {
+  if (!voices || voices.length === 0) {
     return null
   }
 
-  let gender = detectGender(voice)
+  const normalizedLang = lang
+  let bestFit: SpeechSynthesisVoice | null = null
+  let bestScore = -Infinity
 
-  let temp
-  let bestFit
+  const results: {
+    name: string
+    lang: string
+    normalizedLang: string
+    score: number
+    gender: string
+    default: boolean
+  }[] = []
 
-  for (let i = 0; i < voices.length; i++) {
-    temp = voices[i]
+  for (const v of voices) {
+    const score = scoreVoice(normalizedLang, voice, v)
 
-    if (
-      temp.lang.startsWith(lang) &&
-      gender === detectGender(temp.name + temp.voiceURI)
-    ) {
-      bestFit = temp
-      break
-    }
+    results.push({
+      name: v.name,
+      lang: v.lang,
+      normalizedLang: baseLang(v.lang),
+      score,
+      gender: Gender[detectGender(`${v.name} ${v.voiceURI}`)],
+      default: v.default,
+    })
 
-    if (temp.lang.startsWith(lang) && !bestFit) {
-      bestFit = temp
+    if (score > bestScore) {
+      bestScore = score
+      bestFit = v
     }
   }
+
+  results.sort((a, b) => b.score - a.score)
+  console.group(`TTS voice selection: "${voice}" / "${lang}"`)
+  console.log('Candidates:', buildLanguageCandidates(normalizedLang))
+  console.table(results.slice(0, 10))
+  console.log('Best match:', bestFit?.name ?? 'none', '(score:', bestScore, ')')
+  console.groupEnd()
 
   if (bestFit) {
     browserVoices[key] = bestFit
-    return bestFit
   }
 
-  return null
+  return bestFit
 }
 
 function detectGender(voice: string) {
@@ -821,7 +898,7 @@ function storeBackgroundVideo(player: HTMLElement, video: HTMLVideoElement) {
         player.parentElement.firstChild
       )
     }
-  } catch (e) {
+  } catch (e: any) {
     console.warn('TTS failed to draw video frame ->', e.message)
   }
 }
