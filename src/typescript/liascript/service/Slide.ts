@@ -64,15 +64,15 @@ const Service = {
 
       case 'fullscreen': {
         if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen().catch((err) => {
+          document.documentElement.requestFullscreen().catch(err => {
             console.warn(
-              `Error attempting to enable fullscreen mode: ${err.message}`,
+              `Error attempting to enable fullscreen mode: ${err.message}`
             )
           })
         } else {
-          document.exitFullscreen().catch((err) => {
+          document.exitFullscreen().catch(err => {
             console.error(
-              `Error attempting to exit fullscreen mode: ${err.message}`,
+              `Error attempting to exit fullscreen mode: ${err.message}`
             )
           })
         }
@@ -138,10 +138,24 @@ function isInViewport(element: HTMLElement) {
  */
 export function scrollIntoView(id: string, delay: number) {
   setTimeout(function () {
-    const elem = document.getElementById(id)
+    const elem =
+      [...document.querySelectorAll<HTMLElement>('#' + CSS.escape(id))].find(
+        el => el.closest('main:not([hidden=""])')
+      ) ?? null
 
     if (elem) {
-      elem.scrollIntoView({ behavior: 'smooth' })
+      // Double rAF ensures the browser has completed layout after dynamic
+      // content is inserted before attempting to scroll. A single rAF fires
+      // before the browser has recalculated positions; the second one fires
+      // after the next paint cycle when dimensions are finalised.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // `behavior: 'smooth'` is ignored on Safari < 15.4 and IE, falling
+          // back to an instant scroll. Add `scroll-behavior: smooth` on the
+          // <main> container via CSS to cover those browsers.
+          elem.scrollIntoView({ behavior: 'smooth' })
+        })
+      })
     }
   }, delay)
 }
