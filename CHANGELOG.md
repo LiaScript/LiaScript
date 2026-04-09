@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 09/04/2026
+
+- feat: TTS now uses a scored voice-selection algorithm with language fallback chains covering 200+ languages. If a voice for the requested language is not available, linguistically related languages are tried in order.
+- fix: TTS German voice detection
+- fix: `scroll into view` no longer fails on persistent slides when inactive elements share the same id ([#279](https://github.com/LiaScript/LiaScript/issues/279))
+- fix: ASCII-Art arrows now render correctly on first load without requiring a page reload ([#278](https://github.com/LiaScript/LiaScript/issues/278))
+- fix: Escaped and angle-bracket-wrapped URLs now parse correctly, e.g. `<https://doi.org/...>` and percent/backslash-encoded parentheses in links ([#281](https://github.com/LiaScript/LiaScript/issues/281))
+- fix: Dark mode inactive buttons are now consistently gray, matching light mode
+- fix: Removed false background from transparent icon buttons
+- hotfix: Added legacy RTL language codes (e.g. `iw` for Hebrew)
+- chore: npm update (elm-review, eslint, prettier, sass, katex, ace-builds, caniuse-lite)
+
 ## [1.0.4] - 25/03/2026
 
 - improve: RTL support for LiaScript that changes the direction of the text and the layout of the course to better support languages that are written from right to left, such as Arabic, Hebrew, Persian, etc. This includes changes to the CSS and the HTML structure of the course to ensure that the content is displayed correctly and that the navigation works as expected.
