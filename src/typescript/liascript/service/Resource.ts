@@ -77,6 +77,13 @@ export function loadScript(
     return
   }
 
+  // raw.githubusercontent.com always fails via normal script tag — load as blob directly
+  if (url.startsWith('https://raw.githubusercontent.com/')) {
+    if (withSemaphore) window.LIA.eventSemaphore++
+    loadScriptAsBlob(url, withSemaphore, asModule, callback)
+    return
+  }
+
   try {
     let tag = document.createElement('script')
 
