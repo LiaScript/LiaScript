@@ -663,12 +663,13 @@ scriptBody =
              , regex "\\s+"
              , string "@'"
              , string "@"
-             , regexWith { caseInsensitive = True, multiline = False } "'([^'\\\\]*|\\\\'|\\\\)*'"
-             , regexWith { caseInsensitive = True, multiline = False } "\"([^\"\\\\]*|\\\\\"|\\\\)*\""
+             , regex "'([^'\\\\\n]*|\\\\'|\\\\)*('|\n)"
+             , regex "\"([^\"\\\\\n]*|\\\\\"|\\\\)*(\"|\n)"
              , regex "`([^`\\\\]*|\n|\\\\`|\\\\)*`"
              , regex "<(?!/)"
              , regex "//[^<\n]*"
              , string "/"
+             , string "`"
              ]
                 |> choice
             )
