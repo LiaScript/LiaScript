@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 13/04/2026
+
+fix: resource loading for javascript from GitHub on Edge and Chrome on Windows failed, due to raise condition.
+improve: now faster loading of JavaScript resources from GitHub.
+improve: script-tag body parser is now more robust and can handle more complex scripts, even with errors and false strings as well as multiline-comments.
+
 ## [1.0.5] - 09/04/2026
 
 - feat: TTS now uses a scored voice-selection algorithm with language fallback chains covering 200+ languages. If a voice for the requested language is not available, linguistically related languages are tried in order.

@@ -73,7 +73,14 @@ export function loadScript(
 ) {
   // try to load all local scripts as blobs
   if (!url.startsWith('blob:') && origin(url) === window.location.origin) {
-    loadScriptAsBlob(url, asModule, withSemaphore)
+    loadScriptAsBlob(url, withSemaphore, asModule)
+    return
+  }
+
+  // raw.githubusercontent.com always fails via normal script tag — load as blob directly
+  if (url.startsWith('https://raw.githubusercontent.com/')) {
+    if (withSemaphore) window.LIA.eventSemaphore++
+    loadScriptAsBlob(url, withSemaphore, asModule, callback)
     return
   }
 
@@ -101,14 +108,16 @@ export function loadScript(
         if (callback) callback(true)
       }
       tag.onerror = function (_e: any) {
-        window.LIA.eventSemaphore--
         console.warn('could not load =>', url)
 
-        // try to load all local scripts as blobs
         if (!url.startsWith('blob:')) {
+          // Semaphore stays elevated — loadScriptAsBlob will decrement when the blob
+          // script finishes loading (or fails), keeping LIA blocked until then.
           loadScriptAsBlob(url, withSemaphore, asModule, callback)
-        } else if (callback) {
-          callback(false)
+        } else {
+          // Blob script itself failed — now release the semaphore slot.
+          window.LIA.eventSemaphore--
+          if (callback) callback(false)
         }
       }
     }
@@ -126,20 +135,49 @@ function loadScriptAsBlob(
   asModule: boolean,
   callback?: (ok: boolean) => void
 ) {
-  if (!url.startsWith('blob:')) {
-    loadAsBlob(
-      'script',
-      url,
-      (blobUrl: string) => {
-        loadScript(blobUrl, withSemaphore, asModule, callback)
-      },
-      withSemaphore
-        ? (_url, _error) => {
+  if (url.startsWith('blob:')) return
+
+  loadAsBlob(
+    'script',
+    url,
+    (blobUrl: string) => {
+      // Create the blob script tag directly — do NOT go back through loadScript(),
+      // which would unconditionally re-increment the semaphore.
+      try {
+        const blobTag = document.createElement('script')
+        blobTag.src = blobUrl
+        blobTag.async = false
+        blobTag.defer = true
+        blobTag.type = asModule ? 'module' : 'text/javascript'
+
+        if (withSemaphore) {
+          blobTag.onload = () => {
             window.LIA.eventSemaphore--
+            log.info('successfully loaded blob =>', url)
+            if (callback) callback(true)
           }
-        : undefined
-    )
-  }
+          blobTag.onerror = () => {
+            window.LIA.eventSemaphore--
+            console.warn('could not execute blob =>', url)
+            if (callback) callback(false)
+          }
+        } else if (callback) {
+          blobTag.onload = () => callback(true)
+          blobTag.onerror = () => callback(false)
+        }
+
+        document.head.appendChild(blobTag)
+      } catch (e) {
+        log.warn('failed inserting blob script =>', e)
+        if (withSemaphore) window.LIA.eventSemaphore--
+        if (callback) callback(false)
+      }
+    },
+    (_url, _error) => {
+      if (withSemaphore) window.LIA.eventSemaphore--
+      if (callback) callback(false)
+    }
+  )
 }
 
 function loadAsBlob(
@@ -166,7 +204,11 @@ function loadAsBlob(
   }
 
   fetch(url)
-    .then((response) => {
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} loading ${url}`)
+      }
+
       const header = response.headers.get('Content-Disposition')
 
       let match = header?.match('filename="([^"]+)"')
@@ -191,7 +233,7 @@ function loadAsBlob(
       const blobUrl = window.URL.createObjectURL(blob)
       onOk(blobUrl)
     })
-    .catch((e) => {
+    .catch(e => {
       log.warn('could not load', url, 'as blob =>', e.message)
       if (onError) {
         onError(url, e)
@@ -216,7 +258,7 @@ function loadLink(url: string) {
     tag.rel = 'stylesheet'
     tag.type = 'text/css'
 
-    tag.onerror = (_event) => {
+    tag.onerror = _event => {
       console.warn('could not load =>', url)
       loadAsBlob('link', url, (blobUrl: string) => {
         loadLink(blobUrl)
