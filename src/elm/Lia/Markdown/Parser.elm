@@ -496,21 +496,12 @@ quote =
         >> ignore (Indent.push "> ?")
         >> ignore Indent.skip
         >> andMap
-            (maybe alert
-                |> andThen
-                    (\mAlert ->
-                        case mAlert of
-                            Nothing ->
-                                succeed Nothing
-
-                            Just _ ->
-                                -- alert consumed its line + newline, so we are now at the
-                                -- start of the next line; reset indentation_skip so that
-                                -- the first Indent.check in `blocks` actually consumes
-                                -- the "> ?" prefix instead of being a no-op
-                                modifyState (\s -> { s | indentation_skip = False })
-                                    |> keep (succeed mAlert)
-                    )
+            (maybe
+                (regex "[ \t]*\\[!"
+                    |> keep alert
+                    |> ignore (regex "[ \t]*")
+                    |> ignore (many1 newlineWithIndentation)
+                )
             )
         >> andMap (sepBy (many newlineWithIndentation) blocks)
         >> ignore Indent.pop
@@ -519,42 +510,27 @@ quote =
 alert : Parser Context ( Markdown.Alert, Inlines )
 alert =
     choice
-        [ regexWith { caseInsensitive = True, multiline = False } "[ \t]*\\[!NOTE\\][ \t]*"
-            |> keep (succeed Markdown.NOTE)
-        , regexWith { caseInsensitive = True, multiline = False } "[ \t]*\\[!TIP\\][ \t]*"
-            |> keep (succeed Markdown.TIP)
-        , regexWith { caseInsensitive = True, multiline = False } "[ \t]*\\[!IMPORTANT\\][ \t]*"
-            |> keep (succeed Markdown.IMPORTANT)
-        , regexWith { caseInsensitive = True, multiline = False } "[ \t]*\\[!WARNING\\][ \t]*"
-            |> keep (succeed Markdown.WARNING)
-        , regexWith { caseInsensitive = True, multiline = False } "[ \t]*\\[!CAUTION\\][ \t]*"
-            |> keep (succeed Markdown.CAUTION)
+        [ "NOTE\\][ \t]*"
+            |> regexWith { caseInsensitive = True, multiline = False }
+            |> keep (succeed (Tuple.pair Markdown.NOTE))
+            |> andMap (optional [ Chars "Note" [] ] line)
+        , "TIP\\][ \t]*"
+            |> regexWith { caseInsensitive = True, multiline = False }
+            |> keep (succeed (Tuple.pair Markdown.TIP))
+            |> andMap (optional [ Chars "Tip" [] ] line)
+        , "IMPORTANT\\][ \t]*"
+            |> regexWith { caseInsensitive = True, multiline = False }
+            |> keep (succeed (Tuple.pair Markdown.IMPORTANT))
+            |> andMap (optional [ Chars "Important" [] ] line)
+        , "WARNING\\][ \t]*"
+            |> regexWith { caseInsensitive = True, multiline = False }
+            |> keep (succeed (Tuple.pair Markdown.WARNING))
+            |> andMap (optional [ Chars "Warning" [] ] line)
+        , "CAUTION\\][ \t]*"
+            |> regexWith { caseInsensitive = True, multiline = False }
+            |> keep (succeed (Tuple.pair Markdown.CAUTION))
+            |> andMap (optional [ Chars "Caution" [] ] line)
         ]
-        |> map Tuple.pair
-        |> andMap (maybe line)
-        |> andThen
-            (\head ->
-                succeed <|
-                    case head of
-                        ( Markdown.NOTE, Nothing ) ->
-                            ( Markdown.NOTE, [ Chars "Note" [] ] )
-
-                        ( Markdown.TIP, Nothing ) ->
-                            ( Markdown.TIP, [ Chars "Tip" [] ] )
-
-                        ( Markdown.IMPORTANT, Nothing ) ->
-                            ( Markdown.IMPORTANT, [ Chars "Important" [] ] )
-
-                        ( Markdown.WARNING, Nothing ) ->
-                            ( Markdown.WARNING, [ Chars "Warning" [] ] )
-
-                        ( Markdown.CAUTION, Nothing ) ->
-                            ( Markdown.CAUTION, [ Chars "Caution" [] ] )
-
-                        ( a, Just b ) ->
-                            ( a, b )
-            )
-        |> ignore (regex "[ \t]*\n")
 
 
 checkForCitation : Parameters -> Inlines -> Markdown.Block
