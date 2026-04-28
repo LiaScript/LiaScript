@@ -35,11 +35,11 @@ import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Task.View as Task
-import Lia.Markdown.Types exposing (Block(..), Blocks)
+import Lia.Markdown.Types exposing (Alert(..), Block(..), Blocks)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (modal, shuffle)
+import Lia.Utils exposing (icon, modal, shuffle)
 import Lia.Voice as Voice
 import MD5
 import SvgBob
@@ -457,8 +457,8 @@ view_block config block =
         Table attr table ->
             Table.view config attr table
 
-        Quote attr quote ->
-            viewQuote config attr quote
+        Quote attr alert quote ->
+            viewQuote config attr alert quote
 
         HTML attr node ->
             viewHTMLBlock config attr node
@@ -590,8 +590,78 @@ scriptView viewer content =
                 ]
 
 
-viewQuote : Config Msg -> Parameters -> Blocks -> Html Msg
-viewQuote config attr elements =
+viewQuote : Config Msg -> Parameters -> Maybe ( Alert, Inlines ) -> Blocks -> Html Msg
+viewQuote config attr alert elements =
+    let
+        ( alert_style, alert_title ) =
+            case alert of
+                Just ( a, t ) ->
+                    ( Just <|
+                        Attr.style "border-left" <|
+                            case a of
+                                NOTE ->
+                                    "1rem solid #0969da"
+
+                                TIP ->
+                                    "1rem solid #1a7f37"
+
+                                IMPORTANT ->
+                                    "1rem solid #8250df"
+
+                                WARNING ->
+                                    "1rem solid #9a6700"
+
+                                CAUTION ->
+                                    "1rem solid #d1242d"
+                    , Just
+                        (t
+                            |> config.view
+                            |> (::)
+                                (icon
+                                    (case a of
+                                        NOTE ->
+                                            "icon-alert-note"
+
+                                        TIP ->
+                                            "icon-alert-tip"
+
+                                        IMPORTANT ->
+                                            "icon-alert-important"
+
+                                        WARNING ->
+                                            "icon-alert-warning"
+
+                                        CAUTION ->
+                                            "icon-alert-caution"
+                                    )
+                                    [ Attr.style "margin-right" "0.75rem" ]
+                                )
+                            |> Html.p
+                                [ Attr.style "display" "flex"
+                                , Attr.style "align-items" "center"
+                                , Attr.style "color" <|
+                                    case a of
+                                        NOTE ->
+                                            "#0969da"
+
+                                        TIP ->
+                                            "#1a7f37"
+
+                                        IMPORTANT ->
+                                            "#8250df"
+
+                                        WARNING ->
+                                            "#9a6700"
+
+                                        CAUTION ->
+                                            "#d1242d"
+                                ]
+                        )
+                    )
+
+                _ ->
+                    ( Nothing, Nothing )
+    in
     case elements of
         [ Paragraph pAttr pElement, Citation cAttr citation ] ->
             [ [ Paragraph pAttr pElement |> view_block config ]
@@ -601,6 +671,7 @@ viewQuote config attr elements =
                 |> (::) (Html.text "―")
                 |> Html.cite (annotation "lia-quote__cite" cAttr)
             ]
+                |> CList.addWhen alert_title
                 |> Html.blockquote
                     (Attr.cite
                         (citation
@@ -608,12 +679,14 @@ viewQuote config attr elements =
                             |> String.trim
                         )
                         :: annotation "lia-quote" attr
+                        |> CList.addWhen alert_style
                     )
 
         _ ->
             elements
                 |> List.map (view_block config)
-                |> Html.blockquote (annotation "lia-quote" attr)
+                |> CList.addWhen alert_title
+                |> Html.blockquote (annotation "lia-quote" attr |> CList.addWhen alert_style)
 
 
 view_ascii : Config Msg -> Parameters -> ( Maybe Inlines, SvgBob.Configuration Blocks ) -> Html Msg

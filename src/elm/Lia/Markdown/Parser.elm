@@ -33,6 +33,7 @@ import Combine
         , withState
         )
 import Combine.Char
+import I18n.Translations exposing (Lang(..))
 import Lia.Markdown.Chart.Parser as Chart
 import Lia.Markdown.Code.Parser as Code
 import Lia.Markdown.Effect.Model exposing (set_annotation)
@@ -214,7 +215,7 @@ toQuiz ( md, isQuiz ) =
             Markdown.Citation attr _ ->
                 toQuiz_ Nothing attr md
 
-            Markdown.Quote attr _ ->
+            Markdown.Quote attr _ _ ->
                 toQuiz_ Nothing attr md
 
             Markdown.Table attr _ ->
@@ -494,8 +495,66 @@ quote =
         >> ignore (regex "> ?")
         >> ignore (Indent.push "> ?")
         >> ignore Indent.skip
+        >> andMap
+            (maybe alert
+                |> andThen
+                    (\mAlert ->
+                        case mAlert of
+                            Nothing ->
+                                succeed Nothing
+
+                            Just _ ->
+                                -- alert consumed its line + newline, so we are now at the
+                                -- start of the next line; reset indentation_skip so that
+                                -- the first Indent.check in `blocks` actually consumes
+                                -- the "> ?" prefix instead of being a no-op
+                                modifyState (\s -> { s | indentation_skip = False })
+                                    |> keep (succeed mAlert)
+                    )
+            )
         >> andMap (sepBy (many newlineWithIndentation) blocks)
         >> ignore Indent.pop
+
+
+alert : Parser Context ( Markdown.Alert, Inlines )
+alert =
+    choice
+        [ regexWith { caseInsensitive = True, multiline = False } "[ \t]*\\[!NOTE\\][ \t]*"
+            |> keep (succeed Markdown.NOTE)
+        , regexWith { caseInsensitive = True, multiline = False } "[ \t]*\\[!TIP\\][ \t]*"
+            |> keep (succeed Markdown.TIP)
+        , regexWith { caseInsensitive = True, multiline = False } "[ \t]*\\[!IMPORTANT\\][ \t]*"
+            |> keep (succeed Markdown.IMPORTANT)
+        , regexWith { caseInsensitive = True, multiline = False } "[ \t]*\\[!WARNING\\][ \t]*"
+            |> keep (succeed Markdown.WARNING)
+        , regexWith { caseInsensitive = True, multiline = False } "[ \t]*\\[!CAUTION\\][ \t]*"
+            |> keep (succeed Markdown.CAUTION)
+        ]
+        |> map Tuple.pair
+        |> andMap (maybe line)
+        |> andThen
+            (\head ->
+                succeed <|
+                    case head of
+                        ( Markdown.NOTE, Nothing ) ->
+                            ( Markdown.NOTE, [ Chars "Note" [] ] )
+
+                        ( Markdown.TIP, Nothing ) ->
+                            ( Markdown.TIP, [ Chars "Tip" [] ] )
+
+                        ( Markdown.IMPORTANT, Nothing ) ->
+                            ( Markdown.IMPORTANT, [ Chars "Important" [] ] )
+
+                        ( Markdown.WARNING, Nothing ) ->
+                            ( Markdown.WARNING, [ Chars "Warning" [] ] )
+
+                        ( Markdown.CAUTION, Nothing ) ->
+                            ( Markdown.CAUTION, [ Chars "Caution" [] ] )
+
+                        ( a, Just b ) ->
+                            ( a, b )
+            )
+        |> ignore (regex "[ \t]*\n")
 
 
 checkForCitation : Parameters -> Inlines -> Markdown.Block
