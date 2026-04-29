@@ -33,6 +33,7 @@ import Combine
         , withState
         )
 import Combine.Char
+import I18n.Translations exposing (Lang(..))
 import Lia.Markdown.Chart.Parser as Chart
 import Lia.Markdown.Code.Parser as Code
 import Lia.Markdown.Effect.Model exposing (set_annotation)
@@ -214,7 +215,7 @@ toQuiz ( md, isQuiz ) =
             Markdown.Citation attr _ ->
                 toQuiz_ Nothing attr md
 
-            Markdown.Quote attr _ ->
+            Markdown.Quote attr _ _ ->
                 toQuiz_ Nothing attr md
 
             Markdown.Table attr _ ->
@@ -494,8 +495,42 @@ quote =
         >> ignore (regex "> ?")
         >> ignore (Indent.push "> ?")
         >> ignore Indent.skip
+        >> andMap
+            (maybe
+                (regex "[ \t]*\\[!"
+                    |> keep alert
+                    |> ignore (regex "[ \t]*")
+                    |> ignore (many1 newlineWithIndentation)
+                )
+            )
         >> andMap (sepBy (many newlineWithIndentation) blocks)
         >> ignore Indent.pop
+
+
+alert : Parser Context ( Markdown.Alert, Maybe Inlines )
+alert =
+    choice
+        [ "NOTE\\][ \t]*"
+            |> regexWith { caseInsensitive = True, multiline = False }
+            |> keep (succeed (Tuple.pair Markdown.NOTE))
+            |> andMap (maybe line)
+        , "TIP\\][ \t]*"
+            |> regexWith { caseInsensitive = True, multiline = False }
+            |> keep (succeed (Tuple.pair Markdown.TIP))
+            |> andMap (maybe line)
+        , "IMPORTANT\\][ \t]*"
+            |> regexWith { caseInsensitive = True, multiline = False }
+            |> keep (succeed (Tuple.pair Markdown.IMPORTANT))
+            |> andMap (maybe line)
+        , "WARNING\\][ \t]*"
+            |> regexWith { caseInsensitive = True, multiline = False }
+            |> keep (succeed (Tuple.pair Markdown.WARNING))
+            |> andMap (maybe line)
+        , "CAUTION\\][ \t]*"
+            |> regexWith { caseInsensitive = True, multiline = False }
+            |> keep (succeed (Tuple.pair Markdown.CAUTION))
+            |> andMap (maybe line)
+        ]
 
 
 checkForCitation : Parameters -> Inlines -> Markdown.Block
