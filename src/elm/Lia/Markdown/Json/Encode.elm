@@ -29,7 +29,7 @@ encBlock b =
                 [ ( "HLine", JE.null ) ]
                     |> HTML.maybeEncParameters a
 
-            Quote a blocks ->
+            Quote a alert blocks ->
                 [ ( "Quote", encode blocks ) ]
                     |> HTML.maybeEncParameters a
 

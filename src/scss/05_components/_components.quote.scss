@@ -35,7 +35,105 @@
     margin-block-start: 2rem;
     text-align: center;
   }
+
+  &__alert {
+    &-tip {
+      $c: #126229;
+
+      border-left: 1rem solid $c;
+      > :nth-child(1) {
+        display: flex;
+        align-items: center;
+        color: $c;
+        font-size: 1.1em;
+      }
+      @at-root html.lia-variant-dark & {
+        border-left-color: color.scale($c, $lightness: 50%);
+        > :nth-child(1) {
+          color: color.scale($c, $lightness: 50%);
+        }
+      }
+    }
+
+    &-note {
+      $c: #0b5ebe;
+
+      border-left: 1rem solid $c;
+      > :nth-child(1) {
+        display: flex;
+        align-items: center;
+        color: $c;
+        font-size: 1.1em;
+      }
+      @at-root html.lia-variant-dark & {
+        border-left-color: color.scale($c, $lightness: 60%);
+        > :nth-child(1) {
+          color: color.scale($c, $lightness: 60%);
+        }
+      }
+    }
+
+    &-important {
+      $c: #6e44ba;
+
+      border-left: 1rem solid $c;
+      > :nth-child(1) {
+        display: flex;
+        align-items: center;
+        color: $c;
+        font-size: 1.1em;
+      }
+      @at-root html.lia-variant-dark & {
+        border-left-color: color.scale($c, $lightness: 60%);
+        > :nth-child(1) {
+          color: color.scale($c, $lightness: 60%);
+        }
+      }
+    }
+
+    &-warning {
+      $c: #805f1d;
+
+      border-left: 1rem solid $c;
+      > :nth-child(1) {
+        display: flex;
+        align-items: center;
+        color: $c;
+        font-size: 1.1em;
+      }
+      @at-root html.lia-variant-dark & {
+        border-left-color: color.scale($c, $lightness: 60%);
+        > :nth-child(1) {
+          color: color.scale($c, $lightness: 60%);
+        }
+      }
+    }
+
+    &-caution {
+      $c: #ba131e;
+
+      border-left: 1rem solid $c;
+      > :nth-child(1) {
+        display: flex;
+        align-items: center;
+        color: $c;
+        font-size: 1.1em;
+      }
+      @at-root html.lia-variant-dark & {
+        border-left-color: color.scale($c, $lightness: 60%);
+        > :nth-child(1) {
+          color: color.scale($c, $lightness: 60%);
+        }
+      }
+    }
+
+    &-icon {
+      margin-right: 0.8rem;
+    }
+  }
 }
+
+
 
 @mixin style-quote($theme) {
   .lia-quote {
