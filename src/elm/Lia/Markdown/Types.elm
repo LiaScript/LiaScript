@@ -1,5 +1,6 @@
 module Lia.Markdown.Types exposing
-    ( Block(..)
+    ( Alert(..)
+    , Block(..)
     , Blocks
     )
 
@@ -19,7 +20,7 @@ import SvgBob
 
 type Block
     = HLine Parameters
-    | Quote Parameters Blocks
+    | Quote Parameters (Maybe ( Alert, Maybe Inlines )) Blocks
     | Paragraph Parameters Inlines
     | BulletList Parameters (List Blocks)
     | OrderedList Parameters (List ( String, Blocks ))
@@ -38,6 +39,14 @@ type Block
     | Citation Parameters Inlines
     | Problem Inlines
     | HtmlComment
+
+
+type Alert
+    = NOTE
+    | TIP
+    | IMPORTANT
+    | WARNING
+    | CAUTION
 
 
 type alias Blocks =
