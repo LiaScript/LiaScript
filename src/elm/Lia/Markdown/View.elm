@@ -593,26 +593,26 @@ scriptView viewer content =
 viewQuote : Config Msg -> Parameters -> Maybe ( Alert, Inlines ) -> Blocks -> Html Msg
 viewQuote config attr alert elements =
     let
-        ( alert_style, alert_title ) =
+        ( alert_class, alert_title ) =
             case alert of
                 Just ( a, t ) ->
-                    ( Just <|
-                        Attr.style "border-left" <|
-                            case a of
+                    ( "lia-quote"
+                        ++ (case a of
                                 NOTE ->
-                                    "1rem solid #0969da"
+                                    " lia-quote__alert-note"
 
                                 TIP ->
-                                    "1rem solid #1a7f37"
+                                    " lia-quote__alert-tip"
 
                                 IMPORTANT ->
-                                    "1rem solid #8250df"
+                                    " lia-quote__alert-important"
 
                                 WARNING ->
-                                    "1rem solid #9a6700"
+                                    " lia-quote__alert-warning"
 
                                 CAUTION ->
-                                    "1rem solid #d1242d"
+                                    " lia-quote__alert-caution"
+                           )
                     , Just
                         (t
                             |> config.view
@@ -639,28 +639,12 @@ viewQuote config attr alert elements =
                             |> Html.p
                                 [ Attr.style "display" "flex"
                                 , Attr.style "align-items" "center"
-                                , Attr.style "color" <|
-                                    case a of
-                                        NOTE ->
-                                            "#0969da"
-
-                                        TIP ->
-                                            "#1a7f37"
-
-                                        IMPORTANT ->
-                                            "#8250df"
-
-                                        WARNING ->
-                                            "#9a6700"
-
-                                        CAUTION ->
-                                            "#d1242d"
                                 ]
                         )
                     )
 
                 _ ->
-                    ( Nothing, Nothing )
+                    ( "lia-quote", Nothing )
     in
     case elements of
         [ Paragraph pAttr pElement, Citation cAttr citation ] ->
@@ -679,14 +663,13 @@ viewQuote config attr alert elements =
                             |> String.trim
                         )
                         :: annotation "lia-quote" attr
-                        |> CList.addWhen alert_style
                     )
 
         _ ->
             elements
                 |> List.map (view_block config)
                 |> CList.addWhen alert_title
-                |> Html.blockquote (annotation "lia-quote" attr |> CList.addWhen alert_style)
+                |> Html.blockquote (annotation alert_class attr)
 
 
 view_ascii : Config Msg -> Parameters -> ( Maybe Inlines, SvgBob.Configuration Blocks ) -> Html Msg

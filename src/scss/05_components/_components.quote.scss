@@ -35,7 +35,62 @@
     margin-block-start: 2rem;
     text-align: center;
   }
+
+  &__alert {
+    margin-block-start: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+
+    &-tip {
+      border-left: 1rem solid #126229;
+      // first paragraph should be red
+      > :nth-child(1) {
+        color: #126229;
+      }
+    }
+
+    &-note {
+      border-left: 1rem solid #0b5ebe;
+      // first paragraph should be red
+      > :nth-child(1) {
+        color: #0b5ebe;
+      }
+    }
+
+    &-important {
+      border-left: 1rem solid #6e44ba;
+      // first paragraph should be red
+      > :nth-child(1) {
+        color: #6e44ba;
+      }
+    }
+
+    &-warning {
+      border-left: 1rem solid #805f1d;
+      // first paragraph should be red
+      > :nth-child(1) {
+        color: #805f1d;
+      }
+    }
+
+    &-caution {
+      border-left: 1rem solid #ba131e;
+      // first paragraph should be red
+      > :nth-child(1) {
+        color: #ba131e;
+      }
+    }
+
+    &-icon {
+      width: 1.6rem;
+      height: 1.6rem;
+      flex-shrink: 0;
+    }
+  }
 }
+
+
 
 @mixin style-quote($theme) {
   .lia-quote {
