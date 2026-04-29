@@ -46,6 +46,8 @@
       border-left: 1rem solid #126229;
       // first paragraph should be red
       > :nth-child(1) {
+        display: flex;
+        align-items: center;
         color: #126229;
       }
     }
@@ -54,6 +56,8 @@
       border-left: 1rem solid #0b5ebe;
       // first paragraph should be red
       > :nth-child(1) {
+        display: flex;
+        align-items: center;
         color: #0b5ebe;
       }
     }
@@ -62,6 +66,8 @@
       border-left: 1rem solid #6e44ba;
       // first paragraph should be red
       > :nth-child(1) {
+        display: flex;
+        align-items: center;
         color: #6e44ba;
       }
     }
@@ -70,7 +76,10 @@
       border-left: 1rem solid #805f1d;
       // first paragraph should be red
       > :nth-child(1) {
+        display: flex;
+        align-items: center;
         color: #805f1d;
+        
       }
     }
 
@@ -78,14 +87,14 @@
       border-left: 1rem solid #ba131e;
       // first paragraph should be red
       > :nth-child(1) {
+        display: flex;
+        align-items: center;
         color: #ba131e;
       }
     }
 
     &-icon {
-      width: 1.6rem;
-      height: 1.6rem;
-      flex-shrink: 0;
+      margin-right: 0.8rem;
     }
   }
 }

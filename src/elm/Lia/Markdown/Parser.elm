@@ -507,29 +507,29 @@ quote =
         >> ignore Indent.pop
 
 
-alert : Parser Context ( Markdown.Alert, Inlines )
+alert : Parser Context ( Markdown.Alert, Maybe Inlines )
 alert =
     choice
         [ "NOTE\\][ \t]*"
             |> regexWith { caseInsensitive = True, multiline = False }
             |> keep (succeed (Tuple.pair Markdown.NOTE))
-            |> andMap (optional [ Chars "Note" [] ] line)
+            |> andMap (maybe line)
         , "TIP\\][ \t]*"
             |> regexWith { caseInsensitive = True, multiline = False }
             |> keep (succeed (Tuple.pair Markdown.TIP))
-            |> andMap (optional [ Chars "Tip" [] ] line)
+            |> andMap (maybe line)
         , "IMPORTANT\\][ \t]*"
             |> regexWith { caseInsensitive = True, multiline = False }
             |> keep (succeed (Tuple.pair Markdown.IMPORTANT))
-            |> andMap (optional [ Chars "Important" [] ] line)
+            |> andMap (maybe line)
         , "WARNING\\][ \t]*"
             |> regexWith { caseInsensitive = True, multiline = False }
             |> keep (succeed (Tuple.pair Markdown.WARNING))
-            |> andMap (optional [ Chars "Warning" [] ] line)
+            |> andMap (maybe line)
         , "CAUTION\\][ \t]*"
             |> regexWith { caseInsensitive = True, multiline = False }
             |> keep (succeed (Tuple.pair Markdown.CAUTION))
-            |> andMap (optional [ Chars "Caution" [] ] line)
+            |> andMap (maybe line)
         ]
 
 

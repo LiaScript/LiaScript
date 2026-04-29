@@ -20,7 +20,7 @@ import SvgBob
 
 type Block
     = HLine Parameters
-    | Quote Parameters (Maybe ( Alert, Inlines )) Blocks
+    | Quote Parameters (Maybe ( Alert, Maybe Inlines )) Blocks
     | Paragraph Parameters Inlines
     | BulletList Parameters (List Blocks)
     | OrderedList Parameters (List ( String, Blocks ))

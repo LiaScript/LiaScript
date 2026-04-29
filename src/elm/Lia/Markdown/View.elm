@@ -590,61 +590,61 @@ scriptView viewer content =
                 ]
 
 
-viewQuote : Config Msg -> Parameters -> Maybe ( Alert, Inlines ) -> Blocks -> Html Msg
+viewQuote : Config Msg -> Parameters -> Maybe ( Alert, Maybe Inlines ) -> Blocks -> Html Msg
 viewQuote config attr alert elements =
     let
-        ( alert_class, alert_title ) =
+        alert_class =
+            "lia-quote"
+                ++ (case alert of
+                        Nothing ->
+                            ""
+
+                        Just ( NOTE, _ ) ->
+                            " lia-quote__alert-note"
+
+                        Just ( TIP, _ ) ->
+                            " lia-quote__alert-tip"
+
+                        Just ( IMPORTANT, _ ) ->
+                            " lia-quote__alert-important"
+
+                        Just ( WARNING, _ ) ->
+                            " lia-quote__alert-warning"
+
+                        Just ( CAUTION, _ ) ->
+                            " lia-quote__alert-caution"
+                   )
+
+        toTitle name =
+            Just
+                [ icon ("icon-alert-" ++ String.toLower name) [ Attr.class "lia-quote__alert-icon" ]
+                , Html.text name
+                ]
+
+        alert_title =
             case alert of
-                Just ( a, t ) ->
-                    ( "lia-quote"
-                        ++ (case a of
-                                NOTE ->
-                                    " lia-quote__alert-note"
+                Just ( NOTE, Nothing ) ->
+                    toTitle "Note"
 
-                                TIP ->
-                                    " lia-quote__alert-tip"
+                Just ( TIP, Nothing ) ->
+                    toTitle "Tip"
 
-                                IMPORTANT ->
-                                    " lia-quote__alert-important"
+                Just ( IMPORTANT, Nothing ) ->
+                    toTitle "Important"
 
-                                WARNING ->
-                                    " lia-quote__alert-warning"
+                Just ( WARNING, Nothing ) ->
+                    toTitle "Warning"
 
-                                CAUTION ->
-                                    " lia-quote__alert-caution"
-                           )
-                    , Just
-                        (t
-                            |> config.view
-                            |> (::)
-                                (icon
-                                    (case a of
-                                        NOTE ->
-                                            "icon-alert-note"
+                Just ( CAUTION, Nothing ) ->
+                    toTitle "Caution"
 
-                                        TIP ->
-                                            "icon-alert-tip"
-
-                                        IMPORTANT ->
-                                            "icon-alert-important"
-
-                                        WARNING ->
-                                            "icon-alert-warning"
-
-                                        CAUTION ->
-                                            "icon-alert-caution"
-                                    )
-                                    [ Attr.style "margin-right" "0.75rem" ]
-                                )
-                            |> Html.p
-                                [ Attr.style "display" "flex"
-                                , Attr.style "align-items" "center"
-                                ]
-                        )
-                    )
+                Just ( _, Just title ) ->
+                    title
+                        |> config.view
+                        |> Just
 
                 _ ->
-                    ( "lia-quote", Nothing )
+                    Nothing
     in
     case elements of
         [ Paragraph pAttr pElement, Citation cAttr citation ] ->
@@ -655,7 +655,6 @@ viewQuote config attr alert elements =
                 |> (::) (Html.text "―")
                 |> Html.cite (annotation "lia-quote__cite" cAttr)
             ]
-                |> CList.addWhen alert_title
                 |> Html.blockquote
                     (Attr.cite
                         (citation
@@ -668,7 +667,7 @@ viewQuote config attr alert elements =
         _ ->
             elements
                 |> List.map (view_block config)
-                |> CList.addWhen alert_title
+                |> CList.addWhen (alert_title |> Maybe.map (Html.p []))
                 |> Html.blockquote (annotation alert_class attr)
 
 
