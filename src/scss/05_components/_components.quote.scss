@@ -43,53 +43,87 @@
     gap: 0.8rem;
 
     &-tip {
-      border-left: 1rem solid #126229;
-      // first paragraph should be red
+      $c: #126229;
+
+      border-left: 1rem solid $c;
       > :nth-child(1) {
         display: flex;
         align-items: center;
-        color: #126229;
+        color: $c;
+      }
+      @at-root html.lia-variant-dark & {
+        border-left-color: color.scale($c, $lightness: 50%);
+        > :nth-child(1) {
+          color: color.scale($c, $lightness: 50%);
+        }
       }
     }
 
     &-note {
-      border-left: 1rem solid #0b5ebe;
-      // first paragraph should be red
+      $c: #0b5ebe;
+
+      border-left: 1rem solid $c;
       > :nth-child(1) {
         display: flex;
         align-items: center;
-        color: #0b5ebe;
+        color: $c;
+      }
+      @at-root html.lia-variant-dark & {
+        border-left-color: color.scale($c, $lightness: 60%);
+        > :nth-child(1) {
+          color: color.scale($c, $lightness: 60%);
+        }
       }
     }
 
     &-important {
-      border-left: 1rem solid #6e44ba;
-      // first paragraph should be red
+      $c: #6e44ba;
+
+      border-left: 1rem solid $c;
       > :nth-child(1) {
         display: flex;
         align-items: center;
-        color: #6e44ba;
+        color: $c;
+      }
+      @at-root html.lia-variant-dark & {
+        border-left-color: color.scale($c, $lightness: 60%);
+        > :nth-child(1) {
+          color: color.scale($c, $lightness: 60%);
+        }
       }
     }
 
     &-warning {
-      border-left: 1rem solid #805f1d;
-      // first paragraph should be red
+      $c: #805f1d;
+
+      border-left: 1rem solid $c;
       > :nth-child(1) {
         display: flex;
         align-items: center;
-        color: #805f1d;
-        
+        color: $c;
+      }
+      @at-root html.lia-variant-dark & {
+        border-left-color: color.scale($c, $lightness: 60%);
+        > :nth-child(1) {
+          color: color.scale($c, $lightness: 60%);
+        }
       }
     }
 
     &-caution {
-      border-left: 1rem solid #ba131e;
-      // first paragraph should be red
+      $c: #ba131e;
+
+      border-left: 1rem solid $c;
       > :nth-child(1) {
         display: flex;
         align-items: center;
-        color: #ba131e;
+        color: $c;
+      }
+      @at-root html.lia-variant-dark & {
+        border-left-color: color.scale($c, $lightness: 60%);
+        > :nth-child(1) {
+          color: color.scale($c, $lightness: 60%);
+        }
       }
     }
 
