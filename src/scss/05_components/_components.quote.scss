@@ -37,11 +37,6 @@
   }
 
   &__alert {
-    margin-block-start: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-
     &-tip {
       $c: #126229;
 
@@ -50,6 +45,7 @@
         display: flex;
         align-items: center;
         color: $c;
+        font-size: 1.1em;
       }
       @at-root html.lia-variant-dark & {
         border-left-color: color.scale($c, $lightness: 50%);
@@ -67,6 +63,7 @@
         display: flex;
         align-items: center;
         color: $c;
+        font-size: 1.1em;
       }
       @at-root html.lia-variant-dark & {
         border-left-color: color.scale($c, $lightness: 60%);
@@ -84,6 +81,7 @@
         display: flex;
         align-items: center;
         color: $c;
+        font-size: 1.1em;
       }
       @at-root html.lia-variant-dark & {
         border-left-color: color.scale($c, $lightness: 60%);
@@ -101,6 +99,7 @@
         display: flex;
         align-items: center;
         color: $c;
+        font-size: 1.1em;
       }
       @at-root html.lia-variant-dark & {
         border-left-color: color.scale($c, $lightness: 60%);
@@ -118,6 +117,7 @@
         display: flex;
         align-items: center;
         color: $c;
+        font-size: 1.1em;
       }
       @at-root html.lia-variant-dark & {
         border-left-color: color.scale($c, $lightness: 60%);
