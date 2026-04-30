@@ -35,11 +35,11 @@ import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Task.View as Task
-import Lia.Markdown.Types exposing (Block(..), Blocks)
+import Lia.Markdown.Types exposing (Alert(..), Block(..), Blocks)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (modal, shuffle)
+import Lia.Utils exposing (icon, modal, shuffle)
 import Lia.Voice as Voice
 import MD5
 import SvgBob
@@ -457,8 +457,8 @@ view_block config block =
         Table attr table ->
             Table.view config attr table
 
-        Quote attr quote ->
-            viewQuote config attr quote
+        Quote attr alert quote ->
+            viewQuote config attr alert quote
 
         HTML attr node ->
             viewHTMLBlock config attr node
@@ -590,8 +590,62 @@ scriptView viewer content =
                 ]
 
 
-viewQuote : Config Msg -> Parameters -> Blocks -> Html Msg
-viewQuote config attr elements =
+viewQuote : Config Msg -> Parameters -> Maybe ( Alert, Maybe Inlines ) -> Blocks -> Html Msg
+viewQuote config attr alert elements =
+    let
+        alert_class =
+            "lia-quote"
+                ++ (case alert of
+                        Nothing ->
+                            ""
+
+                        Just ( NOTE, _ ) ->
+                            " lia-quote__alert-note"
+
+                        Just ( TIP, _ ) ->
+                            " lia-quote__alert-tip"
+
+                        Just ( IMPORTANT, _ ) ->
+                            " lia-quote__alert-important"
+
+                        Just ( WARNING, _ ) ->
+                            " lia-quote__alert-warning"
+
+                        Just ( CAUTION, _ ) ->
+                            " lia-quote__alert-caution"
+                   )
+
+        toTitle name =
+            Just
+                [ icon ("icon-alert-" ++ String.toLower name) [ Attr.class "lia-quote__alert-icon" ]
+                , Html.text name
+                ]
+
+        alert_title =
+            case alert of
+                Just ( NOTE, Nothing ) ->
+                    toTitle "Note"
+
+                Just ( TIP, Nothing ) ->
+                    toTitle "Tip"
+
+                Just ( IMPORTANT, Nothing ) ->
+                    toTitle "Important"
+
+                Just ( WARNING, Nothing ) ->
+                    toTitle "Warning"
+
+                Just ( CAUTION, Nothing ) ->
+                    toTitle "Caution"
+
+                Just ( _, Just title ) ->
+                    title
+                        |> config.view
+                        |> Just
+
+                _ ->
+                    Nothing
+    in
     case elements of
         [ Paragraph pAttr pElement, Citation cAttr citation ] ->
             [ [ Paragraph pAttr pElement |> view_block config ]
@@ -613,7 +667,8 @@ viewQuote config attr elements =
         _ ->
             elements
                 |> List.map (view_block config)
-                |> Html.blockquote (annotation "lia-quote" attr)
+                |> CList.addWhen (alert_title |> Maybe.map (Html.p []))
+                |> Html.blockquote (annotation alert_class attr)
 
 
 view_ascii : Config Msg -> Parameters -> ( Maybe Inlines, SvgBob.Configuration Blocks ) -> Html Msg

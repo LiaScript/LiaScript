@@ -30,7 +30,7 @@ all2: optimize all deoptimize minify
 #all2: all minify
 
 editor: base index responsivevoice
-	-f dist/README.md
+	rm -f dist/README.md
 
 editor2: optimize editor deoptimize minify
 

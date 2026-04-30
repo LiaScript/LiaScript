@@ -1,0 +1,117 @@
+$icon-font: "icon";
+
+@font-face {
+    font-family: $icon-font;
+    src: url("./icon.eot?9b7df73933267902d5db70945302d04c#iefix") format("embedded-opentype"),
+url("./icon.ttf?9b7df73933267902d5db70945302d04c") format("truetype"),
+url("./icon.woff?9b7df73933267902d5db70945302d04c") format("woff"),
+url("./icon.woff2?9b7df73933267902d5db70945302d04c") format("woff2"),
+url("./icon.svg?9b7df73933267902d5db70945302d04c#icon") format("svg");
+}
+
+i[class^="icon-"]:before, i[class*=" icon-"]:before {
+    font-family: icon !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+$icon-map: (
+    "zoom": "\f101",
+    "zoom-out": "\f102",
+    "websocket": "\f103",
+    "warning": "\f104",
+    "trash": "\f105",
+    "torrent": "\f106",
+    "table": "\f107",
+    "stop-circle": "\f108",
+    "sound-on": "\f109",
+    "sound-off": "\f10a",
+    "sort-desc": "\f10b",
+    "sort-asc": "\f10c",
+    "social": "\f10d",
+    "slides": "\f10e",
+    "settings": "\f10f",
+    "send": "\f110",
+    "search": "\f111",
+    "scatterplot": "\f112",
+    "sankey": "\f113",
+    "resolve": "\f114",
+    "refresh": "\f115",
+    "radar": "\f116",
+    "pubnub": "\f117",
+    "presentation": "\f118",
+    "plus": "\f119",
+    "play-circle": "\f11a",
+    "piechart": "\f11b",
+    "person": "\f11c",
+    "pencil": "\f11d",
+    "pause-circle": "\f11e",
+    "parallel": "\f11f",
+    "p2pt": "\f120",
+    "nostr": "\f121",
+    "mqtt": "\f122",
+    "more": "\f123",
+    "minus": "\f124",
+    "map": "\f125",
+    "mail": "\f126",
+    "login": "\f127",
+    "list-3": "\f128",
+    "list-2": "\f129",
+    "list-1": "\f12a",
+    "lineplot": "\f12b",
+    "lightmode": "\f12c",
+    "ipfs": "\f12d",
+    "info": "\f12e",
+    "hint": "\f12f",
+    "heatmap": "\f130",
+    "gundb": "\f131",
+    "grid": "\f132",
+    "graph": "\f133",
+    "funnel": "\f134",
+    "end-right": "\f135",
+    "end-left": "\f136",
+    "edrys": "\f137",
+    "edit": "\f138",
+    "download": "\f139",
+    "darkmode": "\f13a",
+    "copy": "\f13b",
+    "compile-circle": "\f13c",
+    "code": "\f13d",
+    "close": "\f13e",
+    "clock": "\f13f",
+    "class-on": "\f140",
+    "class-off": "\f141",
+    "chevron-up": "\f142",
+    "chevron-right": "\f143",
+    "chevron-left": "\f144",
+    "chevron-down": "\f145",
+    "chevron-double-right": "\f146",
+    "chevron-double-left": "\f147",
+    "check": "\f148",
+    "chat-open": "\f149",
+    "chat-new": "\f14a",
+    "chat-close": "\f14b",
+    "boxplot": "\f14c",
+    "book": "\f14d",
+    "barchart": "\f14e",
+    "arrow-up": "\f14f",
+    "arrow-right": "\f150",
+    "arrow-left": "\f151",
+    "arrow-down": "\f152",
+    "alert-warning": "\f153",
+    "alert-tip": "\f154",
+    "alert-note": "\f155",
+    "alert-important": "\f156",
+    "alert-caution": "\f157",
+);
+
+@each $name, $value in ($icon-map) {
+    .icon-#{$name}:before {
+        content: $value;
+    }
+}
