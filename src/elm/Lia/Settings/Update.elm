@@ -13,7 +13,7 @@ import Json.Encode as JE
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Settings.Json as Json
-import Lia.Settings.Types exposing (Action(..), Audio(..), Mode(..), Settings)
+import Lia.Settings.Types exposing (Action(..), Audio(..), Mode(..), PlaybackState(..), Settings)
 import Lia.Utils exposing (focus, scheduleFocus)
 import Return exposing (Return)
 import Service.Database
@@ -93,20 +93,35 @@ update main msg model =
                             no_log Nothing <|
                                 case Service.TTS.decode event of
                                     Service.TTS.Start ->
-                                        { model | speaking = True, paused = False }
+                                        { model | playback = Speaking }
 
                                     Service.TTS.Stop ->
-                                        { model | speaking = False, paused = False, audioProgress = Nothing }
+                                        { model | playback = Idle }
 
                                     Service.TTS.Paused ->
-                                        { model | paused = True }
+                                        { model
+                                            | playback =
+                                                case model.playback of
+                                                    SpeakingWithProgress p ->
+                                                        PausedWithProgress p
+
+                                                    _ ->
+                                                        Paused
+                                        }
 
                                     Service.TTS.Progress current total ->
-                                        if model.seeking then
-                                            model
+                                        case model.playback of
+                                            SeekingFromPlaying _ ->
+                                                model
 
-                                        else
-                                            { model | audioProgress = Just { current = current, total = total } }
+                                            SeekingFromPaused _ ->
+                                                model
+
+                                            PausedWithProgress _ ->
+                                                { model | playback = PausedWithProgress { current = current, total = total } }
+
+                                            _ ->
+                                                { model | playback = SpeakingWithProgress { current = current, total = total } }
 
                                     Service.TTS.BrowserTTS support ->
                                         let
