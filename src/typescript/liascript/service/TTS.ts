@@ -20,11 +20,8 @@ var firstSpeak = true
 
 var elmSend: Lia.Send | null
 
-// Browser TTS (Web Speech API) has a Chrome/Safari bug where resume() fires the
-// utterance's 'end' event instead of continuing. We track two things:
-// - browserTTSSpeakArgs: the current speak call args, so we can re-speak on resume
-// - browserTTSIntentionalPause: set to true when the user explicitly pauses, so
-//   the 'end' handler knows to re-speak instead of treating it as natural completion
+// Chrome/Safari bug: resume() fires 'end' instead of continuing — re-speak on resume.
+// browserTTSIntentionalPause flags an explicit user pause so 'end' triggers re-speak.
 type BrowserTTSSpeakArgs = {
   text: string
   voice: SpeechSynthesisVoice
@@ -34,6 +31,16 @@ type BrowserTTSSpeakArgs = {
 
 var browserTTSSpeakArgs: BrowserTTSSpeakArgs = null
 var browserTTSIntentionalPause = false
+
+// Tracks the current responsiveVoice speak call to enable re-speak on resume failure.
+type ResponsiveVoiceSpeakArgs = {
+  text: string
+  voice: string
+  options: { rate: number; pitch: number }
+  handlers: { onStart: () => void; onStop: () => void; onError: (e: any) => void }
+} | null
+
+var responsiveVoiceSpeakArgs: ResponsiveVoiceSpeakArgs = null
 
 type ActiveMediaState = {
   media: HTMLMediaElement | null
@@ -67,6 +74,7 @@ function startProgressInterval(event: Lia.Event) {
       return
     }
     const t = media.currentTime
+    // If duration is not available, estimate total time as current time + 10s, and adjust dynamically as current time advances.
     const total = isFinite(media.duration) && media.duration > 0
       ? media.duration
       : (() => {
@@ -166,6 +174,13 @@ export const Service = {
           if (activeMedia.event) {
             sendResponse(activeMedia.event, 'paused', null)
           }
+        } else if (window.responsiveVoice && responsiveVoiceSpeakArgs && window.responsiveVoice.isPlaying()) {
+          try {
+            window.responsiveVoice.pause()
+            sendResponse(event, 'paused', null)
+          } catch (e) {
+            console.warn('Failed to pause responsiveVoice:', e)
+          }
         } else if (window.speechSynthesis && window.speechSynthesis.speaking) {
           try {
             browserTTSIntentionalPause = true
@@ -193,6 +208,16 @@ export const Service = {
             ? activeMedia.media.duration
             : resumeT + 10
           sendResponse(activeMedia.event, 'progress', JSON.stringify({ current: resumeT, total: resumeTotal }))
+        } else if (window.responsiveVoice && responsiveVoiceSpeakArgs) {
+          try {
+            window.responsiveVoice.resume()
+            sendResponse(event, 'start', null)
+          } catch (e) {
+            // resume() failed — re-speak from scratch as last resort
+            const args = responsiveVoiceSpeakArgs
+            if (args) responsiveSpeak(args.text, args.voice, args.options, args.handlers)
+            console.warn('Failed to resume responsiveVoice, re-speaking:', e)
+          }
         } else if (browserTTSSpeakArgs && (window.speechSynthesis?.paused || browserTTSIntentionalPause)) {
           try {
             EasySpeech.resume()
@@ -639,6 +664,7 @@ function cancel() {
   if (window.responsiveVoice) {
     window.responsiveVoice.cancel()
   }
+  responsiveVoiceSpeakArgs = null
 }
 
 function speak(
@@ -744,14 +770,22 @@ function responsiveSpeak(
     onError: (error: any) => void
   }
 ) {
-  if (window.responsiveVoice)
+  if (window.responsiveVoice) {
+    responsiveVoiceSpeakArgs = { text, voice, options, handlers }
     window.responsiveVoice.speak(text, voice, {
       onstart: handlers.onStart,
-      onend: handlers.onStop,
-      onerror: handlers.onError,
+      onend: () => {
+        responsiveVoiceSpeakArgs = null
+        handlers.onStop()
+      },
+      onerror: (e: any) => {
+        responsiveVoiceSpeakArgs = null
+        handlers.onError(e)
+      },
       pitch: options.pitch,
       rate: options.rate,
     })
+  }
 }
 
 function sendResponse(
