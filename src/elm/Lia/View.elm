@@ -404,32 +404,39 @@ btnPause _ soundEnabled settings =
                 _ ->
                     True
     in
-    if soundEnabled && settings.sound && isActive then
-        Lia.Utils.btnIcon
-            { title =
-                if isPaused then
-                    "Resume"
+    Lia.Utils.btnIcon
+        { title =
+            if isPaused then
+                "Resume"
 
-                else
-                    "Pause"
-            , tabbable = True
-            , msg =
-                if isPaused then
-                    Just TTSResume
+            else
+                "Pause"
+        , tabbable = soundEnabled && settings.sound && isActive
+        , msg =
+            if not (soundEnabled && settings.sound && isActive) then
+                Nothing
 
-                else
-                    Just TTSPause
-            , icon =
-                if isPaused then
-                    "icon-play-circle"
+            else if isPaused then
+                Just TTSResume
 
-                else
-                    "icon-pause-circle"
-            }
-            [ Attr.class "lia-btn--transparent" ]
+            else
+                Just TTSPause
+        , icon =
+            if isPaused then
+                "icon-play-circle"
 
-    else
-        Html.text ""
+            else
+                "icon-pause-circle"
+        }
+        [ Attr.class "lia-btn--transparent"
+        , Attr.style "visibility"
+            (if soundEnabled && settings.sound && isActive then
+                "visible"
+
+             else
+                "hidden"
+            )
+        ]
 
 
 audioProgressSlider : Bool -> Settings -> Html Msg
@@ -452,46 +459,63 @@ audioProgressSlider soundEnabled settings =
                 _ ->
                     Nothing
     in
-    case progressData of
-        Just ( { current, total }, isSeeking ) ->
-            if soundEnabled && settings.sound && total > 0 then
-                Html.div [ Attr.class "lia-tts-progress" ]
-                    [ Html.input
-                        ([ Attr.type_ "range"
-                         , Attr.min "0"
-                         , Attr.max (String.fromFloat total)
-                         , Attr.step "0.1"
-                         , Attr.class "lia-tts-progress__slider"
-                         , on "mousedown" (JD.succeed TTSStartSeeking)
-                         , on "touchstart" (JD.succeed TTSStartSeeking)
-                         , on "change"
-                            (JD.map
-                                (\s ->
-                                    case String.toFloat s of
-                                        Just seconds ->
-                                            TTSSeek seconds
+    let
+        visible =
+            case progressData of
+                Just ( p, _ ) ->
+                    soundEnabled && settings.sound && p.total > 0
 
-                                        Nothing ->
-                                            TTSSeek current
-                                )
-                                (JD.at [ "target", "value" ] JD.string)
-                            )
-                         ]
-                            ++ (if isSeeking then
-                                    []
+                Nothing ->
+                    False
 
-                                else
-                                    [ Attr.value (String.fromFloat current) ]
-                               )
-                        )
+        ( current, total, isSeeking ) =
+            case progressData of
+                Just ( p, s ) ->
+                    ( p.current, p.total, s )
+
+                Nothing ->
+                    ( 0, 1, False )
+    in
+    Html.div
+        [ Attr.class "lia-tts-progress"
+        , Attr.style "visibility"
+            (if visible then
+                "visible"
+
+             else
+                "hidden"
+            )
+        ]
+        [ Html.input
+            ([ Attr.type_ "range"
+             , Attr.min "0"
+             , Attr.max (String.fromFloat total)
+             , Attr.step "0.1"
+             , Attr.class "lia-tts-progress__slider"
+             , on "mousedown" (JD.succeed TTSStartSeeking)
+             , on "touchstart" (JD.succeed TTSStartSeeking)
+             , on "change"
+                (JD.map
+                    (\s ->
+                        case String.toFloat s of
+                            Just seconds ->
+                                TTSSeek seconds
+
+                            Nothing ->
+                                TTSSeek current
+                    )
+                    (JD.at [ "target", "value" ] JD.string)
+                )
+             ]
+                ++ (if isSeeking then
                         []
-                    ]
 
-            else
-                Html.text ""
-
-        Nothing ->
-            Html.text ""
+                    else
+                        [ Attr.value (String.fromFloat current) ]
+                   )
+            )
+            []
+        ]
 
 
 btnStop : Lang -> Settings -> Html Msg
