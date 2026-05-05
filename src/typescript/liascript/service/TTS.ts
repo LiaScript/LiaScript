@@ -42,6 +42,7 @@ type ResponsiveVoiceSpeakArgs = {
 
 var responsiveVoiceSpeakArgs: ResponsiveVoiceSpeakArgs = null
 
+// For tracking active audio/video media to enable pause/resume and progress updates.
 type ActiveMediaState = {
   media: HTMLMediaElement | null
   event: Lia.Event | null
