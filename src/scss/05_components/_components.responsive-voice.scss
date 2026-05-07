@@ -17,13 +17,29 @@ $responsive-voice-hight: 7rem;
   &__control {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
+    gap: 1rem;
+  }
 
-    @include tools.breakpoint('xs') {
-      justify-content: flex-start;
-      width: auto;
+  &__playgroup {
+    display: flex;
+    align-items: center;
+    border: 1px solid rgb(var(--color-highlight));
+    border-radius: settings.$global-radius;
+    overflow: hidden;
+
+    & > * {
+      border-radius: 0;
     }
+
+    & > * + * {
+      border-left: 1px solid rgb(var(--color-highlight));
+    }
+  }
+
+  &__center {
+    position: relative;
+    display: flex;
+    align-items: center;
   }
 
   &__info {
@@ -44,5 +60,19 @@ $responsive-voice-hight: 7rem;
   @include tools.breakpoint('md') {
     border-start-start-radius: settings.$global-radius;
     border-start-end-radius: settings.$global-radius;
+  }
+}
+
+.lia-tts-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+.lia-tts-progress__slider {
+  width: 100%;
+
+  &:disabled {
+    opacity: 0.4;
   }
 }

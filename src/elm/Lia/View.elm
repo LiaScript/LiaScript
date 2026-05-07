@@ -326,18 +326,22 @@ slideBottom { lang, tiny, settings, slide, effects } =
                         Attr.class ""
                     ]
                     [ Html.div [ Attr.class "lia-responsive-voice__control" ]
-                        [ btnReplay lang sound settings
-                        , btnPause lang sound settings
-                        , responsiveVoice
-                            { lang = lang
-                            , tiny = tiny
-                            , show = sound
-                            , tts = settings.tts
-                            , audio = Effect.getAudioRecordings effects
-                            }
+                        [ Html.div [ Attr.class "lia-responsive-voice__playgroup" ]
+                            [ btnReplay lang sound settings
+                            , btnPause lang sound settings
+                            ]
+                        , Html.div [ Attr.class "lia-responsive-voice__center" ]
+                            [ audioProgressSlider sound (not (List.isEmpty (Effect.getAudioRecordings effects ++ Effect.getVideoRecordings effects))) settings
+                            , responsiveVoice
+                                { lang = lang
+                                , tiny = tiny
+                                , show = sound
+                                , tts = settings.tts
+                                , audio = Effect.getAudioRecordings effects ++ Effect.getVideoRecordings effects
+                                }
+                            ]
                         , btnStop lang settings
                         ]
-                    , audioProgressSlider sound settings
                     ]
         ]
 
@@ -429,18 +433,12 @@ btnPause _ soundEnabled settings =
                 "icon-pause-circle"
         }
         [ Attr.class "lia-btn--transparent"
-        , Attr.style "visibility"
-            (if soundEnabled && settings.sound && isActive then
-                "visible"
-
-             else
-                "hidden"
-            )
+        , Attr.disabled (not (soundEnabled && settings.sound && isActive))
         ]
 
 
-audioProgressSlider : Bool -> Settings -> Html Msg
-audioProgressSlider soundEnabled settings =
+audioProgressSlider : Bool -> Bool -> Settings -> Html Msg
+audioProgressSlider soundEnabled hasRecordings settings =
     let
         progressData =
             case settings.playback of
@@ -478,16 +476,17 @@ audioProgressSlider soundEnabled settings =
     in
     Html.div
         [ Attr.class "lia-tts-progress"
-        , Attr.style "visibility"
-            (if visible then
-                "visible"
+        , Attr.style "display"
+            (if hasRecordings && settings.sound then
+                "flex"
 
              else
-                "hidden"
+                "none"
             )
         ]
         [ Html.input
             ([ Attr.type_ "range"
+             , Attr.disabled (not visible)
              , Attr.min "0"
              , Attr.max (String.fromFloat total)
              , Attr.step "0.1"
