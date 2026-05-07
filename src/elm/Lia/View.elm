@@ -373,10 +373,10 @@ btnReplay lang soundEnabled settings =
                 Nothing
         , icon =
             if isActive then
-                "icon-stop-circle"
+                "icon-stop"
 
             else
-                "icon-play-circle"
+                "icon-play"
         }
         [ Attr.id "lia-btn-sound"
         , Attr.class "lia-btn--transparent lia-responsive-voice__play"
@@ -427,10 +427,10 @@ btnPause _ soundEnabled settings =
                 Just TTSPause
         , icon =
             if isPaused then
-                "icon-play-circle"
+                "icon-play"
 
             else
-                "icon-pause-circle"
+                "icon-pause"
         }
         [ Attr.class "lia-btn--transparent"
         , Attr.disabled (not (soundEnabled && settings.sound && isActive))

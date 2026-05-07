@@ -216,351 +216,363 @@
 
 
 .icon-alert-caution:before {
-  content: "\f157"
+  content: "\EA01"
 }
 
 .icon-alert-important:before {
-  content: "\f156"
+  content: "\EA02"
 }
 
 .icon-alert-note:before {
-  content: "\f155"
+  content: "\EA03"
 }
 
 .icon-alert-tip:before {
-  content: "\f154"
+  content: "\EA04"
 }
 
 .icon-alert-warning:before {
-  content: "\f153"
+  content: "\EA05"
 }
 
 .icon-arrow-down:before {
-  content: "\f152"
+  content: "\EA06"
 }
 
 .icon-arrow-left:before {
-  content: "\f151"
+  content: "\EA07"
 }
 
 .icon-arrow-right:before {
-  content: "\f150"
+  content: "\EA08"
 }
 
 .icon-arrow-up:before {
-  content: "\f14f"
+  content: "\EA09"
 }
 
 .icon-barchart:before {
-  content: "\f14e"
+  content: "\EA0A"
 }
 
 .icon-book:before {
-  content: "\f14d"
+  content: "\EA0B"
 }
 
 .icon-boxplot:before {
-  content: "\f14c"
+  content: "\EA0C"
 }
 
 .icon-chat-close:before {
-  content: "\f14b"
+  content: "\EA0D"
 }
 
 .icon-chat-new:before {
-  content: "\f14a"
+  content: "\EA0E"
 }
 
 .icon-chat-open:before {
-  content: "\f149"
+  content: "\EA0F"
 }
 
 .icon-check:before {
-  content: "\f148"
+  content: "\EA10"
 }
 
 .icon-chevron-double-left:before {
-  content: "\f147"
+  content: "\EA11"
 }
 
 .icon-chevron-double-right:before {
-  content: "\f146"
+  content: "\EA12"
 }
 
 .icon-chevron-down:before {
-  content: "\f145"
+  content: "\EA13"
 }
 
 .icon-chevron-left:before {
-  content: "\f144"
+  content: "\EA14"
 }
 
 .icon-chevron-right:before {
-  content: "\f143"
+  content: "\EA15"
 }
 
 .icon-chevron-up:before {
-  content: "\f142"
+  content: "\EA16"
 }
 
 .icon-class-off:before {
-  content: "\f141"
+  content: "\EA17"
 }
 
 .icon-class-on:before {
-  content: "\f140"
+  content: "\EA18"
 }
 
 .icon-clock:before {
-  content: "\f13f"
+  content: "\EA19"
 }
 
 .icon-close:before {
-  content: "\f13e"
+  content: "\EA1A"
 }
 
 .icon-code:before {
-  content: "\f13d"
+  content: "\EA1B"
 }
 
 .icon-compile-circle:before {
-  content: "\f13c"
+  content: "\EA1C"
 }
 
 .icon-copy:before {
-  content: "\f13b"
+  content: "\EA1D"
 }
 
 .icon-darkmode:before {
-  content: "\f13a"
+  content: "\EA1E"
 }
 
 .icon-download:before {
-  content: "\f139"
+  content: "\EA1F"
 }
 
 .icon-edit:before {
-  content: "\f138"
+  content: "\EA20"
 }
 
 .icon-edrys:before {
-  content: "\f137"
+  content: "\EA21"
 }
 
 .icon-end-left:before {
-  content: "\f136"
+  content: "\EA22"
 }
 
 .icon-end-right:before {
-  content: "\f135"
+  content: "\EA23"
 }
 
 .icon-funnel:before {
-  content: "\f134"
+  content: "\EA24"
 }
 
 .icon-graph:before {
-  content: "\f133"
+  content: "\EA25"
 }
 
 .icon-grid:before {
-  content: "\f132"
+  content: "\EA26"
 }
 
 .icon-gundb:before {
-  content: "\f131"
+  content: "\EA27"
 }
 
 .icon-heatmap:before {
-  content: "\f130"
+  content: "\EA28"
 }
 
 .icon-hint:before {
-  content: "\f12f"
+  content: "\EA29"
 }
 
 .icon-info:before {
-  content: "\f12e"
+  content: "\EA2A"
 }
 
 .icon-ipfs:before {
-  content: "\f12d"
+  content: "\EA2B"
 }
 
 .icon-lightmode:before {
-  content: "\f12c"
+  content: "\EA2C"
 }
 
 .icon-lineplot:before {
-  content: "\f12b"
+  content: "\EA2D"
 }
 
 .icon-list-1:before {
-  content: "\f12a"
+  content: "\EA2E"
 }
 
 .icon-list-2:before {
-  content: "\f129"
+  content: "\EA2F"
 }
 
 .icon-list-3:before {
-  content: "\f128"
+  content: "\EA30"
 }
 
 .icon-login:before {
-  content: "\f127"
+  content: "\EA31"
 }
 
 .icon-mail:before {
-  content: "\f126"
+  content: "\EA32"
 }
 
 .icon-map:before {
-  content: "\f125"
+  content: "\EA33"
 }
 
 .icon-minus:before {
-  content: "\f124"
+  content: "\EA34"
 }
 
 .icon-more:before {
-  content: "\f123"
+  content: "\EA35"
 }
 
 .icon-mqtt:before {
-  content: "\f122"
+  content: "\EA36"
 }
 
 .icon-nostr:before {
-  content: "\f121"
+  content: "\EA37"
 }
 
 .icon-p2pt:before {
-  content: "\f120"
+  content: "\EA38"
 }
 
 .icon-parallel:before {
-  content: "\f11f"
+  content: "\EA39"
 }
 
 .icon-pause-circle:before {
-  content: "\f11e"
+  content: "\EA3A"
+}
+
+.icon-pause:before {
+  content: "\EA3B"
 }
 
 .icon-pencil:before {
-  content: "\f11d"
+  content: "\EA3C"
 }
 
 .icon-person:before {
-  content: "\f11c"
+  content: "\EA3D"
 }
 
 .icon-piechart:before {
-  content: "\f11b"
+  content: "\EA3E"
 }
 
 .icon-play-circle:before {
-  content: "\f11a"
+  content: "\EA3F"
+}
+
+.icon-play:before {
+  content: "\EA40"
 }
 
 .icon-plus:before {
-  content: "\f119"
+  content: "\EA41"
 }
 
 .icon-presentation:before {
-  content: "\f118"
+  content: "\EA42"
 }
 
 .icon-pubnub:before {
-  content: "\f117"
+  content: "\EA43"
 }
 
 .icon-radar:before {
-  content: "\f116"
+  content: "\EA44"
 }
 
 .icon-refresh:before {
-  content: "\f115"
+  content: "\EA45"
 }
 
 .icon-resolve:before {
-  content: "\f114"
+  content: "\EA46"
 }
 
 .icon-sankey:before {
-  content: "\f113"
+  content: "\EA47"
 }
 
 .icon-scatterplot:before {
-  content: "\f112"
+  content: "\EA48"
 }
 
 .icon-search:before {
-  content: "\f111"
+  content: "\EA49"
 }
 
 .icon-send:before {
-  content: "\f110"
+  content: "\EA4A"
 }
 
 .icon-settings:before {
-  content: "\f10f"
+  content: "\EA4B"
 }
 
 .icon-slides:before {
-  content: "\f10e"
+  content: "\EA4C"
 }
 
 .icon-social:before {
-  content: "\f10d"
+  content: "\EA4D"
 }
 
 .icon-sort-asc:before {
-  content: "\f10c"
+  content: "\EA4E"
 }
 
 .icon-sort-desc:before {
-  content: "\f10b"
+  content: "\EA4F"
 }
 
 .icon-sound-off:before {
-  content: "\f10a"
+  content: "\EA50"
 }
 
 .icon-sound-on:before {
-  content: "\f109"
+  content: "\EA51"
 }
 
 .icon-stop-circle:before {
-  content: "\f108"
+  content: "\EA52"
+}
+
+.icon-stop:before {
+  content: "\EA53"
 }
 
 .icon-table:before {
-  content: "\f107"
+  content: "\EA54"
 }
 
 .icon-torrent:before {
-  content: "\f106"
+  content: "\EA55"
 }
 
 .icon-trash:before {
-  content: "\f105"
+  content: "\EA56"
 }
 
 .icon-warning:before {
-  content: "\f104"
+  content: "\EA57"
 }
 
 .icon-websocket:before {
-  content: "\f103"
+  content: "\EA58"
 }
 
 .icon-zoom-out:before {
-  content: "\f102"
+  content: "\EA59"
 }
 
 .icon-zoom:before {
-  content: "\f101"
+  content: "\EA5A"
 }
 
 

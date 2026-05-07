@@ -34,6 +34,10 @@ $responsive-voice-hight: 7rem;
     & > * + * {
       border-left: 1px solid rgb(var(--color-highlight));
     }
+
+    .lia-btn__icon {
+      transform: scale(1.4);
+    }
   }
 
   &__center {
