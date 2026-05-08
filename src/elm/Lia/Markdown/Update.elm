@@ -194,6 +194,12 @@ subUpdate js msg section =
                         |> Return.mapValCmd (\v -> SubSection { subsection | code_model = v }) UpdateCode
                         |> Return.mapEvents "code" subsection.id
 
+                UpdateGallery childMsg ->
+                    subsection.gallery_vector
+                        |> Gallery.update childMsg
+                        |> Return.mapVal (\v -> SubSection { subsection | gallery_vector = v })
+                        |> Return.mapEvents "gallery" subsection.id
+
                 UpdateQuiz childMsg ->
                     let
                         result =

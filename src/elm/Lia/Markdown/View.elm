@@ -95,6 +95,8 @@ subView config slide id sub =
                                     , quiz_vector = x.quiz_vector
                                     , survey_vector = x.survey_vector
                                     , code_model = x.code_model
+                                    , task_vector = x.task_vector
+                                    , gallery_vector = x.gallery_vector
                                     , effect_model =
                                         { effects
                                             | comments = x.effect_model.comments
