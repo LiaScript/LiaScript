@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 29/04/2026
+
+- feat: Alerts now support both GitHub and GitLab syntax.
+  - **GitHub syntax** (`> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`) renders with a predefined icon automatically.
+  - **GitLab syntax** (`> [!note]`, `> [!tip]`, etc.) renders without an icon, allowing users to define their own icons freely using emojis, e.g.:
+
+    ```markdown
+    > [!note] 💡 Custom Icon
+    > This is a note with a custom emoji icon.
+    ```
+
 ## [1.0.6] - 13/04/2026
 
 fix: resource loading for javascript from GitHub on Edge and Chrome on Windows failed, due to raise condition.
