@@ -180,8 +180,8 @@ scriptID =
 line : Parser Context Inlines
 line =
     inlines
-        |> map goto
-        |> andMap Context.getLine
+        --|> map goto
+        --|> andMap Context.getLine
         |> many1
         |> map combine
 

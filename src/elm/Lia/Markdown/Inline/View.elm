@@ -791,7 +791,7 @@ img config attr alt_ url_ title_ width =
             :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
             :: onError "img" url_
             :: (-- double-click event is always added to the image
-                if List.isEmpty attr && config.image_zoom then
+                if List.length attr == 1 && config.image_zoom then
                     [ Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") ]
 
                 else
