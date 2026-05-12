@@ -14,7 +14,7 @@ module Const exposing
 
 icon : String
 icon =
-    "icon.ico"
+    "icon.svg"
 
 
 align :

@@ -49,7 +49,7 @@ export function fetch(
             try {
               json.icon = addBase(url, json.icon)
             } catch (e) {
-              json.icon = 'https://liascript.github.io/course/icon.ico'
+              json.icon = 'https://liascript.github.io/course/icon.svg'
             }
 
             backup[url] = json
