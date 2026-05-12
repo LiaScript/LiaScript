@@ -388,7 +388,7 @@ update_ async defintion id e scripts =
                 new =
                     eval_ async defintion id (Service.Script.decode e) js
             in
-            ( new.result /= js.result
+            ( new.result /= js.result || (new.update && not new.running)
             , Array.set id new scripts
             )
 
