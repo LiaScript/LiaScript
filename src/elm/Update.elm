@@ -158,7 +158,10 @@ update msg model =
                 ( Nothing, _, ( "index_get", param ) ) ->
                     case Index.decodeGet param of
                         Ok ( url, course ) ->
-                            ( { model | preload = course }
+                            ( { model
+                                | preload = course
+                                , log = updateLog url Nothing Nothing model.log
+                              }
                             , if isURI url then
                                 download False url
 
@@ -378,8 +381,9 @@ update msg model =
         LiaParse ->
             parsing model
 
-        Load_ReadMe_Result _ (Ok readme) ->
-            load_readme readme model
+        Load_ReadMe_Result url (Ok readme) ->
+            { model | log = updateLog url (Just True) Nothing model.log }
+                |> load_readme readme
 
         Load_ReadMe_Result url (Err info) ->
             case info of
@@ -452,6 +456,7 @@ update msg model =
 
                             _ ->
                                 model.state
+                    , log = updateLog url (Just True) Nothing model.log
                 }
 
         Load_Template_Result url (Err info) ->
@@ -461,10 +466,18 @@ update msg model =
                         | state =
                             Error.Message.loadingResource url info
                                 |> Error.Report.add model.state
+                        , log = updateLog url (Just False) Nothing model.log
                     }
 
             else
-                ( model, download True (IPFS.toHTTPS (Const.urlProxy ++ url) url) )
+                ( { model
+                    | log =
+                        model.log
+                            |> updateLog url (Just False) Nothing
+                            |> updateLog (IPFS.toHTTPS (Const.urlProxy ++ url) url) Nothing Nothing
+                  }
+                , download True (IPFS.toHTTPS (Const.urlProxy ++ url) url)
+                )
 
         GotResponse url (Ok responseData) ->
             case responseData of
@@ -485,6 +498,28 @@ update msg model =
 
         GotResponse url (Err info) ->
             update (Load_ReadMe_Result url (Err info)) model
+
+
+updateLog :
+    String
+    -> Maybe Bool
+    -> Maybe String
+    -> List ( String, Maybe Bool, Maybe String )
+    -> List ( String, Maybe Bool, Maybe String )
+updateLog url state error log =
+    if List.filter (\( loggedUrl, _, _ ) -> loggedUrl == url) log == [] then
+        log ++ [ ( url, state, error ) ]
+
+    else
+        log
+            |> List.map
+                (\( loggedUrl, loggedState, loggedError ) ->
+                    if loggedUrl == url then
+                        ( loggedUrl, state, error )
+
+                    else
+                        ( loggedUrl, loggedState, loggedError )
+                )
 
 
 restore : Model -> ( Model, Cmd Msg )
@@ -678,6 +713,11 @@ load model initial =
                         |> Parsing True
                 , code = initial.code
                 , size = String.length code_ |> toFloat
+                , log =
+                    initial.templates
+                        |> List.foldl
+                            (\url log -> updateLog url Nothing Nothing log)
+                            model.log
               }
             , initial.templates
                 |> List.map (download True)

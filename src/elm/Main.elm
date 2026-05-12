@@ -100,6 +100,7 @@ init flags url key =
                 Nothing
                 (Session (Maybe.withDefault False flags.hasShareAPI) key flags.screen url_)
                 state_
+                []
                 (Lia.Script.init
                     { seed = flags.seed
                     , hasShareApi = flags.hasShareAPI

@@ -57,6 +57,7 @@ type alias Model =
     , preload : Maybe Index.Course
     , session : Session
     , state : State
+    , log : List ( String, Maybe Bool, Maybe String )
     , lia : Lia.Script.Model
     }
 
