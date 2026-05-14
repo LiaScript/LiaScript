@@ -74,6 +74,8 @@ base_div =
         , Attr.style "text-align" "center"
         , Attr.style "top" "25%"
         , Attr.style "position" "absolute"
+        , Attr.class "notranslate"
+        , Attr.attribute "translate" "no"
         ]
 
 
