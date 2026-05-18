@@ -669,7 +669,7 @@ function LOG(...args: any[]) {
 }
 
 function WARN(...args: any[]) {
-  if (window.LIA.debug) console.log('SCORM2004: ', ...args)
+  console.log('SCORM2004: ', ...args)
 }
 
 export { Connector }
