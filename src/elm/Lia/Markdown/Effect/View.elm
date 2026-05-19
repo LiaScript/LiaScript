@@ -4,18 +4,15 @@ module Lia.Markdown.Effect.View exposing
     , state
     )
 
-import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
 import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick)
 import Json.Encode as JE
 import Lia.Markdown.Effect.Model exposing (Model)
 import Lia.Markdown.Effect.Types exposing (Class(..), Effect, class, isIn)
-import Lia.Markdown.Effect.Update as E
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inline)
@@ -24,6 +21,28 @@ import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Voice as Voice
 import Service.Event as Event
 import Service.TTS
+
+
+pausePlaybackAttr : Int -> Int -> Html.Attribute msg
+pausePlaybackAttr id section =
+    Service.TTS.pause
+        |> Event.pushWithId "playback" id
+        |> Event.pushWithId "effect" section
+        |> Event.encode
+        |> JE.encode 0
+        |> (\event -> "window.LIA.playback(" ++ event ++ ")")
+        |> Attr.attribute "onclick"
+
+
+resumePlaybackAttr : Int -> Int -> Html.Attribute msg
+resumePlaybackAttr id section =
+    Service.TTS.resume
+        |> Event.pushWithId "playback" id
+        |> Event.pushWithId "effect" section
+        |> Event.encode
+        |> JE.encode 0
+        |> (\event -> "window.LIA.playback(" ++ event ++ ")")
+        |> Attr.attribute "onclick"
 
 
 circle_ : Int -> Html msg
@@ -200,44 +219,91 @@ hiddenSpan hide speaking attr =
 
 block_playback : Config sub -> Effect Block -> Html Msg
 block_playback config e =
-    if config.speaking == Just e.id then
-        Html.button
-            [ Attr.class "lia-btn text-highlight icon icon-stop-circle"
-            , A11y_Key.tabbable True
-            , e.id
-                |> E.Mute
-                |> UpdateEffect True
-                |> onClick
-            , A11y_Aria.label "Stop playback"
-            ]
-            []
+    let
+        isPaused =
+            config.paused == Just e.id
 
-    else
-        case config.translations |> Maybe.andThen (Voice.getVoiceFor e.voice) of
-            Nothing ->
-                Html.button
-                    [ Attr.class "lia-btn text-highlight icon icon-play-circle"
-                    , A11y_Key.tabbable True
-                    , playBackAttr e.id
+        isActive =
+            isPaused || config.speaking == Just e.id
+
+        stopAttr =
+            Service.TTS.cancel
+                |> Event.pushWithId "playback" e.id
+                |> Event.pushWithId "effect" config.slide
+                |> Event.encode
+                |> JE.encode 0
+                |> (\ev -> "window.LIA.playback(" ++ ev ++ ")")
+                |> Attr.attribute "onclick"
+
+        playAttr =
+            case config.translations |> Maybe.andThen (Voice.getVoiceFor e.voice) of
+                Nothing ->
+                    playBackAttr e.id
                         e.voice
-                        (e.voice
-                            |> Voice.getLang
-                            |> Maybe.withDefault "en"
-                        )
+                        (e.voice |> Voice.getLang |> Maybe.withDefault "en")
                         config.slide
-                        "this.parentNode.childNodes[1]"
-                    , A11y_Aria.label "Start playback"
-                    ]
-                    []
+                        "this.parentNode.parentNode.childNodes[1]"
 
-            Just { translated, lang, name } ->
-                Html.button
-                    [ Attr.class "lia-btn text-highlight icon icon-play-circle"
-                    , A11y_Key.tabbable True
-                    , playBackAttr e.id name lang config.slide "this.parentNode.childNodes[1]"
-                    , A11y_Aria.label "Start playback"
-                    ]
-                    []
+                Just { lang, name } ->
+                    playBackAttr e.id name lang config.slide "this.parentNode.parentNode.childNodes[1]"
+    in
+    Html.div [ Attr.class "lia-effect__playback-controls" ]
+        [ Html.button
+            [ Attr.class "lia-btn lia-btn--transparent"
+            , A11y_Key.tabbable True
+            , if isActive then stopAttr else playAttr
+            , Attr.title
+                (if isActive then
+                    "Stop"
+
+                 else
+                    "Play"
+                )
+            ]
+            [ Html.span
+                [ Attr.class
+                    ("lia-btn__icon icon "
+                        ++ (if isActive then
+                                "icon-stop"
+
+                            else
+                                "icon-play"
+                           )
+                    )
+                ]
+                []
+            ]
+        , Html.button
+            [ Attr.class "lia-btn lia-btn--transparent"
+            , A11y_Key.tabbable isActive
+            , Attr.disabled (not isActive)
+            , if isPaused then
+                resumePlaybackAttr e.id config.slide
+
+              else
+                pausePlaybackAttr e.id config.slide
+            , Attr.title
+                (if isPaused then
+                    "Resume"
+
+                 else
+                    "Pause"
+                )
+            ]
+            [ Html.span
+                [ Attr.class
+                    ("lia-btn__icon icon "
+                        ++ (if isPaused then
+                                "icon-play"
+
+                            else
+                                "icon-pause"
+                           )
+                    )
+                ]
+                []
+            ]
+        ]
 
 
 playBackAttr : Int -> String -> String -> Int -> String -> Html.Attribute msg
@@ -254,59 +320,43 @@ playBackAttr id voice lang section command =
 
 inline_playback : Config sub -> Effect Inline -> Html msg
 inline_playback config e =
-    if config.speaking == Just e.id then
-        Html.button
-            [ Attr.class "lia-btn lia-btn--transparent icon icon-stop-circle"
-            , Service.TTS.cancel
+    let
+        isActive =
+            config.speaking == Just e.id
+
+        stopAttr =
+            Service.TTS.cancel
                 |> Event.pushWithId "playback" e.id
                 |> Event.pushWithId "effect" config.slide
                 |> Event.encode
                 |> JE.encode 0
-                |> (\event -> "window.LIA.playback(" ++ event ++ ")")
+                |> (\ev -> "window.LIA.playback(" ++ ev ++ ")")
                 |> Attr.attribute "onclick"
-            , A11y_Key.tabbable True
-            , A11y_Aria.label "Stop playback of phrase"
-            , Attr.style "padding" "0"
-            , Attr.style "margin" "0 5px 0 5px"
-            ]
-            []
 
-    else
-        case config.translations |> Maybe.andThen (Voice.getVoiceFor e.voice) of
-            Nothing ->
-                Html.button
-                    [ Attr.class "lia-btn icon icon-play-circle"
-                    , playBackAttr
-                        e.id
+        playAttr =
+            case config.translations |> Maybe.andThen (Voice.getVoiceFor e.voice) of
+                Nothing ->
+                    playBackAttr e.id
                         e.voice
-                        (e.voice
-                            |> Voice.getLang
-                            |> Maybe.withDefault "en"
-                        )
+                        (e.voice |> Voice.getLang |> Maybe.withDefault "en")
                         config.slide
                         "this.labels[0]"
-                    , A11y_Key.tabbable True
-                    , A11y_Aria.label "Start playback of phrase"
-                    , Attr.style "padding" "0"
-                    , Attr.style "margin" "0 5px 0 5px"
-                    ]
-                    []
 
-            Just { translated, lang, name } ->
-                Html.button
-                    [ Attr.class "lia-btn lia-btn--transparent icon icon-play-circle"
-                    , playBackAttr
-                        e.id
-                        name
-                        lang
-                        config.slide
-                        "this.labels[0]"
-                    , A11y_Key.tabbable True
-                    , A11y_Aria.label "Start playback of phrase"
-                    , Attr.style "padding" "0"
-                    , Attr.style "margin" "0 5px 0 5px"
-                    ]
-                    []
+                Just { lang, name } ->
+                    playBackAttr e.id name lang config.slide "this.labels[0]"
+    in
+    Html.button
+        [ Attr.class "lia-btn lia-btn--transparent"
+        , A11y_Key.tabbable True
+        , if isActive then stopAttr else playAttr
+        , Attr.title (if isActive then "Stop" else "Play")
+        , Attr.style "padding" "0"
+        , Attr.style "margin" "0 5px 0 5px"
+        ]
+        [ Html.span
+            [ Attr.class ("lia-btn__icon icon " ++ (if isActive then "icon-stop-circle" else "icon-play-circle")) ]
+            []
+        ]
 
 
 circle : Int -> Html msg

@@ -745,6 +745,7 @@ view_inf scripts lang light tooltips translations formulas media =
     , visible = Nothing
     , slide = -1
     , speaking = Nothing
+    , paused = Nothing
     , lang = lang
     , theme = Nothing
     , light = light

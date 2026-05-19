@@ -109,7 +109,7 @@ export const Service = {
       }
 
       window.LIA.playback = function (event: Lia.Event) {
-        playback(event)
+        Service.handle(event)
       }
     }, 2000)
 
@@ -689,6 +689,7 @@ function speak(
     onStart: () => sendResponse(event, 'start'),
     onStop: () => sendResponse(event, 'stop'),
     onError: e => {
+      if (e?.error === 'interrupted' || e?.error === 'canceled') return
       sendResponse(event, 'error', e.toString())
       console.warn('TTS playback failed:', e.toString())
     },
@@ -752,6 +753,7 @@ function easySpeak(
       }
     },
     error: (e: any) => {
+      if (e?.error === 'interrupted' || e?.error === 'canceled') return
       browserTTSSpeakArgs = null
       browserTTSIntentionalPause = false
       handlers.onError(e)
