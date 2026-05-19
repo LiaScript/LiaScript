@@ -171,8 +171,8 @@ markRunning return =
                     | javascript =
                         List.foldl
                             (\e js ->
-                                case Event.id e of
-                                    Just id ->
+                                case ( Event.id e, e.message.cmd ) of
+                                    ( Just id, "exec" ) ->
                                         if id < 0 then
                                             js
 

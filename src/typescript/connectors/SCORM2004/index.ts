@@ -54,7 +54,7 @@ class Connector extends Base.Connector {
     this.db = { quiz: [], survey: [], task: [] }
     this.id = { quiz: [], survey: [], task: [] }
 
-    const scormAPI = this.getAPI(window)
+    const scormAPI = this.getAPI(window) || this.getAPI(window.parent)
 
     if (scormAPI) {
       LOG('successfully opened API')
@@ -102,30 +102,47 @@ class Connector extends Base.Connector {
   // ———————————————————————————————————————————
   // API discovery (SCORM standard algorithm)
   // ———————————————————————————————————————————
-  scanForAPI(win: any) {
-    let nFindAPITries = 0
-    const maxTries = 500
+  private readAPI(win: Window): SCORM | null {
     try {
-      while (
-        win.API_1484_11 == null &&
-        win.parent != null &&
-        win.parent != win
-      ) {
-        nFindAPITries++
-        if (nFindAPITries > maxTries) {
-          return null
-        }
-        win = win.parent
-      }
-      return win.API_1484_11
+      return win?.API_1484_11 ?? null
     } catch (e: any) {
-      WARN('scanForAPI =>', e?.message)
+      WARN('readAPI =>', e?.message)
+      return null
+    }
+  }
+
+  private readParent(win: Window) {
+    try {
+      if (win?.parent && win.parent !== win) {
+        return win.parent
+      }
+    } catch (e: any) {
+      WARN('readParent =>', e?.message)
     }
     return null
   }
 
-  getAPI(win: any) {
-    let API = null
+  scanForAPI(win: Window) {
+    let tries = 0
+    const maxTries = 20
+
+    while (win && tries < maxTries) {
+      const api = this.readAPI(win)
+      if (api) {
+        return api
+      }
+
+      const parent = this.readParent(win)
+      if (!parent) break
+      win = parent
+      tries++
+    }
+
+    return null
+  }
+
+  getAPI(win: Window) {
+    let API = this.scanForAPI(win)
     if (win.parent != null && win.parent != win) {
       API = this.scanForAPI(win.parent)
     }
@@ -134,6 +151,7 @@ class Connector extends Base.Connector {
     }
     return API
   }
+
 
   // ———————————————————————————————————————————
   // Settings bridge
@@ -282,8 +300,7 @@ class Connector extends Base.Connector {
     this.active = mode === 'normal' && credit === 'credit'
 
     WARN(
-      `Running in "${mode}" mode, credit=${credit}. Results will ${
-        this.active ? '' : 'NOT '
+      `Running in "${mode}" mode, credit=${credit}. Results will ${this.active ? '' : 'NOT '
       }be stored!`
     )
 
@@ -332,7 +349,7 @@ class Connector extends Base.Connector {
       id = this.initSecond('task', id)
     }
 
-    ;(window as any)['SCORE'] = 0
+    ; (window as any)['SCORE'] = 0
     this.score()
 
     // periodic commit
@@ -414,7 +431,7 @@ class Connector extends Base.Connector {
     if (this.location !== null && this.location !== undefined) {
       const location = this.location
       setTimeout(function () {
-        ;(window as any)['LIA'].goto(location)
+        ; (window as any)['LIA'].goto(location)
       }, 500)
     }
   }
@@ -507,8 +524,8 @@ class Connector extends Base.Connector {
     const allSurveysCompleted =
       surveyCount === 0 || surveyCount === surveySubmitted
 
-    // Always update UI-visible score
-    ;(window as any)['SCORE'] = score
+      // Always update UI-visible score
+      ; (window as any)['SCORE'] = score
     LOG(
       'SCORE updated =>',
       score,
@@ -652,7 +669,7 @@ function LOG(...args: any[]) {
 }
 
 function WARN(...args: any[]) {
-  if (window.LIA.debug) console.log('SCORM2004: ', ...args)
+  console.log('SCORM2004: ', ...args)
 }
 
 export { Connector }
