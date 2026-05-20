@@ -3,9 +3,12 @@ module Service.TTS exposing
     , abort
     , cancel
     , decode
+    , pause
     , playback
     , preferBrowser
     , readFrom
+    , resume
+    , seek
     )
 
 import Json.Decode as JD
@@ -17,6 +20,8 @@ import String
 type Msg
     = Start
     | Stop
+    | Paused
+    | Progress Float Float
     | Error String
     | BrowserTTS Bool
     | ResponsiveVoiceTTS Bool
@@ -67,6 +72,22 @@ playback { voice, lang, text } =
         |> event "playback"
 
 
+pause : Event
+pause =
+    event "pause" JE.null
+
+
+resume : Event
+resume =
+    event "resume" JE.null
+
+
+seek : Float -> Event
+seek seconds =
+    JE.float seconds
+        |> event "seek"
+
+
 {-| Switch tts
 -}
 preferBrowser : Bool -> Event
@@ -84,6 +105,28 @@ decode e =
 
                 "stop" ->
                     Stop
+
+                "paused" ->
+                    Paused
+
+                "progress" ->
+                    let
+                        progressDecoder =
+                            JD.map2 Tuple.pair
+                                (JD.field "current" JD.float)
+                                (JD.field "total" JD.float)
+
+                        result =
+                            JD.decodeValue (JD.string |> JD.andThen (\s -> JD.decodeString progressDecoder s |> Result.mapError JD.errorToString |> (\r -> case r of
+                                Ok v -> JD.succeed v
+                                Err err -> JD.fail err))) e.message.param
+                    in
+                    case result of
+                        Ok ( current, total ) ->
+                            Progress current total
+
+                        Err _ ->
+                            Error "progress: invalid param"
 
                 "error" ->
                     case JD.decodeValue JD.string e.message.param of

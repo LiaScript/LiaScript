@@ -142,6 +142,7 @@ inline lang translations settings screen effect id formulas media sync =
         , visible = Just effect.visible
         , slide = id
         , speaking = effect.speaking
+        , paused = effect.paused
         , lang = lang
         , theme = Just settings.editor
         , light = settings.light

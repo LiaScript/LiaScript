@@ -19,7 +19,7 @@ import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, loadResource)
 import Lia.Parser.Parser exposing (parse_section)
 import Lia.Section exposing (Section)
-import Lia.Settings.Types exposing (Mode(..))
+import Lia.Settings.Types exposing (Mode(..), PlaybackState(..))
 import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Lia.Utils exposing (checkPersistency)
@@ -30,6 +30,7 @@ import Service.Console
 import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Slide
+import Service.TTS
 import Session exposing (Session)
 
 
@@ -93,6 +94,10 @@ type Msg
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
     | TTSReplay Bool
+    | TTSPause
+    | TTSResume
+    | TTSStartSeeking
+    | TTSSeek Float
     | Media ( String, Maybe Int, Maybe Int )
     | Pane SplitPane.Msg
     | Focus
@@ -143,6 +148,7 @@ update session msg model =
 
                                             else
                                                 settings.table_of_contents
+                                        , playback = Idle
                                     }
                             }
                         )
@@ -158,6 +164,7 @@ update session msg model =
 
                                     else
                                         settings.table_of_contents
+                                , playback = Idle
                             }
                     }
                         |> Return.val
@@ -470,8 +477,70 @@ update session msg model =
                         Nothing ->
                             Return.val model
 
+                ( TTSPause, sec ) ->
+                    sendTTSEvent Service.TTS.pause model sec
+
+                ( TTSResume, sec ) ->
+                    sendTTSEvent Service.TTS.resume model sec
+
+                ( TTSStartSeeking, _ ) ->
+                    let
+                        settings =
+                            model.settings
+
+                        newPlayback =
+                            case settings.playback of
+                                SpeakingWithProgress p ->
+                                    SeekingFromPlaying p
+
+                                PausedWithProgress p ->
+                                    SeekingFromPaused p
+
+                                _ ->
+                                    settings.playback
+                    in
+                    Return.val { model | settings = { settings | playback = newPlayback } }
+
+                ( TTSSeek seconds, sec ) ->
+                    let
+                        settings =
+                            model.settings
+
+                        newPlayback =
+                            case settings.playback of
+                                SeekingFromPlaying p ->
+                                    SpeakingWithProgress { p | current = seconds }
+
+                                SeekingFromPaused p ->
+                                    PausedWithProgress { p | current = seconds }
+
+                                _ ->
+                                    settings.playback
+                    in
+                    case sec of
+                        Just s ->
+                            Return.val { model | settings = { settings | playback = newPlayback } }
+                                |> Return.batchEvent
+                                    (Service.TTS.seek seconds
+                                        |> Event.pushWithId "settings" s.id
+                                    )
+
+                        Nothing ->
+                            Return.val model
+
                 _ ->
                     Return.val model
+
+
+sendTTSEvent : Event -> Model -> Maybe Section -> Return Model Msg Markdown.Msg
+sendTTSEvent ttsEvent model sec =
+    case sec of
+        Just s ->
+            Return.val model
+                |> Return.batchEvent (ttsEvent |> Event.pushWithId "settings" s.id)
+
+        Nothing ->
+            Return.val model
 
 
 getTitle : Model -> String
