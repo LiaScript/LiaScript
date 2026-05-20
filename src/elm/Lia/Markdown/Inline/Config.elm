@@ -22,6 +22,7 @@ type alias Config sub =
     , visible : Maybe Int
     , slide : Int
     , speaking : Maybe Int
+    , paused : Maybe Int
     , lang : Lang
     , theme : Maybe String
     , light : Bool
@@ -50,6 +51,7 @@ init :
     , visible : Maybe Int
     , slide : Int
     , speaking : Maybe Int
+    , paused : Maybe Int
     , lang : Lang
     , theme : Maybe String
     , light : Bool
@@ -73,6 +75,7 @@ init config =
             config.visible
     , slide = config.slide
     , speaking = config.speaking
+    , paused = config.paused
     , lang = config.lang
     , theme = config.theme
     , light = config.light
