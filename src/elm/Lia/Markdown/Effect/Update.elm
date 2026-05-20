@@ -87,7 +87,7 @@ update main sound msg model =
                     Return.val model
 
             Mute id ->
-                { model | speaking = Nothing }
+                { model | speaking = Nothing, paused = Nothing }
                     |> Return.val
                     |> Return.batchEvent (Service.TTS.cancel |> Event.pushWithId "playback" id)
 
@@ -143,13 +143,16 @@ update main sound msg model =
                                 Return.val model
 
                     ( Just "playback", id, ( "start", _ ) ) ->
-                        Return.val { model | speaking = Just id }
+                        Return.val { model | speaking = Just id, paused = Nothing }
 
                     ( Just "playback", _, ( "stop", _ ) ) ->
-                        Return.val { model | speaking = Nothing }
+                        Return.val { model | speaking = Nothing, paused = Nothing }
+
+                    ( Just "playback", id, ( "paused", _ ) ) ->
+                        Return.val { model | paused = Just id }
 
                     ( Just "playback", _, ( "error", _ ) ) ->
-                        { model | speaking = Nothing }
+                        { model | speaking = Nothing, paused = Nothing }
                             |> Return.val
                             |> Return.batchEvent (Service.Console.warn "effects: local playback error")
 

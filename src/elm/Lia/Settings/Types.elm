@@ -2,12 +2,23 @@ module Lia.Settings.Types exposing
     ( Action(..)
     , Audio(..)
     , Mode(..)
+    , PlaybackState(..)
     , Settings
     , TTS
     , fromGroup
     , init
     , toGroup
     )
+
+
+type PlaybackState
+    = Idle
+    | Speaking
+    | Paused
+    | SpeakingWithProgress { current : Float, total : Float }
+    | PausedWithProgress { current : Float, total : Float }
+    | SeekingFromPlaying { current : Float, total : Float }
+    | SeekingFromPaused { current : Float, total : Float }
 
 
 type alias Settings =
@@ -21,7 +32,7 @@ type alias Settings =
     , sound : Bool
     , lang : String
     , action : Maybe Action
-    , speaking : Bool
+    , playback : PlaybackState
     , initialized : Bool
     , hasShareApi : Maybe Bool
     , translateWithGoogle : Maybe Bool
@@ -81,7 +92,7 @@ init hasShareApi isFullscreen mode =
     , sound = True
     , lang = "default"
     , action = Nothing
-    , speaking = False
+    , playback = Idle
     , initialized = False
     , hasShareApi = hasShareApi
     , translateWithGoogle = Just False

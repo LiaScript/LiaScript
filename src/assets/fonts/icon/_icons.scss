@@ -500,147 +500,167 @@ $icon-parallel: "\EA39";
   content: $icon-parallel
 }
 
-$icon-pencil: "\EA3A";
+$icon-pause-circle: "\EA3A";
+.icon-pause-circle:before {
+  content: $icon-pause-circle
+}
+
+$icon-pause: "\EA3B";
+.icon-pause:before {
+  content: $icon-pause
+}
+
+$icon-pencil: "\EA3C";
 .icon-pencil:before {
   content: $icon-pencil
 }
 
-$icon-person: "\EA3B";
+$icon-person: "\EA3D";
 .icon-person:before {
   content: $icon-person
 }
 
-$icon-piechart: "\EA3C";
+$icon-piechart: "\EA3E";
 .icon-piechart:before {
   content: $icon-piechart
 }
 
-$icon-play-circle: "\EA3D";
+$icon-play-circle: "\EA3F";
 .icon-play-circle:before {
   content: $icon-play-circle
 }
 
-$icon-plus: "\EA3E";
+$icon-play: "\EA40";
+.icon-play:before {
+  content: $icon-play
+}
+
+$icon-plus: "\EA41";
 .icon-plus:before {
   content: $icon-plus
 }
 
-$icon-presentation: "\EA3F";
+$icon-presentation: "\EA42";
 .icon-presentation:before {
   content: $icon-presentation
 }
 
-$icon-pubnub: "\EA40";
+$icon-pubnub: "\EA43";
 .icon-pubnub:before {
   content: $icon-pubnub
 }
 
-$icon-radar: "\EA41";
+$icon-radar: "\EA44";
 .icon-radar:before {
   content: $icon-radar
 }
 
-$icon-refresh: "\EA42";
+$icon-refresh: "\EA45";
 .icon-refresh:before {
   content: $icon-refresh
 }
 
-$icon-resolve: "\EA43";
+$icon-resolve: "\EA46";
 .icon-resolve:before {
   content: $icon-resolve
 }
 
-$icon-sankey: "\EA44";
+$icon-sankey: "\EA47";
 .icon-sankey:before {
   content: $icon-sankey
 }
 
-$icon-scatterplot: "\EA45";
+$icon-scatterplot: "\EA48";
 .icon-scatterplot:before {
   content: $icon-scatterplot
 }
 
-$icon-search: "\EA46";
+$icon-search: "\EA49";
 .icon-search:before {
   content: $icon-search
 }
 
-$icon-send: "\EA47";
+$icon-send: "\EA4A";
 .icon-send:before {
   content: $icon-send
 }
 
-$icon-settings: "\EA48";
+$icon-settings: "\EA4B";
 .icon-settings:before {
   content: $icon-settings
 }
 
-$icon-slides: "\EA49";
+$icon-slides: "\EA4C";
 .icon-slides:before {
   content: $icon-slides
 }
 
-$icon-social: "\EA4A";
+$icon-social: "\EA4D";
 .icon-social:before {
   content: $icon-social
 }
 
-$icon-sort-asc: "\EA4B";
+$icon-sort-asc: "\EA4E";
 .icon-sort-asc:before {
   content: $icon-sort-asc
 }
 
-$icon-sort-desc: "\EA4C";
+$icon-sort-desc: "\EA4F";
 .icon-sort-desc:before {
   content: $icon-sort-desc
 }
 
-$icon-sound-off: "\EA4D";
+$icon-sound-off: "\EA50";
 .icon-sound-off:before {
   content: $icon-sound-off
 }
 
-$icon-sound-on: "\EA4E";
+$icon-sound-on: "\EA51";
 .icon-sound-on:before {
   content: $icon-sound-on
 }
 
-$icon-stop-circle: "\EA4F";
+$icon-stop-circle: "\EA52";
 .icon-stop-circle:before {
   content: $icon-stop-circle
 }
 
-$icon-table: "\EA50";
+$icon-stop: "\EA53";
+.icon-stop:before {
+  content: $icon-stop
+}
+
+$icon-table: "\EA54";
 .icon-table:before {
   content: $icon-table
 }
 
-$icon-torrent: "\EA51";
+$icon-torrent: "\EA55";
 .icon-torrent:before {
   content: $icon-torrent
 }
 
-$icon-trash: "\EA52";
+$icon-trash: "\EA56";
 .icon-trash:before {
   content: $icon-trash
 }
 
-$icon-warning: "\EA53";
+$icon-warning: "\EA57";
 .icon-warning:before {
   content: $icon-warning
 }
 
-$icon-websocket: "\EA54";
+$icon-websocket: "\EA58";
 .icon-websocket:before {
   content: $icon-websocket
 }
 
-$icon-zoom-out: "\EA55";
+$icon-zoom-out: "\EA59";
 .icon-zoom-out:before {
   content: $icon-zoom-out
 }
 
-$icon-zoom: "\EA56";
+$icon-zoom: "\EA5A";
 .icon-zoom:before {
   content: $icon-zoom
 }
