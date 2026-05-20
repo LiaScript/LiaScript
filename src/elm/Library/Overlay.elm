@@ -506,7 +506,7 @@ overlayDiv attr model inside =
     div
         (List.append
             [ style "position" "absolute"
-            , style "z-index" "50"
+            , style "z-index" "150"
             , style "background" "#000"
             , onKeyDownPreventDefault model.mode
             , attribute "tabindex" "0"
