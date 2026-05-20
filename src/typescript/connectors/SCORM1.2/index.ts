@@ -14,7 +14,7 @@ import { getAPI } from './discovery'
  */
 class Connector extends Base.Connector {
   private scorm?: SCORM
-  private location: number | null
+  private location: number | null = null
   private active: boolean
 
   // used to handle OPAL strings
@@ -52,7 +52,7 @@ class Connector extends Base.Connector {
     this.id = { quiz: [], survey: [], task: [] }
 
     console.warn(
-      `Hello, this is LiaScript from within a SCORM 1.2 package. You should definitely try out the SCORM 2004 exporter, since this one cannot be used to store states or any kind of progress. The only thing that is stores, is currently the user location...
+      `Hello, this is LiaScript from within a SCORM 1.2 package. You should definitely try out the SCORM 2004 exporter. This allows to store more complex states...
 
 IF YOU ARE AN ELABORATE AND EXPERIENCED SCORM DEVELOPER?
 ========================================================
@@ -68,7 +68,7 @@ Have fun ;-)`
     }
     // Use the discovery algorithm to find the SCORM API
     else {
-      this.scorm = getAPI()
+      this.scorm = getAPI(window) || getAPI(window.parent)
     }
 
     if (this.scorm) {
@@ -104,6 +104,9 @@ Have fun ;-)`
 
       this.init()
     }
+    else {
+      WARN('Could not find the SCORM API, LiaScript will not work properly!')
+    }
   }
 
   init() {
@@ -114,10 +117,10 @@ Have fun ;-)`
 
       WARN(
         'Running in "' +
-          mode +
-          '" mode, results will' +
-          (this.active ? ' ' : ' NOT ') +
-          'be stored!'
+        mode +
+        '" mode, results will' +
+        (this.active ? ' ' : ' NOT ') +
+        'be stored!'
       )
 
       LOG('open location ...')
@@ -149,7 +152,7 @@ Have fun ;-)`
       }
 
       // calculate the new/old scoring value
-      window['SCORE'] = 0
+      (window as any)['SCORE'] = 0
       this.score()
     }
   }
@@ -283,8 +286,8 @@ Have fun ;-)`
       score,
       'surveys =>',
       `${surveySubmitted}/${surveyCount}`
-    )
-    window['SCORE'] = score
+    );
+    (window as any)['SCORE'] = score
   }
 
   /**
@@ -368,7 +371,7 @@ Have fun ;-)`
       try {
         this.scorm.LMSSetValue(uri, data)
         this.scorm.LMSCommit('')
-      } catch (e) {
+      } catch (e: any) {
         WARN('Failed to write =>', uri, data)
         WARN('Message:', e.message)
 
@@ -475,20 +478,22 @@ Have fun ;-)`
    * @param record
    */
   storeHelper(record: Base.Record) {
-    for (let i = 0; i < this.db[record.table][record.id].length; i++) {
-      if (Utils.neq(record.data[i], this.db[record.table][record.id][i])) {
-        this.setObjective(this.id[record.table][record.id][i], record.data[i])
+    const table = record.table as 'quiz' | 'survey' | 'task'
+
+    for (let i = 0; i < this.db[table][record.id].length; i++) {
+      if (Utils.neq(record.data[i], this.db[table][record.id][i])) {
+        this.setObjective(this.id[table][record.id][i], record.data[i])
 
         // store the changed data in memory
-        this.db[record.table][record.id][i] = record.data[i]
+        this.db[table][record.id][i] = record.data[i]
 
         // mark quizzes if possible
-        if (record.table == 'quiz') {
-          this.updateQuiz(this.id[record.table][record.id][i], record.data[i])
+        if (table == 'quiz') {
+          this.updateQuiz(this.id[table][record.id][i], record.data[i])
         }
         // mark surveys if submitted
-        else if (record.table == 'survey' && record.data[i].submitted) {
-          this.updateSurvey(this.id[record.table][record.id][i], record.data[i])
+        else if (table == 'survey' && record.data[i].submitted) {
+          this.updateSurvey(this.id[table][record.id][i], record.data[i])
         }
       }
     }
@@ -540,8 +545,8 @@ Have fun ;-)`
  *
  * @param args
  */
-function LOG(...args) {
-  console.log('SCORM1.2: ', ...args)
+function LOG(...args: unknown[]) {
+  if (window.LIA.debug) console.log('SCORM1.2: ', ...args)
 }
 
 /**
@@ -551,7 +556,7 @@ function LOG(...args) {
  *
  * @param args
  */
-function WARN(...args) {
+function WARN(...args: unknown[]) {
   console.log('SCORM1.2: ', ...args)
 }
 

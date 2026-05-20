@@ -27,6 +27,7 @@ type alias Model a =
     , comments : Dict Int Element
     , javascript : Scripts a
     , speaking : Maybe Int
+    , paused : Maybe Int
     }
 
 
@@ -215,4 +216,5 @@ init =
         0
         Dict.empty
         Array.empty
+        Nothing
         Nothing
