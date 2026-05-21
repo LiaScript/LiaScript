@@ -8,7 +8,8 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick)
+import Html.Events exposing (on, onClick)
+import Json.Decode as JD
 import Html.Keyed as Keyed
 import I18n.Translations as Trans exposing (Lang)
 import Lia.Chat.View as Chat
@@ -22,7 +23,7 @@ import Lia.Markdown.Inline.View exposing (audio, onError, view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Section exposing (Section, SubSection)
-import Lia.Settings.Types exposing (Mode(..), Settings, TTS)
+import Lia.Settings.Types exposing (Mode(..), PlaybackState(..), Settings, TTS)
 import Lia.Settings.Update as Settings_
 import Lia.Settings.View as Settings
 import Lia.Sync.Types as Sync_
@@ -361,14 +362,20 @@ slideBottom { lang, tiny, settings, slide, effects } =
                         Attr.class ""
                     ]
                     [ Html.div [ Attr.class "lia-responsive-voice__control" ]
-                        [ btnReplay lang sound settings
-                        , responsiveVoice
-                            { lang = lang
-                            , tiny = tiny
-                            , show = sound
-                            , tts = settings.tts
-                            , audio = Effect.getAudioRecordings effects
-                            }
+                        [ Html.div [ Attr.class "lia-responsive-voice__playgroup" ]
+                            [ btnReplay lang sound settings
+                            , btnPause lang sound settings
+                            ]
+                        , Html.div [ Attr.class "lia-responsive-voice__center" ]
+                            [ audioProgressSlider sound (not (List.isEmpty (Effect.getAudioRecordings effects ++ Effect.getVideoRecordings effects))) settings
+                            , responsiveVoice
+                                { lang = lang
+                                , tiny = tiny
+                                , show = sound
+                                , tts = settings.tts
+                                , audio = Effect.getAudioRecordings effects ++ Effect.getVideoRecordings effects
+                                }
+                            ]
                         , btnStop lang settings
                         ]
                     ]
@@ -377,9 +384,18 @@ slideBottom { lang, tiny, settings, slide, effects } =
 
 btnReplay : Lang -> Bool -> Settings -> Html Msg
 btnReplay lang soundEnabled settings =
+    let
+        isActive =
+            case settings.playback of
+                Idle ->
+                    False
+
+                _ ->
+                    True
+    in
     Lia.Utils.btnIcon
         { title =
-            if settings.speaking then
+            if isActive then
                 Trans.baseStop lang
 
             else
@@ -387,19 +403,153 @@ btnReplay lang soundEnabled settings =
         , tabbable = settings.sound
         , msg =
             if soundEnabled && settings.sound then
-                Just (TTSReplay (not settings.speaking))
+                Just (TTSReplay (not isActive))
 
             else
                 Nothing
         , icon =
-            if settings.speaking then
-                "icon-stop-circle"
+            if isActive then
+                "icon-stop"
 
             else
-                "icon-play-circle"
+                "icon-play"
         }
         [ Attr.id "lia-btn-sound"
         , Attr.class "lia-btn--transparent lia-responsive-voice__play"
+        ]
+
+
+btnPause : Lang -> Bool -> Settings -> Html Msg
+btnPause _ soundEnabled settings =
+    let
+        isPaused =
+            case settings.playback of
+                Paused ->
+                    True
+
+                PausedWithProgress _ ->
+                    True
+
+                SeekingFromPaused _ ->
+                    True
+
+                _ ->
+                    False
+
+        isActive =
+            case settings.playback of
+                Idle ->
+                    False
+
+                _ ->
+                    True
+    in
+    Lia.Utils.btnIcon
+        { title =
+            if isPaused then
+                "Resume"
+
+            else
+                "Pause"
+        , tabbable = soundEnabled && settings.sound && isActive
+        , msg =
+            if not (soundEnabled && settings.sound && isActive) then
+                Nothing
+
+            else if isPaused then
+                Just TTSResume
+
+            else
+                Just TTSPause
+        , icon =
+            if isPaused then
+                "icon-play"
+
+            else
+                "icon-pause"
+        }
+        [ Attr.class "lia-btn--transparent"
+        , Attr.disabled (not (soundEnabled && settings.sound && isActive))
+        ]
+
+
+audioProgressSlider : Bool -> Bool -> Settings -> Html Msg
+audioProgressSlider soundEnabled hasRecordings settings =
+    let
+        progressData =
+            case settings.playback of
+                SpeakingWithProgress p ->
+                    Just ( p, False )
+
+                PausedWithProgress p ->
+                    Just ( p, False )
+
+                SeekingFromPlaying p ->
+                    Just ( p, True )
+
+                SeekingFromPaused p ->
+                    Just ( p, True )
+
+                _ ->
+                    Nothing
+    in
+    let
+        visible =
+            case progressData of
+                Just ( p, _ ) ->
+                    soundEnabled && settings.sound && p.total > 0
+
+                Nothing ->
+                    False
+
+        ( current, total, isSeeking ) =
+            case progressData of
+                Just ( p, s ) ->
+                    ( p.current, p.total, s )
+
+                Nothing ->
+                    ( 0, 1, False )
+    in
+    Html.div
+        [ Attr.class "lia-tts-progress"
+        , Attr.style "display"
+            (if hasRecordings && settings.sound then
+                "flex"
+
+             else
+                "none"
+            )
+        ]
+        [ Html.input
+            ([ Attr.type_ "range"
+             , Attr.disabled (not visible)
+             , Attr.min "0"
+             , Attr.max (String.fromFloat total)
+             , Attr.step "0.1"
+             , Attr.class "lia-tts-progress__slider"
+             , on "mousedown" (JD.succeed TTSStartSeeking)
+             , on "touchstart" (JD.succeed TTSStartSeeking)
+             , on "change"
+                (JD.map
+                    (\s ->
+                        case String.toFloat s of
+                            Just seconds ->
+                                TTSSeek seconds
+
+                            Nothing ->
+                                TTSSeek current
+                    )
+                    (JD.at [ "target", "value" ] JD.string)
+                )
+             ]
+                ++ (if isSeeking then
+                        []
+
+                    else
+                        [ Attr.value (String.fromFloat current) ]
+                   )
+            )
+            []
         ]
 
 

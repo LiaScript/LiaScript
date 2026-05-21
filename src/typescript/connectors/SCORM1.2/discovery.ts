@@ -1,7 +1,7 @@
 var findAPITries = 0
 
 // source: https://scorm.com/scorm-explained/technical-scorm/run-time/api-discovery-algorithms/
-function findAPI(win) {
+function findAPI(win: Window): any {
   // Check to see if the window (win) contains the API
   // if the window (win) does not contain the API and
   // the window (win) has a parent window and the parent window
@@ -24,24 +24,24 @@ function findAPI(win) {
   return win.API
 }
 
-export function getAPI() {
+export function getAPI(win: Window): any {
   // start by looking for the API in the current window
-  var theAPI = findAPI(window)
+  var theAPI = findAPI(win)
 
   // if the API is null (could not be found in the current window)
   // and the current window has an opener window
   if (
     theAPI == null &&
-    window.opener != null &&
-    typeof window.opener != 'undefined'
+    win.opener != null &&
+    typeof win.opener != 'undefined'
   ) {
     // try to find the API in the current window’s opener
-    theAPI = findAPI(window.opener)
+    theAPI = findAPI(win.opener)
   }
   // if the API has not been found
   if (theAPI == null) {
     // Alert the user that the API Adapter could not be found
-    alert('Unable to find the SCORM1.2 API adapter')
+    // alert('Unable to find the SCORM1.2 API adapter')
   }
   return theAPI
 }

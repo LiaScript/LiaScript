@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.9] - 20/05/2026
+
+- improve audio control with an additional pause functionality for long text and video comments.
+- fix: z-index for tts video comments
+- fix: SCORM detection algorithms for scorm-cloud
+
 ## [1.0.8] - 12/05/2026
 
 - fix: multiple script execution bug fixes

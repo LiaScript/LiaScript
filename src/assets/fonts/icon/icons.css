@@ -443,120 +443,136 @@
   content: "\EA39"
 }
 
-.icon-pencil:before {
+.icon-pause-circle:before {
   content: "\EA3A"
 }
 
-.icon-person:before {
+.icon-pause:before {
   content: "\EA3B"
 }
 
-.icon-piechart:before {
+.icon-pencil:before {
   content: "\EA3C"
 }
 
-.icon-play-circle:before {
+.icon-person:before {
   content: "\EA3D"
 }
 
-.icon-plus:before {
+.icon-piechart:before {
   content: "\EA3E"
 }
 
-.icon-presentation:before {
+.icon-play-circle:before {
   content: "\EA3F"
 }
 
-.icon-pubnub:before {
+.icon-play:before {
   content: "\EA40"
 }
 
-.icon-radar:before {
+.icon-plus:before {
   content: "\EA41"
 }
 
-.icon-refresh:before {
+.icon-presentation:before {
   content: "\EA42"
 }
 
-.icon-resolve:before {
+.icon-pubnub:before {
   content: "\EA43"
 }
 
-.icon-sankey:before {
+.icon-radar:before {
   content: "\EA44"
 }
 
-.icon-scatterplot:before {
+.icon-refresh:before {
   content: "\EA45"
 }
 
-.icon-search:before {
+.icon-resolve:before {
   content: "\EA46"
 }
 
-.icon-send:before {
+.icon-sankey:before {
   content: "\EA47"
 }
 
-.icon-settings:before {
+.icon-scatterplot:before {
   content: "\EA48"
 }
 
-.icon-slides:before {
+.icon-search:before {
   content: "\EA49"
 }
 
-.icon-social:before {
+.icon-send:before {
   content: "\EA4A"
 }
 
-.icon-sort-asc:before {
+.icon-settings:before {
   content: "\EA4B"
 }
 
-.icon-sort-desc:before {
+.icon-slides:before {
   content: "\EA4C"
 }
 
-.icon-sound-off:before {
+.icon-social:before {
   content: "\EA4D"
 }
 
-.icon-sound-on:before {
+.icon-sort-asc:before {
   content: "\EA4E"
 }
 
-.icon-stop-circle:before {
+.icon-sort-desc:before {
   content: "\EA4F"
 }
 
-.icon-table:before {
+.icon-sound-off:before {
   content: "\EA50"
 }
 
-.icon-torrent:before {
+.icon-sound-on:before {
   content: "\EA51"
 }
 
-.icon-trash:before {
+.icon-stop-circle:before {
   content: "\EA52"
 }
 
-.icon-warning:before {
+.icon-stop:before {
   content: "\EA53"
 }
 
-.icon-websocket:before {
+.icon-table:before {
   content: "\EA54"
 }
 
-.icon-zoom-out:before {
+.icon-torrent:before {
   content: "\EA55"
 }
 
-.icon-zoom:before {
+.icon-trash:before {
   content: "\EA56"
+}
+
+.icon-warning:before {
+  content: "\EA57"
+}
+
+.icon-websocket:before {
+  content: "\EA58"
+}
+
+.icon-zoom-out:before {
+  content: "\EA59"
+}
+
+.icon-zoom:before {
+  content: "\EA5A"
 }
 
 
