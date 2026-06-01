@@ -9,9 +9,9 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (on, onClick)
-import Json.Decode as JD
 import Html.Keyed as Keyed
 import I18n.Translations as Trans exposing (Lang)
+import Json.Decode as JD
 import Lia.Chat.View as Chat
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
@@ -326,7 +326,8 @@ slideBottom { lang, tiny, settings, slide, effects } =
                         Attr.class ""
                     ]
                     [ Html.div [ Attr.class "lia-responsive-voice__control" ]
-                        [ Html.div [ Attr.class "lia-responsive-voice__playgroup" ]
+                        [ Html.div
+                            [ Attr.class "lia-responsive-voice__playgroup" ]
                             [ btnReplay lang sound settings
                             , btnPause lang sound settings
                             ]
@@ -379,7 +380,7 @@ btnReplay lang soundEnabled settings =
                 "icon-play"
         }
         [ Attr.id "lia-btn-sound"
-        , Attr.class "lia-btn--transparent lia-responsive-voice__play"
+        , Attr.class "lia-btn--transparent lia-responsive-voice__play "
         ]
 
 
