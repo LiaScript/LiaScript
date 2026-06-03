@@ -117,8 +117,9 @@ viewMessage config peers ( id, message ) =
         [ Html.div
             [ Attr.style "float" "right"
             , Attr.style "color" "#888"
-            , Attr.style "font-size" "0.75rem"
+            , Attr.style "font-size" "1.1rem"
             , Attr.style "margin-top" "-1.1rem"
+            , Attr.style "text-decoration" "overline"
             , Attr.style "display" <|
                 if String.isEmpty peerName then
                     "none"
@@ -126,7 +127,7 @@ viewMessage config peers ( id, message ) =
                 else
                     "block"
             ]
-            [ peerName |> Html.text ]
+            [ Html.strong [] [ Html.text peerName ] ]
         ]
         |> Html.div
             [ Attr.style "margin" "0.45rem 0.5rem"
