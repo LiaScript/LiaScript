@@ -21,6 +21,7 @@ export class Sync extends Base.Sync {
     room: string
     password?: string
     config?: { url: string }
+    name: string
   }) {
     super.connect(data)
 

@@ -44,6 +44,7 @@ type alias Cursor =
     , project : Int
     , file : Int
     , state : Editor.Cursor
+    , name : String
     }
 
 
@@ -302,10 +303,11 @@ decodeCursors =
 
 decodeCursor : JD.Decoder Cursor
 decodeCursor =
-    JD.map6 Cursor
+    JD.map7 Cursor
         (JD.field "id" JD.string)
         (JD.field "color" JD.string)
         (JD.field "section" JD.int)
         (JD.field "project" JD.int)
         (JD.field "file" JD.int)
         (JD.field "state" Editor.decodeCursor)
+        (JD.field "name" JD.string)

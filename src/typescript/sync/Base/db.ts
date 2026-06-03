@@ -476,7 +476,7 @@ export class CRDT {
         position: { row: number; column: number }
         selection: [] | [number, number, number, number]
       }
-    },
+    }, name: string
   ) {
     this.awareness?.setLocalStateField('cursor', {
       id: this.peerID,
@@ -485,6 +485,7 @@ export class CRDT {
       file: cursor.file,
       state: cursor.state,
       color: this.getColor(),
+      name: name,
     })
   }
 

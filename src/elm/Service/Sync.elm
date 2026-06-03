@@ -48,11 +48,8 @@ connect param =
             , ( "persistent", JE.bool param.persistent )
             , ( "fullBackend", JE.string (Via.toString True param.backend) )
             , ( "name"
-              , if String.isEmpty param.name then
-                    JE.null
-
-                else
-                    JE.string param.name
+              , param.name
+                    |> JE.string
               )
             , ( "config"
               , case param.backend of

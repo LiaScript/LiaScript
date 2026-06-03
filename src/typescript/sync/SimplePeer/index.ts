@@ -22,14 +22,15 @@ export class Sync extends Base.Sync {
     room: string
     password?: string
     config?: { signaling?: string; iceServers?: string }
+    name: string
   }) {
     super.connect(data)
 
     this.signaling = data.config?.signaling
       ? data.config.signaling
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean)
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
       : undefined
 
     if (!this.signaling || this.signaling.length === 0) {

@@ -39,6 +39,7 @@ export class Sync extends Base.Sync {
       userId: string
       accessToken: string
     }
+    name: string
   }) {
     super.connect(data)
     this.config = data.config
@@ -99,5 +100,5 @@ export class Sync extends Base.Sync {
   }
 
   // Avoid annoying warnings
-  broadcast(data: Uint8Array): void {}
+  broadcast(data: Uint8Array): void { }
 }

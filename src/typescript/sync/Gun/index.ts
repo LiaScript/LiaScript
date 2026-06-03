@@ -50,7 +50,7 @@ export class Sync extends Base.Sync {
     course: string
     room: string
     password?: string
-    name?: string
+    name: string
     config?: { urls: string[]; persistent: boolean }
   }) {
     super.connect(data)

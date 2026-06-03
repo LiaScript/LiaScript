@@ -326,7 +326,7 @@ update session model msg =
         Connect ->
             case ( sync.sync.select, sync.state ) of
                 ( Just ( True, backend ), Disconnected ) ->
-                    { model | sync = { sync | state = Pending, sync = closeSelect sync.sync } }
+                    { model | sync = { sync | state = Pending, sync = closeSelect sync.sync, name = String.trim sync.name } }
                         |> Return.val
                         |> Return.batchEvent
                             (Service.Sync.connect
@@ -339,7 +339,7 @@ update session model msg =
                                 -- checked (and disabled) for a Local backend,
                                 -- so it must always actually persist too
                                 , persistent = sync.persistent || backend == Backend.Local
-                                , name = sync.name
+                                , name = String.trim sync.name
                                 }
                             )
 

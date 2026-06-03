@@ -50,6 +50,7 @@ export class Sync extends Base.Sync {
     room: string
     password?: string
     config?: string[]
+    name: string
   }) {
     super.connect(data)
 

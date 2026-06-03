@@ -53,7 +53,7 @@ export class Sync {
    * to classrooms without new identification
    */
   protected token: string
-  protected name?: string
+  protected name: string = ''
 
   /** This is a simple semaphore, used to block any execution until all
    * required JavaScript libraries are loaded.
@@ -189,13 +189,14 @@ export class Sync {
     password?: string
     persistent?: boolean
     fullBackend?: string
-    name?: string
+    name: string
     config?: any
   }) {
     this.room = data.room
     this.course = data.course
     this.password = data.password
-    this.name = data.name
+
+    this.name = data.name.trim()
 
     this.isConnected = true
 
@@ -451,7 +452,7 @@ export class Sync {
 
       case 'cursor': {
         if (event.track?.[0][0] == 'code') {
-          this.db.setCursor(event.track[0][1], event.message.param)
+          this.db.setCursor(event.track[0][1], event.message.param, this.name)
         }
         break
       }

@@ -23,6 +23,7 @@ export class Sync extends Base.Sync {
     course: string
     room: string
     password?: string
+    name: string
     config?: {
       host?: string
       port?: string

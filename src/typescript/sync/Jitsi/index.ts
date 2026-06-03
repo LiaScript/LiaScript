@@ -16,6 +16,7 @@ export class Sync extends Base.Sync {
     room: string
     password?: string
     config?: any
+    name: string
   }) {
     super.connect(data)
     this.domain = data.config || 'meet.jit.si'
