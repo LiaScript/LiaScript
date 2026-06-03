@@ -37,9 +37,9 @@ update { msg, definition, model, sync } =
         UpdateMarkdown id childMsg ->
             case Dict.get id model.messages of
                 Just section ->
-                    section
+                    section.section
                         |> Markdown.update sync definition childMsg
-                        |> Return.mapValCmd (\sec -> { model | messages = Dict.insert id sec model.messages }) (UpdateMarkdown id)
+                        |> Return.mapValCmd (\sec -> { model | messages = Dict.insert id { section = sec, peer = section.peer } model.messages }) (UpdateMarkdown id)
 
                 Nothing ->
                     model |> Return.val
@@ -53,9 +53,9 @@ update { msg, definition, model, sync } =
                     in
                     case Dict.get id_ model.messages of
                         Just section ->
-                            section
+                            section.section
                                 |> Markdown.handle sync definition topic e
-                                |> Return.mapValCmd (\sec -> { model | messages = Dict.insert id_ sec model.messages }) (UpdateMarkdown id_)
+                                |> Return.mapValCmd (\sec -> { model | messages = Dict.insert id_ { section = sec, peer = section.peer } model.messages }) (UpdateMarkdown id_)
 
                         _ ->
                             Return.val model

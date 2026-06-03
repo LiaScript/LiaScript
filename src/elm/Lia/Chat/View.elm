@@ -3,7 +3,7 @@ module Lia.Chat.View exposing (view)
 import Accessibility.Aria as A11y
 import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
-import Dict
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Keyed as Keyed
@@ -18,8 +18,8 @@ import Lia.Section exposing (Section)
 import Lia.Utils exposing (btnIcon, noTranslate)
 
 
-view : Lang -> Bool -> (Section -> Config Markdown.Msg) -> Model -> Html Msg
-view lang lightMode config model =
+view : Lang -> Bool -> (Section -> Config Markdown.Msg) -> Dict String String -> Model -> Html Msg
+view lang lightMode config peers model =
     Html.div
         (noTranslate
             [ Attr.style "width" "100%"
@@ -32,7 +32,7 @@ view lang lightMode config model =
         )
         [ model.messages
             |> Dict.toList
-            |> List.map (viewMessage config)
+            |> List.map (viewMessage config peers)
             |> Keyed.node "article"
                 [ Attr.style "display" "flex"
                 , Attr.style "flex-direction" "column"
@@ -96,29 +96,49 @@ view lang lightMode config model =
         ]
 
 
-viewMessage : (Section -> Config Markdown.Msg) -> ( String, Section ) -> ( String, Html Msg )
-viewMessage config ( id, section ) =
+viewMessage : (Section -> Config Markdown.Msg) -> Dict String String -> ( String, { section : Section, peer : String } ) -> ( String, Html Msg )
+viewMessage config peers ( id, message ) =
     let
         id_ =
             id
                 |> String.toInt
                 |> Maybe.withDefault -1
+
+        peerName =
+            Dict.get message.peer peers
+                |> Maybe.withDefault ""
     in
-    section
-        |> config
-        |> Config.setID id_
-        |> Markdown.viewContent
+    List.append
+        (message.section
+            |> config
+            |> Config.setID id_
+            |> Markdown.viewContent
+        )
+        [ Html.div
+            [ Attr.style "float" "right"
+            , Attr.style "color" "#888"
+            , Attr.style "font-size" "0.75rem"
+            , Attr.style "margin-top" "-1.1rem"
+            , Attr.style "display" <|
+                if String.isEmpty peerName then
+                    "none"
+
+                else
+                    "block"
+            ]
+            [ peerName |> Html.text ]
+        ]
         |> Html.div
             [ Attr.style "margin" "0.45rem 0.5rem"
             , Attr.style "box-shadow" "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)"
             , Attr.style
                 "padding"
               <|
-                if section.effect_model.effects == 0 then
+                if message.section.effect_model.effects == 0 then
                     "1rem 1rem 0.1rem"
 
                 else
                     "1rem 1rem 0.1rem 3rem"
             ]
         |> Html.map (UpdateMarkdown id)
-        |> Tuple.pair id
+        |> Tuple.pair (id ++ message.peer)

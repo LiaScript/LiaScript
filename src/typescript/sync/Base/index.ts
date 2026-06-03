@@ -53,6 +53,7 @@ export class Sync {
    * to classrooms without new identification
    */
   protected token: string
+  protected name?: string
 
   /** This is a simple semaphore, used to block any execution until all
    * required JavaScript libraries are loaded.
@@ -128,38 +129,38 @@ export class Sync {
       token,
       useInternalCallback
         ? (event, origin) => {
-            if (self.db) {
-              switch (origin) {
-                case 'cursor': {
-                  this.sync('update', { cmd: 'cursor', param: event })
-                  break
-                }
-                case 'peer': {
-                  this.sync('update', { cmd: 'peer', param: event })
-                  break
-                }
-                case 'code': {
-                  this.sync('update', { cmd: 'code', param: event })
-                  break
-                }
-                case 'quiz': {
-                  this.sync('update', { cmd: 'quiz', param: event })
-                  break
-                }
-                case 'survey': {
-                  this.sync('update', { cmd: 'survey', param: event })
-                  break
-                }
-                case 'chat': {
-                  this.sync('update', { cmd: 'chat', param: event })
-                  break
-                }
-                default: {
-                  console.warn('Sync unknown origin', origin)
-                }
+          if (self.db) {
+            switch (origin) {
+              case 'cursor': {
+                this.sync('update', { cmd: 'cursor', param: event })
+                break
+              }
+              case 'peer': {
+                this.sync('update', { cmd: 'peer', param: event })
+                break
+              }
+              case 'code': {
+                this.sync('update', { cmd: 'code', param: event })
+                break
+              }
+              case 'quiz': {
+                this.sync('update', { cmd: 'quiz', param: event })
+                break
+              }
+              case 'survey': {
+                this.sync('update', { cmd: 'survey', param: event })
+                break
+              }
+              case 'chat': {
+                this.sync('update', { cmd: 'chat', param: event })
+                break
+              }
+              default: {
+                console.warn('Sync unknown origin', origin)
               }
             }
           }
+        }
         : undefined,
     )
   }
@@ -188,11 +189,13 @@ export class Sync {
     password?: string
     persistent?: boolean
     fullBackend?: string
+    name?: string
     config?: any
   }) {
     this.room = data.room
     this.course = data.course
     this.password = data.password
+    this.name = data.name
 
     this.isConnected = true
 

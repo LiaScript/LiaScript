@@ -8,6 +8,10 @@ export type Section = {
 
 export type Vector = Section[]
 
+export type Peer = {
+  [id: string]: string | null
+}
+
 export type Cursor = {
   id: string
   section: number

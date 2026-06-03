@@ -99,7 +99,7 @@ export class Sync extends Base.Sync {
       this.provider = new GenericProvider(this.db.doc, this.transport)
 
       // Wire awareness for ephemeral peer presence and cursors.
-      this.db.setAwareness(this.provider.awareness)
+      this.db.setAwareness(this.provider.awareness, this.name)
 
       // Same two-path connect as Gun:
       //  A) First peer: 'synced' never fires (no remote to exchange SyncStep2).

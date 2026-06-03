@@ -759,9 +759,13 @@ input { active, msg, label, type_, value, placeholder, autocomplete } =
              , Attr.style "width" "100%"
              , Attr.placeholder placeholder
              ]
-                |> CList.addWhen
-                    (autocomplete
-                        |> Maybe.map (Attr.attribute "autocomplete")
+                |> List.append
+                    (case autocomplete of
+                        Just autoc ->
+                            [ Attr.name autoc, Attr.attribute "autocomplete" autoc ]
+
+                        Nothing ->
+                            []
                     )
             )
             []

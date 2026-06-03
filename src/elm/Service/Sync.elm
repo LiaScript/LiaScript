@@ -13,6 +13,7 @@ connect :
     , room : String
     , password : String
     , persistent : Bool
+    , name : String
     }
     -> Event
 connect param =
@@ -46,6 +47,13 @@ connect param =
               )
             , ( "persistent", JE.bool param.persistent )
             , ( "fullBackend", JE.string (Via.toString True param.backend) )
+            , ( "name"
+              , if String.isEmpty param.name then
+                    JE.null
+
+                else
+                    JE.string param.name
+              )
             , ( "config"
               , case param.backend of
                     Via.GUN { urls, persistent } ->

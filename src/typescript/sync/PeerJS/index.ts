@@ -77,7 +77,7 @@ export class Sync extends Base.Sync {
 
         this.provider = new GenericProvider(this.db.doc, this.transport)
 
-        this.db.setAwareness(this.provider.awareness)
+        this.db.setAwareness(this.provider.awareness, this.name)
 
         let syncedOnce = false
 

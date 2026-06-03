@@ -50,6 +50,7 @@ export class Sync extends Base.Sync {
     course: string
     room: string
     password?: string
+    name?: string
     config?: { urls: string[]; persistent: boolean }
   }) {
     super.connect(data)
@@ -98,7 +99,7 @@ export class Sync extends Base.Sync {
 
       // Hand awareness to the CRDT so peer presence and cursors are
       // handled ephemerally instead of via persistent Y.Map entries.
-      this.db.setAwareness(this.provider.awareness)
+      this.db.setAwareness(this.provider.awareness, this.name)
 
       // sendConnect() must only be called once, after the Yjs state-vector
       // exchange is complete so that db.init() (triggered by LiaScript's

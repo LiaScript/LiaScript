@@ -29,7 +29,6 @@ import Lia.Sync.Classroom as Classroom
 import Lia.Sync.Container as Container exposing (Container)
 import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
-import Set exposing (Set)
 
 
 type State
@@ -61,7 +60,8 @@ type alias Settings =
     , state : State
     , room : String
     , password : String
-    , peers : Set String
+    , name : String
+    , peers : Dict String String
     , error : Maybe String
     , data : Data
     , scriptsEnabled : Bool
@@ -120,7 +120,8 @@ init supportedBackends =
     , state = Disconnected
     , room = ""
     , password = ""
-    , peers = Set.empty
+    , name = ""
+    , peers = Dict.empty
     , error = Nothing
     , data =
         { cursor = []
@@ -217,7 +218,7 @@ filter settings container =
                     |> List.member main
             then
                 container
-                    |> Dict.filter (filter_ (Set.insert main settings.peers))
+                    |> Dict.filter (filter_ (Dict.insert main settings.name settings.peers))
                     |> Dict.values
                     |> Just
 
@@ -246,9 +247,9 @@ get settings selector id1 id2 =
 --         Nothing
 
 
-filter_ : Set String -> String -> sync -> Bool
+filter_ : Dict String String -> String -> sync -> Bool
 filter_ ids key _ =
-    Set.member key ids
+    Dict.member key ids
 
 
 {-| Get the own unique user-id only if a connection was established.
@@ -279,7 +280,7 @@ title sync =
                 [ Html.text "Classroom ("
                 , icon "icon-person icon-sm" [ Attr.style "padding-inline-end" "4px" ]
                 , sync.peers
-                    |> Set.size
+                    |> Dict.size
                     |> String.fromInt
                     |> Html.text
                 , Html.text ")"
@@ -289,9 +290,9 @@ title sync =
             Html.text "Classroom (pending)"
 
 
-decodePeers : JD.Decoder (List String)
+decodePeers : JD.Decoder (Dict String String)
 decodePeers =
-    JD.list JD.string
+    JD.dict (JD.maybe JD.string |> JD.map (Maybe.withDefault ""))
 
 
 decodeCursors : JD.Decoder (List Cursor)

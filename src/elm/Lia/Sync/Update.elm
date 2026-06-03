@@ -37,12 +37,12 @@ import Service.Event as Event exposing (Event)
 import Service.Slide
 import Service.Sync
 import Session exposing (Session)
-import Set
 
 
 type Msg
     = Room String
     | Password String
+    | Name String
     | Backend SyncMsg
     | Connect
     | Disconnect
@@ -138,7 +138,7 @@ update session model msg =
                                 | sync =
                                     { sync
                                         | state = Disconnected
-                                        , peers = Set.empty
+                                        , peers = Dict.empty
                                         , error = Just message
                                     }
                             }
@@ -149,7 +149,7 @@ update session model msg =
                                 | sync =
                                     { sync
                                         | state = Disconnected
-                                        , peers = Set.empty
+                                        , peers = Dict.empty
                                         , error = Just "unknown"
                                     }
                             }
@@ -162,7 +162,7 @@ update session model msg =
                                 | sync =
                                     { sync
                                         | state = Connected hashID
-                                        , peers = Set.singleton hashID
+                                        , peers = Dict.singleton hashID sync.name
                                         , error = Nothing
                                     }
                             }
@@ -182,7 +182,7 @@ update session model msg =
                                 | sync =
                                     { sync
                                         | state = Disconnected
-                                        , peers = Set.empty
+                                        , peers = Dict.empty
                                     }
                             }
                                 |> Return.val
@@ -197,7 +197,7 @@ update session model msg =
                         | sync =
                             { sync
                                 | state = Disconnected
-                                , peers = Set.empty
+                                , peers = Dict.empty
                                 , error = Nothing
                                 , data =
                                     { cursor = []
@@ -237,6 +237,10 @@ update session model msg =
 
         Room str ->
             { model | sync = { sync | room = str } }
+                |> Return.val
+
+        Name str ->
+            { model | sync = { sync | name = str } }
                 |> Return.val
 
         Random_Generate ->
@@ -335,6 +339,7 @@ update session model msg =
                                 -- checked (and disabled) for a Local backend,
                                 -- so it must always actually persist too
                                 , persistent = sync.persistent || backend == Backend.Local
+                                , name = sync.name
                                 }
                             )
 
@@ -498,7 +503,6 @@ synchronize model json =
                         | peers =
                             param
                                 |> JD.decodeValue decodePeers
-                                |> Result.map Set.fromList
                                 |> Result.withDefault sync.peers
                     }
             }

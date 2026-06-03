@@ -90,7 +90,7 @@ export class CRDT {
       try {
         const [id] = JSON.parse(key)
         quizIds.add(id)
-      } catch {}
+      } catch { }
     }
     if (quizIds.size > 0) {
       this.callback(
@@ -108,7 +108,7 @@ export class CRDT {
       try {
         const [id] = JSON.parse(key)
         surveyIds.add(id)
-      } catch {}
+      } catch { }
     }
     if (surveyIds.size > 0) {
       this.callback(
@@ -126,7 +126,7 @@ export class CRDT {
       try {
         const [id] = JSON.parse(key)
         codeIds.add(id)
-      } catch {}
+      } catch { }
     }
     if (codeIds.size > 0) {
       this.callback(this.getCode(codeIds), 'code')
@@ -147,10 +147,10 @@ export class CRDT {
     }
   }
 
-  setAwareness(awareness: awarenessProtocol.Awareness) {
+  setAwareness(awareness: awarenessProtocol.Awareness, name?: string) {
     this.awareness = awareness
     // Announce own presence
-    awareness.setLocalState({ peerID: this.peerID, color: this.getColor() })
+    awareness.setLocalState({ peerID: this.peerID, color: this.getColor(), name })
 
     awareness.on(
       'change',
@@ -171,7 +171,7 @@ export class CRDT {
         try {
           const [id] = JSON.parse(key)
           ids.add(id)
-        } catch {}
+        } catch { }
       })
       if (ids.size > 0) {
         this.callback(
@@ -187,7 +187,7 @@ export class CRDT {
         try {
           const [id] = JSON.parse(key)
           ids.add(id)
-        } catch {}
+        } catch { }
       })
       if (ids.size > 0) {
         this.callback(
@@ -228,11 +228,11 @@ export class CRDT {
       for (const event of events) {
         if (event.target === this.codes) {
           // A Y.Text was added/removed from the codes map.
-          ;(event as Y.YMapEvent<any>).keysChanged.forEach((key) => {
+          ; (event as Y.YMapEvent<any>).keysChanged.forEach((key) => {
             try {
               const [id] = JSON.parse(key)
               ids.add(id)
-            } catch {}
+            } catch { }
           })
         } else {
           // A Y.Text content changed.
@@ -241,7 +241,7 @@ export class CRDT {
           try {
             const [id] = JSON.parse(event.path[0] as string)
             ids.add(id)
-          } catch {}
+          } catch { }
         }
       }
 
@@ -322,12 +322,14 @@ export class CRDT {
     return cursors
   }
 
-  getPeers(): string[] {
-    if (!this.awareness) return []
-    const peers: string[] = []
+  getPeers(): State.Peer {
+    if (!this.awareness) return {}
+
+    const peers: State.Peer = {}
     for (const [, state] of this.awareness.getStates()) {
-      if (state?.peerID) peers.push(state.peerID)
+      if (state?.peerID) peers[state.peerID] = state.name
     }
+
     return peers
   }
 
@@ -358,7 +360,7 @@ export class CRDT {
         const peer: string = parsed[2]
         if (!result[qi]) result[qi] = {}
         result[qi][peer] = value
-      } catch {}
+      } catch { }
     }
 
     // Fill sparse holes (questions with no answers yet) with empty objects.

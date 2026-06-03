@@ -86,7 +86,7 @@ view settings =
                                     , Attr.style "padding" "0"
                                     ]
                                 ]
-                        , autocomplete = Nothing
+                        , autocomplete = Just "room"
                         }
                     , Backend.input
                         { active = open && support
@@ -95,7 +95,16 @@ view settings =
                         , type_ = "password"
                         , value = settings.password
                         , placeholder = ""
-                        , autocomplete = Nothing
+                        , autocomplete = Just "password"
+                        }
+                    , Backend.input
+                        { active = open && support
+                        , msg = Name
+                        , label = Html.text "optional name"
+                        , type_ = "text"
+                        , value = settings.name
+                        , placeholder = "Enter your name to be displayed to others"
+                        , autocomplete = Just "name"
                         }
                     , Backend.view (open && support) via
                         |> Html.map Config

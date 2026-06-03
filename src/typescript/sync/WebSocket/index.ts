@@ -50,7 +50,7 @@ export class Sync extends Base.Sync {
         verifyUpdates: false,
       })
 
-      this.db.setAwareness(this.provider.awareness)
+      this.db.setAwareness(this.provider.awareness, this.name)
 
       let syncedOnce = false
 
