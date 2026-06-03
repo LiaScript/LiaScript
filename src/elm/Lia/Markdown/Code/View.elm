@@ -519,6 +519,12 @@ evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync,
                     |> Maybe.andThen String.toInt
                     |> Maybe.withDefault 1
                     |> Editor.firstLineNumber
+                , attr
+                    |> Params.isSet "data-rtl"
+                    |> Editor.rtl
+                , attr
+                    |> Params.isSet "data-rtlText"
+                    |> Editor.rtlText
                 , Editor.showGutter <|
                     if Params.get "data-showGutter" attr /= Nothing then
                         attr
