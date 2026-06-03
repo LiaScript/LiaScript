@@ -187,22 +187,25 @@ list_get idx list =
                 list_get (idx - 1) xs
 
 
-copyToClipboard : Lang -> Bool -> Code -> Int -> Html Msg
-copyToClipboard lang inverted project fileID =
+copyToClipboard : Lang -> Bool -> Bool -> Code -> Int -> Html Msg
+copyToClipboard lang inverted rtl project fileID =
     btnIcon
         { title = Translations.codeCopy lang
         , msg = Just <| CopyToClipboard project fileID
         , icon = "icon-copy"
         , tabbable = True
         }
-        [ Attr.class "lia-btn--transparent"
-        , Attr.class <|
-            if inverted then
-                "lia-code__copy--inverted"
-
-            else
-                "lia-code__copy"
-        ]
+        (CList.appendIf rtl
+            [ Attr.style "left" "4.4rem"
+            , Attr.style "right" "unset"
+            ]
+            [ Attr.classList
+                [ ( "lia-btn--transparent", True )
+                , ( "lia-code__copy--inverted", inverted )
+                , ( "lia-code__copy", not inverted )
+                ]
+            ]
+        )
 
 
 viewCode :
@@ -234,8 +237,10 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1, cursors } i
                 , sync = Maybe.andThen (Array.get id_2) sync
                 , cursors = List.filter (\cursor -> cursor.project == id_1 && cursor.file == id_2) cursors
                 }
-            , copyToClipboard lang
+            , copyToClipboard
+                lang
                 False
+                (Params.isSet "data-rtl" attr)
                 (if isExecutable then
                     Evaluate id_1
 
@@ -287,8 +292,10 @@ viewCode { isExecutable, lang, theme, isRunning, errors, sync, id_1, cursors } i
                         }
                         [ Attr.class "lia-accordion__toggle" ]
                     , Html.h3 [ Attr.class "lia-accordion__headline h4" ] [ Html.text file.name ]
-                    , copyToClipboard lang
+                    , copyToClipboard
+                        lang
                         True
+                        (Params.isSet "data-rtl" attr)
                         (if isExecutable then
                             Evaluate id_1
 
