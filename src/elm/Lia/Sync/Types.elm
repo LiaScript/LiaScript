@@ -222,10 +222,10 @@ isSupportedBy support backend =
                 |> Maybe.withDefault False
 
 
-filter : Settings -> Dict String sync -> Maybe (List sync)
-filter settings container =
-    case id settings.state of
-        Just main ->
+filter : Bool -> Settings -> Dict String sync -> Maybe (List sync)
+filter shouldFilter settings container =
+    case ( id settings.state, shouldFilter ) of
+        ( Just main, True ) ->
             -- only show the result of a voting or quizzes if the user has also solved it ...
             if
                 container
@@ -240,16 +240,38 @@ filter settings container =
             else
                 Nothing
 
+        ( Just _, False ) ->
+            container
+                |> Dict.values
+                |> Just
+
         _ ->
             Nothing
 
 
 get : Maybe Settings -> (Data -> Dict Int (Container sync)) -> Int -> Int -> Maybe (List sync)
 get settings selector id1 id2 =
-    settings
-        |> Maybe.andThen (.data >> selector >> Dict.get id1)
-        |> Maybe.andThen (Container.get id2 >> Maybe.map2 filter settings)
-        |> Maybe.withDefault Nothing
+    case settings of
+        Just s ->
+            if s.mode == Shared then
+                s.data
+                    |> selector
+                    |> Dict.get id1
+                    |> Maybe.andThen (Container.get id2 >> Maybe.map2 (filter True) settings)
+                    |> Maybe.withDefault Nothing
+
+            else if s.mode == Summary && s.owner then
+                s.data
+                    |> selector
+                    |> Dict.get id1
+                    |> Maybe.andThen (Container.get id2 >> Maybe.map2 (filter False) settings)
+                    |> Maybe.withDefault Nothing
+
+            else
+                Nothing
+
+        _ ->
+            Nothing
 
 
 
