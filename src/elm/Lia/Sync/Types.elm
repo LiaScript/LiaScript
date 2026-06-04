@@ -79,6 +79,7 @@ type alias Settings =
     , saved : List Classroom.Entry
     , deletePopup : Maybe ( String, String )
     , mode : ClassroomMode
+    , owner : Bool
     }
 
 
@@ -145,6 +146,7 @@ init supportedBackends =
     , saved = []
     , deletePopup = Nothing
     , mode = Shared
+    , owner = False
     }
 
 
@@ -297,6 +299,12 @@ title sync =
                     |> String.fromInt
                     |> Html.text
                 , Html.text ")"
+                , Html.text <|
+                    if sync.owner && sync.mode /= Shared then
+                        " ✨"
+
+                    else
+                        ""
                 ]
 
         Pending ->

@@ -617,6 +617,21 @@ synchronize model json =
                         |> Return.val
                         |> warn "decoding survey" (JD.errorToString info)
 
+        Ok ( "ownership", param ) ->
+            case JD.decodeValue JD.bool param of
+                Ok ownership ->
+                    let
+                        sync =
+                            model.sync
+                    in
+                    { model | sync = { sync | owner = ownership } }
+                        |> Return.val
+
+                Err info ->
+                    model
+                        |> Return.val
+                        |> warn "decoding ownership" (JD.errorToString info)
+
         Ok ( cmd, _ ) ->
             model
                 |> Return.val

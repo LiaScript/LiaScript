@@ -26,7 +26,7 @@ export class CRDT {
   protected quizzes: Y.Map<any>
   protected surveys: Y.Map<any>
   protected chat: YKeyValue<{ message: String; color: String; user: String }>
-  protected metadata: Y.Map<string>
+  protected metadata: Y.Array<string>
 
   protected length: number
   protected peerID: string
@@ -51,7 +51,7 @@ export class CRDT {
     this.quizzes = this.doc.getMap<any>(QUIZ)
     this.surveys = this.doc.getMap<any>(SURVEY)
     this.chat = new YKeyValue(this.doc.getArray('chat'))
-    this.metadata = this.doc.getMap<string>(META)
+    this.metadata = this.doc.getArray<string>(META)
   }
 
   init(data: State.Vector) {
@@ -64,13 +64,6 @@ export class CRDT {
         this.initText(i, data[i][CODE])
       }
     }, this.peerID)
-
-    // First peer to init() on an empty CRDT claims the initiator slot.
-    // Joining peers see the key already set (CRDT is fully synced before init() runs)
-    // and skip. Y.Map LWW resolves the rare simultaneous-connect race deterministically.
-    if (!this.metadata.has('initiator')) {
-      this.metadata.set('initiator', this.peerID)
-    }
 
     this.registerCallbacks()
 
@@ -503,7 +496,15 @@ export class CRDT {
     this.awareness?.setLocalStateField('cursor', null)
   }
 
-  getInitiator(): string | null {
-    return this.metadata.get('initiator') ?? null
+  claimOwnership() {
+    if (!this.metadata.toArray().includes(this.peerID)) {
+      this.metadata.push([this.peerID])
+    }
+
+    this.callback(this.getOwner() === this.peerID, 'ownership')
+  }
+
+  getOwner(): string | null {
+    return this.metadata.get(0) ?? null
   }
 }

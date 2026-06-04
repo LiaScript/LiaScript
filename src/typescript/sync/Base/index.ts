@@ -155,6 +155,10 @@ export class Sync {
                 this.sync('update', { cmd: 'chat', param: event })
                 break
               }
+              case 'ownership': {
+                this.sync('update', { cmd: 'ownership', param: event })
+                break
+              }
               default: {
                 console.warn('Sync unknown origin', origin)
               }
@@ -298,6 +302,8 @@ export class Sync {
     this.sync('connect', this.token)
 
     if (this.onConnect) this.onConnect()
+
+    setTimeout(() => { this.db.claimOwnership() }, 5000)
   }
 
   pubsubSend(topic: string, message: any) {

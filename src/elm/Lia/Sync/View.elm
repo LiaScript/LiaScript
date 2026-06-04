@@ -545,17 +545,17 @@ viewMode mode =
                     [ Attr.value "0"
                     , Attr.selected <| mode == Shared
                     ]
-                    [ Html.text "Shared" ]
+                    [ Html.text "☮️ Shared" ]
                 , Html.option
                     [ Attr.value "1"
                     , Attr.selected <| mode == Summary
                     ]
-                    [ Html.text "Summary" ]
+                    [ Html.text "🛂 Summary" ]
                 , Html.option
                     [ Attr.value "2"
                     , Attr.selected <| mode == Details
                     ]
-                    [ Html.text "Details" ]
+                    [ Html.text "🛰️ Details" ]
                 ]
             , Html.span []
                 [ Html.text <|
@@ -567,7 +567,7 @@ viewMode mode =
                             "Only the initiator can see the summaries."
 
                         Details ->
-                            "The initiator can see also details per participant."
+                            "(Kremlin mode) The initiator can see also details per participant."
                 ]
             ]
         ]
