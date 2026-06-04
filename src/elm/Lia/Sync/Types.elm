@@ -222,7 +222,7 @@ isSupportedBy support backend =
                 |> Maybe.withDefault False
 
 
-filter : Bool -> Settings -> Dict String sync -> Maybe (List sync)
+filter : Bool -> Settings -> Dict String sync -> Maybe (Dict String sync)
 filter shouldFilter settings container =
     case ( id settings.state, shouldFilter ) of
         ( Just main, True ) ->
@@ -234,22 +234,19 @@ filter shouldFilter settings container =
             then
                 container
                     |> Dict.filter (filter_ (Dict.insert main settings.name settings.peers))
-                    |> Dict.values
                     |> Just
 
             else
                 Nothing
 
         ( Just _, False ) ->
-            container
-                |> Dict.values
-                |> Just
+            Just container
 
         _ ->
             Nothing
 
 
-get : Maybe Settings -> (Data -> Dict Int (Container sync)) -> Int -> Int -> Maybe (List sync)
+get : Maybe Settings -> (Data -> Dict Int (Container sync)) -> Int -> Int -> Maybe (Dict String sync)
 get settings selector id1 id2 =
     case settings of
         Just s ->

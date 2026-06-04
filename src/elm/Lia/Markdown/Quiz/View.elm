@@ -27,6 +27,7 @@ import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
 import Array
 import Conditional.List as CList
+import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import I18n.Translations as Translations
@@ -130,9 +131,9 @@ maybeConfig config quiz vector =
             Nothing
 
 
-viewSync : Config sub -> Maybe (List Sync) -> List (Html msg) -> List (Html msg)
+viewSync : Config sub -> Maybe (Dict String Sync) -> List (Html msg) -> List (Html msg)
 viewSync config syncData quiz =
-    case ( syncData, syncData |> Maybe.map List.length ) of
+    case ( syncData, syncData |> Maybe.map Dict.size ) of
         ( Just _, Just 0 ) ->
             quiz
 
@@ -143,6 +144,7 @@ viewSync config syncData quiz =
 
                 chartData =
                     data
+                        |> Dict.values
                         |> List.Extra.gatherEquals
                         |> List.map
                             (\( i, list ) ->

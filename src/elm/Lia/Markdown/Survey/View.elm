@@ -3,6 +3,7 @@ module Lia.Markdown.Survey.View exposing (view)
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
 import Array
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -120,17 +121,18 @@ view config attr survey model renderedOptions =
     )
 
 
-getSync : Config sub -> Int -> Maybe (List Sync)
+getSync : Config sub -> Int -> Maybe (Dict String Sync)
 getSync config id =
     Sync_.get config.sync .survey config.slide id
 
 
-viewTextSync : Config sub -> Int -> Maybe (List Sync) -> Html msg -> Html msg
+viewTextSync : Config sub -> Int -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewTextSync config lines syncData survey =
     case ( syncData, lines ) of
         ( Just data, 1 ) ->
             case
                 data
+                    |> Dict.values
                     |> Sync.wordCount
                     |> Maybe.map (wordCloud config)
             of
@@ -144,6 +146,7 @@ viewTextSync config lines syncData survey =
             Html.div []
                 [ survey
                 , data
+                    |> Dict.values
                     |> Sync.text
                     |> Maybe.map
                         (List.map textBlock
@@ -161,11 +164,11 @@ viewTextSync config lines syncData survey =
             Html.div [] [ survey ]
 
 
-viewVectorSync : Config sub -> Analysis -> List ( String, body ) -> Maybe (List Sync) -> Html msg -> Html msg
+viewVectorSync : Config sub -> Analysis -> List ( String, Inlines ) -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewVectorSync config analyze questions syncData survey =
     case
         syncData
-            |> Maybe.andThen (Sync.vector (List.map Tuple.first questions))
+            |> Maybe.andThen (Dict.values >> Sync.vector (List.map Tuple.first questions))
     of
         Nothing ->
             survey
@@ -184,11 +187,11 @@ viewVectorSync config analyze questions syncData survey =
                 ]
 
 
-viewMatrixSync : Config sub -> List Inlines -> List String -> Maybe (List Sync) -> Html msg -> Html msg
+viewMatrixSync : Config sub -> List Inlines -> List String -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewMatrixSync config categories questions syncData survey =
     case
         syncData
-            |> Maybe.andThen (Sync.matrix questions)
+            |> Maybe.andThen (Dict.values >> Sync.matrix questions)
             |> Maybe.map (matrixBlock config categories)
     of
         Nothing ->
@@ -198,11 +201,11 @@ viewMatrixSync config categories questions syncData survey =
             Html.div [] [ survey, diagram ]
 
 
-viewSelectSync : Config sub -> List Inlines -> Maybe (List Sync) -> Html msg -> Html msg
+viewSelectSync : Config sub -> List Inlines -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewSelectSync config options syncData survey =
     case
         syncData
-            |> Maybe.andThen (Sync.select (List.length options))
+            |> Maybe.andThen (Dict.values >> Sync.select (List.length options))
             |> Maybe.map (vectorBlockCategory config)
     of
         Nothing ->
