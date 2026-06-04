@@ -24,6 +24,7 @@ export class Sync extends Base.Sync {
     room: string
     password?: string
     name: string
+    mode: number
     config?: {
       host?: string
       port?: string

@@ -23,11 +23,14 @@ import Lia.Sync.Container as Container
 import Lia.Sync.Room as Room
 import Lia.Sync.Types
     exposing
-        ( Settings
+        ( ClassroomMode(..)
+        , Settings
         , State(..)
         , decodeCursors
         , decodePeers
+        , fromClassroomMode
         , id
+        , toClassroomMode
         )
 import Lia.Sync.Via as Backend exposing (Backend)
 import Random
@@ -56,6 +59,7 @@ type Msg
     | CancelDeleteClassroom
     | ConfirmDeleteClassroom String String
     | OpenNotes
+    | ClassroomMode String
 
 
 type SyncMsg
@@ -173,6 +177,7 @@ update session model msg =
                                             { backend = Backend.toString True backend
                                             , course = model.readme
                                             , room = sync.room
+                                            , mode = fromClassroomMode sync.mode
                                             }
                                         |> Session.update
                                     )
@@ -241,6 +246,19 @@ update session model msg =
 
         Name str ->
             { model | sync = { sync | name = str } }
+                |> Return.val
+
+        ClassroomMode mode ->
+            { model
+                | sync =
+                    { sync
+                        | mode =
+                            mode
+                                |> String.toInt
+                                |> Maybe.map toClassroomMode
+                                |> Maybe.withDefault sync.mode
+                    }
+            }
                 |> Return.val
 
         Random_Generate ->
@@ -340,6 +358,7 @@ update session model msg =
                                 -- so it must always actually persist too
                                 , persistent = sync.persistent || backend == Backend.Local
                                 , name = String.trim sync.name
+                                , mode = fromClassroomMode sync.mode
                                 }
                             )
 

@@ -22,6 +22,7 @@ export class Sync extends Base.Sync {
     password?: string
     config?: { url: string }
     name: string
+    mode: number
   }) {
     super.connect(data)
 

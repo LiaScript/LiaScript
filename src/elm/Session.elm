@@ -76,6 +76,7 @@ type alias Room =
     { backend : String
     , course : String
     , room : String
+    , mode : Int
     }
 
 
@@ -199,10 +200,11 @@ setScreen size session =
 
 
 encodeRoom : Room -> String
-encodeRoom { backend, course, room } =
+encodeRoom { backend, course, room, mode } =
     [ ( "backend", JE.string backend )
     , ( "course", JE.string course )
     , ( "room", JE.string room )
+    , ( "mode", JE.int mode )
     ]
         |> JE.object
         |> JE.encode 0
@@ -215,10 +217,11 @@ decodeRoom =
         >> Result.toMaybe
         >> Maybe.andThen
             (JD.decodeString
-                (JD.map3 Room
+                (JD.map4 Room
                     (JD.field "backend" JD.string)
                     (JD.field "course" JD.string)
                     (JD.field "room" JD.string)
+                    (JD.field "mode" JD.int)
                 )
                 >> Result.toMaybe
             )

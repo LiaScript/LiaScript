@@ -54,7 +54,7 @@ export class Sync {
    */
   protected token: string
   protected name: string = ''
-
+  protected mode: number = 0
   /** This is a simple semaphore, used to block any execution until all
    * required JavaScript libraries are loaded.
    */
@@ -190,11 +190,13 @@ export class Sync {
     persistent?: boolean
     fullBackend?: string
     name: string
+    mode: number
     config?: any
   }) {
     this.room = data.room
     this.course = data.course
     this.password = data.password
+    this.mode = data.mode
 
     this.name = data.name.trim()
 
@@ -261,6 +263,7 @@ export class Sync {
         course: this.course,
         room: this.room,
         pw: helper.getHashCode(this.password || ''), // prevent delete from wrong passwords
+        mode: this.mode
       })
     }
 

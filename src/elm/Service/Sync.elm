@@ -14,6 +14,7 @@ connect :
     , password : String
     , persistent : Bool
     , name : String
+    , mode : Int
     }
     -> Event
 connect param =
@@ -38,6 +39,7 @@ connect param =
             -- course-URL, see `Service.Database`
             , ( "uidDB", JE.string param.course )
             , ( "room", JE.string param.room )
+            , ( "mode", JE.int param.mode )
             , ( "password"
               , if String.isEmpty param.password then
                     JE.null

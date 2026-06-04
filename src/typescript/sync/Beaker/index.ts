@@ -19,6 +19,8 @@ export class Sync extends Base.Sync {
     course: string
     room: string
     password?: string
+    name: string
+    mode: number
     config?: any
   }) {
     if (!window.beaker) return

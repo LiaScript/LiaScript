@@ -1,11 +1,13 @@
 module Lia.Sync.Types exposing
-    ( Cursor
+    ( ClassroomMode(..)
+    , Cursor
     , Data
     , Settings
     , State(..)
     , Sync
     , decodeCursors
     , decodePeers
+    , fromClassroomMode
     , get
     , id
     , init
@@ -13,6 +15,7 @@ module Lia.Sync.Types exposing
     , isConnected
     , isSupported
     , title
+    , toClassroomMode
     )
 
 import Array exposing (Array)
@@ -48,6 +51,12 @@ type alias Cursor =
     }
 
 
+type ClassroomMode
+    = Shared
+    | Summary
+    | Details
+
+
 type alias Data =
     { cursor : List Cursor
     , survey : Dict Int (Container Survey.Sync)
@@ -69,6 +78,7 @@ type alias Settings =
     , persistent : Bool
     , saved : List Classroom.Entry
     , deletePopup : Maybe ( String, String )
+    , mode : ClassroomMode
     }
 
 
@@ -134,6 +144,7 @@ init supportedBackends =
     , persistent = False
     , saved = []
     , deletePopup = Nothing
+    , mode = Shared
     }
 
 
@@ -164,7 +175,7 @@ isMember list element =
                 isMember es element
 
 
-initRoom : { backend : String, course : String, room : String } -> Settings -> Settings
+initRoom : { backend : String, course : String, room : String, mode : Int } -> Settings -> Settings
 initRoom config settings =
     case Via.fromString config.backend of
         Just backend ->
@@ -183,6 +194,7 @@ initRoom config settings =
                 -- connect, thus reconnecting to it should also continue to
                 -- use (and update) its local cache
                 , persistent = True
+                , mode = toClassroomMode config.mode
             }
 
         Nothing ->
@@ -311,3 +323,29 @@ decodeCursor =
         (JD.field "file" JD.int)
         (JD.field "state" Editor.decodeCursor)
         (JD.field "name" JD.string)
+
+
+fromClassroomMode : ClassroomMode -> Int
+fromClassroomMode mode =
+    case mode of
+        Shared ->
+            0
+
+        Summary ->
+            1
+
+        Details ->
+            2
+
+
+toClassroomMode : Int -> ClassroomMode
+toClassroomMode mode =
+    case mode of
+        1 ->
+            Summary
+
+        2 ->
+            Details
+
+        _ ->
+            Shared

@@ -23,6 +23,7 @@ export class Sync extends Base.Sync {
     password?: string
     config?: { signaling?: string; iceServers?: string }
     name: string
+    mode: number
   }) {
     super.connect(data)
 

@@ -51,6 +51,7 @@ export class Sync extends Base.Sync {
     password?: string
     config?: string[]
     name: string
+    mode: number
   }) {
     super.connect(data)
 

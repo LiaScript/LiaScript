@@ -9,7 +9,7 @@ import Html.Events as Event
 import Index.View.Popup as Popup
 import Lia.Settings.Update exposing (Msg(..))
 import Lia.Sync.Classroom as Classroom
-import Lia.Sync.Types as Sync exposing (State(..), Sync)
+import Lia.Sync.Types as Sync exposing (ClassroomMode(..), State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
 import Lia.Sync.Via as Backend exposing (Backend)
 import Lia.Utils exposing (btn, btnIcon)
@@ -88,6 +88,7 @@ view settings =
                                 ]
                         , autocomplete = Just "room"
                         }
+                    , viewMode settings.mode
                     , Backend.input
                         { active = open && support
                         , msg = Password
@@ -100,7 +101,7 @@ view settings =
                     , Backend.input
                         { active = open && support
                         , msg = Name
-                        , label = Html.text "optional name"
+                        , label = Html.text "optional username"
                         , type_ = "text"
                         , value = settings.name
                         , placeholder = "Enter your name to be displayed to others"
@@ -507,3 +508,66 @@ button settings =
                 }
                 [ Attr.style "margin-block-start" "2rem" ]
                 [ Html.text "pending" ]
+
+
+viewMode mode =
+    Html.label
+        [ Attr.class "lia-label"
+        , Attr.style "margin-block-start" "2rem"
+        , Attr.style "display" "flex"
+        , Attr.style "flex-direction" "column"
+        , Attr.style "align-items" "flex-start"
+        ]
+        [ Html.span
+            [ Attr.class "lia-label"
+            ]
+            [ Html.text "mode" ]
+        , Html.div
+            [ Attr.style "display" "flex"
+            , Attr.style "flex-direction" "row"
+            , Attr.style "gap" "1rem"
+            , Attr.style "align-items" "center"
+            ]
+            [ Html.select
+                [ Event.onInput ClassroomMode
+                , Attr.style "background" <|
+                    case mode of
+                        Shared ->
+                            "green"
+
+                        Summary ->
+                            "orange"
+
+                        Details ->
+                            "red"
+                ]
+                [ Html.option
+                    [ Attr.value "0"
+                    , Attr.selected <| mode == Shared
+                    ]
+                    [ Html.text "Shared" ]
+                , Html.option
+                    [ Attr.value "1"
+                    , Attr.selected <| mode == Summary
+                    ]
+                    [ Html.text "Summary" ]
+                , Html.option
+                    [ Attr.value "2"
+                    , Attr.selected <| mode == Details
+                    ]
+                    [ Html.text "Details" ]
+                ]
+            , Html.span []
+                [ Html.text <|
+                    case mode of
+                        Shared ->
+                            "All are equal and see the summary of quizzes and surveys."
+
+                        Summary ->
+                            "Only the initiator can see the summaries."
+
+                        Details ->
+                            "The initiator can see also details per participant."
+                ]
+            ]
+        ]

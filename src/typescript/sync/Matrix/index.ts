@@ -40,6 +40,7 @@ export class Sync extends Base.Sync {
       accessToken: string
     }
     name: string
+    mode: number
   }) {
     super.connect(data)
     this.config = data.config
