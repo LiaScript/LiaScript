@@ -257,7 +257,7 @@ get settings selector id1 id2 =
                     |> Maybe.andThen (Container.get id2 >> Maybe.map2 (filter True) settings)
                     |> Maybe.withDefault Nothing
 
-            else if s.mode == Summary && s.owner then
+            else if s.owner then
                 s.data
                     |> selector
                     |> Dict.get id1

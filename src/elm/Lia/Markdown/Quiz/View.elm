@@ -131,13 +131,89 @@ maybeConfig config quiz vector =
             Nothing
 
 
+viewTableSync : Sync.Settings -> Dict String Sync -> List (Html msg) -> List (Html msg)
+viewTableSync syncSettings data quiz =
+    let
+        peers =
+            syncSettings.peers
+
+        padding =
+            Attr.style "padding" "0px 20px 0px 20px"
+    in
+    if syncSettings.owner && syncSettings.mode == Sync.Details then
+        [ Html.details [ Attr.style "margin-top" "1rem" ]
+            [ Html.summary [ padding ] [ Html.text "details" ]
+            , Html.div
+                [ Attr.style "overflow" "auto"
+                , Attr.style "max-height" "200px"
+                ]
+                [ Html.table
+                    [ Attr.class "lia-table"
+                    , Attr.style "overflow" "auto"
+                    , Attr.style "padding" "0px"
+                    ]
+                    [ Html.thead [ Attr.class "lia-table__head" ]
+                        [ Html.tr []
+                            [ Html.th
+                                [ Attr.class "lia-table__header"
+                                , padding
+                                ]
+                                [ Html.text "Username" ]
+                            , Html.th
+                                [ Attr.class "lia-table__header"
+                                , padding
+                                ]
+                                [ Html.text "State" ]
+                            ]
+                        ]
+                    , peers
+                        |> Dict.toList
+                        |> List.map
+                            (\( id, name ) ->
+                                Html.tr [ Attr.class "lia-table__row" ]
+                                    [ Html.td
+                                        [ Attr.class "lia-table__data"
+                                        , padding
+                                        ]
+                                        [ Html.text name ]
+                                    , Html.td
+                                        [ Attr.class "lia-table__data"
+                                        , padding
+                                        , Attr.style "text-align" "center"
+                                        ]
+                                        [ case Dict.get id data of
+                                            Just (Just trial) ->
+                                                Html.text <| "Solved (Trial " ++ String.fromInt trial ++ ")"
+
+                                            Just Nothing ->
+                                                Html.text "Resolved"
+
+                                            Nothing ->
+                                                Html.text "Open"
+                                        ]
+                                    ]
+                            )
+                        |> Html.tbody [ Attr.class "lia-table__body" ]
+                    ]
+                ]
+            ]
+        ]
+            |> List.append quiz
+
+    else
+        quiz
+
+
 viewSync : Config sub -> Maybe (Dict String Sync) -> List (Html msg) -> List (Html msg)
 viewSync config syncData quiz =
-    case ( syncData, syncData |> Maybe.map Dict.size ) of
-        ( Just _, Just 0 ) ->
-            quiz
+    case ( syncData, syncData |> Maybe.map Dict.size, config.sync ) of
+        ( Just data, Just 0, Just sync ) ->
+            viewTableSync sync Dict.empty quiz
 
-        ( Just data, Just length ) ->
+        ( Nothing, Nothing, Just sync ) ->
+            viewTableSync sync Dict.empty quiz
+
+        ( Just data, Just length, Just sync ) ->
             let
                 total =
                     toFloat length
@@ -241,6 +317,7 @@ viewSync config syncData quiz =
                     Nothing
                 |> List.singleton
                 |> List.append quiz
+                |> viewTableSync sync data
 
         _ ->
             quiz
