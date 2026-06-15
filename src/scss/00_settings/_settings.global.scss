@@ -1,3 +1,5 @@
+@use 'sass:map';
+
 /* --------------------------------------------------
    Spacing
    -------------------------------------------------- */
@@ -68,6 +70,8 @@ $global-line-height: 1.47 !default;
 $global-font-family: 'LiaSourceSansPro';
 $global-font-mono: 'LiaSourceCodePro';
 $global-font-headline: 'LiaSourceSerifPro';
+
+$global-top-offset: calc(env(safe-area-inset-top, 0)) !default;
 
 $global-focus-ring-width: $global-outline;
 $global-focus-ring-color: rgb(var(--color-text, 0, 0, 0));

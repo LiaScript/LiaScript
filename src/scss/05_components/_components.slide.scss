@@ -1,10 +1,12 @@
+@use '../00_settings/settings.global';
 @use '../01_tools/tools.breakpoints';
 @use 'components.header';
 
 .lia-slide {
+  margin-top: settings.$global-top-offset;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100dvh - settings.$global-top-offset);
   position: relative;
   width: 100%;
 

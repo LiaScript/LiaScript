@@ -33,7 +33,7 @@ import Nostr from './service/Nostr'
 import * as GLOBALS from './init'
 // TODO: CHECK window.LIA.defaultCourse functionality
 GLOBALS.initGlobals()
-window.LIA.injectResposivevoice = TTS.inject
+//window.LIA.injectResposivevoice = TTS.inject
 
 if (typeof queueMicrotask !== 'function') {
   window.queueMicrotask = function (callback) {
@@ -63,7 +63,7 @@ export class LiaScript {
       script?: string | null
       hideURL?: boolean
       hasShareAPI?: boolean | null
-    } = {}
+    } = {},
   ) {
     window.LIA.debug = debug
 
@@ -119,7 +119,7 @@ export class LiaScript {
     this.initEventSystem(
       document.body,
       this.app.ports.event2js.subscribe,
-      sender
+      sender,
     )
 
     let self = this
@@ -197,7 +197,7 @@ export class LiaScript {
   initEventSystem(
     elem: HTMLElement,
     jsSubscribe: (fn: (_: Lia.Event) => void) => void,
-    elmSend: Lia.Send
+    elmSend: Lia.Send,
   ) {
     log.info('initEventSystem')
 
@@ -218,7 +218,7 @@ export class LiaScript {
         log.info(
           `LIA >>> (${JSON.stringify(event.track)})`,
           event.service,
-          event.message
+          event.message,
         )
 
       switch (event.service) {

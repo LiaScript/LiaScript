@@ -235,6 +235,8 @@ viewPanes : Screen -> Model -> Html Msg
 viewPanes screen model =
     Html.div
         [ Attr.class "lia-slide__container"
+
+        --, Attr.style "top" "64px"
         ]
         [ SplitPane.view
             (case
@@ -261,8 +263,7 @@ viewPanes screen model =
                     , Attr.style "overflow-y" "auto"
                     , Attr.style "display" "flex"
                     , Attr.style "justify-content" "center"
-                    , Attr.class "lia-slide__container"
-                    , Attr.style "margin-block-start" "0px"
+                    , Attr.style "margin-top" "0px"
                     ]
             )
             (Chat.view model.translation (initConfig screen model) model.chat
