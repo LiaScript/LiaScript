@@ -33,7 +33,7 @@ import Nostr from './service/Nostr'
 import * as GLOBALS from './init'
 // TODO: CHECK window.LIA.defaultCourse functionality
 GLOBALS.initGlobals()
-//window.LIA.injectResposivevoice = TTS.inject
+window.LIA.injectResposivevoice = TTS.inject
 
 if (typeof queueMicrotask !== 'function') {
   window.queueMicrotask = function (callback) {
