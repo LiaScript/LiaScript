@@ -7,6 +7,14 @@ import LANGUAGE_FALLBACKS, {
 // @ts-ignore
 import EasySpeech from 'easy-speech/dist/EasySpeech'
 
+import {
+  isNative,
+  nativeSpeak,
+  nativePause,
+  nativeResume,
+  nativeCancel,
+} from './TTS_native'
+
 enum Gender {
   Female,
   Male,
@@ -113,6 +121,14 @@ export const Service = {
       }
     }, 2000)
 
+    // Native: the Capacitor TTS plugin is the provider, reported as browserTTS.
+    // EasySpeech detection doesn't see it, so flag support directly.
+    if (isNative) {
+      useBrowserTTS = true
+      sendEnabledTTS('browserTTS')
+      return
+    }
+
     this.easySpeechSettings = EasySpeech.detect()
 
     EasySpeech.init({ maxTimeout: 5000, interval: 250 })
@@ -169,7 +185,9 @@ export const Service = {
       }
 
       case 'pause': {
-        if (activeMedia.media && !activeMedia.media.paused) {
+        if (isNative && nativePause()) {
+          sendResponse(event, 'paused', null)
+        } else if (activeMedia.media && !activeMedia.media.paused) {
           activeMedia.media.pause()
           stopProgressInterval()
           if (activeMedia.event) {
@@ -196,7 +214,9 @@ export const Service = {
       }
 
       case 'resume': {
-        if (activeMedia.media && activeMedia.media.paused && activeMedia.event) {
+        if (isNative && nativeResume()) {
+          sendResponse(event, 'start', null)
+        } else if (activeMedia.media && activeMedia.media.paused && activeMedia.event) {
           activeMedia.media.play().catch((e: any) => {
             if (e.name !== 'AbortError') {
               console.warn('Failed to resume media:', e.message)
@@ -607,6 +627,10 @@ function sendEnabledTTS(system: 'responsiveVoiceTTS' | 'browserTTS') {
 }
 
 export function inject(key: string) {
+  // On native, TTS goes through the Capacitor plugin — don't load the
+  // external responsiveVoice script.
+  if (isNative) return
+
   if (typeof key === 'string') {
     useBrowserTTS = useBrowserTTS === null ? false : useBrowserTTS
 
@@ -630,6 +654,10 @@ function cancel() {
   browserTTSSpeakArgs = null
   browserTTSIntentionalPause = false
   clearMediaState()
+
+  if (isNative) {
+    nativeCancel()
+  }
 
   try {
     const audioRecordings = document.getElementsByClassName(
@@ -693,6 +721,12 @@ function speak(
       sendResponse(event, 'error', e.toString())
       console.warn('TTS playback failed:', e.toString())
     },
+  }
+
+  // Native: skip browser voice resolution, let the OS engine pick by lang.
+  if (isNative) {
+    nativeSpeak(text, lang, options, customHandlers)
+    return
   }
 
   if (useBrowserTTS) {
