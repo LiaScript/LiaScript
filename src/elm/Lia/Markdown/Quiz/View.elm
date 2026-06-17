@@ -135,7 +135,7 @@ viewTableSync : Sync.Settings -> Dict String Sync -> List (Html msg) -> List (Ht
 viewTableSync syncSettings data quiz =
     let
         peers =
-            syncSettings.peers
+            syncSettings.peersHistory
 
         padding =
             Attr.style "padding" "0px 20px 0px 20px"
@@ -158,12 +158,17 @@ viewTableSync syncSettings data quiz =
                                 [ Attr.class "lia-table__header"
                                 , padding
                                 ]
-                                [ Html.text "Username" ]
+                                [ Html.text "User" ]
                             , Html.th
                                 [ Attr.class "lia-table__header"
                                 , padding
                                 ]
-                                [ Html.text "State" ]
+                                [ Html.text "Quiz" ]
+                            , Html.th
+                                [ Attr.class "lia-table__header"
+                                , padding
+                                ]
+                                [ Html.text "Online" ]
                             ]
                         ]
                     , peers
@@ -179,17 +184,27 @@ viewTableSync syncSettings data quiz =
                                     , Html.td
                                         [ Attr.class "lia-table__data"
                                         , padding
-                                        , Attr.style "text-align" "center"
                                         ]
                                         [ case Dict.get id data of
                                             Just (Just trial) ->
-                                                Html.text <| "Solved (Trial " ++ String.fromInt trial ++ ")"
+                                                Html.text <| "🔵 Solved (Trial " ++ String.fromInt trial ++ ")"
 
                                             Just Nothing ->
-                                                Html.text "Resolved"
+                                                Html.text "⚫ Resolved"
 
                                             Nothing ->
-                                                Html.text "Open"
+                                                Html.text "🟡 Open"
+                                        ]
+                                    , Html.td
+                                        [ Attr.class "lia-table__data"
+                                        , padding
+                                        , Attr.style "text-align" "center"
+                                        ]
+                                        [ if Dict.member id syncSettings.peers then
+                                            Html.text "✅ Online"
+
+                                          else
+                                            Html.text "⛔ Offline "
                                         ]
                                     ]
                             )
@@ -204,117 +219,187 @@ viewTableSync syncSettings data quiz =
         quiz
 
 
+syncDiagram : Config sub -> Sync.Settings -> Int -> Dict String (Maybe Int) -> Html msg
+syncDiagram config sync length data =
+    let
+        owner =
+            sync.owner && sync.mode == Sync.Details
+
+        total =
+            toFloat <|
+                if owner then
+                    Dict.size sync.peersHistory
+
+                else
+                    length
+
+        chartData =
+            data
+                |> Dict.values
+                |> List.Extra.gatherEquals
+                |> List.map
+                    (\( i, list ) ->
+                        let
+                            absolute =
+                                1 + List.length list
+
+                            relative =
+                                percentage total absolute
+                        in
+                        case i of
+                            Just i_ ->
+                                ( JE.string ("Trial " ++ String.fromInt i_)
+                                , JE.object
+                                    [ ( "value", JE.float relative )
+                                    , ( "label"
+                                      , JE.object
+                                            [ ( "show", JE.bool True )
+                                            , ( "formatter"
+                                              , String.fromInt absolute
+                                                    ++ " ("
+                                                    ++ String.fromFloat relative
+                                                    ++ "%)"
+                                                    |> JE.string
+                                              )
+                                            ]
+                                      )
+                                    ]
+                                )
+
+                            Nothing ->
+                                ( JE.string "Resolved"
+                                , JE.object
+                                    [ ( "value"
+                                      , JE.float relative
+                                      )
+                                    , ( "itemStyle"
+                                      , JE.object [ ( "color", JE.string "#888" ) ]
+                                      )
+                                    , ( "label"
+                                      , JE.object
+                                            [ ( "show", JE.bool True )
+                                            , ( "formatter"
+                                              , String.fromInt absolute
+                                                    ++ " ("
+                                                    ++ String.fromFloat relative
+                                                    ++ "%)"
+                                                    |> JE.string
+                                              )
+                                            ]
+                                      )
+                                    ]
+                                )
+                    )
+                |> CList.addIf owner
+                    (let
+                        absolute =
+                            sync.peersHistory
+                                |> Dict.size
+
+                        open =
+                            data
+                                |> Dict.values
+                                |> List.length
+
+                        relative =
+                            percentage (toFloat absolute) (absolute - open)
+                     in
+                     ( JE.string "Open"
+                     , JE.object
+                        [ ( "value"
+                          , JE.float relative
+                          )
+                        , ( "itemStyle"
+                          , JE.object [ ( "color", JE.string "#FDBA74" ) ]
+                          )
+                        , ( "label"
+                          , [ ( "show", JE.bool True )
+                            , ( "formatter"
+                              , String.fromInt (absolute - open)
+                                    ++ " ("
+                                    ++ String.fromFloat relative
+                                    ++ "%)"
+                                    |> JE.string
+                              )
+                            ]
+                                |> CList.appendIf (absolute - open == 0)
+                                    [ ( "distance", JE.int 6 )
+                                    , ( "position", JE.string "top" )
+                                    ]
+                                |> JE.object
+                          )
+                        ]
+                     )
+                    )
+    in
+    JE.object
+        [ ( "grid"
+          , JE.object
+                [ ( "left", JE.int 10 )
+                , ( "top", JE.int 20 )
+                , ( "bottom", JE.int 20 )
+                , ( "right", JE.int 10 )
+                ]
+          )
+        , ( "xAxis"
+          , JE.object
+                [ ( "type", JE.string "category" )
+                , ( "data"
+                  , JE.list Tuple.first chartData
+                  )
+                ]
+          )
+        , ( "yAxis"
+          , JE.object
+                [ ( "type", JE.string "value" )
+                , ( "show", JE.bool False )
+                ]
+          )
+        , ( "series"
+          , [ [ ( "type", JE.string "bar" )
+              , ( "data"
+                , JE.list Tuple.second chartData
+                )
+              ]
+            ]
+                |> JE.list JE.object
+          )
+        ]
+        |> Chart.eCharts
+            { lang = config.lang
+            , attr = syncAttributes
+            , light = config.light
+            }
+            Nothing
+
+
 viewSync : Config sub -> Maybe (Dict String Sync) -> List (Html msg) -> List (Html msg)
 viewSync config syncData quiz =
     case ( syncData, syncData |> Maybe.map Dict.size, config.sync ) of
         ( Just data, Just 0, Just sync ) ->
-            viewTableSync sync Dict.empty quiz
+            if sync.owner && sync.mode == Sync.Details then
+                syncDiagram config sync 0 data
+                    |> List.singleton
+                    |> List.append quiz
+                    |> viewTableSync sync data
+                    |> List.append quiz
+
+            else
+                viewTableSync sync data quiz
 
         ( Nothing, Nothing, Just sync ) ->
-            viewTableSync sync Dict.empty quiz
+            if sync.owner && sync.mode == Sync.Details then
+                syncDiagram config sync 0 Dict.empty
+                    |> List.singleton
+                    |> List.append quiz
+                    |> viewTableSync sync Dict.empty
+                    |> List.append quiz
+
+            else
+                viewTableSync sync Dict.empty quiz
 
         ( Just data, Just length, Just sync ) ->
-            let
-                total =
-                    toFloat length
-
-                chartData =
-                    data
-                        |> Dict.values
-                        |> List.Extra.gatherEquals
-                        |> List.map
-                            (\( i, list ) ->
-                                let
-                                    absolute =
-                                        1 + List.length list
-
-                                    relative =
-                                        percentage total absolute
-                                in
-                                case i of
-                                    Just i_ ->
-                                        ( JE.string ("Trial " ++ String.fromInt i_)
-                                        , JE.object
-                                            [ ( "value", JE.float relative )
-                                            , ( "label"
-                                              , JE.object
-                                                    [ ( "show", JE.bool True )
-                                                    , ( "formatter"
-                                                      , String.fromInt absolute
-                                                            ++ " ("
-                                                            ++ String.fromFloat relative
-                                                            ++ "%)"
-                                                            |> JE.string
-                                                      )
-                                                    ]
-                                              )
-                                            ]
-                                        )
-
-                                    Nothing ->
-                                        ( JE.string "Resolved"
-                                        , JE.object
-                                            [ ( "value"
-                                              , JE.float relative
-                                              )
-                                            , ( "itemStyle"
-                                              , JE.object [ ( "color", JE.string "#888" ) ]
-                                              )
-                                            , ( "label"
-                                              , JE.object
-                                                    [ ( "show", JE.bool True )
-                                                    , ( "formatter"
-                                                      , String.fromInt absolute
-                                                            ++ " ("
-                                                            ++ String.fromFloat relative
-                                                            ++ "%)"
-                                                            |> JE.string
-                                                      )
-                                                    ]
-                                              )
-                                            ]
-                                        )
-                            )
-            in
-            JE.object
-                [ ( "grid"
-                  , JE.object
-                        [ ( "left", JE.int 10 )
-                        , ( "top", JE.int 20 )
-                        , ( "bottom", JE.int 20 )
-                        , ( "right", JE.int 10 )
-                        ]
-                  )
-                , ( "xAxis"
-                  , JE.object
-                        [ ( "type", JE.string "category" )
-                        , ( "data"
-                          , JE.list Tuple.first chartData
-                          )
-                        ]
-                  )
-                , ( "yAxis"
-                  , JE.object
-                        [ ( "type", JE.string "value" )
-                        , ( "show", JE.bool False )
-                        ]
-                  )
-                , ( "series"
-                  , [ [ ( "type", JE.string "bar" )
-                      , ( "data"
-                        , JE.list Tuple.second chartData
-                        )
-                      ]
-                    ]
-                        |> JE.list JE.object
-                  )
-                ]
-                |> Chart.eCharts
-                    { lang = config.lang
-                    , attr = syncAttributes
-                    , light = config.light
-                    }
-                    Nothing
+            syncDiagram config sync length data
                 |> List.singleton
                 |> List.append quiz
                 |> viewTableSync sync data

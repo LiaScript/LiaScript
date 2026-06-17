@@ -143,6 +143,7 @@ update session model msg =
                                     { sync
                                         | state = Disconnected
                                         , peers = Dict.empty
+                                        , peersHistory = Dict.empty
                                         , error = Just message
                                     }
                             }
@@ -154,6 +155,7 @@ update session model msg =
                                     { sync
                                         | state = Disconnected
                                         , peers = Dict.empty
+                                        , peersHistory = Dict.empty
                                         , error = Just "unknown"
                                     }
                             }
@@ -167,6 +169,7 @@ update session model msg =
                                     { sync
                                         | state = Connected hashID
                                         , peers = Dict.singleton hashID sync.name
+                                        , peersHistory = Dict.singleton hashID sync.name
                                         , error = Nothing
                                     }
                             }
@@ -188,6 +191,7 @@ update session model msg =
                                     { sync
                                         | state = Disconnected
                                         , peers = Dict.empty
+                                        , peersHistory = Dict.empty
                                     }
                             }
                                 |> Return.val
@@ -203,6 +207,7 @@ update session model msg =
                             { sync
                                 | state = Disconnected
                                 , peers = Dict.empty
+                                , peersHistory = Dict.empty
                                 , error = Nothing
                                 , data =
                                     { cursor = []
@@ -515,14 +520,17 @@ synchronize model json =
             let
                 sync =
                     model.sync
+
+                peers =
+                    param
+                        |> JD.decodeValue decodePeers
+                        |> Result.withDefault sync.peers
             in
             { model
                 | sync =
                     { sync
-                        | peers =
-                            param
-                                |> JD.decodeValue decodePeers
-                                |> Result.withDefault sync.peers
+                        | peers = peers
+                        , peersHistory = Dict.union peers sync.peersHistory
                     }
             }
                 |> Return.val

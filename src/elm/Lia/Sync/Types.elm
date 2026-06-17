@@ -72,6 +72,7 @@ type alias Settings =
     , password : String
     , name : String
     , peers : Dict String String
+    , peersHistory : Dict String String
     , error : Maybe String
     , data : Data
     , scriptsEnabled : Bool
@@ -134,6 +135,7 @@ init supportedBackends =
     , password = ""
     , name = ""
     , peers = Dict.empty
+    , peersHistory = Dict.empty
     , error = Nothing
     , data =
         { cursor = []
