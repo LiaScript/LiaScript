@@ -25,7 +25,7 @@ import Lia.Markdown.Inline.View
         ( dropHere
         , viewer
         )
-import Lia.Markdown.Quiz.View exposing (syncAttributes)
+import Lia.Markdown.Quiz.View exposing (syncAttributes, viewTableSync)
 import Lia.Markdown.Survey.Model
     exposing
         ( getErrorMessage
@@ -111,6 +111,7 @@ view config attr survey model renderedOptions =
                     survey.id
                 |> viewVectorSync config analysis questions (getSync config survey.id)
 
+        --- IGNORE ---
         Matrix button header vars questions ->
             (matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
                 |> view_matrix config header questions
@@ -167,24 +168,40 @@ viewTextSync config lines syncData survey =
 viewVectorSync : Config sub -> Analysis -> List ( String, Inlines ) -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewVectorSync config analyze questions syncData survey =
     case
-        syncData
+        ( config.sync
+        , syncData
+        , syncData
             |> Maybe.andThen (Dict.values >> Sync.vector (List.map Tuple.first questions))
+        )
     of
-        Nothing ->
-            survey
-
-        Just data ->
+        ( Just sync, Just data, Just summary ) ->
+            let
+                visualize id values =
+                    Dict.get id values
+                        |> Maybe.andThen Sync.toString
+                        |> Maybe.withDefault ""
+                        |> Debug.log "Visualize"
+                        |> Html.text
+            in
             Html.div []
                 [ survey
-                , case analyze of
+                , case analyze |> Debug.log "Analyze" of
                     Categorical ->
-                        vectorBlockCategory config data
+                        [ vectorBlockCategory config summary ]
+                            |> viewTableSync sync visualize data
+                            |> Html.div []
 
                     Quantitative ->
                         questions
                             |> List.filterMap (Tuple.first >> String.split " " >> List.head >> Maybe.andThen String.toFloat)
-                            |> vectorBlockQuantity config data
+                            |> vectorBlockQuantity config summary
+                            |> List.singleton
+                            |> viewTableSync sync visualize data
+                            |> Html.div []
                 ]
+
+        _ ->
+            survey
 
 
 viewMatrixSync : Config sub -> List Inlines -> List String -> Maybe (Dict String Sync) -> Html msg -> Html msg

@@ -4,6 +4,7 @@ module Lia.Markdown.Quiz.View exposing
     , showSolution
     , syncAttributes
     , view
+    , viewTableSync
     )
 
 {-| This module defines the basic frame for all subsequent and specialized
@@ -131,8 +132,8 @@ maybeConfig config quiz vector =
             Nothing
 
 
-viewTableSync : Sync.Settings -> Dict String Sync -> List (Html msg) -> List (Html msg)
-viewTableSync syncSettings data quiz =
+viewTableSync : Sync.Settings -> (String -> Dict String x -> Html msg) -> Dict String x -> List (Html msg) -> List (Html msg)
+viewTableSync syncSettings visualize data quiz =
     let
         peers =
             syncSettings.peersHistory
@@ -163,7 +164,7 @@ viewTableSync syncSettings data quiz =
                                 [ Attr.class "lia-table__header"
                                 , padding
                                 ]
-                                [ Html.text "Quiz" ]
+                                [ Html.text "State" ]
                             , Html.th
                                 [ Attr.class "lia-table__header"
                                 , padding
@@ -185,15 +186,7 @@ viewTableSync syncSettings data quiz =
                                         [ Attr.class "lia-table__data"
                                         , padding
                                         ]
-                                        [ case Dict.get id data of
-                                            Just (Just trial) ->
-                                                Html.text <| "🔵 Solved (Trial " ++ String.fromInt trial ++ ")"
-
-                                            Just Nothing ->
-                                                Html.text "⚫ Resolved"
-
-                                            Nothing ->
-                                                Html.text "🟡 Open"
+                                        [ visualize id data
                                         ]
                                     , Html.td
                                         [ Attr.class "lia-table__data"
@@ -375,34 +368,44 @@ syncDiagram config sync length data =
 
 viewSync : Config sub -> Maybe (Dict String Sync) -> List (Html msg) -> List (Html msg)
 viewSync config syncData quiz =
-    case ( syncData, syncData |> Maybe.map Dict.size, config.sync ) of
+    let
+        visualize id data =
+            case Dict.get id data of
+                Just (Just trial) ->
+                    Html.text <| "🔵 Solved (Trial " ++ String.fromInt trial ++ ")"
+
+                Just Nothing ->
+                    Html.text "⚫ Resolved"
+
+                Nothing ->
+                    Html.text "🟡 Open"
+    in
+    case ( syncData, syncData |> Maybe.map Dict.size, config.sync ) |> Debug.log "viewSync" of
         ( Just data, Just 0, Just sync ) ->
             if sync.owner && sync.mode == Sync.Details then
                 syncDiagram config sync 0 data
                     |> List.singleton
                     |> List.append quiz
-                    |> viewTableSync sync data
-                    |> List.append quiz
+                    |> viewTableSync sync visualize data
 
             else
-                viewTableSync sync data quiz
+                viewTableSync sync visualize data quiz
 
         ( Nothing, Nothing, Just sync ) ->
             if sync.owner && sync.mode == Sync.Details then
                 syncDiagram config sync 0 Dict.empty
                     |> List.singleton
                     |> List.append quiz
-                    |> viewTableSync sync Dict.empty
-                    |> List.append quiz
+                    |> viewTableSync sync visualize Dict.empty
 
             else
-                viewTableSync sync Dict.empty quiz
+                viewTableSync sync visualize Dict.empty quiz
 
         ( Just data, Just length, Just sync ) ->
             syncDiagram config sync length data
                 |> List.singleton
                 |> List.append quiz
-                |> viewTableSync sync data
+                |> viewTableSync sync visualize data
 
         _ ->
             quiz

@@ -9,6 +9,7 @@ module Lia.Markdown.Survey.Sync exposing
     , select
     , sync
     , text
+    , toString
     , vector
     , wordCount
     )
@@ -163,6 +164,40 @@ toVector (Sync s) =
             dict
                 |> Dict.map boolToInt
                 |> Just
+
+        _ ->
+            Nothing
+
+
+toString : Sync -> Maybe String
+toString (Sync s) =
+    case s of
+        Survey.Vector_State False dict ->
+            dict
+                |> Dict.toList
+                |> List.filter Tuple.second
+                |> List.head
+                |> Maybe.map Tuple.first
+                |> Debug.log "Vector to String"
+
+        Survey.Vector_State True dict ->
+            dict
+                |> Dict.toList
+                |> List.map
+                    (\( key, value ) ->
+                        key ++ ":"
+                            ++ (if value then
+                                    "true"
+
+                                else
+                                    "false"
+                               )
+                    )
+                |> String.join ", "
+                |> Just
+
+        Survey.Text_State str ->
+            Just str
 
         _ ->
             Nothing
