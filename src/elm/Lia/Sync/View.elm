@@ -88,16 +88,6 @@ view settings =
                                 ]
                         , autocomplete = Just "room"
                         }
-                    , viewMode settings.mode
-                    , Backend.input
-                        { active = open && support
-                        , msg = Password
-                        , label = Html.text "maybe password"
-                        , type_ = "password"
-                        , value = settings.password
-                        , placeholder = ""
-                        , autocomplete = Just "password"
-                        }
                     , Backend.input
                         { active = open && support
                         , msg = Name
@@ -107,7 +97,19 @@ view settings =
                         , placeholder = "Enter your name to be displayed to others"
                         , autocomplete = Just "name"
                         }
-                    , Backend.view (open && support) via
+                    , Backend.input
+                        { active = open && support
+                        , msg = Password
+                        , label = Html.text "maybe password"
+                        , type_ = "password"
+                        , value = settings.password
+                        , placeholder = ""
+                        , autocomplete = Just "password"
+                        }
+                    , viewMode settings.mode
+                    , Backend.view
+                        (open && support)
+                        via
                         |> Html.map Config
                         |> Html.map Backend
                     , Html.div []

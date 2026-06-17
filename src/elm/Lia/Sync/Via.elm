@@ -562,7 +562,7 @@ view : Bool -> Backend -> Html Msg
 view editable backend =
     case backend of
         GUN { urls, persistent } ->
-            Html.div []
+            details
                 [ input
                     { active = editable
                     , type_ = "text"
@@ -621,7 +621,7 @@ view editable backend =
         --             }
         --         ]
         PubNub { pubKey, subKey } ->
-            Html.div []
+            details
                 [ input
                     { active = editable
                     , type_ = "password"
@@ -643,29 +643,33 @@ view editable backend =
                 ]
 
         P2PT urls ->
-            input
-                { active = editable
-                , type_ = "text"
-                , msg = InputP2PT
-                , value = urls
-                , placeholder = "wss://tracker.torrent"
-                , label = Html.text "WebTorrent tracker URLs"
-                , autocomplete = Just "websocket-urls"
-                }
+            details
+                [ input
+                    { active = editable
+                    , type_ = "text"
+                    , msg = InputP2PT
+                    , value = urls
+                    , placeholder = "wss://tracker.torrent"
+                    , label = Html.text "WebTorrent tracker URLs"
+                    , autocomplete = Just "websocket-urls"
+                    }
+                ]
 
         WebSocket { url } ->
-            input
-                { active = editable
-                , type_ = "text"
-                , msg = InputWebSocket
-                , value = url
-                , placeholder = "wss://your-server.example.com"
-                , label = Html.text "server URL"
-                , autocomplete = Just "websocket-url"
-                }
+            details
+                [ input
+                    { active = editable
+                    , type_ = "text"
+                    , msg = InputWebSocket
+                    , value = url
+                    , placeholder = "wss://your-server.example.com"
+                    , label = Html.text "server URL"
+                    , autocomplete = Just "websocket-url"
+                    }
+                ]
 
         PeerJS { host, port_, path, iceServers } ->
-            Html.div []
+            details
                 [ input
                     { active = editable
                     , type_ = "text"
@@ -705,7 +709,7 @@ view editable backend =
                 ]
 
         SimplePeer { signaling, iceServers } ->
-            Html.div []
+            details
                 [ input
                     { active = editable
                     , type_ = "text"
@@ -728,6 +732,20 @@ view editable backend =
 
         _ ->
             Html.text ""
+
+
+details options =
+    Html.details [ Attr.style "margin-block-start" "2rem" ]
+        [ Html.summary
+            [ Attr.style "cursor" "pointer"
+            , Attr.style "font-weight" "bold"
+            , Attr.style "color" "white"
+            ]
+            [ Html.text "Advanced settings"
+            ]
+        , Html.div [ Attr.style "padding-right" "3.5rem" ]
+            options
+        ]
 
 
 input :
