@@ -144,7 +144,7 @@ viewTextSync config lines syncData survey =
                     [ survey
                     , diagram
                     ]
-                        |> viewSummary config.sync data
+                        |> viewSummary config.sync [ "Text" ] data
 
         ( Just data, _ ) ->
             [ survey
@@ -162,24 +162,24 @@ viewTextSync config lines syncData survey =
                     )
                 |> Maybe.withDefault (Html.text "")
             ]
-                |> viewSummary config.sync data
+                |> viewSummary config.sync [ "Text" ] data
 
         _ ->
             Html.div [] [ survey ]
 
 
-viewSummary : Maybe Sync_.Settings -> Dict String Sync -> List (Html msg) -> Html msg
-viewSummary sync data =
+viewSummary : Maybe Sync_.Settings -> List String -> Dict String Sync -> List (Html msg) -> Html msg
+viewSummary sync header data =
     let
         fn id values =
             Dict.get id values
                 |> Maybe.map Sync.toString
-                |> Maybe.withDefault ""
-                |> Html.text
+                |> Maybe.withDefault []
+                |> List.map Html.text
     in
     case sync of
         Just sync_ ->
-            viewTableSync sync_ fn data
+            viewTableSync sync_ header fn data
                 >> Html.div []
 
         _ ->
@@ -200,14 +200,14 @@ viewVectorSync config analyze questions syncData survey =
                 , case analyze |> Debug.log "Analyze" of
                     Categorical ->
                         [ vectorBlockCategory config summary ]
-                            |> viewSummary config.sync data
+                            |> viewSummary config.sync (questions |> List.map Tuple.first) data
 
                     Quantitative ->
                         questions
                             |> List.filterMap (Tuple.first >> String.split " " >> List.head >> Maybe.andThen String.toFloat)
                             |> vectorBlockQuantity config summary
                             |> List.singleton
-                            |> viewSummary config.sync data
+                            |> viewSummary config.sync (questions |> List.map Tuple.first) data
                 ]
 
         _ ->
@@ -244,7 +244,7 @@ viewSelectSync config options syncData survey =
                 |> Maybe.withDefault []
                 |> vectorBlockCategory config
             ]
-                |> viewSummary config.sync diagram
+                |> viewSummary config.sync [ "State" ] diagram
 
 
 wordCloud : Config sub -> List Sync.Data -> Html msg

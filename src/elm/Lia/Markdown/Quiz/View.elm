@@ -133,8 +133,14 @@ maybeConfig config quiz vector =
             Nothing
 
 
-viewTableSync : Sync.Settings -> (String -> Dict String x -> Html msg) -> Dict String x -> List (Html msg) -> List (Html msg)
-viewTableSync syncSettings visualize data quiz =
+viewTableSync :
+    Sync.Settings
+    -> List String
+    -> (String -> Dict String x -> List (Html msg))
+    -> Dict String x
+    -> List (Html msg)
+    -> List (Html msg)
+viewTableSync syncSettings headers visualize data quiz =
     let
         peers =
             syncSettings.peersHistory
@@ -155,41 +161,38 @@ viewTableSync syncSettings visualize data quiz =
                     , Attr.style "padding" "0px"
                     ]
                     [ Html.thead [ Attr.class "lia-table__head" ]
-                        [ Html.tr []
-                            [ Html.th
-                                [ Attr.class "lia-table__header"
-                                , padding
-                                ]
-                                [ Html.text "User" ]
-                            , Html.th
-                                [ Attr.class "lia-table__header"
-                                , padding
-                                ]
-                                [ Html.text "State" ]
-                            , Html.th
+                        [ Html.th
+                            [ Attr.class "lia-table__header"
+                            , padding
+                            ]
+                            [ Html.text "User" ]
+                            :: Html.th
                                 [ Attr.class "lia-table__header"
                                 , padding
                                 ]
                                 [ Html.text "Online" ]
-                            ]
+                            :: (headers
+                                    |> List.map
+                                        (Html.text
+                                            >> List.singleton
+                                            >> Html.th
+                                                [ Attr.class "lia-table__header"
+                                                , padding
+                                                ]
+                                        )
+                               )
+                            |> Html.tr []
                         ]
                     , peers
                         |> Dict.toList
                         |> List.map
                             (\( id, name ) ->
-                                Html.tr [ Attr.class "lia-table__row" ]
-                                    [ Html.td
-                                        [ Attr.class "lia-table__data"
-                                        , padding
-                                        ]
-                                        [ Html.text name ]
-                                    , Html.td
-                                        [ Attr.class "lia-table__data"
-                                        , padding
-                                        ]
-                                        [ visualize id data
-                                        ]
-                                    , Html.td
+                                Html.td
+                                    [ Attr.class "lia-table__data"
+                                    , padding
+                                    ]
+                                    [ Html.text name ]
+                                    :: Html.td
                                         [ Attr.class "lia-table__data"
                                         , padding
                                         , Attr.style "text-align" "center"
@@ -200,7 +203,17 @@ viewTableSync syncSettings visualize data quiz =
                                           else
                                             Html.text "⛔ Offline "
                                         ]
-                                    ]
+                                    :: (visualize id data
+                                            |> List.map
+                                                (List.singleton
+                                                    >> Html.td
+                                                        [ Attr.class "lia-table__data"
+                                                        , Attr.style "text-align" "center"
+                                                        , padding
+                                                        ]
+                                                )
+                                       )
+                                    |> Html.tr [ Attr.class "lia-table__row" ]
                             )
                         |> Html.tbody [ Attr.class "lia-table__body" ]
                     ]
@@ -327,6 +340,7 @@ syncDiagram config sync length data =
             Nothing
 
 
+openState : Sync.Settings -> Dict String x -> ( JE.Value, JE.Value )
 openState sync data =
     let
         absolute =
@@ -375,13 +389,13 @@ viewSync config syncData quiz =
         visualize id data =
             case Dict.get id data of
                 Just (Just trial) ->
-                    Html.text <| "🔵 Solved (Trial " ++ String.fromInt trial ++ ")"
+                    [ Html.text <| "🔵 Solved (Trial " ++ String.fromInt trial ++ ")" ]
 
                 Just Nothing ->
-                    Html.text "⚫ Resolved"
+                    [ Html.text "⚫ Resolved" ]
 
                 Nothing ->
-                    Html.text "🟡 Open"
+                    [ Html.text "🟡 Open" ]
     in
     case ( syncData, syncData |> Maybe.map Dict.size, config.sync ) |> Debug.log "viewSync" of
         ( Just data, Just 0, Just sync ) ->
@@ -389,26 +403,26 @@ viewSync config syncData quiz =
                 syncDiagram config sync 0 data
                     |> List.singleton
                     |> List.append quiz
-                    |> viewTableSync sync visualize data
+                    |> viewTableSync sync [ "State" ] visualize data
 
             else
-                viewTableSync sync visualize data quiz
+                viewTableSync sync [ "State" ] visualize data quiz
 
         ( Nothing, Nothing, Just sync ) ->
             if Sync.isRoot sync then
                 syncDiagram config sync 0 Dict.empty
                     |> List.singleton
                     |> List.append quiz
-                    |> viewTableSync sync visualize Dict.empty
+                    |> viewTableSync sync [ "State" ] visualize Dict.empty
 
             else
-                viewTableSync sync visualize Dict.empty quiz
+                viewTableSync sync [ "State" ] visualize Dict.empty quiz
 
         ( Just data, Just length, Just sync ) ->
             syncDiagram config sync length data
                 |> List.singleton
                 |> List.append quiz
-                |> viewTableSync sync visualize data
+                |> viewTableSync sync [ "State" ] visualize data
 
         _ ->
             quiz
