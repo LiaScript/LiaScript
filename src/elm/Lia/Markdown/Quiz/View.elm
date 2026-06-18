@@ -1,6 +1,7 @@
 module Lia.Markdown.Quiz.View exposing
     ( class
     , maybeConfig
+    , openState
     , showSolution
     , syncAttributes
     , view
@@ -141,7 +142,7 @@ viewTableSync syncSettings visualize data quiz =
         padding =
             Attr.style "padding" "0px 20px 0px 20px"
     in
-    if syncSettings.owner && syncSettings.mode == Sync.Details then
+    if Sync.isRoot syncSettings then
         [ Html.details [ Attr.style "margin-top" "1rem" ]
             [ Html.summary [ padding ] [ Html.text "details" ]
             , Html.div
@@ -216,7 +217,7 @@ syncDiagram : Config sub -> Sync.Settings -> Int -> Dict String (Maybe Int) -> H
 syncDiagram config sync length data =
     let
         owner =
-            sync.owner && sync.mode == Sync.Details
+            Sync.isRoot sync
 
         total =
             toFloat <|
@@ -283,47 +284,7 @@ syncDiagram config sync length data =
                                     ]
                                 )
                     )
-                |> CList.addIf owner
-                    (let
-                        absolute =
-                            sync.peersHistory
-                                |> Dict.size
-
-                        open =
-                            data
-                                |> Dict.values
-                                |> List.length
-
-                        relative =
-                            percentage (toFloat absolute) (absolute - open)
-                     in
-                     ( JE.string "Open"
-                     , JE.object
-                        [ ( "value"
-                          , JE.float relative
-                          )
-                        , ( "itemStyle"
-                          , JE.object [ ( "color", JE.string "#FDBA74" ) ]
-                          )
-                        , ( "label"
-                          , [ ( "show", JE.bool True )
-                            , ( "formatter"
-                              , String.fromInt (absolute - open)
-                                    ++ " ("
-                                    ++ String.fromFloat relative
-                                    ++ "%)"
-                                    |> JE.string
-                              )
-                            ]
-                                |> CList.appendIf (absolute - open == 0)
-                                    [ ( "distance", JE.int 6 )
-                                    , ( "position", JE.string "top" )
-                                    ]
-                                |> JE.object
-                          )
-                        ]
-                     )
-                    )
+                |> CList.addIf owner (openState sync data)
     in
     JE.object
         [ ( "grid"
@@ -366,6 +327,48 @@ syncDiagram config sync length data =
             Nothing
 
 
+openState sync data =
+    let
+        absolute =
+            sync.peersHistory
+                |> Dict.size
+
+        open =
+            data
+                |> Dict.values
+                |> List.length
+
+        relative =
+            percentage (toFloat absolute) (absolute - open)
+    in
+    ( JE.string "Open"
+    , JE.object
+        [ ( "value"
+          , JE.float relative
+          )
+        , ( "itemStyle"
+          , JE.object [ ( "color", JE.string "#FDBA74" ) ]
+          )
+        , ( "label"
+          , [ ( "show", JE.bool True )
+            , ( "formatter"
+              , String.fromInt (absolute - open)
+                    ++ " ("
+                    ++ String.fromFloat relative
+                    ++ "%)"
+                    |> JE.string
+              )
+            ]
+                |> CList.appendIf (absolute - open == 0)
+                    [ ( "distance", JE.int 6 )
+                    , ( "position", JE.string "top" )
+                    ]
+                |> JE.object
+          )
+        ]
+    )
+
+
 viewSync : Config sub -> Maybe (Dict String Sync) -> List (Html msg) -> List (Html msg)
 viewSync config syncData quiz =
     let
@@ -382,7 +385,7 @@ viewSync config syncData quiz =
     in
     case ( syncData, syncData |> Maybe.map Dict.size, config.sync ) |> Debug.log "viewSync" of
         ( Just data, Just 0, Just sync ) ->
-            if sync.owner && sync.mode == Sync.Details then
+            if Sync.isRoot sync then
                 syncDiagram config sync 0 data
                     |> List.singleton
                     |> List.append quiz
@@ -392,7 +395,7 @@ viewSync config syncData quiz =
                 viewTableSync sync visualize data quiz
 
         ( Nothing, Nothing, Just sync ) ->
-            if sync.owner && sync.mode == Sync.Details then
+            if Sync.isRoot sync then
                 syncDiagram config sync 0 Dict.empty
                     |> List.singleton
                     |> List.append quiz

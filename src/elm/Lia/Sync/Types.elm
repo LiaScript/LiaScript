@@ -13,6 +13,7 @@ module Lia.Sync.Types exposing
     , init
     , initRoom
     , isConnected
+    , isRoot
     , isSupported
     , title
     , toClassroomMode
@@ -378,3 +379,10 @@ toClassroomMode mode =
 
         _ ->
             Shared
+
+
+{-| Check if the user is the owner of Kremlin mode.
+-}
+isRoot : Settings -> Bool
+isRoot settings =
+    settings.owner && settings.mode == Details

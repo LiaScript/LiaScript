@@ -169,7 +169,7 @@ toVector (Sync s) =
             Nothing
 
 
-toString : Sync -> Maybe String
+toString : Sync -> String
 toString (Sync s) =
     case s of
         Survey.Vector_State False dict ->
@@ -178,14 +178,15 @@ toString (Sync s) =
                 |> List.filter Tuple.second
                 |> List.head
                 |> Maybe.map Tuple.first
-                |> Debug.log "Vector to String"
+                |> Maybe.withDefault ""
 
         Survey.Vector_State True dict ->
             dict
                 |> Dict.toList
                 |> List.map
                     (\( key, value ) ->
-                        key ++ ":"
+                        key
+                            ++ ":"
                             ++ (if value then
                                     "true"
 
@@ -194,13 +195,15 @@ toString (Sync s) =
                                )
                     )
                 |> String.join ", "
-                |> Just
 
         Survey.Text_State str ->
-            Just str
+            str
+
+        Survey.Select_State _ i ->
+            String.fromInt (i + 1)
 
         _ ->
-            Nothing
+            "todo ..."
 
 
 select : Int -> List Sync -> Maybe (List Data)

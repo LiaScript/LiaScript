@@ -141,63 +141,73 @@ viewTextSync config lines syncData survey =
                     survey
 
                 Just diagram ->
-                    Html.div [] [ survey, diagram ]
+                    [ survey
+                    , diagram
+                    ]
+                        |> viewSummary config.sync data
 
         ( Just data, _ ) ->
-            Html.div []
-                [ survey
-                , data
-                    |> Dict.values
-                    |> Sync.text
-                    |> Maybe.map
-                        (List.map textBlock
-                            >> Html.div
-                                [ Attr.style "border" "1px solid rgb(var(--color-highlight))"
-                                , Attr.style "border-radius" "0.8rem"
-                                , Attr.style "max-height" "400px"
-                                , Attr.style "overflow" "auto"
-                                ]
-                        )
-                    |> Maybe.withDefault (Html.text "")
-                ]
+            [ survey
+            , data
+                |> Dict.values
+                |> Sync.text
+                |> Maybe.map
+                    (List.map textBlock
+                        >> Html.div
+                            [ Attr.style "border" "1px solid rgb(var(--color-highlight))"
+                            , Attr.style "border-radius" "0.8rem"
+                            , Attr.style "max-height" "400px"
+                            , Attr.style "overflow" "auto"
+                            ]
+                    )
+                |> Maybe.withDefault (Html.text "")
+            ]
+                |> viewSummary config.sync data
 
         _ ->
             Html.div [] [ survey ]
 
 
+viewSummary : Maybe Sync_.Settings -> Dict String Sync -> List (Html msg) -> Html msg
+viewSummary sync data =
+    let
+        fn id values =
+            Dict.get id values
+                |> Maybe.map Sync.toString
+                |> Maybe.withDefault ""
+                |> Html.text
+    in
+    case sync of
+        Just sync_ ->
+            viewTableSync sync_ fn data
+                >> Html.div []
+
+        _ ->
+            Html.div []
+
+
 viewVectorSync : Config sub -> Analysis -> List ( String, Inlines ) -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewVectorSync config analyze questions syncData survey =
     case
-        ( config.sync
-        , syncData
+        ( syncData
         , syncData
             |> Maybe.andThen (Dict.values >> Sync.vector (List.map Tuple.first questions))
         )
     of
-        ( Just sync, Just data, Just summary ) ->
-            let
-                visualize id values =
-                    Dict.get id values
-                        |> Maybe.andThen Sync.toString
-                        |> Maybe.withDefault ""
-                        |> Debug.log "Visualize"
-                        |> Html.text
-            in
+        ( Just data, Just summary ) ->
             Html.div []
                 [ survey
                 , case analyze |> Debug.log "Analyze" of
                     Categorical ->
                         [ vectorBlockCategory config summary ]
-                            |> viewTableSync sync visualize data
-                            |> Html.div []
+                            |> viewSummary config.sync data
 
                     Quantitative ->
                         questions
                             |> List.filterMap (Tuple.first >> String.split " " >> List.head >> Maybe.andThen String.toFloat)
                             |> vectorBlockQuantity config summary
                             |> List.singleton
-                            |> viewTableSync sync visualize data
-                            |> Html.div []
+                            |> viewSummary config.sync data
                 ]
 
         _ ->
@@ -222,14 +232,19 @@ viewSelectSync : Config sub -> List Inlines -> Maybe (Dict String Sync) -> Html 
 viewSelectSync config options syncData survey =
     case
         syncData
-            |> Maybe.andThen (Dict.values >> Sync.select (List.length options))
-            |> Maybe.map (vectorBlockCategory config)
     of
         Nothing ->
             survey
 
         Just diagram ->
-            Html.div [] [ survey, diagram ]
+            [ survey
+            , diagram
+                |> Dict.values
+                |> Sync.select (List.length options)
+                |> Maybe.withDefault []
+                |> vectorBlockCategory config
+            ]
+                |> viewSummary config.sync diagram
 
 
 wordCloud : Config sub -> List Sync.Data -> Html msg
