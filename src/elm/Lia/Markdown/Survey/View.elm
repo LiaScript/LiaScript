@@ -173,7 +173,7 @@ viewSummary sync header data =
     let
         fn id values =
             Dict.get id values
-                |> Maybe.map Sync.toString
+                |> Maybe.map (Sync.toString header)
                 |> Maybe.withDefault []
                 |> List.map Html.text
     in

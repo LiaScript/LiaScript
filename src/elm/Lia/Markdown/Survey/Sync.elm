@@ -169,14 +169,14 @@ toVector (Sync s) =
             Nothing
 
 
-toString : Sync -> List String
-toString (Sync s) =
+toString : List String -> Sync -> List String
+toString keys (Sync s) =
     case s of
         Survey.Vector_State False dict ->
-            dict
-                |> Dict.toList
+            keys
+                |> List.filterMap (\key -> Dict.get key dict)
                 |> List.map
-                    (\( _, value ) ->
+                    (\value ->
                         if value then
                             "☑️ true"
 
@@ -185,10 +185,10 @@ toString (Sync s) =
                     )
 
         Survey.Vector_State True dict ->
-            dict
-                |> Dict.toList
+            keys
+                |> List.filterMap (\key -> Dict.get key dict)
                 |> List.map
-                    (\( _, value ) ->
+                    (\value ->
                         if value then
                             "☑️ true"
 
