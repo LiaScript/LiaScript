@@ -146,7 +146,21 @@ viewTableSync syncSettings headers visualize data quiz =
             syncSettings.peersHistory
 
         padding =
-            Attr.style "padding" "0px 20px 0px 20px"
+            Attr.style "padding" "0px 5px !important"
+
+        isPending bool =
+            Html.td
+                [ Attr.class "lia-table__data"
+                , padding
+                , Attr.style "text-align" "center"
+                ]
+                [ Html.text <|
+                    if bool then
+                        "🟡 Pending"
+
+                    else
+                        "⚪ Answered"
+                ]
     in
     if Sync.isRoot syncSettings then
         [ Html.details [ Attr.style "margin-top" "1rem" ]
@@ -159,6 +173,7 @@ viewTableSync syncSettings headers visualize data quiz =
                     [ Attr.class "lia-table"
                     , Attr.style "overflow" "auto"
                     , Attr.style "padding" "0px"
+                    , Attr.style "table-layout" "fixed"
                     ]
                     [ Html.thead [ Attr.class "lia-table__head" ]
                         [ Html.th
@@ -171,6 +186,11 @@ viewTableSync syncSettings headers visualize data quiz =
                                 , padding
                                 ]
                                 [ Html.text "Online" ]
+                            :: Html.th
+                                [ Attr.class "lia-table__header"
+                                , padding
+                                ]
+                                [ Html.text "State" ]
                             :: (headers
                                     |> List.map
                                         (Html.text
@@ -203,15 +223,23 @@ viewTableSync syncSettings headers visualize data quiz =
                                           else
                                             Html.text "⛔ Offline "
                                         ]
-                                    :: (visualize id data
-                                            |> List.map
-                                                (List.singleton
-                                                    >> Html.td
-                                                        [ Attr.class "lia-table__data"
-                                                        , Attr.style "text-align" "center"
-                                                        , padding
-                                                        ]
-                                                )
+                                    :: (case visualize id data of
+                                            [] ->
+                                                Html.td [ Attr.class "lia-table__data", padding ] []
+                                                    |> List.repeat (List.length headers)
+                                                    |> (::) (isPending True)
+
+                                            list ->
+                                                list
+                                                    |> List.map
+                                                        (List.singleton
+                                                            >> Html.td
+                                                                [ Attr.class "lia-table__data"
+                                                                , Attr.style "text-align" "center"
+                                                                , padding
+                                                                ]
+                                                        )
+                                                    |> (::) (isPending False)
                                        )
                                     |> Html.tr [ Attr.class "lia-table__row" ]
                             )
@@ -395,34 +423,34 @@ viewSync config syncData quiz =
                     [ Html.text "⚫ Resolved" ]
 
                 Nothing ->
-                    [ Html.text "🟡 Open" ]
+                    []
     in
-    case ( syncData, syncData |> Maybe.map Dict.size, config.sync ) |> Debug.log "viewSync" of
+    case ( syncData, syncData |> Maybe.map Dict.size, config.sync ) of
         ( Just data, Just 0, Just sync ) ->
             if Sync.isRoot sync then
                 syncDiagram config sync 0 data
                     |> List.singleton
                     |> List.append quiz
-                    |> viewTableSync sync [ "State" ] visualize data
+                    |> viewTableSync sync [ "Answer" ] visualize data
 
             else
-                viewTableSync sync [ "State" ] visualize data quiz
+                viewTableSync sync [ "Answer" ] visualize data quiz
 
         ( Nothing, Nothing, Just sync ) ->
             if Sync.isRoot sync then
                 syncDiagram config sync 0 Dict.empty
                     |> List.singleton
                     |> List.append quiz
-                    |> viewTableSync sync [ "State" ] visualize Dict.empty
+                    |> viewTableSync sync [ "Answer" ] visualize Dict.empty
 
             else
-                viewTableSync sync [ "State" ] visualize Dict.empty quiz
+                viewTableSync sync [ "Answer" ] visualize Dict.empty quiz
 
         ( Just data, Just length, Just sync ) ->
             syncDiagram config sync length data
                 |> List.singleton
                 |> List.append quiz
-                |> viewTableSync sync [ "State" ] visualize data
+                |> viewTableSync sync [ "Answer" ] visualize data
 
         _ ->
             quiz

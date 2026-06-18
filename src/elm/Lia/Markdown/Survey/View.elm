@@ -197,7 +197,7 @@ viewVectorSync config analyze questions syncData survey =
         ( Just data, Just summary ) ->
             Html.div []
                 [ survey
-                , case analyze |> Debug.log "Analyze" of
+                , case analyze of
                     Categorical ->
                         [ vectorBlockCategory config summary ]
                             |> viewSummary config.sync (questions |> List.map Tuple.first) data

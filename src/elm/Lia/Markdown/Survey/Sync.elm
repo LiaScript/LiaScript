@@ -178,7 +178,7 @@ toString (Sync s) =
                 |> List.map
                     (\( _, value ) ->
                         if value then
-                            "true"
+                            "☑️ true"
 
                         else
                             ""
@@ -190,10 +190,10 @@ toString (Sync s) =
                 |> List.map
                     (\( _, value ) ->
                         if value then
-                            "true"
+                            "☑️ true"
 
                         else
-                            "false"
+                            "⬜ false"
                     )
 
         Survey.Text_State str ->
