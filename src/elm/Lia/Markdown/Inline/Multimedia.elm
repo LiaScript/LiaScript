@@ -1,11 +1,14 @@
 module Lia.Markdown.Inline.Multimedia exposing
     ( audio
     , movie
+    , movieProvider
+    , providerOf
     , website
     )
 
 import Lia.Parser.PatReplace exposing (replace)
 import Lia.Parser.UrlPattern.Generic exposing (root)
+import Regex
 
 
 website =
@@ -54,6 +57,48 @@ movie =
       }
     ]
         |> replace
+
+
+{-| Like `movie`, but also reports which embed provider matched.
+
+Returns `Just ( provider, embedUrl )` for an embeddable platform URL, or `Nothing`
+for a direct/raw media file.
+-}
+movieProvider : String -> Maybe ( String, String )
+movieProvider url =
+    let
+        ( found, embed ) =
+            movie url
+    in
+    if found then
+        Just ( providerOf url, embed )
+
+    else
+        Nothing
+
+
+{-| Determine the provider name from an already-transformed embed URL (the form
+produced by `movie`). Matches the embed hosts emitted above, but also tolerates
+raw source URLs as a fallback.
+-}
+providerOf : String -> String
+providerOf url =
+    [ ( "youtube", "(?:youtube-nocookie\\.com|youtube\\.com|youtu\\.be)" )
+    , ( "vimeo", "vimeo\\.com" )
+    , ( "dailymotion", "dailymotion\\.com" )
+    , ( "peertube", "peertube\\.tv" )
+    , ( "teachertube", "teachertube\\.com" )
+    , ( "tu-freiberg", "video\\.tu\\-freiberg\\.de" )
+    ]
+        |> List.filter (\( _, pat ) -> Regex.contains (regex pat) url)
+        |> List.head
+        |> Maybe.map Tuple.first
+        |> Maybe.withDefault "generic"
+
+
+regex : String -> Regex.Regex
+regex =
+    Regex.fromString >> Maybe.withDefault Regex.never
 
 
 audio : String -> ( Bool, String )

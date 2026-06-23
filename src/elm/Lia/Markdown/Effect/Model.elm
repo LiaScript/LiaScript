@@ -1,10 +1,12 @@
 module Lia.Markdown.Effect.Model exposing
     ( Content
     , Element
+    , EmbedVideo
     , Model
     , current_comment
     , current_paragraphs
     , getAudioRecordings
+    , getEmbedVideoRecordings
     , getHiddenComments
     , getVideoRecordings
     , get_paragraph
@@ -43,6 +45,17 @@ type alias Content =
     , content : Inlines
     , audio : Array String
     , video : Array String
+    , embedVideo : Array EmbedVideo
+    }
+
+
+{-| An embeddable platform video used as a spoken-comment video. `url` is the
+ready-to-embed iframe URL; `provider` selects the JS player adapter (e.g.
+"youtube", "vimeo", "generic").
+-}
+type alias EmbedVideo =
+    { url : String
+    , provider : String
     }
 
 
@@ -64,6 +77,19 @@ getAudioRecordings =
 getVideoRecordings : Model a -> List String
 getVideoRecordings =
     getRecordings .video
+
+
+getEmbedVideoRecordings : Model a -> List EmbedVideo
+getEmbedVideoRecordings model =
+    model.comments
+        |> Dict.get model.visible
+        |> Maybe.map
+            (.content
+                >> Array.map (.embedVideo >> Array.toList)
+                >> Array.toList
+                >> List.concat
+            )
+        |> Maybe.withDefault []
 
 
 getRecordings : (Content -> Array String) -> Model a -> List String

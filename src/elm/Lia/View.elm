@@ -317,6 +317,15 @@ slideBottom { lang, tiny, settings, slide, effects } =
                 let
                     sound =
                         settings.sound && Effect.hasComments effects
+
+                    directRecordings =
+                        Effect.getAudioRecordings effects ++ Effect.getVideoRecordings effects
+
+                    hasEmbedVideo =
+                        not (List.isEmpty (Effect.getEmbedVideoRecordings effects))
+
+                    hasRecordings =
+                        not (List.isEmpty directRecordings) || hasEmbedVideo
                 in
                 Html.div
                     [ Attr.class "lia-responsive-voice"
@@ -333,13 +342,14 @@ slideBottom { lang, tiny, settings, slide, effects } =
                             , btnPause lang sound settings
                             ]
                         , Html.div [ Attr.class "lia-responsive-voice__center" ]
-                            [ audioProgressSlider sound (not (List.isEmpty (Effect.getAudioRecordings effects ++ Effect.getVideoRecordings effects))) settings
+                            [ audioProgressSlider sound hasRecordings settings
                             , responsiveVoice
                                 { lang = lang
                                 , tiny = tiny
                                 , show = sound
                                 , tts = settings.tts
-                                , audio = Effect.getAudioRecordings effects ++ Effect.getVideoRecordings effects
+                                , audio = directRecordings
+                                , hasEmbedVideo = hasEmbedVideo
                                 }
                             ]
                         , btnStop lang settings
@@ -745,8 +755,8 @@ slideNavigation lang mode slide effect =
 -- ]
 
 
-responsiveVoice : { lang : Lang, tiny : Bool, show : Bool, tts : TTS, audio : List String } -> Html msg
-responsiveVoice { lang, tiny, show, tts, audio } =
+responsiveVoice : { lang : Lang, tiny : Bool, show : Bool, tts : TTS, audio : List String, hasEmbedVideo : Bool } -> Html msg
+responsiveVoice { lang, tiny, show, tts, audio, hasEmbedVideo } =
     Html.small
         [ Attr.class "lia-responsive-voice__info notranslate"
         , Attr.attribute "translate" "no"
@@ -763,7 +773,7 @@ responsiveVoice { lang, tiny, show, tts, audio } =
             else
                 "80%"
         ]
-        (appendAudioFragments audio <|
+        (appendAudioFragments audio hasEmbedVideo <|
             case ( tts.isBrowserSupported, tts.isResponsiveVoiceSupported, tts.preferBrowser ) of
                 ( True, False, _ ) ->
                     [ browserTTSText lang ]
@@ -782,10 +792,14 @@ responsiveVoice { lang, tiny, show, tts, audio } =
         )
 
 
-appendAudioFragments : List String -> List (Html msg) -> List (Html msg)
-appendAudioFragments audio info =
+appendAudioFragments : List String -> Bool -> List (Html msg) -> List (Html msg)
+appendAudioFragments audio hasEmbedVideo info =
     if List.isEmpty audio then
-        info
+        if hasEmbedVideo then
+            [ Html.span [ Attr.style "visibility" "hidden" ] info ]
+
+        else
+            info
 
     else
         Html.span [ Attr.style "visibility" "hidden" ] info
@@ -802,39 +816,60 @@ viewVideoComment comments overlay effects =
             else
                 []
 
+        embeds =
+            if comments.active then
+                Effect.getEmbedVideoRecordings effects
+
+            else
+                []
+
         videos =
             String.join "," urls
 
         hide =
-            String.isEmpty videos
+            String.isEmpty videos && List.isEmpty embeds
+
+        directVideo url =
+            Html.video
+                [ Attr.controls False
+                , Attr.style "width" "100%"
+                , Attr.style "height" "100%"
+                , Attr.style "objectFit" "cover"
+                , Attr.style "opacity"
+                    (if hide then
+                        "0"
+
+                     else
+                        "1"
+                    )
+
+                -- Control opacity based on `hide`
+                , Attr.style "transition" "opacity 0.3s" -- Smooth transition for opacity
+                , Attr.attribute "data-url" url
+                , Attr.style "display" "none" -- Hide the video element
+                , Attr.preload "auto"
+                , Attr.src url
+                , Attr.style "position" "absolute"
+                , onError "video" url
+                ]
+                []
+
+        -- Embeds (YouTube/Vimeo/...) are mounted as placeholders; the JS player
+        -- adapter (see comment-media in TTS) injects the actual iframe and drives
+        -- it through the provider API, since iframes are not HTMLMediaElements.
+        embedVideo embed =
+            Html.div
+                [ Attr.class "lia-tts-embed"
+                , Attr.style "width" "100%"
+                , Attr.style "height" "100%"
+                , Attr.style "display" "none"
+                , Attr.style "position" "absolute"
+                , Attr.attribute "data-embed-provider" embed.provider
+                , Attr.attribute "data-embed-url" embed.url
+                ]
+                []
     in
-    urls
-        |> List.map
-            (\url ->
-                Html.video
-                    [ Attr.controls False
-                    , Attr.style "width" "100%"
-                    , Attr.style "height" "100%"
-                    , Attr.style "objectFit" "cover"
-                    , Attr.style "opacity"
-                        (if hide then
-                            "0"
-
-                         else
-                            "1"
-                        )
-
-                    -- Control opacity based on `hide`
-                    , Attr.style "transition" "opacity 0.3s" -- Smooth transition for opacity
-                    , Attr.attribute "data-url" url
-                    , Attr.style "display" "none" -- Hide the video element
-                    , Attr.preload "auto"
-                    , Attr.src url
-                    , Attr.style "position" "absolute"
-                    , onError "video" url
-                    ]
-                    []
-            )
+    (List.map directVideo urls ++ List.map embedVideo embeds)
         |> Html.div
             [ Attr.id "lia-tts-videos"
             , Attr.style "width" "100%"

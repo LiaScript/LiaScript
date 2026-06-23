@@ -31,8 +31,9 @@ import Combine
 import Combine.Char exposing (anyChar)
 import Combine.Num exposing (int)
 import Dict
-import Lia.Markdown.Effect.Model exposing (Content, Element)
+import Lia.Markdown.Effect.Model exposing (Content, Element, EmbedVideo)
 import Lia.Markdown.Effect.Types as Effect exposing (Effect)
+import Lia.Markdown.Inline.Multimedia exposing (providerOf)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Types as Markdown
@@ -229,7 +230,7 @@ add_comment visible ( idx, temp_narrator, par ) =
                         e =
                             s.effect_model
 
-                        { audio, video, paragraph } =
+                        { audio, video, embedVideo, paragraph } =
                             hasMediaContent True par
                     in
                     { e
@@ -245,6 +246,7 @@ add_comment visible ( idx, temp_narrator, par ) =
                                                         paragraph
                                                         (addTo audio Array.empty)
                                                         (addTo video Array.empty)
+                                                        (addTo embedVideo Array.empty)
                                                     )
                                                     cmt.content
                                         }
@@ -263,6 +265,7 @@ add_comment visible ( idx, temp_narrator, par ) =
                                             paragraph
                                             (addTo audio Array.empty)
                                             (addTo video Array.empty)
+                                            (addTo embedVideo Array.empty)
                                          ]
                                             |> Array.fromList
                                             |> Element narrator
@@ -279,7 +282,7 @@ add_comment visible ( idx, temp_narrator, par ) =
         |> andThen rslt
 
 
-addTo : Maybe String -> Array String -> Array String
+addTo : Maybe a -> Array a -> Array a
 addTo file array =
     case file of
         Nothing ->
@@ -289,14 +292,21 @@ addTo file array =
             Array.push f array
 
 
-hasMediaContent : Bool -> Inlines -> { audio : Maybe String, video : Maybe String, paragraph : Inlines }
+hasMediaContent : Bool -> Inlines -> { audio : Maybe String, video : Maybe String, embedVideo : Maybe EmbedVideo, paragraph : Inlines }
 hasMediaContent start par =
     case par of
         (Ref (Audio _ ( False, audio ) _) _) :: par2 ->
-            { audio = Just audio, video = Nothing, paragraph = par2 }
+            { audio = Just audio, video = Nothing, embedVideo = Nothing, paragraph = par2 }
 
         (Ref (Movie _ ( False, video ) _) _) :: par2 ->
-            { audio = Nothing, video = Just video, paragraph = par2 }
+            { audio = Nothing, video = Just video, embedVideo = Nothing, paragraph = par2 }
+
+        (Ref (Movie _ ( True, embed ) _) _) :: par2 ->
+            { audio = Nothing
+            , video = Nothing
+            , embedVideo = Just { url = embed, provider = providerOf embed }
+            , paragraph = par2
+            }
 
         _ ->
             if start then
@@ -306,7 +316,7 @@ hasMediaContent start par =
                     |> (\result -> { result | paragraph = List.reverse result.paragraph })
 
             else
-                { audio = Nothing, video = Nothing, paragraph = par }
+                { audio = Nothing, video = Nothing, embedVideo = Nothing, paragraph = par }
 
 
 get_counter : Int -> Parser Context Int
