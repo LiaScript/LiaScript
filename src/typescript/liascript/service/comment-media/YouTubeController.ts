@@ -92,6 +92,7 @@ export class YouTubeController implements CommentMediaController {
   private errorCb: ((err: any) => void) | null = null
   private endWatcher: ReturnType<typeof setInterval> | null = null
   private pendingRate: number | null = null
+  private pendingMuted: boolean | null = null
 
   constructor(container: HTMLElement, embedUrl: string) {
     this.container = container
@@ -133,6 +134,10 @@ export class YouTubeController implements CommentMediaController {
                 if (this.pendingRate !== null) {
                   this.applyRate(this.pendingRate)
                   this.pendingRate = null
+                }
+                if (this.pendingMuted !== null) {
+                  this.applyMuted(this.pendingMuted)
+                  this.pendingMuted = null
                 }
                 resolve()
               },
@@ -220,11 +225,22 @@ export class YouTubeController implements CommentMediaController {
     this.applyRate(rate)
   }
 
-  setMuted(muted: boolean): void {
+  private applyMuted(muted: boolean): void {
     try {
-      if (muted) this.player?.mute()
-      else this.player?.unMute()
-    } catch (e) {}
+      if (muted) this.player.mute()
+      else this.player.unMute()
+    } catch (e) {
+      console.warn('YouTube setMuted failed:', e)
+    }
+  }
+
+  setMuted(muted: boolean): void {
+    // The player may not be ready yet. So defer the mute until ready.
+    if (!this.player || !this.player.mute) {
+      this.pendingMuted = muted
+      return
+    }
+    this.applyMuted(muted)
   }
 
   setVisible(visible: boolean): void {
