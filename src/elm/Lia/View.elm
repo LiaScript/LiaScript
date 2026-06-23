@@ -165,6 +165,7 @@ viewSlide modalIsActive screen model =
                     , settings = model.settings
                     , slide = model.section_active
                     , effects = section.effect_model
+                    , translated = model.langCodeOriginal /= model.langCode
                     }
                 ]
             , slideA11y
@@ -304,8 +305,8 @@ showSection model screen ( id, section ) =
 {-| **@private:** used to display the text2speech output settings and spoken
 comments in text, depending on the currently applied rendering mode.
 -}
-slideBottom : { lang : Lang, tiny : Bool, settings : Settings, slide : Int, effects : Effect.Model SubSection } -> Html Msg
-slideBottom { lang, tiny, settings, slide, effects } =
+slideBottom : { lang : Lang, tiny : Bool, settings : Settings, slide : Int, effects : Effect.Model SubSection, translated : Bool } -> Html Msg
+slideBottom { lang, tiny, settings, slide, effects, translated } =
     Html.footer
         [ Attr.class "lia-slide__footer" ]
         [ slideNavigation lang settings.mode slide effects
@@ -322,10 +323,18 @@ slideBottom { lang, tiny, settings, slide, effects } =
                         Effect.getAudioRecordings effects ++ Effect.getVideoRecordings effects
 
                     hasEmbedVideo =
-                        not (List.isEmpty (Effect.getEmbedVideoRecordings effects))
+                        not translated
+                            && not (List.isEmpty (Effect.getEmbedVideoRecordings effects))
+
+                    recordings =
+                        if translated then
+                            []
+
+                        else
+                            directRecordings
 
                     hasRecordings =
-                        not (List.isEmpty directRecordings) || hasEmbedVideo
+                        not (List.isEmpty recordings) || hasEmbedVideo
                 in
                 Html.div
                     [ Attr.class "lia-responsive-voice"
@@ -348,7 +357,7 @@ slideBottom { lang, tiny, settings, slide, effects } =
                                 , tiny = tiny
                                 , show = sound
                                 , tts = settings.tts
-                                , audio = directRecordings
+                                , audio = recordings
                                 , hasEmbedVideo = hasEmbedVideo
                                 }
                             ]
