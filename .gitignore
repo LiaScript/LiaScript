@@ -12,3 +12,5 @@ static/README.md
 backup/**
 benchmark
 parcel-bundle-reportsandroid/local.properties
+.mcp.json
+.playwright-mcp

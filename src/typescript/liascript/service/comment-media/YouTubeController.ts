@@ -112,13 +112,26 @@ export class YouTubeController implements CommentMediaController {
             this.container.removeChild(this.container.firstChild)
           }
 
-          // A dedicated child element so we never wipe the placeholder's attrs.
+          // Anchor the clip box to the placeholder.
+          this.container.style.position = 'absolute'
+          this.container.style.top = '0'
+          this.container.style.left = '0'
+          this.container.style.width = '100%'
+          this.container.style.height = '100%'
+          
           const mountPoint = document.createElement('div')
+          mountPoint.style.position = 'absolute'
+          mountPoint.style.top = '0'
+          mountPoint.style.left = '0'
           mountPoint.style.width = '100%'
           mountPoint.style.height = '100%'
+          mountPoint.style.overflow = 'hidden'
           this.container.appendChild(mountPoint)
 
-          this.player = new window.YT.Player(mountPoint, {
+          const inner = document.createElement('div')
+          mountPoint.appendChild(inner)
+
+          this.player = new window.YT.Player(inner, {
             videoId: this.videoId,
             playerVars: {
               autoplay: 0,
@@ -131,6 +144,7 @@ export class YouTubeController implements CommentMediaController {
             },
             events: {
               onReady: () => {
+                this.coverContainer()
                 if (this.pendingRate !== null) {
                   this.applyRate(this.pendingRate)
                   this.pendingRate = null
@@ -151,6 +165,29 @@ export class YouTubeController implements CommentMediaController {
           })
         })
     )
+  }
+
+  /**
+   * Cover the (circular) comment container with the YouTube iframe. Over-sizing
+   * the height to 177.78% (16:9) and centering it both fills the box AND pushes
+   * YouTube's top title strip above the visible area, where the mountPoint's
+   * `overflow:hidden` crops it off.
+   */
+  private coverContainer(): void {
+    const iframe = this.container.querySelector('iframe')
+    if (!iframe) return
+    iframe.style.position = 'absolute'
+    iframe.style.top = '50%'
+    iframe.style.left = '50%'
+    iframe.style.transform = 'translate(-50%, -50%)'
+    iframe.style.width = '100%'
+    iframe.style.height = '177.78%'
+    iframe.style.minWidth = '100%'
+    iframe.style.minHeight = '100%'
+    // Blocking pointer events stops YouTube's hover chrome (title bar / controls) from appearing.
+    iframe.style.pointerEvents = 'none'
+    iframe.setAttribute('width', '')
+    iframe.setAttribute('height', '')
   }
 
   private applyRate(rate: number): void {

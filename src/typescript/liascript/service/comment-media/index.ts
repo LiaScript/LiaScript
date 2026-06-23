@@ -1,6 +1,7 @@
 import { CommentMediaController } from './Controller'
 import { HtmlMediaController } from './HtmlMediaController'
 import { YouTubeController } from './YouTubeController'
+import { VimeoController } from './VimeoController'
 
 export { CommentMediaController } from './Controller'
 export { parseTimeFragment } from './HtmlMediaController'
@@ -30,6 +31,9 @@ export function createController(
     switch (provider) {
       case 'youtube':
         return new YouTubeController(el, url)
+
+      case 'vimeo':
+        return new VimeoController(el, url)
 
       default:
         console.warn(
