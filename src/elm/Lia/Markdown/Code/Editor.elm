@@ -34,6 +34,8 @@ module Lia.Markdown.Code.Editor exposing
     , onKeyBinding
     , readOnly
     , removeKeyBinding
+    , rtl
+    , rtlText
     , setCursors
     , showCursor
     , showGutter
@@ -342,6 +344,20 @@ enableLiveAutocompletion =
 enableSnippets : Bool -> Html.Attribute msg
 enableSnippets =
     boolean "enableSnippets"
+
+
+{-| Set the text direction to right-to-left. This is needed for languages like Arabic or Hebrew.
+-}
+rtl : Bool -> Html.Attribute msg
+rtl =
+    boolean "rtl"
+
+
+{-| auto-detect RTL text direction based on the content of the editor. This is needed for languages like Arabic or Hebrew.
+-}
+rtlText : Bool -> Html.Attribute msg
+rtlText =
+    boolean "rtlText"
 
 
 extensions : List String -> Html.Attribute msg

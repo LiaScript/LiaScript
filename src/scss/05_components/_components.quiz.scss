@@ -50,7 +50,7 @@
   &__sync,
   &__hints,
   &__solution {
-    grid-column-start: 1;
+    grid-column: 1 / -1;
   }
 
   &__feedback {
@@ -64,6 +64,10 @@
     display: grid;
     grid-gap: 2rem;
     grid-template-columns: 1fr;
+
+    @include tools.breakpoint('md') {
+      grid-template-columns: 1fr auto;
+    }
   }
 
   &-single-choice,
