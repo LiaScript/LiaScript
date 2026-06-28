@@ -655,9 +655,12 @@ load_readme readme model =
             |> Maybe.withDefault False
     then
         ( model
-        , { version = initial.model.definition.version, url = initial.model.readme }
-            |> Service.Database.index_restore
-            |> event2js
+        , [ { version = initial.model.definition.version, url = initial.model.readme }
+                |> Service.Database.index_restore
+                |> event2js
+          ]
+            |> CList.addWhen (initial.event |> Maybe.map event2js)
+            |> Cmd.batch
         )
 
     else
