@@ -79,7 +79,7 @@
     "crypto-browserify": "^3.5.1",
     "dexie": "^4.2.1",
     "easy-speech": "^2.4.0",
-    "echarts": "^5.6.0",
+    "echarts": "^6.1.0",
     "echarts-wordcloud": "^2.1.0",
     "elm": "^0.19.1-5",
     "elm-hot": "^1.1.6",
