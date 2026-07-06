@@ -326,6 +326,13 @@ slideBottom { lang, tiny, settings, slide, effects, translated } =
                         not translated
                             && not (List.isEmpty (Effect.getEmbedVideoRecordings effects))
 
+                    -- Generic embeds report no real playback progress, so they shouldn't show the progress slider.
+                    hasSeekableEmbedVideo =
+                        not translated
+                            && List.any
+                                (\embed -> embed.provider == "youtube" || embed.provider == "vimeo")
+                                (Effect.getEmbedVideoRecordings effects)
+
                     recordings =
                         if translated then
                             []
@@ -334,7 +341,13 @@ slideBottom { lang, tiny, settings, slide, effects, translated } =
                             directRecordings
 
                     hasRecordings =
-                        not (List.isEmpty recordings) || hasEmbedVideo
+                        not (List.isEmpty recordings) || hasSeekableEmbedVideo
+
+                    -- Hide the pause/resume button for generic embeds.
+                    canPauseResume =
+                        translated
+                            || List.isEmpty (Effect.getEmbedVideoRecordings effects)
+                            || hasSeekableEmbedVideo
                 in
                 Html.div
                     [ Attr.class "lia-responsive-voice"
@@ -347,9 +360,14 @@ slideBottom { lang, tiny, settings, slide, effects, translated } =
                     [ Html.div [ Attr.class "lia-responsive-voice__control" ]
                         [ Html.div
                             [ Attr.class "lia-responsive-voice__playgroup" ]
-                            [ btnReplay lang sound settings
-                            , btnPause lang sound settings
-                            ]
+                            (btnReplay lang sound settings
+                                :: (if canPauseResume then
+                                        [ btnPause lang sound settings ]
+
+                                    else
+                                        []
+                                   )
+                            )
                         , Html.div [ Attr.class "lia-responsive-voice__center" ]
                             [ audioProgressSlider sound hasRecordings settings
                             , responsiveVoice

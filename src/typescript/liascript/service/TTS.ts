@@ -106,6 +106,7 @@ function startProgressInterval(event: Lia.Event) {
     let duration: number | null
 
     if (controller) {
+      if (!controller.capabilities.duration) return
       paused = controller.isPaused()
       t = controller.getCurrentTime()
       duration = controller.getDuration()
@@ -270,10 +271,12 @@ export const Service = {
               }
             })
             startProgressInterval(activeMedia.event)
-            const resumeT = controller.getCurrentTime()
-            const resumeDuration = controller.getDuration()
-            const resumeTotal = resumeDuration !== null ? resumeDuration : resumeT + 10
-            sendResponse(activeMedia.event, 'progress', JSON.stringify({ current: resumeT, total: resumeTotal }))
+            if (controller.capabilities.duration) {
+              const resumeT = controller.getCurrentTime()
+              const resumeDuration = controller.getDuration()
+              const resumeTotal = resumeDuration !== null ? resumeDuration : resumeT + 10
+              sendResponse(activeMedia.event, 'progress', JSON.stringify({ current: resumeT, total: resumeTotal }))
+            }
             resumed = true
           } else if (activeMedia.media && activeMedia.media.paused && activeMedia.event) {
             activeMedia.media.play().catch((e: any) => {
