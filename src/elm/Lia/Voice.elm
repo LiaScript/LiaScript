@@ -170,73 +170,76 @@ isMale voice =
 
 {-|
 
-    getVoiceFor "Russian Female" ( "en", "en" )
+    getVoiceFor "Russian Female" { old = "en", new = "en", name = Nothing }
     --> Just { translated = False, lang = "ru", name = "Russian Female" }
 
-    getVoiceFor "Russian Female" ( "en", "de" )
+    getVoiceFor "Russian Female" { old = "en", new = "de", name = Nothing }
     --> Just { translated = False, lang = "ru", name = "Russian Female" }
 
-    getVoiceFor "US English Male" ( "en", "en" )
-    --> Just { translated = False, lang = "en", name = "US English Male" }
+    getVoiceFor "US English Male" { old = "en", new = "en", name = Nothing }
+    --> Just { translated = True, lang = "en", name = "US English Male" }
 
-    getVoiceFor "US English Male" ( "en", "de" )
+    getVoiceFor "US English Male" { old = "en", new = "de", name = Nothing }
     --> Just { translated = True, lang = "de", name = "Deutsch Male" }
 
 -}
 getVoiceFor : String -> { x | name : Maybe String, old : String, new : String } -> Maybe Voice
 getVoiceFor voice lang =
-    if lang.old == lang.new then
-        -- Nothing has changed
-        Just
-            { translated = False
-            , lang =
-                voice
-                    |> getLang
-                    |> Maybe.withDefault lang.old
-            , name = voice
-            }
+    if getLang voice == Just lang.old then
+        -- the voice speaks the document's own language, so it should
+        -- be translated along with the rest of the document
+        if lang.old == lang.new then
+            Just
+                { translated = True
+                , lang =
+                    voice
+                        |> getLang
+                        |> Maybe.withDefault lang.old
+                , name = voice
+                }
 
-    else if getLang voice == Just lang.old then
-        -- the old voice needs to be translated too
-        let
-            newVoice =
-                voice
-                    |> isMale
-                    |> getVoiceFromLang lang.new
-        in
-        case ( newVoice, lang.name ) of
-            ( Just newName, _ ) ->
-                Just
-                    { translated = True
-                    , lang = lang.new
-                    , name = newName
-                    }
+        else
+            let
+                newVoice =
+                    voice
+                        |> isMale
+                        |> getVoiceFromLang lang.new
+            in
+            case ( newVoice, lang.name ) of
+                ( Just newName, _ ) ->
+                    Just
+                        { translated = True
+                        , lang = lang.new
+                        , name = newName
+                        }
 
-            ( Nothing, Just langName ) ->
-                let
-                    gender =
-                        case isMale voice of
-                            Just True ->
-                                " Male"
+                ( Nothing, Just langName ) ->
+                    let
+                        gender =
+                            case isMale voice of
+                                Just True ->
+                                    " Male"
 
-                            Just False ->
-                                " Female"
+                                Just False ->
+                                    " Female"
 
-                            Nothing ->
-                                ""
-                in
-                Just
-                    { translated = True
-                    , lang = lang.new
-                    , name = langName ++ gender
-                    }
+                                Nothing ->
+                                    ""
+                    in
+                    Just
+                        { translated = True
+                        , lang = lang.new
+                        , name = langName ++ gender
+                        }
 
-            _ ->
-                Nothing
+                _ ->
+                    Nothing
         --|> Maybe.withDefault (Voice True lang.new lang.name)
 
     else
-        -- the voice
+        -- the voice speaks a different language than the document
+        -- itself, so it must not be swept up by an automatic
+        -- translation of the surrounding text
         Just
             { translated = False
             , lang =
