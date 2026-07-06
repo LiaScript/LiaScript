@@ -58,7 +58,13 @@ export class HtmlMediaController implements CommentMediaController {
   }
 
   play(): Promise<void> {
-    this.el.currentTime = this.fragmentStart ?? this.el.currentTime ?? 0
+    const t = this.el.currentTime || 0
+    const outsideFragment =
+      (this.fragmentStart !== null && t < this.fragmentStart) ||
+      (this.fragmentEnd !== null && t >= this.fragmentEnd)
+    if (outsideFragment) {
+      this.el.currentTime = this.fragmentStart ?? 0
+    }
     this.el.preservesPitch = true
     const r = this.el.play()
     return r ?? Promise.resolve()
@@ -73,14 +79,18 @@ export class HtmlMediaController implements CommentMediaController {
   }
 
   seek(seconds: number): void {
-    this.el.currentTime = seconds
+    this.el.currentTime = (this.fragmentStart ?? 0) + seconds
   }
 
   getCurrentTime(): number {
-    return this.el.currentTime || 0
+    const t = this.el.currentTime || 0
+    return this.fragmentStart !== null ? Math.max(0, t - this.fragmentStart) : t
   }
 
   getDuration(): number | null {
+    if (this.fragmentEnd !== null) {
+      return this.fragmentEnd - (this.fragmentStart ?? 0)
+    }
     return isFinite(this.el.duration) && this.el.duration > 0
       ? this.el.duration
       : null

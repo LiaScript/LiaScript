@@ -72,20 +72,14 @@ export class GenericIframeController implements CommentMediaController {
     // contain-fit those (and any unknown generic embed) instead, accepting
     // letterboxing.
     const coverCrop = this.provider === 'dailymotion' || this.provider === 'peertube'
+    iframe.style.top = '50%'
+    iframe.style.left = '50%'
+    iframe.style.transform = 'translate(-50%, -50%)'
+    iframe.style.width = '100%'
+    iframe.style.height = coverCrop ? '177.78%' : '56.25%'
     if (coverCrop) {
-      iframe.style.top = '50%'
-      iframe.style.left = '50%'
-      iframe.style.transform = 'translate(-50%, -50%)'
-      iframe.style.width = '100%'
-      iframe.style.height = '177.78%'
       iframe.style.minWidth = '100%'
       iframe.style.minHeight = '100%'
-    } else {
-      iframe.style.top = '50%'
-      iframe.style.left = '50%'
-      iframe.style.transform = 'translate(-50%, -50%)'
-      iframe.style.width = '100%'
-      iframe.style.height = '56.25%'
     }
 
     // TeacherTube/TU-Freiberg ignore the `autoplay` URL param, so the user

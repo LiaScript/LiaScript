@@ -15,7 +15,7 @@ import {
   nativeCancel,
 } from './TTS_native'
 
-import { CommentMediaController, createControllers } from './comment-media'
+import { CommentMediaController, createControllers, parseTimeFragment } from './comment-media'
 
 enum Gender {
   Female,
@@ -271,12 +271,6 @@ export const Service = {
               }
             })
             startProgressInterval(activeMedia.event)
-            if (controller.capabilities.duration) {
-              const resumeT = controller.getCurrentTime()
-              const resumeDuration = controller.getDuration()
-              const resumeTotal = resumeDuration !== null ? resumeDuration : resumeT + 10
-              sendResponse(activeMedia.event, 'progress', JSON.stringify({ current: resumeT, total: resumeTotal }))
-            }
             resumed = true
           } else if (activeMedia.media && activeMedia.media.paused && activeMedia.event) {
             activeMedia.media.play().catch((e: any) => {
@@ -285,11 +279,6 @@ export const Service = {
               }
             })
             startProgressInterval(activeMedia.event)
-            const resumeT = activeMedia.media.currentTime
-            const resumeTotal = isFinite(activeMedia.media.duration) && activeMedia.media.duration > 0
-              ? activeMedia.media.duration
-              : resumeT + 10
-            sendResponse(activeMedia.event, 'progress', JSON.stringify({ current: resumeT, total: resumeTotal }))
             resumed = true
           }
 
@@ -1188,37 +1177,6 @@ function storeBackgroundVideo(player: HTMLElement, video: HTMLVideoElement) {
   } catch (e: any) {
     console.warn('TTS failed to draw video frame ->', e.message)
   }
-}
-
-function parseTimeFragment(url: string): {
-  start: number | null
-  end: number | null
-} {
-  const result: { start: number | null; end: number | null } = {
-    start: null,
-    end: null,
-  }
-
-  try {
-    // Extract time fragment if it exists
-    const hashIndex = url.indexOf('#t=')
-    if (hashIndex !== -1) {
-      const timeValue = url.substring(hashIndex + 3)
-      const timeParts = timeValue.split(',')
-
-      if (timeParts[0]) {
-        result.start = parseFloat(timeParts[0])
-      }
-
-      if (timeParts[1]) {
-        result.end = parseFloat(timeParts[1])
-      }
-    }
-  } catch (e) {
-    console.warn('Failed to parse time fragment:', e)
-  }
-
-  return result
 }
 
 /**

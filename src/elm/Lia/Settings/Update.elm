@@ -93,7 +93,15 @@ update main msg model =
                             no_log Nothing <|
                                 case Service.TTS.decode event of
                                     Service.TTS.Start ->
-                                        { model | playback = Speaking }
+                                        { model
+                                            | playback =
+                                                case model.playback of
+                                                    PausedWithProgress p ->
+                                                        SpeakingWithProgress p
+
+                                                    _ ->
+                                                        Speaking
+                                        }
 
                                     Service.TTS.Stop ->
                                         { model | playback = Idle }
