@@ -2,6 +2,7 @@ import { CommentMediaController } from './Controller'
 import { HtmlMediaController } from './HtmlMediaController'
 import { YouTubeController } from './YouTubeController'
 import { VimeoController } from './VimeoController'
+import { GenericIframeController } from './GenericIframeController'
 
 export { CommentMediaController } from './Controller'
 export { parseTimeFragment } from './HtmlMediaController'
@@ -36,10 +37,7 @@ export function createController(
         return new VimeoController(el, url)
 
       default:
-        console.warn(
-          `Comment-video embed provider "${provider}" is not supported yet.`
-        )
-        return null
+        return new GenericIframeController(el, url)
     }
   }
 
