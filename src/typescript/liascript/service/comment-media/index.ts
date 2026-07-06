@@ -37,7 +37,7 @@ export function createController(
         return new VimeoController(el, url)
 
       default:
-        return new GenericIframeController(el, url)
+        return new GenericIframeController(el, url, provider)
     }
   }
 

@@ -19,14 +19,16 @@ export class GenericIframeController implements CommentMediaController {
 
   private container: HTMLElement
   private embedUrl: string
+  private provider: string
   private iframe: HTMLIFrameElement | null = null
   private endedCb: (() => void) | null = null
   private errorCb: ((err: any) => void) | null = null
   private started = false
 
-  constructor(container: HTMLElement, embedUrl: string) {
+  constructor(container: HTMLElement, embedUrl: string, provider: string = 'generic') {
     this.container = container
     this.embedUrl = embedUrl
+    this.provider = provider
   }
 
   /** Build the embed URL with `autoplay=1` so it starts on mount. */
@@ -61,19 +63,35 @@ export class GenericIframeController implements CommentMediaController {
     iframe.setAttribute('allow', 'autoplay; fullscreen')
     iframe.setAttribute('frameborder', '0')
     iframe.setAttribute('allowfullscreen', '')
-    // Cover the square box with the 16:9 iframe and crop the overflow, matching
-    // the YouTube/Vimeo adapters so the clip fills the circular overlay.
     iframe.style.position = 'absolute'
-    iframe.style.top = '50%'
-    iframe.style.left = '50%'
-    iframe.style.transform = 'translate(-50%, -50%)'
-    iframe.style.width = '100%'
-    iframe.style.height = '177.78%'
-    iframe.style.minWidth = '100%'
-    iframe.style.minHeight = '100%'
     iframe.style.border = '0'
-    // Block hover chrome / interaction; this is a passive narration clip.
-    iframe.style.pointerEvents = 'none'
+
+    // Dailymotion/PeerTube render a plain 16:9 frame, so cover-crop those
+    // like the YouTube/Vimeo adapters. TeacherTube/TU-Freiberg (Video.js
+    // players) aren't reliably 16:9, so cover-cropping misplaces their video —
+    // contain-fit those (and any unknown generic embed) instead, accepting
+    // letterboxing.
+    const coverCrop = this.provider === 'dailymotion' || this.provider === 'peertube'
+    if (coverCrop) {
+      iframe.style.top = '50%'
+      iframe.style.left = '50%'
+      iframe.style.transform = 'translate(-50%, -50%)'
+      iframe.style.width = '100%'
+      iframe.style.height = '177.78%'
+      iframe.style.minWidth = '100%'
+      iframe.style.minHeight = '100%'
+    } else {
+      iframe.style.top = '50%'
+      iframe.style.left = '50%'
+      iframe.style.transform = 'translate(-50%, -50%)'
+      iframe.style.width = '100%'
+      iframe.style.height = '56.25%'
+    }
+
+    // TeacherTube/TU-Freiberg ignore the `autoplay` URL param, so the user
+    // must click their native play button.
+    const needsNativeClick = this.provider === 'teachertube' || this.provider === 'tu-freiberg'
+    iframe.style.pointerEvents = needsNativeClick ? 'auto' : 'none'
     iframe.onerror = () => {
       if (this.errorCb) this.errorCb('iframe failed to load')
     }

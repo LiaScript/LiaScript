@@ -501,8 +501,8 @@ getBorderColor mode =
 -- The main overlay div
 
 
-overlayDiv : List (Attribute (Msg parentMsg)) -> Model -> Html parentMsg -> Html (Msg parentMsg)
-overlayDiv attr model inside =
+overlayDiv : Bool -> List (Attribute (Msg parentMsg)) -> Model -> Html parentMsg -> Html (Msg parentMsg)
+overlayDiv allowNativeClicks attr model inside =
     div
         (List.append
             [ style "position" "absolute"
@@ -586,34 +586,44 @@ overlayDiv attr model inside =
         )
         [ Html.map Foreign inside
         , div
-            [ style "position" "absolute"
-            , style "width" "100%"
-            , style "padding" "10px"
-            , style "height" "100%"
-            , style "cursor"
+            ([ style "position" "absolute"
+             , style "width" "100%"
+             , style "padding" "10px"
+             , style "height" "100%"
+             , style "cursor"
                 (if isFollowMove model.mode then
                     "grabbing"
 
                  else
                     "move"
                 )
-            , style "color" "#fff"
-            , style "text-align" "center"
-            , style "top" "0px"
-            , style "right" "0px"
-            , onMouseDown DragStart
-            , onTouchStart DragStart
-            , onDoubleClick (\pos -> DoubleClick pos)
-            , attribute "aria-label" "Drag to move video overlay. Double-click to make it follow mouse."
-            , attribute "tabindex" "0"
-            , title
+             , style "color" "#fff"
+             , style "text-align" "center"
+             , style "top" "0px"
+             , style "right" "0px"
+             , onMouseDown DragStart
+             , onTouchStart DragStart
+             , onDoubleClick (\pos -> DoubleClick pos)
+             , attribute "aria-label" "Drag to move video overlay. Double-click to make it follow mouse."
+             , attribute "tabindex" "0"
+             , title
                 (if isFollowMove model.mode then
                     "double-click to release"
 
                  else
                     "drag or double-click video comment"
                 )
-            ]
+             ]
+                ++ (if allowNativeClicks then
+                        -- Cut a hole in the drag-catcher's hit-test area so
+                        -- clicks reach the iframe's native play button, while
+                        -- the outer ring stays draggable (from the border).
+                        [ style "clip-path" "polygon(0% 0%, 0% 100%, 15% 100%, 15% 15%, 85% 15%, 85% 85%, 15% 85%, 15% 100%, 100% 100%, 100% 0%)" ]
+
+                    else
+                        []
+                   )
+            )
             []
         , div
             [ style "width" "8%"
@@ -689,11 +699,11 @@ overlayDiv attr model inside =
         ]
 
 
-view : List (Attribute (Msg parentMsg)) -> Model -> Html parentMsg -> Html (Msg parentMsg)
-view attr model inside =
+view : Bool -> List (Attribute (Msg parentMsg)) -> Model -> Html parentMsg -> Html (Msg parentMsg)
+view allowNativeClicks attr model inside =
     div []
         [ backgroundDiv model
-        , overlayDiv attr model inside
+        , overlayDiv allowNativeClicks attr model inside
         ]
 
 

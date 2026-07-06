@@ -838,6 +838,11 @@ viewVideoComment comments overlay effects =
         hide =
             String.isEmpty videos && List.isEmpty embeds
 
+        -- TeacherTube/TU-Freiberg expose no autoplay API, so the user must click their own
+        -- native play button; the overlay's drag-catcher must let that click through.
+        allowNativeClicks =
+            List.any (\embed -> embed.provider == "teachertube" || embed.provider == "tu-freiberg") embeds
+
         directVideo url =
             Html.video
                 [ Attr.controls False
@@ -886,6 +891,7 @@ viewVideoComment comments overlay effects =
             , Attr.attribute "data-urls" videos
             ]
         |> Overlay.view
+            allowNativeClicks
             (if hide || not comments.active || comments.hide then
                 [ Attr.style "display" "none" ]
 
