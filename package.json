@@ -1,6 +1,6 @@
 {
   "name": "@liascript/editor",
-  "version": "1.1.43--1.0.10",
+  "version": "1.1.43--1.1.0",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -106,7 +106,7 @@
     "typescript": "^5.9.3",
     "uint8-to-base64": "^0.2.1",
     "util": "^0.12.5",
-    "workbox-cli": "^7.4.0",
+    "workbox-cli": "^7.4.1",
     "y-generic": "github:andre-dietrich/y-generic",
     "y-utility": "^0.1.4",
     "yjs": "^13.6.27"

@@ -605,7 +605,6 @@ overlayDiv attr model inside =
             , onTouchStart DragStart
             , onDoubleClick (\pos -> DoubleClick pos)
             , attribute "aria-label" "Drag to move video overlay. Double-click to make it follow mouse."
-            , attribute "tabindex" "0"
             , title
                 (if isFollowMove model.mode then
                     "double-click to release"
@@ -642,7 +641,6 @@ overlayDiv attr model inside =
             , onTouchStart ResizeStart
             , onDoubleClick (\pos -> DoubleClickResize pos)
             , attribute "aria-label" "Resize video overlay. Double-click to make it follow mouse for resizing."
-            , attribute "tabindex" "0"
             , title
                 (if isFollowResize model.mode then
                     "double-click to stop resize following"

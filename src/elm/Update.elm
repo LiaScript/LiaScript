@@ -29,6 +29,7 @@ import Lia.Definition.Types as Definition
 import Lia.Json.Decode
 import Lia.Model
 import Lia.Script
+import Lia.Utils exposing (checkPersistency)
 import Library.IPFS as IPFS
 import Model exposing (Model, State(..))
 import Process
@@ -215,7 +216,11 @@ update msg model =
                                 { model
                                     | lia =
                                         Lia.Script.add_todos lia.definition
-                                            { lia | settings = model.lia.settings }
+                                            { lia
+                                                | settings =
+                                                    Lia.Script.applyDefinitionSettings lia.readme lia.definition model.lia.settings
+                                                , persistent = checkPersistency lia.definition.macro
+                                            }
                                 }
 
                         Err _ ->
