@@ -3,6 +3,7 @@ module Lia.Script exposing
     , Msg
     , add_imports
     , add_todos
+    , applyDefinitionSettings
     , getSectionNumberFrom
     , handle
     , init
@@ -33,6 +34,7 @@ import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (loadResource)
 import Lia.Parser.Parser as Parser
 import Lia.Section as Section exposing (Sections)
+import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
 import Lia.Utils exposing (checkFalse, checkPersistency, urlBasePath, urlQuery)
@@ -256,10 +258,6 @@ init_script model script =
             script
     of
         Ok ( definition, code ) ->
-            let
-                settings =
-                    model.settings
-            in
             { model =
                 { model
                     | definition = { definition | attributes = [] }
@@ -270,70 +268,7 @@ init_script model script =
                     , langCode = definition.language
                     , langCodeOriginal = definition.language
                     , persistent = checkPersistency definition.macro
-                    , settings =
-                        { settings
-                            | light =
-                                definition.lightMode
-                                    |> Maybe.withDefault settings.light
-                            , mode =
-                                definition.mode
-                                    |> Maybe.withDefault settings.mode
-                            , documentLight = definition.lightMode
-                            , documentMode = definition.mode
-                            , customTheme = Dict.get "custom" definition.macro
-                            , translateWithGoogle =
-                                case
-                                    definition.macro
-                                        |> Dict.get "translateWithGoogle"
-                                        |> Maybe.map checkFalse
-                                of
-                                    Just False ->
-                                        Nothing
-
-                                    _ ->
-                                        settings.translateWithGoogle
-                            , hasShareApi =
-                                case
-                                    definition.macro
-                                        |> Dict.get "sharing"
-                                        |> Maybe.map checkFalse
-                                of
-                                    Just False ->
-                                        Nothing
-
-                                    _ ->
-                                        settings.hasShareApi
-                            , sync =
-                                case
-                                    definition.macro
-                                        |> Dict.get "classroom"
-                                        |> Maybe.map checkFalse
-                                of
-                                    Just False ->
-                                        Nothing
-
-                                    _ ->
-                                        settings.sync
-                            , edit =
-                                case Dict.get "edit" definition.macro of
-                                    Just "true" ->
-                                        openInLiveEditor model.readme
-
-                                    Just "on" ->
-                                        openInLiveEditor model.readme
-
-                                    Just "false" ->
-                                        Nothing
-
-                                    Just "off" ->
-                                        Nothing
-
-                                    Just url ->
-                                        Just url
-
-                                    _ ->
-                                        Nothing
-                        }
+                    , settings = applyDefinitionSettings model.readme definition model.settings
                 }
                     |> add_todos definition
             , code = Just code
@@ -350,6 +285,81 @@ init_script model script =
             , templates = []
             , event = Nothing
             }
+
+
+{-| Derive all settings that are controlled by the course header/macros (e.g.
+`edit`, `translateWithGoogle`, `sharing`, `classroom`, `custom`, light/dark
+mode) from a parsed `Definition`. This has to be re-applied any time a
+`Definition` is (re-)established for a course, whether via a fresh parse
+(`init_script`) or via restoring a previously cached course from the
+database (`index_restore`), since these settings are never themselves
+persisted/cached.
+-}
+applyDefinitionSettings : String -> Definition -> Settings -> Settings
+applyDefinitionSettings readme definition settings =
+    { settings
+        | light =
+            definition.lightMode
+                |> Maybe.withDefault settings.light
+        , mode =
+            definition.mode
+                |> Maybe.withDefault settings.mode
+        , documentLight = definition.lightMode
+        , documentMode = definition.mode
+        , customTheme = Dict.get "custom" definition.macro
+        , translateWithGoogle =
+            case
+                definition.macro
+                    |> Dict.get "translateWithGoogle"
+                    |> Maybe.map checkFalse
+            of
+                Just False ->
+                    Nothing
+
+                _ ->
+                    settings.translateWithGoogle
+        , hasShareApi =
+            case
+                definition.macro
+                    |> Dict.get "sharing"
+                    |> Maybe.map checkFalse
+            of
+                Just False ->
+                    Nothing
+
+                _ ->
+                    settings.hasShareApi
+        , sync =
+            case
+                definition.macro
+                    |> Dict.get "classroom"
+                    |> Maybe.map checkFalse
+            of
+                Just False ->
+                    Nothing
+
+                _ ->
+                    settings.sync
+        , edit =
+            case Dict.get "edit" definition.macro of
+                Just "true" ->
+                    openInLiveEditor readme
+
+                Just "on" ->
+                    openInLiveEditor readme
+
+                Just "false" ->
+                    Nothing
+
+                Just "off" ->
+                    Nothing
+
+                Just url ->
+                    Just url
+
+                _ ->
+                    Nothing
+    }
 
 
 openInLiveEditor : String -> Maybe String

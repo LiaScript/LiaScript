@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 08/07/2026
+
+- feat: RTL support for the code editor
+- fix: re-derive edit/sharing/classroom/persistent settings when restoring a cached course
+- fix: TTS video-overlay triggered even without an active translation
+- fix: overlay could not exit follow/resize mode on Chrome
+- fix: keep translations menu open when selecting a Google Translate option in Chrome
+- fix: voice translation for TTS
+- fix: CSS for classroom summary tables and table upper border
+- improve: copyToClipboard for RTL
+- hotfix: reloading `@style` properly from cache
+- chore: npm dependency updates (js-yaml, immutable, fast-uri, babel plugin-transform-modules-systemjs, serialize-javascript, workbox-cli, ip-address, socks)
+
 ## [1.0.10] - 01/06/2026
 
 - improve: audio for tts & fixes on small screens.

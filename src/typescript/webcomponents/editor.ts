@@ -1,5 +1,6 @@
 // @ts-ignore
 import ace from 'ace-builds/src-min-noconflict/ace'
+import "ace-builds/src-noconflict/ext-rtl";
 import * as EDITOR from './editor-modes'
 
 import * as AceCollabExt from '@convergencelabs/ace-collab-ext'
@@ -165,6 +166,8 @@ customElements.define(
       fontSize: string
       fontFamily: string
       enableKeyboardAccessibility: boolean
+      rtl: boolean
+      rtlText: boolean
     }
 
     constructor() {
@@ -205,6 +208,8 @@ customElements.define(
         fontSize: '1.5rem',
         fontFamily: 'var(--global-font-mono,)',
         enableKeyboardAccessibility: true,
+        rtl: false,
+        rtlText: false,
       }
 
       let markers = {
@@ -244,6 +249,8 @@ customElements.define(
         fontSize: this.model.fontSize,
         fontFamily: this.model.fontFamily,
         enableKeyboardAccessibility: this.model.enableKeyboardAccessibility,
+        rtl: this.model.rtl,
+        rtlText: this.model.rtlText,
       })
 
       if (!this.model.showCursor) {
@@ -452,6 +459,28 @@ customElements.define(
       if (this.model.enableKeyboardAccessibility !== value) {
         this.model.enableKeyboardAccessibility = value
         this.setOption('enableKeyboardAccessibility', value)
+      }
+    }
+
+    get rtl() {
+      return this.model.rtl
+    }
+
+    set rtl(value: boolean) {
+      if (this.model.rtl !== value) {
+        this.model.rtl = value
+        this.setOption('rtl', value)
+      }
+    }
+
+    get rtlText() {
+      return this.model.rtlText
+    }
+
+    set rtlText(value: boolean) {
+      if (this.model.rtlText !== value) {
+        this.model.rtlText = value
+        this.setOption('rtlText', value)
       }
     }
 
@@ -773,10 +802,10 @@ customElements.define(
               this.cursorManager.removeCursor(oldCursor.id)
               try {
                 this.selectManager.clearSelection(oldCursor.id)
-              } catch (e) {}
+              } catch (e) { }
               try {
                 this.selectManager.removeSelection(oldCursor.id)
-              } catch (e) {}
+              } catch (e) { }
             }
           }
 
@@ -808,7 +837,7 @@ customElements.define(
               this.cursorManager.setCursor(newCursor.id, newCursor.position)
               try {
                 this.selectManager.clearSelection(newCursor.id)
-              } catch (e) {}
+              } catch (e) { }
               this.selectManager.setSelection(
                 newCursor.id,
                 this.toRange(newCursor.selection)
@@ -891,13 +920,13 @@ customElements.define(
         // focus the editor so the move is visible
         try {
           this._editor.focus()
-        } catch (e) {}
+        } catch (e) { }
 
         // move cursor and clear any selection
         this._editor.moveCursorToPosition(position)
         try {
           this._editor.clearSelection()
-        } catch (e) {}
+        } catch (e) { }
       } catch (e) {
         // swallow errors; best-effort cursor move
       }
@@ -950,12 +979,12 @@ customElements.define(
                 try {
                   const line = editor.getSession().getLine(newRow) || ''
                   newCol = Math.min(newCol, line.length)
-                } catch (e) {}
+                } catch (e) { }
                 editor.moveCursorToPosition({ row: newRow, column: newCol })
                 try {
                   editor.clearSelection()
-                } catch (e) {}
-              } catch (e) {}
+                } catch (e) { }
+              } catch (e) { }
             } else if (/Down/i.test(keyDesc)) {
               try {
                 const cur = editor.getCursorPosition()
@@ -965,12 +994,12 @@ customElements.define(
                 try {
                   const line = editor.getSession().getLine(newRow) || ''
                   newCol = Math.min(newCol, line.length)
-                } catch (e) {}
+                } catch (e) { }
                 editor.moveCursorToPosition({ row: newRow, column: newCol })
                 try {
                   editor.clearSelection()
-                } catch (e) {}
-              } catch (e) {}
+                } catch (e) { }
+              } catch (e) { }
             }
           },
           readOnly: false,
@@ -1037,7 +1066,7 @@ customElements.define(
             if (/Enter/i.test(keyDesc)) {
               try {
                 editor.insert('\n')
-              } catch (e) {}
+              } catch (e) { }
             } else if (/Up/i.test(keyDesc)) {
               try {
                 const cur = editor.getCursorPosition()
@@ -1046,12 +1075,12 @@ customElements.define(
                 try {
                   const line = editor.getSession().getLine(newRow) || ''
                   newCol = Math.min(newCol, line.length)
-                } catch (e) {}
+                } catch (e) { }
                 editor.moveCursorToPosition({ row: newRow, column: newCol })
                 try {
                   editor.clearSelection()
-                } catch (e) {}
-              } catch (e) {}
+                } catch (e) { }
+              } catch (e) { }
             } else if (/Down/i.test(keyDesc)) {
               try {
                 const cur = editor.getCursorPosition()
@@ -1061,12 +1090,12 @@ customElements.define(
                 try {
                   const line = editor.getSession().getLine(newRow) || ''
                   newCol = Math.min(newCol, line.length)
-                } catch (e) {}
+                } catch (e) { }
                 editor.moveCursorToPosition({ row: newRow, column: newCol })
                 try {
                   editor.clearSelection()
-                } catch (e) {}
-              } catch (e) {}
+                } catch (e) { }
+              } catch (e) { }
             }
           },
           readOnly: false,

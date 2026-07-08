@@ -193,7 +193,7 @@
     }
 
     &:first-of-type > td {
-      border-block-start: 0;
+      border-block-start: settings.$global-border;
     }
 
     &:last-child > td {
@@ -213,6 +213,7 @@
     position: relative;
     border-inline-start: settings.$global-border;
     border-inline-start: settings.$global-border;
+    border-block-start: settings.$global-border;
     border-block-end: settings.$global-border;
     border-inline-end: 0;
     padding: 1.3rem 3.2rem 1.3rem 1.6rem;

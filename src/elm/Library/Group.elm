@@ -18,21 +18,32 @@ id groupId =
 
 decodeGroupIdChanged : (String -> msg) -> JD.Decoder msg
 decodeGroupIdChanged msg =
-    JD.oneOf
-        [ JD.map2
-            (\a b ->
-                if a /= b then
-                    Just a
+    JD.map2
+        (\a b ->
+            if Just a /= b then
+                Just a
 
-                else
-                    Nothing
-            )
-            (JD.at [ "target", "dataset", "groupId" ] JD.string)
-            (JD.at [ "relatedTarget", "dataset", "groupId" ] JD.string)
-        , JD.at [ "target", "dataset", "groupId" ] JD.string
-            |> JD.map (\a -> Just a)
-        ]
+            else
+                Nothing
+        )
+        (JD.at [ "target", "dataset", "groupId" ] JD.string)
+        (JD.at [ "relatedTarget" ] closestGroupId)
         |> JD.andThen (maybeGroupId msg)
+
+
+{-| Walks up from a node (e.g. `relatedTarget`) to find the nearest
+`data-group-id`, mimicking `Element.closest`. Elements injected into a
+group's container by third-party scripts (e.g. the Google Translate
+widget's `<select>`) don't carry that attribute themselves, but their
+ancestor container does, so they still count as "inside" the group.
+-}
+closestGroupId : JD.Decoder (Maybe String)
+closestGroupId =
+    JD.oneOf
+        [ JD.at [ "dataset", "groupId" ] JD.string |> JD.map Just
+        , JD.field "parentElement" (JD.lazy (\_ -> closestGroupId))
+        , JD.succeed Nothing
+        ]
 
 
 maybeGroupId : (String -> msg) -> Maybe String -> JD.Decoder msg
