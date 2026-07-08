@@ -212,31 +212,70 @@ addTranslation :
     }
     -> List ( String, String )
 addTranslation { hidden, translations, id, narrator, audio } =
+    let
+        -- Google's automatic page translation should pick up every
+        -- comment that is spoken in the document's own language. Only a
+        -- narrator that explicitly speaks a different language (e.g. a
+        -- French quote within a German course) must stay untouched, no
+        -- matter whether the document itself was translated (already or
+        -- not) by Google/the browser in the meantime.
+        isForeignNarrator =
+            case translations of
+                Just { old } ->
+                    case Voice.getLang narrator of
+                        Just narratorLang ->
+                            narratorLang /= old
+
+                        Nothing ->
+                            False
+
+                Nothing ->
+                    False
+
+        translateClass =
+            case ( isForeignNarrator, hidden ) of
+                ( True, True ) ->
+                    "notranslate hide"
+
+                ( True, False ) ->
+                    "notranslate"
+
+                ( False, True ) ->
+                    "translate hidden-visually"
+
+                ( False, False ) ->
+                    "translate"
+
+        translateAttr =
+            if isForeignNarrator then
+                "no"
+
+            else
+                "yes"
+    in
     case translations |> Maybe.andThen (Voice.getVoiceFor narrator) of
         Nothing ->
             case translations of
                 Nothing ->
                     []
 
-                Just { old, new, name } ->
+                Just { new, name } ->
                     case name of
                         Nothing ->
                             []
 
                         Just language_name ->
-                            [ ( "class"
-                              , if hidden then
-                                    "translate hidden-visually"
-
-                                else
-                                    "translate"
-                              )
+                            [ ( "class", translateClass )
                             , ( "class", "lia-tts-" ++ String.fromInt id )
                             , ( "data-voice", language_name )
                             , ( "data-lang", new )
-                            , ( "translate"
-                              , "yes"
-                              )
+                            , ( "translate", translateAttr )
+
+                            -- consumed by the TTS service to decide whether
+                            -- a video's own audio should keep playing
+                            -- (untranslated) or be muted and overlaid with
+                            -- synthesized speech (translated)
+                            , ( "data-translated", "yes" )
                             ]
                                 |> CList.addIf hidden ( "aria-hidden", "true" )
                                 |> CList.addIf
@@ -253,24 +292,12 @@ addTranslation { hidden, translations, id, narrator, audio } =
                                     )
 
         Just { translated, lang, name } ->
-            [ ( "class"
-              , case ( translated, hidden ) of
-                    ( True, True ) ->
-                        "translate hidden-visually"
-
-                    ( False, True ) ->
-                        "notranslate hide"
-
-                    ( True, False ) ->
-                        "translate"
-
-                    ( False, False ) ->
-                        "notranslate"
-              )
+            [ ( "class", translateClass )
             , ( "class", "lia-tts-" ++ String.fromInt id )
             , ( "data-voice", name )
             , ( "data-lang", lang )
-            , ( "translate"
+            , ( "translate", translateAttr )
+            , ( "data-translated"
               , if translated then
                     "yes"
 
