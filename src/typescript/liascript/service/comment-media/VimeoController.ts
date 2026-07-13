@@ -85,10 +85,11 @@ export class VimeoController implements CommentMediaController {
   private endAt: number | null
   private endedFired = false
 
-  // Vimeo reports time/duration through Promises; TTS polls synchronously, so
-  // we cache the latest values seen via the `timeupdate` event.
+  // Vimeo reports time/duration/paused through Promises; TTS polls
+  // synchronously, so we cache the latest values seen via the SDK events.
   private currentTime = 0
   private duration: number | null = null
+  private paused = true
 
   constructor(container: HTMLElement, embedUrl: string) {
     this.container = container
@@ -146,7 +147,15 @@ export class VimeoController implements CommentMediaController {
         }
       })
 
+      this.player.on('play', () => {
+        this.paused = false
+      })
+      this.player.on('pause', () => {
+        this.paused = true
+      })
+
       this.player.on('ended', () => {
+        this.paused = true
         if (this.endedCb) this.endedCb()
       })
 
@@ -215,6 +224,7 @@ export class VimeoController implements CommentMediaController {
           this.endedFired = false
           this.player.setCurrentTime(this.startAt ?? 0).catch(() => {})
         }
+        this.paused = false
         const r = this.player.play()
         return r && typeof r.catch === 'function'
           ? r.catch((e: any) => {
@@ -228,16 +238,16 @@ export class VimeoController implements CommentMediaController {
   }
 
   pause(): void {
+    this.paused = true
     try {
       this.player?.pause()?.catch?.(() => {})
     } catch (e) {}
   }
 
   isPaused(): boolean {
-    // Vimeo's paused state is async-only; approximate from cached playback.
-    // The player drives `timeupdate` only while playing, so this is a
-    // best-effort synchronous answer for TTS's progress bookkeeping.
-    return this.player == null
+    // Vimeo's paused state is async-only, so we track it synchronously from the
+    // SDK's play/pause events and our own play()/pause() calls.
+    return this.player == null || this.paused
   }
 
   seek(seconds: number): void {
@@ -292,6 +302,7 @@ export class VimeoController implements CommentMediaController {
   }
 
   reset(): void {
+    this.paused = true
     try {
       this.player?.pause()?.catch?.(() => {})
       this.player?.setCurrentTime(this.startAt ?? 0)?.catch?.(() => {})
