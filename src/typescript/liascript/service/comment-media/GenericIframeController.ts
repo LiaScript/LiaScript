@@ -75,7 +75,7 @@ export class GenericIframeController implements CommentMediaController {
     iframe.style.top = '50%'
     iframe.style.left = '50%'
     iframe.style.transform = 'translate(-50%, -50%)'
-    iframe.style.width = '100%'
+    iframe.style.width = '177.78%'
     iframe.style.height = coverCrop ? '177.78%' : '56.25%'
     if (coverCrop) {
       iframe.style.minWidth = '100%'
