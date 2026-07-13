@@ -1,4 +1,5 @@
 import { CommentMediaController, MediaCapabilities } from './Controller'
+import { coverIframe, containIframe, clearContainer } from './iframe-utils'
 
 /**
  * Best-effort controller for embeddable platform videos that expose no usable
@@ -48,9 +49,7 @@ export class GenericIframeController implements CommentMediaController {
 
   private mount(): void {
     // Start from a clean container, anchored to the (circular) clip box.
-    while (this.container.firstChild) {
-      this.container.removeChild(this.container.firstChild)
-    }
+    clearContainer(this.container)
     this.container.style.position = 'absolute'
     this.container.style.top = '0'
     this.container.style.left = '0'
@@ -63,29 +62,21 @@ export class GenericIframeController implements CommentMediaController {
     iframe.setAttribute('allow', 'autoplay; fullscreen')
     iframe.setAttribute('frameborder', '0')
     iframe.setAttribute('allowfullscreen', '')
-    iframe.style.position = 'absolute'
     iframe.style.border = '0'
-
-    // Dailymotion/PeerTube render a plain 16:9 frame, so cover-crop those
-    // like the YouTube/Vimeo adapters. TeacherTube/TU-Freiberg (Video.js
-    // players) aren't reliably 16:9, so cover-cropping misplaces their video —
-    // contain-fit those (and any unknown generic embed) instead, accepting
-    // letterboxing.
-    const coverCrop = this.provider === 'dailymotion' || this.provider === 'peertube'
-    iframe.style.top = '50%'
-    iframe.style.left = '50%'
-    iframe.style.transform = 'translate(-50%, -50%)'
-    iframe.style.width = '177.78%'
-    iframe.style.height = coverCrop ? '177.78%' : '56.25%'
-    if (coverCrop) {
-      iframe.style.minWidth = '100%'
-      iframe.style.minHeight = '100%'
-    }
 
     // TeacherTube/TU-Freiberg ignore the `autoplay` URL param, so the user
     // must click their native play button.
     const needsNativeClick = this.provider === 'teachertube' || this.provider === 'tu-freiberg'
-    iframe.style.pointerEvents = needsNativeClick ? 'auto' : 'none'
+    const pointerEvents = needsNativeClick ? 'auto' : 'none'
+
+    // Dailymotion/PeerTube render a plain 16:9 frame, so cover-crop those like
+    // the YouTube/Vimeo adapters. TeacherTube/TU-Freiberg (Video.js players)
+    // aren't reliably 16:9, so cover-cropping misplaces their video —
+    // contain-fit those (and any unknown generic embed) instead.
+    const coverCrop = this.provider === 'dailymotion' || this.provider === 'peertube'
+    if (coverCrop) coverIframe(iframe, { pointerEvents })
+    else containIframe(iframe, { pointerEvents })
+
     iframe.onerror = () => {
       if (this.errorCb) this.errorCb('iframe failed to load')
     }
@@ -161,9 +152,7 @@ export class GenericIframeController implements CommentMediaController {
     this.endedCb = null
     this.errorCb = null
     try {
-      while (this.container.firstChild) {
-        this.container.removeChild(this.container.firstChild)
-      }
+      clearContainer(this.container)
     } catch (e) {}
   }
 }

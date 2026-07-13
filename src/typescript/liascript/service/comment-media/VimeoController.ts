@@ -1,5 +1,6 @@
 import { CommentMediaController, MediaCapabilities } from './Controller'
 import { parseTimeFragment } from './HtmlMediaController'
+import { coverIframe, clearContainer } from './iframe-utils'
 
 /**
  * Controller for a Vimeo comment video, driven through the Vimeo Player SDK.
@@ -103,9 +104,7 @@ export class VimeoController implements CommentMediaController {
   private mount(): Promise<void> {
     return loadApi().then(() => {
       // Start from a clean container.
-      while (this.container.firstChild) {
-        this.container.removeChild(this.container.firstChild)
-      }
+      clearContainer(this.container)
 
       // A dedicated child element so we never wipe the placeholder's attrs.
       const mountPoint = document.createElement('div')
@@ -184,16 +183,7 @@ export class VimeoController implements CommentMediaController {
   private coverContainer(mountPoint: HTMLElement): void {
     const iframe = mountPoint.querySelector('iframe')
     if (!iframe) return
-    iframe.style.position = 'absolute'
-    iframe.style.top = '50%'
-    iframe.style.left = '50%'
-    iframe.style.transform = 'translate(-50%, -50%)'
-    iframe.style.minWidth = '100%'
-    iframe.style.minHeight = '100%'
-    iframe.style.width = '177.78%'
-    iframe.style.height = '177.78%'
-    iframe.setAttribute('width', '')
-    iframe.setAttribute('height', '')
+    coverIframe(iframe)
   }
 
   private applyRate(rate: number): void {
@@ -320,9 +310,7 @@ export class VimeoController implements CommentMediaController {
     // Remove any leftover mount point / iframe so a fresh controller built on
     // the same placeholder starts from a clean container.
     try {
-      while (this.container.firstChild) {
-        this.container.removeChild(this.container.firstChild)
-      }
+      clearContainer(this.container)
     } catch (e) {}
   }
 }

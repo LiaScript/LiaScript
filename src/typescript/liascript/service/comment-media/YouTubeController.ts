@@ -1,5 +1,6 @@
 import { CommentMediaController, MediaCapabilities } from './Controller'
 import { parseTimeFragment } from './HtmlMediaController'
+import { coverIframe, clearContainer } from './iframe-utils'
 
 /**
  * Controller for a YouTube comment video, driven through the YouTube IFrame
@@ -113,9 +114,7 @@ export class YouTubeController implements CommentMediaController {
       () =>
         new Promise<void>((resolve) => {
           // Start from a clean container.
-          while (this.container.firstChild) {
-            this.container.removeChild(this.container.firstChild)
-          }
+          clearContainer(this.container)
 
           // Anchor the clip box to the placeholder.
           this.container.style.position = 'absolute'
@@ -181,18 +180,8 @@ export class YouTubeController implements CommentMediaController {
   private coverContainer(): void {
     const iframe = this.container.querySelector('iframe')
     if (!iframe) return
-    iframe.style.position = 'absolute'
-    iframe.style.top = '50%'
-    iframe.style.left = '50%'
-    iframe.style.transform = 'translate(-50%, -50%)'
-    iframe.style.width = '177.78%'
-    iframe.style.height = '177.78%'
-    iframe.style.minWidth = '100%'
-    iframe.style.minHeight = '100%'
-    // Blocking pointer events stops YouTube's hover chrome (title bar / controls) from appearing.
-    iframe.style.pointerEvents = 'none'
-    iframe.setAttribute('width', '')
-    iframe.setAttribute('height', '')
+    // pointerEvents:none stops YouTube's hover chrome (title bar / controls).
+    coverIframe(iframe, { pointerEvents: 'none' })
   }
 
   private applyRate(rate: number): void {
@@ -322,9 +311,7 @@ export class YouTubeController implements CommentMediaController {
     // Remove any leftover mount point / iframe so a fresh controller built on
     // the same placeholder starts from a clean container.
     try {
-      while (this.container.firstChild) {
-        this.container.removeChild(this.container.firstChild)
-      }
+      clearContainer(this.container)
     } catch (e) {}
   }
 }
