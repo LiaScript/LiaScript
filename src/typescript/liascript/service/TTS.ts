@@ -434,7 +434,7 @@ function read(event: Lia.Event) {
   if (element.length) {
     let voice = element[0].getAttribute('data-voice') || 'default'
     let lang = element[0].getAttribute('data-lang') || 'en'
-    let translation = (element[0].getAttribute('translate') || 'no') === 'yes'
+    let translation = (element[0].getAttribute('data-translated') || 'no') === 'yes'
 
     const options = getAudioSettings(element[0])
 

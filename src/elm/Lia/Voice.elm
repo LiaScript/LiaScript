@@ -170,23 +170,25 @@ isMale voice =
 
 {-|
 
-    getVoiceFor "Russian Female" ( "en", "en" )
+    getVoiceFor "Russian Female" { old = "en", new = "en", name = Nothing }
     --> Just { translated = False, lang = "ru", name = "Russian Female" }
 
-    getVoiceFor "Russian Female" ( "en", "de" )
+    getVoiceFor "Russian Female" { old = "en", new = "de", name = Nothing }
     --> Just { translated = False, lang = "ru", name = "Russian Female" }
 
-    getVoiceFor "US English Male" ( "en", "en" )
+    getVoiceFor "US English Male" { old = "en", new = "en", name = Nothing }
     --> Just { translated = False, lang = "en", name = "US English Male" }
 
-    getVoiceFor "US English Male" ( "en", "de" )
+    getVoiceFor "US English Male" { old = "en", new = "de", name = Nothing }
     --> Just { translated = True, lang = "de", name = "Deutsch Male" }
 
 -}
 getVoiceFor : String -> { x | name : Maybe String, old : String, new : String } -> Maybe Voice
 getVoiceFor voice lang =
     if lang.old == lang.new then
-        -- Nothing has changed
+        -- Nothing has changed: the audio (recorded or synthesized) still
+        -- matches the document's own language, so it must not be
+        -- overridden/muted in favor of a synthesized translation
         Just
             { translated = False
             , lang =

@@ -652,7 +652,6 @@ overlayDiv allowNativeClicks attr model inside =
             , onTouchStart ResizeStart
             , onDoubleClick (\pos -> DoubleClickResize pos)
             , attribute "aria-label" "Resize video overlay. Double-click to make it follow mouse for resizing."
-            , attribute "tabindex" "0"
             , title
                 (if isFollowResize model.mode then
                     "double-click to stop resize following"
