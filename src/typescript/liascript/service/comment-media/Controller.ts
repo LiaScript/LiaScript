@@ -1,16 +1,10 @@
 /**
- * Abstraction over a single comment-video player.
+ * Common interface over a single comment-video player. Direct `<video>` files
+ * and iframe embeds (YouTube, Vimeo, …) each get an adapter behind it.
  *
- * Spoken-comment videos historically are `HTMLMediaElement`s (direct .mp4/.webm
- * files), which TTS.ts drives directly (play/pause/seek/rate/muted + media
- * events). Embeddable platform videos (YouTube, Vimeo, …) are iframes that do
- * NOT expose the media-element API, so each provider needs its own adapter
- * behind this common interface.
- *
- * `capabilities` lets the caller degrade gracefully: a provider that cannot
- * report duration returns `getDuration() === null` and `capabilities.duration
- * === false`, which disables TTS rate-matching, seeking and progress reporting
- * for that clip.
+ * `capabilities` drives graceful degradation: a provider that can't report
+ * duration (`getDuration() === null`, `capabilities.duration === false`)
+ * disables TTS rate-matching, seeking and progress for that clip.
  */
 export interface MediaCapabilities {
   duration: boolean
@@ -29,7 +23,7 @@ export interface CommentMediaController {
   /** Whether playback is currently paused. */
   isPaused(): boolean
 
-  /** Seek to an absolute time in seconds (no-op if `capabilities.seek` is false). */
+  /** Seek to seconds (no-op if `capabilities.seek` is false). */
   seek(seconds: number): void
 
   /** Current playback position in seconds (0 if unknown). */
@@ -59,7 +53,7 @@ export interface CommentMediaController {
   /** What this provider can actually do. */
   readonly capabilities: MediaCapabilities
 
-  /** True for direct HTMLMediaElement players (enables background-frame preview). */
+  /** True for direct `<video>` players (enables background-frame preview). */
   readonly isHtmlMedia: boolean
 
   /** The underlying HTMLMediaElement, if this is a direct-file player. */

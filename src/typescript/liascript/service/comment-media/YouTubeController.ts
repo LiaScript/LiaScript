@@ -3,10 +3,8 @@ import { parseTimeFragment } from './HtmlMediaController'
 import { coverIframe, clearContainer } from './iframe-utils'
 
 /**
- * Controller for a YouTube comment video, driven through the YouTube IFrame
- * Player API. The Elm view renders an empty placeholder `<div>` (with
- * `data-embed-url`); this adapter loads the API once, mounts a player into the
- * placeholder and maps the common interface onto the YT player methods.
+ * YouTube comment-video adapter, driven through the IFrame Player API. Loads the
+ * API once and mounts a player into the Elm placeholder `<div>`.
  */
 
 // Minimal ambient typing for the YT IFrame API surface we use.
@@ -92,7 +90,6 @@ export class YouTubeController implements CommentMediaController {
   private ready: Promise<void>
   private endedCb: (() => void) | null = null
   private errorCb: ((err: any) => void) | null = null
-  private endWatcher: ReturnType<typeof setInterval> | null = null
   private pendingRate: number | null = null
   private pendingMuted: boolean | null = null
 
@@ -171,12 +168,7 @@ export class YouTubeController implements CommentMediaController {
     )
   }
 
-  /**
-   * Cover the (circular) comment container with the YouTube iframe. Over-sizing
-   * the height to 177.78% (16:9) and centering it both fills the box AND pushes
-   * YouTube's top title strip above the visible area, where the mountPoint's
-   * `overflow:hidden` crops it off.
-   */
+  /** Cover-crop the iframe; the crop also hides YouTube's top title strip. */
   private coverContainer(): void {
     const iframe = this.container.querySelector('iframe')
     if (!iframe) return
@@ -298,10 +290,6 @@ export class YouTubeController implements CommentMediaController {
   }
 
   destroy(): void {
-    if (this.endWatcher) {
-      clearInterval(this.endWatcher)
-      this.endWatcher = null
-    }
     try {
       this.player?.destroy?.()
     } catch (e) {}

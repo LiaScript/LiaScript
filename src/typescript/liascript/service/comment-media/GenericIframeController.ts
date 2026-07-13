@@ -2,10 +2,9 @@ import { CommentMediaController, MediaCapabilities } from './Controller'
 import { coverIframe, containIframe, clearContainer } from './iframe-utils'
 
 /**
- * Best-effort controller for embeddable platform videos that expose no usable
- * JavaScript player API (Dailymotion, PeerTube, TeacherTube, TU-Freiberg, and
- * the unknown `generic` fallback). These are plain iframes, so we can only
- * influence them through the embed URL's query params.
+ * Best-effort adapter for platform videos with no usable player API
+ * (Dailymotion, PeerTube, TeacherTube, TU-Freiberg, unknown `generic`). Plain
+ * iframes, controllable only through the embed URL's query params.
  */
 
 export class GenericIframeController implements CommentMediaController {

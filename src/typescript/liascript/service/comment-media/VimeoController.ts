@@ -1,17 +1,11 @@
 import { CommentMediaController, MediaCapabilities } from './Controller'
-import { parseTimeFragment } from './HtmlMediaController'
+import { parseTimeFragment, isOutsideFragment } from './HtmlMediaController'
 import { coverIframe, clearContainer } from './iframe-utils'
 
 /**
- * Controller for a Vimeo comment video, driven through the Vimeo Player SDK.
- * The Elm view renders an empty placeholder `<div>` (with `data-embed-url`);
- * this adapter loads the SDK once, mounts a player into the placeholder and
- * maps the common interface onto the Vimeo `Player` methods.
- *
- * Unlike YouTube, Vimeo exposes continuous playback rates and a Promise-based
- * API, so it gets full sync capabilities. The SDK reports time/duration
- * asynchronously, so we keep a cached current-time updated on `timeupdate`
- * (TTS.ts polls `getCurrentTime()` synchronously).
+ * Vimeo comment-video adapter, driven through the Vimeo Player SDK. Full sync
+ * caps (continuous rates). The SDK is Promise-based but TTS polls synchronously,
+ * so time/duration/paused are cached from the SDK's events.
  */
 
 // Minimal ambient typing for the Vimeo SDK surface we use.
@@ -85,8 +79,7 @@ export class VimeoController implements CommentMediaController {
   private endAt: number | null
   private endedFired = false
 
-  // Vimeo reports time/duration/paused through Promises; TTS polls
-  // synchronously, so we cache the latest values seen via the SDK events.
+  // Cached from SDK events for synchronous polling by TTS.
   private currentTime = 0
   private duration: number | null = null
   private paused = true
@@ -186,9 +179,7 @@ export class VimeoController implements CommentMediaController {
     })
   }
 
-  /**
-   * Make the Vimeo iframe cover the (circular) comment container instead of letterboxing.
-   */
+  /** Cover-crop the iframe over the (circular) comment container. */
   private coverContainer(mountPoint: HTMLElement): void {
     const iframe = mountPoint.querySelector('iframe')
     if (!iframe) return
@@ -217,10 +208,7 @@ export class VimeoController implements CommentMediaController {
     return this.ready.then(() => {
       try {
         const t = this.currentTime || 0
-        const outsideFragment =
-          (this.startAt !== null && t < this.startAt) ||
-          (this.endAt !== null && t >= this.endAt)
-        if (outsideFragment) {
+        if (isOutsideFragment(t, this.startAt, this.endAt)) {
           this.endedFired = false
           this.player.setCurrentTime(this.startAt ?? 0).catch(() => {})
         }
@@ -245,8 +233,6 @@ export class VimeoController implements CommentMediaController {
   }
 
   isPaused(): boolean {
-    // Vimeo's paused state is async-only, so we track it synchronously from the
-    // SDK's play/pause events and our own play()/pause() calls.
     return this.player == null || this.paused
   }
 

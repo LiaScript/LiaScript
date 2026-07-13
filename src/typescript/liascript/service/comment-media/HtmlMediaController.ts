@@ -1,10 +1,8 @@
 import { CommentMediaController, MediaCapabilities } from './Controller'
 
 /**
- * Controller for a direct-file comment video, wrapping an `<video>`
- * (HTMLMediaElement). This preserves the original TTS.ts behaviour: time
- * fragments (`#t=start,end`), preservesPitch, durationchange-based progress and
- * the per-clip "ended" handler.
+ * Direct-file comment-video adapter wrapping an `<video>`. Owns time fragments
+ * (`#t=start,end`), preservesPitch and the per-clip "ended" handler.
  */
 export class HtmlMediaController implements CommentMediaController {
   readonly capabilities: MediaCapabilities = {
@@ -59,10 +57,7 @@ export class HtmlMediaController implements CommentMediaController {
 
   play(): Promise<void> {
     const t = this.el.currentTime || 0
-    const outsideFragment =
-      (this.fragmentStart !== null && t < this.fragmentStart) ||
-      (this.fragmentEnd !== null && t >= this.fragmentEnd)
-    if (outsideFragment) {
+    if (isOutsideFragment(t, this.fragmentStart, this.fragmentEnd)) {
       this.el.currentTime = this.fragmentStart ?? 0
     }
     this.el.preservesPitch = true
@@ -133,6 +128,15 @@ export class HtmlMediaController implements CommentMediaController {
     this.endedCb = null
     this.errorCb = null
   }
+}
+
+/** True when `t` is before the fragment start or at/after its end. */
+export function isOutsideFragment(
+  t: number,
+  start: number | null,
+  end: number | null
+): boolean {
+  return (start !== null && t < start) || (end !== null && t >= end)
 }
 
 export function parseTimeFragment(url: string): {
