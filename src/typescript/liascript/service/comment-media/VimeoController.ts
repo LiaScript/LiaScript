@@ -1,4 +1,5 @@
 import { CommentMediaController, MediaCapabilities } from './Controller'
+import { parseTimeFragment } from './HtmlMediaController'
 
 /**
  * Controller for a Vimeo comment video, driven through the Vimeo Player SDK.
@@ -79,6 +80,9 @@ export class VimeoController implements CommentMediaController {
   private errorCb: ((err: any) => void) | null = null
   private pendingRate: number | null = null
   private pendingMuted: boolean | null = null
+  private startAt: number | null
+  private endAt: number | null
+  private endedFired = false
 
   // Vimeo reports time/duration through Promises; TTS polls synchronously, so
   // we cache the latest values seen via the `timeupdate` event.
@@ -88,6 +92,10 @@ export class VimeoController implements CommentMediaController {
   constructor(container: HTMLElement, embedUrl: string) {
     this.container = container
     this.embedUrl = embedUrl
+
+    const frag = parseTimeFragment(embedUrl)
+    this.startAt = frag.start
+    this.endAt = frag.end
 
     this.ready = this.mount()
   }
@@ -125,6 +133,18 @@ export class VimeoController implements CommentMediaController {
       this.player.on('timeupdate', (data: any) => {
         if (typeof data?.seconds === 'number') this.currentTime = data.seconds
         if (typeof data?.duration === 'number') this.duration = data.duration
+
+        // Stop at the fragment end and emit a synthetic "ended", since Vimeo
+        // only fires its own 'ended' event at the actual end of the file.
+        if (
+          this.endAt !== null &&
+          !this.endedFired &&
+          this.currentTime >= this.endAt
+        ) {
+          this.endedFired = true
+          this.pause()
+          if (this.endedCb) this.endedCb()
+        }
       })
 
       this.player.on('ended', () => {
@@ -197,6 +217,14 @@ export class VimeoController implements CommentMediaController {
   play(): Promise<void> {
     return this.ready.then(() => {
       try {
+        const t = this.currentTime || 0
+        const outsideFragment =
+          (this.startAt !== null && t < this.startAt) ||
+          (this.endAt !== null && t >= this.endAt)
+        if (outsideFragment) {
+          this.endedFired = false
+          this.player.setCurrentTime(this.startAt ?? 0).catch(() => {})
+        }
         const r = this.player.play()
         return r && typeof r.catch === 'function'
           ? r.catch((e: any) => {
@@ -224,16 +252,22 @@ export class VimeoController implements CommentMediaController {
 
   seek(seconds: number): void {
     try {
-      this.player?.setCurrentTime(seconds)?.catch?.(() => {})
-      this.currentTime = seconds
+      const absolute = (this.startAt ?? 0) + seconds
+      this.player?.setCurrentTime(absolute)?.catch?.(() => {})
+      this.currentTime = absolute
+      this.endedFired = false
     } catch (e) {}
   }
 
   getCurrentTime(): number {
-    return this.currentTime || 0
+    const t = this.currentTime || 0
+    return this.startAt !== null ? Math.max(0, t - this.startAt) : t
   }
 
   getDuration(): number | null {
+    if (this.endAt !== null) {
+      return this.endAt - (this.startAt ?? 0)
+    }
     return this.duration !== null && isFinite(this.duration) && this.duration > 0
       ? this.duration
       : null
@@ -270,8 +304,9 @@ export class VimeoController implements CommentMediaController {
   reset(): void {
     try {
       this.player?.pause()?.catch?.(() => {})
-      this.player?.setCurrentTime(0)?.catch?.(() => {})
-      this.currentTime = 0
+      this.player?.setCurrentTime(this.startAt ?? 0)?.catch?.(() => {})
+      this.currentTime = this.startAt ?? 0
+      this.endedFired = false
     } catch (e) {}
   }
 

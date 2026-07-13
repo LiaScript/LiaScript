@@ -1,4 +1,5 @@
 import { CommentMediaController, MediaCapabilities } from './Controller'
+import { parseTimeFragment } from './HtmlMediaController'
 
 /**
  * Controller for a YouTube comment video, driven through the YouTube IFrame
@@ -97,8 +98,12 @@ export class YouTubeController implements CommentMediaController {
   constructor(container: HTMLElement, embedUrl: string) {
     this.container = container
     this.videoId = extractVideoId(embedUrl) || ''
-    this.startAt = numParam(embedUrl, 'start')
-    this.endAt = numParam(embedUrl, 'end')
+
+    // `?start=`/`?end=` (YouTube player params) take precedence; fall back to
+    // the Media Fragments `#t=start,end` convention used by direct video files.
+    const frag = parseTimeFragment(embedUrl)
+    this.startAt = numParam(embedUrl, 'start') ?? frag.start
+    this.endAt = numParam(embedUrl, 'end') ?? frag.end
 
     this.ready = this.mount()
   }
@@ -233,19 +238,23 @@ export class YouTubeController implements CommentMediaController {
 
   seek(seconds: number): void {
     try {
-      this.player?.seekTo(seconds, true)
+      this.player?.seekTo((this.startAt ?? 0) + seconds, true)
     } catch (e) {}
   }
 
   getCurrentTime(): number {
     try {
-      return this.player?.getCurrentTime?.() || 0
+      const t = this.player?.getCurrentTime?.() || 0
+      return this.startAt !== null ? Math.max(0, t - this.startAt) : t
     } catch (e) {
       return 0
     }
   }
 
   getDuration(): number | null {
+    if (this.endAt !== null) {
+      return this.endAt - (this.startAt ?? 0)
+    }
     try {
       const d = this.player?.getDuration?.()
       return isFinite(d) && d > 0 ? d : null
