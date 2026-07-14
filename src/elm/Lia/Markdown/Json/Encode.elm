@@ -75,7 +75,7 @@ encBlock b =
                     |> HTML.maybeEncParameters a
 
             Task a tasks ->
-                [ ( "Task", Task.encode tasks ) ]
+                [ ( "Task", Task.encode encBlock tasks ) ]
                     |> HTML.maybeEncParameters a
 
             Gallery a { media, id } ->

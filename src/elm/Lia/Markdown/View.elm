@@ -572,9 +572,10 @@ view_block config block =
         ASCII attr bob ->
             view_ascii config attr bob
 
-        Task attr list ->
-            Task.view config.main config.section.task_vector attr list
-                |> Tuple.mapSecond (Html.map UpdateTask)
+        Task attr task ->
+            task.task
+                |> List.map (viewBlocks config)
+                |> Task.view config.section.task_vector attr task
                 |> scriptView config.view
 
         Gallery attr media ->

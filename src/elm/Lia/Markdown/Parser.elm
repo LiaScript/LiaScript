@@ -142,7 +142,7 @@ elements =
             |> andMap solution
         , md_annotations
             |> map Markdown.Task
-            |> andMap Task.parse
+            |> andMap (Task.parse blocks)
         , md_annotations
             |> andThen (Input.setGroupPermission True)
             |> quote

@@ -12,7 +12,6 @@ elements for visualization are stored within the `Task` record.
 
 import Array exposing (Array)
 import Json.Encode as JE
-import Lia.Markdown.Inline.Types exposing (Inlines)
 
 
 {-| Stores the boolean state for all Task lists per section. Every entry
@@ -36,13 +35,15 @@ type alias Element =
 {-| This type is used by the LiaScript renderer:
 
   - `task`: one List element refers to on boolean value within the state Vector
+    and holds the Markdown block content of that item (`body` is instantiated
+    as `Lia.Markdown.Types.Block` at the point of use)
   - `id`: reference to the state within the `Vector`
   - `javascript`: contains some optional code that is executed on every input
     (onCheck)
 
 -}
-type alias Task =
-    { task : List Inlines
+type alias Task body =
+    { task : List (List body)
     , id : Int
     }
 
