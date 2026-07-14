@@ -47,4 +47,4 @@ row x body ( y, checked ) =
         []
     , Html.div [ Attr.style "width" "100%" ] body
     ]
-        |> Html.div [ Attr.class "lia-label" ]
+        |> Html.div [ Attr.class "lia-label lia-label--top" ]
