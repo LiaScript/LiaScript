@@ -1,3 +1,5 @@
+@use '../00_settings/settings.global';
+
 .lia-label {
   align-items: center;
   display: inline-flex;
@@ -6,6 +8,19 @@
   > .lia-checkbox {
     margin-inline-end: 1rem;
     min-width: 2.4rem;
+  }
+
+  &--top {
+    align-items: flex-start;
+
+    > .lia-radio,
+    > .lia-checkbox {
+      // centers the box against the height of a single line of text
+      // (1em * line-height), instead of the full (multi-block) content
+      margin-top: calc(
+        (1em * #{settings.$global-line-height} - 2.4rem) / 2
+      );
+    }
   }
 
   @at-root html.lia-variant-dark & {
