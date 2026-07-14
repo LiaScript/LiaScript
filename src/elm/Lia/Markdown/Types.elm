@@ -31,7 +31,7 @@ type Block
     | Survey Parameters Survey
     | Chart Parameters Chart
     | Code Code
-    | Task Parameters Task
+    | Task Parameters (Task Block)
     | ASCII Parameters ( Maybe Inlines, SvgBob.Configuration Blocks )
     | HTML Parameters (Node Block)
     | Header Parameters ( Int, Inlines )
