@@ -1,163 +1,161 @@
 module Parser.Inline.Basic exposing
-    ( bold_Suite
-    , bold_italic_Suite
-    , formula_Suite
-    , italic_Suite
-    , strike_Suite
-    , superscript_Suite
-    , underline_Suite
-    , verbatim_Suite
+    ( chars_Suite
+    , escape_Suite
+    , footnoteDefinition_Suite
+    , footnote_Suite
+    , footnote_fuzz_Suite
+    , lineBreak_Suite
+    , smiley_Suite
+    , symbol_Suite
     )
 
---import LiaFuzz exposing (fuzzRegex)
-
+import Dict
 import Expect
-import Lia.Definition.Types exposing (default)
-import Lia.Markdown.Inline.Parser exposing (parse_inlines)
+import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.Inline.Types exposing (Inline(..))
-import Lia.Parser.Context as Context
-import Test exposing (Test, describe, test)
-
-
-parse : String -> List Inline
-parse =
-    ""
-        |> default
-        |> Context.init identity
-        |> parse_inlines
-
-
-chars : String -> Inline
-chars str =
-    Chars str []
-
-
-end : Inline
-end =
-    chars " "
-
-
-simply : String -> Inline -> Test
-simply str rslt =
-    test str <|
-        \_ ->
-            parse str
-                |> Expect.equal [ rslt, end ]
-
-
-italic : String -> Inline
-italic str =
-    Italic (chars str) []
-
-
-italic_Suite : Test
-italic_Suite =
-    describe "generating italic text"
-        [ simply "*test*" (italic "test")
-        , simply "_test_" (italic "test")
-        , simply "*test with multiple*" (italic "test with multiple")
-        , simply "_test with multiple_" (italic "test with multiple")
-        ]
-
-
-bold : String -> Inline
-bold str =
-    Bold (chars str) []
-
-
-bold_Suite : Test
-bold_Suite =
-    describe "generating bold text"
-        [ simply "**test**" (bold "test")
-        , simply "**test with multiple**" (bold "test with multiple")
-        , simply "__test__" (bold "test")
-        , simply "__test with multiple__" (bold "test with multiple")
-        ]
-
-
-bold_italic : String -> Inline
-bold_italic str =
-    Bold (italic str) []
-
-
-bold_italic_Suite : Test
-bold_italic_Suite =
-    describe "generating bold and italic text"
-        [ simply "***test***" (bold_italic "test")
-        , simply "***test with multiple***" (bold_italic "test with multiple")
-        , simply "___test___" (bold_italic "test")
-        , simply "___test with multiple___" (bold_italic "test with multiple")
-        ]
-
-
-strike : String -> Inline
-strike str =
-    Strike (chars str) []
-
-
-strike_Suite : Test
-strike_Suite =
-    describe "generating striked text"
-        [ simply "~test~" (strike "test")
-        , simply "~test with multiple~" (strike "test with multiple")
-        ]
-
-
-underline : String -> Inline
-underline str =
-    Underline (chars str) []
-
-
-underline_Suite : Test
-underline_Suite =
-    describe "generating underlined text"
-        [ simply "~~test~~" (underline "test")
-        , simply "~~test with multiple~~" (underline "test with multiple")
-        ]
-
-
-superscript : String -> Inline
-superscript str =
-    Superscript (chars str) []
-
-
-superscript_Suite : Test
-superscript_Suite =
-    describe "generating superscripted text"
-        [ simply "^test^" (superscript "test")
-        , simply "^test with multiple^" (superscript "test with multiple")
-        ]
-
-
-verbatim : String -> Inline
-verbatim str =
-    Verbatim str []
-
-
-verbatim_Suite : Test
-verbatim_Suite =
-    describe "generating verbatim text"
-        [ simply "`test`" (verbatim "test")
-        , simply "`test with multiple`" (verbatim "test with multiple")
-        ]
-
-
-formula : Bool -> String -> Inline
-formula mode str =
-    Formula
-        (if mode then
-            "true"
-
-         else
-            "false"
+import Lia.Markdown.Types as Markdown
+import LiaFuzz exposing (slug)
+import Parser.Inline.Fixtures
+    exposing
+        ( chars
+        , footnoteMark
+        , parse
+        , parseFootnotes
+        , parseRaw
+        , symbol
+        , toTests
         )
-        str
-        []
+import Test exposing (Test, describe, fuzz, test)
 
 
-formula_Suite : Test
-formula_Suite =
-    describe "generating formula text"
-        [ simply "$inline$" (formula False "inline")
-        , simply "$$inline$$" (formula True "inline")
+chars_Suite : Test
+chars_Suite =
+    describe "generating plain text" <|
+        toTests
+            [ ( "hello world", chars "hello world" )
+            ]
+
+
+symbol_Suite : Test
+symbol_Suite =
+    describe "generating arrow symbols" <|
+        toTests
+            [ ( "<-->", symbol "⟷" )
+            , ( "<--", symbol "⟵" )
+            , ( "-->", symbol "⟶" )
+            , ( "<<-", symbol "↞" )
+            , ( "->>", symbol "↠" )
+            , ( "<->", symbol "↔" )
+            , ( ">->", symbol "↣" )
+            , ( "<-<", symbol "↢" )
+            , ( "->", symbol "→" )
+            , ( "<-", symbol "←" )
+            , ( "<~", symbol "↜" )
+            , ( "~>", symbol "↝" )
+            , ( "<==>", symbol "⟺" )
+            , ( "==>", symbol "⟹" )
+            , ( "<==", symbol "⟸" )
+            , ( "<=>", symbol "⇔" )
+            , ( "=>", symbol "⇒" )
+            , ( "<=", symbol "⇐" )
+            ]
+
+
+smiley_Suite : Test
+smiley_Suite =
+    describe "generating smiley symbols" <|
+        toTests
+            [ ( ":-)", symbol "🙂" )
+            , ( ";-)", symbol "😉" )
+            , ( ":-D", symbol "😀" )
+            , ( ":-O", symbol "😮" )
+            , ( ":-(", symbol "🙁" )
+            , ( ":-|", symbol "😐" )
+            , ( ":-/", symbol "😕" )
+            , ( ":-\\", symbol "😕" )
+            , ( ":-P", symbol "😛" )
+            , ( ":-p", symbol "😛" )
+            , ( ";-P", symbol "😜" )
+            , ( ";-p", symbol "😜" )
+            , ( ":-*", symbol "😗" )
+            , ( ";-*", symbol "😘" )
+            , ( ":')", symbol "😂" )
+            , ( ":'(", symbol "😢" )
+            , ( ":'[", symbol "😭" )
+            , ( ":-[", symbol "😠" )
+            , ( ":-#", symbol "😷" )
+            , ( ":-X", symbol "😷" )
+            , ( ":-§", symbol "😖" )
+            ]
+
+
+escape_Suite : Test
+escape_Suite =
+    describe "escaping special characters" <|
+        toTests
+            [ ( "\\*", chars "*" )
+            , ( "\\_", chars "_" )
+            , ( "\\~", chars "~" )
+            , ( "\\`", chars "`" )
+            , ( "\\$", chars "$" )
+            , ( "\\\\", chars "\\" )
+            , ( "\\{", chars "{" )
+            , ( "\\}", chars "}" )
+            , ( "\\[", chars "[" )
+            , ( "\\]", chars "]" )
+            , ( "\\#", chars "#" )
+            , ( "\\-", chars "-" )
+            , ( "\\^", chars "^" )
+            , ( "\\@", chars "@" )
+            , ( "\\+", chars "+" )
+            , ( "\\|", chars "|" )
+            , ( "\\<", chars "<" )
+            , ( "\\>", chars ">" )
+            , ( "\\'", chars "'" )
+            , ( "\\\"", chars "\"" )
+            , ( "\\.", chars "." )
+            ]
+
+
+footnote_Suite : Test
+footnote_Suite =
+    describe "generating footnote marks" <|
+        toTests
+            [ ( "[^1]", footnoteMark "1" )
+            , ( "[^note]", footnoteMark "note" )
+            , ( "[^some-longer-key]", footnoteMark "some-longer-key" )
+            ]
+
+
+footnote_fuzz_Suite : Test
+footnote_fuzz_Suite =
+    describe "generating footnote marks from arbitrary keys"
+        [ fuzz slug "wrapped in [^...]" <|
+            \key -> parse ("[^" ++ key ++ "]") |> Expect.equal [ footnoteMark key ]
+        ]
+
+
+footnoteDefinition_Suite : Test
+footnoteDefinition_Suite =
+    describe "generating inline footnote definitions"
+        [ test "an inline definition renders like a bare mark and stores its text" <|
+            \_ ->
+                Expect.all
+                    [ parse >> Expect.equal [ footnoteMark "1" ]
+                    , parseFootnotes
+                        >> Dict.get "1"
+                        >> Expect.equal (Just [ Markdown.Paragraph [] [ chars "some text" ] ])
+                    ]
+                    "[^1](some text)"
+        ]
+
+
+lineBreak_Suite : Test
+lineBreak_Suite =
+    describe "generating inline line breaks"
+        [ test "a backslash immediately before a newline becomes <br>" <|
+            \_ ->
+                parseRaw "hello\\\nworld"
+                    |> Expect.equal
+                        [ chars "hello", IHTML (InnerHtml "<br>") [], chars "world" ]
         ]
