@@ -3,11 +3,14 @@ module Parser.Block.Code exposing
     , highlight_Suite
     , highlight_lang_fuzz_Suite
     , multiFile_Suite
+    , output_Suite
+    , project_Suite
     , title_Suite
     )
 
 import Array
 import Expect
+import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (Code(..))
 import Lia.Markdown.Types exposing (Block(..))
 import LiaFuzz exposing (fuzzRegex)
@@ -133,6 +136,92 @@ multiFile_Suite =
                                     , { lang = "js", name = "", code = "file2", visible = True }
                                     ]
                                 )
+                    ]
+                    ()
+        ]
+
+
+{-| A "Project" (docs' term) is just the multi-file grouping from
+`multiFile_Suite` made executable by a trailing `<script>` - i.e. it becomes
+one `Evaluate`, not `Highlight`, with all of its files preserved (each
+keeping its own name/visibility from its `+`/`-title` marker). The `<script>`
+body itself (with its `@input`/`@input(n)` markers) isn't stored on the
+`Project` record at all - see `Lia.Markdown.Effect.Model`'s `javascript`
+array instead, which is out of scope for these parser-focused tests.
+-}
+project_Suite : Test
+project_Suite =
+    describe "generating an executable multi-file project"
+        [ test "two named files with a trailing <script> become one Evaluate with both files" <|
+            \_ ->
+                let
+                    ( blocks, state ) =
+                        parseWithState
+                            ("``` js -EvalScript.js\n"
+                                ++ "let who = data.name;\n"
+                                ++ "```\n"
+                                ++ "``` json +Data.json\n"
+                                ++ "{\"name\": \"Sammy\"}\n"
+                                ++ "```\n"
+                                ++ "<script>\n"
+                                ++ "  let data = @input(1);\n"
+                                ++ "  @input\n"
+                                ++ "</script>\n"
+                            )
+                in
+                Expect.all
+                    [ \_ -> blocks |> Expect.equal [ Code (Evaluate 0) ]
+                    , \_ ->
+                        state.code_model.evaluate
+                            |> allFiles
+                            |> Expect.equal
+                                (Just
+                                    [ { lang = "js", name = "EvalScript.js", code = "let who = data.name;", visible = False }
+                                    , { lang = "json", name = "Data.json", code = "{\"name\": \"Sammy\"}", visible = True }
+                                    ]
+                                )
+                    ]
+                    ()
+        ]
+
+
+{-| A trailing fenced block whose title is exactly `@output` (case-insensitive,
+no `+`/`-` prefix) isn't kept as an ordinary file - it's pulled out of the
+project entirely and becomes that project's initial `log`, shown before the
+user ever runs the code. This works the same for a plain `Highlight` project
+(tested here, no `<script>` needed) as it does for an executable one.
+-}
+output_Suite : Test
+output_Suite =
+    describe "a trailing @output-titled block becomes the project's initial log, not a file"
+        [ test "two real files plus an @output block: only the two files remain, and the log is non-empty" <|
+            \_ ->
+                let
+                    ( blocks, state ) =
+                        parseWithState
+                            ("``` js -EvalScript.js\n"
+                                ++ "let who = data.name;\n"
+                                ++ "```\n"
+                                ++ "``` json +Data.json\n"
+                                ++ "{\"name\": \"Sammy\"}\n"
+                                ++ "```\n"
+                                ++ "``` text @output\n"
+                                ++ "Sammy\n"
+                                ++ "```\n"
+                            )
+                in
+                Expect.all
+                    [ \_ -> blocks |> Expect.equal [ Code (Highlight 0) ]
+                    , \_ ->
+                        state.code_model.highlight
+                            |> allFiles
+                            |> Maybe.map List.length
+                            |> Expect.equal (Just 2)
+                    , \_ ->
+                        state.code_model.highlight
+                            |> Array.get 0
+                            |> Maybe.map (.log >> Log.isEmpty)
+                            |> Expect.equal (Just False)
                     ]
                     ()
         ]
