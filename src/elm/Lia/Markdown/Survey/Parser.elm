@@ -102,7 +102,7 @@ toSelect quiz =
 pattern : Parser Context a -> Parser Context a
 pattern p =
     maybe Indent.check
-        |> ignore (regex "(\\-|\\+|\\*)?[\t ]*\\[")
+        |> ignore (regex "[\t ]*(\\-|\\+|\\*)?[\t ]*\\[")
         |> keep p
         |> ignore (regex "\\][\t ]*")
 
@@ -113,7 +113,7 @@ id_str =
         |> regex
         |> andThen
             (\s ->
-                if s == "X" || s == "x" then
+                if s == "X" || s == "x" || s == "!" || s == "?" then
                     fail ""
 
                 else
@@ -137,19 +137,20 @@ vector blocks p =
 `p`-content within brackets), followed by its (possibly multi-block) content,
 indented relative to the marker.
 
-The required continuation indent is measured *dynamically*, relative to how far
+The required continuation indent is measured _dynamically_, relative to how far
 this particular entry's own marker is indented (its own column, captured below
 before pushing), rather than a fixed absolute amount - this is what lets a
 group of sibling entries that are all uniformly offset under a preceding
 paragraph (to visually nest them under a question, with no genuine nesting
-intended) stay flat siblings of each other, while content indented *further
-than that shared baseline* still nests as a sub-entry - exactly like
+intended) stay flat siblings of each other, while content indented _further
+than that shared baseline_ still nests as a sub-entry - exactly like
 CommonMark's own list-item content-indentation rule. The leading whitespace is
 eaten explicitly here (rather than relying on it already having been eaten by
 `Lia.Markdown.Parser.blocks`'s own `whitespace` step, which only runs for the
 very first entry of the group, reached via `elements` - subsequent entries are
 reached directly via `separator`/`sepBy1` and never go through that step) so
 the column measurement is consistent across every entry in the group.
+
 -}
 item : Parser Context Markdown.Block -> Parser Context a -> Parser Context ( a, Markdown.Blocks )
 item blocks p =
@@ -157,7 +158,7 @@ item blocks p =
         |> keep
             (withColumn
                 (\col ->
-                    Indent.push (String.repeat (col - 1 + 4) " ")
+                    Indent.push (String.repeat (col + 4) " ")
                         |> keep
                             (marker p
                                 |> ignore emptyMarkerLine
@@ -215,8 +216,9 @@ newlineWithIndentation =
 
 header : String -> String -> Parser Context (List Inlines)
 header begin end =
-    string begin
-        |> keep (manyTill inlines (string end))
+    spaces
+        |> keep (string begin)
+        |> keep (manyTill inlines (string end |> ignore spaces))
         |> many1
         |> pattern
         |> ignore newline
@@ -225,7 +227,7 @@ header begin end =
 questions : Parser Context (List Inlines)
 questions =
     maybe Indent.check
-        |> ignore (regex "\\-?[\t ]*\\[[\t ]+\\]")
+        |> ignore (regex "[\t ]*\\-?[\t ]*\\[[\t ]+\\]")
         |> keep line
         |> ignore newline
         |> many1

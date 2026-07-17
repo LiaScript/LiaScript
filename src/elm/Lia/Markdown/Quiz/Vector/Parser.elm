@@ -77,10 +77,17 @@ line, each entry's content is zero-or-more full Markdown `Block`s, indented by 4
 spaces relative to the entry's marker. The provided `button`-parser is used to parse
 the part within the starting brackets, exactly as in `group` (i.e. it can just as
 well be a fixed literal like `string "[?]"`, as used by `Quiz.Parser.hints`).
+
+A leading blank line before the first entry is tolerated: unlike `Vector.parse`
+itself (reached through `Lia.Markdown.Parser.blocks`'s own `whitespace`-eating
+dispatch, which already strips any such blank line before this parser even
+starts), `Quiz.Parser.hints` is called directly, right after a quiz's own type
+has been parsed, with no such step in between - so a hint block separated from
+the preceding option list by a blank line needs `blockGroup` to skip it itself.
 -}
 blockGroup : Parser Context Markdown.Block -> Parser Context a -> Parser Context ( List a, List Markdown.Blocks )
 blockGroup blocks button =
-    item blocks button
+    (many newlineWithIndentation |> keep (item blocks button))
         |> sepBy1 separator
         |> map List.unzip
 
@@ -104,7 +111,7 @@ item blocks button =
         |> keep
             (withColumn
                 (\col ->
-                    Indent.push (String.repeat (col - 1 + 4) " ")
+                    Indent.push (String.repeat (col + 4) " ")
                         |> keep
                             (marker button
                                 |> ignore emptyMarkerLine
