@@ -32,6 +32,7 @@ chars_Suite : Test
 chars_Suite =
     describe "generating plain text" <|
         toTests
+            {- hello world -}
             [ ( "hello world", chars "hello world" )
             ]
 
@@ -40,23 +41,58 @@ symbol_Suite : Test
 symbol_Suite =
     describe "generating arrow symbols" <|
         toTests
+            {- <--> -}
             [ ( "<-->", symbol "⟷" )
+
+            {- <-- -}
             , ( "<--", symbol "⟵" )
+
+            {- --> -}
             , ( "-->", symbol "⟶" )
+
+            {- <<- -}
             , ( "<<-", symbol "↞" )
+
+            {- ->> -}
             , ( "->>", symbol "↠" )
+
+            {- <-> -}
             , ( "<->", symbol "↔" )
+
+            {- >-> -}
             , ( ">->", symbol "↣" )
+
+            {- <-< -}
             , ( "<-<", symbol "↢" )
+
+            {- -> -}
             , ( "->", symbol "→" )
+
+            {- <- -}
             , ( "<-", symbol "←" )
+
+            {- <~ -}
             , ( "<~", symbol "↜" )
+
+            {- ~> -}
             , ( "~>", symbol "↝" )
+
+            {- <==> -}
             , ( "<==>", symbol "⟺" )
+
+            {- ==> -}
             , ( "==>", symbol "⟹" )
+
+            {- <== -}
             , ( "<==", symbol "⟸" )
+
+            {- <=> -}
             , ( "<=>", symbol "⇔" )
+
+            {- => -}
             , ( "=>", symbol "⇒" )
+
+            {- <= -}
             , ( "<=", symbol "⇐" )
             ]
 
@@ -65,26 +101,67 @@ smiley_Suite : Test
 smiley_Suite =
     describe "generating smiley symbols" <|
         toTests
+            {- :-) -}
             [ ( ":-)", symbol "🙂" )
+
+            {- ;-) -}
             , ( ";-)", symbol "😉" )
+
+            {- :-D -}
             , ( ":-D", symbol "😀" )
+
+            {- :-O -}
             , ( ":-O", symbol "😮" )
+
+            {- :-( -}
             , ( ":-(", symbol "🙁" )
+
+            {- :-| -}
             , ( ":-|", symbol "😐" )
+
+            {- :-/ -}
             , ( ":-/", symbol "😕" )
+
+            {- :-\ -}
             , ( ":-\\", symbol "😕" )
+
+            {- :-P -}
             , ( ":-P", symbol "😛" )
+
+            {- :-p -}
             , ( ":-p", symbol "😛" )
+
+            {- ;-P -}
             , ( ";-P", symbol "😜" )
+
+            {- ;-p -}
             , ( ";-p", symbol "😜" )
+
+            {- :-* -}
             , ( ":-*", symbol "😗" )
+
+            {- ;-* -}
             , ( ";-*", symbol "😘" )
+
+            {- :') -}
             , ( ":')", symbol "😂" )
+
+            {- :'( -}
             , ( ":'(", symbol "😢" )
+
+            {- :'[ -}
             , ( ":'[", symbol "😭" )
+
+            {- :-[ -}
             , ( ":-[", symbol "😠" )
+
+            {- :-# -}
             , ( ":-#", symbol "😷" )
+
+            {- :-X -}
             , ( ":-X", symbol "😷" )
+
+            {- :-§ -}
             , ( ":-§", symbol "😖" )
             ]
 
@@ -93,26 +170,67 @@ escape_Suite : Test
 escape_Suite =
     describe "escaping special characters" <|
         toTests
+            {- \* -}
             [ ( "\\*", chars "*" )
+
+            {- \_ -}
             , ( "\\_", chars "_" )
+
+            {- \~ -}
             , ( "\\~", chars "~" )
+
+            {- \` -}
             , ( "\\`", chars "`" )
+
+            {- \$ -}
             , ( "\\$", chars "$" )
+
+            {- \\ -}
             , ( "\\\\", chars "\\" )
+
+            {- \{ -}
             , ( "\\{", chars "{" )
+
+            {- \} -}
             , ( "\\}", chars "}" )
+
+            {- \[ -}
             , ( "\\[", chars "[" )
+
+            {- \] -}
             , ( "\\]", chars "]" )
+
+            {- \# -}
             , ( "\\#", chars "#" )
+
+            {- \- -}
             , ( "\\-", chars "-" )
+
+            {- \^ -}
             , ( "\\^", chars "^" )
+
+            {- \@ -}
             , ( "\\@", chars "@" )
+
+            {- \+ -}
             , ( "\\+", chars "+" )
+
+            {- \| -}
             , ( "\\|", chars "|" )
+
+            {- \< -}
             , ( "\\<", chars "<" )
+
+            {- \> -}
             , ( "\\>", chars ">" )
+
+            {- \' -}
             , ( "\\'", chars "'" )
+
+            {- \" -}
             , ( "\\\"", chars "\"" )
+
+            {- \. -}
             , ( "\\.", chars "." )
             ]
 
@@ -121,8 +239,13 @@ footnote_Suite : Test
 footnote_Suite =
     describe "generating footnote marks" <|
         toTests
+            {- [^1] -}
             [ ( "[^1]", footnoteMark "1" )
+
+            {- [^note] -}
             , ( "[^note]", footnoteMark "note" )
+
+            {- [^some-longer-key] -}
             , ( "[^some-longer-key]", footnoteMark "some-longer-key" )
             ]
 

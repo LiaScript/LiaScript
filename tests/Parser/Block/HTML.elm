@@ -11,6 +11,10 @@ htmlNode_Suite : Test
 htmlNode_Suite =
     describe "generating block-level HTML nodes" <|
         toTests
+            {- <div>
+               hello
+               </div>
+            -}
             [ ( "<div>\nhello\n</div>\n"
               , HTML [] (Node "div" [] [ paragraph "hello" ])
               )
@@ -26,6 +30,14 @@ detailsSummary_Suite : Test
 detailsSummary_Suite =
     describe "generating a <details>/<summary> accordion" <|
         toTests
+            {- <details>
+
+               <summary>click to expand</summary>
+
+               hidden body
+
+               </details>
+            -}
             [ ( "<details>\n\n<summary>click to expand</summary>\n\nhidden body\n\n</details>\n"
               , HTML []
                     (Node "details"

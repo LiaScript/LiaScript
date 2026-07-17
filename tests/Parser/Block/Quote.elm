@@ -15,7 +15,12 @@ quote_Suite : Test
 quote_Suite =
     describe "generating blockquotes" <|
         toTests
+            {- > hello -}
             [ ( "> hello\n", quote [ "hello" ] )
+
+            {- > hello
+               > world
+            -}
             , ( "> hello\n> world\n", quote [ "hello world" ] )
             ]
 
@@ -24,15 +29,38 @@ alert_Suite : Test
 alert_Suite =
     describe "generating alert-style blockquotes" <|
         toTests
+            {- > [!NOTE]
+               > This is a note.
+            -}
             [ ( "> [!NOTE]\n> This is a note.\n"
               , alertQuote NOTE Nothing [ "This is a note." ]
               )
+
+            {- > [!NOTE] A title
+               > This is a note.
+            -}
             , ( "> [!NOTE] A title\n> This is a note.\n"
               , alertQuote NOTE (Just "A title") [ "This is a note." ]
               )
+
+            {- > [!TIP]
+               > Some tip.
+            -}
             , ( "> [!TIP]\n> Some tip.\n", alertQuote TIP Nothing [ "Some tip." ] )
+
+            {- > [!IMPORTANT]
+               > Pay attention.
+            -}
             , ( "> [!IMPORTANT]\n> Pay attention.\n", alertQuote IMPORTANT Nothing [ "Pay attention." ] )
+
+            {- > [!WARNING]
+               > Be careful.
+            -}
             , ( "> [!WARNING]\n> Be careful.\n", alertQuote WARNING Nothing [ "Be careful." ] )
+
+            {- > [!CAUTION]
+               > Danger ahead.
+            -}
             , ( "> [!CAUTION]\n> Danger ahead.\n", alertQuote CAUTION Nothing [ "Danger ahead." ] )
             ]
 

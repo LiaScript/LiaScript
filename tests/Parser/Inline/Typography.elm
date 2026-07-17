@@ -16,7 +16,10 @@ dash_Suite : Test
 dash_Suite =
     describe "generating typographic dashes" <|
         toTests
+            {- -- -}
             [ ( "--", chars "–" )
+
+            {- --- -}
             , ( "---", chars "—" )
             ]
 
@@ -25,6 +28,7 @@ ellipsis_Suite : Test
 ellipsis_Suite =
     describe "generating typographic ellipsis" <|
         toTests
+            {- ... -}
             [ ( "...", chars "…" )
             ]
 
@@ -33,9 +37,12 @@ quote_Suite : Test
 quote_Suite =
     describe "generating typographic quotes" <|
         toTests
+            {- "hello" -}
             [ ( "\"hello\""
               , Container [ chars "“", chars "hello", chars "”" ] []
               )
+
+            {- 'hello' -}
             , ( " 'hello'"
               , Container [ chars " ‘", chars "hello", chars "’" ] []
               )

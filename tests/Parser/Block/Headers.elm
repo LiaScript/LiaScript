@@ -14,11 +14,22 @@ atx_Suite : Test
 atx_Suite =
     describe "generating ATX-style headers (# ... through ###### ...)" <|
         toTests
+            {- # Title -}
             [ ( "# Title\n", header 1 "Title" )
+
+            {- ## Title -}
             , ( "## Title\n", header 2 "Title" )
+
+            {- ### Title -}
             , ( "### Title\n", header 3 "Title" )
+
+            {- #### Title -}
             , ( "#### Title\n", header 4 "Title" )
+
+            {- ##### Title -}
             , ( "##### Title\n", header 5 "Title" )
+
+            {- ###### Title -}
             , ( "###### Title\n", header 6 "Title" )
             ]
 

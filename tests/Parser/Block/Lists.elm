@@ -19,8 +19,19 @@ bulletList_Suite : Test
 bulletList_Suite =
     describe "generating unordered lists" <|
         toTests
+            {- * item one
+               * item two
+            -}
             [ ( "* item one\n* item two\n", bulletList [ "item one", "item two" ] )
+
+            {- + item one
+               + item two
+            -}
             , ( "+ item one\n+ item two\n", bulletList [ "item one", "item two" ] )
+
+            {- - item one
+               - item two
+            -}
             , ( "- item one\n- item two\n", bulletList [ "item one", "item two" ] )
             ]
 
@@ -44,6 +55,9 @@ orderedList_Suite : Test
 orderedList_Suite =
     describe "generating ordered lists" <|
         toTests
+            {- 1. item one
+               2. item two
+            -}
             [ ( "1. item one\n2. item two\n", orderedList [ ( "1", "item one" ), ( "2", "item two" ) ] )
             ]
 
