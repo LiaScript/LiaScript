@@ -13,6 +13,9 @@ gallery_Suite : Test
 gallery_Suite =
     describe "generating media galleries (two or more media references)" <|
         toTests
+            {- ![alt1](http://example.com/1.png)
+               ![alt2](http://example.com/2.png)
+            -}
             [ ( "![alt1](http://example.com/1.png)\n![alt2](http://example.com/2.png)\n"
               , Gallery []
                     { media =
@@ -22,6 +25,8 @@ gallery_Suite =
                     , id = 0
                     }
               )
+
+            {- ![alt1](http://example.com/1.png)![alt2](http://example.com/2.png) -}
             , ( "![alt1](http://example.com/1.png)![alt2](http://example.com/2.png)\n"
               , Gallery []
                     { media =
@@ -41,6 +46,7 @@ notAGallery_Suite : Test
 notAGallery_Suite =
     describe "a single media reference does not become a gallery" <|
         toTests
+            {- ![alt1](http://example.com/1.png) -}
             [ ( "![alt1](http://example.com/1.png)\n"
               , Paragraph [] [ image "alt1" "http://example.com/1.png" ]
               )

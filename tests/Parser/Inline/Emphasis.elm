@@ -43,9 +43,16 @@ italic_Suite : Test
 italic_Suite =
     describe "generating italic text" <|
         toTests
+            {- *test* -}
             [ ( "*test*", italic "test" )
+
+            {- _test_ -}
             , ( "_test_", italic "test" )
+
+            {- *test with multiple* -}
             , ( "*test with multiple*", italic "test with multiple" )
+
+            {- _test with multiple_ -}
             , ( "_test with multiple_", italic "test with multiple" )
             ]
 
@@ -54,9 +61,16 @@ bold_Suite : Test
 bold_Suite =
     describe "generating bold text" <|
         toTests
+            {- **test** -}
             [ ( "**test**", bold "test" )
+
+            {- **test with multiple** -}
             , ( "**test with multiple**", bold "test with multiple" )
+
+            {- __test__ -}
             , ( "__test__", bold "test" )
+
+            {- __test with multiple__ -}
             , ( "__test with multiple__", bold "test with multiple" )
             ]
 
@@ -65,9 +79,16 @@ bold_italic_Suite : Test
 bold_italic_Suite =
     describe "generating bold and italic text" <|
         toTests
+            {- ***test*** -}
             [ ( "***test***", bold_italic "test" )
+
+            {- ***test with multiple*** -}
             , ( "***test with multiple***", bold_italic "test with multiple" )
+
+            {- ___test___ -}
             , ( "___test___", bold_italic "test" )
+
+            {- ___test with multiple___ -}
             , ( "___test with multiple___", bold_italic "test with multiple" )
             ]
 
@@ -76,7 +97,10 @@ strike_Suite : Test
 strike_Suite =
     describe "generating striked text" <|
         toTests
+            {- ~test~ -}
             [ ( "~test~", strike "test" )
+
+            {- ~test with multiple~ -}
             , ( "~test with multiple~", strike "test with multiple" )
             ]
 
@@ -85,7 +109,10 @@ underline_Suite : Test
 underline_Suite =
     describe "generating underlined text" <|
         toTests
+            {- ~~test~~ -}
             [ ( "~~test~~", underline "test" )
+
+            {- ~~test with multiple~~ -}
             , ( "~~test with multiple~~", underline "test with multiple" )
             ]
 
@@ -94,7 +121,10 @@ superscript_Suite : Test
 superscript_Suite =
     describe "generating superscripted text" <|
         toTests
+            {- ^test^ -}
             [ ( "^test^", superscript "test" )
+
+            {- ^test with multiple^ -}
             , ( "^test with multiple^", superscript "test with multiple" )
             ]
 
@@ -103,7 +133,10 @@ verbatim_Suite : Test
 verbatim_Suite =
     describe "generating verbatim text" <|
         toTests
+            {- `test` -}
             [ ( "`test`", verbatim "test" )
+
+            {- `test with multiple` -}
             , ( "`test with multiple`", verbatim "test with multiple" )
             ]
 
@@ -174,7 +207,10 @@ formula_Suite : Test
 formula_Suite =
     describe "generating formula text" <|
         toTests
+            {- $inline$ -}
             [ ( "$inline$", formula False "inline" )
+
+            {- $$inline$$ -}
             , ( "$$inline$$", formula True "inline" )
             ]
 
@@ -183,9 +219,16 @@ nested_Suite : Test
 nested_Suite =
     describe "generating nested/combined emphasis" <|
         toTests
+            {- **~test~** -}
             [ ( "**~test~**", Bold (Strike (chars "test") []) [] )
+
+            {- *__test__* -}
             , ( "*__test__*", Italic (Bold (chars "test") []) [] )
+
+            {- ~~*test*~~ -}
             , ( "~~*test*~~", Underline (Italic (chars "test") []) [] )
+
+            {- ^[text](http://example.com)^ -}
             , ( "^[text](http://example.com)^"
               , Superscript (link "text" "http://example.com") []
               )
@@ -196,9 +239,12 @@ annotation_Suite : Test
 annotation_Suite =
     describe "attaching HTML-comment annotations to emphasis" <|
         toTests
+            {- **test**<!-- data-x="1" --> -}
             [ ( "**test**<!-- data-x=\"1\" -->"
               , Bold (chars "test") [ ( "data-x", "1" ) ]
               )
+
+            {- *test*<!-- data-x="1" --> -}
             , ( "*test*<!-- data-x=\"1\" -->"
               , Italic (chars "test") [ ( "data-x", "1" ) ]
               )

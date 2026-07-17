@@ -13,9 +13,10 @@ import Test exposing (Test, describe)
 
 citation_Suite : Test
 citation_Suite =
-    describe "generating citations (a paragraph starting with \u{2013})" <|
+    describe "generating citations (a paragraph starting with –)" <|
         toTests
-            [ ( "\u{2013} Some quote\n", Citation [] [ chars " Some quote" ] )
+            {- – Some quote -}
+            [ ( "– Some quote\n", Citation [] [ chars " Some quote" ] )
             ]
 
 
@@ -23,6 +24,9 @@ comment_Suite : Test
 comment_Suite =
     describe "generating narrator comments (--{{n}}--)" <|
         toTests
+            {- --{{1}}--
+               Some comment text.
+            -}
             [ ( "--{{1}}--\nSome comment text.\n", Comment ( 1, 0 ) )
             ]
 
@@ -31,6 +35,7 @@ htmlComment_Suite : Test
 htmlComment_Suite =
     describe "consuming standalone HTML comments as blocks" <|
         toTests
+            {- <!-- just an html comment --> -}
             [ ( "<!-- just an html comment -->\n", HtmlComment )
             ]
 
@@ -45,5 +50,6 @@ problem_Suite : Test
 problem_Suite =
     describe "an unparsable line falls back to Problem" <|
         toTests
+            {- {{1}} -}
             [ ( "{{1}}\n", Problem [ chars "{{1}}" ] )
             ]

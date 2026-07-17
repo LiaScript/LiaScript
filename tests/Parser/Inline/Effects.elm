@@ -12,6 +12,7 @@ animation_Suite : Test
 animation_Suite =
     describe "generating inline animation effects" <|
         toTests
+            {- {1}{hello} -}
             [ ( "{1}{hello}"
               , EInline
                     { content = [ chars "hello" ]
@@ -23,6 +24,8 @@ animation_Suite =
                     }
                     []
               )
+
+            {- {1-3}{hello} -}
             , ( "{1-3}{hello}"
               , EInline
                     { content = [ chars "hello" ]
@@ -41,5 +44,6 @@ script_Suite : Test
 script_Suite =
     describe "generating inline script effects" <|
         toTests
+            {- <script>1 + 1;</script> -}
             [ ( "<script>1 + 1;</script>", script 0 )
             ]

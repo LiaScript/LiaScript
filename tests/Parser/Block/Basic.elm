@@ -11,6 +11,7 @@ paragraph_Suite : Test
 paragraph_Suite =
     describe "generating paragraphs" <|
         toTests
+            {- hello world -}
             [ ( "hello world\n", paragraph "hello world" )
             ]
 
@@ -19,5 +20,6 @@ hline_Suite : Test
 hline_Suite =
     describe "generating horizontal lines" <|
         toTests
+            {- --- -}
             [ ( "---\n", hline )
             ]

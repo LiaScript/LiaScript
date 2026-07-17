@@ -14,8 +14,13 @@ tag_Suite : Test
 tag_Suite =
     describe "generating inline HTML tags" <|
         toTests
+            {- <br> -}
             [ ( "<br>", htmlVoid "br" )
+
+            {- <span>hello</span> -}
             , ( "<span>hello</span>", htmlNode "span" [ chars "hello" ] )
+
+            {- <span class="hi">hello</span> -}
             , ( "<span class=\"hi\">hello</span>"
               , IHTML (Node "span" [ ( "class", "hi" ) ] [ chars "hello" ]) []
               )

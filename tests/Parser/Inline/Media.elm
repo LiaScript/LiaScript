@@ -22,6 +22,7 @@ audio_Suite : Test
 audio_Suite =
     describe "generating audio references" <|
         toTests
+            {- ?[a title](http://example.com/audio.mp3) -}
             [ ( "?[a title](http://example.com/audio.mp3)", audio "a title" "http://example.com/audio.mp3" )
             ]
 
@@ -56,6 +57,7 @@ movie_Suite : Test
 movie_Suite =
     describe "generating movie references" <|
         toTests
+            {- !?[a title](http://example.com/video.mp4) -}
             [ ( "!?[a title](http://example.com/video.mp4)", movie "a title" "http://example.com/video.mp4" )
             ]
 
@@ -88,6 +90,7 @@ embed_Suite : Test
 embed_Suite =
     describe "generating embed references" <|
         toTests
+            {- ??[a title](http://example.com/embed) -}
             [ ( "??[a title](http://example.com/embed)", embed "a title" "http://example.com/embed" )
             ]
 
@@ -104,7 +107,10 @@ preview_Suite : Test
 preview_Suite =
     describe "generating preview references" <|
         toTests
+            {- [preview-lia](some-course-id) -}
             [ ( "[preview-lia](some-course-id)", previewLia "some-course-id" )
+
+            {- [preview-link](http://example.com) -}
             , ( "[preview-link](http://example.com)", previewLink "http://example.com" )
             ]
 
@@ -113,5 +119,6 @@ qr_Suite : Test
 qr_Suite =
     describe "generating QR-code references" <|
         toTests
+            {- [qr-code](http://example.com) -}
             [ ( "[qr-code](http://example.com)", qr "http://example.com" )
             ]

@@ -17,6 +17,10 @@ table_Suite : Test
 table_Suite =
     describe "generating tables" <|
         toTests
+            {- | Col1 | Col2 |
+               | --- | --- |
+               | a | b |
+            -}
             [ ( "| Col1 | Col2 |\n| --- | --- |\n| a | b |\n"
               , Table []
                     { class = None
@@ -45,6 +49,10 @@ alignment_Suite : Test
 alignment_Suite =
     describe "a column's header separator sets its alignment (:---, ---:, :---:)" <|
         toTests
+            {- | Col1 | Col2 | Col3 |
+               |:---|---:|:---:|
+               | a | b | c |
+            -}
             [ ( "| Col1 | Col2 | Col3 |\n|:---|---:|:---:|\n| a | b | c |\n"
               , Table []
                     { class = None
@@ -75,6 +83,11 @@ sortable_Suite : Test
 sortable_Suite =
     describe "a data-sortable=\"false\" attribute turns off sorting" <|
         toTests
+            {- <!-- data-sortable="false" -->
+               | Col1 | Col2 |
+               | --- | --- |
+               | a | b |
+            -}
             [ ( "<!-- data-sortable=\"false\" -->\n| Col1 | Col2 |\n| --- | --- |\n| a | b |\n"
               , Table [ ( "data-sortable", "false" ) ]
                     { class = None
@@ -105,6 +118,11 @@ chartClass_Suite : Test
 chartClass_Suite =
     describe "a data-type=\"...\" attribute forces the table's chart classification" <|
         toTests
+            {- <!-- data-type="barchart" -->
+               | Col1 | Col2 |
+               | --- | --- |
+               | a | b |
+            -}
             [ ( "<!-- data-type=\"barchart\" -->\n| Col1 | Col2 |\n| --- | --- |\n| a | b |\n"
               , Table [ ( "data-type", "barchart" ) ]
                     { class = BarChart
