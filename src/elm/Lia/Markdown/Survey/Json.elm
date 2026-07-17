@@ -21,8 +21,8 @@ import Lia.Markdown.Survey.Types
         )
 
 
-encode : Survey -> JE.Value
-encode survey =
+encode : (body -> JE.Value) -> Survey body -> JE.Value
+encode encoder survey =
     JE.object <|
         [ ( "id", JE.int survey.id )
         , case survey.survey of
@@ -47,7 +47,7 @@ encode survey =
                     [ ( "bool", JE.bool bool )
                     , ( "options"
                       , options
-                            |> List.map (Tuple.mapSecond Inline.encode)
+                            |> List.map (Tuple.mapSecond (JE.list encoder))
                             |> JE.object
                       )
                     ]

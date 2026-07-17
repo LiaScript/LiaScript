@@ -6,16 +6,14 @@ module Lia.Markdown.Quiz.Vector.Types exposing
     , initState
     )
 
-import Lia.Markdown.Inline.Types exposing (Inlines)
-
 
 type State
     = SingleChoice (List Bool)
     | MultipleChoice (List Bool)
 
 
-type alias Quiz =
-    { options : List Inlines
+type alias Quiz body =
+    { options : List (List body)
     , solution : State
     }
 
@@ -34,7 +32,7 @@ initState state =
                 |> MultipleChoice
 
 
-comp : Quiz -> State -> Bool
+comp : Quiz body -> State -> Bool
 comp quiz state =
     case ( quiz.solution, state ) of
         ( SingleChoice list1, SingleChoice list2 ) ->

@@ -32,6 +32,7 @@ import Lia.Markdown.Inline.View as Inline
 import Lia.Markdown.Json.Encode as Encode
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Quiz.View as Quizzes
+import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Task.View as Task
@@ -517,8 +518,7 @@ view_block config block =
             viewQuiz config Nothing attr quiz solution
 
         Survey attr survey ->
-            Surveys.view config.main attr survey config.section.survey_vector
-                |> Tuple.mapSecond (Html.map UpdateSurvey)
+            Surveys.view config.main attr survey config.section.survey_vector (surveyVectorOptions config survey.survey)
                 |> scriptView config.view
 
         Comment ( id1, id2 ) ->
@@ -598,6 +598,41 @@ view_block config block =
 viewBlocks : Config Msg -> List Block -> List (Html Msg)
 viewBlocks config =
     List.map (view_block config)
+
+
+{-| Pre-render a Quiz-Vector's option content (used only for `Vector_Type`) via
+`viewBlocks`, since option bodies may contain arbitrary Markdown block content
+that only the top-level renderer knows how to display - see `Quiz.Vector.Parser`.
+-}
+quizVectorOptions : Config Msg -> Quiz.Type Block -> List (List (Html Msg))
+quizVectorOptions config type_ =
+    case type_ of
+        Quiz.Vector_Type q ->
+            q.options |> List.map (viewBlocks config)
+
+        _ ->
+            []
+
+
+{-| Pre-render a Quiz's hints (`[[?]] ...`) via `viewBlocks` - see
+`Quiz.Parser.hints`.
+-}
+quizHints : Config Msg -> Quiz.Quiz Block -> List (List (Html Msg))
+quizHints config quiz =
+    quiz.hints |> List.map (viewBlocks config)
+
+
+{-| Pre-render a Survey-Vector's option content (used only for `Vector`) via
+`viewBlocks` - see `Survey.Parser.vector`.
+-}
+surveyVectorOptions : Config Msg -> Survey.Type Block -> List ( String, List (Html Msg) )
+surveyVectorOptions config type_ =
+    case type_ of
+        Survey.Vector _ options _ ->
+            options |> List.map (Tuple.mapSecond (viewBlocks config))
+
+        _ ->
+            []
 
 
 viewHTMLBlock : Config Msg -> Parameters -> Node Block -> Html Msg
@@ -776,17 +811,25 @@ viewQuiz config labeledBy attr quiz solution =
 
 
 quizControl config labeledBy attr quiz solution =
+    let
+        renderedOptions =
+            quizVectorOptions config quiz.quiz
+
+        renderedHints =
+            quizHints config quiz
+
+        quizView =
+            Quizzes.view config.main labeledBy quiz config.section.quiz_vector renderedOptions renderedHints
+    in
     scriptView config.view <|
         case solution of
             Nothing ->
-                Quizzes.view config.main labeledBy quiz config.section.quiz_vector
+                quizView
                     |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
-                    |> Tuple.mapSecond (Html.map UpdateQuiz)
 
             Just ( answer, hidden_effects ) ->
                 if Quizzes.showSolution quiz config.section.quiz_vector then
-                    Quizzes.view config.main labeledBy quiz config.section.quiz_vector
-                        |> Tuple.mapSecond (List.map (Html.map UpdateQuiz))
+                    quizView
                         |> Tuple.mapSecond
                             (\list ->
                                 List.append list
@@ -798,8 +841,7 @@ quizControl config labeledBy attr quiz solution =
                         |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
 
                 else
-                    Quizzes.view config.main labeledBy quiz config.section.quiz_vector
-                        |> Tuple.mapSecond (List.map (Html.map UpdateQuiz))
+                    quizView
                         |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
 
 
