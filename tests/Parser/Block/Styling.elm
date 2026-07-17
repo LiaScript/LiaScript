@@ -23,16 +23,25 @@ singleAttribute_Suite =
     describe "a single key=\"value\" HTML comment attaches as that block's Parameters" <|
         [ test "a style attribute before a paragraph" <|
             \_ ->
+                {- <!-- style="color: red" -->
+                   Hello world
+                -}
                 parse "<!-- style=\"color: red\" -->\nHello world\n"
                     |> Expect.equal
                         [ Paragraph [ ( "style", "color: red" ) ] [ chars "Hello world" ] ]
         , test "a style attribute before a header" <|
             \_ ->
+                {- <!-- style="color: red" -->
+                   # Title
+                -}
                 parse "<!-- style=\"color: red\" -->\n# Title\n"
                     |> Expect.equal
                         [ Header [ ( "style", "color: red" ) ] ( 1, [ chars "Title" ] ) ]
         , test "a style attribute before a blockquote" <|
             \_ ->
+                {- <!-- style="background-color: tomato;"-->
+                   > Warning
+                -}
                 parse "<!-- style=\"background-color: tomato;\"-->\n> Warning\n"
                     |> Expect.equal
                         [ Quote [ ( "style", "background-color: tomato;" ) ]
@@ -41,6 +50,10 @@ singleAttribute_Suite =
                         ]
         , test "a style attribute before a bullet list" <|
             \_ ->
+                {- <!-- style="color: red" -->
+                   * item one
+                   * item two
+                -}
                 parse "<!-- style=\"color: red\" -->\n* item one\n* item two\n"
                     |> Expect.equal
                         [ BulletList [ ( "style", "color: red" ) ]
@@ -56,6 +69,9 @@ multipleAttributes_Suite =
     describe "several key=\"value\" pairs in one comment all attach, in order" <|
         [ test "class and style together, exactly as in the docs' example" <|
             \_ ->
+                {- <!-- class = "animated rollIn" style = "animation-delay: 3s; color: purple" -->
+                   Hello world
+                -}
                 parse "<!-- class = \"animated rollIn\" style = \"animation-delay: 3s; color: purple\" -->\nHello world\n"
                     |> Expect.equal
                         [ Paragraph

@@ -14,10 +14,11 @@ which produces a `Node` with parsed children):
   - With one or more `<foreignObject>`s inside, it becomes a `SvgNode`: the
     outer `<svg>`'s own attributes, the remaining raw SVG source with the
     foreignObject tags stripped out, and a list of `(attributes, content)`
-    pairs - one per foreignObject - where `content` *is* parsed as ordinary
+    pairs - one per foreignObject - where `content` _is_ parsed as ordinary
     Markdown/LiaScript `Blocks`. That's the actual point of `foreignObject`
     support: injecting rendered Markdown (including e.g. `$$formulas$$`)
     into an SVG graphic.
+
 -}
 
 import Expect
@@ -33,6 +34,10 @@ plain_Suite =
     describe "an <svg> with no <foreignObject> is captured verbatim, unparsed"
         [ test "a circle, untouched" <|
             \_ ->
+                {- <svg viewBox="0 0 200 100">
+                   <circle cx="50" cy="50" r="40" fill="lightblue"/>
+                   </svg>
+                -}
                 parse "<svg viewBox=\"0 0 200 100\">\n<circle cx=\"50\" cy=\"50\" r=\"40\" fill=\"lightblue\"/>\n</svg>\n"
                     |> Expect.equal
                         [ HTML []
@@ -48,6 +53,14 @@ foreignObject_Suite =
     describe "an <svg> containing <foreignObject> parses that content as Markdown"
         [ test "a single foreignObject with inline formatting" <|
             \_ ->
+                {- <svg viewBox="0 0 200 100">
+                   <foreignObject x="0" y="0" width="200" height="100">
+
+                   Hello **world**
+
+                   </foreignObject>
+                   </svg>
+                -}
                 parse "<svg viewBox=\"0 0 200 100\">\n<foreignObject x=\"0\" y=\"0\" width=\"200\" height=\"100\">\n\nHello **world**\n\n</foreignObject>\n</svg>\n"
                     |> Expect.equal
                         [ HTML []
@@ -61,6 +74,20 @@ foreignObject_Suite =
                         ]
         , test "two foreignObjects with plain SVG markup around them - collected in reverse source order" <|
             \_ ->
+                {- <svg viewBox="0 0 200 100">
+                   <foreignObject x="0" y="0" width="100" height="50">
+
+                   first
+
+                   </foreignObject>
+                   <circle r="1"/>
+                   <foreignObject x="100" y="50" width="100" height="50">
+
+                   second
+
+                   </foreignObject>
+                   </svg>
+                -}
                 parse "<svg viewBox=\"0 0 200 100\">\n<foreignObject x=\"0\" y=\"0\" width=\"100\" height=\"50\">\n\nfirst\n\n</foreignObject>\n<circle r=\"1\"/>\n<foreignObject x=\"100\" y=\"50\" width=\"100\" height=\"50\">\n\nsecond\n\n</foreignObject>\n</svg>\n"
                     |> Expect.equal
                         [ HTML []

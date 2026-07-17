@@ -33,6 +33,7 @@ atx_fuzz_Suite =
     describe "any run of # characters becomes a header at that depth"
         [ fuzz2 (fuzzRegex "#{1,12}") words "wrapped in #...# Title" <|
             \marker title ->
+                {- ### Example title -}
                 parse (marker ++ " " ++ title ++ "\n")
                     |> Expect.equal [ header (String.length marker) title ]
         ]
@@ -47,10 +48,16 @@ setext_fuzz_Suite =
     describe "underlining a title with =... or -... generates a setext-style header"
         [ fuzz2 words (fuzzRegex "={3,20}") "underlined with =...=" <|
             \title underline ->
+                {- Example title
+                   =============
+                -}
                 parse (title ++ "\n" ++ underline ++ "\n")
                     |> Expect.equal [ header 1 title ]
         , fuzz2 words (fuzzRegex "-{3,20}") "underlined with -...-" <|
             \title underline ->
+                {- Example title
+                   -------------
+                -}
                 parse (title ++ "\n" ++ underline ++ "\n")
                     |> Expect.equal [ header 2 title ]
         ]

@@ -28,6 +28,9 @@ single_Suite =
     describe "a single block preceded by {{n}} appears starting at step n"
         [ test "{{1}}\\nSome text.\\n" <|
             \_ ->
+                {- {{1}}
+                   Some text.
+                -}
                 parse "{{1}}\nSome text.\n"
                     |> Expect.equal
                         [ Effect []
@@ -47,6 +50,9 @@ range_Suite =
     describe "a {{n-m}} range makes the block disappear again at step m"
         [ test "{{2-3}}\\nOther text.\\n" <|
             \_ ->
+                {- {{2-3}}
+                   Other text.
+                -}
                 parse "{{2-3}}\nOther text.\n"
                     |> Expect.equal
                         [ Effect []
@@ -66,6 +72,13 @@ multiBlock_Suite =
     describe "a {{n}} above a fence of *** groups every block up to the closing fence"
         [ test "{{1-2}}\\n***\\nFirst.\\n\\nSecond.\\n***\\n" <|
             \_ ->
+                {- {{1-2}}
+                   ***
+                   First.
+
+                   Second.
+                   ***
+                -}
                 parse "{{1-2}}\n***\nFirst.\n\nSecond.\n***\n"
                     |> Expect.equal
                         [ Effect []

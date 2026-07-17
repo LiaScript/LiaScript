@@ -31,7 +31,7 @@ link_fuzz_Suite : Test
 link_fuzz_Suite =
     describe "generating links from arbitrary text and URLs" <|
         [ fuzz2 words httpUrl "wrapped in [...](...)" <|
-            \text url -> parse ("[" ++ text ++ "](" ++ url ++ ")") |> Expect.equal [ link text url ]
+            {- [example text](https://example.com) -} \text url -> parse ("[" ++ text ++ "](" ++ url ++ ")") |> Expect.equal [ link text url ]
         ]
 
 
@@ -47,7 +47,7 @@ image_fuzz_Suite : Test
 image_fuzz_Suite =
     describe "generating images from arbitrary alt text and URLs" <|
         [ fuzz2 words httpUrl "wrapped in ![...](...)" <|
-            \alt url -> parse ("![" ++ alt ++ "](" ++ url ++ ")") |> Expect.equal [ image alt url ]
+            {- ![example alt text](https://example.com/image.png) -} \alt url -> parse ("![" ++ alt ++ "](" ++ url ++ ")") |> Expect.equal [ image alt url ]
         ]
 
 
@@ -64,6 +64,7 @@ mail_fuzz_Suite =
     describe "generating mail links from arbitrary text and addresses" <|
         [ fuzz2 words email "wrapped in [...](mailto:...)" <|
             \text address ->
+                {- [mail me](mailto:test@example.com) -}
                 parse ("[" ++ text ++ "](mailto:" ++ address ++ ")")
                     |> Expect.equal [ mail text ("mailto:" ++ address) ]
         ]

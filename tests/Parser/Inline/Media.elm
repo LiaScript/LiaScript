@@ -30,7 +30,7 @@ audio_fuzz_Suite : Test
 audio_fuzz_Suite =
     describe "generating audio references from arbitrary titles and URLs" <|
         [ fuzz2 words httpUrl "wrapped in ?[...](...)" <|
-            \title url -> parse ("?[" ++ title ++ "](" ++ url ++ ")") |> Expect.equal [ audio title url ]
+            {- ?[example title](https://example.com/audio.mp3) -} \title url -> parse ("?[" ++ title ++ "](" ++ url ++ ")") |> Expect.equal [ audio title url ]
         ]
 
 
@@ -39,6 +39,7 @@ movie_platformRewrite_Suite =
     describe "rewriting known video-platform URLs into their embed player"
         [ test "a YouTube watch URL is rewritten to the youtube-nocookie embed URL, dropping the video ID params" <|
             \_ ->
+                {- !?[a title](https://www.youtube.com/watch?v=dQw4w9WgXcQ) -}
                 parse "!?[a title](https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
                     |> Expect.equal
                         [ Ref
@@ -63,7 +64,7 @@ movie_fuzz_Suite : Test
 movie_fuzz_Suite =
     describe "generating movie references from arbitrary titles and URLs" <|
         [ fuzz2 words httpUrl "wrapped in !?[...](...)" <|
-            \title url -> parse ("!?[" ++ title ++ "](" ++ url ++ ")") |> Expect.equal [ movie title url ]
+            {- !?[example title](https://example.com/video.mp4) -} \title url -> parse ("!?[" ++ title ++ "](" ++ url ++ ")") |> Expect.equal [ movie title url ]
         ]
 
 
@@ -72,10 +73,12 @@ audio_platformRewrite_Suite =
     describe "auto-converting known embeddable-audio-platform URLs from Audio to Embed"
         [ test "a SoundCloud URL becomes an Embed reference instead of Audio" <|
             \_ ->
+                {- ?[a title](https://soundcloud.com/artist/track) -}
                 parse "?[a title](https://soundcloud.com/artist/track)"
                     |> Expect.equal [ embed "a title" "https://soundcloud.com/artist/track" ]
         , test "a Spotify URL becomes an Embed reference instead of Audio" <|
             \_ ->
+                {- ?[a title](https://open.spotify.com/track/123) -}
                 parse "?[a title](https://open.spotify.com/track/123)"
                     |> Expect.equal [ embed "a title" "https://open.spotify.com/track/123" ]
         ]
@@ -93,7 +96,7 @@ embed_fuzz_Suite : Test
 embed_fuzz_Suite =
     describe "generating embed references from arbitrary titles and URLs" <|
         [ fuzz2 words httpUrl "wrapped in ??[...](...)" <|
-            \title url -> parse ("??[" ++ title ++ "](" ++ url ++ ")") |> Expect.equal [ embed title url ]
+            {- ??[example title](https://example.com/embed) -} \title url -> parse ("??[" ++ title ++ "](" ++ url ++ ")") |> Expect.equal [ embed title url ]
         ]
 
 

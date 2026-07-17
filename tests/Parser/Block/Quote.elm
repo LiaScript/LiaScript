@@ -39,7 +39,7 @@ alert_Suite =
 
 {-| The alert keyword (`NOTE`, `TIP`, ...) is matched case-insensitively.
 Rather than hand-writing a couple of differently-cased examples, build a
-regex that generates *any* casing of each keyword - one character class per
+regex that generates _any_ casing of each keyword - one character class per
 letter, e.g. `NOTE` becomes `[Nn][Oo][Tt][Ee]` - and fuzz across every
 possible casing to confirm the parser really is indifferent to it.
 -}
@@ -48,22 +48,37 @@ alert_anyCase_fuzz_Suite =
     describe "the alert keyword is matched regardless of letter casing"
         [ fuzz (fuzzRegex (anyCase "NOTE")) "any casing of NOTE" <|
             \keyword ->
+                {- > [!NoTe]
+                   > body
+                -}
                 parse ("> [!" ++ keyword ++ "]\n> body\n")
                     |> Expect.equal [ alertQuote NOTE Nothing [ "body" ] ]
         , fuzz (fuzzRegex (anyCase "TIP")) "any casing of TIP" <|
             \keyword ->
+                {- > [!TiP]
+                   > body
+                -}
                 parse ("> [!" ++ keyword ++ "]\n> body\n")
                     |> Expect.equal [ alertQuote TIP Nothing [ "body" ] ]
         , fuzz (fuzzRegex (anyCase "IMPORTANT")) "any casing of IMPORTANT" <|
             \keyword ->
+                {- > [!ImPoRtAnT]
+                   > body
+                -}
                 parse ("> [!" ++ keyword ++ "]\n> body\n")
                     |> Expect.equal [ alertQuote IMPORTANT Nothing [ "body" ] ]
         , fuzz (fuzzRegex (anyCase "WARNING")) "any casing of WARNING" <|
             \keyword ->
+                {- > [!WaRnInG]
+                   > body
+                -}
                 parse ("> [!" ++ keyword ++ "]\n> body\n")
                     |> Expect.equal [ alertQuote WARNING Nothing [ "body" ] ]
         , fuzz (fuzzRegex (anyCase "CAUTION")) "any casing of CAUTION" <|
             \keyword ->
+                {- > [!CaUtIoN]
+                   > body
+                -}
                 parse ("> [!" ++ keyword ++ "]\n> body\n")
                     |> Expect.equal [ alertQuote CAUTION Nothing [ "body" ] ]
         ]

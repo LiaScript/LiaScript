@@ -27,10 +27,12 @@ comment_Suite =
     describe "consuming HTML comments"
         [ test "a two-dashed comment after text is parsed as its annotation" <|
             \_ ->
+                {- hello<!-- data-x="1" --> -}
                 parse "hello<!-- data-x=\"1\" -->"
                     |> Expect.equal [ Chars "hello" [ ( "data-x", "1" ) ] ]
         , test "a triple-dashed comment after text is fully ignored" <|
             \_ ->
+                {- hello<!--- anything goes here --> -}
                 parse "hello<!--- anything goes here -->"
                     |> Expect.equal [ chars "hello" ]
         ]

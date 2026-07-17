@@ -34,6 +34,7 @@ bulletList_marker_fuzz_Suite =
     describe "any of *, +, - works as a bullet marker"
         [ fuzz2 (fuzzRegex "[*+-]") words "wrapped in <marker> ...\\n" <|
             \marker item ->
+                {- * example item -}
                 parse (marker ++ " " ++ item ++ "\n")
                     |> Expect.equal [ bulletList [ item ] ]
         ]
@@ -56,6 +57,7 @@ orderedList_number_fuzz_Suite =
     describe "the numeral in front of a list item is preserved as-is"
         [ fuzz2 (fuzzRegex "[0-9]{1,4}") words "wrapped in <number>. ...\\n" <|
             \number item ->
+                {- 42. example item -}
                 parse (number ++ ". " ++ item ++ "\n")
                     |> Expect.equal [ orderedList [ ( number, item ) ] ]
         ]
@@ -71,6 +73,11 @@ nested_Suite =
     describe "a list item can contain a nested list, indented one level"
         [ test "a bullet list nested inside a bullet-list item" <|
             \_ ->
+                {- * item one
+                     * nested one
+                     * nested two
+                   * item two
+                -}
                 parse "* item one\n  * nested one\n  * nested two\n* item two\n"
                     |> Expect.equal
                         [ BulletList []
@@ -82,6 +89,11 @@ nested_Suite =
                         ]
         , test "an ordered list nested inside an ordered-list item" <|
             \_ ->
+                {- 1. item one
+                      1. nested one
+                      2. nested two
+                   2. item two
+                -}
                 parse "1. item one\n   1. nested one\n   2. nested two\n2. item two\n"
                     |> Expect.equal
                         [ OrderedList []
@@ -107,7 +119,14 @@ looseVsTight_Suite =
     describe "a blank line between list items (loose) parses identically to no blank line (tight)"
         [ test "tight: no blank line between items" <|
             \_ ->
+                {- * item one
+                   * item two
+                -}
                 parse "* item one\n* item two\n"
+                    {- * item one
+
+                       * item two
+                    -}
                     |> Expect.equal (parse "* item one\n\n* item two\n")
         ]
 
@@ -123,6 +142,11 @@ multiParagraphItem_Suite =
     describe "a list item can span multiple paragraphs via an indented continuation"
         [ test "a blank line then an indented paragraph continues the same item" <|
             \_ ->
+                {- * item one
+
+                     continued
+                   * item two
+                -}
                 parse "* item one\n\n  continued\n* item two\n"
                     |> Expect.equal
                         [ BulletList []

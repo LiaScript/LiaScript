@@ -6,16 +6,21 @@ module Parser.Block.Quiz exposing
     , indentedOptions_Suite
     , indentedQuizTypes_Suite
     , itemText_fuzz_Suite
+    , matrixIndentation_Suite
+    , matrixWithHintsAndSolution_Suite
+    , matrixWithHints_Suite
     , matrix_Suite
     , multiGapText_Suite
     , multipleChoice_Suite
     , nestedQuiz_Suite
     , oneColumnDoesNotSwallowUnrelatedContent_Suite
+    , optionWithCodeFence_Suite
     , singleChoice_Suite
     )
 
 import Array
 import Expect
+import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Inline.Types as InlineTypes
 import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.Types exposing (Type(..))
@@ -32,6 +37,9 @@ multipleChoice_Suite =
     describe "generating multiple-choice quizzes ([[ ]]/[[X]])"
         [ test "a checked and an unchecked option" <|
             \_ ->
+                {- [[X]] correct
+                   [[ ]] wrong
+                -}
                 parse "[[X]] correct\n[[ ]] wrong\n"
                     |> Expect.equal
                         [ Quiz []
@@ -47,6 +55,10 @@ multipleChoice_Suite =
                         ]
         , test "three options, two of them checked" <|
             \_ ->
+                {- [[X]] one
+                   [[X]] two
+                   [[ ]] three
+                -}
                 parse "[[X]] one\n[[X]] two\n[[ ]] three\n"
                     |> Expect.equal
                         [ Quiz []
@@ -62,6 +74,10 @@ multipleChoice_Suite =
                         ]
         , test "options prefixed with the optional -/+/* list marker" <|
             \_ ->
+                {- - [[X]] correct
+                   + [[ ]] wrong
+                   * [[X]] also correct
+                -}
                 parse "- [[X]] correct\n+ [[ ]] wrong\n* [[X]] also correct\n"
                     |> Expect.equal
                         [ Quiz []
@@ -77,6 +93,11 @@ multipleChoice_Suite =
                         ]
         , test "a blank line followed by matching (4-space) indentation continues the option as a second paragraph" <|
             \_ ->
+                {- [[X]] correct
+
+                       continued
+                   [[ ]] wrong
+                -}
                 parse "[[X]] correct\n\n    continued\n[[ ]] wrong\n"
                     |> Expect.equal
                         [ Quiz []
@@ -92,6 +113,11 @@ multipleChoice_Suite =
                         ]
         , test "a blank line followed by insufficient indentation still ends the option list; indented text after it is not absorbed as a continuation" <|
             \_ ->
+                {- [[X]] correct
+
+                     continued
+                   [[ ]] wrong
+                -}
                 parse "[[X]] correct\n\n  continued\n[[ ]] wrong\n"
                     |> Expect.equal
                         [ Quiz []
@@ -108,6 +134,7 @@ multipleChoice_Suite =
                         ]
         , test "a bare marker with no content on the same line fails as a Vector option, falls through to Block_Type" <|
             \_ ->
+                {- [[X]] -}
                 parse "[[X]]\n"
                     |> Expect.equal
                         [ Quiz []
@@ -119,6 +146,11 @@ multipleChoice_Suite =
                         ]
         , test "an option's content may contain a nested bullet list, as a second block" <|
             \_ ->
+                {- [[X]] correct
+
+                   - one
+                   - two
+                -}
                 parse "[[X]] correct\n\n    - one\n    - two\n"
                     |> Expect.equal
                         [ Quiz []
@@ -144,6 +176,9 @@ singleChoice_Suite =
     describe "generating single-choice quizzes ([( )]/[(X)])"
         [ test "a checked and an unchecked option" <|
             \_ ->
+                {- [(X)] correct
+                   [( )] wrong
+                -}
                 parse "[(X)] correct\n[( )] wrong\n"
                     |> Expect.equal
                         [ Quiz []
@@ -159,6 +194,10 @@ singleChoice_Suite =
                         ]
         , test "three options, only one checked" <|
             \_ ->
+                {- [( )] one
+                   [(X)] two
+                   [( )] three
+                -}
                 parse "[( )] one\n[(X)] two\n[( )] three\n"
                     |> Expect.equal
                         [ Quiz []
@@ -174,6 +213,10 @@ singleChoice_Suite =
                         ]
         , test "options prefixed with the optional -/+/* list marker" <|
             \_ ->
+                {- - [(X)] correct
+                   + [( )] wrong
+                   * [( )] also wrong
+                -}
                 parse "- [(X)] correct\n+ [( )] wrong\n* [( )] also wrong\n"
                     |> Expect.equal
                         [ Quiz []
@@ -189,6 +232,11 @@ singleChoice_Suite =
                         ]
         , test "a blank line followed by matching (4-space) indentation continues the option as a second paragraph" <|
             \_ ->
+                {- [(X)] correct
+
+                       continued
+                   [( )] wrong
+                -}
                 parse "[(X)] correct\n\n    continued\n[( )] wrong\n"
                     |> Expect.equal
                         [ Quiz []
@@ -204,6 +252,11 @@ singleChoice_Suite =
                         ]
         , test "a blank line followed by insufficient indentation still ends the option list; indented text after it is not absorbed as a continuation" <|
             \_ ->
+                {- [(X)] correct
+
+                     continued
+                   [( )] wrong
+                -}
                 parse "[(X)] correct\n\n  continued\n[( )] wrong\n"
                     |> Expect.equal
                         [ Quiz []
@@ -229,6 +282,7 @@ checkedCase_fuzz_Suite =
     describe "a checked option is recognized regardless of x/X casing"
         [ fuzz (fuzzRegex "[xX]") "wrapped in [[<x-or-X>]] ...\\n" <|
             \checkedChar ->
+                {- [[x]] correct -}
                 parse ("[[" ++ checkedChar ++ "]] correct\n")
                     |> Expect.equal
                         [ Quiz []
@@ -244,6 +298,7 @@ checkedCase_fuzz_Suite =
                         ]
         , fuzz (fuzzRegex "[xX]") "wrapped in [(<x-or-X>)] ...\\n" <|
             \checkedChar ->
+                {- [(X)] correct -}
                 parse ("[(" ++ checkedChar ++ ")] correct\n")
                     |> Expect.equal
                         [ Quiz []
@@ -270,6 +325,10 @@ hints_Suite =
     describe "generating quiz hints" <|
         [ test "a single [[?]] block becomes one hint" <|
             \_ ->
+                {- [[X]] correct
+                   [[ ]] wrong
+                   [[?]] Here is a hint.
+                -}
                 parse "[[X]] correct\n[[ ]] wrong\n[[?]] Here is a hint.\n"
                     |> Expect.equal
                         [ Quiz []
@@ -285,6 +344,11 @@ hints_Suite =
                         ]
         , test "multiple stacked [[?]] blocks become multiple hints, in order" <|
             \_ ->
+                {- [[X]] correct
+                   [[ ]] wrong
+                   [[?]] First hint.
+                   [[?]] Second hint.
+                -}
                 parse "[[X]] correct\n[[ ]] wrong\n[[?]] First hint.\n[[?]] Second hint.\n"
                     |> Expect.equal
                         [ Quiz []
@@ -300,6 +364,13 @@ hints_Suite =
                         ]
         , test "a hint's content may span multiple paragraphs" <|
             \_ ->
+                {- [[X]] correct
+                   [[ ]] wrong
+                   [[?]] hint one
+
+                       hint continued
+                   [[?]] hint two
+                -}
                 parse "[[X]] correct\n[[ ]] wrong\n[[?]] hint one\n\n    hint continued\n[[?]] hint two\n"
                     |> Expect.equal
                         [ Quiz []
@@ -313,6 +384,31 @@ hints_Suite =
                                 [ [ paragraph "hint one", paragraph "hint continued" ]
                                 , [ paragraph "hint two" ]
                                 ]
+                            }
+                            Nothing
+                        ]
+        , test "a blank line between the last option and the first [[?]] hint is tolerated" <|
+            \_ ->
+                -- Unlike `Vector.parse` itself (reached through `blocks`'s own
+                -- whitespace-eating dispatch), `Quiz.Parser.hints` is called
+                -- directly right after the quiz type is parsed - a leading
+                -- blank line before the first hint must be skipped explicitly,
+                -- see `Vector.Parser.blockGroup`.
+                {- [[X]] correct
+                   [[ ]] wrong
+
+                   [[?]] Here is a hint.
+                -}
+                parse "[[X]] correct\n[[ ]] wrong\n\n[[?]] Here is a hint.\n"
+                    |> Expect.equal
+                        [ Quiz []
+                            { quiz =
+                                Vector_Type
+                                    { options = [ [ paragraph "correct" ], [ paragraph "wrong" ] ]
+                                    , solution = MultipleChoice [ True, False ]
+                                    }
+                            , id = 0
+                            , hints = [ [ paragraph "Here is a hint." ] ]
                             }
                             Nothing
                         ]
@@ -332,11 +428,13 @@ generic_Suite =
     describe "generating generic (no-solution) quiz markers" <|
         [ test "[[!]] alone" <|
             \_ ->
+                {- [[!]] -}
                 parse "[[!]]\n"
                     |> Expect.equal
                         [ Quiz [] { quiz = Generic_Type, id = 0, hints = [] } Nothing ]
         , test "- [[!]] with the optional leading dash" <|
             \_ ->
+                {- - [[!]] -}
                 parse "- [[!]]\n"
                     |> Expect.equal
                         [ Quiz [] { quiz = Generic_Type, id = 0, hints = [] } Nothing ]
@@ -367,6 +465,9 @@ matrix_Suite =
     describe "generating matrix quizzes ([(col)(col)] header + [(X)( )] rows)"
         [ test "two columns, single (radio-button) row" <|
             \_ ->
+                {- [(ColA)(ColB)]
+                   [(X)( )] Row1
+                -}
                 parse "[(ColA)(ColB)]\n[(X)( )] Row1\n"
                     |> Expect.equal
                         [ Quiz []
@@ -383,6 +484,9 @@ matrix_Suite =
                         ]
         , test "bracket-style header columns ([col][col]) work the same as parenthesized ones" <|
             \_ ->
+                {- [[ColA][ColB]]
+                   [(X)( )] Row1
+                -}
                 parse "[[ColA][ColB]]\n[(X)( )] Row1\n"
                     |> Expect.equal
                         [ Quiz []
@@ -399,6 +503,9 @@ matrix_Suite =
                         ]
         , test "three columns, single (radio-button) row" <|
             \_ ->
+                {- [(ColA)(ColB)(ColC)]
+                   [(X)( )(X)] Row1
+                -}
                 parse "[(ColA)(ColB)(ColC)]\n[(X)( )(X)] Row1\n"
                     |> Expect.equal
                         [ Quiz []
@@ -415,6 +522,10 @@ matrix_Suite =
                         ]
         , test "two rows, both single (radio-button) choice" <|
             \_ ->
+                {- [(ColA)(ColB)]
+                   [(X)( )] Row1
+                   [( )(X)] Row2
+                -}
                 parse "[(ColA)(ColB)]\n[(X)( )] Row1\n[( )(X)] Row2\n"
                     |> Expect.equal
                         [ Quiz []
@@ -435,6 +546,10 @@ matrix_Suite =
                         ]
         , test "rows can independently mix single- ([( )]) and multiple-choice ([[ ]]) style" <|
             \_ ->
+                {- [(ColA)(ColB)]
+                   [(X)( )] Row1
+                   [[ ][X]] Row2
+                -}
                 parse "[(ColA)(ColB)]\n[(X)( )] Row1\n[[ ][X]] Row2\n"
                     |> Expect.equal
                         [ Quiz []
@@ -456,6 +571,267 @@ matrix_Suite =
         ]
 
 
+{-| A matrix's header and rows independently accept every combination of an
+optional `-` marker prefix and an optional shared 4-space indent, in either
+header bracket style (`(col)` for single-choice rows, `[col]` for
+multiple-choice rows) - all eight combinations below produce the identical
+structure. Unlike `Survey.Parser` (see
+`Parser.Block.Survey.matrixIndentation_Suite`), `Quiz.Matrix.Parser.header`
+already handled indent-then-dash correctly (`maybe Indent.check |> ignore
+spaces |> ignore (regex "...")`, spaces consumed _before_ the marker regex
+runs), so no fix was needed here - this suite only pins down that already
+appropriate behavior.
+-}
+matrixIndentation_Suite : Test
+matrixIndentation_Suite =
+    let
+        expect solutions =
+            [ Quiz []
+                { quiz =
+                    Matrix_Type
+                        { headers = [ [ chars "A" ], [ chars "B" ] ]
+                        , options = [ [ chars "Row1" ], [ chars "Row2" ] ]
+                        , solution = Array.fromList solutions
+                        }
+                , id = 0
+                , hints = []
+                }
+                Nothing
+            ]
+    in
+    describe "a matrix's header and rows accept every combination of optional dash marker and shared indent"
+        [ test "no indent, no dash, paren-style header (single-choice rows)" <|
+            \_ ->
+                {- [(A)(B)]
+                   [(X)( )] Row1
+                   [( )(X)] Row2
+                -}
+                parse "[(A)(B)]\n[(X)( )] Row1\n[( )(X)] Row2\n"
+                    |> Expect.equal (expect [ SingleChoice [ True, False ], SingleChoice [ False, True ] ])
+        , test "no indent, no dash, bracket-style header (multiple-choice rows)" <|
+            \_ ->
+                {- [[A][B]]
+                   [[X][ ]] Row1
+                   [[ ][X]] Row2
+                -}
+                parse "[[A][B]]\n[[X][ ]] Row1\n[[ ][X]] Row2\n"
+                    |> Expect.equal (expect [ MultipleChoice [ True, False ], MultipleChoice [ False, True ] ])
+        , test "no indent, dash, paren-style header (single-choice rows)" <|
+            \_ ->
+                {- - [(A)(B)]
+                   - [(X)( )] Row1
+                   - [( )(X)] Row2
+                -}
+                parse "- [(A)(B)]\n- [(X)( )] Row1\n- [( )(X)] Row2\n"
+                    |> Expect.equal (expect [ SingleChoice [ True, False ], SingleChoice [ False, True ] ])
+        , test "no indent, dash, bracket-style header (multiple-choice rows)" <|
+            \_ ->
+                {- - [[A][B]]
+                   - [[X][ ]] Row1
+                   - [[ ][X]] Row2
+                -}
+                parse "- [[A][B]]\n- [[X][ ]] Row1\n- [[ ][X]] Row2\n"
+                    |> Expect.equal (expect [ MultipleChoice [ True, False ], MultipleChoice [ False, True ] ])
+        , test "indented, no dash, paren-style header (single-choice rows)" <|
+            \_ ->
+                {- [(A)(B)]
+                   [(X)( )] Row1
+                   [( )(X)] Row2
+                -}
+                parse "    [(A)(B)]\n    [(X)( )] Row1\n    [( )(X)] Row2\n"
+                    |> Expect.equal (expect [ SingleChoice [ True, False ], SingleChoice [ False, True ] ])
+        , test "indented, no dash, bracket-style header (multiple-choice rows)" <|
+            \_ ->
+                {- [[A][B]]
+                   [[X][ ]] Row1
+                   [[ ][X]] Row2
+                -}
+                parse "    [[A][B]]\n    [[X][ ]] Row1\n    [[ ][X]] Row2\n"
+                    |> Expect.equal (expect [ MultipleChoice [ True, False ], MultipleChoice [ False, True ] ])
+        , test "indented, dash, paren-style header (single-choice rows)" <|
+            \_ ->
+                {- - [(A)(B)]
+                   - [(X)( )] Row1
+                   - [( )(X)] Row2
+                -}
+                parse "    - [(A)(B)]\n    - [(X)( )] Row1\n    - [( )(X)] Row2\n"
+                    |> Expect.equal (expect [ SingleChoice [ True, False ], SingleChoice [ False, True ] ])
+        , test "indented, dash, bracket-style header (multiple-choice rows)" <|
+            \_ ->
+                {- - [[A][B]]
+                   - [[X][ ]] Row1
+                   - [[ ][X]] Row2
+                -}
+                parse "    - [[A][B]]\n    - [[X][ ]] Row1\n    - [[ ][X]] Row2\n"
+                    |> Expect.equal (expect [ MultipleChoice [ True, False ], MultipleChoice [ False, True ] ])
+        ]
+
+
+{-| A `[[?]]` hint attaches to a matrix quiz exactly the same way it does to a
+Vector quiz (see `hints_Suite`) - `Quiz.Parser.hints` runs generically after
+whichever quiz type just finished parsing, so it doesn't care whether that
+was a `Matrix_Type`, nor which of the eight indent/dash/header-style
+combinations from `matrixIndentation_Suite` produced it.
+-}
+matrixWithHints_Suite : Test
+matrixWithHints_Suite =
+    let
+        expect solutions =
+            [ Quiz []
+                { quiz =
+                    Matrix_Type
+                        { headers = [ [ chars "A" ], [ chars "B" ] ]
+                        , options = [ [ chars "Row1" ], [ chars "Row2" ] ]
+                        , solution = Array.fromList solutions
+                        }
+                , id = 0
+                , hints = [ [ paragraph "Here is a hint." ] ]
+                }
+                Nothing
+            ]
+    in
+    describe "a [[?]] hint attaches to a matrix quiz, in every indent/dash/header-style combination"
+        [ test "no indent, no dash, paren-style header" <|
+            \_ ->
+                {- [(A)(B)]
+                   [(X)( )] Row1
+                   [( )(X)] Row2
+                   [[?]] Here is a hint.
+                -}
+                parse "[(A)(B)]\n[(X)( )] Row1\n[( )(X)] Row2\n[[?]] Here is a hint.\n"
+                    |> Expect.equal (expect [ SingleChoice [ True, False ], SingleChoice [ False, True ] ])
+        , test "no indent, no dash, bracket-style header" <|
+            \_ ->
+                {- [[A][B]]
+                   [[X][ ]] Row1
+                   [[ ][X]] Row2
+                   [[?]] Here is a hint.
+                -}
+                parse "[[A][B]]\n[[X][ ]] Row1\n[[ ][X]] Row2\n[[?]] Here is a hint.\n"
+                    |> Expect.equal (expect [ MultipleChoice [ True, False ], MultipleChoice [ False, True ] ])
+        , test "no indent, dash, paren-style header" <|
+            \_ ->
+                {- - [(A)(B)]
+                   - [(X)( )] Row1
+                   - [( )(X)] Row2
+                   [[?]] Here is a hint.
+                -}
+                parse "- [(A)(B)]\n- [(X)( )] Row1\n- [( )(X)] Row2\n[[?]] Here is a hint.\n"
+                    |> Expect.equal (expect [ SingleChoice [ True, False ], SingleChoice [ False, True ] ])
+        , test "no indent, dash, bracket-style header" <|
+            \_ ->
+                {- - [[A][B]]
+                   - [[X][ ]] Row1
+                   - [[ ][X]] Row2
+                   [[?]] Here is a hint.
+                -}
+                parse "- [[A][B]]\n- [[X][ ]] Row1\n- [[ ][X]] Row2\n[[?]] Here is a hint.\n"
+                    |> Expect.equal (expect [ MultipleChoice [ True, False ], MultipleChoice [ False, True ] ])
+        , test "indented, no dash, paren-style header" <|
+            \_ ->
+                {- [(A)(B)]
+                       [(X)( )] Row1
+                       [( )(X)] Row2
+                   [[?]] Here is a hint.
+                -}
+                parse "    [(A)(B)]\n    [(X)( )] Row1\n    [( )(X)] Row2\n[[?]] Here is a hint.\n"
+                    |> Expect.equal (expect [ SingleChoice [ True, False ], SingleChoice [ False, True ] ])
+        , test "indented, no dash, bracket-style header" <|
+            \_ ->
+                {- [[A][B]]
+                       [[X][ ]] Row1
+                       [[ ][X]] Row2
+                   [[?]] Here is a hint.
+                -}
+                parse "    [[A][B]]\n    [[X][ ]] Row1\n    [[ ][X]] Row2\n[[?]] Here is a hint.\n"
+                    |> Expect.equal (expect [ MultipleChoice [ True, False ], MultipleChoice [ False, True ] ])
+        , test "indented, dash, paren-style header" <|
+            \_ ->
+                {- - [(A)(B)]
+                       - [(X)( )] Row1
+                       - [( )(X)] Row2
+                   [[?]] Here is a hint.
+                -}
+                parse "    - [(A)(B)]\n    - [(X)( )] Row1\n    - [( )(X)] Row2\n[[?]] Here is a hint.\n"
+                    |> Expect.equal (expect [ SingleChoice [ True, False ], SingleChoice [ False, True ] ])
+        , test "indented, dash, bracket-style header" <|
+            \_ ->
+                {- - [[A][B]]
+                       - [[X][ ]] Row1
+                       - [[ ][X]] Row2
+                   [[?]] Here is a hint.
+                -}
+                parse "    - [[A][B]]\n    - [[X][ ]] Row1\n    - [[ ][X]] Row2\n[[?]] Here is a hint.\n"
+                    |> Expect.equal (expect [ MultipleChoice [ True, False ], MultipleChoice [ False, True ] ])
+        ]
+
+
+{-| A trailing `***...***` block (see `Lia.Markdown.Parser.solution`) reveals
+an "official answer" once the quiz is solved - it may itself span multiple
+Markdown blocks. It attaches the same way regardless of the preceding quiz's
+indent/dash/header-style (that parser is independent of
+`Quiz.Vector.Parser`/`Quiz.Matrix.Parser` entirely, so only two representative
+combinations are covered here, not all eight - see `matrixIndentation_Suite`
+for proof that the marker styles themselves are already independently
+verified). The opening `***` must directly follow the quiz's last line (here:
+the hint) - a blank line in between would prevent it from attaching and leave
+it as a separate, unrelated `Problem` block instead.
+-}
+matrixWithHintsAndSolution_Suite : Test
+matrixWithHintsAndSolution_Suite =
+    let
+        expect solutions answer =
+            [ Quiz []
+                { quiz =
+                    Matrix_Type
+                        { headers = [ [ chars "A" ], [ chars "B" ] ]
+                        , options = [ [ chars "Row1" ], [ chars "Row2" ] ]
+                        , solution = Array.fromList solutions
+                        }
+                , id = 0
+                , hints = [ [ paragraph "Here is a hint." ] ]
+                }
+                (Just ( answer, 0 ))
+            ]
+    in
+    describe "a trailing ***...*** answer block attaches after a matrix quiz's hint"
+        [ test "no indent, no dash, paren-style header, single-block answer" <|
+            \_ ->
+                {- [(A)(B)]
+                   [(X)( )] Row1
+                   [( )(X)] Row2
+                   [[?]] Here is a hint.
+                   ***
+
+                   an answer
+
+                   ***
+                -}
+                parse "[(A)(B)]\n[(X)( )] Row1\n[( )(X)] Row2\n[[?]] Here is a hint.\n***\n\nan answer\n\n***\n"
+                    |> Expect.equal
+                        (expect [ SingleChoice [ True, False ], SingleChoice [ False, True ] ] [ paragraph "an answer" ])
+        , test "indented, dash, bracket-style header, multi-block answer" <|
+            \_ ->
+                {- - [[A][B]]
+                       - [[X][ ]] Row1
+                       - [[ ][X]] Row2
+                   [[?]] Here is a hint.
+                   ***
+
+                   an answer from multiple
+
+                   blocks
+
+                   ***
+                -}
+                parse "    - [[A][B]]\n    - [[X][ ]] Row1\n    - [[ ][X]] Row2\n[[?]] Here is a hint.\n***\n\nan answer from multiple\n\nblocks\n\n***\n"
+                    |> Expect.equal
+                        (expect [ MultipleChoice [ True, False ], MultipleChoice [ False, True ] ]
+                            [ paragraph "an answer from multiple", paragraph "blocks" ]
+                        )
+        ]
+
+
 {-| A `[[...]]` blank with no `|` (a plain fill-in-the-blank, not a
 select/drag-and-drop list) embedded _within_ other chars text promotes
 the whole paragraph into a `Multi_Type` quiz. Note: this only works because
@@ -471,6 +847,7 @@ multiGapText_Suite =
     describe "generating gap-text (fill-in-the-blank) quizzes from inline [[...]] blanks"
         [ test "a blank embedded in a sentence promotes the paragraph to a Multi quiz" <|
             \_ ->
+                {- The capital of France is [[Paris]]. -}
                 parse "The capital of France is [[Paris]].\n"
                     |> Expect.equal
                         [ Quiz []
@@ -493,6 +870,7 @@ multiGapText_Suite =
                         ]
         , test "two blanks in one sentence become two ordered gaps in a single Multi quiz" <|
             \_ ->
+                {- The capital of [[France]] is [[Paris]]. -}
                 parse "The capital of [[France]] is [[Paris]].\n"
                     |> Expect.equal
                         [ Quiz []
@@ -517,6 +895,7 @@ multiGapText_Suite =
                         ]
         , test "a [[a|(b)|c]] blank embedded in a sentence becomes a select-dropdown gap" <|
             \_ ->
+                {- Pick one: [[foo|(bar)|baz]]. -}
                 parse "Pick one: [[foo|(bar)|baz]].\n"
                     |> Expect.equal
                         [ Quiz []
@@ -545,6 +924,7 @@ itemText_fuzz_Suite =
     describe "arbitrary option text is preserved as the option's paragraph content"
         [ fuzz words "wrapped in [[X]] ...\\n" <|
             \text ->
+                {- [[X]] example text -}
                 parse ("[[X]] " ++ text ++ "\n")
                     |> Expect.equal
                         [ Quiz []
@@ -560,6 +940,7 @@ itemText_fuzz_Suite =
                         ]
         , fuzz words "wrapped in [(X)] ...\\n" <|
             \text ->
+                {- [(X)] example text -}
                 parse ("[(X)] " ++ text ++ "\n")
                     |> Expect.equal
                         [ Quiz []
@@ -605,6 +986,7 @@ block_Suite =
     describe "generating standalone Block-type quizzes ([[text]] / [[a|(b)|c]] / [->[a|(b)|c]])"
         [ test "a plain [[text]] line becomes a text fill-in-the-blank quiz" <|
             \_ ->
+                {- [[Berlin]] -}
                 parse "[[Berlin]]\n"
                     |> Expect.equal
                         [ Quiz []
@@ -616,6 +998,7 @@ block_Suite =
                         ]
         , test "a [[a|(b)|c]] line becomes a select-dropdown quiz, correct option in parens" <|
             \_ ->
+                {- [[foo|(bar)|baz]] -}
                 parse "[[foo|(bar)|baz]]\n"
                     |> Expect.equal
                         [ Quiz []
@@ -631,6 +1014,7 @@ block_Suite =
                         ]
         , test "a [->[a|(b)|c]] line becomes a drag-and-drop quiz, correct option in parens" <|
             \_ ->
+                {- [->[foo|(bar)|baz]] -}
                 parse "[->[foo|(bar)|baz]]\n"
                     |> Expect.equal
                         [ Quiz []
@@ -662,6 +1046,12 @@ oneColumnDoesNotSwallowUnrelatedContent_Suite =
     describe "a standalone [[text]] quiz doesn't absorb an unrelated choice-list that happens to follow it"
         [ test "[[Berlin]], a blank line, then an unrelated single-choice list stay two separate quizzes" <|
             \_ ->
+                {- [[Berlin]]
+
+                   - [( )] test
+                   - [(X)] richtig
+                   - [( )] falsch
+                -}
                 parse "[[Berlin]]\n\n- [( )] test\n- [(X)] richtig\n- [( )] falsch\n"
                     |> Expect.equal
                         [ Quiz []
@@ -690,8 +1080,8 @@ required continuation indent is measured dynamically from each option's own
 marker column (not a fixed absolute amount) - so a group of sibling options
 that are all uniformly offset under a preceding question (to visually nest
 the whole list, with no per-option nesting intended) stay flat siblings of
-*each other*, since none of them is indented any further than the others.
-Content indented *further than that shared baseline* still nests as a
+_each other_, since none of them is indented any further than the others.
+Content indented _further than that shared baseline_ still nests as a
 sub-quiz of the preceding option instead (see `nestedQuiz_Suite` below) -
 this dynamic, per-marker baseline is what distinguishes the two cases,
 mirroring CommonMark's own list-item content-indentation rule.
@@ -701,6 +1091,12 @@ indentedOptions_Suite =
     describe "a quiz's options can all be indented by a shared constant amount, same as a plain list"
         [ test "single-choice options indented under a preceding question stay flat siblings of each other" <|
             \_ ->
+                {- What is the correct spelling of H(D)D?
+
+                   [(X)] hard disk drive
+                   [( )] hard desk drive
+                   [(x)] hard disc drive
+                -}
                 parse "What is the correct spelling of H(D)D?\n\n    [(X)] hard disk drive\n    [( )] hard desk drive\n    [(x)] hard disc drive\n"
                     |> Expect.equal
                         [ Paragraph [] [ chars "What is the correct spelling of H(D)D?" ]
@@ -721,6 +1117,9 @@ indentedOptions_Suite =
                         ]
         , test "multiple-choice options indented, with no preceding paragraph at all, also stay flat siblings" <|
             \_ ->
+                {- [[X]] one
+                   [[ ]] two
+                -}
                 parse "    [[X]] one\n    [[ ]] two\n"
                     |> Expect.equal
                         [ Quiz []
@@ -736,6 +1135,7 @@ indentedOptions_Suite =
                         ]
         , test "only the first option's own marker may be indented on its own, staying a single flat option" <|
             \_ ->
+                {- [[X]] one -}
                 parse "    [[X]] one\n"
                     |> Expect.equal
                         [ Quiz []
@@ -754,16 +1154,24 @@ indentedOptions_Suite =
 
 {-| An option's block content may itself contain a nested Quiz, to build a
 sub-question that only makes sense once the outer option is picked. The
-nested quiz's marker must be indented *further* than its enclosing option's
+nested quiz's marker must be indented _further_ than its enclosing option's
 own marker column (here: `- [(X)]` starts at column 0, so 4 spaces is enough)
-- see `indentedOptions_Suite` above for the sibling-vs-nested distinction this
-relies on.
+
+  - see `indentedOptions_Suite` above for the sibling-vs-nested distinction this
+    relies on.
+
 -}
 nestedQuiz_Suite : Test
 nestedQuiz_Suite =
     describe "an option's content may itself contain a nested Quiz"
         [ test "a single-choice option containing a nested multiple-choice quiz" <|
             \_ ->
+                {- [(X)] dies ist ein absatz
+
+                   das ist ein anderer absatz
+
+                   [[X]] eine zeile mit einrückung
+                -}
                 parse "[(X)] dies ist ein absatz\n\n    das ist ein anderer absatz\n\n    [[X]] eine zeile mit einrückung\n"
                     |> Expect.equal
                         [ Quiz []
@@ -794,6 +1202,76 @@ nestedQuiz_Suite =
         ]
 
 
+{-| Regression coverage for an off-by-one in the dynamic per-option indent
+measurement (see `Vector.Parser.item`'s `withColumn` usage): `Combine`
+columns are 0-indexed, not 1-indexed, so a naive `col - 1 + 4` computed one
+space too few, causing an option's fenced code block (which - unlike a plain
+paragraph or list - requires its indentation to match _exactly_, with zero
+tolerance) to fail to parse as nested content and fall back to garbled inline
+text instead.
+-}
+optionWithCodeFence_Suite : Test
+optionWithCodeFence_Suite =
+    describe "an option's content may contain a fenced code block"
+        [ test "a single-choice option containing a highlighted JS code fence" <|
+            \_ ->
+                {- [( )] Beispiel 1
+
+                   ``` js
+                   console.log("hi")
+                   ```
+                -}
+                parse "[( )] Beispiel 1\n\n    ``` js\n    console.log(\"hi\")\n    ```\n"
+                    |> Expect.equal
+                        [ Quiz []
+                            { quiz =
+                                Vector_Type
+                                    { options = [ [ paragraph "Beispiel 1", Code (Code.Highlight 0) ] ]
+                                    , solution = SingleChoice [ False ]
+                                    }
+                            , id = 0
+                            , hints = []
+                            }
+                            Nothing
+                        ]
+        , test "three single-choice options each containing their own code fence stay flat siblings" <|
+            \_ ->
+                {- -[( )] Beispiel 1
+
+                       ``` js
+                       console.log(1)
+                       ```
+                   -[(X)] Beispiel 2
+
+                       ``` js
+                       console.log(2)
+                       ```
+                   -[( )] Beispiel 3
+
+                       ``` js
+                       console.log(3)
+                       ```
+                -}
+                parse "-[( )] Beispiel 1\n\n    ``` js\n    console.log(1)\n    ```\n-[(X)] Beispiel 2\n\n    ``` js\n    console.log(2)\n    ```\n-[( )] Beispiel 3\n\n    ``` js\n    console.log(3)\n    ```\n"
+                    |> Expect.equal
+                        [ Quiz []
+                            { quiz =
+                                Vector_Type
+                                    { options =
+                                        [ [ paragraph "Beispiel 1", Code (Code.Highlight 0) ]
+                                        , [ paragraph "Beispiel 2", Code (Code.Highlight 1) ]
+                                        , [ paragraph "Beispiel 3", Code (Code.Highlight 2) ]
+                                        ]
+                                    , solution = SingleChoice [ False, True, False ]
+                                    }
+                            , id = 0
+                            , hints = []
+                            }
+                            Nothing
+                        ]
+        ]
+
+
 {-| Every quiz type - not just the `Vector_Type` covered by
 `indentedOptions_Suite` above - accepts being shifted right by a shared
 4-space indent, exactly like a plain Markdown list or paragraph would. This
@@ -805,6 +1283,9 @@ indentedQuizTypes_Suite =
     describe "quizzes of every type can be indented by 4 spaces"
         [ test "a matrix quiz, header and row both indented" <|
             \_ ->
+                {- [(ColA)(ColB)]
+                   [(X)( )] Row1
+                -}
                 parse "    [(ColA)(ColB)]\n    [(X)( )] Row1\n"
                     |> Expect.equal
                         [ Quiz []
@@ -821,6 +1302,7 @@ indentedQuizTypes_Suite =
                         ]
         , test "a standalone [[text]] fill-in-the-blank quiz, indented" <|
             \_ ->
+                {- [[Berlin]] -}
                 parse "    [[Berlin]]\n"
                     |> Expect.equal
                         [ Quiz []
@@ -832,6 +1314,7 @@ indentedQuizTypes_Suite =
                         ]
         , test "a generic (no-solution) [[!]] marker, indented" <|
             \_ ->
+                {- [[!]] -}
                 parse "    [[!]]\n"
                     |> Expect.equal
                         [ Quiz [] { quiz = Generic_Type, id = 0, hints = [] } Nothing ]
