@@ -28,7 +28,7 @@ type Block
     | Quiz Parameters (Quiz Block) (Maybe ( Blocks, Int ))
     | Effect Parameters (Effect Block)
     | Comment ( Int, Int )
-    | Survey Parameters Survey
+    | Survey Parameters (Survey Block)
     | Chart Parameters Chart
     | Code Code
     | Task Parameters (Task Block)

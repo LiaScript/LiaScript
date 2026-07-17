@@ -7,7 +7,6 @@ module Lia.Markdown.Quiz.Json exposing
 import Array
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Inline.Json.Encode as Inline
 import Lia.Markdown.Quiz.Block.Json as Block
 import Lia.Markdown.Quiz.Matrix.Json as Matrix
 import Lia.Markdown.Quiz.Multi.Json as Multi
@@ -16,8 +15,8 @@ import Lia.Markdown.Quiz.Types exposing (Element, Quiz, State(..), Type(..), Vec
 import Lia.Markdown.Quiz.Vector.Json as Vector
 
 
-encode : Quiz x -> JE.Value
-encode quiz =
+encode : (x -> JE.Value) -> Quiz x -> JE.Value
+encode encoder quiz =
     JE.object
         [ case quiz.quiz of
             Generic_Type ->
@@ -30,12 +29,12 @@ encode quiz =
                 Multi.encode multi
 
             Vector_Type vector ->
-                Vector.encode vector
+                Vector.encode encoder vector
 
             Matrix_Type matrix ->
                 Matrix.encode matrix
         , ( "id", JE.int quiz.id )
-        , ( "hints", JE.list Inline.encode quiz.hints )
+        , ( "hints", JE.list (JE.list encoder) quiz.hints )
         ]
 
 

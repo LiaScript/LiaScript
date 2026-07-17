@@ -28,19 +28,20 @@ import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (eScript, parse_inlines)
-import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Block.Parser as Block
 import Lia.Markdown.Quiz.Matrix.Parser as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types
     exposing
-        ( Options
+        ( Hints
+        , Options
         , Quiz
         , Type(..)
         , initState
         )
 import Lia.Markdown.Quiz.Vector.Parser as Vector
+import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
@@ -50,23 +51,24 @@ import Lia.Utils as Utils
 import PseudoRandom
 
 
-parse : Parameters -> Parser Context (Quiz x)
-parse attr =
+parse : Parser Context Markdown.Block -> Parameters -> Parser Context (Quiz Markdown.Block)
+parse blocks attr =
     [ map Matrix_Type Matrix.parse
-    , map Vector_Type Vector.parse
+    , map Vector_Type (Vector.parse blocks)
     , onsuccess Generic_Type generic
     , map Block_Type (Block.parse parse_inlines)
     ]
         |> choice
-        |> andThen adds
+        |> andThen (adds blocks)
         |> andThen (modify_State Nothing attr)
 
 
-gapText scriptID attr block =
+gapText : Parser Context Markdown.Block -> Maybe Int -> Parameters -> Markdown.Block -> Parser Context (Quiz Markdown.Block)
+gapText blocks scriptID attr block =
     Input.pop
         |> map (\q -> { q | elements = [ block ] })
         |> map Multi_Type
-        |> andThen adds
+        |> andThen (adds blocks)
         |> andThen (modify_State scriptID attr)
 
 
@@ -111,10 +113,10 @@ randomize typeOf seed =
             Nothing
 
 
-adds : Type x -> Parser Context (Quiz x)
-adds type_ =
+adds : Parser Context Markdown.Block -> Type Markdown.Block -> Parser Context (Quiz Markdown.Block)
+adds blocks type_ =
     map (Quiz type_) get_counter
-        |> andMap hints
+        |> andMap (hints blocks)
 
 
 get_counter : Parser Context Int
@@ -131,10 +133,10 @@ generic =
         |> skip
 
 
-hints : Parser Context (List Inlines)
-hints =
+hints : Parser Context Markdown.Block -> Parser Context (Hints Markdown.Block)
+hints blocks =
     string "[?]"
-        |> Vector.group
+        |> Vector.blockGroup blocks
         |> map Tuple.second
         |> optional []
 

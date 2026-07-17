@@ -136,9 +136,9 @@ elements =
         , horizontal_line
         , md_annotations
             |> map Markdown.Survey
-            |> andMap Survey.parse
+            |> andMap (Survey.parse blocks)
         , md_annotations
-            |> andThen (\attr -> Quiz.parse attr |> map (Markdown.Quiz attr))
+            |> andThen (\attr -> Quiz.parse blocks attr |> map (Markdown.Quiz attr))
             |> andMap solution
         , md_annotations
             |> map Markdown.Task
@@ -247,7 +247,7 @@ toQuiz ( md, isQuiz ) =
 
 
 toQuiz_ scriptID attr =
-    Quiz.gapText scriptID attr
+    Quiz.gapText blocks scriptID attr
         >> map (Markdown.Quiz attr)
         >> andMap solution
 

@@ -49,6 +49,8 @@ import Lia.Markdown.Survey.Update
         , Msg(..)
         , SelectMsg(..)
         )
+import Lia.Markdown.Types as Markdown
+import Lia.Markdown.Update as Main
 import Lia.Sync.Types as Sync_
 import Lia.Utils
     exposing
@@ -58,34 +60,45 @@ import Lia.Utils
         , string2Color
         )
 import List.Extra
-import Return exposing (val)
 
 
-view : Config sub -> Parameters -> Survey -> Vector -> ( Maybe Int, Html (Msg sub) )
-view config attr survey model =
+{-| Main Survey view function. `renderedOptions` (used only for `Vector`) is
+pre-rendered by the caller (`Lia.Markdown.View`, which recursively renders
+nested `Block` content via `viewBlocks`), one `List (Html Main.Msg)` per
+option - exactly as with Task-list items and Quiz-Vector options.
+-}
+view : Config Main.Msg -> Parameters -> Survey Markdown.Block -> Vector -> List ( String, List (Html Main.Msg) ) -> ( Maybe Int, Html Main.Msg )
+view config attr survey model renderedOptions =
     ( model
         |> Array.get survey.id
         |> Maybe.andThen .scriptID
     , case survey.survey of
         Text lines ->
-            view_text config (get_text_state model survey.id) lines survey.id
+            (view_text config (get_text_state model survey.id) lines survey.id
+                >> Html.map Main.UpdateSurvey
+            )
                 |> view_survey config attr "text" model survey.id
                 |> viewTextSync config lines (getSync config survey.id)
 
         Select inlines ->
-            view_select config inlines (get_select_state model survey.id) survey.id
+            (view_select config inlines (get_select_state model survey.id) survey.id
+                >> Html.map Main.UpdateSurvey
+            )
                 |> view_survey config attr "select" model survey.id
                 |> viewSelectSync config inlines (getSync config survey.id)
 
         DragAndDrop inlines ->
-            view_drop config inlines (get_drop_state model survey.id) survey.id
+            (view_drop config inlines (get_drop_state model survey.id) survey.id
+                >> Html.map Main.UpdateSurvey
+            )
                 |> view_survey config attr "drop" model survey.id
                 |> viewSelectSync config inlines (getSync config survey.id)
 
         Vector button questions analysis ->
-            vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
-                |> view_vector questions
-                |> view_survey config
+            vector button (VectorUpdate survey.id) (get_vector_state model survey.id)
+                |> view_vector renderedOptions
+                |> view_survey
+                    config
                     attr
                     (if button then
                         "single-choice"
@@ -98,8 +111,10 @@ view config attr survey model =
                 |> viewVectorSync config analysis questions (getSync config survey.id)
 
         Matrix button header vars questions ->
-            matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
+            (matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
                 |> view_matrix config header questions
+            )
+                >> Html.map Main.UpdateSurvey
                 |> view_survey config attr "matrix" model survey.id
                 |> viewMatrixSync config questions vars (getSync config survey.id)
     )
@@ -146,7 +161,7 @@ viewTextSync config lines syncData survey =
             Html.div [] [ survey ]
 
 
-viewVectorSync : Config sub -> Analysis -> List ( String, Inlines ) -> Maybe (List Sync) -> Html msg -> Html msg
+viewVectorSync : Config sub -> Analysis -> List ( String, body ) -> Maybe (List Sync) -> Html msg -> Html msg
 viewVectorSync config analyze questions syncData survey =
     case
         syncData
@@ -519,13 +534,13 @@ viewError message =
 
 
 view_survey :
-    Config sub
+    Config Main.Msg
     -> Parameters
     -> String
     -> Vector
     -> Int
-    -> (Bool -> Html (Msg sub))
-    -> Html (Msg sub)
+    -> (Bool -> Html Main.Msg)
+    -> Html Main.Msg
 view_survey config attr class model idx fn =
     let
         submitted =
@@ -552,7 +567,7 @@ view_survey config attr class model idx fn =
         ]
 
 
-submit_button : Config sub -> Bool -> Int -> Html (Msg sub)
+submit_button : Config Main.Msg -> Bool -> Int -> Html Main.Msg
 submit_button config submitted idx =
     Html.div [ Attr.class "lia-quiz__control" ]
         [ if submitted then
@@ -568,7 +583,7 @@ submit_button config submitted idx =
 
           else
             btn
-                { msg = Just <| Submit idx
+                { msg = Just <| Main.UpdateSurvey (Submit idx)
                 , tabbable = True
                 , title = surveySubmit config.lang
                 }
@@ -873,13 +888,13 @@ view_text config str lines idx submitted =
                 []
 
 
-view_vector : List ( String, Inlines ) -> (Bool -> ( String, Inlines ) -> Html (Msg sub)) -> Bool -> Html (Msg sub)
-view_vector questions fn submitted =
+view_vector : List ( String, List (Html Main.Msg) ) -> (Bool -> ( String, List (Html Main.Msg) ) -> Html Main.Msg) -> Bool -> Html Main.Msg
+view_vector options fn submitted =
     let
         fnX =
             fn submitted
     in
-    List.map fnX questions
+    List.map fnX options
         |> Html.div [ Attr.class "lia-quiz__answers" ]
 
 
@@ -909,21 +924,17 @@ view_matrix config header questions fn submitted =
 
 
 vector :
-    Config sub
-    -> Bool
-    -> (String -> Msg sub)
+    Bool
+    -> (String -> Msg Main.Msg)
     -> (String -> Bool)
     -> Bool
-    -> ( String, Inlines )
-    -> Html (Msg sub)
-vector config button msg fn submitted ( var, elements ) =
-    let
-        state =
-            fn var
-    in
-    Html.label [ Attr.class "lia-label" ]
-        [ input button (msg var) state submitted
-        , Html.span [] [ inline config elements ]
+    -> ( String, List (Html Main.Msg) )
+    -> Html Main.Msg
+vector button msg fn submitted ( var, body ) =
+    Html.label [ Attr.class "lia-label lia-label--top" ]
+        [ input button (msg var) (fn var) submitted
+            |> Html.map Main.UpdateSurvey
+        , Html.div [ Attr.style "width" "100%" ] body
         ]
 
 

@@ -63,6 +63,7 @@ import Lia.Markdown.Quiz.Types
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
 import Lia.Markdown.Types as Markdown
+import Lia.Markdown.Update as Main
 import Lia.Sync.Types as Sync
 import Lia.Utils
     exposing
@@ -79,15 +80,19 @@ syncAttributes =
     [ ( "style", "height: 150px; width: 100%" ), ( "class", "lia-quiz__sync" ) ]
 
 
-{-| Main Quiz view function.
+{-| Main Quiz view function. `renderedOptions` (used only for `Vector_Type`) and
+`renderedHints` are pre-rendered by the caller (`Lia.Markdown.View`, which
+recursively renders nested `Block` content via `viewBlocks`), since the block
+content may itself contain arbitrary Markdown constructs that only the top-level
+renderer knows how to display.
 -}
-view : Config sub -> Maybe String -> Quiz Markdown.Block -> Vector -> ( Maybe Int, List (Html (Msg sub)) )
-view config labeledBy quiz vector =
+view : Config Main.Msg -> Maybe String -> Quiz Markdown.Block -> Vector -> List (List (Html Main.Msg)) -> List (List (Html Main.Msg)) -> ( Maybe Int, List (Html Main.Msg) )
+view config labeledBy quiz vector renderedOptions renderedHints =
     case Array.get quiz.id vector of
         Just elem ->
             ( elem.scriptID
-            , viewState config elem quiz
-                |> viewQuiz config labeledBy elem quiz
+            , viewState config elem quiz renderedOptions
+                |> viewQuiz config labeledBy elem quiz renderedHints
                 |> viewSync config (Sync.get config.sync .quiz config.slide quiz.id)
             )
 
@@ -95,7 +100,7 @@ view config labeledBy quiz vector =
             ( Nothing, [] )
 
 
-maybeConfig : Config sub -> Quiz Markdown.Block -> Vector -> Maybe ( Config sub, Markdown.Block, Maybe (List Int) )
+maybeConfig : Config Main.Msg -> Quiz Markdown.Block -> Vector -> Maybe ( Config Main.Msg, Markdown.Block, Maybe (List Int) )
 maybeConfig config quiz vector =
     case ( Array.get quiz.id vector, quiz.quiz ) of
         ( Just elem, Multi_Type q ) ->
@@ -250,32 +255,33 @@ class id =
 
 
 {-| **private:** Simple router function that is used to match the current state
-of a quiz with its type.
+of a quiz with its type. `renderedOptions` is only used by the `Vector_Type`
+branch (pre-rendered option content, see `view`).
 -}
 viewState :
-    Config sub
+    Config Main.Msg
     -> Element
     -> Quiz x
-    -> ( List (Attribute (Msg sub)), List (Html (Msg sub)) )
-viewState config elem quiz =
+    -> List (List (Html Main.Msg))
+    -> ( List (Attribute Main.Msg), List (Html Main.Msg) )
+viewState config elem quiz renderedOptions =
     case ( elem.state, quiz.quiz ) of
         ( Block_State s, Block_Type q ) ->
             ( []
             , s
                 |> Block.view config elem.opt.randomize ( elem.solved, elem.trial ) q
-                |> List.map (Html.map (Block_Update quiz.id))
+                |> List.map (Html.map (Block_Update quiz.id >> Main.UpdateQuiz))
             )
 
         ( Vector_State s, Vector_Type q ) ->
-            s
-                |> Vector.view config
-                    (elem.solved == Solution.Open)
-                    (Solution.toClass ( elem.solved, elem.trial ) Nothing)
-                    q
-                |> Tuple.mapSecond
-                    (shuffle elem.opt.randomize
-                        >> List.map (Html.map (Vector_Update quiz.id))
-                    )
+            Vector.view
+                (elem.solved == Solution.Open)
+                (Solution.toClass ( elem.solved, elem.trial ) Nothing)
+                quiz.id
+                q
+                s
+                renderedOptions
+                |> Tuple.mapSecond (shuffle elem.opt.randomize)
 
         ( Matrix_State s, Matrix_Type q ) ->
             ( []
@@ -288,7 +294,7 @@ viewState config elem quiz =
                 , partiallySolved = elem.partiallySolved
                 }
                     |> Matrix.view
-                    |> Html.map (Matrix_Update quiz.id)
+                    |> Html.map (Matrix_Update quiz.id >> Main.UpdateQuiz)
               ]
             )
 
@@ -308,13 +314,14 @@ viewState config elem quiz =
 
 -}
 viewQuiz :
-    Config sub
+    Config Main.Msg
     -> Maybe String
     -> Element
     -> Quiz Markdown.Block
-    -> ( List (Attribute (Msg sub)), List (Html (Msg sub)) )
-    -> List (Html (Msg sub))
-viewQuiz config labeledBy state quiz ( attr, body ) =
+    -> List (List (Html Main.Msg))
+    -> ( List (Attribute Main.Msg), List (Html Main.Msg) )
+    -> List (Html Main.Msg)
+viewQuiz config labeledBy state quiz renderedHints ( attr, body ) =
     [ Html.div
         (Attr.class "lia-quiz__answers"
             :: (labeledBy
@@ -326,11 +333,11 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
         )
         body
     , Html.div [ Attr.class "lia-quiz__control" ]
-        [ viewMainButton config state.trial state.deactivated state.solved (Check quiz.id quiz.quiz)
+        [ viewMainButton config state.trial state.deactivated state.solved quiz.id quiz.quiz
         , viewSolutionButton
             { config = config
             , solution = state.solved
-            , msg = ShowSolution quiz.id quiz.quiz
+            , msg = Main.UpdateQuiz (ShowSolution quiz.id quiz.quiz)
             , hidden = state.trial < state.opt.showResolveAt
             , deactivated = state.deactivated
             }
@@ -342,7 +349,7 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
             }
         ]
     , viewFeedback config state
-    , viewHints config state.hint quiz.hints
+    , viewHints state.hint renderedHints
     ]
 
 
@@ -374,7 +381,7 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
 -}
 
 
-viewFeedback : Config sub -> Element -> Html (Msg sub)
+viewFeedback : Config Main.Msg -> Element -> Html Main.Msg
 viewFeedback config state =
     if state.error_msg /= "" then
         Html.div [ Attr.class "lia-quiz__feedback text-error", A11y_Live.polite ]
@@ -413,13 +420,13 @@ viewFeedback config state =
                         ]
 
 
-showCustomFeedback : Config sub -> Maybe Inlines -> (Lang -> String) -> Html (Msg sub)
+showCustomFeedback : Config Main.Msg -> Maybe Inlines -> (Lang -> String) -> Html Main.Msg
 showCustomFeedback config custom default =
     custom
         |> Maybe.map
             (viewer config
                 >> Html.div []
-                >> Html.map Script
+                >> Html.map (Script >> Main.UpdateQuiz)
             )
         |> Maybe.withDefault
             (config.lang
@@ -431,7 +438,7 @@ showCustomFeedback config custom default =
 {-| **private:** Show the solution button only if the quiz has not been solved
 yet.
 -}
-viewSolutionButton : { config : Config sub, hidden : Bool, solution : Solution, msg : Msg sub, deactivated : Bool } -> Html (Msg sub)
+viewSolutionButton : { config : Config Main.Msg, hidden : Bool, solution : Solution, msg : Main.Msg, deactivated : Bool } -> Html Main.Msg
 viewSolutionButton { config, hidden, solution, msg, deactivated } =
     btnIcon
         { title = quizSolution config.lang
@@ -455,13 +462,13 @@ viewSolutionButton { config, hidden, solution, msg, deactivated } =
 {-| **private:** Show the main check-button to compare the current state of the
 quiz with the solution state. The number of trials is automatically added.
 -}
-viewMainButton : Config sub -> Int -> Bool -> Solution -> Msg sub -> Html (Msg sub)
-viewMainButton config trials isDeactivated solution msg =
+viewMainButton : Config Main.Msg -> Int -> Bool -> Solution -> Int -> Type Markdown.Block -> Html Main.Msg
+viewMainButton config trials isDeactivated solution quizId typeOf =
     btn
         { title = ""
         , msg =
             if solution == Solution.Open && not isDeactivated then
-                Just msg
+                Just (Main.UpdateQuiz (Check quizId typeOf))
 
             else
                 Nothing
@@ -483,33 +490,32 @@ shown within a list and an additional button will be displayed to reveal more
 hints, if there are still hints not shown to the user and if the quiz has not
 been solved yet.
 -}
-viewHints : Config sub -> Int -> List Inlines -> Html (Msg sub)
-viewHints config counter hints =
+viewHints : Int -> List (List (Html Main.Msg)) -> Html Main.Msg
+viewHints counter hints =
     if List.isEmpty hints then
         Html.text ""
 
     else
         hints
             |> List.take counter
-            |> List.map (viewer config >> Html.li [])
+            |> List.map (Html.li [])
             |> Html.ul
                 [ Attr.class "lia-list--unordered lia-quiz__hints"
                 , A11y_Live.polite
                 ]
-            |> Html.map Script
 
 
 {-| **private:** Show a generic hint button, every time it is clicked it will
 reveal another hint from the list.
 -}
-viewHintButton : { id : Int, show : Bool, active : Bool, title : String } -> Html (Msg sub)
+viewHintButton : { id : Int, show : Bool, active : Bool, title : String } -> Html Main.Msg
 viewHintButton { id, show, active, title } =
     if show then
         btnIcon
             { title = title
             , msg =
                 if active then
-                    Just (ShowHint id)
+                    Just (Main.UpdateQuiz (ShowHint id))
 
                 else
                     Nothing
