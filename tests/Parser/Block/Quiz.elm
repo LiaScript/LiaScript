@@ -9,6 +9,7 @@ module Parser.Block.Quiz exposing
     , matrix_Suite
     , multiGapText_Suite
     , multipleChoice_Suite
+    , nestedQuiz_Suite
     , oneColumnDoesNotSwallowUnrelatedContent_Suite
     , singleChoice_Suite
     )
@@ -21,7 +22,7 @@ import Lia.Markdown.Quiz.Types exposing (Type(..))
 import Lia.Markdown.Quiz.Vector.Types exposing (State(..))
 import Lia.Markdown.Types exposing (Block(..))
 import LiaFuzz exposing (fuzzRegex, words)
-import Parser.Block.Fixtures exposing (paragraph, parse)
+import Parser.Block.Fixtures exposing (bulletList, paragraph, parse)
 import Parser.Inline.Fixtures exposing (chars)
 import Test exposing (Test, describe, fuzz, test)
 
@@ -36,7 +37,7 @@ multipleChoice_Suite =
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "correct" ], [ chars "wrong" ] ]
+                                    { options = [ [ paragraph "correct" ], [ paragraph "wrong" ] ]
                                     , solution = MultipleChoice [ True, False ]
                                     }
                             , id = 0
@@ -51,7 +52,7 @@ multipleChoice_Suite =
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "one" ], [ chars "two" ], [ chars "three" ] ]
+                                    { options = [ [ paragraph "one" ], [ paragraph "two" ], [ paragraph "three" ] ]
                                     , solution = MultipleChoice [ True, True, False ]
                                     }
                             , id = 0
@@ -66,7 +67,7 @@ multipleChoice_Suite =
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "correct" ], [ chars "wrong" ], [ chars "also correct" ] ]
+                                    { options = [ [ paragraph "correct" ], [ paragraph "wrong" ], [ paragraph "also correct" ] ]
                                     , solution = MultipleChoice [ True, False, True ]
                                     }
                             , id = 0
@@ -74,14 +75,29 @@ multipleChoice_Suite =
                             }
                             Nothing
                         ]
-        , test "a blank line ends the option list; indented text after it is not absorbed as a continuation" <|
+        , test "a blank line followed by matching (4-space) indentation continues the option as a second paragraph" <|
             \_ ->
                 parse "[[X]] correct\n\n    continued\n[[ ]] wrong\n"
                     |> Expect.equal
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "correct" ] ]
+                                    { options = [ [ paragraph "correct", paragraph "continued" ], [ paragraph "wrong" ] ]
+                                    , solution = MultipleChoice [ True, False ]
+                                    }
+                            , id = 0
+                            , hints = []
+                            }
+                            Nothing
+                        ]
+        , test "a blank line followed by insufficient indentation still ends the option list; indented text after it is not absorbed as a continuation" <|
+            \_ ->
+                parse "[[X]] correct\n\n  continued\n[[ ]] wrong\n"
+                    |> Expect.equal
+                        [ Quiz []
+                            { quiz =
+                                Vector_Type
+                                    { options = [ [ paragraph "correct" ] ]
                                     , solution = MultipleChoice [ True ]
                                     }
                             , id = 0
@@ -89,6 +105,36 @@ multipleChoice_Suite =
                             }
                             Nothing
                         , paragraph "continued [[ ]] wrong"
+                        ]
+        , test "a bare marker with no content on the same line fails as a Vector option, falls through to Block_Type" <|
+            \_ ->
+                parse "[[X]]\n"
+                    |> Expect.equal
+                        [ Quiz []
+                            { quiz = Block_Type { options = [], solution = Block.Text "X" }
+                            , id = 0
+                            , hints = []
+                            }
+                            Nothing
+                        ]
+        , test "an option's content may contain a nested bullet list, as a second block" <|
+            \_ ->
+                parse "[[X]] correct\n\n    - one\n    - two\n"
+                    |> Expect.equal
+                        [ Quiz []
+                            { quiz =
+                                Vector_Type
+                                    { options =
+                                        [ [ paragraph "correct"
+                                          , bulletList [ "one", "two" ]
+                                          ]
+                                        ]
+                                    , solution = MultipleChoice [ True ]
+                                    }
+                            , id = 0
+                            , hints = []
+                            }
+                            Nothing
                         ]
         ]
 
@@ -103,7 +149,7 @@ singleChoice_Suite =
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "correct" ], [ chars "wrong" ] ]
+                                    { options = [ [ paragraph "correct" ], [ paragraph "wrong" ] ]
                                     , solution = SingleChoice [ True, False ]
                                     }
                             , id = 0
@@ -118,7 +164,7 @@ singleChoice_Suite =
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "one" ], [ chars "two" ], [ chars "three" ] ]
+                                    { options = [ [ paragraph "one" ], [ paragraph "two" ], [ paragraph "three" ] ]
                                     , solution = SingleChoice [ False, True, False ]
                                     }
                             , id = 0
@@ -133,7 +179,7 @@ singleChoice_Suite =
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "correct" ], [ chars "wrong" ], [ chars "also wrong" ] ]
+                                    { options = [ [ paragraph "correct" ], [ paragraph "wrong" ], [ paragraph "also wrong" ] ]
                                     , solution = SingleChoice [ True, False, False ]
                                     }
                             , id = 0
@@ -141,14 +187,29 @@ singleChoice_Suite =
                             }
                             Nothing
                         ]
-        , test "a blank line ends the option list; indented text after it is not absorbed as a continuation" <|
+        , test "a blank line followed by matching (4-space) indentation continues the option as a second paragraph" <|
             \_ ->
                 parse "[(X)] correct\n\n    continued\n[( )] wrong\n"
                     |> Expect.equal
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "correct" ] ]
+                                    { options = [ [ paragraph "correct", paragraph "continued" ], [ paragraph "wrong" ] ]
+                                    , solution = SingleChoice [ True, False ]
+                                    }
+                            , id = 0
+                            , hints = []
+                            }
+                            Nothing
+                        ]
+        , test "a blank line followed by insufficient indentation still ends the option list; indented text after it is not absorbed as a continuation" <|
+            \_ ->
+                parse "[(X)] correct\n\n  continued\n[( )] wrong\n"
+                    |> Expect.equal
+                        [ Quiz []
+                            { quiz =
+                                Vector_Type
+                                    { options = [ [ paragraph "correct" ] ]
                                     , solution = SingleChoice [ True ]
                                     }
                             , id = 0
@@ -173,7 +234,7 @@ checkedCase_fuzz_Suite =
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "correct" ] ]
+                                    { options = [ [ paragraph "correct" ] ]
                                     , solution = MultipleChoice [ True ]
                                     }
                             , id = 0
@@ -188,7 +249,7 @@ checkedCase_fuzz_Suite =
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "correct" ] ]
+                                    { options = [ [ paragraph "correct" ] ]
                                     , solution = SingleChoice [ True ]
                                     }
                             , id = 0
@@ -199,7 +260,10 @@ checkedCase_fuzz_Suite =
         ]
 
 
-{-| Trailing `[[?]]`-marked blocks attach as hints to the preceding quiz.
+{-| Trailing `[[?]]`-marked blocks attach as hints to the preceding quiz. Like
+Vector-options, a hint's content may span multiple blocks (see the
+multi-paragraph case below), indented by 4 spaces relative to its `[[?]]`
+marker.
 -}
 hints_Suite : Test
 hints_Suite =
@@ -211,11 +275,11 @@ hints_Suite =
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "correct" ], [ chars "wrong" ] ]
+                                    { options = [ [ paragraph "correct" ], [ paragraph "wrong" ] ]
                                     , solution = MultipleChoice [ True, False ]
                                     }
                             , id = 0
-                            , hints = [ [ chars "Here is a hint." ] ]
+                            , hints = [ [ paragraph "Here is a hint." ] ]
                             }
                             Nothing
                         ]
@@ -226,11 +290,29 @@ hints_Suite =
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "correct" ], [ chars "wrong" ] ]
+                                    { options = [ [ paragraph "correct" ], [ paragraph "wrong" ] ]
                                     , solution = MultipleChoice [ True, False ]
                                     }
                             , id = 0
-                            , hints = [ [ chars "First hint." ], [ chars "Second hint." ] ]
+                            , hints = [ [ paragraph "First hint." ], [ paragraph "Second hint." ] ]
+                            }
+                            Nothing
+                        ]
+        , test "a hint's content may span multiple paragraphs" <|
+            \_ ->
+                parse "[[X]] correct\n[[ ]] wrong\n[[?]] hint one\n\n    hint continued\n[[?]] hint two\n"
+                    |> Expect.equal
+                        [ Quiz []
+                            { quiz =
+                                Vector_Type
+                                    { options = [ [ paragraph "correct" ], [ paragraph "wrong" ] ]
+                                    , solution = MultipleChoice [ True, False ]
+                                    }
+                            , id = 0
+                            , hints =
+                                [ [ paragraph "hint one", paragraph "hint continued" ]
+                                , [ paragraph "hint two" ]
+                                ]
                             }
                             Nothing
                         ]
@@ -468,7 +550,7 @@ itemText_fuzz_Suite =
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars text ] ]
+                                    { options = [ [ paragraph text ] ]
                                     , solution = MultipleChoice [ True ]
                                     }
                             , id = 0
@@ -483,7 +565,7 @@ itemText_fuzz_Suite =
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars text ] ]
+                                    { options = [ [ paragraph text ] ]
                                     , solution = SingleChoice [ True ]
                                     }
                             , id = 0
@@ -591,7 +673,7 @@ oneColumnDoesNotSwallowUnrelatedContent_Suite =
                         , Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "test" ], [ chars "richtig" ], [ chars "falsch" ] ]
+                                    { options = [ [ paragraph "test" ], [ paragraph "richtig" ], [ paragraph "falsch" ] ]
                                     , solution = SingleChoice [ False, True, False ]
                                     }
                             , id = 1
@@ -602,22 +684,22 @@ oneColumnDoesNotSwallowUnrelatedContent_Suite =
         ]
 
 
-{-| A quiz's options may all be indented by a shared constant amount (e.g. to
-visually nest a `[(X)]`/`[( )]` list under a preceding question paragraph),
-same as a plain paragraph or list can be - `Lia.Markdown.Quiz.Vector.Parser`
-runs each option through `Indent.check`, which strips exactly this kind of
-shared leading indentation before matching the `[(...)]`/`[[...]]` marker.
-
-Note this is a different case from a blank line splitting the list (see the
-"a blank line ends the option list ..." cases in `multipleChoice_Suite`/
-`singleChoice_Suite` above): each option here is still its own single line,
-just uniformly shifted right - `Vector.Parser` only ever parses one `Inlines`
-line per option, it doesn't support a multi-paragraph option body.
+{-| A quiz option's content is indented relative to its own marker, exactly
+like a Task-list item's content (see `Task.Parser`/`Vector.Parser.item`). The
+required continuation indent is measured dynamically from each option's own
+marker column (not a fixed absolute amount) - so a group of sibling options
+that are all uniformly offset under a preceding question (to visually nest
+the whole list, with no per-option nesting intended) stay flat siblings of
+*each other*, since none of them is indented any further than the others.
+Content indented *further than that shared baseline* still nests as a
+sub-quiz of the preceding option instead (see `nestedQuiz_Suite` below) -
+this dynamic, per-marker baseline is what distinguishes the two cases,
+mirroring CommonMark's own list-item content-indentation rule.
 -}
 indentedOptions_Suite : Test
 indentedOptions_Suite =
     describe "a quiz's options can all be indented by a shared constant amount, same as a plain list"
-        [ test "single-choice options indented under a preceding question, no blank line inside the list" <|
+        [ test "single-choice options indented under a preceding question stay flat siblings of each other" <|
             \_ ->
                 parse "What is the correct spelling of H(D)D?\n\n    [(X)] hard disk drive\n    [( )] hard desk drive\n    [(x)] hard disc drive\n"
                     |> Expect.equal
@@ -626,9 +708,9 @@ indentedOptions_Suite =
                             { quiz =
                                 Vector_Type
                                     { options =
-                                        [ [ chars "hard disk drive" ]
-                                        , [ chars "hard desk drive" ]
-                                        , [ chars "hard disc drive" ]
+                                        [ [ paragraph "hard disk drive" ]
+                                        , [ paragraph "hard desk drive" ]
+                                        , [ paragraph "hard disc drive" ]
                                         ]
                                     , solution = SingleChoice [ True, False, True ]
                                     }
@@ -637,17 +719,74 @@ indentedOptions_Suite =
                             }
                             Nothing
                         ]
-        , test "multiple-choice options indented, with no preceding paragraph at all" <|
+        , test "multiple-choice options indented, with no preceding paragraph at all, also stay flat siblings" <|
             \_ ->
                 parse "    [[X]] one\n    [[ ]] two\n"
                     |> Expect.equal
                         [ Quiz []
                             { quiz =
                                 Vector_Type
-                                    { options = [ [ chars "one" ], [ chars "two" ] ]
+                                    { options = [ [ paragraph "one" ], [ paragraph "two" ] ]
                                     , solution = MultipleChoice [ True, False ]
                                     }
                             , id = 0
+                            , hints = []
+                            }
+                            Nothing
+                        ]
+        , test "only the first option's own marker may be indented on its own, staying a single flat option" <|
+            \_ ->
+                parse "    [[X]] one\n"
+                    |> Expect.equal
+                        [ Quiz []
+                            { quiz =
+                                Vector_Type
+                                    { options = [ [ paragraph "one" ] ]
+                                    , solution = MultipleChoice [ True ]
+                                    }
+                            , id = 0
+                            , hints = []
+                            }
+                            Nothing
+                        ]
+        ]
+
+
+{-| An option's block content may itself contain a nested Quiz, to build a
+sub-question that only makes sense once the outer option is picked. The
+nested quiz's marker must be indented *further* than its enclosing option's
+own marker column (here: `- [(X)]` starts at column 0, so 4 spaces is enough)
+- see `indentedOptions_Suite` above for the sibling-vs-nested distinction this
+relies on.
+-}
+nestedQuiz_Suite : Test
+nestedQuiz_Suite =
+    describe "an option's content may itself contain a nested Quiz"
+        [ test "a single-choice option containing a nested multiple-choice quiz" <|
+            \_ ->
+                parse "[(X)] dies ist ein absatz\n\n    das ist ein anderer absatz\n\n    [[X]] eine zeile mit einrückung\n"
+                    |> Expect.equal
+                        [ Quiz []
+                            { quiz =
+                                Vector_Type
+                                    { options =
+                                        [ [ paragraph "dies ist ein absatz"
+                                          , paragraph "das ist ein anderer absatz"
+                                          , Quiz []
+                                                { quiz =
+                                                    Vector_Type
+                                                        { options = [ [ paragraph "eine zeile mit einrückung" ] ]
+                                                        , solution = MultipleChoice [ True ]
+                                                        }
+                                                , id = 0
+                                                , hints = []
+                                                }
+                                                Nothing
+                                          ]
+                                        ]
+                                    , solution = SingleChoice [ True ]
+                                    }
+                            , id = 1
                             , hints = []
                             }
                             Nothing
