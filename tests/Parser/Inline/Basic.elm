@@ -131,7 +131,7 @@ footnote_fuzz_Suite : Test
 footnote_fuzz_Suite =
     describe "generating footnote marks from arbitrary keys"
         [ fuzz slug "wrapped in [^...]" <|
-            \key -> parse ("[^" ++ key ++ "]") |> Expect.equal [ footnoteMark key ]
+            {- [^example-key] -} \key -> parse ("[^" ++ key ++ "]") |> Expect.equal [ footnoteMark key ]
         ]
 
 

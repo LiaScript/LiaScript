@@ -14,6 +14,7 @@ example spell out "9", "y", "-", "a", "x", "i", "s", "0" as single-character
 row labels down the left edge. To keep this test's expected values simple we
 avoid that overlap by giving every row a non-numeric label instead, which
 leaves `y-max`/`y-min` at their defaults (1.0 / 0.0).
+
 -}
 
 import Dict
@@ -29,6 +30,11 @@ lines_Suite =
     describe "generating a chart from the raw ASCII row/axis notation"
         [ test "two single-point rows become a two-point Lines series" <|
             \_ ->
+                {- a |*
+                   b |  *
+                   +----
+                   0 x   4
+                -}
                 parse "a |*\nb |  *\n+----\n0 x   4\n"
                     |> Expect.equal
                         [ Chart []

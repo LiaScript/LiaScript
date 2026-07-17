@@ -47,10 +47,12 @@ quote_fuzz_Suite =
     describe "generating typographic quotes from arbitrary content"
         [ fuzz words "straight double quotes become curly" <|
             \content ->
+                {- "example text" -}
                 parse ("\"" ++ content ++ "\"")
                     |> Expect.equal [ container [ chars "“", chars content, chars "”" ] ]
         , fuzz words "straight single quotes become curly (with a leading space)" <|
             \content ->
+                {- 'example text' -}
                 parse (" '" ++ content ++ "'")
                     |> Expect.equal [ container [ chars " ‘", chars content, chars "’" ] ]
         ]

@@ -112,9 +112,9 @@ italic_fuzz_Suite : Test
 italic_fuzz_Suite =
     describe "generating italic text from arbitrary content"
         [ fuzz words "wrapped in *...*" <|
-            \content -> parse ("*" ++ content ++ "*") |> Expect.equal [ italic content ]
+            {- *example text* -} \content -> parse ("*" ++ content ++ "*") |> Expect.equal [ italic content ]
         , fuzz words "wrapped in _..._" <|
-            \content -> parse ("_" ++ content ++ "_") |> Expect.equal [ italic content ]
+            {- _example text_ -} \content -> parse ("_" ++ content ++ "_") |> Expect.equal [ italic content ]
         ]
 
 
@@ -122,9 +122,9 @@ bold_fuzz_Suite : Test
 bold_fuzz_Suite =
     describe "generating bold text from arbitrary content"
         [ fuzz words "wrapped in **...**" <|
-            \content -> parse ("**" ++ content ++ "**") |> Expect.equal [ bold content ]
+            {- **example text** -} \content -> parse ("**" ++ content ++ "**") |> Expect.equal [ bold content ]
         , fuzz words "wrapped in __...__" <|
-            \content -> parse ("__" ++ content ++ "__") |> Expect.equal [ bold content ]
+            {- __example text__ -} \content -> parse ("__" ++ content ++ "__") |> Expect.equal [ bold content ]
         ]
 
 
@@ -132,9 +132,9 @@ bold_italic_fuzz_Suite : Test
 bold_italic_fuzz_Suite =
     describe "generating bold and italic text from arbitrary content"
         [ fuzz words "wrapped in ***...***" <|
-            \content -> parse ("***" ++ content ++ "***") |> Expect.equal [ bold_italic content ]
+            {- ***example text*** -} \content -> parse ("***" ++ content ++ "***") |> Expect.equal [ bold_italic content ]
         , fuzz words "wrapped in ___..___" <|
-            \content -> parse ("___" ++ content ++ "___") |> Expect.equal [ bold_italic content ]
+            {- ___example text___ -} \content -> parse ("___" ++ content ++ "___") |> Expect.equal [ bold_italic content ]
         ]
 
 
@@ -142,7 +142,7 @@ strike_fuzz_Suite : Test
 strike_fuzz_Suite =
     describe "generating striked text from arbitrary content"
         [ fuzz words "wrapped in ~...~" <|
-            \content -> parse ("~" ++ content ++ "~") |> Expect.equal [ strike content ]
+            {- ~example text~ -} \content -> parse ("~" ++ content ++ "~") |> Expect.equal [ strike content ]
         ]
 
 
@@ -150,7 +150,7 @@ underline_fuzz_Suite : Test
 underline_fuzz_Suite =
     describe "generating underlined text from arbitrary content"
         [ fuzz words "wrapped in ~~...~~" <|
-            \content -> parse ("~~" ++ content ++ "~~") |> Expect.equal [ underline content ]
+            {- ~~example text~~ -} \content -> parse ("~~" ++ content ++ "~~") |> Expect.equal [ underline content ]
         ]
 
 
@@ -158,7 +158,7 @@ superscript_fuzz_Suite : Test
 superscript_fuzz_Suite =
     describe "generating superscripted text from arbitrary content"
         [ fuzz words "wrapped in ^...^" <|
-            \content -> parse ("^" ++ content ++ "^") |> Expect.equal [ superscript content ]
+            {- ^example text^ -} \content -> parse ("^" ++ content ++ "^") |> Expect.equal [ superscript content ]
         ]
 
 
@@ -166,7 +166,7 @@ verbatim_fuzz_Suite : Test
 verbatim_fuzz_Suite =
     describe "generating verbatim text from arbitrary content"
         [ fuzz words "wrapped in `...`" <|
-            \content -> parse ("`" ++ content ++ "`") |> Expect.equal [ verbatim content ]
+            {- `example text` -} \content -> parse ("`" ++ content ++ "`") |> Expect.equal [ verbatim content ]
         ]
 
 
