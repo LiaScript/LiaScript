@@ -16,7 +16,7 @@ import Lia.Markdown.Quiz.Types as QuizTypes
 import Lia.Markdown.Survey.Types exposing (Analysis(..), Type(..))
 import Lia.Markdown.Types exposing (Block(..))
 import LiaFuzz exposing (fuzzRegex)
-import Parser.Block.Fixtures exposing (parse)
+import Parser.Block.Fixtures exposing (paragraph, parse)
 import Parser.Inline.Fixtures exposing (chars)
 import Test exposing (Test, describe, fuzz, test)
 
@@ -185,9 +185,9 @@ vector_Suite =
                         , Survey []
                             { survey =
                                 Vector True
-                                    [ ( "red", [ chars "is it red" ] )
-                                    , ( "green", [ chars "green" ] )
-                                    , ( "blue", [ chars "or blue" ] )
+                                    [ ( "red", [ paragraph "is it red" ] )
+                                    , ( "green", [ paragraph "green" ] )
+                                    , ( "blue", [ paragraph "or blue" ] )
                                     ]
                                     Categorical
                             , id = 0
@@ -201,10 +201,10 @@ vector_Suite =
                         , Survey []
                             { survey =
                                 Vector False
-                                    [ ( "1", [ chars "option 1" ] )
-                                    , ( "2", [ chars "option 2" ] )
-                                    , ( "3", [ chars "option 3" ] )
-                                    , ( "0", [ chars "option 0" ] )
+                                    [ ( "1", [ paragraph "option 1" ] )
+                                    , ( "2", [ paragraph "option 2" ] )
+                                    , ( "3", [ paragraph "option 3" ] )
+                                    , ( "0", [ paragraph "option 0" ] )
                                     ]
                                     Quantitative
                             , id = 0
@@ -217,8 +217,8 @@ vector_Suite =
                         [ Survey []
                             { survey =
                                 Vector False
-                                    [ ( "very good", [ chars "I like it very much" ] )
-                                    , ( "bad", [ chars "I don't like it" ] )
+                                    [ ( "very good", [ paragraph "I like it very much" ] )
+                                    , ( "bad", [ paragraph "I don't like it" ] )
                                     ]
                                     Categorical
                             , id = 0
@@ -287,15 +287,21 @@ indentedTypes_Suite =
                         ]
         , test "a categorical Vector-survey, labeled options, indented under its question paragraph - the docs' own presentation style" <|
             \_ ->
+                -- Just like Quiz-Vector (see `Parser.Block.Quiz.indentedOptions_Suite`),
+                -- the indent required for an option's nested content is measured
+                -- dynamically from that option's own marker column, not a fixed
+                -- absolute amount - so a group of sibling options uniformly offset
+                -- under a preceding question (all at the same column) stay flat
+                -- siblings of each other.
                 parse "What are your favorite colors?\n\n    [[red]] is it red\n    [[green]] green\n    [[blue]] or blue\n"
                     |> Expect.equal
                         [ Paragraph [] [ chars "What are your favorite colors?" ]
                         , Survey []
                             { survey =
                                 Vector True
-                                    [ ( "red", [ chars "is it red" ] )
-                                    , ( "green", [ chars "green" ] )
-                                    , ( "blue", [ chars "or blue" ] )
+                                    [ ( "red", [ paragraph "is it red" ] )
+                                    , ( "green", [ paragraph "green" ] )
+                                    , ( "blue", [ paragraph "or blue" ] )
                                     ]
                                     Categorical
                             , id = 0
