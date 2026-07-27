@@ -25,6 +25,7 @@ import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Sync as Code
 import Lia.Markdown.Quiz.Sync as Quiz
 import Lia.Markdown.Survey.Sync as Survey
+import Lia.Sync.Classroom as Classroom
 import Lia.Sync.Container as Container exposing (Container)
 import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
@@ -64,6 +65,9 @@ type alias Settings =
     , error : Maybe String
     , data : Data
     , scriptsEnabled : Bool
+    , persistent : Bool
+    , saved : List Classroom.Entry
+    , deletePopup : Maybe String
     }
 
 
@@ -124,6 +128,9 @@ init supportedBackends =
         , code = Dict.empty
         }
     , scriptsEnabled = False
+    , persistent = False
+    , saved = []
+    , deletePopup = Nothing
     }
 
 

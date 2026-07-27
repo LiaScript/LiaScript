@@ -18,6 +18,7 @@ import Lia.Markdown.Survey.Sync as Survey
 import Lia.Section as Section exposing (Sections)
 import Lia.Settings.Types as Lia
 import Lia.Settings.Update exposing (updatedChatMessages)
+import Lia.Sync.Classroom as Classroom
 import Lia.Sync.Container as Container
 import Lia.Sync.Room as Room
 import Lia.Sync.Types
@@ -49,6 +50,13 @@ type Msg
     | Random_Generate
     | Random_Result String
     | EnabledScript Bool
+    | TogglePersistent
+    | LoadClassrooms
+    | LoadClassroom Classroom.Entry
+    | AskDeleteClassroom String
+    | CancelDeleteClassroom
+    | ConfirmDeleteClassroom String
+    | OpenNotes
 
 
 type SyncMsg
@@ -208,6 +216,18 @@ update session model msg =
                                 |> Session.update
                             )
 
+                ( "classrooms", param ) ->
+                    { model
+                        | sync =
+                            { sync
+                                | saved =
+                                    param
+                                        |> JD.decodeValue Classroom.decoder
+                                        |> Result.withDefault sync.saved
+                            }
+                    }
+                        |> Return.val
+
                 _ ->
                     model
                         |> Return.val
@@ -237,6 +257,71 @@ update session model msg =
             { model | sync = { sync | scriptsEnabled = not enabled } }
                 |> Return.val
 
+        TogglePersistent ->
+            { model | sync = { sync | persistent = not sync.persistent } }
+                |> Return.val
+
+        LoadClassrooms ->
+            model
+                |> Return.val
+                |> Return.batchEvent (Service.Sync.listClassrooms model.readme)
+
+        LoadClassroom entry ->
+            case Backend.fromString entry.backend of
+                Just backend ->
+                    let
+                        innerSync =
+                            sync.sync
+                    in
+                    { model
+                        | sync =
+                            { sync
+                                | sync = { innerSync | select = Just ( True, backend ), open = False }
+                                , room = entry.room
+                                , password = entry.password |> Maybe.withDefault ""
+                                , persistent = True
+                            }
+                    }
+                        |> Return.val
+
+                Nothing ->
+                    model |> Return.val
+
+        OpenNotes ->
+            let
+                innerSync =
+                    sync.sync
+            in
+            { model
+                | sync =
+                    { sync
+                        | sync = { innerSync | select = Just ( True, Backend.Local ), open = False }
+                        , room = notesRoomName
+                        , password = ""
+                        , persistent = True
+                    }
+            }
+                |> Return.val
+
+        AskDeleteClassroom room ->
+            { model | sync = { sync | deletePopup = Just room } }
+                |> Return.val
+
+        CancelDeleteClassroom ->
+            { model | sync = { sync | deletePopup = Nothing } }
+                |> Return.val
+
+        ConfirmDeleteClassroom room ->
+            { model
+                | sync =
+                    { sync
+                        | deletePopup = Nothing
+                        , saved = List.filter (\entry -> entry.room /= room) sync.saved
+                    }
+            }
+                |> Return.val
+                |> Return.batchEvent (Service.Sync.deleteClassroom model.readme room)
+
         Connect ->
             case ( sync.sync.select, sync.state ) of
                 ( Just ( True, backend ), Disconnected ) ->
@@ -248,6 +333,7 @@ update session model msg =
                                 , course = model.readme
                                 , room = sync.room
                                 , password = sync.password
+                                , persistent = sync.persistent
                                 }
                             )
 
@@ -294,6 +380,11 @@ updateSync msg sync =
 
 closeSelect sync =
     { sync | open = False }
+
+
+notesRoomName : String
+notesRoomName =
+    "__notes__"
 
 
 isConnected : Settings -> Bool

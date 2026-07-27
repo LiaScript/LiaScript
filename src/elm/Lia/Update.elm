@@ -437,6 +437,7 @@ update session msg model =
                                             else
                                                 Just logo
                                        )
+                            , readme = model.readme
                             }
                         )
                         childMsg
