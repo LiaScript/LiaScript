@@ -67,7 +67,7 @@ type alias Settings =
     , scriptsEnabled : Bool
     , persistent : Bool
     , saved : List Classroom.Entry
-    , deletePopup : Maybe String
+    , deletePopup : Maybe ( String, String )
     }
 
 
@@ -172,28 +172,37 @@ initRoom config settings =
             { settings
                 | sync =
                     { sync
-                        | select =
-                            Just
-                                ( settings.sync.support
-                                    |> List.filter
-                                        (\( support, for ) ->
-                                            if Via.eq for backend then
-                                                support
-
-                                            else
-                                                False
-                                        )
-                                    |> List.head
-                                    |> Maybe.map Tuple.first
-                                    |> Maybe.withDefault False
-                                , backend
-                                )
+                        | select = Just ( isSupportedBy settings.sync.support backend, backend )
                     }
                 , room = config.room
+
+                -- a room is only encoded into the URL after a successful
+                -- connect, thus reconnecting to it should also continue to
+                -- use (and update) its local cache
+                , persistent = True
             }
 
         Nothing ->
             { settings | error = Just ("Unknown Backend type: " ++ config.backend) }
+
+
+{-| Check if a backend is generally usable. `Via.Local` is not part of the
+`support` list, since it is not offered within the backend-selection, but it
+never depends on any external library or configuration, thus it is always
+supported.
+-}
+isSupportedBy : List ( Bool, Backend ) -> Backend -> Bool
+isSupportedBy support backend =
+    case backend of
+        Via.Local ->
+            True
+
+        _ ->
+            support
+                |> List.filter (Tuple.second >> Via.eq backend)
+                |> List.head
+                |> Maybe.map Tuple.first
+                |> Maybe.withDefault False
 
 
 filter : Settings -> Dict String sync -> Maybe (List sync)

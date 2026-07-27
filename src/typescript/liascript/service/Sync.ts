@@ -1,6 +1,7 @@
 import log from '../log'
-import { IndexedDBTransport } from '../../../../node_modules/y-generic/dist/providers/indexeddb/index'
-import * as Base from '../../sync/Base/index'
+// this module is dependency-free on purpose, the transport itself as well as
+// the entire yjs-machinery are loaded lazily, see `delete_classroom`
+import { PERSIST_PREFIX, docId } from '../../sync/Base/persist'
 
 var sync: any
 var elmSend: Lia.Send | null
@@ -17,6 +18,19 @@ var Trystero
 var WebSocket_
 var PeerJS_
 var SimplePeer_
+
+/** Report a failure back into Elm, reusing the same "error" channel that is
+ * also used for connection errors, see `Lia.Sync.Update`.
+ */
+function sendError(event: Lia.Event, message: string) {
+  if (elmSend) {
+    elmSend({
+      ...event,
+      message: { cmd: 'error', param: message },
+      reply: true,
+    })
+  }
+}
 
 function hasRTCPeerConnection() {
   return !!(
@@ -294,11 +308,19 @@ const Service = {
           sync.connect(event.message.param.config)
 
           const config = event.message.param.config
-          if (config.persistent && Database) {
-            Database.saveClassroom(config.course, {
+
+          // the "Own Notes" classroom is always presented by its own tile
+          // within the UI, it must not show up as a deletable entry within
+          // the list of saved classrooms
+          if (config.persistent && Database && config.fullBackend !== 'Local') {
+            // a failing save must not tear down an otherwise working
+            // connection, thus this is only reported to the console
+            Database.saveClassroom(config.uidDB || config.course, {
               room: config.room,
               backend: config.fullBackend,
               password: config.password,
+            })?.catch((e: any) => {
+              log.warn('could not save classroom ->', e?.message || e)
             })
           }
         }
@@ -322,27 +344,45 @@ const Service = {
 
       case 'list_classrooms': {
         const course = event.message.param
-        const list = Database ? await Database.getClassrooms(course) : []
 
-        if (elmSend) {
-          elmSend({
-            ...event,
-            message: { cmd: 'classrooms', param: list },
-            reply: true,
-          })
+        try {
+          const list = Database ? await Database.getClassrooms(course) : []
+
+          if (elmSend) {
+            elmSend({
+              ...event,
+              message: { cmd: 'classrooms', param: list },
+              reply: true,
+            })
+          }
+        } catch (e: any) {
+          log.warn('could not list classrooms ->', e?.message || e)
+          sendError(event, `could not load classrooms: ${e?.message || e}`)
         }
 
         break
       }
 
       case 'delete_classroom': {
-        const { course, room } = event.message.param
+        const { course, room, backend } = event.message.param
 
-        if (Database) await Database.deleteClassroom(course, room)
-        await IndexedDBTransport.deleteDatabase(
-          Base.docId(course, room),
-          Base.PERSIST_PREFIX,
-        )
+        try {
+          if (Database) await Database.deleteClassroom(course, room, backend)
+
+          // both, the transport and the entire yjs-machinery, are only
+          // required for this rare action, thus they are loaded lazily
+          const { IndexedDBTransport } = await import(
+            '../../../../node_modules/y-generic/dist/providers/indexeddb/index'
+          )
+
+          await IndexedDBTransport.deleteDatabase(
+            docId(course, room, backend),
+            PERSIST_PREFIX,
+          )
+        } catch (e: any) {
+          log.warn('could not delete classroom ->', e?.message || e)
+          sendError(event, `could not delete classroom: ${e?.message || e}`)
+        }
 
         break
       }

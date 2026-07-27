@@ -5,6 +5,7 @@ import * as helper from '../../helper'
 import { CRDT } from './db'
 
 import { encode, decode } from 'uint8-to-base64'
+import { PERSIST_PREFIX, docId } from './persist'
 
 export function uint8_to_base64(data: Uint8Array): string {
   return encode(data)
@@ -13,11 +14,7 @@ export function base64_to_unit8(data: string): Uint8Array {
   return decode(data)
 }
 
-export const PERSIST_PREFIX = 'lia-classroom'
-
-export function docId(course: string, room: string): string {
-  return `${course}::${room}`
-}
+export { PERSIST_PREFIX, docId }
 
 /* This function is only required to generate a random string, that is used
 as a personal ID for every peer, since it is not possible at the moment to
@@ -72,6 +69,17 @@ export class Sync {
   public db: CRDT
   public provider?: GenericProvider
   protected persistProvider?: GenericProvider
+
+  /** Resolves as soon as the local (IndexedDB) persistence is actually
+   * writable, rejects if it could not be opened at all. It resolves
+   * immediately, if no persistence was requested.
+   *
+   * Any update that is produced before this promise settles would be dropped
+   * by the transport — and since yjs updates are deltas, a dropped update is
+   * unrecoverable. Backends that can, should therefore delay their `connect`
+   * notification until this promise resolves.
+   */
+  public persistReady: Promise<void> = Promise.resolve()
 
   /** To initialize the communication, two callbacks are required. While the
    * first is used to send configuration messages about successful join or
@@ -175,9 +183,11 @@ export class Sync {
    */
   connect(data: {
     course: string
+    uidDB?: string
     room: string
     password?: string
     persistent?: boolean
+    fullBackend?: string
     config?: any
   }) {
     this.room = data.room
@@ -189,7 +199,23 @@ export class Sync {
     if (data.persistent) {
       const transport = new IndexedDBTransport({ prefix: PERSIST_PREFIX })
       this.persistProvider = new GenericProvider(this.db.doc, transport)
-      this.persistProvider.connect({ room: docId(data.course, data.room) })
+      this.persistReady = this.persistProvider.connect({
+        // the local cache is identified by the local database-name, not by
+        // the (possibly normalized) network identity of the course
+        room: docId(
+          data.uidDB || data.course,
+          data.room,
+          data.fullBackend || '',
+        ),
+      })
+
+      // the promise itself is passed on to the subclasses, this only prevents
+      // an unhandled rejection, if nobody else is listening
+      this.persistReady.catch((e: any) => {
+        console.warn('Sync: local persistence unavailable ->', e?.message || e)
+      })
+    } else {
+      this.persistReady = Promise.resolve()
     }
   }
 

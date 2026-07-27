@@ -130,7 +130,7 @@ export class Connector {
     console.log('saveClassroom not implemented')
   }
 
-  async deleteClassroom(_uidDB: string, _room: string) {
+  async deleteClassroom(_uidDB: string, _room: string, _backend: string) {
     console.log('deleteClassroom not implemented')
   }
 }
