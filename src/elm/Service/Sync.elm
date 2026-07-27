@@ -1,4 +1,4 @@
-module Service.Sync exposing (chat, code, codes, connect, cursor, disconnect, join, publish, quiz, survey)
+module Service.Sync exposing (chat, code, codes, connect, cursor, deleteClassroom, disconnect, join, listClassrooms, publish, quiz, survey)
 
 import Array exposing (Array)
 import Json.Encode as JE
@@ -12,6 +12,7 @@ connect :
     , course : String
     , room : String
     , password : String
+    , persistent : Bool
     }
     -> Event
 connect param =
@@ -37,6 +38,8 @@ connect param =
                 else
                     JE.string param.password
               )
+            , ( "persistent", JE.bool param.persistent )
+            , ( "fullBackend", JE.string (Via.toString True param.backend) )
             , ( "config"
               , case param.backend of
                     Via.GUN { urls, persistent } ->
@@ -110,6 +113,22 @@ disconnect id =
 join : JE.Value -> Event
 join =
     publish "join"
+
+
+listClassrooms : String -> Event
+listClassrooms course =
+    course
+        |> JE.string
+        |> publish "list_classrooms"
+
+
+deleteClassroom : String -> String -> Event
+deleteClassroom course room =
+    [ ( "course", JE.string course )
+    , ( "room", JE.string room )
+    ]
+        |> JE.object
+        |> publish "delete_classroom"
 
 
 publish : String -> JE.Value -> Event
