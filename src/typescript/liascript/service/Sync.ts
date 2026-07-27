@@ -1,7 +1,5 @@
 import log from '../log'
-// this module is dependency-free on purpose, the transport itself as well as
-// the entire yjs-machinery are loaded lazily, see `delete_classroom`
-import { PERSIST_PREFIX, docId } from '../../sync/Base/persist'
+import { docId } from '../../sync/Base/persist'
 
 var sync: any
 var elmSend: Lia.Send | null
@@ -367,18 +365,10 @@ const Service = {
         const { course, room, backend } = event.message.param
 
         try {
-          if (Database) await Database.deleteClassroom(course, room, backend)
-
-          // both, the transport and the entire yjs-machinery, are only
-          // required for this rare action, thus they are loaded lazily
-          const { IndexedDBTransport } = await import(
-            '../../../../node_modules/y-generic/dist/providers/indexeddb/index'
-          )
-
-          await IndexedDBTransport.deleteDatabase(
-            docId(course, room, backend),
-            PERSIST_PREFIX,
-          )
+          if (Database) {
+            await Database.deleteClassroom(course, room, backend)
+            await Database.clearYjsUpdates(course, docId(course, room, backend))
+          }
         } catch (e: any) {
           log.warn('could not delete classroom ->', e?.message || e)
           sendError(event, `could not delete classroom: ${e?.message || e}`)
