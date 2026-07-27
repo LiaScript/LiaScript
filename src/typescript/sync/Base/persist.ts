@@ -15,7 +15,9 @@
  * same room-name for the same course, would silently overwrite each other's
  * cache.
  *
- * @param course - the (normalized) course URL
+ * @param course - the un-normalized course URL / `uidDB`; do **not** pass a
+ *                 normalized value here, the cache-key has to match the one
+ *                 the Elm side derives, see `Service/Sync.elm`
  * @param room - the room-name
  * @param backend - the full, pipe-encoded backend string
  */
