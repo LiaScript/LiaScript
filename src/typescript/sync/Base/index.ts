@@ -1,5 +1,6 @@
 import Lia from '../../liascript/types/lia.d'
-import { GenericProvider } from 'y-generic/providers/generic/index'
+import { GenericProvider } from 'y-generic'
+import { IndexedDBTransport } from '../../../../node_modules/y-generic/dist/providers/indexeddb/index'
 import * as helper from '../../helper'
 import { CRDT } from './db'
 
@@ -10,6 +11,12 @@ export function uint8_to_base64(data: Uint8Array): string {
 }
 export function base64_to_unit8(data: string): Uint8Array {
   return decode(data)
+}
+
+export const PERSIST_PREFIX = 'lia-classroom'
+
+export function docId(course: string, room: string): string {
+  return `${course}::${room}`
 }
 
 /* This function is only required to generate a random string, that is used
@@ -64,6 +71,7 @@ export class Sync {
 
   public db: CRDT
   public provider?: GenericProvider
+  protected persistProvider?: GenericProvider
 
   /** To initialize the communication, two callbacks are required. While the
    * first is used to send configuration messages about successful join or
@@ -169,6 +177,7 @@ export class Sync {
     course: string
     room: string
     password?: string
+    persistent?: boolean
     config?: any
   }) {
     this.room = data.room
@@ -176,9 +185,17 @@ export class Sync {
     this.password = data.password
 
     this.isConnected = true
+
+    if (data.persistent) {
+      const transport = new IndexedDBTransport({ prefix: PERSIST_PREFIX })
+      this.persistProvider = new GenericProvider(this.db.doc, transport)
+      this.persistProvider.connect({ room: docId(data.course, data.room) })
+    }
   }
 
   destroy() {
+    this.persistProvider?.disconnect()
+    this.persistProvider = undefined
     this.db.destroy()
     this.cbConnection('disconnect', this.token)
     this.isConnected = false
