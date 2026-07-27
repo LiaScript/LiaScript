@@ -275,6 +275,25 @@ const Service = {
       return connector.deleteClassroom(uidDB, room, backend)
     }
   },
+
+  getYjsUpdates: async function (uidDB: string, key: string) {
+    if (connector) {
+      return connector.getYjsUpdates(uidDB, key)
+    }
+    return []
+  },
+
+  appendYjsUpdate: async function (uidDB: string, key: string, data: Uint8Array) {
+    if (connector) {
+      return connector.appendYjsUpdate(uidDB, key, data)
+    }
+  },
+
+  clearYjsUpdates: async function (uidDB: string, key: string) {
+    if (connector) {
+      return connector.clearYjsUpdates(uidDB, key)
+    }
+  },
 }
 
 /**

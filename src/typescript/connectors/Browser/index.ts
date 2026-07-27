@@ -93,6 +93,18 @@ class Connector extends Base.Connector {
   async deleteClassroom(uidDB: string, room: string, backend: string) {
     return this.database.deleteClassroom(uidDB, room, backend)
   }
+
+  async getYjsUpdates(uidDB: string, key: string) {
+    return this.database.getYjsUpdates(uidDB, key)
+  }
+
+  async appendYjsUpdate(uidDB: string, key: string, data: Uint8Array) {
+    return this.database.appendYjsUpdate(uidDB, key, data)
+  }
+
+  async clearYjsUpdates(uidDB: string, key: string) {
+    return this.database.clearYjsUpdates(uidDB, key)
+  }
 }
 
 export { Connector }
