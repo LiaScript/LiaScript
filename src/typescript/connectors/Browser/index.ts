@@ -78,6 +78,21 @@ class Connector extends Base.Connector {
   async getMisc(uidDB: string, versionDB: number | null, key?: string) {
     return this.database.getMisc(uidDB, versionDB, key)
   }
+
+  async getClassrooms(uidDB: string) {
+    return this.database.getClassrooms(uidDB)
+  }
+
+  async saveClassroom(
+    uidDB: string,
+    entry: { room: string; backend: string; password?: string }
+  ) {
+    this.database.saveClassroom(uidDB, entry)
+  }
+
+  async deleteClassroom(uidDB: string, room: string) {
+    this.database.deleteClassroom(uidDB, room)
+  }
 }
 
 export { Connector }
