@@ -51,11 +51,10 @@ type Msg
     | Random_Result String
     | EnabledScript Bool
     | TogglePersistent
-    | LoadClassrooms
     | LoadClassroom Classroom.Entry
-    | AskDeleteClassroom String
+    | AskDeleteClassroom String String
     | CancelDeleteClassroom
-    | ConfirmDeleteClassroom String
+    | ConfirmDeleteClassroom String String
     | OpenNotes
 
 
@@ -261,11 +260,6 @@ update session model msg =
             { model | sync = { sync | persistent = not sync.persistent } }
                 |> Return.val
 
-        LoadClassrooms ->
-            model
-                |> Return.val
-                |> Return.batchEvent (Service.Sync.listClassrooms model.readme)
-
         LoadClassroom entry ->
             case Backend.fromString entry.backend of
                 Just backend ->
@@ -303,24 +297,27 @@ update session model msg =
             }
                 |> Return.val
 
-        AskDeleteClassroom room ->
-            { model | sync = { sync | deletePopup = Just room } }
+        AskDeleteClassroom room backend ->
+            { model | sync = { sync | deletePopup = Just ( room, backend ) } }
                 |> Return.val
 
         CancelDeleteClassroom ->
             { model | sync = { sync | deletePopup = Nothing } }
                 |> Return.val
 
-        ConfirmDeleteClassroom room ->
+        ConfirmDeleteClassroom room backend ->
             { model
                 | sync =
                     { sync
                         | deletePopup = Nothing
-                        , saved = List.filter (\entry -> entry.room /= room) sync.saved
+                        , saved =
+                            List.filter
+                                (\entry -> entry.room /= room || entry.backend /= backend)
+                                sync.saved
                     }
             }
                 |> Return.val
-                |> Return.batchEvent (Service.Sync.deleteClassroom model.readme room)
+                |> Return.batchEvent (Service.Sync.deleteClassroom model.readme room backend)
 
         Connect ->
             case ( sync.sync.select, sync.state ) of

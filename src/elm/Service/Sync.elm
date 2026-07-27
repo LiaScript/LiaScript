@@ -24,12 +24,18 @@ connect param =
       )
     , ( "config"
       , JE.object
-            [ ( "course"
+            [ -- the network identity of a room, an IPFS-course is identified
+              -- by its origin, no matter which gateway is used to load it
+              ( "course"
               , param.course
                     |> IPFS.origin
                     |> Maybe.withDefault param.course
                     |> JE.string
               )
+
+            -- the name of the local database, which is always the plain
+            -- course-URL, see `Service.Database`
+            , ( "uidDB", JE.string param.course )
             , ( "room", JE.string param.room )
             , ( "password"
               , if String.isEmpty param.password then
@@ -115,6 +121,12 @@ join =
     publish "join"
 
 
+{-| The `course` is used as the name of the local database (`uidDB`), thus it
+must be the plain course-URL — exactly like in `Service.Database` and like the
+`uidDB` that is passed along with `connect`. It must **not** be normalized via
+`IPFS.origin`, otherwise the classrooms of an IPFS-course would be written
+into a different database than the one they are read from.
+-}
 listClassrooms : String -> Event
 listClassrooms course =
     course
@@ -122,10 +134,16 @@ listClassrooms course =
         |> publish "list_classrooms"
 
 
-deleteClassroom : String -> String -> Event
-deleteClassroom course room =
+{-| The `backend` is the full (pipe-encoded) backend string, as it was stored
+within the `classrooms` table. It is part of the primary key of a classroom
+entry as well as of the id of its local cache. See `listClassrooms` on why the
+`course` is not normalized.
+-}
+deleteClassroom : String -> String -> String -> Event
+deleteClassroom course room backend =
     [ ( "course", JE.string course )
     , ( "room", JE.string room )
+    , ( "backend", JE.string backend )
     ]
         |> JE.object
         |> publish "delete_classroom"
