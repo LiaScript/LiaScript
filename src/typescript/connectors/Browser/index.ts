@@ -102,6 +102,10 @@ class Connector extends Base.Connector {
     return this.database.appendYjsUpdate(uidDB, key, data)
   }
 
+  async replaceYjsUpdates(uidDB: string, key: string, data: Uint8Array) {
+    return this.database.replaceYjsUpdates(uidDB, key, data)
+  }
+
   async clearYjsUpdates(uidDB: string, key: string) {
     return this.database.clearYjsUpdates(uidDB, key)
   }

@@ -283,9 +283,23 @@ const Service = {
     return []
   },
 
-  appendYjsUpdate: async function (uidDB: string, key: string, data: Uint8Array) {
+  appendYjsUpdate: async function (
+    uidDB: string,
+    key: string,
+    data: Uint8Array
+  ) {
     if (connector) {
       return connector.appendYjsUpdate(uidDB, key, data)
+    }
+  },
+
+  replaceYjsUpdates: async function (
+    uidDB: string,
+    key: string,
+    data: Uint8Array
+  ) {
+    if (connector) {
+      return connector.replaceYjsUpdates(uidDB, key, data)
     }
   },
 

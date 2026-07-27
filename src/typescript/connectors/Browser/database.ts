@@ -342,7 +342,17 @@ class LiaDB {
 
       log.info('storing new version to index', item)
 
-      await this.db.offline.put({
+      // NOT `this.db`: `Database.ts`'s `index_store` fires `connector.open()`
+      // without awaiting it and calls `storeToIndex()` right after, so by the
+      // time we get here `open()` is usually still inside its asynchronous
+      // `openShared_()` handshake - `this.db` would be `undefined` on the very
+      // first course of a session, and still point at the PREVIOUS course on
+      // every later one. `openShared_()` hands out the exact same connection
+      // `open()` is waiting for, keyed by the course URL, so this is both safe
+      // and race-free.
+      let db = await this.openShared_(data.readme)
+
+      await db['offline'].put({
         id: 0,
         version: data.version,
         data: data,
@@ -476,6 +486,26 @@ class LiaDB {
     const db = await this.openShared_(uidDB)
 
     await db['yjsUpdates'].add({ key, data, created: new Date().getTime() })
+  }
+
+  /** Atomically replace *all* cached Yjs updates of one classroom by a single
+   * one. Used by `DexieTransport` to compact the cache right after it has
+   * replayed the previously stored rows into the document: the replacement is
+   * a full document snapshot that is equivalent to all of them together, so
+   * nothing is lost — but only if the delete and the insert cannot be
+   * separated, hence the transaction.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param key - identifies one classroom, see `sync/Base/persist.ts`'s `docId`
+   * @param data - one raw Yjs update that supersedes everything stored so far
+   */
+  async replaceYjsUpdates(uidDB: string, key: string, data: Uint8Array) {
+    const db = await this.openShared_(uidDB)
+
+    await db.transaction('rw', db['yjsUpdates'], async () => {
+      await db['yjsUpdates'].where('key').equals(key).delete()
+      await db['yjsUpdates'].add({ key, data, created: new Date().getTime() })
+    })
   }
 
   /** Remove all cached Yjs updates for one classroom.
