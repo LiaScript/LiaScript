@@ -1,11 +1,11 @@
 import Lia from '../../liascript/types/lia.d'
 import { GenericProvider } from 'y-generic'
-import { IndexedDBTransport } from '../../../../node_modules/y-generic/dist/providers/indexeddb/index'
+import { DexieTransport } from './dexieTransport'
 import * as helper from '../../helper'
 import { CRDT } from './db'
 
 import { encode, decode } from 'uint8-to-base64'
-import { PERSIST_PREFIX, docId } from './persist'
+import { docId } from './persist'
 
 export function uint8_to_base64(data: Uint8Array): string {
   return encode(data)
@@ -14,7 +14,7 @@ export function base64_to_unit8(data: string): Uint8Array {
   return decode(data)
 }
 
-export { PERSIST_PREFIX, docId }
+export { docId }
 
 /* This function is only required to generate a random string, that is used
 as a personal ID for every peer, since it is not possible at the moment to
@@ -197,7 +197,7 @@ export class Sync {
     this.isConnected = true
 
     if (data.persistent) {
-      const transport = new IndexedDBTransport({ prefix: PERSIST_PREFIX })
+      const transport = new DexieTransport()
       this.persistProvider = new GenericProvider(this.db.doc, transport)
       this.persistReady = this.persistProvider.connect({
         // the local cache is identified by the local database-name, not by
@@ -207,6 +207,7 @@ export class Sync {
           data.room,
           data.fullBackend || '',
         ),
+        uidDB: data.uidDB || data.course,
       })
 
       // the promise itself is passed on to the subclasses, this only prevents
