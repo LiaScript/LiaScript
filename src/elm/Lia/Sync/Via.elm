@@ -36,6 +36,7 @@ type Backend
     | WebSocket { url : String }
     | PeerJS { host : String, port_ : String, path : String, iceServers : String }
     | SimplePeer { signaling : String, iceServers : String }
+    | Local
 
 
 toString : Bool -> Backend -> String
@@ -131,6 +132,9 @@ toString full via =
                         ""
                    )
 
+        Local ->
+            "Local"
+
 
 icon : Backend -> Html msg
 icon via =
@@ -172,6 +176,9 @@ icon via =
 
             SimplePeer _ ->
                 "icon-simplepeer icon-xs"
+
+            Local ->
+                "icon-pencil icon-xs"
         )
         [ Attr.style "padding-inline-end" "5px"
         , Attr.style "vertical-align" "middle"
@@ -259,6 +266,9 @@ fromString via =
 
         [ "simplepeer", signaling, iceServers ] ->
             Just (SimplePeer { signaling = signaling, iceServers = iceServers })
+
+        [ "local" ] ->
+            Just Local
 
         _ ->
             Nothing
@@ -530,6 +540,11 @@ infoOn supported about =
                 , Html.br [] []
                 , Html.br [] []
                 , allowScripts
+                ]
+
+            ( Local, _ ) ->
+                [ Html.text "This is a purely local classroom — nothing is sent over the network. "
+                , Html.text "Your notes are written to this browser's storage only and never shared with anyone."
                 ]
 
 
