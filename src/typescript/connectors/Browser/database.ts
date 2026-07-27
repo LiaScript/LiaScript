@@ -71,6 +71,10 @@ class LiaDB {
       classrooms: '[room+backend], updated',
     })
 
+    db.version(5).stores({
+      yjsUpdates: '++id, key',
+    })
+
     return db
   }
 
@@ -416,6 +420,46 @@ class LiaDB {
     await db['classrooms'].delete([room, backend])
   }
 
+  /** Return all cached Yjs update chunks for one classroom, in the order they
+   * were written, so they can be replayed to reconstruct the document.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param key - identifies one classroom, see `sync/Base/persist.ts`'s `docId`
+   */
+  async getYjsUpdates(uidDB: string, key: string): Promise<Uint8Array[]> {
+    const db = this.open_(uidDB)
+    await db.open()
+
+    const rows = await db['yjsUpdates'].where('key').equals(key).toArray()
+
+    return rows.map((row: { data: Uint8Array }) => row.data)
+  }
+
+  /** Append one Yjs update chunk to a classroom's local cache.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param key - identifies one classroom, see `sync/Base/persist.ts`'s `docId`
+   * @param data - one raw Yjs update
+   */
+  async appendYjsUpdate(uidDB: string, key: string, data: Uint8Array) {
+    const db = this.open_(uidDB)
+    await db.open()
+
+    await db['yjsUpdates'].add({ key, data, created: new Date().getTime() })
+  }
+
+  /** Remove all cached Yjs updates for one classroom.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param key - identifies one classroom, see `sync/Base/persist.ts`'s `docId`
+   */
+  async clearYjsUpdates(uidDB: string, key: string) {
+    const db = this.open_(uidDB)
+    await db.open()
+
+    await db['yjsUpdates'].where('key').equals(key).delete()
+  }
+
   /** Delete all entries for all versions of a certain course defined by its
    * URL. This removes all state information as well as the course from the
    * main index.
@@ -423,49 +467,10 @@ class LiaDB {
    * @param uidDB - A string URL or URI, which identifies the source of a course.
    */
   async deleteIndex(uidDB: string) {
-    // the locally cached content of all saved classrooms lives in separate
-    // IndexedDB databases, these would be orphaned otherwise
-    await this.deleteClassroomCaches(uidDB)
-
     await Promise.all([
       this.dbIndex['courses'].delete(uidDB),
       Dexie.delete(uidDB),
     ])
-  }
-
-  /** **private helper:** wipe the local caches of all classrooms that were
-   * saved for a course. Both, the transport and the id-helpers, are imported
-   * lazily, so that no yjs-related code ends up within the initial bundle.
-   *
-   * @param uidDB - A string URL or URI, which identifies the source of a course.
-   */
-  private async deleteClassroomCaches(uidDB: string) {
-    try {
-      const classrooms = await this.getClassrooms(uidDB)
-
-      // the "Own Notes" classroom is intentionally not stored within the
-      // classrooms table, but it does have a local cache, see Lia.Sync.Update
-      classrooms.push({ room: '__notes__', backend: 'Local' })
-
-      const [{ IndexedDBTransport }, { PERSIST_PREFIX, docId }] =
-        await Promise.all([
-          import(
-            '../../../../node_modules/y-generic/dist/providers/indexeddb/index'
-          ),
-          import('../../sync/Base/persist'),
-        ])
-
-      await Promise.all(
-        classrooms.map((entry: { room: string; backend: string }) =>
-          IndexedDBTransport.deleteDatabase(
-            docId(uidDB, entry.room, entry.backend),
-            PERSIST_PREFIX
-          )
-        )
-      )
-    } catch (e: any) {
-      log.warn('could not delete classroom caches ->', e?.message || e)
-    }
   }
 
   /** Delete all state information for a particular course and a particular version.
