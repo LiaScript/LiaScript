@@ -262,13 +262,17 @@ const Service = {
     entry: { room: string; backend: string; password?: string }
   ) {
     if (connector) {
-      connector.saveClassroom(uidDB, entry)
+      return connector.saveClassroom(uidDB, entry)
     }
   },
 
-  deleteClassroom: async function (uidDB: string, room: string) {
+  deleteClassroom: async function (
+    uidDB: string,
+    room: string,
+    backend: string
+  ) {
     if (connector) {
-      connector.deleteClassroom(uidDB, room)
+      return connector.deleteClassroom(uidDB, room, backend)
     }
   },
 }

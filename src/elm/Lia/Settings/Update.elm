@@ -196,8 +196,24 @@ update main msg model =
                     (if model.sync == Just False then
                         main
                             |> Maybe.map .readme
-                            |> Maybe.withDefault ""
-                            |> Service.Sync.listClassrooms
+                            |> Maybe.andThen
+                                (\readme ->
+                                    -- no course context (e.g. the course index),
+                                    -- thus there is nothing to look up
+                                    if String.isEmpty readme then
+                                        Nothing
+
+                                    else
+                                        Just readme
+                                )
+                            |> Maybe.map
+                                (Service.Sync.listClassrooms
+                                    -- the reply has to be routed back into
+                                    -- Lia.Sync.Update, which is identified by
+                                    -- the "sync" topic, see Lia.Update
+                                    >> Event.push "sync"
+                                )
+                            |> Maybe.withDefault Event.none
 
                      else
                         Event.none

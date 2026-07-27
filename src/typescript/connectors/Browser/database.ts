@@ -60,6 +60,17 @@ class LiaDB {
       classrooms: '&room, updated',
     })
 
+    // the room-name alone is not unique, two different backends can share the
+    // same room-name for the same course. Dexie cannot change a primary key
+    // in place, thus the table has to be dropped and recreated.
+    db.version(3).stores({
+      classrooms: null,
+    })
+
+    db.version(4).stores({
+      classrooms: '[room+backend], updated',
+    })
+
     return db
   }
 
@@ -371,7 +382,7 @@ class LiaDB {
   /** Insert or update a saved classroom entry for a course.
    *
    * @param uidDB - A string URL or URI, which identifies the source of a course.
-   * @param entry - room name (primary key), full encoded backend string, optional password
+   * @param entry - room name and full encoded backend string (primary key), optional password
    */
   async saveClassroom(
     uidDB: string,
@@ -380,7 +391,7 @@ class LiaDB {
     const db = this.open_(uidDB)
     await db.open()
 
-    const existing = await db['classrooms'].get(entry.room)
+    const existing = await db['classrooms'].get([entry.room, entry.backend])
     const now = new Date().getTime()
 
     await db['classrooms'].put({
@@ -395,13 +406,14 @@ class LiaDB {
   /** Remove a saved classroom entry for a course.
    *
    * @param uidDB - A string URL or URI, which identifies the source of a course.
-   * @param room - the classroom's room name (primary key)
+   * @param room - the classroom's room name (part of the primary key)
+   * @param backend - the full encoded backend string (part of the primary key)
    */
-  async deleteClassroom(uidDB: string, room: string) {
+  async deleteClassroom(uidDB: string, room: string, backend: string) {
     const db = this.open_(uidDB)
     await db.open()
 
-    await db['classrooms'].delete(room)
+    await db['classrooms'].delete([room, backend])
   }
 
   /** Delete all entries for all versions of a certain course defined by its
@@ -411,10 +423,49 @@ class LiaDB {
    * @param uidDB - A string URL or URI, which identifies the source of a course.
    */
   async deleteIndex(uidDB: string) {
+    // the locally cached content of all saved classrooms lives in separate
+    // IndexedDB databases, these would be orphaned otherwise
+    await this.deleteClassroomCaches(uidDB)
+
     await Promise.all([
       this.dbIndex['courses'].delete(uidDB),
       Dexie.delete(uidDB),
     ])
+  }
+
+  /** **private helper:** wipe the local caches of all classrooms that were
+   * saved for a course. Both, the transport and the id-helpers, are imported
+   * lazily, so that no yjs-related code ends up within the initial bundle.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   */
+  private async deleteClassroomCaches(uidDB: string) {
+    try {
+      const classrooms = await this.getClassrooms(uidDB)
+
+      // the "Own Notes" classroom is intentionally not stored within the
+      // classrooms table, but it does have a local cache, see Lia.Sync.Update
+      classrooms.push({ room: '__notes__', backend: 'Local' })
+
+      const [{ IndexedDBTransport }, { PERSIST_PREFIX, docId }] =
+        await Promise.all([
+          import(
+            '../../../../node_modules/y-generic/dist/providers/indexeddb/index'
+          ),
+          import('../../sync/Base/persist'),
+        ])
+
+      await Promise.all(
+        classrooms.map((entry: { room: string; backend: string }) =>
+          IndexedDBTransport.deleteDatabase(
+            docId(uidDB, entry.room, entry.backend),
+            PERSIST_PREFIX
+          )
+        )
+      )
+    } catch (e: any) {
+      log.warn('could not delete classroom caches ->', e?.message || e)
+    }
   }
 
   /** Delete all state information for a particular course and a particular version.

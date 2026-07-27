@@ -87,11 +87,11 @@ class Connector extends Base.Connector {
     uidDB: string,
     entry: { room: string; backend: string; password?: string }
   ) {
-    this.database.saveClassroom(uidDB, entry)
+    return this.database.saveClassroom(uidDB, entry)
   }
 
-  async deleteClassroom(uidDB: string, room: string) {
-    this.database.deleteClassroom(uidDB, room)
+  async deleteClassroom(uidDB: string, room: string, backend: string) {
+    return this.database.deleteClassroom(uidDB, room, backend)
   }
 }
 

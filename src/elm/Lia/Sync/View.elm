@@ -166,7 +166,7 @@ notesTile =
         ]
 
 
-savedItem : Maybe String -> Classroom.Entry -> Html Msg
+savedItem : Maybe ( String, String ) -> Classroom.Entry -> Html Msg
 savedItem deletePopup entry =
     Html.div
         [ Attr.style "display" "flex"
@@ -185,26 +185,26 @@ savedItem deletePopup entry =
             , Html.text entry.room
             ]
         , case deletePopup of
-            Just room ->
-                if room == entry.room then
+            Just ( room, backend ) ->
+                if room == entry.room && backend == entry.backend then
                     Popup.view
                         { text = "Delete this saved classroom and its locally cached content? This cannot be undone."
-                        , action = { msg = ConfirmDeleteClassroom entry.room, text = "Delete" }
+                        , action = { msg = ConfirmDeleteClassroom entry.room entry.backend, text = "Delete" }
                         , escape = CancelDeleteClassroom
                         }
 
                 else
-                    deleteBtn entry.room
+                    deleteBtn entry
 
             Nothing ->
-                deleteBtn entry.room
+                deleteBtn entry
         ]
 
 
-deleteBtn : String -> Html Msg
-deleteBtn room =
+deleteBtn : Classroom.Entry -> Html Msg
+deleteBtn entry =
     btnIcon
-        { msg = Just (AskDeleteClassroom room)
+        { msg = Just (AskDeleteClassroom entry.room entry.backend)
         , title = "Delete this saved classroom"
         , tabbable = True
         , icon = "icon-trash"
