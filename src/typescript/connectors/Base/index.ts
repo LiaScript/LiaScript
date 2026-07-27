@@ -118,4 +118,19 @@ export class Connector {
   async getMisc(_uidDB: string, _versionDB: number | null, _key?: string) {
     console.log('getMisc not implemented')
   }
+
+  async getClassrooms(_uidDB: string): Promise<any[]> {
+    return []
+  }
+
+  async saveClassroom(
+    _uidDB: string,
+    _entry: { room: string; backend: string; password?: string }
+  ) {
+    console.log('saveClassroom not implemented')
+  }
+
+  async deleteClassroom(_uidDB: string, _room: string) {
+    console.log('deleteClassroom not implemented')
+  }
 }
