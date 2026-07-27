@@ -56,6 +56,10 @@ class LiaDB {
       offline: '[id+version], version',
     })
 
+    db.version(2).stores({
+      classrooms: '&room, updated',
+    })
+
     return db
   }
 
@@ -351,6 +355,53 @@ class LiaDB {
     }
 
     return item?.misc
+  }
+
+  /** Return all saved classrooms for a course, most recently updated first.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   */
+  async getClassrooms(uidDB: string) {
+    const db = this.open_(uidDB)
+    await db.open()
+
+    return await db['classrooms'].orderBy('updated').reverse().toArray()
+  }
+
+  /** Insert or update a saved classroom entry for a course.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param entry - room name (primary key), full encoded backend string, optional password
+   */
+  async saveClassroom(
+    uidDB: string,
+    entry: { room: string; backend: string; password?: string }
+  ) {
+    const db = this.open_(uidDB)
+    await db.open()
+
+    const existing = await db['classrooms'].get(entry.room)
+    const now = new Date().getTime()
+
+    await db['classrooms'].put({
+      room: entry.room,
+      backend: entry.backend,
+      password: entry.password || null,
+      created: existing ? existing.created : now,
+      updated: now,
+    })
+  }
+
+  /** Remove a saved classroom entry for a course.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param room - the classroom's room name (primary key)
+   */
+  async deleteClassroom(uidDB: string, room: string) {
+    const db = this.open_(uidDB)
+    await db.open()
+
+    await db['classrooms'].delete(room)
   }
 
   /** Delete all entries for all versions of a certain course defined by its
