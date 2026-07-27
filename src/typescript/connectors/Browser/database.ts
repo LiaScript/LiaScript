@@ -129,10 +129,11 @@ class LiaDB {
    */
   async open(uidDB: string, versionDB: number, init?: Record) {
     this.version = versionDB
-    this.db = this.open_(uidDB)
 
     try {
-      await this.db.open()
+      // the session connection is the very same instance that `openShared_()`
+      // hands out, so `deleteIndex()` only has to close one of them
+      this.db = await this.openShared_(uidDB)
     } catch (e: any) {
       log.warn('DB: open -> ', e.message)
       this.db = null
@@ -258,7 +259,7 @@ class LiaDB {
     const course = await this.dbIndex['courses'].get(uidDB)
 
     if (course) {
-      let db = this.open_(uidDB)
+      let db = await this.openShared_(uidDB)
 
       const offline = await db['offline'].get({
         id: 0,
@@ -354,8 +355,7 @@ class LiaDB {
 
       log.info('storing new version to index', item)
 
-      let db = this.open_(data.readme)
-      await db.open()
+      let db = await this.openShared_(data.readme)
 
       await db['offline'].put({
         id: 0,
@@ -506,6 +506,14 @@ class LiaDB {
       try {
         ;(await shared).close()
       } catch (e) {}
+    }
+
+    // `open()` keeps a second reference to that very same instance. Closing a
+    // Dexie does not neutralize it - `autoOpen` is on by default, so a later
+    // `store()`/`slide()` through the stale `this.db` would re-create the
+    // database that is being deleted right here.
+    if (this.db?.name === uidDB) {
+      this.db = null
     }
 
     await Promise.all([
