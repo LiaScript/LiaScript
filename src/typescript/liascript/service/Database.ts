@@ -249,6 +249,28 @@ const Service = {
       console.warn('connector not initialized')
     }
   },
+
+  getClassrooms: async function (uidDB: string) {
+    if (connector) {
+      return connector.getClassrooms(uidDB)
+    }
+    return []
+  },
+
+  saveClassroom: async function (
+    uidDB: string,
+    entry: { room: string; backend: string; password?: string }
+  ) {
+    if (connector) {
+      connector.saveClassroom(uidDB, entry)
+    }
+  },
+
+  deleteClassroom: async function (uidDB: string, room: string) {
+    if (connector) {
+      connector.deleteClassroom(uidDB, room)
+    }
+  },
 }
 
 /**
