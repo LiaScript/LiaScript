@@ -1,5 +1,3 @@
-// src/typescript/sync/Base/dexieTransport.ts
-//
 // Note on the type-only import below: `y-generic`'s package.json `exports`
 // map only publishes `.` and `./providers/*` as valid subpaths - there is no
 // `./dist/transport` entry. Importing from the package root works because
@@ -23,6 +21,14 @@ export class DexieTransport implements Transport {
   private messageCallback?: (data: Uint8Array) => void
   private _isConnected: boolean = false
 
+  // Updates loaded from Dexie during `connect()`, buffered here because
+  // `GenericProvider.connect()` only calls `onMessage()` *after*
+  // `transport.connect()` resolves (see `y-generic/dist/index.js`,
+  // `GenericProvider.connect`) - there is no listener registered yet while
+  // this method runs. The buffer is flushed as soon as a callback is
+  // registered in `onMessage()`.
+  private pendingUpdates: Uint8Array[] = []
+
   get isConnected(): boolean {
     return this._isConnected
   }
@@ -31,11 +37,7 @@ export class DexieTransport implements Transport {
     this.uidDB = config.uidDB
     this.key = config.room
 
-    const updates = await Database.getYjsUpdates(this.uidDB, this.key)
-
-    for (const update of updates) {
-      this.messageCallback?.(update)
-    }
+    this.pendingUpdates = await Database.getYjsUpdates(this.uidDB, this.key)
 
     this._isConnected = true
   }
@@ -43,6 +45,7 @@ export class DexieTransport implements Transport {
   disconnect(): void {
     this._isConnected = false
     this.messageCallback = undefined
+    this.pendingUpdates = []
   }
 
   send(data: Uint8Array): void | Promise<void> {
@@ -51,6 +54,19 @@ export class DexieTransport implements Transport {
 
   onMessage(callback: (data: Uint8Array) => void): () => void {
     this.messageCallback = callback
+
+    // Replay whatever was loaded by `connect()`, now that someone is
+    // actually listening. `GenericProvider` calls `onMessage()` synchronously
+    // right after `transport.connect()` resolves, with no intervening
+    // `await`, so this is not racing against any other caller of `send()`.
+    if (this.pendingUpdates.length > 0) {
+      const updates = this.pendingUpdates
+      this.pendingUpdates = []
+
+      for (const update of updates) {
+        this.messageCallback?.(update)
+      }
+    }
 
     return () => {
       this.messageCallback = undefined
