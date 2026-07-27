@@ -16,6 +16,10 @@ class LiaDB {
   private db: any
   private version: number
 
+  /** One shared, already-opened connection per course database, see
+   * `openShared_()`. */
+  private dbCache: { [uidDB: string]: Promise<Dexie> } = {}
+
   /** Create a DexieDB instance that stores all states for:
    *
    * - quizzes
@@ -76,6 +80,39 @@ class LiaDB {
     })
 
     return db
+  }
+
+  /** Open — and from then on re-use — one connection per course database.
+   *
+   * `open_()` builds a *brand new* `Dexie` instance on every call, and none of
+   * its callers ever close it again. That is acceptable for the rare
+   * classroom-list queries, but `appendYjsUpdate()` runs for every single Yjs
+   * frame (several per second while a classroom is connected, plus one per
+   * replayed frame on connect) — leaking that many IndexedDB connections
+   * exhausts the browser's connection budget, and every one of them has to
+   * pass the `indexedDB.open` security guard from `patches/dexie+4.2.1.patch`
+   * again.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   */
+  private async openShared_(uidDB: string): Promise<Dexie> {
+    let opening = this.dbCache[uidDB]
+
+    if (!opening) {
+      const db = this.open_(uidDB)
+
+      opening = db.open().then(() => db)
+
+      // a failed open must not be cached, otherwise the course would stay
+      // broken for the rest of the session
+      opening.catch(() => {
+        delete this.dbCache[uidDB]
+      })
+
+      this.dbCache[uidDB] = opening
+    }
+
+    return opening
   }
 
   /** Open the initial database connection, that is used during the entire
@@ -340,8 +377,7 @@ class LiaDB {
     key: string,
     value: any
   ) {
-    const db = this.open_(uidDB)
-    await db.open()
+    const db = await this.openShared_(uidDB)
 
     await db.transaction('rw', db['offline'], async () => {
       let item = await db['offline'].get({
@@ -357,8 +393,7 @@ class LiaDB {
   }
 
   async getMisc(uidDB: string, versionDB: number | null, key?: string) {
-    const db = this.open_(uidDB)
-    await db.open()
+    const db = await this.openShared_(uidDB)
 
     const item = await db['offline'].get({
       id: 0,
@@ -377,8 +412,7 @@ class LiaDB {
    * @param uidDB - A string URL or URI, which identifies the source of a course.
    */
   async getClassrooms(uidDB: string) {
-    const db = this.open_(uidDB)
-    await db.open()
+    const db = await this.openShared_(uidDB)
 
     return await db['classrooms'].orderBy('updated').reverse().toArray()
   }
@@ -392,8 +426,7 @@ class LiaDB {
     uidDB: string,
     entry: { room: string; backend: string; password?: string }
   ) {
-    const db = this.open_(uidDB)
-    await db.open()
+    const db = await this.openShared_(uidDB)
 
     const existing = await db['classrooms'].get([entry.room, entry.backend])
     const now = new Date().getTime()
@@ -414,8 +447,7 @@ class LiaDB {
    * @param backend - the full encoded backend string (part of the primary key)
    */
   async deleteClassroom(uidDB: string, room: string, backend: string) {
-    const db = this.open_(uidDB)
-    await db.open()
+    const db = await this.openShared_(uidDB)
 
     await db['classrooms'].delete([room, backend])
   }
@@ -427,8 +459,7 @@ class LiaDB {
    * @param key - identifies one classroom, see `sync/Base/persist.ts`'s `docId`
    */
   async getYjsUpdates(uidDB: string, key: string): Promise<Uint8Array[]> {
-    const db = this.open_(uidDB)
-    await db.open()
+    const db = await this.openShared_(uidDB)
 
     const rows = await db['yjsUpdates'].where('key').equals(key).toArray()
 
@@ -442,8 +473,7 @@ class LiaDB {
    * @param data - one raw Yjs update
    */
   async appendYjsUpdate(uidDB: string, key: string, data: Uint8Array) {
-    const db = this.open_(uidDB)
-    await db.open()
+    const db = await this.openShared_(uidDB)
 
     await db['yjsUpdates'].add({ key, data, created: new Date().getTime() })
   }
@@ -454,8 +484,7 @@ class LiaDB {
    * @param key - identifies one classroom, see `sync/Base/persist.ts`'s `docId`
    */
   async clearYjsUpdates(uidDB: string, key: string) {
-    const db = this.open_(uidDB)
-    await db.open()
+    const db = await this.openShared_(uidDB)
 
     await db['yjsUpdates'].where('key').equals(key).delete()
   }
@@ -467,6 +496,18 @@ class LiaDB {
    * @param uidDB - A string URL or URI, which identifies the source of a course.
    */
   async deleteIndex(uidDB: string) {
+    // an open connection blocks `Dexie.delete()`, so the shared one has to be
+    // dropped first, see `openShared_()`
+    const shared = this.dbCache[uidDB]
+
+    if (shared) {
+      delete this.dbCache[uidDB]
+
+      try {
+        ;(await shared).close()
+      } catch (e) {}
+    }
+
     await Promise.all([
       this.dbIndex['courses'].delete(uidDB),
       Dexie.delete(uidDB),
@@ -479,8 +520,7 @@ class LiaDB {
    * @param versionDB - The version number of the course
    */
   async reset(uidDB: string, versionDB: number) {
-    const db = this.open_(uidDB)
-    await db.open()
+    const db = await this.openShared_(uidDB)
 
     await Promise.all([
       db['code'].where('version').equals(versionDB).delete(),
