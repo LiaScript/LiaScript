@@ -133,4 +133,16 @@ export class Connector {
   async deleteClassroom(_uidDB: string, _room: string, _backend: string) {
     console.log('deleteClassroom not implemented')
   }
+
+  async getYjsUpdates(_uidDB: string, _key: string): Promise<Uint8Array[]> {
+    return []
+  }
+
+  async appendYjsUpdate(_uidDB: string, _key: string, _data: Uint8Array) {
+    console.log('appendYjsUpdate not implemented')
+  }
+
+  async clearYjsUpdates(_uidDB: string, _key: string) {
+    console.log('clearYjsUpdates not implemented')
+  }
 }
