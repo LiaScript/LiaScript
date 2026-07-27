@@ -6,7 +6,9 @@ import Accessibility.Role as A11y_Role
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
+import Index.View.Popup as Popup
 import Lia.Settings.Update exposing (Msg(..))
+import Lia.Sync.Classroom as Classroom
 import Lia.Sync.Types as Sync exposing (State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
 import Lia.Sync.Via as Backend exposing (Backend)
@@ -49,6 +51,7 @@ view settings =
                 |> Maybe.withDefault (Html.text "")
             ]
         , select open settings.sync
+        , savedList settings
         , case settings.sync.select of
             Nothing ->
                 Backend.info
@@ -101,6 +104,17 @@ view settings =
                             , value = settings.scriptsEnabled
                             }
                         ]
+                    , Html.div []
+                        [ Backend.checkbox
+                            { active =
+                                open
+                                    && support
+                                    && (via /= Backend.Local)
+                            , msg = TogglePersistent
+                            , label = Html.text "Remember this classroom (saves settings and caches its content locally)"
+                            , value = settings.persistent || via == Backend.Local
+                            }
+                        ]
                     , button settings
                     , viewError settings.error
                     , Backend.infoOn support via
@@ -118,6 +132,84 @@ viewError message =
             Html.div
                 [ Attr.style "margin-block-start" "2rem", Attr.style "font-weight" "bold" ]
                 [ Html.text <| "Error: " ++ msg ]
+
+
+savedList : Sync.Settings -> Html Msg
+savedList settings =
+    case settings.state of
+        Sync.Disconnected ->
+            Html.div [ Attr.style "margin-block-start" "2rem" ]
+                [ Html.span [ Attr.class "lia-label" ] [ Html.text "Saved Classrooms" ]
+                , Html.div []
+                    (notesTile :: List.map (savedItem settings.deletePopup) settings.saved)
+                ]
+
+        _ ->
+            Html.text ""
+
+
+notesTile : Html Msg
+notesTile =
+    Html.div
+        [ Attr.style "display" "flex"
+        , Attr.style "align-items" "center"
+        , Attr.style "justify-content" "space-between"
+        , Attr.style "padding" "5px 0"
+        ]
+        [ Html.button
+            [ Event.onClick OpenNotes
+            , Attr.class "lia-btn lia-btn--transparent"
+            ]
+            [ Backend.icon Backend.Local
+            , Html.text "Own Notes (offline)"
+            ]
+        ]
+
+
+savedItem : Maybe String -> Classroom.Entry -> Html Msg
+savedItem deletePopup entry =
+    Html.div
+        [ Attr.style "display" "flex"
+        , Attr.style "align-items" "center"
+        , Attr.style "justify-content" "space-between"
+        , Attr.style "padding" "5px 0"
+        ]
+        [ Html.button
+            [ Event.onClick (LoadClassroom entry)
+            , Attr.class "lia-btn lia-btn--transparent"
+            ]
+            [ entry.backend
+                |> Backend.fromString
+                |> Maybe.map Backend.icon
+                |> Maybe.withDefault (Html.text "")
+            , Html.text entry.room
+            ]
+        , case deletePopup of
+            Just room ->
+                if room == entry.room then
+                    Popup.view
+                        { text = "Delete this saved classroom and its locally cached content? This cannot be undone."
+                        , action = { msg = ConfirmDeleteClassroom entry.room, text = "Delete" }
+                        , escape = CancelDeleteClassroom
+                        }
+
+                else
+                    deleteBtn entry.room
+
+            Nothing ->
+                deleteBtn entry.room
+        ]
+
+
+deleteBtn : String -> Html Msg
+deleteBtn room =
+    btnIcon
+        { msg = Just (AskDeleteClassroom room)
+        , title = "Delete this saved classroom"
+        , tabbable = True
+        , icon = "icon-trash"
+        }
+        [ Attr.class "lia-btn--tag lia-btn--transparent text-red-dark border-red-dark px-1" ]
 
 
 select : Bool -> Sync -> Html Msg
