@@ -134,12 +134,21 @@ export class Connector {
     console.log('deleteClassroom not implemented')
   }
 
+  // The classroom/Yjs persistence below is - exactly like `addMisc`/`getMisc`
+  // above - a Browser-connector-only feature: SCORM, xAPI and H5P have no
+  // IndexedDB-backed course database, so they intentionally no-op these
+  // methods instead of implementing them.
+
   async getYjsUpdates(_uidDB: string, _key: string): Promise<Uint8Array[]> {
     return []
   }
 
   async appendYjsUpdate(_uidDB: string, _key: string, _data: Uint8Array) {
     console.log('appendYjsUpdate not implemented')
+  }
+
+  async replaceYjsUpdates(_uidDB: string, _key: string, _data: Uint8Array) {
+    console.log('replaceYjsUpdates not implemented')
   }
 
   async clearYjsUpdates(_uidDB: string, _key: string) {

@@ -26,7 +26,7 @@ const SYNC_STEP1 = 0
  */
 function readVarUint(
   data: Uint8Array,
-  offset: number,
+  offset: number
 ): [number, number] | null {
   let num = 0
   let mult = 1
@@ -106,8 +106,47 @@ export class DexieTransport implements Transport {
   // registered in `onMessage()`.
   private pendingUpdates: Uint8Array[] = []
 
+  /** Compaction latch, see `armCompaction()`. */
+  private compactOnNextSend: boolean = false
+
   get isConnected(): boolean {
     return this._isConnected
+  }
+
+  /** Arm the one-shot cache compaction.
+   *
+   * Without this, the cache only ever grows: every `connect()` makes
+   * `GenericProvider.connect()` call `syncNow()`, which pushes a *full*
+   * `Y.encodeStateAsUpdate(doc)` through the transport - so each connect (and
+   * each BroadcastChannel exchange between two tabs of the same classroom)
+   * adds another document-sized row that is never merged or pruned. Given
+   * enough reconnects that runs into the IndexedDB storage quota, and
+   * `GenericProvider._send()` only `console.error`s a rejected write, so the
+   * resulting data loss would be silent.
+   *
+   * The compaction is safe *only* at this exact point: this method is called
+   * at the very end of `onMessage()`, i.e. after every cached row has been
+   * replayed into the document. Whatever those rows contained is therefore
+   * part of the document now, and the next frame the provider sends is
+   * `syncNow()`'s full snapshot of exactly that document - a single row that
+   * is equivalent to all of them. `replaceYjsUpdates()` swaps them in one
+   * transaction, so there is no window in which the cache is empty.
+   *
+   * The latch is deliberately scoped to the current task:
+   * `GenericProvider.connect()` runs `onMessage()` -> `syncNow()` ->
+   * `_sendUpdate()` -> `_send()` -> `transport.send()` without a single
+   * `await` in between, so the snapshot is guaranteed to be seen while the
+   * latch is set. The `queueMicrotask()` disarm makes sure that if that push
+   * ever *doesn't* happen (e.g. a future version rate-limits it away), a later
+   * *incremental* update can never be mistaken for a full snapshot and wipe
+   * the cache.
+   */
+  private armCompaction() {
+    this.compactOnNextSend = true
+
+    queueMicrotask(() => {
+      this.compactOnNextSend = false
+    })
   }
 
   async connect(config: ConnectionConfig): Promise<void> {
@@ -123,12 +162,21 @@ export class DexieTransport implements Transport {
     this._isConnected = false
     this.messageCallback = undefined
     this.pendingUpdates = []
+    this.compactOnNextSend = false
   }
 
   send(data: Uint8Array): void | Promise<void> {
     // protocol chatter (awareness, pub/sub, SyncStep1 requests) must not end
     // up in the cache, see `carriesDocumentState()`
     if (!carriesDocumentState(data)) return
+
+    if (this.compactOnNextSend) {
+      this.compactOnNextSend = false
+
+      // this frame is the full snapshot of the just-replayed document, see
+      // `armCompaction()` - it supersedes every row that was replayed
+      return Database.replaceYjsUpdates(this.uidDB, this.key, data)
+    }
 
     return Database.appendYjsUpdate(this.uidDB, this.key, data)
   }
@@ -148,6 +196,10 @@ export class DexieTransport implements Transport {
         this.messageCallback?.(update)
       }
     }
+
+    // everything that was cached is part of the document now, so the snapshot
+    // the provider is about to push can replace all of it
+    this.armCompaction()
 
     return () => {
       this.messageCallback = undefined
