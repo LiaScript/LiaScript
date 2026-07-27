@@ -20,6 +20,7 @@ import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Share
 import Service.Slide
+import Service.Sync
 import Service.TTS
 import Service.Translate
 
@@ -55,7 +56,7 @@ type Toggle
 
 
 update :
-    Maybe { title : String, comment : Inlines, effectID : Maybe Int, logo : Maybe String }
+    Maybe { title : String, comment : Inlines, effectID : Maybe Int, logo : Maybe String, readme : String }
     -> Msg
     -> Settings
     -> Return Settings Msg sub
@@ -190,6 +191,16 @@ update main msg model =
 
                      else
                         []
+                    )
+                |> Return.batchEvent
+                    (if model.sync == Just False then
+                        main
+                            |> Maybe.map .readme
+                            |> Maybe.withDefault ""
+                            |> Service.Sync.listClassrooms
+
+                     else
+                        Event.none
                     )
 
         Toggle QRCode ->
