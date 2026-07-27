@@ -1,13 +1,17 @@
 import log from '../log'
+import { IndexedDBTransport } from '../../../../node_modules/y-generic/dist/providers/indexeddb/index'
+import * as Base from '../../sync/Base/index'
 
 var sync: any
 var elmSend: Lia.Send | null
+var Database: any
 
 var Edrys
 // var Jitsi
 // var Matrix
 var PubNub
 var Gun
+var Local
 var P2PT
 var Trystero
 var WebSocket_
@@ -34,6 +38,7 @@ const Service = {
     //'jitsi',
     //'matrix',
     'ipfs',
+    'local',
     'mqtt',
     'nostr',
     'pubnub',
@@ -44,8 +49,9 @@ const Service = {
     'websocket',
   ],
 
-  init: function (elmSend_: Lia.Send) {
+  init: function (elmSend_: Lia.Send, database_: any) {
     elmSend = elmSend_
+    Database = database_
 
     if (window['LIA']) {
       window['LIA']['classroom'] = {
@@ -107,6 +113,24 @@ const Service = {
               }
 
               sync = new Gun.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                false,
+              )
+              break
+
+            case 'local':
+              if (!Local) {
+                import('../../sync/Local/index').then((e) => {
+                  Local = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new Local.Sync(
                 cbConnection,
                 elmSend,
                 onConnect,
@@ -266,7 +290,18 @@ const Service = {
           }
         }
 
-        if (sync) sync.connect(event.message.param.config)
+        if (sync) {
+          sync.connect(event.message.param.config)
+
+          const config = event.message.param.config
+          if (config.persistent && Database) {
+            Database.saveClassroom(config.course, {
+              room: config.room,
+              backend: config.fullBackend,
+              password: config.password,
+            })
+          }
+        }
 
         break
       }
@@ -281,6 +316,33 @@ const Service = {
           window.LIA.classroom.connected = false
           CALLBACK.disconnect.forEach((cb) => cb())
         }
+
+        break
+      }
+
+      case 'list_classrooms': {
+        const course = event.message.param
+        const list = Database ? await Database.getClassrooms(course) : []
+
+        if (elmSend) {
+          elmSend({
+            ...event,
+            message: { cmd: 'classrooms', param: list },
+            reply: true,
+          })
+        }
+
+        break
+      }
+
+      case 'delete_classroom': {
+        const { course, room } = event.message.param
+
+        if (Database) await Database.deleteClassroom(course, room)
+        await IndexedDBTransport.deleteDatabase(
+          Base.docId(course, room),
+          Base.PERSIST_PREFIX,
+        )
 
         break
       }
