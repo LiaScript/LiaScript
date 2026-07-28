@@ -175,7 +175,7 @@ icon via =
                 "icon-peerjs icon-xs"
 
             SimplePeer _ ->
-                "icon-simplepeer icon-xs"
+                "icon-webrtc icon-xs"
 
             Local ->
                 "icon-pencil icon-xs"

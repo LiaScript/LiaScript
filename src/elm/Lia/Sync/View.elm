@@ -51,10 +51,12 @@ view settings =
                 |> Maybe.withDefault (Html.text "")
             ]
         , select open settings.sync
-        , savedList settings
         , case settings.sync.select of
             Nothing ->
-                Backend.info
+                Html.div []
+                    [ savedList settings
+                    , Backend.info
+                    ]
 
             Just ( support, via ) ->
                 Html.div []
