@@ -113,6 +113,7 @@ init supportedBackends =
             , Via.SimplePeer { signaling = "", iceServers = "" }
             ]
                 |> List.map (isMember supported)
+                |> (::) ( True, Via.Local )
         , select = Nothing
         , open = False
         }
