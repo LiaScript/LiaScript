@@ -18,8 +18,8 @@ import Lia.Section exposing (Section)
 import Lia.Utils exposing (btnIcon, noTranslate)
 
 
-view : Lang -> (Section -> Config Markdown.Msg) -> Model -> Html Msg
-view lang config model =
+view : Lang -> Bool -> (Section -> Config Markdown.Msg) -> Model -> Html Msg
+view lang lightMode config model =
     Html.div
         (noTranslate
             [ Attr.style "width" "100%"
@@ -82,6 +82,14 @@ view lang config model =
                 , Attr.class "lia-code__input"
                 , Editor.onCtrlEnter Send
                 , A11y_Role.textBox
+                , Editor.theme <|
+                    "cloud9_"
+                        ++ (if lightMode then
+                                "day"
+
+                            else
+                                "night"
+                           )
                 ]
                 []
             ]

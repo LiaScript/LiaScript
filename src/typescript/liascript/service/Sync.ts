@@ -307,10 +307,10 @@ const Service = {
 
           const config = event.message.param.config
 
-          // the "Own Notes" classroom is always presented by its own tile
-          // within the UI, it must not show up as a deletable entry within
-          // the list of saved classrooms
-          if (config.persistent && Database && config.fullBackend !== 'Local') {
+          // the "Own Notes" classroom still gets its "updated" timestamp
+          // recorded here; the UI pins it to its own tile instead of
+          // rendering it as a deletable entry in the saved-classrooms list
+          if (config.persistent && Database) {
             // a failing save must not tear down an otherwise working
             // connection, thus this is only reported to the console
             Database.saveClassroom(config.uidDB || config.course, {
