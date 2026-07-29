@@ -265,7 +265,7 @@ viewPanes screen model =
                     , Attr.style "margin-block-start" "0px"
                     ]
             )
-            (Chat.view model.translation (initConfig screen model) model.chat
+            (Chat.view model.translation model.settings.light (initConfig screen model) model.chat
                 |> Html.map UpdateChat
             )
             model.pane

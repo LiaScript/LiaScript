@@ -1,4 +1,4 @@
-module Lia.Sync.Classroom exposing (Entry, decoder)
+module Lia.Sync.Classroom exposing (Entry, decoder, notesRoomName)
 
 import Json.Decode as JD
 
@@ -29,3 +29,11 @@ entryDecoder =
         (JD.field "backend" JD.string)
         (JD.field "password" (JD.nullable JD.string))
         (JD.field "updated" JD.int)
+
+
+{-| The fixed room name used for the "Own Notes" shortcut — a purely local,
+never-networked classroom that every course gets for free.
+-}
+notesRoomName : String
+notesRoomName =
+    "__notes__"
