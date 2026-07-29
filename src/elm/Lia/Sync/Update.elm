@@ -290,7 +290,7 @@ update session model msg =
                 | sync =
                     { sync
                         | sync = { innerSync | select = Just ( True, Backend.Local ), open = False }
-                        , room = notesRoomName
+                        , room = Classroom.notesRoomName
                         , password = ""
                         , persistent = True
                     }
@@ -330,7 +330,11 @@ update session model msg =
                                 , course = model.readme
                                 , room = sync.room
                                 , password = sync.password
-                                , persistent = sync.persistent
+
+                                -- the "Own Notes" checkbox is always shown as
+                                -- checked (and disabled) for a Local backend,
+                                -- so it must always actually persist too
+                                , persistent = sync.persistent || backend == Backend.Local
                                 }
                             )
 
@@ -377,11 +381,6 @@ updateSync msg sync =
 
 closeSelect sync =
     { sync | open = False }
-
-
-notesRoomName : String
-notesRoomName =
-    "__notes__"
 
 
 isConnected : Settings -> Bool

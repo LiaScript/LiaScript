@@ -13,6 +13,7 @@ import Lia.Sync.Types as Sync exposing (State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
 import Lia.Sync.Via as Backend exposing (Backend)
 import Lia.Utils exposing (btn, btnIcon)
+import Time
 
 
 view : Sync.Settings -> Html Msg
@@ -54,13 +55,14 @@ view settings =
         , case settings.sync.select of
             Nothing ->
                 Html.div []
-                    [ savedList settings
+                    [ savedList Nothing settings
                     , Backend.info
                     ]
 
             Just ( support, via ) ->
                 Html.div []
-                    [ Backend.input
+                    [ savedList (Just via) settings
+                    , Backend.input
                         { active = open && support
                         , msg = Room
                         , type_ = "text"
@@ -136,22 +138,160 @@ viewError message =
                 [ Html.text <| "Error: " ++ msg ]
 
 
-savedList : Sync.Settings -> Html Msg
-savedList settings =
+{-| Show the locally saved classrooms. The "Own Notes" entry (if it has ever
+been connected to) is always pinned as its own tile rather than a regular
+deletable row, on both the overview and its own backend page.
+
+On the overview page (`context == Nothing`) every other saved entry is
+listed alongside that pinned tile. On a backend-specific page
+(`context == Just via`) the list is narrowed down to entries saved for that
+backend; if none match (and it isn't the Local page, which always has its
+pinned tile), nothing is rendered at all.
+
+-}
+savedList : Maybe Backend -> Sync.Settings -> Html Msg
+savedList context settings =
     case settings.state of
         Sync.Disconnected ->
-            Html.div [ Attr.style "margin-block-start" "2rem" ]
-                [ Html.span [ Attr.class "lia-label" ] [ Html.text "Saved Classrooms" ]
-                , Html.div []
-                    (notesTile :: List.map (savedItem settings.deletePopup) settings.saved)
-                ]
+            let
+                notes =
+                    settings.saved |> List.filter isNotesEntry |> List.head
+
+                header rows =
+                    Html.div [ Attr.style "margin-block-start" "2rem" ]
+                        [ Html.span [ Attr.class "lia-label" ] [ Html.text "Saved Classrooms" ]
+                        , listContainer rows
+                        ]
+            in
+            case context of
+                Nothing ->
+                    settings.saved
+                        |> List.filter (isNotesEntry >> not)
+                        |> List.map (savedItem settings.deletePopup)
+                        |> (::) (notesTile notes)
+                        |> header
+
+                Just Backend.Local ->
+                    settings.saved
+                        |> List.filter (\entry -> matchesBackend Backend.Local entry && not (isNotesEntry entry))
+                        |> List.map (savedItem settings.deletePopup)
+                        |> (::) (notesTile notes)
+                        |> header
+
+                Just via ->
+                    case List.filter (matchesBackend via) settings.saved of
+                        [] ->
+                            Html.text ""
+
+                        entries ->
+                            header (List.map (savedItem settings.deletePopup) entries)
 
         _ ->
             Html.text ""
 
 
-notesTile : Html Msg
-notesTile =
+{-| Does this saved entry belong to the given backend? Compared by backend
+_type_ (e.g. any saved GUN room matches a GUN backend, regardless of its
+stored relay-server URL) via `Backend.eq`.
+-}
+matchesBackend : Backend -> Classroom.Entry -> Bool
+matchesBackend via entry =
+    entry.backend
+        |> Backend.fromString
+        |> Maybe.map (Backend.eq via)
+        |> Maybe.withDefault False
+
+
+{-| The "Own Notes" entry is the one saved (Local, `notesRoomName`) room —
+it is pinned to its own tile rather than shown as a regular deletable row.
+-}
+isNotesEntry : Classroom.Entry -> Bool
+isNotesEntry entry =
+    entry.room == Classroom.notesRoomName && matchesBackend Backend.Local entry
+
+
+{-| Bordered, height-capped, scrollable box for the saved-classrooms rows, so
+a long list doesn't push the rest of the modal down.
+-}
+listContainer : List (Html msg) -> Html msg
+listContainer =
+    Html.div
+        [ Attr.style "border" "1px solid rgb(var(--color-border))"
+        , Attr.style "border-radius" "4px"
+        , Attr.style "max-height" "12rem"
+        , Attr.style "overflow-y" "auto"
+        , Attr.style "padding" "0 10px"
+        ]
+
+
+{-| Format a stored `updated` timestamp (epoch milliseconds) as
+`DD.MM.YYYY HH:MM`, in UTC (no user-local timezone is plumbed through the
+app anywhere yet).
+-}
+formatDate : Int -> String
+formatDate ms =
+    let
+        posix =
+            Time.millisToPosix ms
+
+        pad n =
+            n |> String.fromInt |> String.padLeft 2 '0'
+
+        month =
+            case Time.toMonth Time.utc posix of
+                Time.Jan ->
+                    1
+
+                Time.Feb ->
+                    2
+
+                Time.Mar ->
+                    3
+
+                Time.Apr ->
+                    4
+
+                Time.May ->
+                    5
+
+                Time.Jun ->
+                    6
+
+                Time.Jul ->
+                    7
+
+                Time.Aug ->
+                    8
+
+                Time.Sep ->
+                    9
+
+                Time.Oct ->
+                    10
+
+                Time.Nov ->
+                    11
+
+                Time.Dec ->
+                    12
+    in
+    pad (Time.toDay Time.utc posix)
+        ++ "."
+        ++ pad month
+        ++ "."
+        ++ String.fromInt (Time.toYear Time.utc posix)
+        ++ " "
+        ++ pad (Time.toHour Time.utc posix)
+        ++ ":"
+        ++ pad (Time.toMinute Time.utc posix)
+
+
+{-| The pinned "Own Notes" shortcut. Shows the last-used date once the
+notes room has actually been connected to at least once; before that,
+there is nothing to show a date for.
+-}
+notesTile : Maybe Classroom.Entry -> Html Msg
+notesTile entry =
     Html.div
         [ Attr.style "display" "flex"
         , Attr.style "align-items" "center"
@@ -164,8 +304,21 @@ notesTile =
             ]
             [ Backend.icon Backend.Local
             , Html.text "Own Notes (offline)"
+            , entry
+                |> Maybe.map (.updated >> dateSpan)
+                |> Maybe.withDefault (Html.text "")
             ]
         ]
+
+
+dateSpan : Int -> Html msg
+dateSpan updated =
+    Html.span
+        [ Attr.style "opacity" "0.6"
+        , Attr.style "font-size" "smaller"
+        , Attr.style "padding-inline-start" "8px"
+        ]
+        [ Html.text (formatDate updated) ]
 
 
 savedItem : Maybe ( String, String ) -> Classroom.Entry -> Html Msg
@@ -185,6 +338,7 @@ savedItem deletePopup entry =
                 |> Maybe.map Backend.icon
                 |> Maybe.withDefault (Html.text "")
             , Html.text entry.room
+            , dateSpan entry.updated
             ]
         , case deletePopup of
             Just ( room, backend ) ->
