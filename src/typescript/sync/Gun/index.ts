@@ -153,7 +153,11 @@ export class Sync extends Base.Sync {
         this.onReceive?.(topic, message)
       })
 
-      this.provider.connect({ room: this.store })
+      this.provider.connect({
+        room: this.store,
+        persistent: this.persistent,
+        doc: this.persistent ? this.db.doc : undefined,
+      })
     } else {
       let message = 'GunDB unknown error'
 
