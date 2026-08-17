@@ -84,7 +84,17 @@ export function allowedProtocol(url: string) {
     url.startsWith('ipfs://') ||
     url.startsWith('ipns://') ||
     url.startsWith('blob:') ||
-    url.startsWith('data:')
+    url.startsWith('data:') ||
+    url.startsWith('sms:') ||
+    url.startsWith('geo:') ||
+    url.startsWith('webcal:') ||
+    url.startsWith('sip:') ||
+    url.startsWith('sips:') ||
+    url.startsWith('ftp:') ||
+    url.startsWith('ftps:') ||
+    url.startsWith('magnet:') ||
+    url.startsWith('bitcoin:') ||
+    url.startsWith('matrix:')
   )
 }
 
