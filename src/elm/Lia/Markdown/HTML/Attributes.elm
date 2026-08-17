@@ -290,6 +290,37 @@ allowedProtocol url =
         "tel" ->
             True
 
+        -- New prot
+        "sms" ->
+            True
+
+        "geo" ->
+            True
+
+        "webcal" ->
+            True
+
+        "sip" ->
+            True
+
+        "sips" ->
+            True
+
+        "ftp" ->
+            True
+
+        "ftps" ->
+            True
+
+        "magnet" ->
+            True
+
+        "bitcoin" ->
+            True
+
+        "matrix" ->
+            True
+
         _ ->
             False
 
