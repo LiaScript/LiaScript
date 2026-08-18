@@ -186,7 +186,7 @@ viewSummary sync header data =
             Html.div []
 
 
-viewVectorSync : Config sub -> Analysis -> List ( String, Inlines ) -> Maybe (Dict String Sync) -> Html msg -> Html msg
+viewVectorSync : Config sub -> Analysis -> List ( String, body ) -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewVectorSync config analyze questions syncData survey =
     case
         ( syncData

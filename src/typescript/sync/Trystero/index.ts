@@ -100,9 +100,6 @@ export class Sync extends Base.Sync {
 
       this.provider = new GenericProvider(this.db.doc, this.transport)
 
-      // Wire awareness for ephemeral peer presence and cursors.
-      this.db.setAwareness(this.provider.awareness, this.name)
-
       // Same two-path connect as Gun:
       //  A) First peer: 'synced' never fires (no remote to exchange SyncStep2).
       //     Fallback timer fires after 2 s.
@@ -142,7 +139,12 @@ export class Sync extends Base.Sync {
         this.onReceive?.(topic, message)
       })
 
-      this.provider.connect({ room: id })
+      this.provider.connect({ room: id }).then(() => {
+        // Wire awareness only once the transport is actually connected, so
+        // the initial local-state broadcast isn't dropped by a transport
+        // that silently no-ops send() while unconnected.
+        this.db.setAwareness(this.provider.awareness, this.name)
+      })
     } else {
       let message = this.backend + ' unknown error'
       if (error) message = 'Could not load resource: ' + error
