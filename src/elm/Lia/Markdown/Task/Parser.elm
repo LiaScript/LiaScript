@@ -71,7 +71,7 @@ the marker, exactly as with regular (un-)ordered list items.
 -}
 item : Parser Context Markdown.Block -> Parser Context ( Bool, Markdown.Blocks )
 item blocks =
-    Indent.push "    "
+    Indent.push "      "
         |> keep
             (marker
                 |> map Tuple.pair

@@ -470,7 +470,8 @@ ordered_list : Parser Context (List ( String, Markdown.Blocks ))
 ordered_list =
     Indent.push "   "
         |> keep
-            (regex "[ \t]*-?\\d+"
+            (regex "[ \t]*"
+                |> keep (regex "-?\\d+")
                 |> map Tuple.pair
                 |> ignore (regex "\\.[ \t]*")
                 |> andMap (sepBy (many newlineWithIndentation) blocks)
@@ -575,7 +576,7 @@ paragraph : Parser Context Inlines
 paragraph =
     checkParagraph
         |> ignore Indent.skip
-        |> keep (many1 (Indent.check |> ignore allowedLine |> keep line |> ignore newline))
+        |> keep (many1 (Indent.check |> ignore (regex "[ \t]*") |> ignore allowedLine |> keep line |> ignore newline))
         |> map (List.intersperse [ Chars " " [] ] >> List.concat >> combine)
 
 

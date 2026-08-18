@@ -27,6 +27,7 @@ import Combine
         , string
         , succeed
         , withColumn
+        , withState
         )
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -84,6 +85,7 @@ dispatch, which already strips any such blank line before this parser even
 starts), `Quiz.Parser.hints` is called directly, right after a quiz's own type
 has been parsed, with no such step in between - so a hint block separated from
 the preceding option list by a blank line needs `blockGroup` to skip it itself.
+
 -}
 blockGroup : Parser Context Markdown.Block -> Parser Context a -> Parser Context ( List a, List Markdown.Blocks )
 blockGroup blocks button =
@@ -96,30 +98,51 @@ blockGroup blocks button =
 `button`-content within brackets), followed by its (possibly multi-block) content,
 indented relative to the marker.
 
-The required continuation indent is measured *dynamically*, relative to how far
-this particular entry's own marker is indented (its own leading whitespace,
-captured below before pushing), rather than a fixed absolute amount - this is
-what lets a group of sibling entries that are all uniformly offset under a
-preceding paragraph (to visually nest them under a question, with no genuine
-nesting intended) stay flat siblings of each other, while content indented
-*further than that shared baseline* still nests as a sub-entry - exactly like
-CommonMark's own list-item content-indentation rule.
+The required continuation indent is measured _dynamically_, as the exact
+physical column right after this entry's marker, minus however much of that
+is already accounted for by the currently-active `Indent` stack (e.g. an
+enclosing list's/blockquote's own pushed level) - so nested content must line
+up directly under the marker's own text, exactly like a Task-list item, while
+never double-counting an ancestor's contribution and never under-counting a
+shared leading whitespace this entry's group happens to carry (e.g. when the
+whole group is visually offset under a preceding question) that never made it
+onto the stack anywhere. The two failure modes this specifically guards
+against: (1) an absolute column on its own double-counts already-active
+indentation (an option one level inside a list would require the list's own
+width twice); (2) a *marker-width-only* measurement (ignoring the current
+absolute column entirely) works for constructs reached through
+`Lia.Markdown.Parser.blocks`'s own dispatch, which already strips ambient
+indentation before this parser ever runs - but breaks for `Quiz.Parser.hints`,
+which calls this same `item` directly, with no such stripping step in
+between, silently baking a still-unconsumed ancestor prefix into what should
+have been just the marker's own width.
+
 -}
 item : Parser Context Markdown.Block -> Parser Context a -> Parser Context ( a, Markdown.Blocks )
 item blocks button =
     regex "[ \t]*"
         |> keep
-            (withColumn
-                (\col ->
-                    Indent.push (String.repeat (col + 4) " ")
-                        |> keep
-                            (marker button
-                                |> ignore emptyMarkerLine
-                                |> map Tuple.pair
-                                |> andMap (sepBy1 (many newlineWithIndentation) blocks)
+            (marker button
+                |> andThen
+                    (\result ->
+                        withColumn
+                            (\after ->
+                                withState
+                                    (\state ->
+                                        let
+                                            active =
+                                                state.indentation
+                                                    |> String.concat
+                                                    |> String.length
+                                        in
+                                        Indent.push (String.repeat (after - active) " ")
+                                            |> ignore emptyMarkerLine
+                                            |> keep (sepBy1 (many newlineWithIndentation) blocks)
+                                            |> map (Tuple.pair result)
+                                            |> ignore Indent.pop
+                                    )
                             )
-                        |> ignore Indent.pop
-                )
+                    )
             )
 
 

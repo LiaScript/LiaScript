@@ -135,8 +135,8 @@ generic =
 
 hints : Parser Context Markdown.Block -> Parser Context (Hints Markdown.Block)
 hints blocks =
-    string "[?]"
-        |> Vector.blockGroup blocks
+    Indent.maybeCheck
+        |> keep (Vector.blockGroup blocks (string "[?]"))
         |> map Tuple.second
         |> optional []
 

@@ -92,6 +92,7 @@ code_body char len =
     manyTill
         (Indent.maybeCheck |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\n")))
         (Indent.check
+            |> ignore (regex "[ \t]*")
             |> keep
                 (regex control_frame
                     |> ignore spaces
