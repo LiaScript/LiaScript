@@ -96,7 +96,7 @@ nested_Suite =
             \_ ->
                 let
                     ( blocks, state ) =
-                        parseWithState "- [ ] item one\n    - [ ] nested one\n    - [x] nested two\n- [x] item two\n"
+                        parseWithState "- [ ] item one\n      - [ ] nested one\n      - [x] nested two\n- [x] item two\n"
                 in
                 Expect.all
                     [ \_ ->
