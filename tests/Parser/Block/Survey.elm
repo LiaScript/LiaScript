@@ -4,6 +4,8 @@ module Parser.Block.Survey exposing
     , indentedTypes_Suite
     , matrixIndentation_Suite
     , matrix_Suite
+    , optionInBlockquote_Suite
+    , optionInBulletList_Suite
     , reservedIds_Suite
     , select_Suite
     , textInput_Suite
@@ -12,6 +14,7 @@ module Parser.Block.Survey exposing
     )
 
 import Expect
+import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.Types as QuizTypes
 import Lia.Markdown.Survey.Types exposing (Analysis(..), Type(..))
@@ -471,5 +474,105 @@ indentedTypes_Suite =
                             , hints = []
                             }
                             Nothing
+                        ]
+        ]
+
+
+{-| A Survey-Vector can itself be nested inside a bullet-list item, exactly
+like a Quiz-Vector (see `Parser.Block.Quiz.optionInBulletList_Suite`) - same
+`Vector.Parser.item` machinery, same regression coverage for the
+list-indentation double-counting bug fixed the same session.
+-}
+optionInBulletList_Suite : Test
+optionInBulletList_Suite =
+    describe "a Survey-Vector can be nested inside a bullet-list item"
+        [ test "two options stay one survey group, nested inside the list item" <|
+            \_ ->
+                {- * foo
+                   * survey
+
+                     [[red]] is it red
+
+                     [[green]] green
+                -}
+                parse "* foo\n* survey\n\n  [[red]] is it red\n\n  [[green]] green\n"
+                    |> Expect.equal
+                        [ BulletList []
+                            [ [ paragraph "foo" ]
+                            , [ paragraph "survey"
+                              , Survey []
+                                    { survey =
+                                        Vector True
+                                            [ ( "red", [ paragraph "is it red" ] )
+                                            , ( "green", [ paragraph "green" ] )
+                                            ]
+                                            Categorical
+                                    , id = 0
+                                    }
+                              ]
+                            ]
+                        ]
+        , test "an option's fenced code block still nests correctly, even though the list's own indentation is also active" <|
+            \_ ->
+                {- * foo
+                   * survey
+
+                     [[red]] is it red
+
+                             ``` js
+                             console.log("x")
+                             ```
+
+                     [[green]] green
+                -}
+                parse "* foo\n* survey\n\n  [[red]] is it red\n\n          ``` js\n          console.log(\"x\")\n          ```\n\n  [[green]] green\n"
+                    |> Expect.equal
+                        [ BulletList []
+                            [ [ paragraph "foo" ]
+                            , [ paragraph "survey"
+                              , Survey []
+                                    { survey =
+                                        Vector True
+                                            [ ( "red", [ paragraph "is it red", Code (Code.Highlight 0) ] )
+                                            , ( "green", [ paragraph "green" ] )
+                                            ]
+                                            Categorical
+                                    , id = 0
+                                    }
+                              ]
+                            ]
+                        ]
+        ]
+
+
+{-| Same as `optionInBulletList_Suite`, but nested inside a blockquote instead
+of a list (see `Parser.Block.Quiz.optionInBlockquote_Suite`).
+-}
+optionInBlockquote_Suite : Test
+optionInBlockquote_Suite =
+    describe "a Survey-Vector can be nested inside a blockquote"
+        [ test "an option's fenced code block still nests correctly inside a blockquote" <|
+            \_ ->
+                {- > [[red]] is it red
+                   >
+                   >        ``` js
+                   >        console.log("x")
+                   >        ```
+                   >
+                   > [[green]] green
+                -}
+                parse "> [[red]] is it red\n>\n>        ``` js\n>        console.log(\"x\")\n>        ```\n>\n> [[green]] green\n"
+                    |> Expect.equal
+                        [ Quote [] Nothing
+                            [ Survey []
+                                { survey =
+                                    Vector True
+                                        [ ( "red", [ paragraph "is it red", Code (Code.Highlight 0) ] )
+                                        , ( "green", [ paragraph "green" ] )
+                                        ]
+                                        Categorical
+                                , id = 0
+                                }
+                            ]
                         ]
         ]
