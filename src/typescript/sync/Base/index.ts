@@ -393,7 +393,6 @@ export class Sync {
   }
 
   publish(event: Lia.Event) {
-    console.warn('publish needs to be implemented', event)
     switch (event.message.cmd) {
       case 'update': {
         break
