@@ -28,11 +28,15 @@ export class Sync extends Base.Sync {
     super.connect(data)
 
     this.signaling = data.config?.signaling
-      ? data.config.signaling
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean)
-      : undefined
+      ?.split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+
+    if (!this.signaling?.length) {
+      this.signaling = process.env.WEBRTC_SIGNALING_SERVERS
+        ? JSON.parse(process.env.WEBRTC_SIGNALING_SERVERS)
+        : undefined
+    }
 
     if (!this.signaling || this.signaling.length === 0) {
       return this.sendDisconnectError(
@@ -42,7 +46,7 @@ export class Sync extends Base.Sync {
 
     if (data.config?.iceServers) {
       try {
-        this.iceServers = JSON.parse(data.config.iceServers)
+        this.iceServers = JSON.parse(data.config.iceServers || process.env.WEBRTC_ICE_SERVERS || 'null')
       } catch {
         console.warn(
           'SimplePeer: invalid iceServers JSON, ignoring:',
