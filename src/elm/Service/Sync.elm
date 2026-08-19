@@ -106,6 +106,18 @@ connect param =
                             , ( "iceServers", JE.string iceServers )
                             ]
 
+                    Via.NoStr { relayUrls, turnConfig } ->
+                        trysteroConfig relayUrls turnConfig
+
+                    Via.MQTT { relayUrls, turnConfig } ->
+                        trysteroConfig relayUrls turnConfig
+
+                    Via.Torrent { relayUrls, turnConfig } ->
+                        trysteroConfig relayUrls turnConfig
+
+                    Via.IPFS { turnConfig } ->
+                        trysteroConfig "" turnConfig
+
                     _ ->
                         JE.null
               )
@@ -114,6 +126,20 @@ connect param =
     ]
         |> JE.object
         |> publish "connect"
+
+
+trysteroConfig : String -> String -> JE.Value
+trysteroConfig relayUrls turnConfig =
+    JE.object
+        [ ( "relayUrls"
+          , relayUrls
+                |> String.split ","
+                |> List.map String.trim
+                |> List.filter (String.isEmpty >> not)
+                |> JE.list JE.string
+          )
+        , ( "turnConfig", JE.string turnConfig )
+        ]
 
 
 disconnect : String -> Event

@@ -14,6 +14,8 @@ const joinRoomFns: Record<Backend, any> = {
 export class Sync extends Base.Sync {
   private transport?: TrysteroTransport
   private backend: Backend
+  private relayUrls?: string[]
+  private turnConfig?: any[]
   private syncFallbackTimer: ReturnType<typeof setTimeout> | null = null
 
   constructor(
@@ -49,11 +51,26 @@ export class Sync extends Base.Sync {
     course: string
     room: string
     password?: string
-    config?: string[]
+    config?: { relayUrls?: string[]; turnConfig?: string }
     name: string
     mode: number
   }) {
     super.connect(data)
+
+    this.relayUrls = data.config?.relayUrls?.length
+      ? data.config.relayUrls
+      : undefined
+
+    try {
+      this.turnConfig = JSON.parse(
+        data.config?.turnConfig || process.env.WEBRTC_ICE_SERVERS || 'null',
+      )
+    } catch {
+      console.warn(
+        'Trystero: invalid turnConfig JSON, ignoring:',
+        data.config?.turnConfig,
+      )
+    }
 
     if (joinRoomFns[this.backend]) {
       this.init(true)
@@ -96,6 +113,8 @@ export class Sync extends Base.Sync {
         appId: 'liascript',
         password: this.password,
         ...(stun ? { rtcConfig: stun } : {}),
+        ...(this.relayUrls ? { relayUrls: this.relayUrls } : {}),
+        ...(this.turnConfig ? { turnConfig: this.turnConfig } : {}),
       })
 
       this.provider = new GenericProvider(this.db.doc, this.transport)

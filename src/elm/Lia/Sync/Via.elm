@@ -27,12 +27,12 @@ type Backend
       --| Jitsi String
       --| Matrix { baseURL : String, userId : String, accessToken : String }
     | P2PT String
-    | IPFS
+    | IPFS { turnConfig : String }
     | PubNub { pubKey : String, subKey : String }
       -- Trystero
-    | NoStr
-    | MQTT
-    | Torrent
+    | NoStr { relayUrls : String, turnConfig : String }
+    | MQTT { relayUrls : String, turnConfig : String }
+    | Torrent { relayUrls : String, turnConfig : String }
     | WebSocket { url : String }
     | PeerJS { host : String, port_ : String, path : String, iceServers : String }
     | SimplePeer { signaling : String, iceServers : String }
@@ -45,17 +45,41 @@ toString full via =
         Edrys ->
             "Edrys"
 
-        NoStr ->
+        NoStr { relayUrls, turnConfig } ->
             "NoStr"
+                ++ (if full then
+                        "|" ++ relayUrls ++ "|" ++ turnConfig
 
-        MQTT ->
+                    else
+                        ""
+                   )
+
+        MQTT { relayUrls, turnConfig } ->
             "MQTT"
+                ++ (if full then
+                        "|" ++ relayUrls ++ "|" ++ turnConfig
 
-        Torrent ->
+                    else
+                        ""
+                   )
+
+        Torrent { relayUrls, turnConfig } ->
             "Torrent"
+                ++ (if full then
+                        "|" ++ relayUrls ++ "|" ++ turnConfig
 
-        IPFS ->
+                    else
+                        ""
+                   )
+
+        IPFS { turnConfig } ->
             "IPFS"
+                ++ (if full then
+                        "|" ++ turnConfig
+
+                    else
+                        ""
+                   )
 
         GUN { urls, persistent } ->
             "GUN"
@@ -146,16 +170,16 @@ icon via =
             GUN _ ->
                 "icon-gundb icon-xs"
 
-            NoStr ->
+            NoStr _ ->
                 "icon-nostr icon-xs"
 
-            MQTT ->
+            MQTT _ ->
                 "icon-mqtt icon-xs"
 
-            Torrent ->
+            Torrent _ ->
                 "icon-torrent icon-xs"
 
-            IPFS ->
+            IPFS _ ->
                 "icon-ipfs icon-xs"
 
             -- Jitsi _ ->
@@ -193,16 +217,37 @@ fromString via =
             Just Edrys
 
         [ "nostr" ] ->
-            Just NoStr
+            Just (NoStr { relayUrls = "", turnConfig = "" })
+
+        [ "nostr", relayUrls ] ->
+            Just (NoStr { relayUrls = relayUrls, turnConfig = "" })
+
+        [ "nostr", relayUrls, turnConfig ] ->
+            Just (NoStr { relayUrls = relayUrls, turnConfig = turnConfig })
 
         [ "mqtt" ] ->
-            Just MQTT
+            Just (MQTT { relayUrls = "", turnConfig = "" })
+
+        [ "mqtt", relayUrls ] ->
+            Just (MQTT { relayUrls = relayUrls, turnConfig = "" })
+
+        [ "mqtt", relayUrls, turnConfig ] ->
+            Just (MQTT { relayUrls = relayUrls, turnConfig = turnConfig })
 
         [ "ipfs" ] ->
-            Just IPFS
+            Just (IPFS { turnConfig = "" })
+
+        [ "ipfs", turnConfig ] ->
+            Just (IPFS { turnConfig = turnConfig })
 
         [ "torrent" ] ->
-            Just Torrent
+            Just (Torrent { relayUrls = "", turnConfig = "" })
+
+        [ "torrent", relayUrls ] ->
+            Just (Torrent { relayUrls = relayUrls, turnConfig = "" })
+
+        [ "torrent", relayUrls, turnConfig ] ->
+            Just (Torrent { relayUrls = relayUrls, turnConfig = turnConfig })
 
         [ "gun" ] ->
             Just (GUN { urls = "", persistent = False })
@@ -383,18 +428,19 @@ infoOn supported about =
                 , allowScripts
                 ]
 
-            ( IPFS, _ ) ->
+            ( IPFS _, _ ) ->
                 [ link "IPFS (InterPlanetary File System)" "https://ipfs.io"
                 , Html.text " is a peer-to-peer hypermedia protocol designed to make the web faster, safer, and more open. "
                 , Html.text "It enables users to host and share content in a decentralized manner, eliminating the need for traditional centralized servers. "
                 , Html.text "In the context of browser-based Pub/Sub (Publish/Subscribe) messaging, IPFS can facilitate real-time communication by allowing browsers to publish messages to specific topics and subscribe to receive messages from those topics. "
                 , Html.text "This decentralized approach enhances data availability and resilience, making it suitable for applications like chat or live streaming."
+                , trysteroTurnHint
                 , Html.br [] []
                 , Html.br [] []
                 , allowScripts
                 ]
 
-            ( NoStr, _ ) ->
+            ( NoStr _, _ ) ->
                 [ link "NoStr" "https://nostr.com"
                 , Html.text " is a decentralized protocol designed for creating a censorship-resistant global social network."
                 , Html.text "The acronym stands for \"Notes and Other Stuff Transmitted by Relays\""
@@ -402,28 +448,31 @@ infoOn supported about =
                 , Html.text "Users are identified by public keys, and all events (like messages or updates) are signed for verification. "
                 , Html.text "NoStr's decentralization ensures resilience against censorship and single points of failure, as data is distributed across multiple nodes. "
                 , Html.text "It's an open standard, allowing anyone to build upon it, and its design promotes freedom of speech and global accessibility."
+                , trysteroRelayHint "relay"
                 , Html.br [] []
                 , Html.br [] []
                 , allowScripts
                 ]
 
-            ( MQTT, _ ) ->
+            ( MQTT _, _ ) ->
                 [ link "MQTT (Message Queuing Telemetry Transport)" "https://mqtt.org"
                 , Html.text " is a lightweight, publish-subscribe messaging protocol designed for machine-to-machine (M2M) communication, particularly in the Internet of Things (IoT) and industrial IoT (IIoT) contexts. "
                 , Html.text "It enables devices to efficiently publish and subscribe to data over the Internet, facilitating communication between embedded devices, sensors, and industrial PLCs. "
                 , Html.text "MQTT operates over a transport protocol like TCP/IP, ensuring ordered, lossless, bi-directional connections."
                 , Html.text "The protocol is event-driven, with a broker managing the distribution of messages between publishers and subscribers based on topics. "
                 , Html.text "This decoupling allows for scalable and reliable data exchange, making MQTT a standard for IoT data transmission."
+                , trysteroRelayHint "broker"
                 , Html.br [] []
                 , Html.br [] []
                 , allowScripts
                 ]
 
-            ( Torrent, _ ) ->
+            ( Torrent _, _ ) ->
                 [ link "Torrent" "https://www.beautifulcode.co/blog/58-understanding-bittorrent-protocol"
                 , Html.text " is a peer-to-peer file-sharing protocol used for distributing large files across a network of computers. "
                 , Html.text "In the context of browser-based Pub/Sub (Publish/Subscribe) messaging, Torrent can facilitate the distribution of messages or data across a network of peers, enabling efficient, decentralized communication without a central server. "
                 , Html.text "This approach is particularly useful for real-time applications like chat or live streaming, ensuring data is quickly and reliably distributed to all interested peers."
+                , trysteroRelayHint "tracker"
                 , Html.br [] []
                 , Html.br [] []
                 , allowScripts
@@ -553,6 +602,16 @@ allowScripts =
     Html.text "If you want to allow scripts to be executed in the chat, you can check this box, allowing for dynamic content and interactivity. However, please be cautious as this may pose security risks if untrusted code is executed."
 
 
+trysteroTurnHint : Html msg
+trysteroTurnHint =
+    Html.text " This backend still uses WebRTC for the actual data transfer, so under \"Advanced settings\" you can provide TURN servers to improve connectivity in restricted networks."
+
+
+trysteroRelayHint : String -> Html msg
+trysteroRelayHint kind =
+    Html.text (" Under \"Advanced settings\" you can provide custom " ++ kind ++ " URLs instead of the defaults, as well as TURN servers, since this backend still uses WebRTC for the actual data transfer.")
+
+
 link : String -> String -> Html msg
 link title url =
     Html.a [ Attr.href url, Attr.target "blank" ] [ Html.text title ]
@@ -577,6 +636,28 @@ view editable backend =
                     , value = persistent
                     , msg = CheckboxGun
                     , label = Html.text "persistent storage"
+                    }
+                ]
+
+        NoStr { relayUrls, turnConfig } ->
+            trysteroSettings editable "relay" "wss://relay.damus.io, wss://nos.lol, ..." relayUrls turnConfig
+
+        MQTT { relayUrls, turnConfig } ->
+            trysteroSettings editable "broker" "wss://broker.example.com, ..." relayUrls turnConfig
+
+        Torrent { relayUrls, turnConfig } ->
+            trysteroSettings editable "tracker" "wss://tracker.example.com, ..." relayUrls turnConfig
+
+        IPFS { turnConfig } ->
+            details
+                [ input
+                    { active = editable
+                    , type_ = "text"
+                    , msg = InputTrystero "turn"
+                    , value = turnConfig
+                    , placeholder = "[{\"urls\":\"turn:turn.example.com\",\"username\":\"user\",\"credential\":\"pass\"}]"
+                    , label = Html.text "TURN servers as JSON (optional)"
+                    , autocomplete = Just "trystero-turn"
                     }
                 ]
 
@@ -734,6 +815,30 @@ view editable backend =
             Html.text ""
 
 
+trysteroSettings : Bool -> String -> String -> String -> String -> Html Msg
+trysteroSettings editable kind placeholder relayUrls turnConfig =
+    details
+        [ input
+            { active = editable
+            , type_ = "text"
+            , msg = InputTrystero "relay"
+            , value = relayUrls
+            , placeholder = placeholder
+            , label = Html.text (kind ++ " URLs (optional)")
+            , autocomplete = Just "trystero-relay"
+            }
+        , input
+            { active = editable
+            , type_ = "text"
+            , msg = InputTrystero "turn"
+            , value = turnConfig
+            , placeholder = "[{\"urls\":\"turn:turn.example.com\",\"username\":\"user\",\"credential\":\"pass\"}]"
+            , label = Html.text "TURN servers as JSON (optional)"
+            , autocomplete = Just "trystero-turn"
+            }
+        ]
+
+
 details options =
     Html.details [ Attr.style "margin-block-start" "2rem" ]
         [ Html.summary
@@ -830,6 +935,7 @@ type Msg
     | InputWebSocket String
     | InputPeerJS String String
     | InputSimplePeer String String
+    | InputTrystero String String
 
 
 update : Msg -> Backend -> Backend
@@ -879,6 +985,27 @@ update msg backend =
         ( InputSimplePeer "ice" v, SimplePeer data ) ->
             SimplePeer { data | iceServers = v }
 
+        ( InputTrystero "relay" v, NoStr data ) ->
+            NoStr { data | relayUrls = v }
+
+        ( InputTrystero "turn" v, NoStr data ) ->
+            NoStr { data | turnConfig = v }
+
+        ( InputTrystero "relay" v, MQTT data ) ->
+            MQTT { data | relayUrls = v }
+
+        ( InputTrystero "turn" v, MQTT data ) ->
+            MQTT { data | turnConfig = v }
+
+        ( InputTrystero "relay" v, Torrent data ) ->
+            Torrent { data | relayUrls = v }
+
+        ( InputTrystero "turn" v, Torrent data ) ->
+            Torrent { data | turnConfig = v }
+
+        ( InputTrystero "turn" v, IPFS data ) ->
+            IPFS { data | turnConfig = v }
+
         _ ->
             backend
 
@@ -906,6 +1033,18 @@ eq a b =
             True
 
         ( SimplePeer _, SimplePeer _ ) ->
+            True
+
+        ( NoStr _, NoStr _ ) ->
+            True
+
+        ( MQTT _, MQTT _ ) ->
+            True
+
+        ( Torrent _, Torrent _ ) ->
+            True
+
+        ( IPFS _, IPFS _ ) ->
             True
 
         _ ->

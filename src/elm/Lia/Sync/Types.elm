@@ -114,13 +114,13 @@ init supportedBackends =
 
             --, Via.Jitsi Const.jitsi_Domain
             --, Via.Matrix { baseURL = "", userId = "", accessToken = "" }
-            , Via.IPFS
-            , Via.MQTT
-            , Via.NoStr
+            , Via.IPFS { turnConfig = "" }
+            , Via.MQTT { relayUrls = "", turnConfig = "" }
+            , Via.NoStr { relayUrls = "", turnConfig = "" }
 
             --, Via.P2PT Const.webTorrent_TrackerURLs
             , Via.PubNub { pubKey = "", subKey = "" }
-            , Via.Torrent
+            , Via.Torrent { relayUrls = "", turnConfig = "" }
             , Via.Edrys
             , Via.WebSocket { url = "" }
             , Via.PeerJS { host = "", port_ = "", path = "", iceServers = "" }
