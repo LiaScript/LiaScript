@@ -15,6 +15,7 @@ type alias Entry =
     , password : Maybe String
     , name : Maybe String
     , updated : Int
+    , mode : Int
     }
 
 
@@ -25,12 +26,13 @@ decoder =
 
 entryDecoder : JD.Decoder Entry
 entryDecoder =
-    JD.map5 Entry
+    JD.map6 Entry
         (JD.field "room" JD.string)
         (JD.field "backend" JD.string)
         (JD.field "password" (JD.nullable JD.string))
         (JD.oneOf [ JD.field "name" (JD.nullable JD.string), JD.succeed Nothing ])
         (JD.field "updated" JD.int)
+        (JD.oneOf [ JD.field "mode" JD.int, JD.succeed 0 ])
 
 
 {-| The fixed room name used for the "Own Notes" shortcut — a purely local,

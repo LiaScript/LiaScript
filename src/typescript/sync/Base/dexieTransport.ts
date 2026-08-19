@@ -98,13 +98,17 @@ export class DexieTransport implements Transport {
   private messageCallback?: (data: Uint8Array) => void
   private _isConnected: boolean = false
 
-  // Updates loaded from Dexie during `connect()`, buffered here because
-  // `GenericProvider.connect()` only calls `onMessage()` *after*
-  // `transport.connect()` resolves (see `y-generic/dist/index.js`,
-  // `GenericProvider.connect`) - there is no listener registered yet while
-  // this method runs. The buffer is flushed as soon as a callback is
-  // registered in `onMessage()`.
+  // Updates loaded from Dexie during `connect()`, buffered here until they
+  // can be replayed - see `replayIfReady()`.
   private pendingUpdates: Uint8Array[] = []
+
+  // `replayIfReady()` must run exactly once, whichever of `connect()` /
+  // `onMessage()` finishes second - `GenericProvider.connect()` actually
+  // calls `onMessage()` *before* awaiting `transport.connect()` (see
+  // `y-generic/dist/index.js`, `GenericProvider.connect`), so `connect()`
+  // cannot assume a listener is already attached, and `onMessage()` cannot
+  // assume `pendingUpdates` is already loaded.
+  private replayed: boolean = false
 
   /** Compaction latch, see `armCompaction()`. */
   private compactOnNextSend: boolean = false
@@ -125,21 +129,22 @@ export class DexieTransport implements Transport {
    * resulting data loss would be silent.
    *
    * The compaction is safe *only* at this exact point: this method is called
-   * at the very end of `onMessage()`, i.e. after every cached row has been
-   * replayed into the document. Whatever those rows contained is therefore
-   * part of the document now, and the next frame the provider sends is
-   * `syncNow()`'s full snapshot of exactly that document - a single row that
-   * is equivalent to all of them. `replaceYjsUpdates()` swaps them in one
-   * transaction, so there is no window in which the cache is empty.
+   * at the very end of `replayIfReady()`, i.e. after every cached row has
+   * been replayed into the document. Whatever those rows contained is
+   * therefore part of the document now, and the next frame the provider
+   * sends is `syncNow()`'s full snapshot of exactly that document - a single
+   * row that is equivalent to all of them. `replaceYjsUpdates()` swaps them
+   * in one transaction, so there is no window in which the cache is empty.
    *
    * The latch is deliberately scoped to the current task:
-   * `GenericProvider.connect()` runs `onMessage()` -> `syncNow()` ->
-   * `_sendUpdate()` -> `_send()` -> `transport.send()` without a single
-   * `await` in between, so the snapshot is guaranteed to be seen while the
-   * latch is set. The `queueMicrotask()` disarm makes sure that if that push
-   * ever *doesn't* happen (e.g. a future version rate-limits it away), a later
-   * *incremental* update can never be mistaken for a full snapshot and wipe
-   * the cache.
+   * `GenericProvider.connect()` runs `transport.connect()` (which is where
+   * `replayIfReady()` fires, once `_isConnected` and `messageCallback` are
+   * both set) -> `syncNow()` -> `_sendUpdate()` -> `_send()` ->
+   * `transport.send()` without a single `await` in between, so the snapshot
+   * is guaranteed to be seen while the latch is set. The `queueMicrotask()`
+   * disarm makes sure that if that push ever *doesn't* happen (e.g. a future
+   * version rate-limits it away), a later *incremental* update can never be
+   * mistaken for a full snapshot and wipe the cache.
    */
   private armCompaction() {
     this.compactOnNextSend = true
@@ -156,6 +161,7 @@ export class DexieTransport implements Transport {
     this.pendingUpdates = await Database.getYjsUpdates(this.uidDB, this.key)
 
     this._isConnected = true
+    this.replayIfReady()
   }
 
   disconnect(): void {
@@ -163,6 +169,7 @@ export class DexieTransport implements Transport {
     this.messageCallback = undefined
     this.pendingUpdates = []
     this.compactOnNextSend = false
+    this.replayed = false
   }
 
   send(data: Uint8Array): void | Promise<void> {
@@ -184,25 +191,32 @@ export class DexieTransport implements Transport {
   onMessage(callback: (data: Uint8Array) => void): () => void {
     this.messageCallback = callback
 
-    // Replay whatever was loaded by `connect()`, now that someone is
-    // actually listening. `GenericProvider` calls `onMessage()` synchronously
-    // right after `transport.connect()` resolves, with no intervening
-    // `await`, so this is not racing against any other caller of `send()`.
-    if (this.pendingUpdates.length > 0) {
-      const updates = this.pendingUpdates
-      this.pendingUpdates = []
+    this.replayIfReady()
 
-      for (const update of updates) {
-        this.messageCallback?.(update)
-      }
+    return () => {
+      this.messageCallback = undefined
+    }
+  }
+
+  /** Replay whatever `connect()` loaded from Dexie into the document, once
+   * both a listener is attached (`onMessage()`) and the load has finished
+   * (`connect()`) - runs exactly once, regardless of which of the two
+   * finishes last.
+   */
+  private replayIfReady(): void {
+    if (this.replayed || !this._isConnected || !this.messageCallback) return
+
+    this.replayed = true
+
+    const updates = this.pendingUpdates
+    this.pendingUpdates = []
+
+    for (const update of updates) {
+      this.messageCallback(update)
     }
 
     // everything that was cached is part of the document now, so the snapshot
     // the provider is about to push can replace all of it
     this.armCompaction()
-
-    return () => {
-      this.messageCallback = undefined
-    }
   }
 }

@@ -318,6 +318,7 @@ const Service = {
               backend: config.fullBackend,
               password: config.password,
               name: config.name,
+              mode: config.mode,
             })?.catch((e: any) => {
               log.warn('could not save classroom ->', e?.message || e)
             })

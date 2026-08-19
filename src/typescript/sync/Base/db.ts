@@ -512,15 +512,40 @@ export class CRDT {
     this.awareness?.setLocalStateField('cursor', null)
   }
 
+  /** Parse one `metadata` entry. Entries are `"<peerID>@<claimedAt>"`; a bare
+   * peerID (written before this format existed) is treated as claimed at
+   * time 0, so a pre-existing owner always outranks a fresh claim.
+   */
+  private parseClaim(raw: string): { id: string; ts: number } {
+    const at = raw.lastIndexOf('@')
+    return at === -1
+      ? { id: raw, ts: 0 }
+      : { id: raw.slice(0, at), ts: Number(raw.slice(at + 1)) || 0 }
+  }
+
   claimOwnership() {
-    if (!this.metadata.toArray().includes(this.peerID)) {
-      this.metadata.push([this.peerID])
+    const claims = this.metadata.toArray().map((raw) => this.parseClaim(raw))
+
+    if (!claims.some((c) => c.id === this.peerID)) {
+      this.metadata.push([`${this.peerID}@${Date.now()}`])
     }
 
     this.callback(this.getOwner() === this.peerID, 'ownership')
   }
 
+  /** The owner is whoever claimed earliest, not whoever ended up at array
+   * index 0 - two peers can push a claim concurrently (neither has seen the
+   * other's claim yet), and Yjs then orders the conflicting inserts by
+   * comparing internal per-doc client IDs, which are random per session and
+   * have nothing to do with who actually claimed first. Comparing the
+   * `claimedAt` timestamp carried in the entry itself is a real, replica-
+   * independent ordering instead of leaning on that arbitrary tie-break.
+   */
   getOwner(): string | null {
-    return this.metadata.get(0) ?? null
+    const claims = this.metadata.toArray().map((raw) => this.parseClaim(raw))
+
+    if (claims.length === 0) return null
+
+    return claims.reduce((min, c) => (c.ts < min.ts ? c : min)).id
   }
 }

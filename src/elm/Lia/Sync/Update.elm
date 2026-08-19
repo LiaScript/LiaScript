@@ -302,6 +302,13 @@ update session model msg =
                                 , password = entry.password |> Maybe.withDefault ""
                                 , name = entry.name |> Maybe.withDefault sync.name
                                 , persistent = True
+
+                                -- mode is folded into the network room identity
+                                -- (see TS Sync.uniqueID), so reconnecting has to
+                                -- reuse the same mode the classroom was saved
+                                -- under, otherwise it joins a different room and
+                                -- loses the CRDT ownership history
+                                , mode = toClassroomMode entry.mode
                             }
                     }
                         |> Return.val

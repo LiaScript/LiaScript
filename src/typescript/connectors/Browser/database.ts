@@ -430,11 +430,21 @@ class LiaDB {
   /** Insert or update a saved classroom entry for a course.
    *
    * @param uidDB - A string URL or URI, which identifies the source of a course.
-   * @param entry - room name and full encoded backend string (primary key), optional password
+   * @param entry - room name and full encoded backend string (primary key), optional password.
+   *   `mode` is stored too (not just cosmetic) - it is folded into the
+   *   network room identity (see `Sync.uniqueID`), so reconnecting under a
+   *   different mode joins a different room and loses the CRDT ownership
+   *   history.
    */
   async saveClassroom(
     uidDB: string,
-    entry: { room: string; backend: string; password?: string; name?: string }
+    entry: {
+      room: string
+      backend: string
+      password?: string
+      name?: string
+      mode?: number
+    }
   ) {
     const db = await this.openShared_(uidDB)
 
@@ -446,6 +456,7 @@ class LiaDB {
       backend: entry.backend,
       password: entry.password || null,
       name: entry.name || null,
+      mode: entry.mode || 0,
       created: existing ? existing.created : now,
       updated: now,
     })
