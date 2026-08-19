@@ -32,7 +32,7 @@ jobs:
       - name: LiaScript - prebuild
         run: |
           cd LiaScript
-          npm install
+          npm install --allow-git=all
           npm run prebuild
       - name: LiaScript - patches
         run: |
