@@ -31,7 +31,7 @@ export class Sync extends Base.Sync {
       data.config,
     )
 
-    this.serverUrl = data.config?.url
+    this.serverUrl = data.config?.url || process.env.WEBSOCKET_SERVER
 
     if (!this.serverUrl) {
       return this.sendDisconnectError(
