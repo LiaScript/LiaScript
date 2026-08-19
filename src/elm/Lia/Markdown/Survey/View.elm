@@ -25,7 +25,7 @@ import Lia.Markdown.Inline.View
         ( dropHere
         , viewer
         )
-import Lia.Markdown.Quiz.View exposing (syncAttributes, viewTableSync)
+import Lia.Markdown.Quiz.View exposing (openState, syncAttributes, viewTableSync)
 import Lia.Markdown.Survey.Model
     exposing
         ( getErrorMessage
@@ -220,6 +220,23 @@ viewSummary sync headers fn data =
             Html.div []
 
 
+{-| The "Open" bar (how many known peers haven't answered yet), reusing
+`Quiz.View.openState` -- only the Details-mode owner has the peer-roster
+data to compute it, everyone else gets `Nothing` (no extra bar).
+-}
+openIfRoot : Config sub -> Dict String Sync -> Maybe ( JE.Value, JE.Value )
+openIfRoot config data =
+    config.sync
+        |> Maybe.andThen
+            (\sync_ ->
+                if Sync_.isRoot sync_ then
+                    Just (openState sync_ data)
+
+                else
+                    Nothing
+            )
+
+
 {-| Renders each user's answer(s) via `Sync.toString`, looked up by `keys` --
 the "details" table row-fn shared by every survey type except the free-text
 list (which shows each answer directly, not as a table column, see
@@ -249,7 +266,7 @@ viewVectorSync config analyze questions syncData survey =
                 [ survey
                 , case analyze of
                     Categorical ->
-                        [ vectorBlockCategory config summary ]
+                        [ vectorBlockCategory config (openIfRoot config data) summary ]
                             |> viewSummary config.sync (questions |> List.map Tuple.first) (toStringFn (questions |> List.map Tuple.first)) data
 
                     Quantitative ->
@@ -276,7 +293,7 @@ viewMatrixSync config categories questions syncData survey =
                         |> Maybe.withDefault []
             in
             [ survey
-            , matrixBlock config categories summary
+            , matrixBlock config categories (openIfRoot config data) summary
             ]
                 |> viewSummary config.sync
                     (categories |> List.concatMap (\category -> questions |> List.map ((++) (stringify category ++ " / "))))
@@ -299,7 +316,7 @@ viewSelectSync config options syncData survey =
                         |> Maybe.withDefault []
             in
             [ survey
-            , vectorBlockCategory config summary
+            , vectorBlockCategory config (openIfRoot config data) summary
             ]
                 |> viewSummary config.sync [ "State" ] (toStringFn [ "State" ]) data
         )
@@ -355,46 +372,26 @@ wordCloud config data =
             Nothing
 
 
-vectorBlockCategory : Config sub -> List Sync.Data -> Html msg
-vectorBlockCategory config data =
-    JE.object
-        [ ( "grid"
-          , JE.object
-                [ ( "left", JE.int 10 )
-                , ( "top", JE.int 20 )
-                , ( "bottom", JE.int 20 )
-                , ( "right", JE.int 10 )
-                ]
-          )
-        , ( "xAxis"
-          , JE.object
-                [ ( "type", JE.string "category" )
-                , ( "data"
-                  , data
-                        |> List.map .value
-                        |> JE.list JE.string
-                  )
-                ]
-          )
-        , ( "yAxis"
-          , JE.object
-                [ ( "type", JE.string "value" )
-                , ( "show", JE.bool False )
-                ]
-          )
-        , ( "series"
-          , [ [ ( "type", JE.string "bar" )
-              , ( "smooth", JE.bool True )
-              , ( "areaStyle", JE.object [ ( "opacity", JE.float 0.8 ) ] )
-              , ( "data"
-                , data
-                    |> List.map
-                        (\d ->
-                            case d.absolute of
-                                0 ->
-                                    [ ( "value", JE.float d.relative ) ]
+{-| `open`, when given, is `Quiz.View.openState`'s ("Open", <chart-value>) pair
+-- an extra bar showing how many known peers haven't answered yet, exactly
+like the Quiz sync diagram. Only the Details-mode owner has the peer-roster
+data (`peersHistory`) needed to compute it, so callers pass `Nothing` for
+everyone else.
+-}
+vectorBlockCategory : Config sub -> Maybe ( JE.Value, JE.Value ) -> List Sync.Data -> Html msg
+vectorBlockCategory config open data =
+    let
+        chartData =
+            (data
+                |> List.map
+                    (\d ->
+                        ( JE.string d.value
+                        , case d.absolute of
+                            0 ->
+                                JE.object [ ( "value", JE.float d.relative ) ]
 
-                                _ ->
+                            _ ->
+                                JE.object
                                     [ ( "value", JE.float d.relative )
                                     , ( "label"
                                       , JE.object
@@ -410,8 +407,36 @@ vectorBlockCategory config data =
                                       )
                                     ]
                         )
-                    |> JE.list JE.object
-                )
+                    )
+            )
+                ++ (open |> Maybe.map List.singleton |> Maybe.withDefault [])
+    in
+    JE.object
+        [ ( "grid"
+          , JE.object
+                [ ( "left", JE.int 10 )
+                , ( "top", JE.int 20 )
+                , ( "bottom", JE.int 20 )
+                , ( "right", JE.int 10 )
+                ]
+          )
+        , ( "xAxis"
+          , JE.object
+                [ ( "type", JE.string "category" )
+                , ( "data", JE.list Tuple.first chartData )
+                ]
+          )
+        , ( "yAxis"
+          , JE.object
+                [ ( "type", JE.string "value" )
+                , ( "show", JE.bool False )
+                ]
+          )
+        , ( "series"
+          , [ [ ( "type", JE.string "bar" )
+              , ( "smooth", JE.bool True )
+              , ( "areaStyle", JE.object [ ( "opacity", JE.float 0.8 ) ] )
+              , ( "data", JE.list Tuple.second chartData )
               ]
             ]
                 |> JE.list JE.object
@@ -505,8 +530,27 @@ vectorBlockQuantity config data categories =
             Nothing
 
 
-matrixBlock : Config sub -> List Inlines -> List (List Sync.Data) -> Html msg
-matrixBlock config categories data =
+{-| `open`, when given, is `Quiz.View.openState`'s ("Open", <chart-value>)
+pair. It's rendered as one extra bar under its own "Open" category on the
+x-axis -- a dedicated series holding `null` everywhere except that category,
+so it doesn't get grouped in with the per-variable bars of the real
+questions (each of those series is padded with a trailing `null` to match).
+-}
+matrixBlock : Config sub -> List Inlines -> Maybe ( JE.Value, JE.Value ) -> List (List Sync.Data) -> Html msg
+matrixBlock config categories open data =
+    let
+        openSeries =
+            case open of
+                Just ( name, value ) ->
+                    [ [ ( "type", JE.string "bar" )
+                      , ( "name", name )
+                      , ( "data", JE.list identity (List.repeat (List.length categories) JE.null ++ [ value ]) )
+                      ]
+                    ]
+
+                Nothing ->
+                    []
+    in
     JE.object
         [ ( "grid"
           , JE.object
@@ -519,9 +563,9 @@ matrixBlock config categories data =
         , ( "legend"
           , JE.object
                 [ ( "data"
-                  , data
-                        |> List.map (List.head >> Maybe.map .value >> Maybe.withDefault "")
-                        |> JE.list JE.string
+                  , (data |> List.map (List.head >> Maybe.map .value >> Maybe.withDefault "") |> List.map JE.string)
+                        ++ (open |> Maybe.map (Tuple.first >> List.singleton) |> Maybe.withDefault [])
+                        |> JE.list identity
                   )
                 ]
           )
@@ -529,9 +573,9 @@ matrixBlock config categories data =
           , JE.object
                 [ ( "type", JE.string "category" )
                 , ( "data"
-                  , categories
-                        |> List.map stringify
-                        |> JE.list JE.string
+                  , (categories |> List.map (stringify >> JE.string))
+                        ++ (open |> Maybe.map (Tuple.first >> List.singleton) |> Maybe.withDefault [])
+                        |> JE.list identity
                   )
                 ]
           )
@@ -555,7 +599,7 @@ matrixBlock config categories data =
           )
         , ( "tooltip", JE.object [] )
         , ( "series"
-          , data
+          , (data
                 |> List.map
                     (\data_ ->
                         [ ( "type", JE.string "bar" )
@@ -567,34 +611,40 @@ matrixBlock config categories data =
                                 |> JE.string
                           )
                         , ( "data"
-                          , data_
+                          , ((data_
                                 |> List.map
                                     (\d ->
                                         case d.absolute of
                                             0 ->
-                                                [ ( "value", JE.float d.relative ) ]
+                                                JE.object [ ( "value", JE.float d.relative ) ]
 
                                             _ ->
-                                                [ ( "value", JE.float d.relative )
-                                                , ( "label"
-                                                  , JE.object
-                                                        [ ( "show", JE.bool True )
-                                                        , ( "formatter"
-                                                          , String.fromInt d.absolute
-                                                                ++ " ("
-                                                                ++ String.fromFloat d.relative
-                                                                ++ "%)"
-                                                                |> JE.string
-                                                          )
-                                                        , ( "rotate", JE.int 90 )
-                                                        ]
-                                                  )
-                                                ]
+                                                JE.object
+                                                    [ ( "value", JE.float d.relative )
+                                                    , ( "label"
+                                                      , JE.object
+                                                            [ ( "show", JE.bool True )
+                                                            , ( "formatter"
+                                                              , String.fromInt d.absolute
+                                                                    ++ " ("
+                                                                    ++ String.fromFloat d.relative
+                                                                    ++ "%)"
+                                                                    |> JE.string
+                                                              )
+                                                            , ( "rotate", JE.int 90 )
+                                                            ]
+                                                      )
+                                                    ]
                                     )
-                                |> JE.list JE.object
+                             )
+                                ++ (open |> Maybe.map (\_ -> [ JE.null ]) |> Maybe.withDefault [])
+                            )
+                                |> JE.list identity
                           )
                         ]
                     )
+            )
+                ++ openSeries
                 |> JE.list JE.object
           )
         ]
