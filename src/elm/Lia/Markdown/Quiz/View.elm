@@ -480,7 +480,7 @@ viewSync config syncData quiz =
         visualize id data =
             case Dict.get id data of
                 Just (Just trial) ->
-                    [ Html.span [] [ iconWithColor "✓" "#5470c6" Nothing, Html.sup [] [ Html.text <| String.fromInt trial ] ] ]
+                    [ iconWithColor "✓" "#5470c6" Nothing, Html.text <| String.fromInt trial ]
 
                 Just Nothing ->
                     [ iconWithColor "✗" "#888" Nothing ]
@@ -494,26 +494,26 @@ viewSync config syncData quiz =
                 syncDiagram config sync 0 data
                     |> List.singleton
                     |> List.append quiz
-                    |> viewTableSync sync [ "Answered" ] visualize data
+                    |> viewTableSync sync [ "Answered", "Trial" ] visualize data
 
             else
-                viewTableSync sync [ "Answered" ] visualize data quiz
+                viewTableSync sync [ "Answered", "Trial" ] visualize data quiz
 
         ( Nothing, Nothing, Just sync ) ->
             if Sync.isRoot sync then
                 syncDiagram config sync 0 Dict.empty
                     |> List.singleton
                     |> List.append quiz
-                    |> viewTableSync sync [ "Answered" ] visualize Dict.empty
+                    |> viewTableSync sync [ "Answered", "Trial" ] visualize Dict.empty
 
             else
-                viewTableSync sync [ "Answered" ] visualize Dict.empty quiz
+                viewTableSync sync [ "Answered", "Trial" ] visualize Dict.empty quiz
 
         ( Just data, Just length, Just sync ) ->
             syncDiagram config sync length data
                 |> List.singleton
                 |> List.append quiz
-                |> viewTableSync sync [ "Answered" ] visualize data
+                |> viewTableSync sync [ "Answered", "Trial" ] visualize data
 
         _ ->
             quiz
