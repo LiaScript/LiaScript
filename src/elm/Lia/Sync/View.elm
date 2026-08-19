@@ -106,7 +106,7 @@ view settings =
                         , placeholder = ""
                         , autocomplete = Just "password"
                         }
-                    , viewMode settings.mode
+                    , viewMode (open && support) settings.mode
                     , Backend.view
                         (open && support)
                         via
@@ -512,7 +512,8 @@ button settings =
                 [ Html.text "pending" ]
 
 
-viewMode mode =
+viewMode : Bool -> ClassroomMode -> Html Msg
+viewMode active mode =
     Html.label
         [ Attr.class "lia-label"
         , Attr.style "margin-block-start" "2rem"
@@ -531,7 +532,11 @@ viewMode mode =
             , Attr.style "align-items" "center"
             ]
             [ Html.select
-                [ Event.onInput ClassroomMode
+                [ if active then
+                    Event.onInput ClassroomMode
+
+                  else
+                    Attr.disabled True
                 , Attr.style "background" <|
                     case mode of
                         Shared ->
