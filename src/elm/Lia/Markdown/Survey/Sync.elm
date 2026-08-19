@@ -173,7 +173,7 @@ toString keys (Sync s) =
                 |> List.map
                     (\value ->
                         if value then
-                            "☑️ true"
+                            "🗹"
 
                         else
                             ""
@@ -185,10 +185,10 @@ toString keys (Sync s) =
                 |> List.map
                     (\value ->
                         if value then
-                            "☑️ true"
+                            "🗹"
 
                         else
-                            "⬜ false"
+                            "☐"
                     )
 
         Survey.Text_State str ->
@@ -207,10 +207,10 @@ toString keys (Sync s) =
                                 (\key ->
                                     case Dict.get key dict of
                                         Just True ->
-                                            "☑️ true"
+                                            "🗹"
 
                                         Just False ->
-                                            "⬜ false"
+                                            "☐"
 
                                         Nothing ->
                                             ""

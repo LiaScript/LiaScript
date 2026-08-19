@@ -133,6 +133,25 @@ maybeConfig config quiz vector =
             Nothing
 
 
+iconWithColor : String -> String -> Maybe String -> Html msg
+iconWithColor icon color text =
+    Html.span []
+        [ Html.span
+            [ Attr.style "color" color
+            , Attr.style "margin-right" <|
+                if text == Nothing then
+                    "0"
+
+                else
+                    "0.5rem"
+            ]
+            [ Html.text icon ]
+        , text
+            |> Maybe.withDefault ""
+            |> Html.text
+        ]
+
+
 viewTableSync :
     Sync.Settings
     -> List String
@@ -154,26 +173,22 @@ viewTableSync syncSettings headers visualize data quiz =
                 , padding
                 , Attr.style "text-align" "center"
                 ]
-                [ Html.text <|
-                    if bool then
-                        "🟡 Pending"
+                [ if bool then
+                    iconWithColor "◉" "orange" (Just "Open")
 
-                    else
-                        "⚪ Answered"
+                  else
+                    iconWithColor "◉" "gray" (Just "Done")
                 ]
     in
     if Sync.isRoot syncSettings then
         [ Html.details [ Attr.style "margin-top" "1rem" ]
             [ Html.summary [ padding ] [ Html.text "details" ]
             , Html.div
-                [ Attr.style "overflow" "auto"
+                [ Attr.class "lia-table-responsive has-thead-sticky has-first-col-sticky"
                 , Attr.style "max-height" "200px"
                 ]
                 [ Html.table
-                    [ Attr.class "lia-table"
-                    , Attr.style "overflow" "auto"
-                    , Attr.style "padding" "0px"
-                    , Attr.style "table-layout" "fixed"
+                    [ Attr.class "lia-table is-compact"
                     ]
                     [ Html.thead [ Attr.class "lia-table__head" ]
                         [ Html.th
@@ -218,10 +233,10 @@ viewTableSync syncSettings headers visualize data quiz =
                                         , Attr.style "text-align" "center"
                                         ]
                                         [ if Dict.member id syncSettings.peers then
-                                            Html.text "✅ Online"
+                                            iconWithColor "●" "green" (Just "On")
 
                                           else
-                                            Html.text "⛔ Offline "
+                                            iconWithColor "●" "red" (Just "Off")
                                         ]
                                     :: (if Dict.member id data then
                                             visualize id data
@@ -416,10 +431,10 @@ viewSync config syncData quiz =
         visualize id data =
             case Dict.get id data of
                 Just (Just trial) ->
-                    [ Html.text <| "🔵 Solved (Trial " ++ String.fromInt trial ++ ")" ]
+                    [ Html.span [] [ iconWithColor "✓" "#5470c6" Nothing, Html.sup [] [ Html.text <| String.fromInt trial ] ] ]
 
                 Just Nothing ->
-                    [ Html.text "⚫ Resolved" ]
+                    [ iconWithColor "✗" "#888" Nothing ]
 
                 Nothing ->
                     []
@@ -430,26 +445,26 @@ viewSync config syncData quiz =
                 syncDiagram config sync 0 data
                     |> List.singleton
                     |> List.append quiz
-                    |> viewTableSync sync [ "Answer" ] visualize data
+                    |> viewTableSync sync [ "Answered" ] visualize data
 
             else
-                viewTableSync sync [ "Answer" ] visualize data quiz
+                viewTableSync sync [ "Answered" ] visualize data quiz
 
         ( Nothing, Nothing, Just sync ) ->
             if Sync.isRoot sync then
                 syncDiagram config sync 0 Dict.empty
                     |> List.singleton
                     |> List.append quiz
-                    |> viewTableSync sync [ "Answer" ] visualize Dict.empty
+                    |> viewTableSync sync [ "Answered" ] visualize Dict.empty
 
             else
-                viewTableSync sync [ "Answer" ] visualize Dict.empty quiz
+                viewTableSync sync [ "Answered" ] visualize Dict.empty quiz
 
         ( Just data, Just length, Just sync ) ->
             syncDiagram config sync length data
                 |> List.singleton
                 |> List.append quiz
-                |> viewTableSync sync [ "Answer" ] visualize data
+                |> viewTableSync sync [ "Answered" ] visualize data
 
         _ ->
             quiz

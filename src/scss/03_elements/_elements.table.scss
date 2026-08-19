@@ -269,6 +269,13 @@
     }
   }
 
+  &.is-compact {
+    .lia-table__header,
+    .lia-table__data {
+      min-width: auto;
+    }
+  }
+
   &.is-alternating {
     .lia-table__row:nth-child(2n) {
       td {
