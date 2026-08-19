@@ -167,6 +167,14 @@ export class CRDT {
   }
 
   registerCallbacks() {
+    // Ownership is decided by the CRDT, not by wall-clock timing — re-derive
+    // it every time metadata converges with a remote peer, so a slow initial
+    // sync (see claimOwnership's setTimeout) can never leave two peers each
+    // permanently believing they're the owner.
+    this.metadata.observe(() => {
+      this.callback(this.getOwner() === this.peerID, 'ownership')
+    })
+
     // The map is flat so a shallow observe is sufficient — no nesting.
     this.quizzes.observe((event: Y.YMapEvent<any>) => {
       const ids = new Set<number>()
