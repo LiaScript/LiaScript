@@ -303,7 +303,16 @@ export class Sync {
 
     if (this.onConnect) this.onConnect()
 
-    setTimeout(() => { this.db.claimOwnership() }, 5000)
+    // Wait for local persistence too (only `Local` normally awaits
+    // persistReady before connecting) — otherwise a reconnecting peer can
+    // push itself into an as-yet-unrestored metadata array before the
+    // locally cached history (holding the real owner) has merged in, and
+    // Yjs has to resolve the resulting concurrent inserts by per-doc client
+    // ID rather than by who was actually first.
+    Promise.all([
+      new Promise((resolve) => setTimeout(resolve, 5000)),
+      this.persistReady.catch(() => { }),
+    ]).then(() => this.db.claimOwnership())
   }
 
   pubsubSend(topic: string, message: any) {

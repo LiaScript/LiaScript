@@ -77,7 +77,7 @@ export class CRDT {
   protected fireInitialState() {
     // Peers
     const peers = this.getPeers()
-    if (peers.length > 0) {
+    if (Object.keys(peers).length > 0) {
       this.callback(peers, 'peer')
     }
 
@@ -164,6 +164,14 @@ export class CRDT {
         if (cursors.length > 0) this.callback(cursors, 'cursor')
       },
     )
+
+    // A remote peer's state can already be sitting in `awareness` by the
+    // time this listener attaches — e.g. their broadcast arrived and was
+    // applied while we were still mid-connect, before setAwareness() ran.
+    // That doesn't re-fire 'change' for a listener that wasn't there yet, so
+    // without this we'd silently show only ourselves until something else
+    // happens to change awareness again.
+    this.callback(this.getPeers(), 'peer')
   }
 
   registerCallbacks() {

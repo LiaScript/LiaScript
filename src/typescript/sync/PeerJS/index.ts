@@ -79,8 +79,6 @@ export class Sync extends Base.Sync {
 
         this.provider = new GenericProvider(this.db.doc, this.transport)
 
-        this.db.setAwareness(this.provider.awareness, this.name)
-
         let syncedOnce = false
 
         const doConnect = () => {
@@ -119,7 +117,12 @@ export class Sync extends Base.Sync {
         this.provider.connect({
           room: id,
           ...(this.password ? { password: this.password } : {}),
-        } as any)
+        } as any).then(() => {
+          // Wire awareness only once the transport is actually connected, so
+          // the initial local-state broadcast isn't dropped by a transport
+          // that silently no-ops send() while unconnected.
+          this.db.setAwareness(this.provider.awareness, this.name)
+        })
       })
     } else {
       let message = 'PeerJS unknown error'
