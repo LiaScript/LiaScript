@@ -125,7 +125,7 @@ export class Connector {
 
   async saveClassroom(
     _uidDB: string,
-    _entry: { room: string; backend: string; password?: string }
+    _entry: { room: string; backend: string; password?: string; name?: string }
   ) {
     console.log('saveClassroom not implemented')
   }

@@ -8,8 +8,8 @@ module Lia.Markdown.Survey.Sync exposing
     , matrix
     , select
     , sync
-    , text
     , toString
+    , toText
     , vector
     , wordCount
     )
@@ -90,11 +90,6 @@ wordCount =
                     |> List.map (\( key, value ) -> Data key value (percentage total value))
                     |> ifEmpty
            )
-
-
-text : List Sync -> Maybe (List String)
-text =
-    List.filterMap toText >> ifEmpty
 
 
 toText : Sync -> Maybe String
@@ -201,6 +196,26 @@ toString keys (Sync s) =
 
         Survey.Select_State _ i ->
             [ String.fromInt (i + 1) ]
+
+        Survey.Matrix_State _ state ->
+            state
+                |> Array.toList
+                |> List.concatMap
+                    (\dict ->
+                        keys
+                            |> List.map
+                                (\key ->
+                                    case Dict.get key dict of
+                                        Just True ->
+                                            "☑️ true"
+
+                                        Just False ->
+                                            "⬜ false"
+
+                                        Nothing ->
+                                            ""
+                                )
+                    )
 
         _ ->
             [ "todo ..." ]

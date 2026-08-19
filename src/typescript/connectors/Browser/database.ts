@@ -434,7 +434,7 @@ class LiaDB {
    */
   async saveClassroom(
     uidDB: string,
-    entry: { room: string; backend: string; password?: string }
+    entry: { room: string; backend: string; password?: string; name?: string }
   ) {
     const db = await this.openShared_(uidDB)
 
@@ -445,6 +445,7 @@ class LiaDB {
       room: entry.room,
       backend: entry.backend,
       password: entry.password || null,
+      name: entry.name || null,
       created: existing ? existing.created : now,
       updated: now,
     })

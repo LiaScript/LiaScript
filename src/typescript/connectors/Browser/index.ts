@@ -85,7 +85,7 @@ class Connector extends Base.Connector {
 
   async saveClassroom(
     uidDB: string,
-    entry: { room: string; backend: string; password?: string }
+    entry: { room: string; backend: string; password?: string; name?: string }
   ) {
     return this.database.saveClassroom(uidDB, entry)
   }

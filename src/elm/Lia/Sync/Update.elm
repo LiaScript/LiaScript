@@ -300,6 +300,7 @@ update session model msg =
                                 | sync = { innerSync | select = Just ( True, backend ), open = False }
                                 , room = entry.room
                                 , password = entry.password |> Maybe.withDefault ""
+                                , name = entry.name |> Maybe.withDefault sync.name
                                 , persistent = True
                             }
                     }

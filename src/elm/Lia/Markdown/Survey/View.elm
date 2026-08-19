@@ -129,122 +129,181 @@ getSync config id =
 
 viewTextSync : Config sub -> Int -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewTextSync config lines syncData survey =
-    case ( syncData, lines ) of
-        ( Just data, 1 ) ->
-            case
-                data
-                    |> Dict.values
-                    |> Sync.wordCount
-                    |> Maybe.map (wordCloud config)
-            of
-                Nothing ->
-                    survey
-
-                Just diagram ->
+    withSync config.sync
+        syncData
+        (\data ->
+            case lines of
+                1 ->
+                    let
+                        words =
+                            data |> Dict.values |> Sync.wordCount |> Maybe.withDefault []
+                    in
                     [ survey
-                    , diagram
+                    , wordCloud config words
                     ]
-                        |> viewSummary config.sync [ "Text" ] data
+                        |> viewSummary config.sync [ "Text" ] (toStringFn [ "Text" ]) data
 
-        ( Just data, _ ) ->
-            [ survey
-            , data
-                |> Dict.values
-                |> Sync.text
-                |> Maybe.map
-                    (List.map textBlock
-                        >> Html.div
-                            [ Attr.style "border" "1px solid rgb(var(--color-highlight))"
-                            , Attr.style "border-radius" "0.8rem"
-                            , Attr.style "max-height" "400px"
-                            , Attr.style "overflow" "auto"
-                            ]
-                    )
-                |> Maybe.withDefault (Html.text "")
-            ]
-                |> viewSummary config.sync [ "Text" ] data
+                _ ->
+                    let
+                        isOwner =
+                            config.sync |> Maybe.map Sync_.isRoot |> Maybe.withDefault False
 
-        _ ->
-            Html.div [] [ survey ]
+                        peers =
+                            config.sync |> Maybe.map .peersHistory |> Maybe.withDefault Dict.empty
+
+                        answers =
+                            data
+                                |> Dict.toList
+                                |> List.filterMap (\( id, entry ) -> Sync.toText entry |> Maybe.map (Tuple.pair id))
+                    in
+                    [ survey
+                    , case answers of
+                        [] ->
+                            Html.text ""
+
+                        list ->
+                            list
+                                |> List.map
+                                    (\( id, str ) ->
+                                        textBlock
+                                            (if isOwner then
+                                                Dict.get id peers
+
+                                             else
+                                                Nothing
+                                            )
+                                            str
+                                    )
+                                |> Html.div
+                                    [ Attr.style "border" "1px solid rgb(var(--color-highlight))"
+                                    , Attr.style "border-radius" "0.8rem"
+                                    , Attr.style "max-height" "400px"
+                                    , Attr.style "overflow" "auto"
+                                    ]
+                    ]
+                        |> viewSummary config.sync [] (\_ _ -> []) data
+        )
+        (Html.div [] [ survey ])
 
 
-viewSummary : Maybe Sync_.Settings -> List String -> Dict String Sync -> List (Html msg) -> Html msg
-viewSummary sync header data =
-    let
-        fn id values =
-            Dict.get id values
-                |> Maybe.map (Sync.toString header)
-                |> Maybe.withDefault []
-                |> List.map Html.text
-    in
+{-| An owner in Details mode should see the pending roster immediately, even
+before `Sync.get` has any container at all for this element (no sync event
+has arrived for it yet) -- mirrors `Quiz.View.viewSync`'s `Dict.empty`
+fallback. Everyone else (a Shared-mode peer who hasn't answered yet, or a
+Summary-mode owner with no container yet) still sees nothing, since
+`syncData == Nothing` there is a genuine privacy gate, not just "no data
+yet".
+-}
+withSync : Maybe Sync_.Settings -> Maybe (Dict String Sync) -> (Dict String Sync -> Html msg) -> Html msg -> Html msg
+withSync sync syncData render fallback =
+    case sync of
+        Nothing ->
+            fallback
+
+        Just sync_ ->
+            case ( syncData, Sync_.isRoot sync_ ) of
+                ( Nothing, False ) ->
+                    fallback
+
+                ( maybeData, _ ) ->
+                    render (Maybe.withDefault Dict.empty maybeData)
+
+
+viewSummary : Maybe Sync_.Settings -> List String -> (String -> Dict String Sync -> List (Html msg)) -> Dict String Sync -> List (Html msg) -> Html msg
+viewSummary sync headers fn data =
     case sync of
         Just sync_ ->
-            viewTableSync sync_ header fn data
+            viewTableSync sync_ headers fn data
                 >> Html.div []
 
         _ ->
             Html.div []
 
 
+{-| Renders each user's answer(s) via `Sync.toString`, looked up by `keys` --
+the "details" table row-fn shared by every survey type except the free-text
+list (which shows each answer directly, not as a table column, see
+`viewTextSync`).
+-}
+toStringFn : List String -> String -> Dict String Sync -> List (Html msg)
+toStringFn keys id values =
+    Dict.get id values
+        |> Maybe.map (Sync.toString keys)
+        |> Maybe.withDefault []
+        |> List.map Html.text
+
+
 viewVectorSync : Config sub -> Analysis -> List ( String, body ) -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewVectorSync config analyze questions syncData survey =
-    case
-        ( syncData
-        , syncData
-            |> Maybe.andThen (Dict.values >> Sync.vector (List.map Tuple.first questions))
-        )
-    of
-        ( Just data, Just summary ) ->
+    withSync config.sync
+        syncData
+        (\data ->
+            let
+                summary =
+                    data
+                        |> Dict.values
+                        |> Sync.vector (List.map Tuple.first questions)
+                        |> Maybe.withDefault []
+            in
             Html.div []
                 [ survey
                 , case analyze of
                     Categorical ->
                         [ vectorBlockCategory config summary ]
-                            |> viewSummary config.sync (questions |> List.map Tuple.first) data
+                            |> viewSummary config.sync (questions |> List.map Tuple.first) (toStringFn (questions |> List.map Tuple.first)) data
 
                     Quantitative ->
-                        questions
+                        [ questions
                             |> List.filterMap (Tuple.first >> String.split " " >> List.head >> Maybe.andThen String.toFloat)
                             |> vectorBlockQuantity config summary
-                            |> List.singleton
-                            |> viewSummary config.sync (questions |> List.map Tuple.first) data
+                        ]
+                            |> viewSummary config.sync (questions |> List.map Tuple.first) (toStringFn (questions |> List.map Tuple.first)) data
                 ]
-
-        _ ->
-            survey
+        )
+        survey
 
 
 viewMatrixSync : Config sub -> List Inlines -> List String -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewMatrixSync config categories questions syncData survey =
-    case
+    withSync config.sync
         syncData
-            |> Maybe.andThen (Dict.values >> Sync.matrix questions)
-            |> Maybe.map (matrixBlock config categories)
-    of
-        Nothing ->
-            survey
-
-        Just diagram ->
-            Html.div [] [ survey, diagram ]
+        (\data ->
+            let
+                summary =
+                    data
+                        |> Dict.values
+                        |> Sync.matrix questions
+                        |> Maybe.withDefault []
+            in
+            [ survey
+            , matrixBlock config categories summary
+            ]
+                |> viewSummary config.sync
+                    (categories |> List.concatMap (\category -> questions |> List.map ((++) (stringify category ++ " / "))))
+                    (toStringFn questions)
+                    data
+        )
+        survey
 
 
 viewSelectSync : Config sub -> List Inlines -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewSelectSync config options syncData survey =
-    case
+    withSync config.sync
         syncData
-    of
-        Nothing ->
-            survey
-
-        Just diagram ->
+        (\data ->
+            let
+                summary =
+                    data
+                        |> Dict.values
+                        |> Sync.select (List.length options)
+                        |> Maybe.withDefault []
+            in
             [ survey
-            , diagram
-                |> Dict.values
-                |> Sync.select (List.length options)
-                |> Maybe.withDefault []
-                |> vectorBlockCategory config
+            , vectorBlockCategory config summary
             ]
-                |> viewSummary config.sync [ "State" ] diagram
+                |> viewSummary config.sync [ "State" ] (toStringFn [ "State" ]) data
+        )
+        survey
 
 
 wordCloud : Config sub -> List Sync.Data -> Html msg
@@ -547,15 +606,32 @@ matrixBlock config categories data =
             Nothing
 
 
-textBlock : String -> Html msg
-textBlock str =
+textBlock : Maybe String -> String -> Html msg
+textBlock name str =
     Html.div
-        [ Attr.style "white-space" "pre"
-        , Attr.style "background-color" "rgb(179 179 179)"
-        , Attr.style "border-block-end" "2px dashed #666"
+        [ Attr.style "background-color" "rgb(var(--color-background))"
+        , Attr.style "border" "2px solid rgb(var(--color-border))"
+        , Attr.style "border-radius" "0.6rem"
         , Attr.style "padding" "0.8rem"
+        , Attr.style "margin" "0.5rem"
         ]
-        [ Html.text str ]
+        [ Html.div [ Attr.style "white-space" "pre" ] [ Html.text str ]
+        , case name of
+            Just user ->
+                Html.div
+                    [ Attr.style "border-top" "1px solid rgb(var(--color-border))"
+                    , Attr.style "margin-top" "0.5rem"
+                    , Attr.style "padding-top" "0.4rem"
+                    , Attr.style "text-align" "right"
+                    , Attr.style "font-style" "italic"
+                    , Attr.style "font-size" "0.85em"
+                    , Attr.style "color" "rgb(var(--color-highlight-dark))"
+                    ]
+                    [ Html.text ("— " ++ user) ]
+
+            Nothing ->
+                Html.text ""
+        ]
 
 
 viewError : Maybe String -> Html msg

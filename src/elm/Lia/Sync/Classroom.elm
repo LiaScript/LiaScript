@@ -13,6 +13,7 @@ type alias Entry =
     { room : String
     , backend : String
     , password : Maybe String
+    , name : Maybe String
     , updated : Int
     }
 
@@ -24,10 +25,11 @@ decoder =
 
 entryDecoder : JD.Decoder Entry
 entryDecoder =
-    JD.map4 Entry
+    JD.map5 Entry
         (JD.field "room" JD.string)
         (JD.field "backend" JD.string)
         (JD.field "password" (JD.nullable JD.string))
+        (JD.oneOf [ JD.field "name" (JD.nullable JD.string), JD.succeed Nothing ])
         (JD.field "updated" JD.int)
 
 

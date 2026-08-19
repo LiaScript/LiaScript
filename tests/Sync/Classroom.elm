@@ -20,6 +20,7 @@ suite =
                                 [ ( "room", JE.string "my-room" )
                                 , ( "backend", JE.string (Via.toString True (Via.WebSocket { url = "wss://example.com" })) )
                                 , ( "password", JE.string "secret" )
+                                , ( "name", JE.string "Alice" )
                                 , ( "updated", JE.int 1234 )
                                 ]
                             , JE.object
@@ -27,6 +28,9 @@ suite =
                                 , ( "backend", JE.string (Via.toString True Via.Local) )
                                 , ( "password", JE.null )
                                 , ( "updated", JE.int 5678 )
+
+                                -- no "name" field: records saved before this
+                                -- field existed must still decode
                                 ]
                             ]
                 in
@@ -37,11 +41,13 @@ suite =
                             [ { room = "my-room"
                               , backend = "WebSocket|wss://example.com"
                               , password = Just "secret"
+                              , name = Just "Alice"
                               , updated = 1234
                               }
                             , { room = "__notes__"
                               , backend = "Local"
                               , password = Nothing
+                              , name = Nothing
                               , updated = 5678
                               }
                             ]

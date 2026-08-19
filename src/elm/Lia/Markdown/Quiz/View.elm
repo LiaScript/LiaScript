@@ -223,23 +223,22 @@ viewTableSync syncSettings headers visualize data quiz =
                                           else
                                             Html.text "⛔ Offline "
                                         ]
-                                    :: (case visualize id data of
-                                            [] ->
-                                                Html.td [ Attr.class "lia-table__data", padding ] []
-                                                    |> List.repeat (List.length headers)
-                                                    |> (::) (isPending True)
+                                    :: (if Dict.member id data then
+                                            visualize id data
+                                                |> List.map
+                                                    (List.singleton
+                                                        >> Html.td
+                                                            [ Attr.class "lia-table__data"
+                                                            , Attr.style "text-align" "center"
+                                                            , padding
+                                                            ]
+                                                    )
+                                                |> (::) (isPending False)
 
-                                            list ->
-                                                list
-                                                    |> List.map
-                                                        (List.singleton
-                                                            >> Html.td
-                                                                [ Attr.class "lia-table__data"
-                                                                , Attr.style "text-align" "center"
-                                                                , padding
-                                                                ]
-                                                        )
-                                                    |> (::) (isPending False)
+                                        else
+                                            Html.td [ Attr.class "lia-table__data", padding ] []
+                                                |> List.repeat (List.length headers)
+                                                |> (::) (isPending True)
                                        )
                                     |> Html.tr [ Attr.class "lia-table__row" ]
                             )

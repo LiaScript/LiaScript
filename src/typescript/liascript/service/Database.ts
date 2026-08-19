@@ -259,7 +259,7 @@ const Service = {
 
   saveClassroom: async function (
     uidDB: string,
-    entry: { room: string; backend: string; password?: string }
+    entry: { room: string; backend: string; password?: string; name?: string }
   ) {
     if (connector) {
       return connector.saveClassroom(uidDB, entry)
