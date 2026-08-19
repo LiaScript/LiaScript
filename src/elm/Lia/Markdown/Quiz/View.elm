@@ -5,6 +5,7 @@ module Lia.Markdown.Quiz.View exposing
     , showSolution
     , syncAttributes
     , view
+    , viewMatrixTableSync
     , viewTableSync
     )
 
@@ -152,6 +153,21 @@ iconWithColor icon color text =
         ]
 
 
+tablePadding : Html.Attribute msg
+tablePadding =
+    Attr.style "padding" "0px 5px !important"
+
+
+tableHeaderCell : List (Html.Attribute msg) -> String -> Html msg
+tableHeaderCell attrs text =
+    Html.th (Attr.class "lia-table__header" :: tablePadding :: attrs) [ Html.text text ]
+
+
+fixedHeaderCells : List (Html.Attribute msg) -> List (Html msg)
+fixedHeaderCells attrs =
+    [ "User", "Online", "State" ] |> List.map (tableHeaderCell attrs)
+
+
 viewTableSync :
     Sync.Settings
     -> List String
@@ -159,18 +175,73 @@ viewTableSync :
     -> Dict String x
     -> List (Html msg)
     -> List (Html msg)
-viewTableSync syncSettings headers visualize data quiz =
+viewTableSync syncSettings headers =
+    viewTableSyncWith syncSettings
+        (List.length headers)
+        [ (fixedHeaderCells [] ++ (headers |> List.map (tableHeaderCell [])))
+            |> Html.tr []
+        ]
+
+
+{-| Matrix survey tables get a two-row header: one cell per main statement
+spanning all of its option columns, with the option labels as a sub-header
+underneath. `groups` must stay in the same (statement, options) order the
+`toStringFn`-flattened cells are emitted in, since the two are not linked by
+anything but call-site convention.
+-}
+viewMatrixTableSync :
+    Sync.Settings
+    -> List ( String, List String )
+    -> (String -> Dict String x -> List (Html msg))
+    -> Dict String x
+    -> List (Html msg)
+    -> List (Html msg)
+viewMatrixTableSync syncSettings groups =
+    viewTableSyncWith syncSettings
+        (groups |> List.concatMap Tuple.second |> List.length)
+        [ (fixedHeaderCells [ Attr.rowspan 2 ]
+            ++ (groups
+                    |> List.map
+                        (\( statement, options ) ->
+                            -- kept to a single line (ellipsis + title for the
+                            -- full text) so its rendered height stays
+                            -- predictable -- the sub-header row below relies
+                            -- on that height to compute its own sticky offset.
+                            tableHeaderCell
+                                [ Attr.colspan (List.length options)
+                                , Attr.title statement
+                                , Attr.style "white-space" "nowrap"
+                                , Attr.style "overflow" "hidden"
+                                , Attr.style "text-overflow" "ellipsis"
+                                ]
+                                statement
+                        )
+               )
+          )
+            |> Html.tr []
+        , groups
+            |> List.concatMap (Tuple.second >> List.map (tableHeaderCell []))
+            |> Html.tr [ Attr.class "lia-table__head-row--sub" ]
+        ]
+
+
+viewTableSyncWith :
+    Sync.Settings
+    -> Int
+    -> List (Html msg)
+    -> (String -> Dict String x -> List (Html msg))
+    -> Dict String x
+    -> List (Html msg)
+    -> List (Html msg)
+viewTableSyncWith syncSettings columnCount headerRows visualize data quiz =
     let
         peers =
             syncSettings.peersHistory
 
-        padding =
-            Attr.style "padding" "0px 5px !important"
-
         isPending bool =
             Html.td
                 [ Attr.class "lia-table__data"
-                , padding
+                , tablePadding
                 , Attr.style "text-align" "center"
                 ]
                 [ if bool then
@@ -182,54 +253,32 @@ viewTableSync syncSettings headers visualize data quiz =
     in
     if Sync.isRoot syncSettings then
         [ Html.details [ Attr.style "margin-top" "1rem" ]
-            [ Html.summary [ padding ] [ Html.text "details" ]
+            [ Html.summary
+                [ tablePadding
+                , Attr.style "margin" "0"
+                ]
+                [ Html.text "details" ]
             , Html.div
                 [ Attr.class "lia-table-responsive has-thead-sticky has-first-col-sticky"
-                , Attr.style "max-height" "200px"
+                , Attr.style "max-height" "300px"
+                , Attr.style "padding" "0"
                 ]
                 [ Html.table
                     [ Attr.class "lia-table is-compact"
                     ]
-                    [ Html.thead [ Attr.class "lia-table__head" ]
-                        [ Html.th
-                            [ Attr.class "lia-table__header"
-                            , padding
-                            ]
-                            [ Html.text "User" ]
-                            :: Html.th
-                                [ Attr.class "lia-table__header"
-                                , padding
-                                ]
-                                [ Html.text "Online" ]
-                            :: Html.th
-                                [ Attr.class "lia-table__header"
-                                , padding
-                                ]
-                                [ Html.text "State" ]
-                            :: (headers
-                                    |> List.map
-                                        (Html.text
-                                            >> List.singleton
-                                            >> Html.th
-                                                [ Attr.class "lia-table__header"
-                                                , padding
-                                                ]
-                                        )
-                               )
-                            |> Html.tr []
-                        ]
+                    [ Html.thead [ Attr.class "lia-table__head" ] headerRows
                     , peers
                         |> Dict.toList
                         |> List.map
                             (\( id, name ) ->
                                 Html.td
                                     [ Attr.class "lia-table__data"
-                                    , padding
+                                    , tablePadding
                                     ]
                                     [ Html.text name ]
                                     :: Html.td
                                         [ Attr.class "lia-table__data"
-                                        , padding
+                                        , tablePadding
                                         , Attr.style "text-align" "center"
                                         ]
                                         [ if Dict.member id syncSettings.peers then
@@ -245,14 +294,14 @@ viewTableSync syncSettings headers visualize data quiz =
                                                         >> Html.td
                                                             [ Attr.class "lia-table__data"
                                                             , Attr.style "text-align" "center"
-                                                            , padding
+                                                            , tablePadding
                                                             ]
                                                     )
                                                 |> (::) (isPending False)
 
                                         else
-                                            Html.td [ Attr.class "lia-table__data", padding ] []
-                                                |> List.repeat (List.length headers)
+                                            Html.td [ Attr.class "lia-table__data", tablePadding ] []
+                                                |> List.repeat columnCount
                                                 |> (::) (isPending True)
                                        )
                                     |> Html.tr [ Attr.class "lia-table__row" ]

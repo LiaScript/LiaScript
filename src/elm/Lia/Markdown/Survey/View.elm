@@ -25,7 +25,7 @@ import Lia.Markdown.Inline.View
         ( dropHere
         , viewer
         )
-import Lia.Markdown.Quiz.View exposing (openState, syncAttributes, viewTableSync)
+import Lia.Markdown.Quiz.View exposing (openState, syncAttributes, viewMatrixTableSync, viewTableSync)
 import Lia.Markdown.Survey.Model
     exposing
         ( getErrorMessage
@@ -220,6 +220,21 @@ viewSummary sync headers fn data =
             Html.div []
 
 
+{-| Same as `viewSummary`, but for `Matrix` surveys, whose "details" table
+gets a two-row header (main statement spanning its options) instead of one
+flat "statement / option" column per cell.
+-}
+viewSummaryMatrix : Maybe Sync_.Settings -> List ( String, List String ) -> (String -> Dict String Sync -> List (Html msg)) -> Dict String Sync -> List (Html msg) -> Html msg
+viewSummaryMatrix sync groups fn data =
+    case sync of
+        Just sync_ ->
+            viewMatrixTableSync sync_ groups fn data
+                >> Html.div []
+
+        _ ->
+            Html.div []
+
+
 {-| The "Open" bar (how many known peers haven't answered yet), reusing
 `Quiz.View.openState` -- only the Details-mode owner has the peer-roster
 data to compute it, everyone else gets `Nothing` (no extra bar).
@@ -295,8 +310,8 @@ viewMatrixSync config categories questions syncData survey =
             [ survey
             , matrixBlock config categories (openIfRoot config data) summary
             ]
-                |> viewSummary config.sync
-                    (categories |> List.concatMap (\category -> questions |> List.map ((++) (stringify category ++ " / "))))
+                |> viewSummaryMatrix config.sync
+                    (categories |> List.map (\category -> ( stringify category, questions )))
                     (toStringFn questions)
                     data
         )

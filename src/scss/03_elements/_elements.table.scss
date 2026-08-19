@@ -25,6 +25,15 @@
           top: 0;
           z-index: 1;
         }
+
+        // second header row of a two-row (e.g. survey-matrix) head: stick
+        // below the first row instead of overlapping it at top: 0.
+        // ponytail: assumes the first row is a single line of text; if it
+        // wraps to multiple lines this offset undershoots and needs a
+        // measured/JS value instead.
+        .lia-table__head-row--sub th {
+          top: calc(1.47em + 2px);
+        }
       }
 
       &.has-first-col-sticky {
@@ -273,6 +282,11 @@
     .lia-table__header,
     .lia-table__data {
       min-width: auto;
+      // higher specificity than the base padding rule above, so this wins
+      // without needing `!important` (which an inline Elm `style` can't
+      // carry anyway -- the two-row sticky matrix header's offset depends
+      // on this row height actually being this small).
+      padding: 0px 5px;
     }
   }
 
