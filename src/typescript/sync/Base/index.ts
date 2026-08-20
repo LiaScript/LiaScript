@@ -272,7 +272,7 @@ export class Sync {
     }
 
     if (uid) {
-      uid = helper.getHashCode(uid + (salt || '')).toString()
+      uid = Math.abs(helper.getHashCode(uid + (salt || ''))).toString(16)
     }
 
     if (!uid) console.warn('Sync: no uniqueID')
