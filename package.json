@@ -83,7 +83,7 @@
     "echarts-wordcloud": "^2.1.0",
     "elm": "^0.19.1-5",
     "elm-hot": "^1.1.6",
-    "elm-optimize-level-2": "^0.3.5",
+    "elm-optimize-level-2": "^0.4.0",
     "elm-review": "^2.13.5",
     "elm-test": "^0.19.1-revision12",
     "eslint": "^9.39.4",
