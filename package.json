@@ -89,7 +89,7 @@
     "eslint": "^9.39.4",
     "events": "^3.3.0",
     "jszip": "^3.10.1",
-    "katex": "^0.16.45",
+    "katex": "^0.18.4",
     "logger.ts": "^1.0.5",
     "minify": "^9.2.0",
     "node-elm-compiler": "^5.0.6",
