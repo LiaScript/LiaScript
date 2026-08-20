@@ -36,6 +36,8 @@ const modes: {
   applescript: 'applescript',
   oascript: 'applescript',
   /* ------------------------------------- */
+  astro: 'astro',
+  /* ------------------------------------- */
   aql: 'aql',
   /* ------------------------------------- */
   arduino: 'c_cpp',
@@ -85,12 +87,17 @@ const modes: {
   c9search: 'c9search',
   c9search_results: 'c9search',
   /* ------------------------------------- */
+  cedar: 'cedar',
+  cedarschema: 'cedarschema',
+  /* ------------------------------------- */
   cirru: 'cirru',
   /* ------------------------------------- */
   clojure: 'clojure',
   clj: 'clojure',
   cljs: 'clojure',
   edn: 'clojure',
+  /* ------------------------------------- */
+  clue: 'clue',
   /* ------------------------------------- */
   cmake: 'makefile',
   'cmake.in': 'makefile',
@@ -213,6 +220,8 @@ const modes: {
   // ! F
   // !--------------------------------------
 
+  flix: 'flix',
+  /* ------------------------------------- */
   forth: 'forth',
   frt: 'forth',
   ldr: 'forth',
@@ -262,6 +271,8 @@ const modes: {
   /* ------------------------------------- */
   graphqlschema: 'graphqlschema',
   gql: 'graphqlschema',
+  /* ------------------------------------- */
+  groq: 'groq',
   /* ------------------------------------- */
   groovy: 'groovy',
 
@@ -410,6 +421,8 @@ const modes: {
   mk: 'makefile',
   gnumakefile: 'makefile',
   ocamlmakefile: 'makefile',
+  /* ------------------------------------- */
+  mariadb: 'mariadb',
   /* ------------------------------------- */
   markdown: 'markdown',
   md: 'markdown',
