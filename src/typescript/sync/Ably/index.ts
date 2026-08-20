@@ -26,7 +26,7 @@ export class Sync extends Base.Sync {
   }) {
     super.connect(data)
 
-    this.apiKey = data.config?.apiKey
+    this.apiKey = data.config?.apiKey || process.env.ABLY_API_KEY || undefined
 
     if (window['Ably']) {
       this.init(true)
