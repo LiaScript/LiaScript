@@ -120,6 +120,7 @@ init supportedBackends =
 
             --, Via.P2PT Const.webTorrent_TrackerURLs
             , Via.PubNub { pubKey = "", subKey = "" }
+            , Via.Ably { apiKey = "" }
             , Via.Torrent { relayUrls = "", turnConfig = "" }
             , Via.Edrys
             , Via.WebSocket { url = "" }
@@ -165,6 +166,9 @@ isMember list element =
         -- ( (Via.Matrix _) :: _, Via.Matrix _ ) ->
         --     ( True, element )
         ( (Via.PubNub _) :: _, Via.PubNub _ ) ->
+            ( True, element )
+
+        ( (Via.Ably _) :: _, Via.Ably _ ) ->
             ( True, element )
 
         -- ( (Via.Jitsi _) :: _, Via.Jitsi _ ) ->

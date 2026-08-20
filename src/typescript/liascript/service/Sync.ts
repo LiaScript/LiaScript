@@ -8,6 +8,7 @@ var Database: any
 var Edrys
 // var Jitsi
 // var Matrix
+var Ably
 var PubNub
 var Gun
 var Local
@@ -45,6 +46,7 @@ const Service = {
 
   supported: [
     // remove these strings if you want to enable or disable certain sync support
+    'ably',
     'edrys',
     'gun',
     //'jitsi',
@@ -205,6 +207,24 @@ const Service = {
               sync = new Matrix.Sync(cbConnection, elmSend)
               break
             */
+
+            case 'ably':
+              if (!Ably) {
+                import('../../sync/Ably/index').then((e) => {
+                  Ably = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new Ably.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                true,
+              )
+              break
 
             case 'pubnub':
               if (!PubNub) {

@@ -82,6 +82,11 @@ connect param =
                             , ( "subscribeKey", JE.string subKey )
                             ]
 
+                    Via.Ably { apiKey } ->
+                        JE.object
+                            [ ( "apiKey", JE.string apiKey )
+                            ]
+
                     Via.P2PT urls ->
                         urls
                             |> String.split ","

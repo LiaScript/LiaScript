@@ -29,6 +29,7 @@ type Backend
     | P2PT String
     | IPFS { turnConfig : String }
     | PubNub { pubKey : String, subKey : String }
+    | Ably { apiKey : String }
       -- Trystero
     | NoStr { relayUrls : String, turnConfig : String }
     | MQTT { relayUrls : String, turnConfig : String }
@@ -120,6 +121,15 @@ toString full via =
                         ""
                    )
 
+        Ably { apiKey } ->
+            "Ably"
+                ++ (if full then
+                        "|" ++ apiKey
+
+                    else
+                        ""
+                   )
+
         P2PT urls ->
             "P2PT"
                 ++ (if full then
@@ -188,6 +198,9 @@ icon via =
             --     "icon-matrix icon-xs"
             PubNub _ ->
                 "icon-pubnub icon-xs"
+
+            Ably _ ->
+                "icon-websocket icon-xs"
 
             P2PT _ ->
                 "icon-p2pt icon-xs"
@@ -287,6 +300,12 @@ fromString via =
 
         [ "pubnub", pub, sub ] ->
             Just <| PubNub { pubKey = pub, subKey = sub }
+
+        [ "ably" ] ->
+            Just <| Ably { apiKey = "" }
+
+        [ "ably", apiKey ] ->
+            Just <| Ably { apiKey = apiKey }
 
         [ "websocket" ] ->
             Just (WebSocket { url = "" })
@@ -512,6 +531,17 @@ infoOn supported about =
                 , allowScripts
                 ]
 
+            ( Ably _, _ ) ->
+                [ link "Ably" "https://ably.com"
+                , Html.text " is a managed real-time messaging platform with a global edge network. "
+                , Html.text "To create a classroom that uses this service, you will only require an account, which is free for testing. "
+                , Html.text "After that, you simply have to create a new App within their dashboard and copy one of its API keys. "
+                , Html.text "This is the key you will have to provide for this room. "
+                , Html.br [] []
+                , Html.br [] []
+                , allowScripts
+                ]
+
             ( WebSocket _, _ ) ->
                 [ link "WebSocket" "https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"
                 , Html.text " provides full-duplex communication over a single TCP connection. "
@@ -723,6 +753,19 @@ view editable backend =
                     }
                 ]
 
+        Ably { apiKey } ->
+            details
+                [ input
+                    { active = editable
+                    , type_ = "password"
+                    , msg = InputAbly
+                    , label = Html.text "API key"
+                    , value = apiKey
+                    , placeholder = "xVLyHw.XXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                    , autocomplete = Just "ably-apiKey"
+                    }
+                ]
+
         P2PT urls ->
             details
                 [ input
@@ -929,6 +972,7 @@ type Msg
     = InputGun String
     | CheckboxGun
     | InputPubNub String String
+    | InputAbly String
       --| InputMatrix String String
       --| InputJitsi String
     | InputP2PT String
@@ -954,6 +998,9 @@ update msg backend =
 
         ( InputPubNub "sub" new, PubNub data ) ->
             PubNub { data | subKey = new }
+
+        ( InputAbly new, Ably data ) ->
+            Ably { data | apiKey = new }
 
         -- ( InputMatrix "url" new, Matrix data ) ->
         --     Matrix { data | baseURL = new }
@@ -1019,6 +1066,9 @@ eq a b =
         -- ( Matrix _, Matrix _ ) ->
         --     True
         ( PubNub _, PubNub _ ) ->
+            True
+
+        ( Ably _, Ably _ ) ->
             True
 
         -- ( Jitsi _, Jitsi _ ) ->
