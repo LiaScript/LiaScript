@@ -271,8 +271,8 @@ export class Sync {
       })
     }
 
-    if (salt && uid) {
-      uid = helper.getHashCode(uid + salt).toString()
+    if (uid) {
+      uid = helper.getHashCode(uid + (salt || '')).toString()
     }
 
     if (!uid) console.warn('Sync: no uniqueID')

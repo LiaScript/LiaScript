@@ -83,14 +83,13 @@ const Service = {
         if (sync) sync = undefined
 
         if (elmSend) {
-          // for what so ever reason perform a deep-copy
-          const event_ = { ...event }
           const cbConnection = function (topic: string, msg: any) {
-            event_.message.cmd = topic
-            event_.message.param = msg
-            event_.reply = true
-
-            if (elmSend) elmSend(event_)
+            if (elmSend)
+              elmSend({
+                ...event,
+                message: { cmd: topic, param: msg },
+                reply: true,
+              })
           }
 
           const backend = event.message.param.backend
