@@ -200,7 +200,7 @@ icon via =
                 "icon-pubnub icon-xs"
 
             Ably _ ->
-                "icon-websocket icon-xs"
+                "icon-ably icon-xs"
 
             P2PT _ ->
                 "icon-p2pt icon-xs"
