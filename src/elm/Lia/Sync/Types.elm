@@ -120,7 +120,7 @@ init supportedBackends =
 
             --, Via.P2PT Const.webTorrent_TrackerURLs
             , Via.PubNub { pubKey = "", subKey = "" }
-            , Via.Ably { apiKey = "" }
+            , Via.Ably { apiKey = "", persistent = False }
             , Via.Torrent { relayUrls = "", turnConfig = "" }
             , Via.Edrys
             , Via.WebSocket { url = "" }

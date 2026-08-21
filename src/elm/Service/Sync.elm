@@ -82,9 +82,10 @@ connect param =
                             , ( "subscribeKey", JE.string subKey )
                             ]
 
-                    Via.Ably { apiKey } ->
+                    Via.Ably { apiKey, persistent } ->
                         JE.object
                             [ ( "apiKey", JE.string apiKey )
+                            , ( "persistent", JE.bool persistent )
                             ]
 
                     Via.P2PT urls ->

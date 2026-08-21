@@ -5,6 +5,7 @@ import { GenericProvider } from 'y-generic'
 export class Sync extends Base.Sync {
   private transport?: AblyTransport
   private apiKey?: string
+  private persistent: boolean = false
   private syncFallbackTimer: ReturnType<typeof setTimeout> | null = null
 
   destroy() {
@@ -27,11 +28,17 @@ export class Sync extends Base.Sync {
     super.connect(data)
 
     this.apiKey = data.config?.apiKey || process.env.ABLY_API_KEY || undefined
+    this.persistent = data.config?.persistent || false
 
-    if (window['Ably']) {
+    const urls: string[] = []
+    if (!window['Ably']) urls.push('https://cdn.ably.com/lib/ably.min-2.js')
+    if (this.persistent && !window['AblyLiveObjectsPlugin'])
+      urls.push('https://cdn.ably.com/lib/liveobjects.umd.min-2.js')
+
+    if (urls.length === 0) {
       this.init(true)
     } else {
-      this.load(['https://cdn.ably.com/lib/ably.min-2.js'], this)
+      this.load(urls, this)
     }
   }
 
@@ -43,7 +50,12 @@ export class Sync extends Base.Sync {
     const id = this.uniqueID()
 
     if (ok && window['Ably'] && id) {
-      this.transport = new AblyTransport({ Realtime: window['Ably'].Realtime })
+      this.transport = new AblyTransport({
+        Realtime: window['Ably'].Realtime,
+        LiveObjects: this.persistent
+          ? window['AblyLiveObjectsPlugin']
+          : undefined,
+      })
 
       this.provider = new GenericProvider(this.db.doc, this.transport)
 
@@ -83,6 +95,8 @@ export class Sync extends Base.Sync {
       this.provider.connect({
         room: id,
         apiKey: this.apiKey,
+        persistent: this.persistent,
+        doc: this.persistent ? this.db.doc : undefined,
         ...(this.password ? { password: this.password } : {}),
       } as any)
     } else {

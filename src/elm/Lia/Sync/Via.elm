@@ -29,7 +29,7 @@ type Backend
     | P2PT String
     | IPFS { turnConfig : String }
     | PubNub { pubKey : String, subKey : String }
-    | Ably { apiKey : String }
+    | Ably { apiKey : String, persistent : Bool }
       -- Trystero
     | NoStr { relayUrls : String, turnConfig : String }
     | MQTT { relayUrls : String, turnConfig : String }
@@ -121,10 +121,17 @@ toString full via =
                         ""
                    )
 
-        Ably { apiKey } ->
+        Ably { apiKey, persistent } ->
             "Ably"
                 ++ (if full then
-                        "|" ++ apiKey
+                        (if persistent then
+                            "|t"
+
+                         else
+                            "|f"
+                        )
+                            ++ "|"
+                            ++ apiKey
 
                     else
                         ""
@@ -302,10 +309,22 @@ fromString via =
             Just <| PubNub { pubKey = pub, subKey = sub }
 
         [ "ably" ] ->
-            Just <| Ably { apiKey = "" }
+            Just <| Ably { apiKey = "", persistent = False }
+
+        [ "ably", "f" ] ->
+            Just <| Ably { apiKey = "", persistent = False }
+
+        [ "ably", "f", apiKey ] ->
+            Just <| Ably { apiKey = apiKey, persistent = False }
+
+        [ "ably", "t" ] ->
+            Just <| Ably { apiKey = "", persistent = True }
+
+        [ "ably", "t", apiKey ] ->
+            Just <| Ably { apiKey = apiKey, persistent = True }
 
         [ "ably", apiKey ] ->
-            Just <| Ably { apiKey = apiKey }
+            Just <| Ably { apiKey = apiKey, persistent = False }
 
         [ "websocket" ] ->
             Just (WebSocket { url = "" })
@@ -537,6 +556,7 @@ infoOn supported about =
                 , Html.text "To create a classroom that uses this service, you will only require an account, which is free for testing. "
                 , Html.text "After that, you simply have to create a new App within their dashboard and copy one of its API keys. "
                 , Html.text "This is the key you will have to provide for this room. "
+                , Html.text "By checking \"persistent storage\" you can ensure that the chat messages and the modified code will be accessible over a longer time period, using Ably's LiveObjects, otherwise the state is deleted."
                 , Html.br [] []
                 , Html.br [] []
                 , allowScripts
@@ -753,7 +773,7 @@ view editable backend =
                     }
                 ]
 
-        Ably { apiKey } ->
+        Ably { apiKey, persistent } ->
             details
                 [ input
                     { active = editable
@@ -763,6 +783,12 @@ view editable backend =
                     , value = apiKey
                     , placeholder = "xVLyHw.XXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
                     , autocomplete = Just "ably-apiKey"
+                    }
+                , checkbox
+                    { active = editable
+                    , value = persistent
+                    , msg = CheckboxAbly
+                    , label = Html.text "persistent storage"
                     }
                 ]
 
@@ -973,6 +999,7 @@ type Msg
     | CheckboxGun
     | InputPubNub String String
     | InputAbly String
+    | CheckboxAbly
       --| InputMatrix String String
       --| InputJitsi String
     | InputP2PT String
@@ -1001,6 +1028,9 @@ update msg backend =
 
         ( InputAbly new, Ably data ) ->
             Ably { data | apiKey = new }
+
+        ( CheckboxAbly, Ably data ) ->
+            Ably { data | persistent = not data.persistent }
 
         -- ( InputMatrix "url" new, Matrix data ) ->
         --     Matrix { data | baseURL = new }
