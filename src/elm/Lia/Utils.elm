@@ -8,6 +8,7 @@ module Lia.Utils exposing
     , checkPersistency
     , deactivate
     , focus
+    , formatDate
     , get
     , icon
     , modal
@@ -37,6 +38,7 @@ import Json.Decode as JD
 import List.Extra
 import Process
 import Task
+import Time
 import Url
 
 
@@ -445,3 +447,64 @@ cleanupVscodeSimpleBrowserUrl url =
 
             else
                 url
+
+
+{-| Format an epoch-millisecond timestamp as `DD.MM.YYYY HH:MM`, in UTC (no
+user-local timezone is plumbed through the app anywhere yet).
+-}
+formatDate : Int -> String
+formatDate ms =
+    let
+        posix =
+            Time.millisToPosix ms
+
+        pad n =
+            n |> String.fromInt |> String.padLeft 2 '0'
+
+        month =
+            case Time.toMonth Time.utc posix of
+                Time.Jan ->
+                    1
+
+                Time.Feb ->
+                    2
+
+                Time.Mar ->
+                    3
+
+                Time.Apr ->
+                    4
+
+                Time.May ->
+                    5
+
+                Time.Jun ->
+                    6
+
+                Time.Jul ->
+                    7
+
+                Time.Aug ->
+                    8
+
+                Time.Sep ->
+                    9
+
+                Time.Oct ->
+                    10
+
+                Time.Nov ->
+                    11
+
+                Time.Dec ->
+                    12
+    in
+    pad (Time.toDay Time.utc posix)
+        ++ "."
+        ++ pad month
+        ++ "."
+        ++ String.fromInt (Time.toYear Time.utc posix)
+        ++ " "
+        ++ pad (Time.toHour Time.utc posix)
+        ++ ":"
+        ++ pad (Time.toMinute Time.utc posix)

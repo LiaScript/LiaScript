@@ -15,7 +15,7 @@ import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Update as Markdown
 import Lia.Markdown.View as Markdown
 import Lia.Section exposing (Section)
-import Lia.Utils exposing (btnIcon, noTranslate)
+import Lia.Utils exposing (btnIcon, formatDate, noTranslate)
 
 
 view : Lang -> Bool -> (Section -> Config Markdown.Msg) -> Dict String String -> Model -> Html Msg
@@ -120,14 +120,15 @@ viewMessage config peers ( id, message ) =
             , Attr.style "font-size" "1.1rem"
             , Attr.style "margin-top" "-1.1rem"
             , Attr.style "text-decoration" "overline"
-            , Attr.style "display" <|
-                if String.isEmpty peerName then
-                    "none"
-
-                else
-                    "block"
             ]
-            [ Html.strong [] [ Html.text peerName ] ]
+            [ Html.strong []
+                (if String.isEmpty peerName then
+                    [ Html.text (String.right 5 (formatDate id_)) ]
+
+                 else
+                    [ Html.text (peerName ++ " · " ++ String.right 5 (formatDate id_)) ]
+                )
+            ]
         ]
         |> Html.div
             [ Attr.style "margin" "0.45rem 0.5rem"

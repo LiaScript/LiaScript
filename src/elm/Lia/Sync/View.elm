@@ -12,8 +12,7 @@ import Lia.Sync.Classroom as Classroom
 import Lia.Sync.Types as Sync exposing (ClassroomMode(..), State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
 import Lia.Sync.Via as Backend exposing (Backend)
-import Lia.Utils exposing (btn, btnIcon)
-import Time
+import Lia.Utils exposing (btn, btnIcon, formatDate)
 
 
 view : Sync.Settings -> Html Msg
@@ -234,68 +233,6 @@ listContainer =
         , Attr.style "overflow-y" "auto"
         , Attr.style "padding" "0 10px"
         ]
-
-
-{-| Format a stored `updated` timestamp (epoch milliseconds) as
-`DD.MM.YYYY HH:MM`, in UTC (no user-local timezone is plumbed through the
-app anywhere yet).
--}
-formatDate : Int -> String
-formatDate ms =
-    let
-        posix =
-            Time.millisToPosix ms
-
-        pad n =
-            n |> String.fromInt |> String.padLeft 2 '0'
-
-        month =
-            case Time.toMonth Time.utc posix of
-                Time.Jan ->
-                    1
-
-                Time.Feb ->
-                    2
-
-                Time.Mar ->
-                    3
-
-                Time.Apr ->
-                    4
-
-                Time.May ->
-                    5
-
-                Time.Jun ->
-                    6
-
-                Time.Jul ->
-                    7
-
-                Time.Aug ->
-                    8
-
-                Time.Sep ->
-                    9
-
-                Time.Oct ->
-                    10
-
-                Time.Nov ->
-                    11
-
-                Time.Dec ->
-                    12
-    in
-    pad (Time.toDay Time.utc posix)
-        ++ "."
-        ++ pad month
-        ++ "."
-        ++ String.fromInt (Time.toYear Time.utc posix)
-        ++ " "
-        ++ pad (Time.toHour Time.utc posix)
-        ++ ":"
-        ++ pad (Time.toMinute Time.utc posix)
 
 
 {-| The pinned "Own Notes" shortcut. Shows the last-used date once the
