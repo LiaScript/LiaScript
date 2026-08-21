@@ -11,6 +11,7 @@ module Lia.Utils exposing
     , formatDate
     , get
     , icon
+    , identicon
     , modal
     , noTranslate
     , onEnter
@@ -23,6 +24,7 @@ module Lia.Utils exposing
     , urlBasePath
     , urlDecodeIfEncoded
     , urlQuery
+    , viewIdenticon
     )
 
 import Accessibility.Aria as A11y_Aria
@@ -298,6 +300,63 @@ string2Color maxValue url =
                     ++ (String.fromInt <| modBy maxValue b)
                     ++ ")"
            )
+
+
+{-| A curated set of neutral, inoffensive emoji (animals, plants, food,
+everyday objects) used by `identicon`. Deliberately excludes anything that
+could read as rude, violent, or otherwise inappropriate for a classroom.
+-}
+identiconSymbols : Array String
+identiconSymbols =
+    Array.fromList
+        [ "🦊", "🐸", "🐨", "🐼", "🦉", "🐢", "🦋", "🐙", "🦁", "🐯"
+        , "🐵", "🐰", "🐻", "🐱", "🐶", "🦄", "🐘", "🦒", "🦓", "🐧"
+        , "🐬", "🦔", "🌵", "🌻", "🍀", "⭐", "🌙", "🍎", "🍊", "🍋"
+        , "🍉", "🍇", "🍓", "🍒", "🥑", "🍍", "🥕", "🎈", "🎨", "🎯"
+        , "🎲", "🚀", "⚽", "🎸", "📚", "💡", "🔑", "⚓"
+        ]
+
+
+{-| A small, deterministic per-user "avatar" derived only from a string
+(typically a peer id): a `string2Color` background plus a symbol picked from
+`identiconSymbols`. The same id always yields the same result on every
+client, with no coordination needed -- useful to visually tell two users
+with the same display name apart.
+-}
+identicon : String -> { color : String, symbol : String }
+identicon id =
+    { color = string2Color 180 id
+    , symbol =
+        id
+            |> String.foldl (\c acc -> acc + Char.toCode c) 0
+            |> modBy (Array.length identiconSymbols)
+            |> (\i -> Array.get i identiconSymbols)
+            |> Maybe.withDefault "❔"
+    }
+
+
+{-| Render the `identicon` for a given id as a small circular badge. Marked
+`aria-hidden`, since it is a purely visual disambiguation aid -- the
+adjacent name text already carries the accessible label.
+-}
+viewIdenticon : String -> Html msg
+viewIdenticon id =
+    let
+        { color, symbol } =
+            identicon id
+    in
+    Html.span
+        [ Attr.style "background-color" color
+        , Attr.style "border-radius" "50%"
+        , Attr.style "display" "inline-flex"
+        , Attr.style "align-items" "center"
+        , Attr.style "justify-content" "center"
+        , Attr.style "width" "1.4em"
+        , Attr.style "height" "1.4em"
+        , Attr.style "margin-right" "0.35rem"
+        , Attr.attribute "aria-hidden" "true"
+        ]
+        [ Html.text symbol ]
 
 
 {-| Return rounded percentage up to two digits.

@@ -75,6 +75,7 @@ import Lia.Utils
         , btnIcon
         , percentage
         , shuffle
+        , viewIdenticon
         )
 import List.Extra
 
@@ -275,7 +276,7 @@ viewTableSyncWith syncSettings columnCount headerRows visualize data quiz =
                                     [ Attr.class "lia-table__data"
                                     , tablePadding
                                     ]
-                                    [ Html.text name ]
+                                    [ viewIdenticon id, Html.text name ]
                                     :: Html.td
                                         [ Attr.class "lia-table__data"
                                         , tablePadding

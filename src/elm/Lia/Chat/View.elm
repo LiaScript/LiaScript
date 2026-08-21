@@ -15,7 +15,7 @@ import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Update as Markdown
 import Lia.Markdown.View as Markdown
 import Lia.Section exposing (Section)
-import Lia.Utils exposing (btnIcon, formatDate, noTranslate)
+import Lia.Utils exposing (btnIcon, formatDate, noTranslate, viewIdenticon)
 
 
 view : Lang -> Bool -> (Section -> Config Markdown.Msg) -> Dict String String -> Model -> Html Msg
@@ -126,7 +126,9 @@ viewMessage config peers ( id, message ) =
                     [ Html.text (String.right 5 (formatDate id_)) ]
 
                  else
-                    [ Html.text (peerName ++ " · " ++ String.right 5 (formatDate id_)) ]
+                    [ viewIdenticon message.peer
+                    , Html.text (peerName ++ " · " ++ String.right 5 (formatDate id_))
+                    ]
                 )
             ]
         ]
