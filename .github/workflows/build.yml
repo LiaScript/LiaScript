@@ -48,6 +48,7 @@ jobs:
           WEBSOCKET_SERVER: ${{ secrets.WEBSOCKET_SERVER }}
           WEBRTC_SIGNALING_SERVERS: ${{ secrets.WEBRTC_SIGNALING_SERVERS }}
           WEBRTC_ICE_SERVERS: ${{ secrets.WEBRTC_ICE_SERVERS }}
+          ABLY_API_KEY: ${{ secrets.ABLY_API_KEY }}
         run: |
           cd LiaScript
           make all2
