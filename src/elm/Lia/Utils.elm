@@ -309,11 +309,80 @@ could read as rude, violent, or otherwise inappropriate for a classroom.
 identiconSymbols : Array String
 identiconSymbols =
     Array.fromList
-        [ "🦊", "🐸", "🐨", "🐼", "🦉", "🐢", "🦋", "🐙", "🦁", "🐯"
-        , "🐵", "🐰", "🐻", "🐱", "🐶", "🦄", "🐘", "🦒", "🦓", "🐧"
-        , "🐬", "🦔", "🌵", "🌻", "🍀", "⭐", "🌙", "🍎", "🍊", "🍋"
-        , "🍉", "🍇", "🍓", "🍒", "🥑", "🍍", "🥕", "🎈", "🎨", "🎯"
-        , "🎲", "🚀", "⚽", "🎸", "📚", "💡", "🔑", "⚓"
+        [ "🐶"
+        , "🐱"
+        , "🦊"
+        , "🦁"
+        , "🐯"
+        , "🐼"
+        , "🐨"
+        , "🐰"
+        , "🐧"
+        , "🐦"
+        , "🦅"
+        , "🦄"
+        , "🐬"
+        , "🐳"
+        , "🦋"
+        , "🐞"
+        , "🐝"
+        , "🐢"
+        , "🦔"
+        , "🦒"
+        , "🦖"
+        , "🦕"
+        , "🌹"
+        , "🌻"
+        , "🌵"
+        , "🍀"
+        , "☀️"
+        , "🌙"
+        , "⭐"
+        , "🪐"
+        , "❄️"
+        , "🌊"
+        , "🍎"
+        , "🍓"
+        , "⚽"
+        , "🏀"
+        , "🏈"
+        , "🏓"
+        , "🛹"
+        , "🎿"
+        , "🏆"
+        , "🥇"
+        , "🎵"
+        , "🎸"
+        , "🎹"
+        , "🎧"
+        , "🎤"
+        , "🎨"
+        , "📷"
+        , "🎮"
+        , "🎁"
+        , "🎈"
+        , "🎉"
+        , "🎯"
+        , "🧸"
+        , "🏎️"
+        , "🚲"
+        , "✈️"
+        , "⛵"
+        , "💻"
+        , "📱"
+        , "⌚"
+        , "💡"
+        , "🔭"
+        , "🔬"
+        , "📚"
+        , "✏️"
+        , "🎒"
+        , "💎"
+        , "👑"
+        , "🕶️"
+        , "👟"
+        , "🎓"
+        , "🔑"
         ]
 
 
@@ -335,7 +404,10 @@ identicon id =
     }
 
 
-{-| Render the `identicon` for a given id as a small circular badge. Marked
+{-| Render the `identicon` for a given id as "<emoji> <colored diamond>".
+Emoji glyphs are drawn by the platform's color emoji font and ignore CSS
+`color`, so only the diamond actually carries the `string2Color` hue -- the
+emoji contributes shape, the diamond contributes color. Marked
 `aria-hidden`, since it is a purely visual disambiguation aid -- the
 adjacent name text already carries the accessible label.
 -}
@@ -346,17 +418,11 @@ viewIdenticon id =
             identicon id
     in
     Html.span
-        [ Attr.style "background-color" color
-        , Attr.style "border-radius" "50%"
-        , Attr.style "display" "inline-flex"
-        , Attr.style "align-items" "center"
-        , Attr.style "justify-content" "center"
-        , Attr.style "width" "1.4em"
-        , Attr.style "height" "1.4em"
-        , Attr.style "margin-right" "0.35rem"
-        , Attr.attribute "aria-hidden" "true"
+        [ Attr.attribute "aria-hidden" "true" ]
+        [ Html.text (symbol ++ " ")
+        , Html.span [ Attr.style "color" color ] [ Html.text "◆" ]
+        , Html.text " "
         ]
-        [ Html.text symbol ]
 
 
 {-| Return rounded percentage up to two digits.
