@@ -9,6 +9,7 @@ const QUIZ = 'q'
 const SURVEY = 's'
 const CODE = 'c'
 const META = 'meta'
+const IDENTITY = 'name'
 
 export class CRDT {
   protected callback: (event: any, origin: null | string) => void
@@ -27,6 +28,10 @@ export class CRDT {
   protected surveys: Y.Map<any>
   protected chat: YKeyValue<{ message: String; color: String; user: String }>
   protected metadata: Y.Array<string>
+  // Durable peerID -> name map, persisted like `quizzes`/`surveys` so a
+  // reconnecting/late-joining owner can still label rows for peers who
+  // already left (Awareness alone is live-only and forgets them).
+  protected identities: Y.Map<string>
 
   protected length: number
   protected peerID: string
@@ -52,6 +57,7 @@ export class CRDT {
     this.surveys = this.doc.getMap<any>(SURVEY)
     this.chat = new YKeyValue(this.doc.getArray('chat'))
     this.metadata = this.doc.getArray<string>(META)
+    this.identities = this.doc.getMap<string>(IDENTITY)
   }
 
   init(data: State.Vector) {
@@ -79,6 +85,12 @@ export class CRDT {
     const peers = this.getPeers()
     if (Object.keys(peers).length > 0) {
       this.callback(peers, 'peer')
+    }
+
+    // Identities — everyone ever seen, including peers now offline.
+    const identities = this.getIdentities()
+    if (Object.keys(identities).length > 0) {
+      this.callback(identities, 'identity')
     }
 
     // Cursors (awareness-based, fire alongside peers)
@@ -154,6 +166,10 @@ export class CRDT {
     this.awareness = awareness
     // Announce own presence
     awareness.setLocalState({ peerID: this.peerID, color: this.getColor(), name })
+    // Persist own identity so it survives after this peer goes offline again.
+    if (name && this.identities.get(this.peerID) !== name) {
+      this.identities.set(this.peerID, name)
+    }
 
     awareness.on(
       'change',
@@ -214,6 +230,10 @@ export class CRDT {
           'survey',
         )
       }
+    })
+
+    this.identities.observe(() => {
+      this.callback(this.getIdentities(), 'identity')
     })
 
     this.chat.on(
@@ -355,6 +375,14 @@ export class CRDT {
   removePeer() {
     // Remove own presence from awareness so remote peers see us leave.
     this.awareness?.setLocalState(null)
+  }
+
+  getIdentities(): State.Peer {
+    const identities: State.Peer = {}
+    for (const [id, name] of this.identities) {
+      identities[id] = name
+    }
+    return identities
   }
 
   id(id1: number, id2: number, id3?: number) {

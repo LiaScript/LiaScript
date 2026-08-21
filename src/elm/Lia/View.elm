@@ -265,7 +265,16 @@ viewPanes screen model =
                     , Attr.style "margin-block-start" "0px"
                     ]
             )
-            (Chat.view model.translation model.settings.light (initConfig screen model) model.sync.peers model.chat
+            (Chat.view model.translation
+                model.settings.light
+                (initConfig screen model)
+                (if Sync_.isRoot model.sync then
+                    model.sync.peersHistory
+
+                 else
+                    model.sync.peers
+                )
+                model.chat
                 |> Html.map UpdateChat
             )
             model.pane

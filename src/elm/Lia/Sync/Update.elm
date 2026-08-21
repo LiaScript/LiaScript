@@ -543,6 +543,24 @@ synchronize model json =
             }
                 |> Return.val
 
+        Ok ( "identity", param ) ->
+            let
+                sync =
+                    model.sync
+
+                identities =
+                    param
+                        |> JD.decodeValue decodePeers
+                        |> Result.withDefault Dict.empty
+            in
+            { model
+                | sync =
+                    { sync
+                        | peersHistory = Dict.union sync.peersHistory identities
+                    }
+            }
+                |> Return.val
+
         Ok ( "code", param ) ->
             case
                 param

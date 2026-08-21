@@ -139,6 +139,10 @@ export class Sync {
                 this.sync('update', { cmd: 'peer', param: event })
                 break
               }
+              case 'identity': {
+                this.sync('update', { cmd: 'identity', param: event })
+                break
+              }
               case 'code': {
                 this.sync('update', { cmd: 'code', param: event })
                 break
