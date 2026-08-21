@@ -478,7 +478,7 @@ viewSync : Config sub -> Maybe (Dict String Sync) -> List (Html msg) -> List (Ht
 viewSync config syncData quiz =
     let
         visualize id data =
-            case Dict.get id data of
+            case Dict.get id data |> Maybe.map .trial of
                 Just (Just trial) ->
                     [ iconWithColor "✓" "#5470c6" Nothing, Html.text <| String.fromInt trial ]
 
@@ -487,11 +487,14 @@ viewSync config syncData quiz =
 
                 Nothing ->
                     []
+
+        trials =
+            Dict.map (\_ v -> v.trial)
     in
     case ( syncData, syncData |> Maybe.map Dict.size, config.sync ) of
         ( Just data, Just 0, Just sync ) ->
             if Sync.isRoot sync then
-                syncDiagram config sync 0 data
+                syncDiagram config sync 0 (trials data)
                     |> List.singleton
                     |> List.append quiz
                     |> viewTableSync sync [ "Answered", "Trial" ] visualize data
@@ -510,7 +513,7 @@ viewSync config syncData quiz =
                 viewTableSync sync [ "Answered", "Trial" ] visualize Dict.empty quiz
 
         ( Just data, Just length, Just sync ) ->
-            syncDiagram config sync length data
+            syncDiagram config sync length (trials data)
                 |> List.singleton
                 |> List.append quiz
                 |> viewTableSync sync [ "Answered", "Trial" ] visualize data

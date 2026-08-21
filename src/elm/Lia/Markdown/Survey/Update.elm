@@ -3,6 +3,7 @@ module Lia.Markdown.Survey.Update exposing
     , Msg(..)
     , SelectMsg(..)
     , handle
+    , lockAnswered
     , update
     )
 
@@ -16,6 +17,7 @@ import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Sync as Sync
 import Lia.Markdown.Survey.Types exposing (Element, State(..), Vector, toString)
+import Lia.Sync.Types as Classroom
 import Process
 import Return exposing (Return)
 import Service.Database
@@ -50,8 +52,18 @@ type Msg sub
     | None
 
 
-update : Bool -> Maybe Int -> Scripts a -> Msg sub -> Vector -> Return Vector (Msg sub) sub
-update sync sectionID scripts msg vector =
+update :
+    { sync | state : Classroom.State, data : Classroom.Data }
+    -> Maybe Int
+    -> Scripts a
+    -> Msg sub
+    -> Vector
+    -> Return Vector (Msg sub) sub
+update classroom sectionID scripts msg vector =
+    let
+        connected =
+            Classroom.isConnected classroom.state
+    in
     case msg of
         TextUpdate idx str ->
             update_text vector idx str
@@ -99,7 +111,7 @@ update sync sectionID scripts msg vector =
                                 in
                                 new_vector
                                     |> Return.val
-                                    |> doSync sync sectionID (Just id)
+                                    |> doSync connected sectionID (Just id)
                                     |> store sectionID
 
                             else
@@ -144,8 +156,9 @@ update sync sectionID scripts msg vector =
                         |> Json.toVector
                         |> Result.map (merge (\sID body -> { body | scriptID = sID.scriptID }) vector)
                         |> Result.withDefault vector
+                        |> lockAnswered classroom sectionID
                         |> Return.val
-                        |> doSync sync sectionID Nothing
+                        |> doSync connected sectionID Nothing
                         |> init (\i s -> execute i s.state)
 
                 ( Just "eval", section, ( "eval", param ) ) ->
@@ -160,14 +173,14 @@ update sync sectionID scripts msg vector =
                                 |> update_ section vector
                                 |> store sectionID
                                 |> Return.script (JS.submit scriptID event)
-                                |> doSync sync sectionID (Just section)
+                                |> doSync connected sectionID (Just section)
 
                         Nothing ->
                             param
                                 |> evalEventDecoder
                                 |> update_ section vector
                                 |> store sectionID
-                                |> doSync sync sectionID (Just section)
+                                |> doSync connected sectionID (Just section)
 
                 {- let
                        eval =
@@ -189,8 +202,9 @@ update sync sectionID scripts msg vector =
                         |> Json.toVector
                         |> Result.map (merge (\sID body -> { body | scriptID = sID.scriptID }) vector)
                         |> Result.withDefault vector
+                        |> lockAnswered classroom sectionID
                         |> Return.val
-                        |> doSync sync sectionID Nothing
+                        |> doSync connected sectionID Nothing
                         |> init (\i s -> execute i s.state)
 
                 _ ->
@@ -198,6 +212,11 @@ update sync sectionID scripts msg vector =
 
         None ->
             Return.val vector
+
+
+lockAnswered : { sync | state : Classroom.State, data : Classroom.Data } -> Maybe Int -> Vector -> Vector
+lockAnswered classroom sectionID =
+    Sync.lockAnswered (Classroom.id classroom.state) classroom.data.survey sectionID
 
 
 update_ :

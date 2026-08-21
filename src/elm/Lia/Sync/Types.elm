@@ -7,6 +7,7 @@ module Lia.Sync.Types exposing
     , Sync
     , decodeCursors
     , decodePeers
+    , disconnected
     , fromClassroomMode
     , get
     , id
@@ -89,6 +90,22 @@ type alias Sync =
     { support : List ( Bool, Backend )
     , select : Maybe ( Bool, Backend )
     , open : Bool
+    }
+
+
+{-| A minimal, always-disconnected/no-data classroom context, for places
+outside classroom scope (e.g. nested subsections) that still need to satisfy
+the `{ state : State, data : Data }` shape.
+-}
+disconnected : { state : State, data : Data }
+disconnected =
+    { state = Disconnected
+    , data =
+        { cursor = []
+        , survey = Dict.empty
+        , quiz = Dict.empty
+        , code = Dict.empty
+        }
     }
 
 

@@ -516,7 +516,7 @@ synchronize model json =
                 ( todo, chat ) =
                     param
                         |> JD.decodeValue Chat.decoder
-                        |> Result.map (Chat.insert model.sync.scriptsEnabled model.search_index model.definition model.chat)
+                        |> Result.map (Chat.insert model.sync model.sync.scriptsEnabled model.search_index model.definition model.chat)
                         |> Result.withDefault ( [], model.chat )
             in
             { model | chat = chat, settings = updatedChatMessages model.settings }

@@ -95,7 +95,7 @@ update sync globals msg section =
 
         UpdateQuiz childMsg ->
             section.quiz_vector
-                |> Quiz.update (Sync.isConnected sync.state) (Just section.id) section.effect_model.javascript childMsg
+                |> Quiz.update sync (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | quiz_vector = v })
                 |> Return.mapEvents "quiz" section.id
                 |> Return.mapCmd UpdateQuiz
@@ -117,7 +117,7 @@ update sync globals msg section =
 
         UpdateSurvey childMsg ->
             section.survey_vector
-                |> Survey.update (Sync.isConnected sync.state) (Just section.id) section.effect_model.javascript childMsg
+                |> Survey.update sync (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | survey_vector = v })
                 |> Return.mapEvents "survey" section.id
                 |> Return.mapCmd UpdateSurvey
@@ -203,7 +203,7 @@ subUpdate js msg section =
                 UpdateQuiz childMsg ->
                     let
                         result =
-                            Quiz.update False Nothing js childMsg subsection.quiz_vector
+                            Quiz.update Sync.disconnected Nothing js childMsg subsection.quiz_vector
                     in
                     case result.sub of
                         Just _ ->
@@ -220,7 +220,7 @@ subUpdate js msg section =
                 UpdateSurvey childMsg ->
                     let
                         result =
-                            Survey.update False Nothing js childMsg subsection.survey_vector
+                            Survey.update Sync.disconnected Nothing js childMsg subsection.survey_vector
                     in
                     case result.sub of
                         Just _ ->
