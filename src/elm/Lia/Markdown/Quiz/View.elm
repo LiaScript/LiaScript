@@ -95,10 +95,15 @@ view : Config Main.Msg -> Maybe String -> Quiz Markdown.Block -> Vector -> List 
 view config labeledBy quiz vector renderedOptions renderedHints =
     case Array.get quiz.id vector of
         Just elem ->
+            let
+                _ =
+                    elem.opt.score
+                        |> Debug.log "quiz"
+            in
             ( elem.scriptID
             , viewState config elem quiz renderedOptions
                 |> viewQuiz config labeledBy elem quiz renderedHints
-                |> viewSync config (Sync.get config.sync .quiz config.slide quiz.id)
+                |> viewSync config (Sync.get config.sync .quiz config.slide quiz.id) elem.opt.score
             )
 
         _ ->
@@ -475,16 +480,25 @@ openState sync data =
     )
 
 
-viewSync : Config sub -> Maybe (Dict String Sync) -> List (Html msg) -> List (Html msg)
-viewSync config syncData quiz =
+viewSync : Config sub -> Maybe (Dict String Sync) -> Maybe Float -> List (Html msg) -> List (Html msg)
+viewSync config syncData score quiz =
     let
         visualize id data =
             case Dict.get id data |> Maybe.map .trial of
                 Just (Just trial) ->
-                    [ iconWithColor "✓" "#5470c6" Nothing, Html.text <| String.fromInt trial ]
+                    [ iconWithColor "✓" "#5470c6" Nothing
+                    , Html.text <| String.fromInt trial
+                    , score
+                        |> Maybe.map String.fromFloat
+                        |> Maybe.withDefault "1.0"
+                        |> Html.text
+                    ]
 
                 Just Nothing ->
-                    [ iconWithColor "✗" "#888" Nothing, Html.text "" ]
+                    [ iconWithColor "✗" "#888" Nothing
+                    , Html.text ""
+                    , Html.text "0.0"
+                    ]
 
                 Nothing ->
                     []
@@ -498,26 +512,26 @@ viewSync config syncData quiz =
                 syncDiagram config sync 0 (trials data)
                     |> List.singleton
                     |> List.append quiz
-                    |> viewTableSync sync [ "Answered", "Trial" ] visualize data
+                    |> viewTableSync sync [ "Answered", "Trial", "Score" ] visualize data
 
             else
-                viewTableSync sync [ "Answered", "Trial" ] visualize data quiz
+                viewTableSync sync [ "Answered", "Trial", "Score" ] visualize data quiz
 
         ( Nothing, Nothing, Just sync ) ->
             if Sync.isRoot sync then
                 syncDiagram config sync 0 Dict.empty
                     |> List.singleton
                     |> List.append quiz
-                    |> viewTableSync sync [ "Answered", "Trial" ] visualize Dict.empty
+                    |> viewTableSync sync [ "Answered", "Trial", "Score" ] visualize Dict.empty
 
             else
-                viewTableSync sync [ "Answered", "Trial" ] visualize Dict.empty quiz
+                viewTableSync sync [ "Answered", "Trial", "Score" ] visualize Dict.empty quiz
 
         ( Just data, Just length, Just sync ) ->
             syncDiagram config sync length (trials data)
                 |> List.singleton
                 |> List.append quiz
-                |> viewTableSync sync [ "Answered", "Trial" ] visualize data
+                |> viewTableSync sync [ "Answered", "Trial", "Score" ] visualize data
 
         _ ->
             quiz
