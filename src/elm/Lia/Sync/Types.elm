@@ -83,6 +83,13 @@ type alias Settings =
     , deletePopup : Maybe ( String, String )
     , mode : ClassroomMode
     , owner : Bool
+    , passwordVisible : Bool
+
+    -- local-only labels for the saved classroom entry (not shared via URL,
+    -- unlike room/password/mode) - help re-recognize a room in the "Your
+    -- classrooms" grid independently of its actual (often generated) name
+    , title : String
+    , notes : String
     }
 
 
@@ -168,6 +175,9 @@ init supportedBackends =
     , deletePopup = Nothing
     , mode = Shared
     , owner = False
+    , passwordVisible = False
+    , title = ""
+    , notes = ""
     }
 
 

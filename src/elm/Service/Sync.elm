@@ -1,4 +1,4 @@
-module Service.Sync exposing (chat, code, codes, connect, cursor, deleteClassroom, disconnect, join, listClassrooms, publish, quiz, survey)
+module Service.Sync exposing (chat, code, codes, connect, cursor, deleteClassroom, disconnect, join, listClassrooms, markOwner, publish, quiz, survey, updateClassroomMeta)
 
 import Array exposing (Array)
 import Json.Encode as JE
@@ -14,6 +14,8 @@ connect :
     , password : String
     , persistent : Bool
     , name : String
+    , title : String
+    , notes : String
     , mode : Int
     }
     -> Event
@@ -53,6 +55,8 @@ connect param =
               , param.name
                     |> JE.string
               )
+            , ( "title", JE.string param.title )
+            , ( "notes", JE.string param.notes )
             , ( "config"
               , case param.backend of
                     Via.GUN { urls, persistent } ->
@@ -146,6 +150,39 @@ trysteroConfig relayUrls turnConfig =
           )
         , ( "turnConfig", JE.string turnConfig )
         ]
+
+
+{-| Persist a saved classroom's user-editable title/notes, without touching
+its password/mode/connection settings. See `listClassrooms` on why the
+`course` is not normalized, and `deleteClassroom` on the `backend` string.
+-}
+updateClassroomMeta : String -> String -> String -> { title : String, notes : String } -> Event
+updateClassroomMeta course room backend meta =
+    [ ( "course", JE.string course )
+    , ( "room", JE.string room )
+    , ( "backend", JE.string backend )
+    , ( "title", JE.string meta.title )
+    , ( "notes", JE.string meta.notes )
+    ]
+        |> JE.object
+        |> publish "update_classroom_meta"
+
+
+{-| Mirror the live CRDT-ownership flag (see the `"ownership"` event in
+`Lia.Sync.Update`) into the saved classroom entry, so it can be shown on its
+card without having to reconnect. Reuses the `update_classroom_meta` command,
+but — unlike `updateClassroomMeta` — omits `title`/`notes` so the TS side's
+partial update leaves them untouched.
+-}
+markOwner : String -> String -> String -> Bool -> Event
+markOwner course room backend owner =
+    [ ( "course", JE.string course )
+    , ( "room", JE.string room )
+    , ( "backend", JE.string backend )
+    , ( "owner", JE.bool owner )
+    ]
+        |> JE.object
+        |> publish "update_classroom_meta"
 
 
 disconnect : String -> Event

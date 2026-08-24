@@ -337,6 +337,8 @@ const Service = {
               backend: config.fullBackend,
               password: config.password,
               name: config.name,
+              title: config.title,
+              notes: config.notes,
               mode: config.mode,
             })?.catch((e: any) => {
               log.warn('could not save classroom ->', e?.message || e)
@@ -377,6 +379,26 @@ const Service = {
         } catch (e: any) {
           log.warn('could not list classrooms ->', e?.message || e)
           sendError(event, `could not load classrooms: ${e?.message || e}`)
+        }
+
+        break
+      }
+
+      case 'update_classroom_meta': {
+        const { course, room, backend, title, notes, owner } =
+          event.message.param
+
+        try {
+          if (Database) {
+            await Database.updateClassroomMeta(course, room, backend, {
+              title,
+              notes,
+              owner,
+            })
+          }
+        } catch (e: any) {
+          log.warn('could not update classroom ->', e?.message || e)
+          sendError(event, `could not update classroom: ${e?.message || e}`)
         }
 
         break

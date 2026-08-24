@@ -259,10 +259,28 @@ const Service = {
 
   saveClassroom: async function (
     uidDB: string,
-    entry: { room: string; backend: string; password?: string; name?: string }
+    entry: {
+      room: string
+      backend: string
+      password?: string
+      name?: string
+      title?: string
+      notes?: string
+    }
   ) {
     if (connector) {
       return connector.saveClassroom(uidDB, entry)
+    }
+  },
+
+  updateClassroomMeta: async function (
+    uidDB: string,
+    room: string,
+    backend: string,
+    meta: { title?: string; notes?: string; owner?: boolean }
+  ) {
+    if (connector) {
+      return connector.updateClassroomMeta(uidDB, room, backend, meta)
     }
   },
 

@@ -1,6 +1,8 @@
 module Lia.Sync.Via exposing
     ( Backend(..)
     , Msg
+    , badge
+    , badges
     , checkbox
     , eq
     , fromString
@@ -8,6 +10,7 @@ module Lia.Sync.Via exposing
     , info
     , infoOn
     , input
+    , tagline
     , toString
     , update
     , view
@@ -223,10 +226,105 @@ icon via =
             Local ->
                 "icon-pencil icon-xs"
         )
-        [ Attr.style "padding-inline-end" "5px"
-        , Attr.style "vertical-align" "middle"
-        , Attr.style "font-size" "inherit"
-        ]
+        [ Attr.class "lia-sync-icon" ]
+
+
+{-| A handful of short, hand-picked tags describing a backend's key
+properties, distilled from the longer prose in `infoOn`. Used to render the
+small pill badges in the backend picker.
+-}
+badges : Backend -> List String
+badges via =
+    case via of
+        Edrys ->
+            [ "Embedded platform", "No setup" ]
+
+        GUN _ ->
+            [ "Decentralized", "Self-hostable" ]
+
+        NoStr _ ->
+            [ "Relay based", "Open protocol" ]
+
+        MQTT _ ->
+            [ "Broker based", "Open protocol", "Custom brokers" ]
+
+        Torrent _ ->
+            [ "BitTorrent", "Tracker based" ]
+
+        IPFS _ ->
+            [ "Peer-to-peer", "Decentralized" ]
+
+        PubNub _ ->
+            [ "Managed service", "Account required" ]
+
+        Ably _ ->
+            [ "Managed service", "Account required" ]
+
+        P2PT _ ->
+            [ "WebTorrent", "Tracker based" ]
+
+        WebSocket _ ->
+            [ "Self-hostable", "Experimental" ]
+
+        PeerJS _ ->
+            [ "WebRTC", "Public or self-hosted" ]
+
+        SimplePeer _ ->
+            [ "WebRTC", "Self-hostable" ]
+
+        Local ->
+            [ "Offline", "No network" ]
+
+
+badge : String -> Html msg
+badge text =
+    Html.span [ Attr.class "lia-badge" ] [ Html.text text ]
+
+
+{-| A one-line description shown next to the backend's icon and name, above
+the badges. Kept short on purpose — the longer explanation follows below.
+-}
+tagline : Backend -> String
+tagline via =
+    case via of
+        Edrys ->
+            "Embedded remote-teaching platform, no setup required."
+
+        GUN _ ->
+            "Small, fast real-time database for syncing data."
+
+        NoStr _ ->
+            "Relay-based open protocol for decentralized exchange."
+
+        MQTT _ ->
+            "Broker-based realtime communication."
+
+        Torrent _ ->
+            "BitTorrent trackers used as a peer-to-peer relay."
+
+        IPFS _ ->
+            "Peer-to-peer hypermedia protocol for decentralized data."
+
+        PubNub _ ->
+            "Managed real-time messaging platform."
+
+        Ably _ ->
+            "Managed real-time messaging with a global edge network."
+
+        P2PT _ ->
+            "WebTorrent trackers used for WebRTC signaling."
+
+        WebSocket _ ->
+            "Full-duplex communication over your own WebSocket server."
+
+        PeerJS _ ->
+            "Simplified WebRTC peer-to-peer data channels."
+
+        SimplePeer _ ->
+            "Minimal WebRTC library for direct peer connections."
+
+        Local ->
+            "Offline notes, stored only in this browser."
 
 
 fromString : String -> Maybe Backend
@@ -366,15 +464,6 @@ mapHead fn list =
             list
 
 
-box : List (Html msg) -> Html msg
-box =
-    Html.p
-        [ Attr.style "padding" "5px 15px 5px 15px"
-        , Attr.style "border" "1px solid white"
-        , Attr.style "margin-block-start" "2rem"
-        ]
-
-
 line : Html msg
 line =
     Html.hr [ Attr.style "margin" "5px 0px" ] []
@@ -382,7 +471,8 @@ line =
 
 info : Html msg
 info =
-    box
+    Html.p
+        []
         [ Html.text "The LiaScript classroom enables a lightweight collaboration between small groups of users. "
         , Html.text "\"Lightweight\" means that there is no chat (video-conferencing), no logging, and no user roles. "
         , Html.text "Instead, there is only one global state created and shared between the browsers of all users. "
@@ -431,7 +521,7 @@ yjsLink =
 
 infoOn : Bool -> Backend -> Html msg
 infoOn supported about =
-    box <|
+    Html.p [] <|
         case ( about, supported ) of
             ( Edrys, _ ) ->
                 [ link "Edrys" "https://edrys-labs.github.io"
@@ -442,9 +532,6 @@ infoOn supported about =
                 , Html.text ". Additionally, your course has to be loaded via the "
                 , link "module-liascript" "https://github.com/edrys-labs/module-liascript"
                 , Html.text "."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( GUN _, _ ) ->
@@ -460,9 +547,6 @@ infoOn supported about =
                 , Html.text ". By checking \"persistent storage\" you can ensure that the chat messages and the modified code will be accessible over a longer time period, otherwise the state is deleted."
                 , Html.text " However, since this is a free service, we cannot give guarantees that your messages will be stored forever and that the GunDB server might be offline."
                 , Html.text " If you want to be certain, you can host your own instance of a GunDB server and change the URL appropriately."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( IPFS _, _ ) ->
@@ -472,9 +556,6 @@ infoOn supported about =
                 , Html.text "In the context of browser-based Pub/Sub (Publish/Subscribe) messaging, IPFS can facilitate real-time communication by allowing browsers to publish messages to specific topics and subscribe to receive messages from those topics. "
                 , Html.text "This decentralized approach enhances data availability and resilience, making it suitable for applications like chat or live streaming."
                 , trysteroTurnHint
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( NoStr _, _ ) ->
@@ -486,9 +567,6 @@ infoOn supported about =
                 , Html.text "NoStr's decentralization ensures resilience against censorship and single points of failure, as data is distributed across multiple nodes. "
                 , Html.text "It's an open standard, allowing anyone to build upon it, and its design promotes freedom of speech and global accessibility."
                 , trysteroRelayHint "relay"
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( MQTT _, _ ) ->
@@ -499,9 +577,6 @@ infoOn supported about =
                 , Html.text "The protocol is event-driven, with a broker managing the distribution of messages between publishers and subscribers based on topics. "
                 , Html.text "This decoupling allows for scalable and reliable data exchange, making MQTT a standard for IoT data transmission."
                 , trysteroRelayHint "broker"
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( Torrent _, _ ) ->
@@ -510,9 +585,6 @@ infoOn supported about =
                 , Html.text "In the context of browser-based Pub/Sub (Publish/Subscribe) messaging, Torrent can facilitate the distribution of messages or data across a network of peers, enabling efficient, decentralized communication without a central server. "
                 , Html.text "This approach is particularly useful for real-time applications like chat or live streaming, ensuring data is quickly and reliably distributed to all interested peers."
                 , trysteroRelayHint "tracker"
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             -- ( Jitsi _, _ ) ->
@@ -544,9 +616,6 @@ infoOn supported about =
                 , Html.text "The basic steps that are required, are described in more detail "
                 , link "here" "https://www.appypie.com/faqs/how-to-get-pubnub-publish-key-and-subscribe-key"
                 , Html.text "."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( Ably _, _ ) ->
@@ -556,9 +625,6 @@ infoOn supported about =
                 , Html.text "After that, you simply have to create a new App within their dashboard and copy one of its API keys. "
                 , Html.text "This is the key you will have to provide for this room. "
                 , Html.text "By checking \"persistent storage\" you can ensure that the chat messages and the modified code will be accessible over a longer time period, using Ably's LiveObjects, otherwise the state is deleted."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( WebSocket _, _ ) ->
@@ -571,9 +637,6 @@ infoOn supported about =
                 , Html.text "Provide the full WebSocket URL, e.g. "
                 , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://your-server.example.com" ]
                 , Html.text "."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( PeerJS _, _ ) ->
@@ -594,9 +657,6 @@ infoOn supported about =
                 , Html.text "The implementation can be found "
                 , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/PeerJS"
                 , Html.text "."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( SimplePeer _, _ ) ->
@@ -618,9 +678,6 @@ infoOn supported about =
                 , Html.text "The implementation can be found "
                 , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/SimplePeer"
                 , Html.text "."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( P2PT _, _ ) ->
@@ -635,9 +692,6 @@ infoOn supported about =
                 , Html.text "Thus, you have to provide WebSocket-URLs, which start with "
                 , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://" ]
                 , Html.text "."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( Local, _ ) ->
@@ -646,19 +700,14 @@ infoOn supported about =
                 ]
 
 
-allowScripts : Html msg
-allowScripts =
-    Html.text "If you want to allow scripts to be executed in the chat, you can check this box, allowing for dynamic content and interactivity. However, please be cautious as this may pose security risks if untrusted code is executed."
-
-
 trysteroTurnHint : Html msg
 trysteroTurnHint =
-    Html.text " This backend still uses WebRTC for the actual data transfer, so under \"Advanced settings\" you can provide TURN servers to improve connectivity in restricted networks."
+    Html.text " This backend still uses WebRTC for the actual data transfer, so you can provide TURN servers below to improve connectivity in restricted networks."
 
 
 trysteroRelayHint : String -> Html msg
 trysteroRelayHint kind =
-    Html.text (" Under \"Advanced settings\" you can provide custom " ++ kind ++ " URLs instead of the defaults, as well as TURN servers, since this backend still uses WebRTC for the actual data transfer.")
+    Html.text (" You can provide custom " ++ kind ++ " URLs below instead of the defaults, as well as TURN servers, since this backend still uses WebRTC for the actual data transfer.")
 
 
 link : String -> String -> Html msg
@@ -914,7 +963,7 @@ details options =
             , Attr.style "font-weight" "bold"
             , Attr.style "color" "white"
             ]
-            [ Html.text "Advanced settings"
+            [ Html.text "Infrastructure settings"
             ]
         , Html.div [ Attr.style "padding-right" "3.5rem" ]
             options

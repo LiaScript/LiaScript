@@ -7,6 +7,14 @@ $controlHeight: 4rem;
   --color-background: var(--lia-grey-dark);
   --color-border: var(--lia-grey-light);
   --focus-ring-color: white;
+
+  // modals always render on a dark backdrop, regardless of the site's
+  // light/dark setting - `a` (_elements.link.scss) reads
+  // `--color-highlight-dark`, which is otherwise the *theme* color's
+  // darker shade meant for light backgrounds and hard to read here
+  --color-highlight-dark: var(--color-highlight);
+
+
   align-items: center;
   color: var(--color-text);
   display: flex;

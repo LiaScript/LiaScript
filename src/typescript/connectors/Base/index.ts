@@ -125,9 +125,25 @@ export class Connector {
 
   async saveClassroom(
     _uidDB: string,
-    _entry: { room: string; backend: string; password?: string; name?: string }
+    _entry: {
+      room: string
+      backend: string
+      password?: string
+      name?: string
+      title?: string
+      notes?: string
+    }
   ) {
     console.log('saveClassroom not implemented')
+  }
+
+  async updateClassroomMeta(
+    _uidDB: string,
+    _room: string,
+    _backend: string,
+    _meta: { title?: string; notes?: string; owner?: boolean }
+  ) {
+    console.log('updateClassroomMeta not implemented')
   }
 
   async deleteClassroom(_uidDB: string, _room: string, _backend: string) {

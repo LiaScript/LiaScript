@@ -443,6 +443,8 @@ class LiaDB {
       backend: string
       password?: string
       name?: string
+      title?: string
+      notes?: string
       mode?: number
     }
   ) {
@@ -456,10 +458,38 @@ class LiaDB {
       backend: entry.backend,
       password: entry.password || null,
       name: entry.name || null,
+      title: entry.title || null,
+      notes: entry.notes || null,
       mode: entry.mode || 0,
       created: existing ? existing.created : now,
       updated: now,
     })
+  }
+
+  /** Partially update an already-saved classroom entry, without touching
+   * its password/mode/connection settings. Only the keys actually present
+   * in `meta` are written - e.g. a title/notes edit (from the saved-
+   * classrooms card grid) must not clobber the `owner` flag written
+   * separately once a connection resolves CRDT ownership, and vice versa.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param room - the classroom's room name (part of the primary key)
+   * @param backend - the full encoded backend string (part of the primary key)
+   */
+  async updateClassroomMeta(
+    uidDB: string,
+    room: string,
+    backend: string,
+    meta: { title?: string; notes?: string; owner?: boolean }
+  ) {
+    const db = await this.openShared_(uidDB)
+    const changes: { title?: string | null; notes?: string | null; owner?: boolean } = {}
+
+    if (meta.title !== undefined) changes.title = meta.title || null
+    if (meta.notes !== undefined) changes.notes = meta.notes || null
+    if (meta.owner !== undefined) changes.owner = meta.owner
+
+    await db['classrooms'].update([room, backend], changes)
   }
 
   /** Remove a saved classroom entry for a course.

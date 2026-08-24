@@ -46,6 +46,8 @@ type Msg
     = Room String
     | Password String
     | Name String
+    | LocalName String
+    | LocalNote String
     | Backend SyncMsg
     | Connect
     | Disconnect
@@ -55,11 +57,15 @@ type Msg
     | EnabledScript Bool
     | TogglePersistent
     | LoadClassroom Classroom.Entry
+    | ConnectClassroom Classroom.Entry
     | AskDeleteClassroom String String
     | CancelDeleteClassroom
     | ConfirmDeleteClassroom String String
     | OpenNotes
     | ClassroomMode String
+    | EditMeta Classroom.Entry String String
+    | SaveMeta Classroom.Entry
+    | TogglePasswordVisibility
 
 
 type SyncMsg
@@ -226,15 +232,26 @@ update session model msg =
                             )
 
                 ( "classrooms", param ) ->
-                    { model
-                        | sync =
-                            { sync
-                                | saved =
-                                    param
-                                        |> JD.decodeValue Classroom.decoder
-                                        |> Result.withDefault sync.saved
-                            }
-                    }
+                    let
+                        saved =
+                            param
+                                |> JD.decodeValue Classroom.decoder
+                                |> Result.withDefault sync.saved
+
+                        -- prefill "Your name" from the most recently used
+                        -- classroom, so returning users don't have to
+                        -- retype it every time they open the dialog
+                        name =
+                            if String.isEmpty sync.name then
+                                saved
+                                    |> List.head
+                                    |> Maybe.andThen .name
+                                    |> Maybe.withDefault sync.name
+
+                            else
+                                sync.name
+                    in
+                    { model | sync = { sync | saved = saved, name = name } }
                         |> Return.val
 
                 _ ->
@@ -251,6 +268,14 @@ update session model msg =
 
         Name str ->
             { model | sync = { sync | name = str } }
+                |> Return.val
+
+        LocalName str ->
+            { model | sync = { sync | title = str } }
+                |> Return.val
+
+        LocalNote str ->
+            { model | sync = { sync | notes = str } }
                 |> Return.val
 
         ClassroomMode mode ->
@@ -287,6 +312,54 @@ update session model msg =
             { model | sync = { sync | persistent = not sync.persistent } }
                 |> Return.val
 
+        TogglePasswordVisibility ->
+            { model | sync = { sync | passwordVisible = not sync.passwordVisible } }
+                |> Return.val
+
+        EditMeta entry title notes ->
+            let
+                update_ e =
+                    if e.room == entry.room && e.backend == entry.backend then
+                        { e
+                            | title = nonEmpty title
+                            , notes = nonEmpty notes
+                        }
+
+                    else
+                        e
+
+                nonEmpty str =
+                    if String.isEmpty str then
+                        Nothing
+
+                    else
+                        Just str
+            in
+            { model | sync = { sync | saved = List.map update_ sync.saved } }
+                |> Return.val
+
+        SaveMeta entry ->
+            -- fired on blur, so the (already locally updated by `EditMeta`)
+            -- title/notes only get written to IndexedDB once editing settles,
+            -- not on every keystroke
+            let
+                current =
+                    sync.saved
+                        |> List.filter (\e -> e.room == entry.room && e.backend == entry.backend)
+                        |> List.head
+                        |> Maybe.withDefault entry
+            in
+            model
+                |> Return.val
+                |> Return.batchEvent
+                    (Service.Sync.updateClassroomMeta model.readme
+                        entry.room
+                        entry.backend
+                        { title = current.title |> Maybe.withDefault ""
+                        , notes = current.notes |> Maybe.withDefault ""
+                        }
+                    )
+
         LoadClassroom entry ->
             case Backend.fromString entry.backend of
                 Just backend ->
@@ -301,6 +374,8 @@ update session model msg =
                                 , room = entry.room
                                 , password = entry.password |> Maybe.withDefault ""
                                 , name = entry.name |> Maybe.withDefault sync.name
+                                , title = entry.title |> Maybe.withDefault ""
+                                , notes = entry.notes |> Maybe.withDefault ""
                                 , persistent = True
 
                                 -- mode is folded into the network room identity
@@ -316,6 +391,63 @@ update session model msg =
                 Nothing ->
                     model |> Return.val
 
+        -- Like `LoadClassroom` followed by `Connect` in one step - reconnect
+        -- to a saved entry directly from its card, without detouring through
+        -- the (already-filled-in) form.
+        ConnectClassroom entry ->
+            case Backend.fromString entry.backend of
+                Just backend ->
+                    let
+                        innerSync =
+                            sync.sync
+
+                        password =
+                            entry.password |> Maybe.withDefault ""
+
+                        name =
+                            entry.name |> Maybe.withDefault sync.name
+
+                        title =
+                            entry.title |> Maybe.withDefault ""
+
+                        notes =
+                            entry.notes |> Maybe.withDefault ""
+
+                        mode =
+                            toClassroomMode entry.mode
+                    in
+                    { model
+                        | sync =
+                            { sync
+                                | sync = { innerSync | select = Just ( True, backend ), open = False }
+                                , state = Pending
+                                , room = entry.room
+                                , password = password
+                                , name = name
+                                , title = title
+                                , notes = notes
+                                , persistent = True
+                                , mode = mode
+                            }
+                    }
+                        |> Return.val
+                        |> Return.batchEvent
+                            (Service.Sync.connect
+                                { backend = backend
+                                , course = model.readme
+                                , room = entry.room
+                                , password = password
+                                , persistent = True
+                                , name = String.trim name
+                                , title = String.trim title
+                                , notes = String.trim notes
+                                , mode = fromClassroomMode mode
+                                }
+                            )
+
+                Nothing ->
+                    model |> Return.val
+
         OpenNotes ->
             let
                 innerSync =
@@ -327,6 +459,8 @@ update session model msg =
                         | sync = { innerSync | select = Just ( True, Backend.Local ), open = False }
                         , room = Classroom.notesRoomName
                         , password = ""
+                        , title = ""
+                        , notes = ""
                         , persistent = True
                     }
             }
@@ -371,6 +505,8 @@ update session model msg =
                                 -- so it must always actually persist too
                                 , persistent = sync.persistent || backend == Backend.Local
                                 , name = String.trim sync.name
+                                , title = String.trim sync.title
+                                , notes = String.trim sync.notes
                                 , mode = fromClassroomMode sync.mode
                                 }
                             )
@@ -466,6 +602,7 @@ synchronize :
         , search_index : String -> String
         , definition : Definition
         , settings : Lia.Settings
+        , readme : String
     }
     -> JD.Value
     ->
@@ -477,6 +614,7 @@ synchronize :
                 , search_index : String -> String
                 , definition : Definition
                 , settings : Lia.Settings
+                , readme : String
             }
             msg
             sub
@@ -660,6 +798,14 @@ synchronize model json =
                     in
                     { model | sync = { sync | owner = ownership } }
                         |> Return.val
+                        |> Return.batchEvent
+                            (case ( sync.persistent, sync.sync.select ) of
+                                ( True, Just ( _, backend ) ) ->
+                                    Service.Sync.markOwner model.readme sync.room (Backend.toString True backend) ownership
+
+                                _ ->
+                                    Event.none
+                            )
 
                 Err info ->
                     model

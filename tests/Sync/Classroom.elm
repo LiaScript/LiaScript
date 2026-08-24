@@ -42,13 +42,21 @@ suite =
                               , backend = "WebSocket|wss://example.com"
                               , password = Just "secret"
                               , name = Just "Alice"
+                              , title = Nothing
+                              , notes = Nothing
                               , updated = 1234
+                              , mode = 0
+                              , owner = False
                               }
                             , { room = "__notes__"
                               , backend = "Local"
                               , password = Nothing
                               , name = Nothing
+                              , title = Nothing
+                              , notes = Nothing
                               , updated = 5678
+                              , mode = 0
+                              , owner = False
                               }
                             ]
                         )

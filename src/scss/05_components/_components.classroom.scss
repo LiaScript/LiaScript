@@ -1,0 +1,276 @@
+@use '../01_tools/tools.breakpoints' as tools;
+
+.lia-classroom {
+  width: 80%;
+  max-width: 1240px;
+  overflow: auto;
+  padding: 0 10px;
+
+  &__overview {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__columns {
+    display: flex;
+    align-items: stretch;
+    margin-block-start: 1rem;
+
+    @include tools.breakpoint('sm', 'max') {
+      flex-direction: column;
+    }
+  }
+
+  &__form,
+  &__info {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  // a dedicated element instead of a border on `__info`, since a border
+  // only ever matches its own element's height - it was either too short
+  // or too long depending on which column happened to be taller
+  &__divider {
+    align-self: stretch;
+    background: rgb(var(--color-border));
+    flex: 0 0 1px;
+    margin-inline: 2.4rem;
+    width: 1px;
+
+    // the explanation's own border, which the divider above replaces
+    ~ .lia-classroom__info > p {
+      border: none !important;
+    }
+
+    @include tools.breakpoint('sm', 'max') {
+      display: none;
+    }
+  }
+
+  &__info {
+    @include tools.breakpoint('sm', 'max') {
+      border-block-start: 1px solid rgb(var(--color-border));
+      margin-block-start: 2.4rem;
+      padding-block-start: 2.4rem;
+
+      > p {
+        border: none !important;
+      }
+    }
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-block-end: 1rem;
+  }
+
+  &__info-header {
+    align-items: center;
+    display: flex;
+    gap: 1.5rem;
+    margin-block-end: 1rem;
+
+    .lia-classroom__card-icon {
+      flex-shrink: 0;
+      font-size: 5.5rem;
+      height: 7rem;
+      margin-block-end: 0;
+      width: 7rem;
+    }
+
+    h2 {
+      margin: 0;
+    }
+  }
+
+  &__tagline {
+    margin: 0.2rem 0 0;
+    opacity: 0.8;
+  }
+
+  .lia-dropdown {
+    display: block;
+    width: 100%;
+  }
+
+  &__option-tags {
+    display: block;
+    font-size: smaller;
+    opacity: 0.6;
+  }
+
+  &__cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  &__card {
+    // NOT overflow: hidden - the delete-confirm Popup positions itself
+    // absolutely relative to this card and needs to be able to escape its
+    // bounds, otherwise it gets clipped at the card edge
+    background: transparent;
+    margin-block-start: 0;
+
+    .lia-card__content {
+      padding-block-start: 1rem;
+    }
+
+    .lia-card__header {
+      padding-inline: 2.4rem;
+    }
+
+    .lia-card__subtitle {
+      padding-inline: 2.4rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .lia-card__footer {
+      border-top: 1px solid rgba(var(--color-border), 0.4);
+      margin-block-start: 1rem;
+      padding-block-start: 1rem;
+    }
+  }
+
+  // icon on the left, editable title + the room's real name to its right,
+  // the backend badge on the far right
+  &__card-top {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 2.4rem 0;
+  }
+
+  &__card-heading {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    // already positioned by `__card-top`'s own padding/gap, so the
+    // header-matching inline padding from `.lia-card__subtitle` above
+    // would just double it up here
+    .lia-card__subtitle {
+      padding-inline: 0;
+    }
+  }
+
+  &__card-icon {
+    align-items: center;
+    border: 1px solid rgb(var(--color-border));
+    border-radius: 50%;
+    display: flex;
+    flex-shrink: 0;
+    font-size: 4.5rem;
+    height: 5rem;
+    justify-content: center;
+    width: 5rem;
+
+    // `.lia-sync-icon`'s padding-inline-end is meant for icon-followed-by-
+    // text rows (dropdown, badges) - here the icon is centered alone.
+    .lia-sync-icon {
+      padding-inline-end: 0;
+    }
+  }
+
+  &__card-backend {
+    align-self: flex-start;
+    border: 1px solid rgb(var(--color-border));
+    border-radius: 6px;
+    flex-shrink: 0;
+    font-size: smaller;
+    padding: 0.2rem 0.6rem;
+    white-space: nowrap;
+  }
+
+  &__card-title {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    color: inherit;
+    font-size: 1.1em;
+    font-weight: bold;
+    overflow: hidden;
+    padding: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+
+    &:hover,
+    &:focus {
+      border-bottom-color: rgb(var(--color-border));
+    }
+  }
+
+  &__card-notes-view {
+    font-size: smaller;
+    margin: 0 2.4rem 1rem;
+    opacity: 0.8;
+  }
+
+  &__card-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+
+    // icon webfonts have no weight axis, so a heavier look is faked by
+    // stroking the glyph outline instead
+    .icon {
+      -webkit-text-stroke: 0.5px currentColor;
+    }
+  }
+
+  &__card-meta {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  &__date {
+    font-size: smaller;
+    opacity: 0.6;
+  }
+
+  // the modal always renders on a dark backdrop, regardless of the site's
+  // light/dark theme setting - so these always use the brighter, dark-
+  // scheme-appropriate color tokens (not the deeper "-dark"/"-darker"
+  // variants, which are hard to read here)
+  &__mode {
+    border-radius: 999px;
+    font-size: smaller;
+    padding: 0.1rem 0.6rem;
+
+    &--shared {
+      background: rgba(var(--lia-success), 0.8);
+    }
+
+    &--summary {
+      background: rgba(var(--lia-warning), 0.8);
+    }
+
+    &--details {
+      background: rgba(var(--lia-red), 0.8);
+    }
+  }
+}
+
+.lia-badge {
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 999px;
+  display: inline-block;
+  font-size: smaller;
+  padding: 0.2rem 0.8rem;
+}
+
+// `Lia.Sync.Via.icon` - used in the backend dropdown, the modal title and
+// the classroom cards. Default spacing assumes it's followed by text (as
+// in the dropdown); contexts where it stands alone (e.g. card icons)
+// override padding-inline-end back to 0.
+.lia-sync-icon {
+  font-size: inherit;
+  padding-inline-end: 5px;
+  vertical-align: middle;
+}

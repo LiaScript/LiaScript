@@ -85,9 +85,25 @@ class Connector extends Base.Connector {
 
   async saveClassroom(
     uidDB: string,
-    entry: { room: string; backend: string; password?: string; name?: string }
+    entry: {
+      room: string
+      backend: string
+      password?: string
+      name?: string
+      title?: string
+      notes?: string
+    }
   ) {
     return this.database.saveClassroom(uidDB, entry)
+  }
+
+  async updateClassroomMeta(
+    uidDB: string,
+    room: string,
+    backend: string,
+    meta: { title?: string; notes?: string; owner?: boolean }
+  ) {
+    return this.database.updateClassroomMeta(uidDB, room, backend, meta)
   }
 
   async deleteClassroom(uidDB: string, room: string, backend: string) {
