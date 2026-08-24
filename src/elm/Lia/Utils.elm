@@ -419,9 +419,8 @@ viewIdenticon id =
     in
     Html.span
         [ Attr.attribute "aria-hidden" "true" ]
-        [ Html.text (symbol ++ " ")
-        , Html.span [ Attr.style "color" color ] [ Html.text "◆" ]
-        , Html.text " "
+        [ Html.span [ Attr.style "color" color ] [ Html.text " ◆" ]
+        , Html.text symbol
         ]
 
 

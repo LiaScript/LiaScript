@@ -276,7 +276,7 @@ viewTableSyncWith syncSettings columnCount headerRows visualize data quiz =
                                     [ Attr.class "lia-table__data"
                                     , tablePadding
                                     ]
-                                    [ viewIdenticon id, Html.text name ]
+                                    [ Html.text name, viewIdenticon id ]
                                     :: Html.td
                                         [ Attr.class "lia-table__data"
                                         , tablePadding
@@ -484,7 +484,7 @@ viewSync config syncData quiz =
                     [ iconWithColor "✓" "#5470c6" Nothing, Html.text <| String.fromInt trial ]
 
                 Just Nothing ->
-                    [ iconWithColor "✗" "#888" Nothing ]
+                    [ iconWithColor "✗" "#888" Nothing, Html.text "" ]
 
                 Nothing ->
                     []

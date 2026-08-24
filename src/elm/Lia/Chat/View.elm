@@ -126,8 +126,10 @@ viewMessage config peers ( id, message ) =
                     [ Html.text (String.right 5 (formatDate id_)) ]
 
                  else
-                    [ viewIdenticon message.peer
-                    , Html.text (peerName ++ " · " ++ String.right 5 (formatDate id_))
+                    [ Html.text <| peerName ++ " "
+                    , viewIdenticon message.peer
+                    , Html.text " · "
+                    , Html.text <| String.right 5 (formatDate id_)
                     ]
                 )
             ]
