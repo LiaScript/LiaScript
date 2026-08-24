@@ -72,7 +72,7 @@ viewOverlay config id mediaID size =
     Inline.viewMedia { config | oEmbed = Just { maxwidth = 0, maxheight = 0, scale = 0.76, thumbnail = False } }
         >> Html.map Script
         >> List.singleton
-        >> modal (Close id) (viewControls config.lang id mediaID size)
+        >> modal True (Close id) (viewControls config.lang id mediaID size)
 
 
 viewControls : Lang -> Int -> Int -> Int -> Maybe (List (Html (Msg sub)))

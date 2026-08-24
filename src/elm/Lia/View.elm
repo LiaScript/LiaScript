@@ -924,10 +924,11 @@ showModal model =
                 |> Sync.view
                 |> Html.map UpdateSync
                 |> List.singleton
-                |> modal (UpdateSettings (Settings_.Toggle Settings_.Sync)) Nothing
+                |> modal False (UpdateSettings (Settings_.Toggle Settings_.Sync)) Nothing
 
         ( _, Just url, _ ) ->
-            modal (Media ( "", Nothing, Nothing ))
+            modal True
+                (Media ( "", Nothing, Nothing ))
                 Nothing
                 [ Html.figure
                     [ Attr.class "lia-figure"
@@ -952,7 +953,7 @@ showModal model =
                 ]
 
         ( _, _, True ) ->
-            modal
+            modal True
                 (UpdateSettings (Settings_.Toggle Settings_.QRCode))
                 Nothing
                 [ Html.div

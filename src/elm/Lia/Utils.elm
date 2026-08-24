@@ -194,8 +194,8 @@ scheduleFocus delay msg elementID =
 
 {-| Create custom modals, which overlay the entire view.
 -}
-modal : msg -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
-modal msgClose controls content =
+modal : Bool -> msg -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
+modal activeBorder msgClose controls content =
     Html.div
         [ Attr.class "lia-modal"
         , A11y_Aria.modal True
@@ -223,7 +223,11 @@ modal msgClose controls content =
             ]
         , Html.div
             [ Attr.class "lia-modal__outer"
-            , Event.onClick msgClose
+            , if activeBorder then
+                Event.onClick msgClose
+
+              else
+                Attr.class ""
             ]
             []
         ]

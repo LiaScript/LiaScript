@@ -362,7 +362,7 @@ view_footnote viewer key footnotes =
                     , Attr.style "max-width" "90%"
                     ]
             ]
-                |> modal FootnoteHide Nothing
+                |> modal True FootnoteHide Nothing
 
         Nothing ->
             Html.text ""

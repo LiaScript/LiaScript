@@ -13,7 +13,6 @@ module Lia.Sync.Via exposing
     , view
     )
 
-import Conditional.List as CList
 import Const
 import Html exposing (Html)
 import Html.Attributes as Attr
