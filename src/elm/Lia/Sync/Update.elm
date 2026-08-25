@@ -57,13 +57,12 @@ type Msg
     | EnabledScript Bool
     | TogglePersistent
     | LoadClassroom Classroom.Entry
-    | ConnectClassroom Classroom.Entry
     | AskDeleteClassroom String String
     | CancelDeleteClassroom
     | ConfirmDeleteClassroom String String
     | OpenNotes
     | ClassroomMode String
-    | EditMeta Classroom.Entry String String
+    | EditMeta Classroom.Entry { title : String, notes : String, name : String }
     | SaveMeta Classroom.Entry
     | TogglePasswordVisibility
 
@@ -316,13 +315,14 @@ update session model msg =
             { model | sync = { sync | passwordVisible = not sync.passwordVisible } }
                 |> Return.val
 
-        EditMeta entry title notes ->
+        EditMeta entry meta ->
             let
                 update_ e =
                     if e.room == entry.room && e.backend == entry.backend then
                         { e
-                            | title = nonEmpty title
-                            , notes = nonEmpty notes
+                            | title = nonEmpty meta.title
+                            , notes = nonEmpty meta.notes
+                            , name = nonEmpty meta.name
                         }
 
                     else
@@ -340,8 +340,8 @@ update session model msg =
 
         SaveMeta entry ->
             -- fired on blur, so the (already locally updated by `EditMeta`)
-            -- title/notes only get written to IndexedDB once editing settles,
-            -- not on every keystroke
+            -- title/notes/name only get written to IndexedDB once editing
+            -- settles, not on every keystroke
             let
                 current =
                     sync.saved
@@ -357,6 +357,7 @@ update session model msg =
                         entry.backend
                         { title = current.title |> Maybe.withDefault ""
                         , notes = current.notes |> Maybe.withDefault ""
+                        , name = current.name |> Maybe.withDefault ""
                         }
                     )
 
@@ -387,63 +388,6 @@ update session model msg =
                             }
                     }
                         |> Return.val
-
-                Nothing ->
-                    model |> Return.val
-
-        -- Like `LoadClassroom` followed by `Connect` in one step - reconnect
-        -- to a saved entry directly from its card, without detouring through
-        -- the (already-filled-in) form.
-        ConnectClassroom entry ->
-            case Backend.fromString entry.backend of
-                Just backend ->
-                    let
-                        innerSync =
-                            sync.sync
-
-                        password =
-                            entry.password |> Maybe.withDefault ""
-
-                        name =
-                            entry.name |> Maybe.withDefault sync.name
-
-                        title =
-                            entry.title |> Maybe.withDefault ""
-
-                        notes =
-                            entry.notes |> Maybe.withDefault ""
-
-                        mode =
-                            toClassroomMode entry.mode
-                    in
-                    { model
-                        | sync =
-                            { sync
-                                | sync = { innerSync | select = Just ( True, backend ), open = False }
-                                , state = Pending
-                                , room = entry.room
-                                , password = password
-                                , name = name
-                                , title = title
-                                , notes = notes
-                                , persistent = True
-                                , mode = mode
-                            }
-                    }
-                        |> Return.val
-                        |> Return.batchEvent
-                            (Service.Sync.connect
-                                { backend = backend
-                                , course = model.readme
-                                , room = entry.room
-                                , password = password
-                                , persistent = True
-                                , name = String.trim name
-                                , title = String.trim title
-                                , notes = String.trim notes
-                                , mode = fromClassroomMode mode
-                                }
-                            )
 
                 Nothing ->
                     model |> Return.val

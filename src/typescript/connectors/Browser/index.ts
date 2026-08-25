@@ -101,7 +101,7 @@ class Connector extends Base.Connector {
     uidDB: string,
     room: string,
     backend: string,
-    meta: { title?: string; notes?: string; owner?: boolean }
+    meta: { title?: string; notes?: string; name?: string; owner?: boolean }
   ) {
     return this.database.updateClassroomMeta(uidDB, room, backend, meta)
   }

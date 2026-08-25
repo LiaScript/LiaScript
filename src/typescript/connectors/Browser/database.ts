@@ -480,13 +480,19 @@ class LiaDB {
     uidDB: string,
     room: string,
     backend: string,
-    meta: { title?: string; notes?: string; owner?: boolean }
+    meta: { title?: string; notes?: string; name?: string; owner?: boolean }
   ) {
     const db = await this.openShared_(uidDB)
-    const changes: { title?: string | null; notes?: string | null; owner?: boolean } = {}
+    const changes: {
+      title?: string | null
+      notes?: string | null
+      name?: string | null
+      owner?: boolean
+    } = {}
 
     if (meta.title !== undefined) changes.title = meta.title || null
     if (meta.notes !== undefined) changes.notes = meta.notes || null
+    if (meta.name !== undefined) changes.name = meta.name || null
     if (meta.owner !== undefined) changes.owner = meta.owner
 
     await db['classrooms'].update([room, backend], changes)

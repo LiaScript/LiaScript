@@ -152,17 +152,19 @@ trysteroConfig relayUrls turnConfig =
         ]
 
 
-{-| Persist a saved classroom's user-editable title/notes, without touching
-its password/mode/connection settings. See `listClassrooms` on why the
-`course` is not normalized, and `deleteClassroom` on the `backend` string.
+{-| Persist a saved classroom's user-editable title/notes/name, without
+touching its password/mode/connection settings. See `listClassrooms` on why
+the `course` is not normalized, and `deleteClassroom` on the `backend`
+string.
 -}
-updateClassroomMeta : String -> String -> String -> { title : String, notes : String } -> Event
+updateClassroomMeta : String -> String -> String -> { title : String, notes : String, name : String } -> Event
 updateClassroomMeta course room backend meta =
     [ ( "course", JE.string course )
     , ( "room", JE.string room )
     , ( "backend", JE.string backend )
     , ( "title", JE.string meta.title )
     , ( "notes", JE.string meta.notes )
+    , ( "name", JE.string meta.name )
     ]
         |> JE.object
         |> publish "update_classroom_meta"

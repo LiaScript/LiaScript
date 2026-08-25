@@ -385,7 +385,7 @@ const Service = {
       }
 
       case 'update_classroom_meta': {
-        const { course, room, backend, title, notes, owner } =
+        const { course, room, backend, title, notes, name, owner } =
           event.message.param
 
         try {
@@ -393,6 +393,7 @@ const Service = {
             await Database.updateClassroomMeta(course, room, backend, {
               title,
               notes,
+              name,
               owner,
             })
           }

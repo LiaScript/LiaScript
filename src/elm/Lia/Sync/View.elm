@@ -12,7 +12,7 @@ import Lia.Sync.Classroom as Classroom
 import Lia.Sync.Types as Sync exposing (ClassroomMode(..), State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
 import Lia.Sync.Via as Backend exposing (Backend)
-import Lia.Utils exposing (btn, btnIcon, formatDate)
+import Lia.Utils exposing (btn, btnIcon, formatDate, icon)
 
 
 view : Sync.Settings -> Html Msg
@@ -304,27 +304,24 @@ Shared mode — whether this browser was that initiator the last time it
 connected (mirrored from the live `"ownership"` event, see
 `Lia.Sync.Update`).
 -}
-modeBadge : Int -> Bool -> Html msg
-modeBadge modeInt owner =
+modeBadge : Int -> Html msg
+modeBadge modeInt =
     let
-        ( emoji, label, modifier ) =
+        ( label, modifier ) =
             case Sync.toClassroomMode modeInt of
                 Shared ->
-                    ( "☮️", "Shared", "lia-classroom__mode--shared" )
+                    ( "Shared", "lia-classroom__mode--shared" )
 
                 Summary ->
-                    ( "🛂", "Summary", "lia-classroom__mode--summary" )
+                    ( "Summary", "lia-classroom__mode--summary" )
 
                 Details ->
-                    ( "🛰️", "Details", "lia-classroom__mode--details" )
+                    ( "Details", "lia-classroom__mode--details" )
     in
-    Html.span [ Attr.class "lia-classroom__mode", Attr.class modifier ]
-        [ Html.text (emoji ++ " " ++ label)
-        , if owner then
-            Html.text " ✨ owner"
-
-          else
-            Html.text ""
+    Html.span
+        [ Attr.class "lia-classroom__mode" ]
+        [ Html.span [ Attr.class "lia-classroom__mode-dot", Attr.class modifier ] []
+        , Html.text label
         ]
 
 
@@ -338,6 +335,13 @@ render cards at all.
 -}
 savedCard : Maybe ( String, String ) -> Classroom.Entry -> Html Msg
 savedCard deletePopup entry =
+    let
+        meta =
+            { title = entry.title |> Maybe.withDefault ""
+            , notes = entry.notes |> Maybe.withDefault ""
+            , name = entry.name |> Maybe.withDefault ""
+            }
+    in
     Html.article [ Attr.class "lia-card lia-classroom__card" ]
         [ Html.div [ Attr.class "lia-classroom__card-top" ]
             [ Html.div [ Attr.class "lia-classroom__card-icon" ]
@@ -349,9 +353,9 @@ savedCard deletePopup entry =
             , Html.div [ Attr.class "lia-classroom__card-heading" ]
                 [ Html.input
                     [ Attr.class "lia-classroom__card-title"
-                    , Attr.value (entry.title |> Maybe.withDefault "")
+                    , Attr.value meta.title
                     , Attr.placeholder entry.room
-                    , Event.onInput (\title -> EditMeta entry title (entry.notes |> Maybe.withDefault ""))
+                    , Event.onInput (\title -> EditMeta entry { meta | title = title })
                     , Event.onBlur (SaveMeta entry)
                     ]
                     []
@@ -366,53 +370,58 @@ savedCard deletePopup entry =
                 ]
             ]
         , Html.div [ Attr.class "lia-card__content" ]
-            [ case entry.notes of
-                Just notes ->
-                    if String.isEmpty notes then
+            [ Html.textarea
+                [ Attr.class "lia-classroom__card-notes"
+                , Attr.rows 1
+                , Attr.placeholder "Add a comment…"
+                , Attr.value meta.notes
+                , Event.onInput (\notes -> EditMeta entry { meta | notes = notes })
+                , Event.onBlur (SaveMeta entry)
+                ]
+                []
+            , Html.footer [ Attr.class "lia-card__footer" ]
+                [ Html.div [ Attr.class "lia-classroom__card-row" ]
+                    [ Html.div [ Attr.class "lia-classroom__card-mode-row" ]
+                        [ modeBadge entry.mode ]
+                    , if entry.owner then
+                        Html.span [ Attr.class "lia-classroom__card-tag" ] [ Html.text "Initiator" ]
+
+                      else
+                        Html.text ""
+                    , Html.div [ Attr.class "lia-classroom__card-controls" ]
+                        [ case deletePopup of
+                            Just ( room, backend ) ->
+                                if room == entry.room && backend == entry.backend then
+                                    Popup.view
+                                        { text = "Delete this saved classroom and its locally cached content? This cannot be undone."
+                                        , action = { msg = ConfirmDeleteClassroom entry.room entry.backend, text = "Delete" }
+                                        , escape = CancelDeleteClassroom
+                                        }
+
+                                else
+                                    deleteBtn entry
+
+                            Nothing ->
+                                deleteBtn entry
+                        , btnIcon
+                            { msg = Just (LoadClassroom entry)
+                            , title = "Connect to this classroom"
+                            , tabbable = True
+                            , icon = "icon-login"
+                            }
+                            [ Attr.class "lia-classroom__card-ghost lia-classroom__card-ghost--accent" ]
+                        ]
+                    ]
+                , Html.div [ Attr.class "lia-classroom__card-meta-row" ]
+                    [ if String.isEmpty meta.name then
                         Html.text ""
 
-                    else
-                        Html.p [ Attr.class "lia-classroom__card-notes-view" ] [ Html.text notes ]
-
-                Nothing ->
-                    Html.text ""
-            , Html.footer [ Attr.class "lia-card__footer" ]
-                [ Html.div [ Attr.class "lia-classroom__card-meta" ]
-                    [ modeBadge entry.mode entry.owner
+                      else
+                        Html.span [ Attr.class "lia-classroom__card-user" ]
+                            [ icon "icon-person" [ Attr.class "lia-classroom__card-user-icon" ]
+                            , Html.span [ Attr.class "lia-classroom__card-user-name" ] [ Html.text meta.name ]
+                            ]
                     , dateSpan entry.updated
-                    ]
-                , Html.div [ Attr.class "lia-classroom__card-controls" ]
-                    [ case deletePopup of
-                        Just ( room, backend ) ->
-                            if room == entry.room && backend == entry.backend then
-                                Popup.view
-                                    { text = "Delete this saved classroom and its locally cached content? This cannot be undone."
-                                    , action = { msg = ConfirmDeleteClassroom entry.room entry.backend, text = "Delete" }
-                                    , escape = CancelDeleteClassroom
-                                    }
-
-                            else
-                                deleteBtn entry
-
-                        Nothing ->
-                            deleteBtn entry
-                    , btnIcon
-                        { msg = Just (LoadClassroom entry)
-                        , title = "Edit this classroom's settings before connecting"
-                        , tabbable = True
-                        , icon = "icon-pencil"
-                        }
-                        [ Attr.class "lia-btn--transparent lia-btn--tag px-1 border-grey" ]
-                    , btnIcon
-                        { msg = Just (ConnectClassroom entry)
-                        , title = "Connect to this classroom"
-                        , tabbable = True
-                        , icon = "icon-login"
-                        }
-                        [ Attr.class "lia-btn--transparent lia-btn--tag px-1"
-                        , Attr.style "color" "turquoise"
-                        , Attr.style "border" "1px solid turquoise"
-                        ]
                     ]
                 ]
             ]
@@ -427,10 +436,7 @@ deleteBtn entry =
         , tabbable = True
         , icon = "icon-trash"
         }
-        [ Attr.class "lia-btn--tag lia-btn--transparent px-1"
-        , Attr.style "color" "red"
-        , Attr.style "border" "1px solid red"
-        ]
+        [ Attr.class "lia-classroom__card-ghost lia-classroom__card-ghost--danger" ]
 
 
 select : Bool -> Sync -> Html Msg

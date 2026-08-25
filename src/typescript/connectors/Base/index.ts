@@ -141,7 +141,7 @@ export class Connector {
     _uidDB: string,
     _room: string,
     _backend: string,
-    _meta: { title?: string; notes?: string; owner?: boolean }
+    _meta: { title?: string; notes?: string; name?: string; owner?: boolean }
   ) {
     console.log('updateClassroomMeta not implemented')
   }
