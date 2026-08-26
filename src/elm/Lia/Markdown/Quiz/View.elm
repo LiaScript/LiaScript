@@ -95,11 +95,6 @@ view : Config Main.Msg -> Maybe String -> Quiz Markdown.Block -> Vector -> List 
 view config labeledBy quiz vector renderedOptions renderedHints =
     case Array.get quiz.id vector of
         Just elem ->
-            let
-                _ =
-                    elem.opt.score
-                        |> Debug.log "quiz"
-            in
             ( elem.scriptID
             , viewState config elem quiz renderedOptions
                 |> viewQuiz config labeledBy elem quiz renderedHints
