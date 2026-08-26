@@ -111,46 +111,57 @@ view settings =
 
                           else
                             Html.text ""
-                        , Backend.input
-                            { active = open && support
-                            , msg = Password
-                            , label =
-                                Html.span
-                                    [ Attr.style "display" "flex"
-                                    , Attr.style "justify-content" "space-between"
-                                    , Attr.style "align-items" "center"
+                        , Html.label []
+                            [ Html.span
+                                [ Attr.class "lia-label"
+                                , Attr.style "margin-block-start" "2rem"
+                                , Attr.style "width" "100%"
+                                ]
+                                [ Html.text "Password (optional)" ]
+                            , Html.div [ Attr.class "lia-classroom__field-row" ]
+                                [ Html.input
+                                    [ if open && support then
+                                        Event.onInput Password
+
+                                      else
+                                        Attr.disabled True
+                                    , Attr.value settings.password
+                                    , Attr.style "color" "black"
+                                    , Attr.type_ <|
+                                        if settings.passwordVisible then
+                                            "text"
+
+                                        else
+                                            "password"
                                     , Attr.style "width" "100%"
+                                    , Attr.name "password"
+                                    , Attr.attribute "autocomplete" "password"
                                     ]
-                                    [ Html.text "Password (optional)"
-                                    , btn
-                                        { title =
-                                            if settings.passwordVisible then
-                                                "hide password"
+                                    []
+                                , btnIcon
+                                    { title =
+                                        if settings.passwordVisible then
+                                            "hide password"
 
-                                            else
-                                                "show password"
-                                        , tabbable = open && support
-                                        , msg = Just TogglePasswordVisibility
-                                        }
-                                        [ Attr.class "lia-btn--transparent lia-btn--small-tag" ]
-                                        [ Html.text <|
-                                            if settings.passwordVisible then
-                                                "hide"
+                                        else
+                                            "show password"
+                                    , tabbable = open && support
+                                    , msg =
+                                        if open && support then
+                                            Just TogglePasswordVisibility
 
-                                            else
-                                                "show"
-                                        ]
-                                    ]
-                            , type_ =
-                                if settings.passwordVisible then
-                                    "text"
+                                        else
+                                            Nothing
+                                    , icon =
+                                        if settings.passwordVisible then
+                                            "icon-eye-open"
 
-                                else
-                                    "password"
-                            , value = settings.password
-                            , placeholder = ""
-                            , autocomplete = Just "password"
-                            }
+                                        else
+                                            "icon-eye-closed"
+                                    }
+                                    [ Attr.class "lia-btn--outline lia-classroom__field-btn" ]
+                                ]
+                            ]
                         , if via /= Backend.Local then
                             viewMode (open && support) settings.mode
 
