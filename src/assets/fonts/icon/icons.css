@@ -359,232 +359,240 @@
   content: "\EA24"
 }
 
-.icon-funnel:before {
+.icon-eye-closed:before {
   content: "\EA25"
 }
 
-.icon-graph:before {
+.icon-eye-open:before {
   content: "\EA26"
 }
 
-.icon-grid:before {
+.icon-funnel:before {
   content: "\EA27"
 }
 
-.icon-gundb:before {
+.icon-graph:before {
   content: "\EA28"
 }
 
-.icon-heatmap:before {
+.icon-grid:before {
   content: "\EA29"
 }
 
-.icon-hint:before {
+.icon-gundb:before {
   content: "\EA2A"
 }
 
-.icon-info:before {
+.icon-heatmap:before {
   content: "\EA2B"
 }
 
-.icon-ipfs:before {
+.icon-hint:before {
   content: "\EA2C"
 }
 
-.icon-lightmode:before {
+.icon-info:before {
   content: "\EA2D"
 }
 
-.icon-lineplot:before {
+.icon-ipfs:before {
   content: "\EA2E"
 }
 
-.icon-list-1:before {
+.icon-lightmode:before {
   content: "\EA2F"
 }
 
-.icon-list-2:before {
+.icon-lineplot:before {
   content: "\EA30"
 }
 
-.icon-list-3:before {
+.icon-list-1:before {
   content: "\EA31"
 }
 
-.icon-login:before {
+.icon-list-2:before {
   content: "\EA32"
 }
 
-.icon-mail:before {
+.icon-list-3:before {
   content: "\EA33"
 }
 
-.icon-map:before {
+.icon-login:before {
   content: "\EA34"
 }
 
-.icon-minus:before {
+.icon-mail:before {
   content: "\EA35"
 }
 
-.icon-more:before {
+.icon-map:before {
   content: "\EA36"
 }
 
-.icon-mqtt:before {
+.icon-minus:before {
   content: "\EA37"
 }
 
-.icon-nostr:before {
+.icon-more:before {
   content: "\EA38"
 }
 
-.icon-p2pt:before {
+.icon-mqtt:before {
   content: "\EA39"
 }
 
-.icon-parallel:before {
+.icon-nostr:before {
   content: "\EA3A"
 }
 
-.icon-pause-circle:before {
+.icon-p2pt:before {
   content: "\EA3B"
 }
 
-.icon-pause:before {
+.icon-parallel:before {
   content: "\EA3C"
 }
 
-.icon-peerjs:before {
+.icon-pause-circle:before {
   content: "\EA3D"
 }
 
-.icon-pencil:before {
+.icon-pause:before {
   content: "\EA3E"
 }
 
-.icon-person:before {
+.icon-peerjs:before {
   content: "\EA3F"
 }
 
-.icon-piechart:before {
+.icon-pencil:before {
   content: "\EA40"
 }
 
-.icon-play-circle:before {
+.icon-person:before {
   content: "\EA41"
 }
 
-.icon-play:before {
+.icon-piechart:before {
   content: "\EA42"
 }
 
-.icon-plus:before {
+.icon-play-circle:before {
   content: "\EA43"
 }
 
-.icon-presentation:before {
+.icon-play:before {
   content: "\EA44"
 }
 
-.icon-pubnub:before {
+.icon-plus:before {
   content: "\EA45"
 }
 
-.icon-radar:before {
+.icon-presentation:before {
   content: "\EA46"
 }
 
-.icon-refresh:before {
+.icon-pubnub:before {
   content: "\EA47"
 }
 
-.icon-resolve:before {
+.icon-radar:before {
   content: "\EA48"
 }
 
-.icon-sankey:before {
+.icon-refresh:before {
   content: "\EA49"
 }
 
-.icon-scatterplot:before {
+.icon-resolve:before {
   content: "\EA4A"
 }
 
-.icon-search:before {
+.icon-sankey:before {
   content: "\EA4B"
 }
 
-.icon-send:before {
+.icon-scatterplot:before {
   content: "\EA4C"
 }
 
-.icon-settings:before {
+.icon-search:before {
   content: "\EA4D"
 }
 
-.icon-slides:before {
+.icon-send:before {
   content: "\EA4E"
 }
 
-.icon-social:before {
+.icon-settings:before {
   content: "\EA4F"
 }
 
-.icon-sort-asc:before {
+.icon-slides:before {
   content: "\EA50"
 }
 
-.icon-sort-desc:before {
+.icon-social:before {
   content: "\EA51"
 }
 
-.icon-sound-off:before {
+.icon-sort-asc:before {
   content: "\EA52"
 }
 
-.icon-sound-on:before {
+.icon-sort-desc:before {
   content: "\EA53"
 }
 
-.icon-stop-circle:before {
+.icon-sound-off:before {
   content: "\EA54"
 }
 
-.icon-stop:before {
+.icon-sound-on:before {
   content: "\EA55"
 }
 
-.icon-table:before {
+.icon-stop-circle:before {
   content: "\EA56"
 }
 
-.icon-torrent:before {
+.icon-stop:before {
   content: "\EA57"
 }
 
-.icon-trash:before {
+.icon-table:before {
   content: "\EA58"
 }
 
-.icon-warning:before {
+.icon-torrent:before {
   content: "\EA59"
 }
 
-.icon-webrtc:before {
+.icon-trash:before {
   content: "\EA5A"
 }
 
-.icon-websocket:before {
+.icon-warning:before {
   content: "\EA5B"
 }
 
-.icon-zoom-out:before {
+.icon-webrtc:before {
   content: "\EA5C"
 }
 
-.icon-zoom:before {
+.icon-websocket:before {
   content: "\EA5D"
+}
+
+.icon-zoom-out:before {
+  content: "\EA5E"
+}
+
+.icon-zoom:before {
+  content: "\EA5F"
 }
 
 
