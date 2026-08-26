@@ -27,8 +27,8 @@ export class Sync extends Base.Sync {
   }) {
     super.connect(data)
 
-    this.publishKey = data.config?.publishKey
-    this.subscribeKey = data.config?.subscribeKey
+    this.publishKey = data.config?.publishKey || process.env.PUBNUB_PUBLISH_KEY || undefined
+    this.subscribeKey = data.config?.subscribeKey || process.env.PUBNUB_SUBSCRIBE_KEY || undefined
 
     if (window['PubNub']) {
       this.init(true)

@@ -11,6 +11,69 @@
     flex-direction: column;
   }
 
+  &__subtitle {
+    margin: 0.4rem auto 2rem;
+    max-width: 52ch;
+    opacity: 0.75;
+    text-align: center;
+  }
+
+  // the "just for me" local-notes shortcut, sitting to the left of the
+  // backend dropdown - bottom-aligned with it via the invisible spacer
+  // label in the button's own column, matching the dropdown's own
+  // "Connect to a classroom" label row above it. `4rem` matches the
+  // dropdown control's own natural (unstyled) height - it gets that
+  // height from its base `.lia-dropdown` padding/border (see
+  // generic.shared.scss and components.dropdown.scss), not from
+  // anything set here, so it has to be matched explicitly.
+  &__quick-row {
+    // flex-start, not flex-end: the dropdown grows taller (downward) once
+    // opened, and the button must stay pinned to its top/closed edge
+    // rather than trailing the now-taller box's bottom
+    align-items: flex-start;
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  &__quick-btn-wrap {
+    flex: 0 0 auto;
+  }
+
+  &__dropdown-wrap {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  &__notes-btn {
+    align-items: center;
+    display: flex;
+    height: 4rem;
+    justify-content: center;
+    width: 4rem;
+  }
+
+  // an input with a trailing action button (e.g. the room name's "generate
+  // random" button) - stretch, not a fixed height on the button, so it
+  // always matches the input's own actual rendered height
+  &__field-row {
+    align-items: stretch;
+    display: flex;
+    gap: 0.5rem;
+
+    input {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+  }
+
+  &__field-btn {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+    justify-content: center;
+    width: 4rem;
+  }
+
   &__columns {
     display: flex;
     align-items: stretch;

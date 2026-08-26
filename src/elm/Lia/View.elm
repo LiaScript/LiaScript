@@ -27,6 +27,7 @@ import Lia.Settings.Types exposing (Mode(..), PlaybackState(..), Settings, TTS)
 import Lia.Settings.Update as Settings_
 import Lia.Settings.View as Settings
 import Lia.Sync.Types as Sync_
+import Lia.Sync.Update as SyncUpdate
 import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (deactivate, modal)
@@ -916,6 +917,20 @@ isHidden model =
             False
 
 
+{-| The Classroom modal's close ("×") button: on the backend/connect
+sub-page it steps back to the overview instead of closing the whole
+modal - only closes for real once already on the overview.
+-}
+syncCloseMsg : Sync_.Settings -> Msg
+syncCloseMsg sync =
+    case sync.sync.select of
+        Just _ ->
+            UpdateSync (SyncUpdate.Backend (SyncUpdate.Select Nothing))
+
+        Nothing ->
+            UpdateSettings (Settings_.Toggle Settings_.Sync)
+
+
 showModal : Model -> Html Msg
 showModal model =
     case ( model.settings.sync, model.modal, model.settings.showQRCode ) of
@@ -924,7 +939,7 @@ showModal model =
                 |> Sync.view
                 |> Html.map UpdateSync
                 |> List.singleton
-                |> modal False (UpdateSettings (Settings_.Toggle Settings_.Sync)) Nothing
+                |> modal False (syncCloseMsg model.sync) Nothing
 
         ( _, Just url, _ ) ->
             modal True

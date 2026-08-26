@@ -38,14 +38,12 @@ export class Sync extends Base.Sync {
     this.port = data.config?.port ? parseInt(data.config.port, 10) : undefined
     this.peerPath = data.config?.path || undefined
 
-    if (data.config?.iceServers) {
+    const iceServersRaw = data.config?.iceServers || process.env.WEBRTC_ICE_SERVERS
+    if (iceServersRaw) {
       try {
-        this.iceServers = JSON.parse(data.config.iceServers || process.env.WEBRTC_ICE_SERVERS || '[]')
+        this.iceServers = JSON.parse(iceServersRaw)
       } catch {
-        console.warn(
-          'PeerJS: invalid iceServers JSON, ignoring:',
-          data.config.iceServers,
-        )
+        console.warn('PeerJS: invalid iceServers JSON, ignoring:', iceServersRaw)
       }
     }
 

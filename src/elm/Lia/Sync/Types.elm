@@ -134,22 +134,21 @@ init supportedBackends =
     in
     { sync =
         { support =
-            [ Via.GUN { urls = Const.gunDB_ServerURL, persistent = False }
+            [ Via.Ably { apiKey = "", persistent = False }
+            , Via.GUN { urls = Const.gunDB_ServerURL, persistent = False }
+            , Via.PeerJS { host = "", port_ = "", path = "", iceServers = "" }
+            , Via.SimplePeer { signaling = "", iceServers = "" }
+            , Via.WebSocket { url = "" }
+            , Via.NoStr { relayUrls = "", turnConfig = "" }
+            , Via.MQTT { relayUrls = "", turnConfig = "" }
+            , Via.Torrent { relayUrls = "", turnConfig = "" }
+            , Via.IPFS { turnConfig = "" }
 
             --, Via.Jitsi Const.jitsi_Domain
             --, Via.Matrix { baseURL = "", userId = "", accessToken = "" }
-            , Via.IPFS { turnConfig = "" }
-            , Via.MQTT { relayUrls = "", turnConfig = "" }
-            , Via.NoStr { relayUrls = "", turnConfig = "" }
-
             --, Via.P2PT Const.webTorrent_TrackerURLs
             , Via.PubNub { pubKey = "", subKey = "" }
-            , Via.Ably { apiKey = "", persistent = False }
-            , Via.Torrent { relayUrls = "", turnConfig = "" }
             , Via.Edrys
-            , Via.WebSocket { url = "" }
-            , Via.PeerJS { host = "", port_ = "", path = "", iceServers = "" }
-            , Via.SimplePeer { signaling = "", iceServers = "" }
             ]
                 |> List.map (isMember supported)
                 |> (::) ( True, Via.Local )

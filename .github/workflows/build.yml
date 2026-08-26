@@ -49,6 +49,8 @@ jobs:
           WEBRTC_SIGNALING_SERVERS: ${{ secrets.WEBRTC_SIGNALING_SERVERS }}
           WEBRTC_ICE_SERVERS: ${{ secrets.WEBRTC_ICE_SERVERS }}
           ABLY_API_KEY: ${{ secrets.ABLY_API_KEY }}
+          PUBNUB_PUBLISH_KEY: ${{ secrets.PUBNUB_PUBLISH_KEY }}
+          PUBNUB_SUBSCRIBE_KEY: ${{ secrets.PUBNUB_SUBSCRIBE_KEY }}
         run: |
           cd LiaScript
           make all2

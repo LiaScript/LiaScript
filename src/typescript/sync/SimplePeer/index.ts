@@ -44,14 +44,12 @@ export class Sync extends Base.Sync {
       )
     }
 
-    if (data.config?.iceServers) {
+    const iceServersRaw = data.config?.iceServers || process.env.WEBRTC_ICE_SERVERS
+    if (iceServersRaw) {
       try {
-        this.iceServers = JSON.parse(data.config.iceServers || process.env.WEBRTC_ICE_SERVERS || '[]')
+        this.iceServers = JSON.parse(iceServersRaw)
       } catch {
-        console.warn(
-          'SimplePeer: invalid iceServers JSON, ignoring:',
-          data.config.iceServers,
-        )
+        console.warn('SimplePeer: invalid iceServers JSON, ignoring:', iceServersRaw)
       }
     }
 

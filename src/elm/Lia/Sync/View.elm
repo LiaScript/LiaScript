@@ -37,55 +37,90 @@ view settings =
         , case settings.sync.select of
             Nothing ->
                 Html.div [ Attr.class "lia-classroom__overview" ]
-                    [ select open settings.sync
+                    [ Html.p [ Attr.class "lia-classroom__subtitle" ]
+                        [ Html.text "Work together with your class in real time — share quizzes, surveys, and live sessions. No accounts needed." ]
+                    , Html.div [ Attr.class "lia-classroom__quick-row" ]
+                        [ Html.div [ Attr.class "lia-classroom__quick-btn-wrap" ]
+                            [ Html.span [ Attr.class "lia-label", A11y_Aria.hidden True ] [ Html.text "\u{00A0}" ]
+                            , Html.br [] []
+                            , btnIcon
+                                { msg = Just OpenNotes
+                                , title = "Just for me — local notes, no connection"
+                                , tabbable = True
+                                , icon = "icon-pencil"
+                                }
+                                [ Attr.class "lia-classroom__notes-btn" ]
+                            ]
+                        , Html.div [ Attr.class "lia-classroom__dropdown-wrap" ] [ select "Connect to a classroom" open settings.sync ]
+                        ]
                     , savedList settings
-                    , Backend.info
+                    , infoDetails
                     ]
 
             Just ( support, via ) ->
                 Html.div [ Attr.class "lia-classroom__columns" ]
                     [ Html.div [ Attr.class "lia-classroom__form" ]
-                        [ select open settings.sync
-                        , Backend.input
-                            { active = open && support
-                            , msg = Room
-                            , type_ = "text"
-                            , value = settings.room
-                            , placeholder = "Just any kind of typeable name"
-                            , label =
-                                Html.span []
-                                    [ Html.text "Room "
-                                    , btnIcon
-                                        { title = "generate random"
-                                        , tabbable = open && support
-                                        , msg =
-                                            if open && support then
-                                                Just Random_Generate
+                        [ select "Backend" open settings.sync
+                        , Html.label []
+                            [ Html.span
+                                [ Attr.class "lia-label"
+                                , Attr.style "margin-block-start" "2rem"
+                                , Attr.style "width" "100%"
+                                ]
+                                [ Html.text "Room" ]
+                            , Html.div [ Attr.class "lia-classroom__field-row" ]
+                                [ Html.input
+                                    [ if open && support then
+                                        Event.onInput Room
 
-                                            else
-                                                Nothing
-                                        , icon = "icon-refresh"
-                                        }
-                                        [ Attr.class "lia-btn--transparent icon-sm"
-                                        , Attr.style "padding" "0"
-                                        ]
+                                      else
+                                        Attr.disabled True
+                                    , Attr.value settings.room
+                                    , Attr.style "color" "black"
+                                    , Attr.type_ "text"
+                                    , Attr.style "width" "100%"
+                                    , Attr.placeholder "Just any kind of typeable name"
+                                    , Attr.name "room"
+                                    , Attr.attribute "autocomplete" "room"
                                     ]
-                            , autocomplete = Just "room"
-                            }
-                        , Backend.input
-                            { active = open && support
-                            , msg = Name
-                            , label = Html.text "Your name (optional)"
-                            , type_ = "text"
-                            , value = settings.name
-                            , placeholder = "Enter your name to be displayed to others"
-                            , autocomplete = Just "name"
-                            }
+                                    []
+                                , btnIcon
+                                    { title = "generate random"
+                                    , tabbable = open && support
+                                    , msg =
+                                        if open && support then
+                                            Just Random_Generate
+
+                                        else
+                                            Nothing
+                                    , icon = "icon-refresh"
+                                    }
+                                    [ Attr.class "lia-btn--outline lia-classroom__field-btn" ]
+                                ]
+                            ]
+                        , if via /= Backend.Local then
+                            Backend.input
+                                { active = open && support
+                                , msg = Name
+                                , label = Html.text "Your name (optional)"
+                                , type_ = "text"
+                                , value = settings.name
+                                , placeholder = "Enter your name to be displayed to others"
+                                , autocomplete = Just "name"
+                                }
+
+                          else
+                            Html.text ""
                         , Backend.input
                             { active = open && support
                             , msg = Password
                             , label =
-                                Html.span []
+                                Html.span
+                                    [ Attr.style "display" "flex"
+                                    , Attr.style "justify-content" "space-between"
+                                    , Attr.style "align-items" "center"
+                                    , Attr.style "width" "100%"
+                                    ]
                                     [ Html.text "Password (optional)"
                                     , btn
                                         { title =
@@ -116,7 +151,11 @@ view settings =
                             , placeholder = ""
                             , autocomplete = Just "password"
                             }
-                        , viewMode (open && support) settings.mode
+                        , if via /= Backend.Local then
+                            viewMode (open && support) settings.mode
+
+                          else
+                            Html.text ""
                         , Html.div []
                             [ Backend.checkbox
                                 { active = True
@@ -136,7 +175,7 @@ view settings =
                                 , value = settings.persistent || via == Backend.Local
                                 }
                             ]
-                        , if settings.persistent && via /= Backend.Local then
+                        , if settings.persistent || via == Backend.Local then
                             Html.div [ Attr.class "lia-classroom__local-fields" ]
                                 [ Backend.input
                                     { active = open && support
@@ -186,6 +225,24 @@ view settings =
         ]
 
 
+{-| The long, static "how does this work" explanation, tucked behind a
+collapsed `<details>` disclosure instead of always taking up space on the
+overview page - styled the same way as `Backend.Via`'s own "Infrastructure
+settings" disclosure, for visual consistency.
+-}
+infoDetails : Html msg
+infoDetails =
+    Html.details [ Attr.style "margin-block-start" "2rem" ]
+        [ Html.summary
+            [ Attr.style "cursor" "pointer"
+            , Attr.style "font-weight" "bold"
+            , Attr.style "color" "white"
+            ]
+            [ Html.text "What can a classroom do?" ]
+        , Backend.info
+        ]
+
+
 viewError : Maybe String -> Html msg
 viewError message =
     case message of
@@ -200,28 +257,24 @@ viewError message =
 
 {-| Show the locally saved classrooms as a card grid. Only shown on the
 overview page (no backend selected yet) — once a backend is picked, the
-form takes over and the cards would just be visual clutter. The "Own Notes"
-entry (if it has ever been connected to) is always pinned as its own tile
-rather than a regular deletable row.
+form takes over and the cards would just be visual clutter. The local
+"Own Notes" room is excluded here - it has its own quick-access button
+next to the backend dropdown instead of a grid tile.
 -}
 savedList : Sync.Settings -> Html Msg
 savedList settings =
     case settings.state of
         Sync.Disconnected ->
-            let
-                notes =
-                    settings.saved |> List.filter isNotesEntry |> List.head
-            in
-            settings.saved
-                |> List.filter (isNotesEntry >> not)
-                |> List.map (savedCard settings.deletePopup)
-                |> (::) (notesCard notes)
-                |> (\cards ->
-                        Html.div [ Attr.style "margin-block-start" "2rem" ]
-                            [ Html.span [ Attr.class "lia-label" ] [ Html.text "Your classrooms" ]
-                            , Html.div [ Attr.class "lia-classroom__cards" ] cards
-                            ]
-                   )
+            case settings.saved |> List.filter (isNotesEntry >> not) of
+                [] ->
+                    Html.text ""
+
+                entries ->
+                    Html.div [ Attr.style "margin-block-start" "2rem" ]
+                        [ Html.span [ Attr.class "lia-label" ] [ Html.text "Your classrooms" ]
+                        , Html.div [ Attr.class "lia-classroom__cards" ]
+                            (List.map (savedCard settings.deletePopup) entries)
+                        ]
 
         _ ->
             Html.text ""
@@ -247,55 +300,9 @@ isNotesEntry entry =
     entry.room == Classroom.notesRoomName && matchesBackend Backend.Local entry
 
 
-{-| The pinned "Own Notes" shortcut. Shows the last-used date once the
-notes room has actually been connected to at least once; before that,
-there is nothing to show a date for. Not user-editable (title/notes),
-unlike regular saved-classroom cards, since it may not have a persisted
-entry yet.
--}
-notesCard : Maybe Classroom.Entry -> Html Msg
-notesCard entry =
-    Html.article [ Attr.class "lia-card lia-classroom__card" ]
-        [ cardTop (Backend.icon Backend.Local) "Offline"
-        , Html.div [ Attr.class "lia-card__content" ]
-            [ Html.header [ Attr.class "lia-card__header" ]
-                [ Html.span [ Attr.class "lia-card__title" ] [ Html.text "Own Notes" ]
-                ]
-            , Html.p [ Attr.class "lia-card__subtitle" ] [ Html.text "Offline local notes" ]
-            , Html.footer [ Attr.class "lia-card__footer" ]
-                [ entry
-                    |> Maybe.map (.updated >> dateSpan)
-                    |> Maybe.withDefault (Html.text "")
-                , btnIcon
-                    { msg = Just OpenNotes
-                    , title = "Open your own notes"
-                    , tabbable = True
-                    , icon = "icon-login"
-                    }
-                    [ Attr.class "lia-btn--transparent lia-btn--tag px-1"
-                    , Attr.style "color" "turquoise"
-                    , Attr.style "border" "1px solid turquoise"
-                    ]
-                ]
-            ]
-        ]
-
-
 dateSpan : Int -> Html msg
 dateSpan updated =
     Html.span [ Attr.class "lia-classroom__date" ] [ Html.text (formatDate updated) ]
-
-
-{-| A card's top row: the (already prominent) backend icon on the left, and
-a small text-only backend-name badge on the right — no icon in the badge
-itself, since the icon to its left already identifies the backend.
--}
-cardTop : Html msg -> String -> Html msg
-cardTop backendIcon label =
-    Html.div [ Attr.class "lia-classroom__card-top" ]
-        [ Html.div [ Attr.class "lia-classroom__card-icon" ] [ backendIcon ]
-        , Html.span [ Attr.class "lia-classroom__card-backend" ] [ Html.text label ]
-        ]
 
 
 {-| The mode (Shared/Summary/Details) a saved classroom was last used with,
@@ -439,11 +446,11 @@ deleteBtn entry =
         [ Attr.class "lia-classroom__card-ghost lia-classroom__card-ghost--danger" ]
 
 
-select : Bool -> Sync -> Html Msg
-select editable sync =
+select : String -> Bool -> Sync -> Html Msg
+select label editable sync =
     Html.map Backend <|
         Html.label []
-            [ Html.span [ Attr.class "lia-label" ] [ Html.text "Backend" ]
+            [ Html.span [ Attr.class "lia-label" ] [ Html.text label ]
             , Html.br [] []
             , Html.div
                 [ Attr.class "lia-dropdown"
@@ -470,7 +477,12 @@ select editable sync =
                     , Attr.tabindex 0
                     , A11y_Aria.expanded sync.open
                     ]
-                    [ maybeSelect sync.select
+                    [ case sync.select of
+                        Nothing ->
+                            Html.text "Choose a backend…"
+
+                        Just ( _, via ) ->
+                            selectString via
                     , Html.i
                         [ Attr.class <|
                             "icon"
@@ -542,6 +554,12 @@ selectString via =
 
 button : Sync.Settings -> Html Msg
 button settings =
+    let
+        attrs =
+            [ Attr.style "margin-block-start" "2rem"
+            , Attr.style "width" "100%"
+            ]
+    in
     case settings.state of
         Disconnected ->
             btn
@@ -554,7 +572,7 @@ button settings =
                         Just Connect
                 , tabbable = True
                 }
-                [ Attr.style "margin-block-start" "2rem" ]
+                attrs
                 [ Html.text "connect" ]
 
         Connected _ ->
@@ -563,7 +581,7 @@ button settings =
                 , msg = Just Disconnect
                 , tabbable = True
                 }
-                [ Attr.style "margin-block-start" "2rem" ]
+                attrs
                 [ Html.text "disconnect" ]
 
         Pending ->
@@ -572,7 +590,7 @@ button settings =
                 , msg = Nothing
                 , tabbable = False
                 }
-                [ Attr.style "margin-block-start" "2rem" ]
+                attrs
                 [ Html.text "pending" ]
 
 

@@ -240,37 +240,37 @@ badges via =
             [ "Embedded platform", "No setup" ]
 
         GUN _ ->
-            [ "Decentralized", "Self-hostable" ]
+            [ "Decentralized", "Self-hostable", "WebSocket", "Public relays" ]
 
         NoStr _ ->
-            [ "Relay based", "Open protocol" ]
+            [ "Relay based", "Open protocol", "WebSocket", "WebRTC", "Public relays" ]
 
         MQTT _ ->
-            [ "Broker based", "Open protocol", "Custom brokers" ]
+            [ "Broker based", "Custom brokers", "WebSocket", "WebRTC", "Public relays" ]
 
         Torrent _ ->
-            [ "BitTorrent", "Tracker based" ]
+            [ "BitTorrent", "Tracker based", "WebSocket", "WebRTC", "Public relays" ]
 
         IPFS _ ->
-            [ "Peer-to-peer", "Decentralized" ]
+            [ "Peer-to-peer", "Decentralized", "WebSocket", "WebRTC", "Public relays" ]
 
         PubNub _ ->
-            [ "Managed service", "Account required" ]
+            [ "Managed service", "Account required", "HTTP", "Dedicated infra" ]
 
         Ably _ ->
-            [ "Managed service", "Account required" ]
+            [ "Managed service", "Account required", "WebSocket", "Dedicated infra" ]
 
         P2PT _ ->
-            [ "WebTorrent", "Tracker based" ]
+            [ "WebTorrent", "Tracker based", "WebSocket", "WebRTC", "Public relays" ]
 
         WebSocket _ ->
-            [ "Self-hostable", "Experimental" ]
+            [ "Self-hostable", "Experimental", "Dedicated infra" ]
 
         PeerJS _ ->
-            [ "WebRTC", "Public or self-hosted" ]
+            [ "WebRTC", "Public relays" ]
 
         SimplePeer _ ->
-            [ "WebRTC", "Self-hostable" ]
+            [ "WebRTC", "Self-hostable", "Dedicated infra" ]
 
         Local ->
             [ "Offline", "No network" ]
@@ -300,7 +300,7 @@ tagline via =
             "Broker-based realtime communication."
 
         Torrent _ ->
-            "BitTorrent trackers used as a peer-to-peer relay."
+            "BitTorrent trackers used for WebRTC signaling."
 
         IPFS _ ->
             "Peer-to-peer hypermedia protocol for decentralized data."
@@ -525,10 +525,12 @@ infoOn supported about =
         case ( about, supported ) of
             ( Edrys, _ ) ->
                 [ link "Edrys" "https://edrys-labs.github.io"
-                , Html.text " is an open and modular remote teaching platform (and the first live LMS). "
+                , Html.text " is an open, modular remote-teaching platform. The site linked here runs "
+                , link "edrys-Lite" "https://github.com/edrys-labs/edrys-Lite"
+                , Html.text ", a serverless, browser-only rewrite that syncs directly between peers over WebTorrent — no backend server required. "
                 , Html.text "It is a great platform for building remote labs and share them by using only a browser locally. "
                 , Html.text "Thus, this synchronization will only work, if you are within an Edrys classroom, for more information try the following link: "
-                , link "https://github.com/edrys-labsg" "https://github.com/edrys-labs"
+                , link "https://github.com/edrys-labs" "https://github.com/edrys-labs"
                 , Html.text ". Additionally, your course has to be loaded via the "
                 , link "module-liascript" "https://github.com/edrys-labs/module-liascript"
                 , Html.text "."
@@ -536,26 +538,26 @@ infoOn supported about =
 
             ( GUN _, _ ) ->
                 [ link "GunDB" "https://gun.eco"
-                , Html.text " is a small, easy, and fast real-time database for syncing data across various users."
-                , Html.text " You can use the default relay server hosted at "
+                , Html.text " is a small, easy, and fast real-time database for syncing data across various users, talking to relay servers over "
+                , link "WebSocket" "https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"
+                , Html.text ". You can use the default relay servers hosted at "
                 , link Const.gunDB_ServerURL Const.gunDB_ServerURL
-                , Html.text ". Or, if you don't trust us ;-) you can also use one of the free hosted relay servers listed "
+                , Html.text ", themselves community-hosted volunteer relays, not run by LiaScript — or pick others, or add your own, from the list "
                 , link "here" "https://github.com/amark/gun/wiki/volunteer.dht"
-                , Html.text ". Multiple peers have to be separated by commas."
-                , Html.text " The implementation of this classroom can be found "
+                , Html.text ". The implementation of this classroom can be found "
                 , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/Gun"
-                , Html.text ". By checking \"persistent storage\" you can ensure that the chat messages and the modified code will be accessible over a longer time period, otherwise the state is deleted."
-                , Html.text " However, since this is a free service, we cannot give guarantees that your messages will be stored forever and that the GunDB server might be offline."
-                , Html.text " If you want to be certain, you can host your own instance of a GunDB server and change the URL appropriately."
+                , Html.text ". Since these are free, community-run services, we cannot guarantee your messages will be stored forever or that a relay stays online — if you need certainty, host your own GunDB instance and point the URL below at it."
                 ]
 
             ( IPFS _, _ ) ->
-                [ link "IPFS (InterPlanetary File System)" "https://ipfs.io"
-                , Html.text " is a peer-to-peer hypermedia protocol designed to make the web faster, safer, and more open. "
-                , Html.text "It enables users to host and share content in a decentralized manner, eliminating the need for traditional centralized servers. "
-                , Html.text "In the context of browser-based Pub/Sub (Publish/Subscribe) messaging, IPFS can facilitate real-time communication by allowing browsers to publish messages to specific topics and subscribe to receive messages from those topics. "
-                , Html.text "This decentralized approach enhances data availability and resilience, making it suitable for applications like chat or live streaming."
-                , trysteroTurnHint
+                [ Html.text "Despite the name, this strategy doesn't use the classic "
+                , link "IPFS" "https://ipfs.tech"
+                , Html.text " file-storage network — under the hood it runs on "
+                , link "Waku" "https://waku.org"
+                , Html.text ", a "
+                , link "libp2p" "https://libp2p.io"
+                , Html.text "-based decentralized publish/subscribe messaging protocol, purely to find peers and exchange the WebRTC handshake. "
+                , Html.text "It has the least relay redundancy of the decentralized strategies offered here (behind MQTT and BitTorrent), so expect connections to occasionally take longer to establish."
                 ]
 
             ( NoStr _, _ ) ->
@@ -573,17 +575,19 @@ infoOn supported about =
                 [ link "MQTT (Message Queuing Telemetry Transport)" "https://mqtt.org"
                 , Html.text " is a lightweight, publish-subscribe messaging protocol designed for machine-to-machine (M2M) communication, particularly in the Internet of Things (IoT) and industrial IoT (IIoT) contexts. "
                 , Html.text "It enables devices to efficiently publish and subscribe to data over the Internet, facilitating communication between embedded devices, sensors, and industrial PLCs. "
-                , Html.text "MQTT operates over a transport protocol like TCP/IP, ensuring ordered, lossless, bi-directional connections."
+                , Html.text "MQTT normally runs directly over TCP, but browsers can't open raw TCP sockets — so this backend speaks MQTT-over-WebSocket instead, which is why broker URLs look like "
+                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://" ]
+                , Html.text " addresses rather than a plain host:port. "
                 , Html.text "The protocol is event-driven, with a broker managing the distribution of messages between publishers and subscribers based on topics. "
                 , Html.text "This decoupling allows for scalable and reliable data exchange, making MQTT a standard for IoT data transmission."
                 , trysteroRelayHint "broker"
                 ]
 
             ( Torrent _, _ ) ->
-                [ link "Torrent" "https://www.beautifulcode.co/blog/58-understanding-bittorrent-protocol"
-                , Html.text " is a peer-to-peer file-sharing protocol used for distributing large files across a network of computers. "
-                , Html.text "In the context of browser-based Pub/Sub (Publish/Subscribe) messaging, Torrent can facilitate the distribution of messages or data across a network of peers, enabling efficient, decentralized communication without a central server. "
-                , Html.text "This approach is particularly useful for real-time applications like chat or live streaming, ensuring data is quickly and reliably distributed to all interested peers."
+                [ link "WebTorrent" "https://webtorrent.io"
+                , Html.text " trackers are the same kind of signaling servers "
+                , link "BitTorrent" "https://en.wikipedia.org/wiki/BitTorrent"
+                , Html.text " clients use to find peers sharing a file — here they're repurposed to bootstrap real-time connections for chat and quizzes instead; no file-sharing involved."
                 , trysteroRelayHint "tracker"
                 ]
 
@@ -608,52 +612,36 @@ infoOn supported about =
             --     ]
             ( PubNub _, _ ) ->
                 [ link "PubNub" "https://www.pubnub.com"
-                , Html.text " is a real-time communication platform. "
-                , Html.text "To create a classroom that uses this service, you will only require an account, which is free for testing. "
-                , Html.text "After that, you simply have to create a new App with a new Keyset within their dashboard. "
-                , Html.text "These are the keys you will have to provide for this room. "
-                , Html.text "After this, you can simply generate a new set of keys. "
-                , Html.text "The basic steps that are required, are described in more detail "
-                , link "here" "https://www.appypie.com/faqs/how-to-get-pubnub-publish-key-and-subscribe-key"
+                , Html.text " is a managed real-time communication platform — no server of your own to run. "
+                , Html.text "LiaScript ships with a shared, free-tier keyset so this works immediately, but its capacity is split across everyone who leaves the fields below empty. "
+                , Html.text "Unlike Ably or GunDB here, this backend has no persistent-storage option — the room's state only exists while participants are connected. "
+                , Html.text "If you'll use this regularly, create your own free account instead (no credit card required, capped at 3 keysets) — full setup steps are in PubNub's own docs "
+                , link "here" "https://www.pubnub.com/docs/general/setup/account-setup"
                 , Html.text "."
                 ]
 
             ( Ably _, _ ) ->
                 [ link "Ably" "https://ably.com"
-                , Html.text " is a managed real-time messaging platform with a global edge network. "
-                , Html.text "To create a classroom that uses this service, you will only require an account, which is free for testing. "
-                , Html.text "After that, you simply have to create a new App within their dashboard and copy one of its API keys. "
-                , Html.text "This is the key you will have to provide for this room. "
-                , Html.text "By checking \"persistent storage\" you can ensure that the chat messages and the modified code will be accessible over a longer time period, using Ably's LiveObjects, otherwise the state is deleted."
+                , Html.text " is a managed real-time messaging platform with a global edge network — no server of your own to run. "
+                , Html.text "LiaScript ships with a shared, free-tier API key so this works immediately, but its capacity (200 concurrent connections, 6M messages/month) is split across everyone who leaves the field below empty. "
+                , Html.text "If you'll use this regularly, create your own free Ably account instead — no credit card required."
                 ]
 
             ( WebSocket _, _ ) ->
                 [ link "WebSocket" "https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"
                 , Html.text " provides full-duplex communication over a single TCP connection. "
-                , Html.text "To use this backend, you need a WebSocket server that supports the y-websocket protocol. "
-                , Html.text "You can host your own server using "
+                , Html.text "This backend only works with a server that speaks the "
                 , link "y-websocket" "https://github.com/yjs/y-websocket"
-                , Html.text " or any compatible implementation. "
-                , Html.text "Provide the full WebSocket URL, e.g. "
-                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://your-server.example.com" ]
-                , Html.text "."
+                , Html.text " wire protocol — either y-websocket's own reference server or any compatible implementation, self-hosted; there's no public default to fall back to."
                 ]
 
             ( PeerJS _, _ ) ->
                 [ link "PeerJS" "https://peerjs.com"
                 , Html.text " simplifies WebRTC peer-to-peer data channel connections. "
                 , Html.text "By default it uses the free PeerJS Cloud signaling server — no setup required. "
-                , Html.text "For production use or larger groups you can host your own "
+                , Html.text "For production use or larger groups, host your own "
                 , link "PeerServer" "https://github.com/peers/peerjs-server"
-                , Html.text " and configure it with the fields below. "
-                , Html.text "All fields are optional. "
-                , Html.text "The \"ICE / TURN servers\" field accepts a JSON array of "
-                , link "RTCIceServer" "https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer"
-                , Html.text " objects (see "
-                , link "RTCPeerConnection config" "https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection"
-                , Html.text "), e.g. "
-                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "[{\"urls\":\"stun:stun.l.google.com:19302\"}]" ]
-                , Html.text ". Use TURN servers to improve connectivity in restricted networks. "
+                , Html.text " instead and point the fields below at it. "
                 , Html.text "The implementation can be found "
                 , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/PeerJS"
                 , Html.text "."
@@ -666,15 +654,9 @@ infoOn supported about =
                 , Html.text "A signaling server URL is "
                 , Html.strong [] [ Html.text "required" ]
                 , Html.text " — the previously public default server is no longer available. "
-                , Html.text "Host your own using "
+                , Html.text "Host your own — the signaling server bundled with "
                 , link "y-webrtc" "https://github.com/yjs/y-webrtc"
-                , Html.text ", which includes a ready-to-use signaling server. "
-                , Html.text "You can provide multiple comma-separated URLs for redundancy. "
-                , Html.text "The \"ICE / TURN servers\" field accepts a JSON array of "
-                , link "RTCIceServer" "https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer"
-                , Html.text " objects (optional), e.g. "
-                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "[{\"urls\":\"stun:stun.l.google.com:19302\"}]" ]
-                , Html.text ". Use TURN servers to improve connectivity in restricted networks. "
+                , Html.text " works fine here too, since it's a generic topic-based relay rather than something specific to that protocol. "
                 , Html.text "The implementation can be found "
                 , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/SimplePeer"
                 , Html.text "."
@@ -689,9 +671,9 @@ infoOn supported about =
                 , link "WebRTC" "https://en.wikipedia.org/wiki/WebRTC"
                 , Html.text ". Therefor P2PT uses magnet-URIs as an app identifier to communicate with the WebTorrent trackers, which provide a list of web peers using the app."
                 , Html.text "With this information, P2PT enables an browser applications to share real-time data and send messages interaction between connected peers."
-                , Html.text "Thus, you have to provide WebSocket-URLs, which start with "
+                , Html.text "Thus, you have to provide one or more WebSocket tracker URLs, starting with "
                 , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://" ]
-                , Html.text "."
+                , Html.text ", separated by commas if you list several — there is no built-in default, so at least one is required."
                 ]
 
             ( Local, _ ) ->
@@ -700,14 +682,9 @@ infoOn supported about =
                 ]
 
 
-trysteroTurnHint : Html msg
-trysteroTurnHint =
-    Html.text " This backend still uses WebRTC for the actual data transfer, so you can provide TURN servers below to improve connectivity in restricted networks."
-
-
 trysteroRelayHint : String -> Html msg
 trysteroRelayHint kind =
-    Html.text (" You can provide custom " ++ kind ++ " URLs below instead of the defaults, as well as TURN servers, since this backend still uses WebRTC for the actual data transfer.")
+    Html.text (" This backend uses the " ++ kind ++ " only to discover peers and exchange the WebRTC handshake — the actual chat and quiz data still flows directly between browsers over WebRTC.")
 
 
 link : String -> String -> Html msg
@@ -729,22 +706,24 @@ view editable backend =
                     , label = Html.text "relay server"
                     , autocomplete = Just "gun-server"
                     }
+                , fieldHint "Add multiple relay servers, separated by commas."
                 , checkbox
                     { active = editable
                     , value = persistent
                     , msg = CheckboxGun
                     , label = Html.text "persistent storage"
                     }
+                , fieldHint "Writes the room's state to the relay server(s) so it survives after everyone disconnects — nothing is ever cached in your own browser either way. Left unchecked, the room only exists in the relay's memory and disappears once it empties."
                 ]
 
         NoStr { relayUrls, turnConfig } ->
             trysteroSettings editable "relay" "wss://relay.damus.io, wss://nos.lol, ..." relayUrls turnConfig
 
         MQTT { relayUrls, turnConfig } ->
-            trysteroSettings editable "broker" "wss://broker.example.com, ..." relayUrls turnConfig
+            trysteroSettings editable "broker" "wss://broker.emqx.io:8084/mqtt, wss://broker.hivemq.com:8884/mqtt, ..." relayUrls turnConfig
 
         Torrent { relayUrls, turnConfig } ->
-            trysteroSettings editable "tracker" "wss://tracker.example.com, ..." relayUrls turnConfig
+            trysteroSettings editable "tracker" "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, ..." relayUrls turnConfig
 
         IPFS { turnConfig } ->
             details
@@ -757,6 +736,7 @@ view editable backend =
                     , label = Html.text "TURN servers as JSON (optional)"
                     , autocomplete = Just "trystero-turn"
                     }
+                , fieldHint "Waku only finds peers and exchanges the WebRTC handshake — the actual chat and quiz data flows directly between browsers. Add TURN servers here if participants sit behind firewalls/NATs that block a direct WebRTC connection; there's no separate relay URL to configure for this strategy."
                 ]
 
         -- Jitsi domain ->
@@ -819,6 +799,7 @@ view editable backend =
                     , placeholder = "sub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
                     , autocomplete = Just "pubnup-subscribeKey"
                     }
+                , fieldHint "Leave both empty to use LiaScript's shared keyset. For regular use, create your own free App/Keyset in the PubNub dashboard and paste its publish and subscribe key here instead, so you're not sharing capacity with everyone else."
                 ]
 
         Ably { apiKey, persistent } ->
@@ -832,12 +813,14 @@ view editable backend =
                     , placeholder = "xVLyHw.XXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
                     , autocomplete = Just "ably-apiKey"
                     }
+                , fieldHint "Leave empty to use LiaScript's shared key. For regular use, create a free App in your own Ably dashboard and paste one of its API keys here instead, so you're not sharing capacity with everyone else."
                 , checkbox
                     { active = editable
                     , value = persistent
                     , msg = CheckboxAbly
                     , label = Html.text "persistent storage"
                     }
+                , fieldHint "Uses Ably's LiveObjects to keep the chat and modified code available after everyone disconnects, retained for up to 90 days by default. Left unchecked, the state is dropped once the room empties."
                 ]
 
         P2PT urls ->
@@ -847,8 +830,8 @@ view editable backend =
                     , type_ = "text"
                     , msg = InputP2PT
                     , value = urls
-                    , placeholder = "wss://tracker.torrent"
-                    , label = Html.text "WebTorrent tracker URLs"
+                    , placeholder = "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, ..."
+                    , label = Html.text "WebTorrent tracker URLs (required, comma-separated)"
                     , autocomplete = Just "websocket-urls"
                     }
                 ]
@@ -864,6 +847,7 @@ view editable backend =
                     , label = Html.text "server URL"
                     , autocomplete = Just "websocket-url"
                     }
+                , fieldHint "Required — the full WebSocket URL of your y-websocket-compatible server."
                 ]
 
         PeerJS { host, port_, path, iceServers } ->
@@ -895,6 +879,7 @@ view editable backend =
                     , label = Html.text "server path (optional)"
                     , autocomplete = Just "peerjs-path"
                     }
+                , fieldHint "All three fields above are optional — leave them empty to use the free PeerJS Cloud signaling server."
                 , input
                     { active = editable
                     , type_ = "text"
@@ -904,6 +889,7 @@ view editable backend =
                     , label = Html.text "ICE / TURN servers as JSON (optional)"
                     , autocomplete = Just "peerjs-ice"
                     }
+                , iceServersHint
                 ]
 
         SimplePeer { signaling, iceServers } ->
@@ -917,6 +903,7 @@ view editable backend =
                     , label = Html.text "signaling server URLs (required, comma-separated)"
                     , autocomplete = Just "simplepeer-signaling"
                     }
+                , fieldHint "Required. Multiple comma-separated URLs can be provided for redundancy."
                 , input
                     { active = editable
                     , type_ = "text"
@@ -926,6 +913,7 @@ view editable backend =
                     , label = Html.text "ICE / TURN servers as JSON (optional)"
                     , autocomplete = Just "simplepeer-ice"
                     }
+                , iceServersHint
                 ]
 
         _ ->
@@ -944,6 +932,7 @@ trysteroSettings editable kind placeholder relayUrls turnConfig =
             , label = Html.text (kind ++ " URLs (optional)")
             , autocomplete = Just "trystero-relay"
             }
+        , fieldHint ("Comma-separated. Leave empty to use Trystero's built-in default " ++ kind ++ "s.")
         , input
             { active = editable
             , type_ = "text"
@@ -953,6 +942,44 @@ trysteroSettings editable kind placeholder relayUrls turnConfig =
             , label = Html.text "TURN servers as JSON (optional)"
             , autocomplete = Just "trystero-turn"
             }
+        , fieldHint "Only needed if some participants sit behind firewalls/NATs that block a direct WebRTC connection."
+        ]
+
+
+{-| A small greyed-out caption placed right under a field in "Infrastructure
+settings" to explain what it does, without bloating the longer `infoOn` prose
+above.
+-}
+fieldHint : String -> Html msg
+fieldHint text =
+    fieldHintHtml [ Html.text text ]
+
+
+{-| Like `fieldHint`, but for the (rare) case where the caption itself needs
+a link or inline code, e.g. `iceServersHint`.
+-}
+fieldHintHtml : List (Html msg) -> Html msg
+fieldHintHtml content =
+    Html.p
+        [ Attr.style "font-size" "smaller"
+        , Attr.style "opacity" "0.7"
+        , Attr.style "margin-block-start" "0.35rem"
+        , Attr.style "margin-block-end" "0"
+        ]
+        content
+
+
+{-| Shared by PeerJS and SimplePeer, whose "ICE / TURN servers" fields are
+identical in shape and meaning.
+-}
+iceServersHint : Html msg
+iceServersHint =
+    fieldHintHtml
+        [ Html.text "Optional. Takes a JSON array of "
+        , link "RTCIceServer" "https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer"
+        , Html.text " objects, e.g. "
+        , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "[{\"urls\":\"stun:stun.l.google.com:19302\"}]" ]
+        , Html.text ". Add TURN servers to improve connectivity in restricted networks."
         ]
 
 
@@ -985,6 +1012,7 @@ input { active, msg, label, type_, value, placeholder, autocomplete } =
         [ Html.span
             [ Attr.class "lia-label"
             , Attr.style "margin-block-start" "2rem"
+            , Attr.style "width" "100%"
             ]
             [ label ]
         , Html.input
