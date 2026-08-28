@@ -60,7 +60,7 @@ view settings =
             Just ( support, via ) ->
                 Html.div [ Attr.class "lia-classroom__columns" ]
                     [ Html.div [ Attr.class "lia-classroom__form" ]
-                        [ select "Backend" open settings.sync
+                        [ select "Backend" (open && not settings.locked) settings.sync
                         , Html.label []
                             [ Html.span
                                 [ Attr.class "lia-label"
@@ -70,7 +70,7 @@ view settings =
                                 [ Html.text "Room" ]
                             , Html.div [ Attr.class "lia-classroom__field-row" ]
                                 [ Html.input
-                                    [ if open && support then
+                                    [ if open && support && not settings.locked then
                                         Event.onInput Room
 
                                       else
@@ -86,9 +86,9 @@ view settings =
                                     []
                                 , btnIcon
                                     { title = "generate random"
-                                    , tabbable = open && support
+                                    , tabbable = open && support && not settings.locked
                                     , msg =
-                                        if open && support then
+                                        if open && support && not settings.locked then
                                             Just Random_Generate
 
                                         else
@@ -120,7 +120,7 @@ view settings =
                                 [ Html.text "Password (optional)" ]
                             , Html.div [ Attr.class "lia-classroom__field-row" ]
                                 [ Html.input
-                                    [ if open && support then
+                                    [ if open && support && not settings.passwordLocked then
                                         Event.onInput Password
 
                                       else
@@ -128,14 +128,14 @@ view settings =
                                     , Attr.value settings.password
                                     , Attr.style "color" "black"
                                     , Attr.type_ <|
-                                        if settings.passwordVisible then
+                                        if settings.passwordVisible && not settings.passwordLocked then
                                             "text"
 
                                         else
                                             "password"
                                     , Attr.style "width" "100%"
                                     , Attr.name "password"
-                                    , Attr.attribute "autocomplete" "password"
+                                    , Attr.attribute "autocomplete" "new-password"
                                     ]
                                     []
                                 , btnIcon
@@ -145,9 +145,9 @@ view settings =
 
                                         else
                                             "show password"
-                                    , tabbable = open && support
+                                    , tabbable = open && support && not settings.passwordLocked
                                     , msg =
-                                        if open && support then
+                                        if open && support && not settings.passwordLocked then
                                             Just TogglePasswordVisibility
 
                                         else
@@ -163,7 +163,7 @@ view settings =
                                 ]
                             ]
                         , if via /= Backend.Local then
-                            viewMode (open && support) settings.mode
+                            viewMode (open && support && not settings.locked) settings.mode
 
                           else
                             Html.text ""
@@ -227,6 +227,7 @@ view settings =
                             (via |> Backend.badges |> List.map Backend.badge)
                         , Backend.infoOn support via
                         , Backend.view
+                            settings.locked
                             (open && support)
                             via
                             |> Html.map Config

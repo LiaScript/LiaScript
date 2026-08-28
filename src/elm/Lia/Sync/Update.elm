@@ -299,6 +299,28 @@ update session model msg =
             { model | sync = { sync | room = roomName } }
                 |> Return.val
 
+        Backend (Select Nothing) ->
+            { model
+                | sync =
+                    { sync
+                        | sync = updateSync (Select Nothing) sync.sync
+                        , room = ""
+                        , password = ""
+                        , title = ""
+                        , notes = ""
+                        , mode = Shared
+                        , persistent = False
+                        , locked = False
+                        , passwordLocked = False
+                    }
+            }
+                |> Return.val
+                |> Return.cmd
+                    (session
+                        |> Session.setQuery model.readme
+                        |> Session.update
+                    )
+
         Backend sub ->
             { model | sync = { sync | sync = updateSync sub sync.sync } }
                 |> Return.val
@@ -385,6 +407,8 @@ update session model msg =
                                 -- under, otherwise it joins a different room and
                                 -- loses the CRDT ownership history
                                 , mode = toClassroomMode entry.mode
+                                , locked = True
+                                , passwordLocked = True
                             }
                     }
                         |> Return.val
@@ -406,6 +430,8 @@ update session model msg =
                         , title = ""
                         , notes = ""
                         , persistent = True
+                        , locked = False
+                        , passwordLocked = False
                     }
             }
                 |> Return.val

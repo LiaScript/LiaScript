@@ -84,6 +84,8 @@ type alias Settings =
     , mode : ClassroomMode
     , owner : Bool
     , passwordVisible : Bool
+    , locked : Bool
+    , passwordLocked : Bool
 
     -- local-only labels for the saved classroom entry (not shared via URL,
     -- unlike room/password/mode) - help re-recognize a room in the "Your
@@ -175,6 +177,8 @@ init supportedBackends =
     , mode = Shared
     , owner = False
     , passwordVisible = False
+    , locked = False
+    , passwordLocked = False
     , title = ""
     , notes = ""
     }
@@ -230,6 +234,7 @@ initRoom config settings =
                 -- use (and update) its local cache
                 , persistent = True
                 , mode = toClassroomMode config.mode
+                , locked = True
             }
 
         Nothing ->

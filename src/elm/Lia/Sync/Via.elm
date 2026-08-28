@@ -692,8 +692,15 @@ link title url =
     Html.a [ Attr.href url, Attr.target "blank" ] [ Html.text title ]
 
 
-view : Bool -> Backend -> Html Msg
-view editable backend =
+view : Bool -> Bool -> Backend -> Html Msg
+view locked editable backend =
+    if locked then
+        details
+            [ Html.p [ Attr.style "font-style" "italic" ]
+                [ Html.text "Infrastructure settings are locked while connected to this classroom." ]
+            ]
+
+    else
     case backend of
         GUN { urls, persistent } ->
             details
