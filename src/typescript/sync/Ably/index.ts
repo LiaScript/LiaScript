@@ -55,6 +55,7 @@ export class Sync extends Base.Sync {
         LiveObjects: this.persistent
           ? window['AblyLiveObjectsPlugin']
           : undefined,
+        debug: !!window['LIA']?.debug,
       })
 
       this.provider = new GenericProvider(this.db.doc, this.transport)
