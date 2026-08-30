@@ -93,7 +93,7 @@
     "logger.ts": "^1.0.5",
     "minify": "^9.2.0",
     "node-elm-compiler": "^5.0.6",
-    "parcel": "^2.8.3",
+    "parcel": "^2.16.4",
     "parcel-reporter-static-files-copy": "^1.5.3",
     "patch-package": "^8.0.1",
     "path-browserify": "^1.0.1",
