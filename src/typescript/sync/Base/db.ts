@@ -10,10 +10,14 @@ const SURVEY = 's'
 const CODE = 'c'
 const META = 'meta'
 const IDENTITY = 'name'
+const USER = 'user'
+
+type SyncType = typeof QUIZ | typeof SURVEY
 
 export class CRDT {
   protected callback: (event: any, origin: null | string) => void
   public doc: Y.Doc
+  public sub: Y.Doc
 
   // Used by legacy manual-sync providers (Trystero, PubNub, P2PT) as a
   // rough causal tiebreaker. Not needed by the GenericProvider path.
@@ -21,18 +25,21 @@ export class CRDT {
 
   protected awareness?: awarenessProtocol.Awareness
   protected codes: Y.Map<Y.Text>
-  // Flat Y.Map with composite key = JSON.stringify([sectionId, questionIdx, peerID]).
-  // Each peer owns exactly one key per question — no two peers ever write the
-  // same key, so there is no last-writer-wins collision whatsoever.
-  protected quizzes: Y.Map<any>
-  protected surveys: Y.Map<any>
   protected chat: YKeyValue<{ message: String; color: String; user: String }>
   protected metadata: Y.Array<string>
-  // Durable peerID -> name map, persisted like `quizzes`/`surveys` so a
+  // Durable peerID -> name map, persisted like `user`, so a
   // reconnecting/late-joining owner can still label rows for peers who
   // already left (Awareness alone is live-only and forgets them).
   protected identities: Y.Map<string>
-
+  // peerID -> { q: Y.Map<sectionId, Y.Array<value>>, s: Y.Map<sectionId, Y.Array<value>> }
+  // A peer only ever creates/writes inside its own top-level key — a
+  // structural single-writer guarantee, no composite-key encoding needed.
+  // sectionId is a Y.Map key (string) because it's either a small dense
+  // course-section index or a chat timestamp (Date.now()) — genuinely
+  // sparse/arbitrary. questionIdx is a Y.Array index because it's always
+  // dense within a section, and single-writer-per-array means no
+  // concurrent-edit reconciliation cost.
+  protected user: Y.Map<Y.Map<any>>
   protected length: number
   protected peerID: string
   protected color?: string
@@ -53,11 +60,11 @@ export class CRDT {
 
     this.codes = this.doc.getMap(CODE)
 
-    this.quizzes = this.doc.getMap<any>(QUIZ)
-    this.surveys = this.doc.getMap<any>(SURVEY)
     this.chat = new YKeyValue(this.doc.getArray('chat'))
     this.metadata = this.doc.getArray<string>(META)
     this.identities = this.doc.getMap<string>(IDENTITY)
+
+    this.user = this.doc.getMap<Y.Map<any>>(USER)
   }
 
   init(data: State.Vector) {
@@ -65,8 +72,8 @@ export class CRDT {
 
     this.doc.transact(() => {
       for (let i = 0; i < data.length; i++) {
-        this.initMap(this.quizzes, i, data[i][QUIZ])
-        this.initMap(this.surveys, i, data[i][SURVEY])
+        this.initRecord(QUIZ, i, data[i][QUIZ])
+        this.initRecord(SURVEY, i, data[i][SURVEY])
         this.initText(i, data[i][CODE])
       }
     }, this.peerID)
@@ -100,36 +107,21 @@ export class CRDT {
     }
 
     // Quizzes — collect all section IDs that have any entries
-    const quizIds = new Set<number>()
-    for (const key of this.quizzes.keys()) {
-      try {
-        const [id] = JSON.parse(key)
-        quizIds.add(id)
-      } catch { }
-    }
+    const quizIds = this.collectSectionIds(QUIZ)
     if (quizIds.size > 0) {
       this.callback(
-        [...quizIds].map((id) => ({
-          id,
-          data: this.getMaps(id, this.quizzes),
-        })),
+        [...quizIds].map((id) => ({ id, data: this.getSection(id, QUIZ) })),
         'quiz',
       )
     }
 
     // Surveys
-    const surveyIds = new Set<number>()
-    for (const key of this.surveys.keys()) {
-      try {
-        const [id] = JSON.parse(key)
-        surveyIds.add(id)
-      } catch { }
-    }
+    const surveyIds = this.collectSectionIds(SURVEY)
     if (surveyIds.size > 0) {
       this.callback(
         [...surveyIds].map((id) => ({
           id,
-          data: this.getMaps(id, this.surveys),
+          data: this.getSection(id, SURVEY),
         })),
         'survey',
       )
@@ -199,34 +191,33 @@ export class CRDT {
       this.callback(this.getOwner() === this.peerID, 'ownership')
     })
 
-    // The map is flat so a shallow observe is sufficient — no nesting.
-    this.quizzes.observe((event: Y.YMapEvent<any>) => {
-      const ids = new Set<number>()
-      event.keysChanged.forEach((key) => {
-        try {
-          const [id] = JSON.parse(key)
-          ids.add(id)
-        } catch { }
-      })
-      if (ids.size > 0) {
+    // Nested structure (peer -> type -> section -> Y.Array), so a deep
+    // observer is required. Yjs does not fire deep events for a nested type
+    // that was itself created within the same transaction (see
+    // addChangedTypeToTransaction in yjs's transaction.js) — a peer's first
+    // answer for a section creates its whole peer/type/section chain lazily,
+    // so `event.path` alone can't reliably tell us which section changed.
+    // The callback is a local event2elm port call, not a network send, so
+    // recomputing full current state on any change is cheap — just resend
+    // everything instead of trying to diff precisely.
+    this.user.observeDeep((events: Y.YEvent<any>[]) => {
+      if (events.length === 0) return
+
+      const quizIds = this.collectSectionIds(QUIZ)
+      if (quizIds.size > 0) {
         this.callback(
-          [...ids].map((id) => ({ id, data: this.getMaps(id, this.quizzes) })),
+          [...quizIds].map((id) => ({ id, data: this.getSection(id, QUIZ) })),
           'quiz',
         )
       }
-    })
 
-    this.surveys.observe((event: Y.YMapEvent<any>) => {
-      const ids = new Set<number>()
-      event.keysChanged.forEach((key) => {
-        try {
-          const [id] = JSON.parse(key)
-          ids.add(id)
-        } catch { }
-      })
-      if (ids.size > 0) {
+      const surveyIds = this.collectSectionIds(SURVEY)
+      if (surveyIds.size > 0) {
         this.callback(
-          [...ids].map((id) => ({ id, data: this.getMaps(id, this.surveys) })),
+          [...surveyIds].map((id) => ({
+            id,
+            data: this.getSection(id, SURVEY),
+          })),
           'survey',
         )
       }
@@ -310,22 +301,21 @@ export class CRDT {
     */
   }
 
-  protected initMap(map: Y.Map<any>, id: number, data: State.Data[]) {
+  protected initRecord(type: SyncType, id: number, data: State.Data[]) {
     if (data.length === 0) return
 
     for (let i = 0; i < data.length; i++) {
       // Only write our own answer. LiaScript's join payload includes other
       // peers' answers from its local cache — we must never write those, as
-      // each peer is the sole owner of their composite key.
+      // each peer is the sole owner of their own subtree.
       const ownValue = data[i][this.peerID]
       if (ownValue === undefined) continue
 
-      // Composite key = [sectionId, questionIdx, peerID] — globally unique per peer.
-      const key = JSON.stringify([id, i, this.peerID])
+      const section = this.getOwnSectionArray(type, id)
 
       // Skip if we already have a live answer in the CRDT (e.g. rejoining).
-      if (!map.has(key)) {
-        map.set(key, ownValue)
+      if (section.length <= i || section.get(i) === undefined) {
+        this.setArrayValue(section, i, ownValue)
       }
     }
   }
@@ -393,21 +383,37 @@ export class CRDT {
     return JSON.stringify([id1, id2, id3])
   }
 
-  getMaps(id: number, map: Y.Map<any>): State.Data[] {
-    // Prefix check avoids JSON.parse for keys belonging to other sections.
-    const prefix = `[${id},`
+  // Collect every section id (course index or chat timestamp) that has at
+  // least one entry from any peer, for the given sync type.
+  protected collectSectionIds(type: SyncType): Set<number> {
+    const ids = new Set<number>()
+    for (const [, own] of this.user) {
+      const typeMap = own.get(type) as Y.Map<any> | undefined
+      if (!typeMap) continue
+      for (const id of typeMap.keys()) {
+        ids.add(Number(id))
+      }
+    }
+    return ids
+  }
+
+  // Reassemble one section's data across all peers into the shape Elm's
+  // Container.decoder expects: an array indexed by question index, each
+  // entry a {peerId: value} map.
+  getSection(id: number, type: SyncType): State.Data[] {
     const result: State.Data[] = []
 
-    for (const [key, value] of map) {
-      if (!key.startsWith(prefix)) continue
-      try {
-        const parsed = JSON.parse(key)
-        if (parsed.length !== 3) continue
-        const qi: number = parsed[1]
-        const peer: string = parsed[2]
+    for (const [peerId, own] of this.user) {
+      const typeMap = own.get(type) as Y.Map<any> | undefined
+      const section = typeMap?.get(String(id)) as Y.Array<any> | undefined
+      if (!section) continue
+
+      for (let qi = 0; qi < section.length; qi++) {
+        const value = section.get(qi)
+        if (value === undefined) continue
         if (!result[qi]) result[qi] = {}
-        result[qi][peer] = value
-      } catch { }
+        result[qi][peerId] = value
+      }
     }
 
     // Fill sparse holes (questions with no answers yet) with empty objects.
@@ -438,16 +444,55 @@ export class CRDT {
   }
 
   addQuiz(id: number, i: number, value: any) {
-    this.addRecord(this.quizzes, id, i, value)
+    this.addRecord(QUIZ, id, i, value)
   }
 
   addSurvey(id: number, i: number, value: any) {
-    this.addRecord(this.surveys, id, i, value)
+    this.addRecord(SURVEY, id, i, value)
   }
 
-  addRecord(map: Y.Map<any>, id: number, i: number, value: any) {
-    // Composite key guarantees each peer owns a unique slot — pure CRDT.
-    map.set(JSON.stringify([id, i, this.peerID]), value)
+  protected addRecord(type: SyncType, id: number, i: number, value: any) {
+    this.doc.transact(() => {
+      const section = this.getOwnSectionArray(type, id)
+      this.setArrayValue(section, i, value)
+    }, this.peerID)
+  }
+
+  // Get-or-create this peer's own { type -> { sectionId -> Y.Array } }
+  // subtree. A peer only ever writes inside its own top-level `user` key —
+  // pure CRDT, no cross-peer collision possible.
+  protected getOwnSectionArray(type: SyncType, id: number): Y.Array<any> {
+    let own = this.user.get(this.peerID)
+    if (!own) {
+      own = new Y.Map()
+      this.user.set(this.peerID, own)
+    }
+
+    let typeMap = own.get(type) as Y.Map<any> | undefined
+    if (!typeMap) {
+      typeMap = new Y.Map()
+      own.set(type, typeMap)
+    }
+
+    let section = typeMap.get(String(id)) as Y.Array<any> | undefined
+    if (!section) {
+      section = new Y.Array()
+      typeMap.set(String(id), section)
+    }
+
+    return section
+  }
+
+  // Single-writer per array (each peer only ever writes its own path), so a
+  // plain delete+insert replace is safe — no concurrent-edit races to
+  // reconcile, unlike a collaboratively-edited Y.Array.
+  protected setArrayValue(section: Y.Array<any>, i: number, value: any) {
+    if (section.length > i) {
+      section.delete(i, 1)
+    } else {
+      while (section.length < i) section.push([undefined])
+    }
+    section.insert(i, [value])
   }
 
   initCode(id: number, i: number, j: number, value: string) {
