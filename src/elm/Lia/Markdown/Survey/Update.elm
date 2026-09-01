@@ -152,14 +152,36 @@ update classroom sectionID scripts msg vector =
         Handle event ->
             case Event.destructure event of
                 ( Nothing, _, ( "load", param ) ) ->
-                    param
-                        |> Json.toVector
-                        |> Result.map (merge (\sID body -> { body | scriptID = sID.scriptID }) vector)
-                        |> Result.withDefault vector
-                        |> lockAnswered classroom sectionID
-                        |> Return.val
-                        |> doSync connected sectionID Nothing
-                        |> init (\i s -> execute i s.state)
+                    if Array.isEmpty vector then
+                        -- Section not parsed yet (no survey blocks known
+                        -- locally, e.g. this is the eager sync preload for
+                        -- an unvisited section) - nothing local to merge
+                        -- into, but the CRDT should still learn about
+                        -- persisted answers so peers see them in "details
+                        -- mode" before this section is ever visited.
+                        vector
+                            |> Return.val
+                            |> (if connected then
+                                    Return.batchEvents
+                                        (param
+                                            |> Json.toVector
+                                            |> Result.map (Array.toList >> List.indexedMap Sync.event >> List.filter Event.notNone)
+                                            |> Result.withDefault []
+                                        )
+
+                                else
+                                    identity
+                               )
+
+                    else
+                        param
+                            |> Json.toVector
+                            |> Result.map (merge (\sID body -> { body | scriptID = sID.scriptID }) vector)
+                            |> Result.withDefault vector
+                            |> lockAnswered classroom sectionID
+                            |> Return.val
+                            |> doSync connected sectionID Nothing
+                            |> init (\i s -> execute i s.state)
 
                 ( Just "eval", section, ( "eval", param ) ) ->
                     case

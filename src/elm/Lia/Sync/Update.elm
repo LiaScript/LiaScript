@@ -6,6 +6,7 @@ module Lia.Sync.Update exposing
     , update
     )
 
+import Array
 import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
@@ -37,6 +38,7 @@ import Random
 import Return exposing (Return)
 import Service.Console as Console
 import Service.Event as Event exposing (Event)
+import Service.Database
 import Service.Slide
 import Service.Sync
 import Session exposing (Session)
@@ -552,16 +554,49 @@ join :
 join model =
     case model.sync.state of
         Connected id ->
-            model
+            let
+                sync =
+                    model.sync
+            in
+            { model | sync = { sync | preloaded = True } }
                 |> Return.val
                 |> Return.batchEvent
                     (model.sections
                         |> JE.array (Section.sync id)
                         |> Service.Sync.join
                     )
+                |> Return.batchEvents
+                    (if sync.preloaded then
+                        []
+
+                     else
+                        preloadEvents model.sections
+                    )
 
         _ ->
             Return.val model
+
+
+{-| Request persisted quiz/survey answers for every section that hasn't been
+parsed yet, so a joining peer's history reaches the CRDT even for slides
+nobody has visited this session - without paying for a full-course parse.
+Replies are routed through the existing `Quiz.Update`/`Survey.Update`
+`"load"` handler via the same `Event.pushWithId` convention `add_load` uses.
+-}
+preloadEvents : Sections -> List Event
+preloadEvents =
+    Array.toList
+        >> List.indexedMap
+            (\i sec ->
+                if sec.parsed then
+                    []
+
+                else
+                    [ Service.Database.load "quiz" i |> Event.pushWithId "quiz" i
+                    , Service.Database.load "survey" i |> Event.pushWithId "survey" i
+                    ]
+            )
+        >> List.concat
 
 
 synchronize :

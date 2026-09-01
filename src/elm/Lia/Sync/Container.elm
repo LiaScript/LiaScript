@@ -1,13 +1,9 @@
 module Lia.Sync.Container exposing
     ( Container
-    , decode
     , decoder
-    , empty
     , encode
     , get
     , init
-    , isEmpty
-    , toMaybe
     )
 
 {-| This is a basic container module for dealing with synchronized data. At
@@ -34,12 +30,12 @@ synchronization might not exist for all peers.
 
 ## Convenience functions
 
-@init ,@isEmpty, @empty, @get, @union, @union\_
+@init, @get
 
 
 ## JSON
 
-@encode, @decode, @decoder
+@encode, @decoder
 
 -}
 
@@ -56,16 +52,16 @@ type Container sync
     = Container (Array (Dict String sync))
 
 
-{-| Used to initialize an entire Vector-state such as for Quizzes. The `id` to
-be passed is the peer itself. The
+{-| Initialize an entire Container from a section's current state-array, e.g.
+for quizzes or surveys.
 
 Parameters:
 
-  - `id`: Own peer-ID
-  - `map`: A functions that translates the current state into a sharable state,
-    not everything
-  - `array`: The additional array defines the original state used within the
-    quiz, survey, etc.
+  - `id`: own peer-ID, the key this container's initial values are stored
+    under
+  - `map`: translates one array element into its sharable sync state, or
+    `Nothing` if it has nothing worth sharing yet (e.g. unanswered)
+  - the `Array` itself: the section's current quiz/survey/... state
 
 -}
 init : String -> (x -> Maybe sync) -> Array x -> Container sync
@@ -87,28 +83,6 @@ get i (Container bag) =
     Array.get i bag
 
 
-{-| Determine if the given container is empty:
-
-    isEmpty empty == True
-
--}
-isEmpty : Container sync -> Bool
-isEmpty (Container bag) =
-    bag
-        |> Array.toList
-        |> List.all Dict.isEmpty
-
-
-{-| Return an empty Container:
-
-    isEmpty empty == True
-
--}
-empty : Container sync
-empty =
-    Container Array.empty
-
-
 {-| Turn a Container into a JSON. This encoder is a generic encoder and
 requires and additional encoder-function `fn` to encode the internal
 `sync` type.
@@ -118,26 +92,9 @@ encode fn (Container bag) =
     JE.array (JE.dict identity fn) bag
 
 
-{-| Decode a JSON into a `Container`. An additional decoder for the custom
-`sync` type has to be passed.
--}
-decode : JD.Decoder sync -> JD.Value -> Result JD.Error (Container sync)
-decode fn =
-    JD.decodeValue (decoder fn)
-
-
 {-| Decoder for custom `Container`s, thats why an additional decoder for
 the custom `sync` type has to be passed.
 -}
 decoder : JD.Decoder sync -> JD.Decoder (Container sync)
 decoder fn =
     JD.array (JD.dict fn) |> JD.map Container
-
-
-toMaybe : Container sync -> Maybe (Container sync)
-toMaybe (Container sync) =
-    if Array.isEmpty sync then
-        Nothing
-
-    else
-        Just (Container sync)

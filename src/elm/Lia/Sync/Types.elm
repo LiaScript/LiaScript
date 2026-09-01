@@ -92,6 +92,11 @@ type alias Settings =
     -- classrooms" grid independently of its actual (often generated) name
     , title : String
     , notes : String
+
+    -- whether the eager quiz/survey preload (unvisited sections' persisted
+    -- answers pushed into the CRDT) has already run this page load - guards
+    -- against re-running the whole preload burst on every reconnect
+    , preloaded : Bool
     }
 
 
@@ -181,6 +186,7 @@ init supportedBackends =
     , passwordLocked = False
     , title = ""
     , notes = ""
+    , preloaded = False
     }
 
 
