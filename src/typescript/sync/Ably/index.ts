@@ -1,6 +1,8 @@
 import * as Base from '../Base/index'
 import { AblyTransport } from '../../../../node_modules/y-generic/dist/providers/ably/index'
 import { GenericProvider } from 'y-generic'
+import { wrapTransport } from '../Base/security'
+import { Crypto } from '../Crypto'
 
 export class Sync extends Base.Sync {
   private transport?: AblyTransport
@@ -34,6 +36,7 @@ export class Sync extends Base.Sync {
     if (!window['Ably']) urls.push('https://cdn.ably.com/lib/ably.min-2.js')
     if (this.persistent && !window['AblyLiveObjectsPlugin'])
       urls.push('https://cdn.ably.com/lib/liveobjects.umd.min-2.js')
+    if (this.password && !window['SimpleCrypto']) urls.push(Crypto.url)
 
     if (urls.length === 0) {
       this.init(true)
@@ -50,6 +53,8 @@ export class Sync extends Base.Sync {
     const id = this.uniqueID()
 
     if (ok && window['Ably'] && id) {
+      if (this.password) Crypto.init(this.password)
+
       this.transport = new AblyTransport({
         Realtime: window['Ably'].Realtime,
         LiveObjects: this.persistent
@@ -58,7 +63,12 @@ export class Sync extends Base.Sync {
         debug: !!window['LIA']?.debug,
       })
 
-      this.provider = new GenericProvider(this.db.doc, this.transport)
+      this.provider = new GenericProvider(
+        this.db.doc,
+        // AblyTransport strips/re-adds GenericProvider's 4-byte CRC32 header
+        // internally too - see security.ts's stripHeaderBytes doc comment.
+        wrapTransport(this.transport, this.password, 4),
+      )
 
       this.db.setAwareness(this.provider.awareness, this.name)
 

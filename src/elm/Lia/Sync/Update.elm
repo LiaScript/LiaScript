@@ -168,6 +168,18 @@ update session model msg =
                             }
                                 |> Return.val
 
+                ( "warning", param ) ->
+                    -- Advisory only (e.g. the password-mismatch heuristic) -
+                    -- unlike "error", the connection is not actually down,
+                    -- so state/peers must stay untouched.
+                    case JD.decodeValue JD.string param of
+                        Ok message ->
+                            { model | sync = { sync | error = Just message } }
+                                |> Return.val
+
+                        Err _ ->
+                            model |> Return.val
+
                 ( "connect", param ) ->
                     case ( JD.decodeValue JD.string param, sync.sync.select ) of
                         ( Ok hashID, Just ( True, backend ) ) ->

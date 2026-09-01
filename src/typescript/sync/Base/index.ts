@@ -206,6 +206,11 @@ export class Sync {
     this.password = data.password
     this.mode = data.mode
 
+    // roomId only needs to be stable per classroom for this browser to
+    // reuse its owner keypair across reconnects - independent of which
+    // network backend is chosen.
+    this.db.setMode(data.mode, `${data.course}|${data.room}|${data.password || ''}`)
+
     this.name = data.name.trim()
 
     this.isConnected = true
@@ -302,10 +307,41 @@ export class Sync {
     this.sync('error', msg)
   }
 
+  /** Show an advisory message without touching connection state - unlike
+   * sendDisconnectError, the connection is not actually failing (used by
+   * the password-mismatch heuristic in sendConnect(), where data keeps
+   * syncing fine underneath; resetting state/peers via the 'error' channel
+   * would be misleading).
+   */
+  sendWarning(msg: string) {
+    this.sync('warning', msg)
+  }
+
   sendConnect() {
     this.sync('connect', this.token)
 
     if (this.onConnect) this.onConnect()
+
+    // A wrong classroom password derives a different room id (see
+    // uniqueID()), so a mismatched peer never meets anyone and just sits in
+    // an empty room with no explicit signal why. This is a heuristic, not
+    // proof - a genuinely early joiner in a correct room also sees it - but
+    // it's a real, honest hint for the far more common case of a typo.
+    if (this.password) {
+      setTimeout(() => {
+        // getPeers() includes our own awareness entry (by design - the peer
+        // list UI shows yourself too), so it's never actually empty. Only
+        // OTHER peers count for "is anyone else here".
+        const others = Object.keys(this.db.getPeers()).filter(
+          (id) => id !== this.token,
+        )
+        if (others.length === 0) {
+          this.sendWarning(
+            'No other participants found — double-check that your classroom password matches theirs.',
+          )
+        }
+      }, 6000)
+    }
 
     // Wait for local persistence too (only `Local` normally awaits
     // persistReady before connecting) — otherwise a reconnecting peer can
@@ -402,12 +438,16 @@ export class Sync {
         break
       }
       case 'join': {
-        this.db.init(event.message.param)
+        this.db
+          .init(event.message.param)
+          .catch((e: any) => console.warn('db.init failed ->', e))
         break
       }
 
       case 'chat': {
-        this.db.addChatMessage(event.message.param)
+        this.db
+          .addChatMessage(event.message.param)
+          .catch((e: any) => console.warn('addChatMessage failed ->', e))
         break
       }
 

@@ -2,6 +2,8 @@ import * as Y from 'yjs'
 import * as awarenessProtocol from 'y-protocols/awareness'
 import * as State from './state'
 import * as helper from '../../helper'
+import * as peerCrypto from './peerCrypto'
+import { getOrCreateKey } from './keyStore'
 
 import { YKeyValue } from 'y-utility/y-keyvalue'
 
@@ -11,6 +13,9 @@ const CODE = 'c'
 const META = 'meta'
 const IDENTITY = 'name'
 const USER = 'user'
+const OWNER_KEY = 'ownerKey'
+const WRAPPED_KEYS = 'wrappedKeys'
+const SIGNING_KEYS = 'signingKeys'
 
 type SyncType = typeof QUIZ | typeof SURVEY
 
@@ -25,7 +30,12 @@ export class CRDT {
 
   protected awareness?: awarenessProtocol.Awareness
   protected codes: Y.Map<Y.Text>
-  protected chat: YKeyValue<{ message: String; color: String; user: String }>
+  protected chat: YKeyValue<{
+    message: String
+    color: String
+    user: String
+    signature?: string
+  }>
   protected metadata: Y.Array<string>
   // Durable peerID -> name map, persisted like `user`, so a
   // reconnecting/late-joining owner can still label rows for peers who
@@ -43,6 +53,35 @@ export class CRDT {
   protected length: number
   protected peerID: string
   protected color?: string
+
+  // 0 = Shared (see Lia/Sync/Types.elm ClassroomMode) - everyone can already
+  // read everyone in that mode, so all per-peer encryption below is gated on
+  // `classroomMode !== 0`.
+  protected classroomMode: number = 0
+  protected roomId?: string
+
+  // peerID -> base64 ECDH public key of whoever is currently the owner.
+  protected ownerKey: Y.Map<string>
+  // peerID -> that peer's own AES content key, ECDH-wrapped for the current
+  // owner (see peerCrypto.wrapContentKeyForOwner).
+  protected wrappedKeys: Y.Map<string>
+
+  // Own per-peer AES-GCM content key (session-lived, never persisted).
+  protected contentKey?: CryptoKey
+  protected contentKeyReady?: Promise<CryptoKey>
+
+  // Only populated when this peer is the classroom owner.
+  protected ownerKeyPair?: CryptoKeyPair
+
+  // peerId -> unwrapped content key, invalidated whenever the peer's
+  // `wrappedKeys` entry changes (see getPeerContentKey).
+  protected peerKeyCache: Map<string, { wrapped: string; key: CryptoKey }> =
+    new Map()
+
+  // peerID -> base64 ECDSA public verify key. Chat authenticity only -
+  // unrelated to classroomMode, published unconditionally by every peer.
+  protected signingKeys: Y.Map<string>
+  protected signingKeyReady: Promise<CryptoKeyPair>
 
   constructor(
     peerID: string,
@@ -65,15 +104,49 @@ export class CRDT {
     this.identities = this.doc.getMap<string>(IDENTITY)
 
     this.user = this.doc.getMap<Y.Map<any>>(USER)
+    this.ownerKey = this.doc.getMap<string>(OWNER_KEY)
+    this.wrappedKeys = this.doc.getMap<string>(WRAPPED_KEYS)
+
+    this.signingKeys = this.doc.getMap<string>(SIGNING_KEYS)
+    this.signingKeyReady = peerCrypto.generateSigningKeyPair().then(async (pair) => {
+      const pub = await peerCrypto.exportPublicKey(pair.publicKey)
+      this.signingKeys.set(this.peerID, pub)
+      return pair
+    })
   }
 
-  init(data: State.Vector) {
+  /** Must be called before init(), so classroomMode is known once ownership
+   * and quiz/survey writes start happening. roomId only needs to be stable
+   * per classroom (course+room+password) - it's just the local key under
+   * which this browser's owner keypair is cached in IndexedDB.
+   */
+  setMode(mode: number, roomId: string) {
+    this.classroomMode = mode
+    this.roomId = roomId
+  }
+
+  async init(data: State.Vector) {
     this.length = Math.max(this.length, data.length)
 
+    // Web Crypto is async, but a Yjs transact callback must be synchronous -
+    // so encrypt everything up front, then apply the plain Y-doc writes in
+    // one synchronous transact.
+    const writes: { type: SyncType; id: number; i: number; value: any }[] = []
+    for (let i = 0; i < data.length; i++) {
+      await this.collectInitWrites(QUIZ, i, data[i][QUIZ], writes)
+      await this.collectInitWrites(SURVEY, i, data[i][SURVEY], writes)
+    }
+
     this.doc.transact(() => {
+      for (const w of writes) {
+        const section = this.getOwnSectionArray(w.type, w.id)
+        // Skip if we already have a live answer in the CRDT (e.g. rejoining).
+        if (section.length <= w.i || section.get(w.i) === undefined) {
+          this.setArrayValue(section, w.i, w.value)
+        }
+      }
+
       for (let i = 0; i < data.length; i++) {
-        this.initRecord(QUIZ, i, data[i][QUIZ])
-        this.initRecord(SURVEY, i, data[i][SURVEY])
         this.initText(i, data[i][CODE])
       }
     }, this.peerID)
@@ -84,10 +157,37 @@ export class CRDT {
     // for data that was just written (own answers) or data that already existed
     // in the CRDT from a sync that completed before init() was called.
     // Explicitly dispatch the current CRDT state to LiaScript once.
-    this.fireInitialState()
+    await this.fireInitialState()
   }
 
-  protected fireInitialState() {
+  // Only writes our own answer. LiaScript's join payload includes other
+  // peers' answers from its local cache - we must never write those, as
+  // each peer is the sole owner of their own subtree.
+  protected async collectInitWrites(
+    type: SyncType,
+    id: number,
+    data: State.Data[],
+    writes: { type: SyncType; id: number; i: number; value: any }[],
+  ) {
+    if (!data || data.length === 0) return
+
+    for (let i = 0; i < data.length; i++) {
+      const ownValue = data[i][this.peerID]
+      if (ownValue === undefined) continue
+
+      const value =
+        this.classroomMode !== 0
+          ? await peerCrypto.encryptValue(
+              await this.ensureContentKey(),
+              ownValue,
+            )
+          : ownValue
+
+      writes.push({ type, id, i, value })
+    }
+  }
+
+  protected async fireInitialState() {
     // Peers
     const peers = this.getPeers()
     if (Object.keys(peers).length > 0) {
@@ -110,7 +210,12 @@ export class CRDT {
     const quizIds = this.collectSectionIds(QUIZ)
     if (quizIds.size > 0) {
       this.callback(
-        [...quizIds].map((id) => ({ id, data: this.getSection(id, QUIZ) })),
+        await Promise.all(
+          [...quizIds].map(async (id) => ({
+            id,
+            data: await this.getSection(id, QUIZ),
+          })),
+        ),
         'quiz',
       )
     }
@@ -119,10 +224,12 @@ export class CRDT {
     const surveyIds = this.collectSectionIds(SURVEY)
     if (surveyIds.size > 0) {
       this.callback(
-        [...surveyIds].map((id) => ({
-          id,
-          data: this.getSection(id, SURVEY),
-        })),
+        await Promise.all(
+          [...surveyIds].map(async (id) => ({
+            id,
+            data: await this.getSection(id, SURVEY),
+          })),
+        ),
         'survey',
       )
     }
@@ -139,19 +246,55 @@ export class CRDT {
       this.callback(this.getCode(codeIds), 'code')
     }
 
-    // Chat — iterate YKeyValue's internal map (sorted by timestamp key)
-    const chatMessages: any[] = []
+    // Chat
+    const chatMessages = await this.buildChatVector()
+    if (chatMessages.length > 0) {
+      this.callback(chatMessages, 'chat')
+    }
+  }
+
+  // Iterates YKeyValue's internal map, verifying every entry's signature.
+  // Used for the full initial dump and for a signingKeys-arrival re-check -
+  // resending everything is cheap (this is a local port call, not a network
+  // send), same philosophy as the quiz/survey observers above.
+  protected async buildChatVector(): Promise<any[]> {
+    const entries: any[] = []
     for (const [key, entry] of (this.chat as any).map as Map<
       string,
       { key: string; val: any }
     >) {
-      const obj = { ...entry.val, id: parseInt(key) }
-      chatMessages.push(obj)
+      entries.push({ ...entry.val, id: parseInt(key) })
     }
-    if (chatMessages.length > 0) {
-      chatMessages.sort((a, b) => a.id - b.id)
-      this.callback(chatMessages, 'chat')
-    }
+
+    const verified = await Promise.all(
+      entries.map((entry) => this.verifyChatEntry(entry)),
+    )
+    verified.sort((a, b) => a.id - b.id)
+    return verified
+  }
+
+  // Chat is meant to stay readable by everyone in the room (unlike
+  // quiz/survey) - this only authenticates the claimed sender, it never
+  // withholds the message.
+  protected async verifyChatEntry(entry: {
+    color: String
+    message: String
+    user: String
+    signature?: string
+    id: number
+  }): Promise<any> {
+    if (!entry.signature) return { ...entry, verified: false }
+
+    const pub = this.signingKeys.get(String(entry.user))
+    if (!pub) return { ...entry, verified: false }
+
+    const ok = await peerCrypto.verifyChatMessage(
+      pub,
+      { message: String(entry.message), user: String(entry.user), ts: entry.id },
+      entry.signature,
+    )
+
+    return { ...entry, verified: ok }
   }
 
   setAwareness(awareness: awarenessProtocol.Awareness, name?: string) {
@@ -189,6 +332,19 @@ export class CRDT {
     // permanently believing they're the owner.
     this.metadata.observe(() => {
       this.callback(this.getOwner() === this.peerID, 'ownership')
+      this.maybeBecomeOwner().catch((e: any) =>
+        console.warn('maybeBecomeOwner failed ->', e),
+      )
+    })
+
+    // Fires whenever the owner announces (or changes) their public key -
+    // every peer re-wraps its own content key against it. Cheap (key-only),
+    // and only actually needed again on a genuine owner handover, since the
+    // owner's keypair itself is persisted across ordinary reconnects.
+    this.ownerKey.observe(() => {
+      this.rewrapForCurrentOwner().catch((e: any) =>
+        console.warn('rewrapForCurrentOwner failed ->', e),
+      )
     })
 
     // Nested structure (peer -> type -> section -> Y.Array), so a deep
@@ -205,26 +361,43 @@ export class CRDT {
 
       const quizIds = this.collectSectionIds(QUIZ)
       if (quizIds.size > 0) {
-        this.callback(
-          [...quizIds].map((id) => ({ id, data: this.getSection(id, QUIZ) })),
-          'quiz',
+        Promise.all(
+          [...quizIds].map(async (id) => ({
+            id,
+            data: await this.getSection(id, QUIZ),
+          })),
         )
+          .then((vec) => this.callback(vec, 'quiz'))
+          .catch((e: any) => console.warn('quiz decrypt failed ->', e))
       }
 
       const surveyIds = this.collectSectionIds(SURVEY)
       if (surveyIds.size > 0) {
-        this.callback(
-          [...surveyIds].map((id) => ({
+        Promise.all(
+          [...surveyIds].map(async (id) => ({
             id,
-            data: this.getSection(id, SURVEY),
+            data: await this.getSection(id, SURVEY),
           })),
-          'survey',
         )
+          .then((vec) => this.callback(vec, 'survey'))
+          .catch((e: any) => console.warn('survey decrypt failed ->', e))
       }
     })
 
     this.identities.observe(() => {
       this.callback(this.getIdentities(), 'identity')
+    })
+
+    // Re-verify (and re-send, cheap) the whole chat history whenever a
+    // signingKeys entry arrives/changes - covers the case where a chat
+    // message synced before its sender's public key did (CRDT convergence
+    // race), which would otherwise stay marked unverified forever.
+    this.signingKeys.observe(() => {
+      this.buildChatVector()
+        .then((vector) => {
+          if (vector.length > 0) this.callback(vector, 'chat')
+        })
+        .catch((e: any) => console.warn('chat re-verify failed ->', e))
     })
 
     this.chat.on(
@@ -237,18 +410,22 @@ export class CRDT {
           | { action: 'delete'; oldValue: any }
         >,
       ) => {
-        const vector: any[] = []
-
-        let obj
+        const additions: { id: number; entry: any }[] = []
         for (let [id, op] of changes) {
           if (op.action === 'add') {
-            obj = op.newValue
-            obj['id'] = parseInt(id)
-            vector.push(obj)
+            additions.push({ id: parseInt(id), entry: op.newValue })
           }
         }
 
-        if (vector.length > 0) this.callback(vector, 'chat')
+        if (additions.length === 0) return
+
+        Promise.all(
+          additions.map(({ id, entry }) =>
+            this.verifyChatEntry({ ...entry, id }),
+          ),
+        )
+          .then((vector) => this.callback(vector, 'chat'))
+          .catch((e: any) => console.warn('chat verify failed ->', e))
       },
     )
 
@@ -299,25 +476,6 @@ export class CRDT {
     /*console.warn('*********** DATA ************')
     console.warn(this.doc)
     */
-  }
-
-  protected initRecord(type: SyncType, id: number, data: State.Data[]) {
-    if (data.length === 0) return
-
-    for (let i = 0; i < data.length; i++) {
-      // Only write our own answer. LiaScript's join payload includes other
-      // peers' answers from its local cache — we must never write those, as
-      // each peer is the sole owner of their own subtree.
-      const ownValue = data[i][this.peerID]
-      if (ownValue === undefined) continue
-
-      const section = this.getOwnSectionArray(type, id)
-
-      // Skip if we already have a live answer in the CRDT (e.g. rejoining).
-      if (section.length <= i || section.get(i) === undefined) {
-        this.setArrayValue(section, i, ownValue)
-      }
-    }
   }
 
   protected initText(id: number, data: State.Data[]) {
@@ -400,7 +558,7 @@ export class CRDT {
   // Reassemble one section's data across all peers into the shape Elm's
   // Container.decoder expects: an array indexed by question index, each
   // entry a {peerId: value} map.
-  getSection(id: number, type: SyncType): State.Data[] {
+  async getSection(id: number, type: SyncType): Promise<State.Data[]> {
     const result: State.Data[] = []
 
     for (const [peerId, own] of this.user) {
@@ -409,8 +567,15 @@ export class CRDT {
       if (!section) continue
 
       for (let qi = 0; qi < section.length; qi++) {
-        const value = section.get(qi)
+        const raw = section.get(qi)
+        if (raw === undefined) continue
+
+        const value = await this.decryptSectionValue(peerId, raw)
+        // undefined means "not authorized to read this peer's answer" -
+        // omit it entirely, same outcome the Elm-side filter gave before,
+        // now actually enforced at the data layer.
         if (value === undefined) continue
+
         if (!result[qi]) result[qi] = {}
         result[qi][peerId] = value
       }
@@ -422,6 +587,108 @@ export class CRDT {
     }
 
     return result
+  }
+
+  // classroomMode === 0 (Shared) or a legacy/plaintext value: use as-is.
+  // Otherwise: own values decrypt with our own content key; other peers'
+  // values only decrypt if we're the current owner (and only really do, if
+  // our wrapped-key unwrap succeeds) - anyone else gets `undefined`.
+  protected async decryptSectionValue(peerId: string, raw: any): Promise<any> {
+    if (this.classroomMode === 0 || !peerCrypto.isEncryptedValue(raw)) {
+      return raw
+    }
+
+    try {
+      if (peerId === this.peerID) {
+        return await peerCrypto.decryptValue(await this.ensureContentKey(), raw)
+      }
+
+      if (this.getOwner() === this.peerID && this.ownerKeyPair) {
+        const key = await this.getPeerContentKey(peerId)
+        if (!key) return undefined
+        return await peerCrypto.decryptValue(key, raw)
+      }
+    } catch (e) {
+      // Stale/mismatched key (e.g. owner handover mid-flight, or IndexedDB
+      // was unavailable when the content key was first generated) - fail
+      // soft for this one entry rather than reject the whole section's
+      // Promise.all, which would silently drop every other peer's update too.
+      return undefined
+    }
+
+    return undefined
+  }
+
+  protected async getPeerContentKey(
+    peerId: string,
+  ): Promise<CryptoKey | undefined> {
+    const wrapped = this.wrappedKeys.get(peerId)
+    if (!wrapped) return undefined
+
+    const cached = this.peerKeyCache.get(peerId)
+    if (cached && cached.wrapped === wrapped) return cached.key
+
+    const key = await peerCrypto.unwrapContentKey(
+      wrapped,
+      this.ownerKeyPair!.privateKey,
+    )
+    this.peerKeyCache.set(peerId, { wrapped, key })
+    return key
+  }
+
+  // Persisted (not just session-lived) - a reconnect is already required
+  // today to apply any classroom config change (including switching mode),
+  // and answers encrypted under a discarded key would become permanently
+  // unreadable, including to their own author, without this.
+  protected ensureContentKey(): Promise<CryptoKey> {
+    if (!this.contentKeyReady) {
+      this.contentKeyReady = getOrCreateKey(
+        `${this.roomId ?? 'default'}:content:${this.peerID}`,
+        () => peerCrypto.generateContentKey(),
+      ).then((key) => {
+        this.contentKey = key
+        return key
+      })
+    }
+    return this.contentKeyReady
+  }
+
+  // Called whenever `metadata` converges - becomes a no-op once this peer
+  // already has an owner keypair set up, or if it isn't (or is no longer)
+  // the owner.
+  protected async maybeBecomeOwner() {
+    if (this.classroomMode === 0) return
+    if (this.getOwner() !== this.peerID) return
+    if (this.ownerKeyPair) return
+
+    this.ownerKeyPair = await getOrCreateKey(this.roomId ?? 'default', () =>
+      peerCrypto.generateECDHKeyPair(),
+    )
+    const pub = await peerCrypto.exportPublicKey(this.ownerKeyPair.publicKey)
+
+    if (this.ownerKey.get(this.peerID) !== pub) {
+      this.ownerKey.set(this.peerID, pub)
+    }
+  }
+
+  // Every peer (owner included) re-wraps its own content key whenever the
+  // current owner's public key is announced or changes.
+  protected async rewrapForCurrentOwner() {
+    if (this.classroomMode === 0) return
+
+    const ownerId = this.getOwner()
+    if (!ownerId) return
+
+    const ownerPub = this.ownerKey.get(ownerId)
+    if (!ownerPub) return
+
+    const contentKey = await this.ensureContentKey()
+    const wrapped = await peerCrypto.wrapContentKeyForOwner(
+      contentKey,
+      ownerPub,
+    )
+
+    this.wrappedKeys.set(this.peerID, wrapped)
   }
 
   getAllTexts(id: number): string[][] {
@@ -444,17 +711,32 @@ export class CRDT {
   }
 
   addQuiz(id: number, i: number, value: any) {
-    this.addRecord(QUIZ, id, i, value)
+    this.addRecord(QUIZ, id, i, value).catch((e: any) =>
+      console.warn('addQuiz failed ->', e),
+    )
   }
 
   addSurvey(id: number, i: number, value: any) {
-    this.addRecord(SURVEY, id, i, value)
+    this.addRecord(SURVEY, id, i, value).catch((e: any) =>
+      console.warn('addSurvey failed ->', e),
+    )
   }
 
-  protected addRecord(type: SyncType, id: number, i: number, value: any) {
+  protected async addRecord(
+    type: SyncType,
+    id: number,
+    i: number,
+    value: any,
+  ) {
+    // Encrypt (async) before the transact, which must stay synchronous.
+    const finalValue =
+      this.classroomMode !== 0
+        ? await peerCrypto.encryptValue(await this.ensureContentKey(), value)
+        : value
+
     this.doc.transact(() => {
       const section = this.getOwnSectionArray(type, id)
-      this.setArrayValue(section, i, value)
+      this.setArrayValue(section, i, finalValue)
     }, this.peerID)
   }
 
@@ -509,11 +791,20 @@ export class CRDT {
     }
   }
 
-  addChatMessage(msg: string) {
-    this.chat.set('' + Date.now(), {
+  async addChatMessage(msg: string) {
+    const ts = Date.now()
+    const keyPair = await this.signingKeyReady
+    const signature = await peerCrypto.signChatMessage(keyPair.privateKey, {
+      message: msg,
+      user: this.peerID,
+      ts,
+    })
+
+    this.chat.set('' + ts, {
       color: this.getColor(),
       message: msg,
       user: this.peerID,
+      signature,
     })
   }
 

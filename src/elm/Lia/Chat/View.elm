@@ -96,7 +96,7 @@ view lang lightMode config peers model =
         ]
 
 
-viewMessage : (Section -> Config Markdown.Msg) -> Dict String String -> ( String, { section : Section, peer : String } ) -> ( String, Html Msg )
+viewMessage : (Section -> Config Markdown.Msg) -> Dict String String -> ( String, { section : Section, peer : String, verified : Bool } ) -> ( String, Html Msg )
 viewMessage config peers ( id, message ) =
     let
         id_ =
@@ -128,6 +128,14 @@ viewMessage config peers ( id, message ) =
                  else
                     [ Html.text <| peerName ++ " "
                     , viewIdenticon message.peer
+                    , if message.verified then
+                        Html.text ""
+
+                      else
+                        Lia.Utils.icon "icon-warning"
+                            [ Attr.title "Unverified sender"
+                            , Attr.style "margin" "0 0.25rem"
+                            ]
                     , Html.text " · "
                     , Html.text <| String.right 5 (formatDate id_)
                     ]

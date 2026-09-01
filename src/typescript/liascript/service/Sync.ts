@@ -82,7 +82,17 @@ const Service = {
   handle: async function (event: Lia.Event) {
     switch (event.message.cmd) {
       case 'connect': {
-        if (sync) sync = undefined
+        // A reconnect (password/room/backend/mode change, etc.) previously
+        // just dropped the reference here without tearing down the old
+        // instance - its WebSocket/transport, timers and GenericProvider
+        // stayed alive indefinitely. Harmless-ish when payloads were
+        // plaintext (a stray duplicate Yjs update is a no-op), but now that
+        // encrypted backends hard-fail on a mismatched key, a leaked old
+        // connection can spam decrypt-failure warnings forever.
+        if (sync) {
+          sync.disconnect()
+          sync = undefined
+        }
 
         if (elmSend) {
           const cbConnection = function (topic: string, msg: any) {

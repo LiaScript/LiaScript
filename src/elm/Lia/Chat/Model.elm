@@ -21,7 +21,7 @@ import Service.Script as Script
 
 type alias Model =
     { input : String
-    , messages : Dict String { section : Section, peer : String }
+    , messages : Dict String { section : Section, peer : String, verified : Bool }
     }
 
 
@@ -57,8 +57,8 @@ parse :
     -> (String -> String)
     -> Definition
     -> Change
-    -> ( List Event, Dict String { section : Section, peer : String } )
-    -> ( List Event, Dict String { section : Section, peer : String } )
+    -> ( List Event, Dict String { section : Section, peer : String, verified : Bool } )
+    -> ( List Event, Dict String { section : Section, peer : String, verified : Bool } )
 parse classroom scriptsEnabled searchIndex definition change ( todo, chat ) =
     case
         change.message
@@ -127,7 +127,7 @@ parse classroom scriptsEnabled searchIndex definition change ( todo, chat ) =
                 load change.id :: newTodo
             , Dict.insert
                 (String.fromInt change.id)
-                { section = section, peer = change.user }
+                { section = section, peer = change.user, verified = change.verified }
                 chat
             )
 

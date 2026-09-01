@@ -1,6 +1,8 @@
 import * as Base from '../Base/index'
 import { SimplePeerTransport } from '../../../../node_modules/y-generic/dist/providers/simple-peer/index'
 import { GenericProvider } from 'y-generic'
+import { wrapTransport } from '../Base/security'
+import { Crypto } from '../Crypto'
 
 export class Sync extends Base.Sync {
   private transport?: SimplePeerTransport
@@ -53,10 +55,15 @@ export class Sync extends Base.Sync {
       }
     }
 
-    if (window['SimplePeer']) {
+    const urls: string[] = []
+    if (!window['SimplePeer'])
+      urls.push('//unpkg.com/simple-peer@9.11.1/simplepeer.min.js')
+    if (this.password && !window['SimpleCrypto']) urls.push(Crypto.url)
+
+    if (urls.length === 0) {
       this.init(true)
     } else {
-      this.load(['//unpkg.com/simple-peer@9.11.1/simplepeer.min.js'], this)
+      this.load(urls, this)
     }
   }
 
@@ -64,6 +71,8 @@ export class Sync extends Base.Sync {
     const raw = this.uniqueID()
 
     if (ok && window['SimplePeer'] && raw) {
+      if (this.password) Crypto.init(this.password)
+
       hashID(raw).then((id) => {
         const stun =
           this.iceServers ?? JSON.parse(process.env.STUN_SERVER || 'null')
@@ -72,10 +81,12 @@ export class Sync extends Base.Sync {
           peer: window['SimplePeer'],
           ...(this.signaling ? { signaling: this.signaling } : {}),
           ...(stun ? { iceServers: stun } : {}),
-          ...(this.password ? { password: this.password } : {}),
         })
 
-        this.provider = new GenericProvider(this.db.doc, this.transport)
+        this.provider = new GenericProvider(
+          this.db.doc,
+          wrapTransport(this.transport, this.password),
+        )
 
         this.db.setAwareness(this.provider.awareness, this.name)
 
