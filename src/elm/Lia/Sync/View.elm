@@ -167,6 +167,50 @@ view settings =
 
                           else
                             Html.text ""
+                        , if settings.mode /= Shared then
+                            let
+                                editable =
+                                    open && support && not settings.locked && settings.state == Disconnected
+                            in
+                            Html.label []
+                                [ Html.span
+                                    [ Attr.class "lia-label"
+                                    , Attr.style "margin-block-start" "2rem"
+                                    , Attr.style "width" "100%"
+                                    ]
+                                    [ Html.text "Owner token" ]
+                                , Html.div [ Attr.class "lia-classroom__field-row" ]
+                                    [ Html.input
+                                        [ Attr.readonly True
+                                        , Attr.value (Maybe.withDefault "" settings.ownerToken)
+                                        , Attr.style "color" "black"
+                                        , Attr.type_ "text"
+                                        , Attr.style "width" "100%"
+                                        , Attr.placeholder "No token - normal participant access only"
+                                        ]
+                                        []
+
+                                    -- generating (or regenerating) only makes sense before
+                                    -- committing to a connection - once connected, whatever
+                                    -- token was used to establish (or not establish) ownership
+                                    -- is already fixed for this session
+                                    , btnIcon
+                                        { title = "generate owner token"
+                                        , tabbable = editable
+                                        , msg =
+                                            if editable then
+                                                Just GenerateOwnerToken
+
+                                            else
+                                                Nothing
+                                        , icon = "icon-refresh"
+                                        }
+                                        [ Attr.class "lia-btn--outline lia-classroom__field-btn" ]
+                                    ]
+                                ]
+
+                          else
+                            Html.text ""
                         , Html.div []
                             [ Backend.checkbox
                                 { active = True
@@ -211,7 +255,7 @@ view settings =
                           else
                             Html.text ""
                         , button settings
-                        , if settings.owner then
+                        , if settings.ownerToken /= Nothing then
                             btn
                                 { title = "copy owner link"
                                 , tabbable = True

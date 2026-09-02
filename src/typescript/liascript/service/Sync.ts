@@ -402,6 +402,30 @@ const Service = {
         break
       }
 
+      // Lets the creator mint the room's owner secret before ever
+      // connecting - ownership only ever comes from explicitly generating
+      // one here (or from following an owner-link carrying one), never
+      // implicitly from just being first to connect (see
+      // db.ts resolveOwnerToken()).
+      case 'generate_owner_token': {
+        try {
+          const token = peerCrypto.randomBytesBase64(32)
+          const hash = await peerCrypto.sha256Base64(token)
+
+          if (elmSend) {
+            elmSend({
+              ...event,
+              message: { cmd: 'owner_token', param: { token, hash } },
+              reply: true,
+            })
+          }
+        } catch (e: any) {
+          log.warn('owner token generation failed ->', e?.message || e)
+        }
+
+        break
+      }
+
       case 'list_classrooms': {
         const course = event.message.param
 

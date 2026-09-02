@@ -70,6 +70,7 @@ type Msg
     | SaveMeta Classroom.Entry
     | TogglePasswordVisibility
     | CopyOwnerLink
+    | GenerateOwnerToken
 
 
 type SyncMsg
@@ -178,6 +179,21 @@ update session model msg =
                     case JD.decodeValue JD.string param of
                         Ok message ->
                             { model | sync = { sync | error = Just message } }
+                                |> Return.val
+
+                        Err _ ->
+                            model |> Return.val
+
+                ( "owner_token", param ) ->
+                    case JD.decodeValue ownerTokenGenerated param of
+                        Ok info ->
+                            { model
+                                | sync =
+                                    { sync
+                                        | ownerToken = Just info.token
+                                        , ownerTokenHash = info.hash
+                                    }
+                            }
                                 |> Return.val
 
                         Err _ ->
@@ -370,9 +386,17 @@ update session model msg =
             { model | sync = { sync | passwordVisible = not sync.passwordVisible } }
                 |> Return.val
 
+        GenerateOwnerToken ->
+            model
+                |> Return.val
+                |> Return.batchEvent Service.Sync.generateOwnerToken
+
         CopyOwnerLink ->
-            case ( sync.owner, sync.ownerToken, sync.sync.select ) of
-                ( True, Just token, Just ( _, backend ) ) ->
+            -- Available as soon as a token exists - either freshly minted
+            -- here before ever connecting, or confirmed as owner after the
+            -- fact (`sync.owner`) - not only once actually connected.
+            case ( sync.ownerToken, sync.sync.select ) of
+                ( Just token, Just ( _, backend ) ) ->
                     let
                         room =
                             { backend = Backend.toString True backend
@@ -909,6 +933,17 @@ synchronize model json =
 warn : String -> String -> Return model msg sub -> Return model msg sub
 warn what info =
     Return.batchEvent (Console.warn ("Sync: " ++ what ++ " -> " ++ info))
+
+
+{-| Reply of the `"owner_token"` event - a freshly minted secret and its
+hash, generated together so they're correct by construction, see
+`Service.Sync.generateOwnerToken`.
+-}
+ownerTokenGenerated : JD.Decoder { token : String, hash : String }
+ownerTokenGenerated =
+    JD.map2 (\token hash -> { token = token, hash = hash })
+        (JD.field "token" JD.string)
+        (JD.field "hash" JD.string)
 
 
 {-| Ack payload of the `"connect"` event - the raw owner secret is never part

@@ -1,4 +1,4 @@
-module Service.Sync exposing (chat, checkPassword, code, codes, connect, cursor, deleteClassroom, disconnect, join, listClassrooms, markOwner, publish, quiz, survey, updateClassroomMeta)
+module Service.Sync exposing (chat, checkPassword, code, codes, connect, cursor, deleteClassroom, disconnect, generateOwnerToken, join, listClassrooms, markOwner, publish, quiz, survey, updateClassroomMeta)
 
 import Array exposing (Array)
 import Json.Encode as JE
@@ -204,6 +204,16 @@ disconnect id =
     id
         |> JE.string
         |> publish "disconnect"
+
+
+{-| Ask TS to mint a fresh, cryptographically random owner secret (and its
+hash) before ever connecting - the only other way to become owner is via an
+owner-link, see `Session.encodeOwnerLink`. The reply arrives as an
+`"owner_token"` event carrying `{ token, hash }`.
+-}
+generateOwnerToken : Event
+generateOwnerToken =
+    publish "generate_owner_token" JE.null
 
 
 {-| Ask TS whether a typed password matches the room's `pwCheck` hint, purely

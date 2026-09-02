@@ -147,49 +147,53 @@ export class CRDT {
     this.incomingOwnerToken = security?.ownerToken || undefined
   }
 
-  /** Resolves (generating or adopting as needed) the local proof this
-   * browser needs to be allowed to claim ownership, and returns the room's
-   * public `ownerTokenHash` to publish back into the shareable link.
+  /** Resolves (adopting as needed) the local proof this browser needs to be
+   * allowed to claim ownership, and returns the room's public
+   * `ownerTokenHash` to publish back into the shareable link.
    *
-   * - No hash known yet -> this connect is establishing the room for the
-   *   first time: mint a fresh secret and its hash.
-   * - An incoming raw token was supplied (owner-link) and it hashes to the
-   *   known `ownerTokenHash` -> adopt and persist it. A mismatch (tampered
-   *   or stale link) is silently discarded - this browser just proceeds as
-   *   an ordinary peer, no error surfaced.
-   * - Otherwise, check whether this browser already cached a token for this
-   *   room from an earlier session (reconnect, or a second device/tab that
-   *   already redeemed the owner-link once) whose hash still matches.
+   * Ownership is opt-in only - this never mints a token on its own
+   * initiative, whether or not the room turns out to be brand new. The only
+   * ways to end up with a `localOwnerToken` are: an incoming raw token that
+   * hashes correctly (generated up front via `generate_owner_token` before
+   * this browser's own connect, or supplied by an owner-link), or a token
+   * this browser already cached from having redeemed one of those earlier.
+   * Merely being first to connect to an as-yet-unclaimed room grants
+   * nothing.
    */
   async resolveOwnerToken(): Promise<string> {
     const tokenId = `${this.roomId ?? 'default'}:ownerToken`
     const uidDB = this.uidDB ?? 'default'
 
-    if (!this.ownerTokenHash) {
-      this.localOwnerToken = await getOrCreateKey(uidDB, tokenId, () =>
-        Promise.resolve(peerCrypto.randomBytesBase64(32)),
-      )
-      this.ownerTokenHash = await peerCrypto.sha256Base64(this.localOwnerToken)
-      return this.ownerTokenHash
-    }
-
     if (this.incomingOwnerToken) {
-      if (
-        (await peerCrypto.sha256Base64(this.incomingOwnerToken)) ===
-        this.ownerTokenHash
-      ) {
+      const hash = await peerCrypto.sha256Base64(this.incomingOwnerToken)
+
+      // No hash known yet -> Elm generated token+hash together right
+      // before this connect, so they're correct by construction. A known,
+      // mismatching hash means a tampered/stale link - silently discarded,
+      // this browser just proceeds as an ordinary peer, no error surfaced.
+      if (!this.ownerTokenHash || hash === this.ownerTokenHash) {
         this.localOwnerToken = this.incomingOwnerToken
+        this.ownerTokenHash = hash
         await putStoredValue(uidDB, tokenId, this.localOwnerToken)
       }
-      return this.ownerTokenHash
+
+      return this.ownerTokenHash ?? ''
     }
 
-    const cached = await getStoredValue<string>(uidDB, tokenId)
-    if (cached && (await peerCrypto.sha256Base64(cached)) === this.ownerTokenHash) {
-      this.localOwnerToken = cached
+    // No candidate supplied - the only way to still be owner is a
+    // previously-verified token already cached here (reconnect, or a
+    // second tab/device that redeemed the owner-link earlier).
+    if (this.ownerTokenHash) {
+      const cached = await getStoredValue<string>(uidDB, tokenId)
+      if (
+        cached &&
+        (await peerCrypto.sha256Base64(cached)) === this.ownerTokenHash
+      ) {
+        this.localOwnerToken = cached
+      }
     }
 
-    return this.ownerTokenHash
+    return this.ownerTokenHash ?? ''
   }
 
   async init(data: State.Vector) {
@@ -219,6 +223,23 @@ export class CRDT {
     }, this.peerID)
 
     this.registerCallbacks()
+
+    // Same root cause as the comment below, but for the owner-key bootstrap
+    // chain: `maybeBecomeOwner()`/`rewrapForCurrentOwner()` are only ever
+    // triggered by the `metadata`/`ownerKey` observers just registered
+    // above, so state that already existed before this point - notably our
+    // own ownership claim, pushed by `claimOwnership()` in `sendConnect()`
+    // well before Elm's "join" event reaches here - would otherwise never
+    // trigger them, leaving the owner's keypair ungenerated and every
+    // peer's content key unwrapped forever. Run both once explicitly,
+    // before the section dump below so it can actually decrypt what's
+    // already decryptable.
+    await this.maybeBecomeOwner().catch((e: any) =>
+      console.warn('maybeBecomeOwner failed ->', e),
+    )
+    await this.rewrapForCurrentOwner().catch((e: any) =>
+      console.warn('rewrapForCurrentOwner failed ->', e),
+    )
 
     // Observers are registered AFTER the transact above, so they never fire
     // for data that was just written (own answers) or data that already existed

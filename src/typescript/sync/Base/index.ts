@@ -349,12 +349,13 @@ export class Sync {
   }
 
   async sendConnect() {
-    const isNewRoom = !this.ownerTokenHash
     this.ownerTokenHash = await this.db.resolveOwnerToken()
 
     // Only the room's creator ever needs to mint these - a join always
-    // brings its own pwSalt/pwCheck (or none) from the link.
-    if (isNewRoom && this.password && !this.pwCheck) {
+    // brings its own pwSalt/pwCheck (or none) from the link, which is what
+    // `!this.pwCheck` actually tests (independent of ownership now that
+    // ownership itself is opt-in rather than a side effect of being first).
+    if (this.password && !this.pwCheck) {
       this.pwSalt = peerCrypto.randomBytesBase64(16)
       this.pwCheck = await peerCrypto.pbkdf2Base64(this.password, this.pwSalt)
     }
