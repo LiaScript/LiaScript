@@ -149,7 +149,11 @@ export class CRDT {
 
   /** Resolves (adopting as needed) the local proof this browser needs to be
    * allowed to claim ownership, and returns the room's public
-   * `ownerTokenHash` to publish back into the shareable link.
+   * `ownerTokenHash` to publish back into the shareable link, plus the raw
+   * `token` itself whenever this browser turns out to hold it - including
+   * when it came from its own local cache rather than from Elm, so a plain
+   * reconnect (page reload, "Your classrooms") can still show/copy it, not
+   * only a fresh generate or a freshly-opened owner-link.
    *
    * Ownership is opt-in only - this never mints a token on its own
    * initiative, whether or not the room turns out to be brand new. The only
@@ -160,7 +164,7 @@ export class CRDT {
    * Merely being first to connect to an as-yet-unclaimed room grants
    * nothing.
    */
-  async resolveOwnerToken(): Promise<string> {
+  async resolveOwnerToken(): Promise<{ hash: string; token?: string }> {
     const tokenId = `${this.roomId ?? 'default'}:ownerToken`
     const uidDB = this.uidDB ?? 'default'
 
@@ -177,7 +181,7 @@ export class CRDT {
         await putStoredValue(uidDB, tokenId, this.localOwnerToken)
       }
 
-      return this.ownerTokenHash ?? ''
+      return { hash: this.ownerTokenHash ?? '', token: this.localOwnerToken }
     }
 
     // No candidate supplied - the only way to still be owner is a
@@ -193,7 +197,7 @@ export class CRDT {
       }
     }
 
-    return this.ownerTokenHash ?? ''
+    return { hash: this.ownerTokenHash ?? '', token: this.localOwnerToken }
   }
 
   async init(data: State.Vector) {

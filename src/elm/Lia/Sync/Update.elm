@@ -212,6 +212,7 @@ update session model msg =
                                         , ownerTokenHash = info.ownerTokenHash
                                         , pwSalt = info.pwSalt
                                         , pwCheck = info.pwCheck
+                                        , ownerToken = info.ownerToken
                                     }
                             }
                                 |> join
@@ -946,8 +947,11 @@ ownerTokenGenerated =
         (JD.field "hash" JD.string)
 
 
-{-| Ack payload of the `"connect"` event - the raw owner secret is never part
-of it, only its hash, see `Session.Room`.
+{-| Ack payload of the `"connect"` event. `ownerToken` is only ever the raw
+secret we already hold by then - reported back so a plain reconnect (page
+reload, "Your classrooms") can still display/copy it even though Elm itself
+never received it via a generate action or an owner-link this time; never a
+route for one browser to learn another's secret, see `Session.Room`.
 -}
 connectAck :
     JD.Decoder
@@ -955,16 +959,28 @@ connectAck :
         , ownerTokenHash : String
         , pwSalt : String
         , pwCheck : String
+        , ownerToken : Maybe String
         }
 connectAck =
     JD.succeed
-        (\id_ hash salt check ->
-            { id = id_, ownerTokenHash = hash, pwSalt = salt, pwCheck = check }
+        (\id_ hash salt check token ->
+            { id = id_
+            , ownerTokenHash = hash
+            , pwSalt = salt
+            , pwCheck = check
+            , ownerToken =
+                if String.isEmpty token then
+                    Nothing
+
+                else
+                    Just token
+            }
         )
         |> JDP.required "id" JD.string
         |> JDP.optional "ownerTokenHash" JD.string ""
         |> JDP.optional "pwSalt" JD.string ""
         |> JDP.optional "pwCheck" JD.string ""
+        |> JDP.optional "ownerToken" JD.string ""
 
 
 dataDecoder : JD.Decoder data -> JD.Value -> Result JD.Error (List ( Int, data ))

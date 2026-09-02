@@ -349,7 +349,8 @@ export class Sync {
   }
 
   async sendConnect() {
-    this.ownerTokenHash = await this.db.resolveOwnerToken()
+    const owner = await this.db.resolveOwnerToken()
+    this.ownerTokenHash = owner.hash
 
     // Only the room's creator ever needs to mint these - a join always
     // brings its own pwSalt/pwCheck (or none) from the link, which is what
@@ -365,6 +366,10 @@ export class Sync {
       ownerTokenHash: this.ownerTokenHash || '',
       pwSalt: this.pwSalt || '',
       pwCheck: this.pwCheck || '',
+      // Reported back even when Elm didn't already know it (e.g. resolved
+      // from this browser's own cache on a plain reconnect) - see
+      // resolveOwnerToken()'s doc comment.
+      ownerToken: owner.token || '',
     })
 
     if (this.onConnect) this.onConnect()

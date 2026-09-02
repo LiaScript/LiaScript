@@ -178,15 +178,22 @@ view settings =
                                     , Attr.style "margin-block-start" "2rem"
                                     , Attr.style "width" "100%"
                                     ]
-                                    [ Html.text "Owner token" ]
+                                    [ Html.text "Owner token hash" ]
+
+                                -- Purely informational/confirmation - not needed to join at
+                                -- all (room + password already suffice, see the room/password
+                                -- fields above) and not itself proof of ownership either. Safe
+                                -- to write down and hand out freely, unlike the raw
+                                -- `ownerToken`, which never appears as copyable text anywhere -
+                                -- it only ever travels via "copy owner link" below.
                                 , Html.div [ Attr.class "lia-classroom__field-row" ]
                                     [ Html.input
                                         [ Attr.readonly True
-                                        , Attr.value (Maybe.withDefault "" settings.ownerToken)
+                                        , Attr.value settings.ownerTokenHash
                                         , Attr.style "color" "black"
                                         , Attr.type_ "text"
                                         , Attr.style "width" "100%"
-                                        , Attr.placeholder "No token - normal participant access only"
+                                        , Attr.placeholder "No owner set up - normal participant access only"
                                         ]
                                         []
 
