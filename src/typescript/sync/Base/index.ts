@@ -208,8 +208,14 @@ export class Sync {
 
     // roomId only needs to be stable per classroom for this browser to
     // reuse its owner keypair across reconnects - independent of which
-    // network backend is chosen.
-    this.db.setMode(data.mode, `${data.course}|${data.room}|${data.password || ''}`)
+    // network backend is chosen. uidDB (falling back to course, same as the
+    // Yjs persistence path below) identifies which course-local database
+    // that keypair is cached in.
+    this.db.setMode(
+      data.mode,
+      `${data.course}|${data.room}|${data.password || ''}`,
+      data.uidDB || data.course,
+    )
 
     this.name = data.name.trim()
 
@@ -275,7 +281,7 @@ export class Sync {
       uid = JSON.stringify({
         course: this.course,
         room: this.room,
-        pw: helper.getHashCode(this.password || ''), // prevent delete from wrong passwords
+        pw: this.password ? 1 : 0, // prevent delete from wrong passwords
         mode: this.mode
       })
     }
@@ -322,13 +328,25 @@ export class Sync {
 
     if (this.onConnect) this.onConnect()
 
-    // A wrong classroom password derives a different room id (see
-    // uniqueID()), so a mismatched peer never meets anyone and just sits in
-    // an empty room with no explicit signal why. This is a heuristic, not
-    // proof - a genuinely early joiner in a correct room also sees it - but
-    // it's a real, honest hint for the far more common case of a typo.
-    if (this.password) {
-      setTimeout(() => {
+    // Wait for local persistence too (only `Local` normally awaits
+    // persistReady before connecting) — otherwise a reconnecting peer can
+    // push itself into an as-yet-unrestored metadata array before the
+    // locally cached history (holding the real owner) has merged in, and
+    // Yjs has to resolve the resulting concurrent inserts by per-doc client
+    // ID rather than by who was actually first.
+    Promise.all([
+      new Promise((resolve) => setTimeout(resolve, 5000)),
+      this.persistReady.catch(() => { }),
+    ]).then(() => {
+      // A wrong classroom password derives a different room id (see
+      // uniqueID()), so a mismatched peer never meets anyone and just sits
+      // in an empty room with no explicit signal why. This is a heuristic,
+      // not proof - a genuinely early joiner in a correct room also sees it
+      // - but it's a real, honest hint for the far more common case of a
+      // typo. Checked right before claimOwnership() (rather than on its own
+      // later timer) so the warning never arrives after the peer has
+      // already been declared owner.
+      if (this.password) {
         // getPeers() includes our own awareness entry (by design - the peer
         // list UI shows yourself too), so it's never actually empty. Only
         // OTHER peers count for "is anyone else here".
@@ -340,19 +358,10 @@ export class Sync {
             'No other participants found — double-check that your classroom password matches theirs.',
           )
         }
-      }, 6000)
-    }
+      }
 
-    // Wait for local persistence too (only `Local` normally awaits
-    // persistReady before connecting) — otherwise a reconnecting peer can
-    // push itself into an as-yet-unrestored metadata array before the
-    // locally cached history (holding the real owner) has merged in, and
-    // Yjs has to resolve the resulting concurrent inserts by per-doc client
-    // ID rather than by who was actually first.
-    Promise.all([
-      new Promise((resolve) => setTimeout(resolve, 5000)),
-      this.persistReady.catch(() => { }),
-    ]).then(() => this.db.claimOwnership())
+      this.db.claimOwnership()
+    })
   }
 
   pubsubSend(topic: string, message: any) {

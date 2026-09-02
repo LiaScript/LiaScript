@@ -170,4 +170,12 @@ export class Connector {
   async clearYjsUpdates(_uidDB: string, _key: string) {
     console.log('clearYjsUpdates not implemented')
   }
+
+  async getKey(_uidDB: string, _id: string): Promise<any> {
+    return undefined
+  }
+
+  async putKey(_uidDB: string, _id: string, _value: any) {
+    console.log('putKey not implemented')
+  }
 }

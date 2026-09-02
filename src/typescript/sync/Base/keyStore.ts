@@ -1,16 +1,4 @@
-const DB_NAME = 'lia-classroom-keys'
-const STORE = 'keys'
-
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1)
-    req.onupgradeneeded = () => {
-      req.result.createObjectStore(STORE)
-    }
-    req.onsuccess = () => resolve(req.result)
-    req.onerror = () => reject(req.error)
-  })
-}
+import Database from '../../liascript/service/Database'
 
 /** Reuses whatever was stored under `id` across reconnects (Web Crypto
  * `CryptoKey`/`CryptoKeyPair` objects are directly structured-cloneable, no
@@ -20,32 +8,30 @@ function openDB(): Promise<IDBDatabase> {
  * key that then gets thrown away.
  *
  * Used for both the classroom owner's ECDH keypair (id: roomId) and each
- * peer's own AES content key (id: `${roomId}:content:${peerID}`).
+ * peer's own AES content key (id: `${roomId}:content:${peerID}`). Stored via
+ * the connector's own per-course Dexie database, not a separate raw
+ * IndexedDB database - a standalone `indexedDB.open()` here would trip the
+ * `patches/dexie+4.2.1.patch` security guard, and worse, whitelisting an
+ * extra database name by itself only gates the first `open()` call: once
+ * approved, any same-origin script (including untrusted course-authored
+ * ones - LiaScript courses can run JS with no origin isolation) could open
+ * it too and read these extractable keys straight out.
+ *
+ * @param uidDB - identifies the course's local database, see `LiaDB.getKey`/`putKey`
  */
 export async function getOrCreateKey<T>(
+  uidDB: string,
   id: string,
   generate: () => Promise<T>,
 ): Promise<T> {
   try {
-    const db = await openDB()
-
-    const existing = await new Promise<T | undefined>((resolve, reject) => {
-      const tx = db.transaction(STORE, 'readonly')
-      const req = tx.objectStore(STORE).get(id)
-      req.onsuccess = () => resolve(req.result)
-      req.onerror = () => reject(req.error)
-    })
+    const existing = await Database.getKey(uidDB, id)
 
     if (existing) return existing
 
     const value = await generate()
 
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction(STORE, 'readwrite')
-      tx.objectStore(STORE).put(value, id)
-      tx.oncomplete = () => resolve()
-      tx.onerror = () => reject(tx.error)
-    })
+    await Database.putKey(uidDB, id, value)
 
     return value
   } catch (e) {

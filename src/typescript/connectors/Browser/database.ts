@@ -61,22 +61,9 @@ class LiaDB {
     })
 
     db.version(2).stores({
-      classrooms: '&room, updated',
-    })
-
-    // the room-name alone is not unique, two different backends can share the
-    // same room-name for the same course. Dexie cannot change a primary key
-    // in place, thus the table has to be dropped and recreated.
-    db.version(3).stores({
-      classrooms: null,
-    })
-
-    db.version(4).stores({
       classrooms: '[room+backend], updated',
-    })
-
-    db.version(5).stores({
       yjsUpdates: '++id, key',
+      keys: '&id',
     })
 
     return db
@@ -567,6 +554,34 @@ class LiaDB {
     await db['yjsUpdates'].where('key').equals(key).delete()
   }
 
+  /** Look up one classroom key/keypair cached for a course, see `putKey()`.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param id - identifies one key, see `sync/Base/keyStore.ts`'s `getOrCreateKey`
+   */
+  async getKey(uidDB: string, id: string): Promise<any> {
+    const db = await this.openShared_(uidDB)
+
+    const row = await db['keys'].get(id)
+
+    return row?.value
+  }
+
+  /** Cache one classroom `CryptoKey`/`CryptoKeyPair` for a course, so it can
+   * be reused across reconnects instead of regenerated - see
+   * `sync/Base/keyStore.ts`'s `getOrCreateKey`. Not scoped by `this.version`:
+   * classroom keys are per-room, not per-course-version.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param id - identifies one key, see `sync/Base/keyStore.ts`'s `getOrCreateKey`
+   * @param value - a `CryptoKey` or `CryptoKeyPair`, directly structured-cloneable
+   */
+  async putKey(uidDB: string, id: string, value: any) {
+    const db = await this.openShared_(uidDB)
+
+    await db['keys'].put({ id, value })
+  }
+
   /** Delete all entries for all versions of a certain course defined by its
    * URL. This removes all state information as well as the course from the
    * main index.
@@ -582,8 +597,8 @@ class LiaDB {
       delete this.dbCache[uidDB]
 
       try {
-        ;(await shared).close()
-      } catch (e) {}
+        ; (await shared).close()
+      } catch (e) { }
     }
 
     // `open()` keeps a second reference to that very same instance. Closing a

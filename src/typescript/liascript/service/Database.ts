@@ -326,6 +326,18 @@ const Service = {
       return connector.clearYjsUpdates(uidDB, key)
     }
   },
+
+  getKey: async function (uidDB: string, id: string) {
+    if (connector) {
+      return connector.getKey(uidDB, id)
+    }
+  },
+
+  putKey: async function (uidDB: string, id: string, value: any) {
+    if (connector) {
+      return connector.putKey(uidDB, id, value)
+    }
+  },
 }
 
 /**

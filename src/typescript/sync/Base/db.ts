@@ -59,6 +59,8 @@ export class CRDT {
   // `classroomMode !== 0`.
   protected classroomMode: number = 0
   protected roomId?: string
+  // identifies the course's local database, see `setMode()` / `keyStore.ts`
+  protected uidDB?: string
 
   // peerID -> base64 ECDH public key of whoever is currently the owner.
   protected ownerKey: Y.Map<string>
@@ -118,11 +120,13 @@ export class CRDT {
   /** Must be called before init(), so classroomMode is known once ownership
    * and quiz/survey writes start happening. roomId only needs to be stable
    * per classroom (course+room+password) - it's just the local key under
-   * which this browser's owner keypair is cached in IndexedDB.
+   * which this browser's owner keypair is cached. uidDB identifies which
+   * course-local database that cache lives in, see `keyStore.ts`.
    */
-  setMode(mode: number, roomId: string) {
+  setMode(mode: number, roomId: string, uidDB: string) {
     this.classroomMode = mode
     this.roomId = roomId
+    this.uidDB = uidDB
   }
 
   async init(data: State.Vector) {
@@ -643,6 +647,7 @@ export class CRDT {
   protected ensureContentKey(): Promise<CryptoKey> {
     if (!this.contentKeyReady) {
       this.contentKeyReady = getOrCreateKey(
+        this.uidDB ?? 'default',
         `${this.roomId ?? 'default'}:content:${this.peerID}`,
         () => peerCrypto.generateContentKey(),
       ).then((key) => {
@@ -661,8 +666,10 @@ export class CRDT {
     if (this.getOwner() !== this.peerID) return
     if (this.ownerKeyPair) return
 
-    this.ownerKeyPair = await getOrCreateKey(this.roomId ?? 'default', () =>
-      peerCrypto.generateECDHKeyPair(),
+    this.ownerKeyPair = await getOrCreateKey(
+      this.uidDB ?? 'default',
+      this.roomId ?? 'default',
+      () => peerCrypto.generateECDHKeyPair(),
     )
     const pub = await peerCrypto.exportPublicKey(this.ownerKeyPair.publicKey)
 
