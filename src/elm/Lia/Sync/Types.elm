@@ -87,6 +87,14 @@ type alias Settings =
     , locked : Bool
     , passwordLocked : Bool
 
+    -- owner-election security metadata, see `Session.Room` for the exact
+    -- meaning of each field - mirrored here so `Service.Sync.connect`/
+    -- `CopyOwnerLink` can read the current room's values.
+    , ownerTokenHash : String
+    , pwSalt : String
+    , pwCheck : String
+    , ownerToken : Maybe String
+
     -- local-only labels for the saved classroom entry (not shared via URL,
     -- unlike room/password/mode) - help re-recognize a room in the "Your
     -- classrooms" grid independently of its actual (often generated) name
@@ -184,6 +192,10 @@ init supportedBackends =
     , passwordVisible = False
     , locked = False
     , passwordLocked = False
+    , ownerTokenHash = ""
+    , pwSalt = ""
+    , pwCheck = ""
+    , ownerToken = Nothing
     , title = ""
     , notes = ""
     , preloaded = False
@@ -220,7 +232,18 @@ isMember list element =
                 isMember es element
 
 
-initRoom : { backend : String, course : String, room : String, mode : Int } -> Settings -> Settings
+initRoom :
+    { backend : String
+    , course : String
+    , room : String
+    , mode : Int
+    , ownerTokenHash : String
+    , pwSalt : String
+    , pwCheck : String
+    , ownerToken : Maybe String
+    }
+    -> Settings
+    -> Settings
 initRoom config settings =
     case Via.fromString config.backend of
         Just backend ->
@@ -241,6 +264,10 @@ initRoom config settings =
                 , persistent = True
                 , mode = toClassroomMode config.mode
                 , locked = True
+                , ownerTokenHash = config.ownerTokenHash
+                , pwSalt = config.pwSalt
+                , pwCheck = config.pwCheck
+                , ownerToken = config.ownerToken
             }
 
         Nothing ->

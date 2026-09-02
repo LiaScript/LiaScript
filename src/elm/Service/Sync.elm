@@ -1,4 +1,4 @@
-module Service.Sync exposing (chat, code, codes, connect, cursor, deleteClassroom, disconnect, join, listClassrooms, markOwner, publish, quiz, survey, updateClassroomMeta)
+module Service.Sync exposing (chat, checkPassword, code, codes, connect, cursor, deleteClassroom, disconnect, join, listClassrooms, markOwner, publish, quiz, survey, updateClassroomMeta)
 
 import Array exposing (Array)
 import Json.Encode as JE
@@ -17,6 +17,10 @@ connect :
     , title : String
     , notes : String
     , mode : Int
+    , ownerTokenHash : String
+    , pwSalt : String
+    , pwCheck : String
+    , ownerToken : Maybe String
     }
     -> Event
 connect param =
@@ -57,6 +61,14 @@ connect param =
               )
             , ( "title", JE.string param.title )
             , ( "notes", JE.string param.notes )
+            , ( "ownerTokenHash", JE.string param.ownerTokenHash )
+            , ( "pwSalt", JE.string param.pwSalt )
+            , ( "pwCheck", JE.string param.pwCheck )
+            , ( "ownerToken"
+              , param.ownerToken
+                    |> Maybe.map JE.string
+                    |> Maybe.withDefault JE.null
+              )
             , ( "config"
               , case param.backend of
                     Via.GUN { urls, persistent } ->
@@ -192,6 +204,20 @@ disconnect id =
     id
         |> JE.string
         |> publish "disconnect"
+
+
+{-| Ask TS whether a typed password matches the room's `pwCheck` hint, purely
+advisory (see peerCrypto.verifyPasswordCheck) - a mismatch comes back on the
+existing `"warning"` channel, success stays silent.
+-}
+checkPassword : { password : String, pwSalt : String, pwCheck : String } -> Event
+checkPassword param =
+    [ ( "password", JE.string param.password )
+    , ( "pwSalt", JE.string param.pwSalt )
+    , ( "pwCheck", JE.string param.pwCheck )
+    ]
+        |> JE.object
+        |> publish "check_password"
 
 
 join : JE.Value -> Event

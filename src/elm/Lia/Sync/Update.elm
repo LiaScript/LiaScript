@@ -9,6 +9,7 @@ module Lia.Sync.Update exposing
 import Array
 import Dict exposing (Dict)
 import Json.Decode as JD
+import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
 import Lia.Chat.Model as Chat
 import Lia.Chat.Sync as Chat
@@ -39,6 +40,7 @@ import Return exposing (Return)
 import Service.Console as Console
 import Service.Event as Event exposing (Event)
 import Service.Database
+import Service.Share
 import Service.Slide
 import Service.Sync
 import Session exposing (Session)
@@ -67,6 +69,7 @@ type Msg
     | EditMeta Classroom.Entry { title : String, notes : String, name : String }
     | SaveMeta Classroom.Entry
     | TogglePasswordVisibility
+    | CopyOwnerLink
 
 
 type SyncMsg
@@ -181,15 +184,18 @@ update session model msg =
                             model |> Return.val
 
                 ( "connect", param ) ->
-                    case ( JD.decodeValue JD.string param, sync.sync.select ) of
-                        ( Ok hashID, Just ( True, backend ) ) ->
+                    case ( JD.decodeValue connectAck param, sync.sync.select ) of
+                        ( Ok info, Just ( True, backend ) ) ->
                             { model
                                 | sync =
                                     { sync
-                                        | state = Connected hashID
-                                        , peers = Dict.singleton hashID sync.name
-                                        , peersHistory = Dict.singleton hashID sync.name
+                                        | state = Connected info.id
+                                        , peers = Dict.singleton info.id sync.name
+                                        , peersHistory = Dict.singleton info.id sync.name
                                         , error = Nothing
+                                        , ownerTokenHash = info.ownerTokenHash
+                                        , pwSalt = info.pwSalt
+                                        , pwCheck = info.pwCheck
                                     }
                             }
                                 |> join
@@ -200,6 +206,15 @@ update session model msg =
                                             , course = model.readme
                                             , room = sync.room
                                             , mode = fromClassroomMode sync.mode
+                                            , ownerTokenHash = info.ownerTokenHash
+                                            , pwSalt = info.pwSalt
+                                            , pwCheck = info.pwCheck
+
+                                            -- never re-materialize the raw
+                                            -- secret into the address bar,
+                                            -- even though `encodeRoom`
+                                            -- itself would already drop it
+                                            , ownerToken = Nothing
                                             }
                                         |> Session.update
                                     )
@@ -326,6 +341,10 @@ update session model msg =
                         , persistent = False
                         , locked = False
                         , passwordLocked = False
+                        , ownerTokenHash = ""
+                        , pwSalt = ""
+                        , pwCheck = ""
+                        , ownerToken = Nothing
                     }
             }
                 |> Return.val
@@ -350,6 +369,35 @@ update session model msg =
         TogglePasswordVisibility ->
             { model | sync = { sync | passwordVisible = not sync.passwordVisible } }
                 |> Return.val
+
+        CopyOwnerLink ->
+            case ( sync.owner, sync.ownerToken, sync.sync.select ) of
+                ( True, Just token, Just ( _, backend ) ) ->
+                    let
+                        room =
+                            { backend = Backend.toString True backend
+                            , course = model.readme
+                            , room = sync.room
+                            , mode = fromClassroomMode sync.mode
+                            , ownerTokenHash = sync.ownerTokenHash
+                            , pwSalt = sync.pwSalt
+                            , pwCheck = sync.pwCheck
+                            , ownerToken = Just token
+                            }
+                    in
+                    model
+                        |> Return.val
+                        |> Return.batchEvent
+                            (Service.Share.link
+                                { title = "Classroom owner link"
+                                , text = "Use this link to manage \"" ++ sync.room ++ "\" as its owner."
+                                , url = Session.urlWithQuery (Session.encodeOwnerLink room) session
+                                , image = Nothing
+                                }
+                            )
+
+                _ ->
+                    model |> Return.val
 
         EditMeta entry meta ->
             let
@@ -492,7 +540,25 @@ update session model msg =
                                 , title = String.trim sync.title
                                 , notes = String.trim sync.notes
                                 , mode = fromClassroomMode sync.mode
+                                , ownerTokenHash = sync.ownerTokenHash
+                                , pwSalt = sync.pwSalt
+                                , pwCheck = sync.pwCheck
+                                , ownerToken = sync.ownerToken
                                 }
+                            )
+                        |> Return.batchEvent
+                            -- only a join brings along a pwCheck hint to
+                            -- verify against - a freshly created room has
+                            -- nothing yet to check
+                            (if String.isEmpty sync.pwCheck then
+                                Event.none
+
+                             else
+                                Service.Sync.checkPassword
+                                    { password = sync.password
+                                    , pwSalt = sync.pwSalt
+                                    , pwCheck = sync.pwCheck
+                                    }
                             )
 
                 _ ->
@@ -843,6 +909,27 @@ synchronize model json =
 warn : String -> String -> Return model msg sub -> Return model msg sub
 warn what info =
     Return.batchEvent (Console.warn ("Sync: " ++ what ++ " -> " ++ info))
+
+
+{-| Ack payload of the `"connect"` event - the raw owner secret is never part
+of it, only its hash, see `Session.Room`.
+-}
+connectAck :
+    JD.Decoder
+        { id : String
+        , ownerTokenHash : String
+        , pwSalt : String
+        , pwCheck : String
+        }
+connectAck =
+    JD.succeed
+        (\id_ hash salt check ->
+            { id = id_, ownerTokenHash = hash, pwSalt = salt, pwCheck = check }
+        )
+        |> JDP.required "id" JD.string
+        |> JDP.optional "ownerTokenHash" JD.string ""
+        |> JDP.optional "pwSalt" JD.string ""
+        |> JDP.optional "pwCheck" JD.string ""
 
 
 dataDecoder : JD.Decoder data -> JD.Value -> Result JD.Error (List ( Int, data ))

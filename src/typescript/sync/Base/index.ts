@@ -3,6 +3,7 @@ import { GenericProvider } from 'y-generic'
 import { DexieTransport } from './dexieTransport'
 import * as helper from '../../helper'
 import { CRDT } from './db'
+import * as peerCrypto from './peerCrypto'
 
 import { encode, decode } from 'uint8-to-base64'
 import { docId } from './persist'
@@ -47,6 +48,22 @@ export class Sync {
   /** Messages will be encrypted, if an password is defined.
    */
   protected password?: string
+
+  /** Salted PBKDF2 hint (see peerCrypto.pbkdf2Base64) letting a joiner check
+   * locally whether their typed password matches, without a fast hash
+   * enabling offline brute-force of the room password. Set either from an
+   * incoming link (joining) or freshly minted on room creation, see
+   * `sendConnect()`.
+   */
+  protected pwSalt?: string
+  protected pwCheck?: string
+
+  /** The room's public owner-secret hash, known ahead of connecting whenever
+   * this is a join (from the link); absent when this browser is creating
+   * the room, which `sendConnect()` uses to decide whether to mint a fresh
+   * `pwSalt`/`pwCheck` pair alongside the owner token.
+   */
+  protected ownerTokenHash?: string
 
   /** Every user is identified by a unique, anonymous, and random string. This
    * token is stored within the local storage and allows to leave and reconnect
@@ -200,11 +217,18 @@ export class Sync {
     name: string
     mode: number
     config?: any
+    ownerTokenHash?: string
+    pwSalt?: string
+    pwCheck?: string
+    ownerToken?: string
   }) {
     this.room = data.room
     this.course = data.course
     this.password = data.password
     this.mode = data.mode
+    this.pwSalt = data.pwSalt
+    this.pwCheck = data.pwCheck
+    this.ownerTokenHash = data.ownerTokenHash
 
     // roomId only needs to be stable per classroom for this browser to
     // reuse its owner keypair across reconnects - independent of which
@@ -215,6 +239,7 @@ export class Sync {
       data.mode,
       `${data.course}|${data.room}|${data.password || ''}`,
       data.uidDB || data.course,
+      { ownerTokenHash: data.ownerTokenHash, ownerToken: data.ownerToken },
     )
 
     this.name = data.name.trim()
@@ -323,29 +348,38 @@ export class Sync {
     this.sync('warning', msg)
   }
 
-  sendConnect() {
-    this.sync('connect', this.token)
+  async sendConnect() {
+    const isNewRoom = !this.ownerTokenHash
+    this.ownerTokenHash = await this.db.resolveOwnerToken()
+
+    // Only the room's creator ever needs to mint these - a join always
+    // brings its own pwSalt/pwCheck (or none) from the link.
+    if (isNewRoom && this.password && !this.pwCheck) {
+      this.pwSalt = peerCrypto.randomBytesBase64(16)
+      this.pwCheck = await peerCrypto.pbkdf2Base64(this.password, this.pwSalt)
+    }
+
+    this.sync('connect', {
+      id: this.token,
+      ownerTokenHash: this.ownerTokenHash || '',
+      pwSalt: this.pwSalt || '',
+      pwCheck: this.pwCheck || '',
+    })
 
     if (this.onConnect) this.onConnect()
 
-    // Wait for local persistence too (only `Local` normally awaits
-    // persistReady before connecting) — otherwise a reconnecting peer can
-    // push itself into an as-yet-unrestored metadata array before the
-    // locally cached history (holding the real owner) has merged in, and
-    // Yjs has to resolve the resulting concurrent inserts by per-doc client
-    // ID rather than by who was actually first.
-    Promise.all([
-      new Promise((resolve) => setTimeout(resolve, 5000)),
-      this.persistReady.catch(() => { }),
-    ]).then(() => {
+    // Ownership claiming no longer races unauthorized peers (see
+    // db.ts claimOwnership()/resolveOwnerToken()), so the only remaining
+    // reason to wait here is the one persistReady already documents: don't
+    // produce a Yjs update before local persistence can actually record it.
+    this.persistReady.catch(() => {}).then(() => {
       // A wrong classroom password derives a different room id (see
       // uniqueID()), so a mismatched peer never meets anyone and just sits
       // in an empty room with no explicit signal why. This is a heuristic,
       // not proof - a genuinely early joiner in a correct room also sees it
       // - but it's a real, honest hint for the far more common case of a
-      // typo. Checked right before claimOwnership() (rather than on its own
-      // later timer) so the warning never arrives after the peer has
-      // already been declared owner.
+      // typo. Checked right before claimOwnership() so the warning never
+      // arrives after the peer has already been declared owner.
       if (this.password) {
         // getPeers() includes our own awareness entry (by design - the peer
         // list UI shows yourself too), so it's never actually empty. Only

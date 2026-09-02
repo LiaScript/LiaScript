@@ -43,3 +43,31 @@ export async function getOrCreateKey<T>(
     return generate()
   }
 }
+
+/** Plain read, no fallback generation - `undefined` both when nothing is
+ * stored and when IndexedDB itself is unavailable, since callers here only
+ * ever want to know "do we already have one", never conjure a substitute.
+ */
+export async function getStoredValue<T>(
+  uidDB: string,
+  id: string,
+): Promise<T | undefined> {
+  try {
+    return await Database.getKey(uidDB, id)
+  } catch (e) {
+    console.warn('keyStore: getStoredValue unavailable ->', e)
+    return undefined
+  }
+}
+
+export async function putStoredValue<T>(
+  uidDB: string,
+  id: string,
+  value: T,
+): Promise<void> {
+  try {
+    await Database.putKey(uidDB, id, value)
+  } catch (e) {
+    console.warn('keyStore: putStoredValue unavailable ->', e)
+  }
+}

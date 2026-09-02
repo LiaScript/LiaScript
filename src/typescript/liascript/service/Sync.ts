@@ -1,5 +1,6 @@
 import log from '../log'
 import { docId } from '../../sync/Base/persist'
+import * as peerCrypto from '../../sync/Base/peerCrypto'
 
 var sync: any
 var elmSend: Lia.Send | null
@@ -368,6 +369,34 @@ const Service = {
           window.LIA.classroom.publish = publish
           window.LIA.classroom.connected = false
           CALLBACK.disconnect.forEach((cb) => cb())
+        }
+
+        break
+      }
+
+      // Lets a joiner know before/without ever connecting whether their
+      // typed password matches the room's `pwCheck` hint - purely advisory
+      // (see peerCrypto.verifyPasswordCheck), so success stays silent and
+      // only a mismatch is reported, reusing the existing "warning" channel.
+      case 'check_password': {
+        const { password, pwSalt, pwCheck } = event.message.param
+
+        try {
+          const ok = await peerCrypto.verifyPasswordCheck(
+            password,
+            pwSalt,
+            pwCheck,
+          )
+
+          if (!ok && elmSend) {
+            elmSend({
+              ...event,
+              message: { cmd: 'warning', param: 'Wrong classroom password.' },
+              reply: true,
+            })
+          }
+        } catch (e: any) {
+          log.warn('password check failed ->', e?.message || e)
         }
 
         break

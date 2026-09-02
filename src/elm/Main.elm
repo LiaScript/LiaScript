@@ -197,17 +197,37 @@ init flags url key =
                         |> getIndex query
 
                 Session.Class room fragment ->
-                    { url = get_base courseUrl
-                    , readme = room.course
-                    , origin =
-                        room.course
-                            |> Utils.urlBasePath
-                            |> Maybe.withDefault ""
-                    , anchor = fragment
-                    }
-                        |> model courseUrl Loading
-                        |> openSync room
-                        |> getIndex room.course
+                    let
+                        ( initialized, cmd ) =
+                            { url = get_base courseUrl
+                            , readme = room.course
+                            , origin =
+                                room.course
+                                    |> Utils.urlBasePath
+                                    |> Maybe.withDefault ""
+                            , anchor = fragment
+                            }
+                                |> model courseUrl Loading
+                                |> openSync room
+                                |> getIndex room.course
+                    in
+                    ( initialized
+                    , Cmd.batch
+                        [ cmd
+
+                        -- a raw owner token only ever arrives via a
+                        -- deliberately-shared "owner link" (see
+                        -- Session.encodeOwnerLink) - `encodeRoom` never
+                        -- serializes it, so re-encoding the room here
+                        -- immediately scrubs it from the address bar
+                        , if room.ownerToken /= Nothing then
+                            Session.setClass room initialized.session
+                                |> Session.update
+
+                          else
+                            Cmd.none
+                        ]
+                    )
 
         _ ->
             { url = ""

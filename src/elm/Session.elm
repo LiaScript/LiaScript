@@ -3,6 +3,8 @@ module Session exposing
     , Screen
     , Session
     , Type(..)
+    , decodeRoom
+    , encodeOwnerLink
     , encodeRoom
     , getType
     , load
@@ -15,6 +17,7 @@ module Session exposing
     , setScreen
     , setUrl
     , update
+    , urlWithQuery
     )
 
 {-| This module covers all relevant session functions/data that deal with
@@ -25,6 +28,7 @@ URL-navigation. Therefor all relevant information is stored and updated with the
 import Base64
 import Browser.Navigation as Navigation
 import Json.Decode as JD
+import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
 import Url exposing (Url)
 
@@ -77,6 +81,19 @@ type alias Room =
     , course : String
     , room : String
     , mode : Int
+
+    -- hash of the room's owner secret, safe to share - see `ownerToken`
+    , ownerTokenHash : String
+
+    -- salted PBKDF2 password hint, both safe to share - see `Service.Sync.checkPassword`
+    , pwSalt : String
+    , pwCheck : String
+
+    -- the raw owner secret. `Just` only on a dedicated "owner link" (see
+    -- `encodeOwnerLink`) - `encodeRoom` never serializes it, which is what
+    -- guarantees a normal, forwarded classroom link can never grant owner
+    -- access.
+    , ownerToken : Maybe String
     }
 
 
@@ -199,29 +216,83 @@ setScreen size session =
     { session | screen = size }
 
 
+{-| The raw `ownerToken` is deliberately never encoded here - this is the one
+place that guarantees a normal classroom link (the one sitting in the address
+bar, including the owner's own) can never leak owner access to whoever it's
+forwarded to. Use `encodeOwnerLink` for the separate, dedicated owner link.
+-}
 encodeRoom : Room -> String
-encodeRoom { backend, course, room, mode } =
-    [ ( "backend", JE.string backend )
-    , ( "course", JE.string course )
-    , ( "room", JE.string room )
-    , ( "mode", JE.int mode )
-    ]
+encodeRoom room =
+    roomFields room
         |> JE.object
         |> JE.encode 0
         |> Base64.encode
 
 
+{-| Like `encodeRoom`, but additionally includes the raw `ownerToken` when
+present - only ever used to build the dedicated "owner link" copied from the
+classroom settings, never for the address bar.
+-}
+encodeOwnerLink : Room -> String
+encodeOwnerLink room =
+    (roomFields room
+        ++ (case room.ownerToken of
+                Just token ->
+                    [ ( "ownerToken", JE.string token ) ]
+
+                Nothing ->
+                    []
+           )
+    )
+        |> JE.object
+        |> JE.encode 0
+        |> Base64.encode
+
+
+roomFields : Room -> List ( String, JE.Value )
+roomFields { backend, course, room, mode, ownerTokenHash, pwSalt, pwCheck } =
+    [ ( "backend", JE.string backend )
+    , ( "course", JE.string course )
+    , ( "room", JE.string room )
+    , ( "mode", JE.int mode )
+    , ( "ownerTokenHash", JE.string ownerTokenHash )
+    , ( "pwSalt", JE.string pwSalt )
+    , ( "pwCheck", JE.string pwCheck )
+    ]
+
+
+{-| Missing `ownerTokenHash`/`pwSalt`/`pwCheck`/`ownerToken` (a link generated
+before this scheme existed) simply default to "no security metadata", so old
+links keep decoding instead of breaking.
+-}
 decodeRoom : String -> Maybe Room
 decodeRoom =
     Base64.decode
         >> Result.toMaybe
         >> Maybe.andThen
             (JD.decodeString
-                (JD.map4 Room
-                    (JD.field "backend" JD.string)
-                    (JD.field "course" JD.string)
-                    (JD.field "room" JD.string)
-                    (JD.field "mode" JD.int)
+                (JD.succeed Room
+                    |> JDP.required "backend" JD.string
+                    |> JDP.required "course" JD.string
+                    |> JDP.required "room" JD.string
+                    |> JDP.required "mode" JD.int
+                    |> JDP.optional "ownerTokenHash" JD.string ""
+                    |> JDP.optional "pwSalt" JD.string ""
+                    |> JDP.optional "pwCheck" JD.string ""
+                    |> JDP.optional "ownerToken" (JD.map Just JD.string) Nothing
                 )
                 >> Result.toMaybe
             )
+
+
+{-| Build a full URL string from an already-encoded query, without touching
+`session`/the browser history - used for the owner-link copy action, which
+must never navigate to or replace the current address bar entry.
+-}
+urlWithQuery : String -> Session -> String
+urlWithQuery query session =
+    let
+        url =
+            session.url
+    in
+    Url.toString { url | query = Just query }

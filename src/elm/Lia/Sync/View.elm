@@ -211,6 +211,19 @@ view settings =
                           else
                             Html.text ""
                         , button settings
+                        , if settings.owner then
+                            btn
+                                { title = "copy owner link"
+                                , tabbable = True
+                                , msg = Just CopyOwnerLink
+                                }
+                                [ Attr.style "margin-block-start" "1rem"
+                                , Attr.style "width" "100%"
+                                ]
+                                [ Html.text "🔑 Copy owner link" ]
+
+                          else
+                            Html.text ""
                         , viewError settings.error
                         ]
                     , Html.div [ Attr.class "lia-classroom__divider" ] []

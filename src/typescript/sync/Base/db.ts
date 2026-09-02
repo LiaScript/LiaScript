@@ -3,7 +3,7 @@ import * as awarenessProtocol from 'y-protocols/awareness'
 import * as State from './state'
 import * as helper from '../../helper'
 import * as peerCrypto from './peerCrypto'
-import { getOrCreateKey } from './keyStore'
+import { getOrCreateKey, getStoredValue, putStoredValue } from './keyStore'
 
 import { YKeyValue } from 'y-utility/y-keyvalue'
 
@@ -61,6 +61,17 @@ export class CRDT {
   protected roomId?: string
   // identifies the course's local database, see `setMode()` / `keyStore.ts`
   protected uidDB?: string
+
+  // The room's public hash of its owner secret (safe to share, see
+  // `resolveOwnerToken()`) and, only when this browser just opened an
+  // owner-link, the raw secret itself.
+  protected ownerTokenHash?: string
+  protected incomingOwnerToken?: string
+  // Set only once `resolveOwnerToken()` has confirmed this browser actually
+  // holds the secret matching `ownerTokenHash` - `claimOwnership()` is gated
+  // on this being set, which is what excludes everyone else structurally
+  // rather than relying on who calls it first.
+  protected localOwnerToken?: string
 
   // peerID -> base64 ECDH public key of whoever is currently the owner.
   protected ownerKey: Y.Map<string>
@@ -123,10 +134,62 @@ export class CRDT {
    * which this browser's owner keypair is cached. uidDB identifies which
    * course-local database that cache lives in, see `keyStore.ts`.
    */
-  setMode(mode: number, roomId: string, uidDB: string) {
+  setMode(
+    mode: number,
+    roomId: string,
+    uidDB: string,
+    security?: { ownerTokenHash?: string; ownerToken?: string },
+  ) {
     this.classroomMode = mode
     this.roomId = roomId
     this.uidDB = uidDB
+    this.ownerTokenHash = security?.ownerTokenHash || undefined
+    this.incomingOwnerToken = security?.ownerToken || undefined
+  }
+
+  /** Resolves (generating or adopting as needed) the local proof this
+   * browser needs to be allowed to claim ownership, and returns the room's
+   * public `ownerTokenHash` to publish back into the shareable link.
+   *
+   * - No hash known yet -> this connect is establishing the room for the
+   *   first time: mint a fresh secret and its hash.
+   * - An incoming raw token was supplied (owner-link) and it hashes to the
+   *   known `ownerTokenHash` -> adopt and persist it. A mismatch (tampered
+   *   or stale link) is silently discarded - this browser just proceeds as
+   *   an ordinary peer, no error surfaced.
+   * - Otherwise, check whether this browser already cached a token for this
+   *   room from an earlier session (reconnect, or a second device/tab that
+   *   already redeemed the owner-link once) whose hash still matches.
+   */
+  async resolveOwnerToken(): Promise<string> {
+    const tokenId = `${this.roomId ?? 'default'}:ownerToken`
+    const uidDB = this.uidDB ?? 'default'
+
+    if (!this.ownerTokenHash) {
+      this.localOwnerToken = await getOrCreateKey(uidDB, tokenId, () =>
+        Promise.resolve(peerCrypto.randomBytesBase64(32)),
+      )
+      this.ownerTokenHash = await peerCrypto.sha256Base64(this.localOwnerToken)
+      return this.ownerTokenHash
+    }
+
+    if (this.incomingOwnerToken) {
+      if (
+        (await peerCrypto.sha256Base64(this.incomingOwnerToken)) ===
+        this.ownerTokenHash
+      ) {
+        this.localOwnerToken = this.incomingOwnerToken
+        await putStoredValue(uidDB, tokenId, this.localOwnerToken)
+      }
+      return this.ownerTokenHash
+    }
+
+    const cached = await getStoredValue<string>(uidDB, tokenId)
+    if (cached && (await peerCrypto.sha256Base64(cached)) === this.ownerTokenHash) {
+      this.localOwnerToken = cached
+    }
+
+    return this.ownerTokenHash
   }
 
   async init(data: State.Vector) {
@@ -332,8 +395,8 @@ export class CRDT {
   registerCallbacks() {
     // Ownership is decided by the CRDT, not by wall-clock timing — re-derive
     // it every time metadata converges with a remote peer, so a slow initial
-    // sync (see claimOwnership's setTimeout) can never leave two peers each
-    // permanently believing they're the owner.
+    // sync can never leave two peers each permanently believing they're the
+    // owner.
     this.metadata.observe(() => {
       this.callback(this.getOwner() === this.peerID, 'ownership')
       this.maybeBecomeOwner().catch((e: any) =>
@@ -894,11 +957,18 @@ export class CRDT {
       : { id: raw.slice(0, at), ts: Number(raw.slice(at + 1)) || 0 }
   }
 
+  /** Only a peer holding the room's owner secret (see `resolveOwnerToken()`)
+   * may push a claim at all - everyone else is structurally excluded, so
+   * there is no longer a race to be first: an unauthorized peer's call here
+   * is just a read of the current owner.
+   */
   claimOwnership() {
-    const claims = this.metadata.toArray().map((raw) => this.parseClaim(raw))
+    if (this.localOwnerToken) {
+      const claims = this.metadata.toArray().map((raw) => this.parseClaim(raw))
 
-    if (!claims.some((c) => c.id === this.peerID)) {
-      this.metadata.push([`${this.peerID}@${Date.now()}`])
+      if (!claims.some((c) => c.id === this.peerID)) {
+        this.metadata.push([`${this.peerID}@${Date.now()}`])
+      }
     }
 
     this.callback(this.getOwner() === this.peerID, 'ownership')

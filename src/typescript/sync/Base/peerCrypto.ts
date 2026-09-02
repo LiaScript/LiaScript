@@ -190,3 +190,51 @@ export async function verifyChatMessage(
     return false
   }
 }
+
+// --- Owner-token proof-of-possession & password hint (see the classroom
+// owner-election redesign: only the holder of the room's random owner
+// secret may claim ownership - everyone else only ever sees its hash). ---
+
+export function randomBytesBase64(byteLength: number): string {
+  return b64(crypto.getRandomValues(new Uint8Array(byteLength)).buffer)
+}
+
+export async function sha256Base64(input: string): Promise<string> {
+  const bytes = new TextEncoder().encode(input)
+  return b64(await crypto.subtle.digest('SHA-256', bytes))
+}
+
+export const PBKDF2_ITERATIONS = 150000
+
+export async function pbkdf2Base64(
+  password: string,
+  saltBase64: string,
+  iterations: number = PBKDF2_ITERATIONS,
+): Promise<string> {
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  )
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', hash: 'SHA-256', salt: unb64(saltBase64), iterations },
+    keyMaterial,
+    256,
+  )
+  return b64(bits)
+}
+
+// A blank `expectedCheckBase64` means the room carries no password hint at
+// all (a legacy link, or a room without a password) - nothing to check.
+export async function verifyPasswordCheck(
+  password: string,
+  saltBase64: string,
+  expectedCheckBase64: string,
+  iterations: number = PBKDF2_ITERATIONS,
+): Promise<boolean> {
+  if (!expectedCheckBase64) return true
+  const actual = await pbkdf2Base64(password, saltBase64, iterations)
+  return actual === expectedCheckBase64
+}
