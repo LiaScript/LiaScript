@@ -451,6 +451,26 @@ class Connector extends Base.Connector {
     }
   }
 
+  /**
+   * Load every id of a table (quiz, survey, task) from memory in one call,
+   * instead of one `load` per slide.
+   *
+   * @param table
+   * @returns the stored data per id, only for ids that have an entry
+   */
+  loadAll(table: string) {
+    switch (table) {
+      case 'quiz':
+      case 'survey':
+      case 'task': {
+        const data: { id: number; data: any }[] = []
+        this.db[table].forEach((entry, id) => data.push({ id, data: entry }))
+        return data
+      }
+    }
+    return []
+  }
+
   store(record: Base.Record) {
     // Always recompute SCORE for UI even in preview/no-credit
     switch (record.table) {

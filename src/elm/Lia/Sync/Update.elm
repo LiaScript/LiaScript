@@ -6,7 +6,6 @@ module Lia.Sync.Update exposing
     , update
     )
 
-import Array
 import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
@@ -691,7 +690,7 @@ join model =
                         []
 
                      else
-                        preloadEvents model.sections
+                        preloadEvents
                     )
 
         _ ->
@@ -701,23 +700,16 @@ join model =
 {-| Request persisted quiz/survey answers for every section that hasn't been
 parsed yet, so a joining peer's history reaches the CRDT even for slides
 nobody has visited this session - without paying for a full-course parse.
-Replies are routed through the existing `Quiz.Update`/`Survey.Update`
-`"load"` handler via the same `Event.pushWithId` convention `add_load` uses.
+Instead of one `load` event per section (2×N round-trips for N sections),
+this issues exactly one bulk request per table; the reply is fanned out to
+the affected sections by `Lia.Markdown.Update.handleAll`, reusing the
+existing `Quiz.Update`/`Survey.Update` `"load"` handler for each of them.
 -}
-preloadEvents : Sections -> List Event
+preloadEvents : List Event
 preloadEvents =
-    Array.toList
-        >> List.indexedMap
-            (\i sec ->
-                if sec.parsed then
-                    []
-
-                else
-                    [ Service.Database.load "quiz" i |> Event.pushWithId "quiz" i
-                    , Service.Database.load "survey" i |> Event.pushWithId "survey" i
-                    ]
-            )
-        >> List.concat
+    [ Service.Database.loadAll "quiz" |> Event.pushWithId "quizAll" 0
+    , Service.Database.loadAll "survey" |> Event.pushWithId "surveyAll" 0
+    ]
 
 
 synchronize :

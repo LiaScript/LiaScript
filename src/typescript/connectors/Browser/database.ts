@@ -186,6 +186,28 @@ class LiaDB {
     return null
   }
 
+  /** Load every entry of a table for the current version in one query,
+   * instead of one `load` call per id. Used to preload all persisted
+   * quiz/survey answers when joining a classroom, without paying for
+   * one IndexedDB round-trip per slide.
+   *
+   * @param table - table to load, e.g. "quiz" or "survey"
+   * @param versionDB - optional version number for the database entry
+   * @returns the stored `data` per id, only for ids that have an entry
+   * @example
+   *    loadAll('quiz')
+   */
+  async loadAll(table: string, versionDB?: number) {
+    if (!this.db) return []
+
+    const rows = await this.db[table]
+      .where('version')
+      .equals(versionDB != undefined ? versionDB : this.version)
+      .toArray()
+
+    return rows.map((row: any) => ({ id: row.id, data: row.data }))
+  }
+
   /** This is a shorthand for updating the stored slide number within the
    * offline table of the currents database
    *

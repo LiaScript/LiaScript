@@ -44,6 +44,11 @@ const Service = {
         sendReply(event)
         break
 
+      case 'load_all':
+        event.message.param = await connector.loadAll(param)
+        sendReply(event)
+        break
+
       case 'store':
         if (param.id < 10000) {
           connector.store(param)

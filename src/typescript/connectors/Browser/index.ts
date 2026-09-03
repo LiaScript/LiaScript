@@ -26,6 +26,10 @@ class Connector extends Base.Connector {
     return this.database.load(record)
   }
 
+  loadAll(table: string) {
+    return this.database.loadAll(table)
+  }
+
   store(record: Base.Record) {
     return this.database.store(record)
   }

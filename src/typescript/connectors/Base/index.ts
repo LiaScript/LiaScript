@@ -82,6 +82,12 @@ export class Connector {
 
   load(_record: Record) {}
 
+  loadAll(
+    _table: string
+  ): { id: number; data: any }[] | Promise<{ id: number; data: any }[]> {
+    return []
+  }
+
   store(_record: Record) {}
 
   update(_record: Record, _fn: (a: any) => any) {}
