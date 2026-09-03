@@ -513,6 +513,7 @@ update session model msg =
                                 , locked = True
                                 , passwordLocked = True
                                 , ownerTokenHash = entry.ownerTokenHash
+                                , owner = entry.owner
                             }
                     }
                         |> Return.val

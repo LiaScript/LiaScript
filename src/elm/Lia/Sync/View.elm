@@ -178,7 +178,18 @@ view settings =
                                     , Attr.style "margin-block-start" "2rem"
                                     , Attr.style "width" "100%"
                                     ]
-                                    [ Html.text "Owner token hash" ]
+                                    [ Html.text "Owner token hash"
+                                    , if settings.ownerToken /= Nothing || settings.owner then
+                                        Html.text " — 👑 you are the owner"
+
+                                      else
+                                        Html.text ""
+                                    ]
+                                , Html.p
+                                    [ Attr.class "lia-classroom__tagline"
+                                    , Attr.style "margin" "0 0 0.5rem"
+                                    ]
+                                    [ Html.text "Lets you prove later that you created this classroom, e.g. to a co-teacher. Safe to copy and share." ]
 
                                 -- Purely informational/confirmation - not needed to join at
                                 -- all (room + password already suffice, see the room/password
