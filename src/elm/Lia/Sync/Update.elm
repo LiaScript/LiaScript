@@ -183,6 +183,19 @@ update session model msg =
                         Err _ ->
                             model |> Return.val
 
+                ( "password_ok", _ ) ->
+                    -- checkPassword confirmed a match (see the Connect case,
+                    -- which withheld the actual connect event until now) -
+                    -- safe to connect for real.
+                    case sync.sync.select of
+                        Just ( True, backend ) ->
+                            model
+                                |> Return.val
+                                |> Return.batchEvent (connectEvent backend model.readme sync)
+
+                        _ ->
+                            model |> Return.val
+
                 ( "owner_token", param ) ->
                     case JD.decodeValue ownerTokenGenerated param of
                         Ok info ->
@@ -568,32 +581,14 @@ update session model msg =
                     { model | sync = { sync | state = Pending, sync = closeSelect sync.sync, name = String.trim sync.name } }
                         |> Return.val
                         |> Return.batchEvent
-                            (Service.Sync.connect
-                                { backend = backend
-                                , course = model.readme
-                                , room = sync.room
-                                , password = sync.password
-
-                                -- the "Own Notes" checkbox is always shown as
-                                -- checked (and disabled) for a Local backend,
-                                -- so it must always actually persist too
-                                , persistent = sync.persistent || backend == Backend.Local
-                                , name = String.trim sync.name
-                                , title = String.trim sync.title
-                                , notes = String.trim sync.notes
-                                , mode = fromClassroomMode sync.mode
-                                , ownerTokenHash = sync.ownerTokenHash
-                                , pwSalt = sync.pwSalt
-                                , pwCheck = sync.pwCheck
-                                , ownerToken = sync.ownerToken
-                                }
-                            )
-                        |> Return.batchEvent
                             -- only a join brings along a pwCheck hint to
                             -- verify against - a freshly created room has
-                            -- nothing yet to check
+                            -- nothing yet to check, so it can connect right
+                            -- away. A join defers connecting until the
+                            -- "password_ok" reply above, so a wrong password
+                            -- never opens the room, not even for an instant.
                             (if String.isEmpty sync.pwCheck then
-                                Event.none
+                                connectEvent backend model.readme sync
 
                              else
                                 Service.Sync.checkPassword
@@ -646,6 +641,30 @@ updateSync msg sync =
 
 closeSelect sync =
     { sync | open = False }
+
+
+{-| Build the actual `connect` event from the current sync settings - shared
+by the direct-connect path (no `pwCheck` to verify) and by the deferred path
+triggered once `checkPassword` confirms a match, see the `Connect` case and
+the `"password_ok"` reply above.
+-}
+connectEvent : Backend -> String -> Settings -> Event
+connectEvent backend course syncSettings =
+    Service.Sync.connect
+        { backend = backend
+        , course = course
+        , room = syncSettings.room
+        , password = syncSettings.password
+        , persistent = syncSettings.persistent || backend == Backend.Local
+        , name = String.trim syncSettings.name
+        , title = String.trim syncSettings.title
+        , notes = String.trim syncSettings.notes
+        , mode = fromClassroomMode syncSettings.mode
+        , ownerTokenHash = syncSettings.ownerTokenHash
+        , pwSalt = syncSettings.pwSalt
+        , pwCheck = syncSettings.pwCheck
+        , ownerToken = syncSettings.ownerToken
+        }
 
 
 isConnected : Settings -> Bool

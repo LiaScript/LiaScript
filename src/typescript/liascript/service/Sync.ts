@@ -375,29 +375,33 @@ const Service = {
         break
       }
 
-      // Lets a joiner know before/without ever connecting whether their
-      // typed password matches the room's `pwCheck` hint - purely advisory
-      // (see peerCrypto.verifyPasswordCheck), so success stays silent and
-      // only a mismatch is reported, reusing the existing "warning" channel.
+      // Gates the actual connect for a join: Elm withholds 'connect' until
+      // this resolves (see the "password_ok" case in Lia.Sync.Update), so a
+      // wrong password never opens the room, not even for an instant.
+      // Deterministic check against the room's `pwCheck` hint (see
+      // peerCrypto.verifyPasswordCheck), unlike the P2P empty-room heuristic
+      // in Base/index.ts. A crypto failure (malformed salt/hint, near-never
+      // in practice) fails open rather than stranding the user in Pending
+      // forever - the same leniency plaintext connects already had before
+      // this check existed.
       case 'check_password': {
         const { password, pwSalt, pwCheck } = event.message.param
 
+        let ok = true
         try {
-          const ok = await peerCrypto.verifyPasswordCheck(
-            password,
-            pwSalt,
-            pwCheck,
-          )
-
-          if (!ok && elmSend) {
-            elmSend({
-              ...event,
-              message: { cmd: 'warning', param: 'Wrong classroom password.' },
-              reply: true,
-            })
-          }
+          ok = await peerCrypto.verifyPasswordCheck(password, pwSalt, pwCheck)
         } catch (e: any) {
           log.warn('password check failed ->', e?.message || e)
+        }
+
+        if (elmSend) {
+          elmSend({
+            ...event,
+            message: ok
+              ? { cmd: 'password_ok', param: null }
+              : { cmd: 'error', param: 'Wrong classroom password.' },
+            reply: true,
+          })
         }
 
         break

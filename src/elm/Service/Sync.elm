@@ -232,9 +232,11 @@ generateOwnerToken =
     publish "generate_owner_token" JE.null
 
 
-{-| Ask TS whether a typed password matches the room's `pwCheck` hint, purely
-advisory (see peerCrypto.verifyPasswordCheck) - a mismatch comes back on the
-existing `"warning"` channel, success stays silent.
+{-| Ask TS whether a typed password matches the room's `pwCheck` hint (see
+peerCrypto.verifyPasswordCheck), gating the actual `connect` - see the
+`Connect` case in `Lia.Sync.Update`, which withholds `connect` until this
+resolves. Deterministic, unlike the P2P empty-room heuristic: a mismatch
+comes back as `"error"`, a match as `"password_ok"`.
 -}
 checkPassword : { password : String, pwSalt : String, pwCheck : String } -> Event
 checkPassword param =

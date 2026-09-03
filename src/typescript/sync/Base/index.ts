@@ -306,7 +306,7 @@ export class Sync {
       uid = JSON.stringify({
         course: this.course,
         room: this.room,
-        pw: this.password ? 1 : 0, // prevent delete from wrong passwords
+        pw: helper.getHashCode(this.password || ''),
         mode: this.mode
       })
     }
@@ -378,7 +378,7 @@ export class Sync {
     // db.ts claimOwnership()/resolveOwnerToken()), so the only remaining
     // reason to wait here is the one persistReady already documents: don't
     // produce a Yjs update before local persistence can actually record it.
-    this.persistReady.catch(() => {}).then(() => {
+    this.persistReady.catch(() => { }).then(() => {
       // A wrong classroom password derives a different room id (see
       // uniqueID()), so a mismatched peer never meets anyone and just sits
       // in an empty room with no explicit signal why. This is a heuristic,
