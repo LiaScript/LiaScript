@@ -87,6 +87,12 @@ type alias Settings =
     , locked : Bool
     , passwordLocked : Bool
 
+    -- true only when this room's config was decoded straight from the page
+    -- URL (`initRoom`) - hides "Infrastructure settings" entirely for a
+    -- joining participant, as opposed to someone who created/entered the
+    -- room themselves (manually, or by reconnecting to a saved classroom)
+    , fromUrl : Bool
+
     -- owner-election security metadata, see `Session.Room` for the exact
     -- meaning of each field - mirrored here so `Service.Sync.connect`/
     -- `CopyOwnerLink` can read the current room's values.
@@ -192,6 +198,7 @@ init supportedBackends =
     , passwordVisible = False
     , locked = False
     , passwordLocked = False
+    , fromUrl = False
     , ownerTokenHash = ""
     , pwSalt = ""
     , pwCheck = ""
@@ -264,6 +271,7 @@ initRoom config settings =
                 , persistent = True
                 , mode = toClassroomMode config.mode
                 , locked = True
+                , fromUrl = True
                 , ownerTokenHash = config.ownerTokenHash
                 , pwSalt = config.pwSalt
                 , pwCheck = config.pwCheck

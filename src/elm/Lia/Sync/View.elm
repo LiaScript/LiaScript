@@ -301,12 +301,16 @@ view settings =
                         , Html.div [ Attr.class "lia-classroom__badges" ]
                             (via |> Backend.badges |> List.map Backend.badge)
                         , Backend.infoOn support via
-                        , Backend.view
-                            settings.locked
-                            (open && support)
-                            via
-                            |> Html.map Config
-                            |> Html.map Backend
+                        , if settings.fromUrl then
+                            Html.text ""
+
+                          else
+                            Backend.view
+                                settings.locked
+                                (open && support)
+                                via
+                                |> Html.map Config
+                                |> Html.map Backend
                         ]
                     ]
         ]

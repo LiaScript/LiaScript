@@ -386,6 +386,7 @@ update session model msg =
                         , persistent = False
                         , locked = False
                         , passwordLocked = False
+                        , fromUrl = False
                         , ownerTokenHash = ""
                         , pwSalt = ""
                         , pwCheck = ""
@@ -524,6 +525,7 @@ update session model msg =
                                 , mode = toClassroomMode entry.mode
                                 , locked = True
                                 , passwordLocked = True
+                                , fromUrl = False
                                 , ownerTokenHash = entry.ownerTokenHash
                                 , owner = entry.owner
                             }
@@ -549,6 +551,7 @@ update session model msg =
                         , persistent = True
                         , locked = False
                         , passwordLocked = False
+                        , fromUrl = False
                     }
             }
                 |> Return.val
