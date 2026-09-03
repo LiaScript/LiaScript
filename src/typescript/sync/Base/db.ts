@@ -186,14 +186,18 @@ export class CRDT {
 
     // No candidate supplied - the only way to still be owner is a
     // previously-verified token already cached here (reconnect, or a
-    // second tab/device that redeemed the owner-link earlier).
-    if (this.ownerTokenHash) {
-      const cached = await getStoredValue<string>(uidDB, tokenId)
-      if (
-        cached &&
-        (await peerCrypto.sha256Base64(cached)) === this.ownerTokenHash
-      ) {
+    // second tab/device that redeemed the owner-link earlier). Checked
+    // regardless of whether a hash was already known - a route like
+    // reconnecting via "Your classrooms" never carries one at all, even
+    // though this exact room's cache entry (keyed by `tokenId`, i.e.
+    // already scoped to this room) is just as trustworthy as one that
+    // arrived with a hash attached.
+    const cached = await getStoredValue<string>(uidDB, tokenId)
+    if (cached) {
+      const hash = await peerCrypto.sha256Base64(cached)
+      if (!this.ownerTokenHash || hash === this.ownerTokenHash) {
         this.localOwnerToken = cached
+        this.ownerTokenHash = hash
       }
     }
 

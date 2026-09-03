@@ -11,7 +11,11 @@ back into a `Via.Backend` with `Via.fromString` when the user picks this
 entry to reconnect. `owner` mirrors whether this browser was the CRDT owner
 the last time it connected (see the `"ownership"` event in
 `Lia.Sync.Update`) — it is only known live, once connected, so it is written
-back after the fact rather than at the initial save.
+back after the fact rather than at the initial save. `ownerTokenHash` is
+written back the same way, as soon as a connect resolves it (see
+`Lia.Sync.Update`'s `("connect", param)` case) - purely informational/safe to
+share (never the raw secret), so it can be read off a card without having to
+reconnect first.
 -}
 type alias Entry =
     { room : String
@@ -23,6 +27,7 @@ type alias Entry =
     , updated : Int
     , mode : Int
     , owner : Bool
+    , ownerTokenHash : String
     }
 
 
@@ -43,6 +48,7 @@ entryDecoder =
         |> JDP.required "updated" JD.int
         |> JDP.optional "mode" JD.int 0
         |> JDP.optional "owner" JD.bool False
+        |> JDP.optional "ownerTokenHash" JD.string ""
 
 
 {-| The fixed room name used for the "Own Notes" shortcut — a purely local,

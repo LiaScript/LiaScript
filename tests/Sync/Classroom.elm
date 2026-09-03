@@ -47,6 +47,7 @@ suite =
                               , updated = 1234
                               , mode = 0
                               , owner = False
+                              , ownerTokenHash = ""
                               }
                             , { room = "__notes__"
                               , backend = "Local"
@@ -57,6 +58,7 @@ suite =
                               , updated = 5678
                               , mode = 0
                               , owner = False
+                              , ownerTokenHash = ""
                               }
                             ]
                         )

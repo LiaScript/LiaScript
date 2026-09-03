@@ -38,8 +38,8 @@ import Lia.Sync.Via as Backend exposing (Backend)
 import Random
 import Return exposing (Return)
 import Service.Console as Console
-import Service.Event as Event exposing (Event)
 import Service.Database
+import Service.Event as Event exposing (Event)
 import Service.Share
 import Service.Slide
 import Service.Sync
@@ -234,6 +234,22 @@ update session model msg =
                                             , ownerToken = Nothing
                                             }
                                         |> Session.update
+                                    )
+                                |> Return.batchEvent
+                                    -- readable/copyable from the saved-classrooms
+                                    -- card even without reconnecting - see
+                                    -- Classroom.Entry.ownerTokenHash. Every
+                                    -- successful connect resolves this, not only
+                                    -- the owner's.
+                                    (if sync.persistent && not (String.isEmpty info.ownerTokenHash) then
+                                        Service.Sync.markOwnerTokenHash
+                                            model.readme
+                                            sync.room
+                                            (Backend.toString True backend)
+                                            info.ownerTokenHash
+
+                                     else
+                                        Event.none
                                     )
 
                         _ ->

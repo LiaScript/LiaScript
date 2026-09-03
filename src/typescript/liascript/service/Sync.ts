@@ -351,6 +351,7 @@ const Service = {
               title: config.title,
               notes: config.notes,
               mode: config.mode,
+              ownerTokenHash: config.ownerTokenHash,
             })?.catch((e: any) => {
               log.warn('could not save classroom ->', e?.message || e)
             })
@@ -448,7 +449,7 @@ const Service = {
       }
 
       case 'update_classroom_meta': {
-        const { course, room, backend, title, notes, name, owner } =
+        const { course, room, backend, title, notes, name, owner, ownerTokenHash } =
           event.message.param
 
         try {
@@ -458,6 +459,7 @@ const Service = {
               notes,
               name,
               owner,
+              ownerTokenHash,
             })
           }
         } catch (e: any) {

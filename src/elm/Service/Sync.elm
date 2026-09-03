@@ -1,4 +1,4 @@
-module Service.Sync exposing (chat, checkPassword, code, codes, connect, cursor, deleteClassroom, disconnect, generateOwnerToken, join, listClassrooms, markOwner, publish, quiz, survey, updateClassroomMeta)
+module Service.Sync exposing (chat, checkPassword, code, codes, connect, cursor, deleteClassroom, disconnect, generateOwnerToken, join, listClassrooms, markOwner, markOwnerTokenHash, publish, quiz, survey, updateClassroomMeta)
 
 import Array exposing (Array)
 import Json.Encode as JE
@@ -194,6 +194,22 @@ markOwner course room backend owner =
     , ( "room", JE.string room )
     , ( "backend", JE.string backend )
     , ( "owner", JE.bool owner )
+    ]
+        |> JE.object
+        |> publish "update_classroom_meta"
+
+
+{-| Mirror the room's (non-secret) `ownerTokenHash`, resolved on every
+successful connect - not only for the owner - into the saved classroom
+entry, so it can be read off/copied from its card without reconnecting.
+Same partial-update mechanism and rationale as `markOwner`.
+-}
+markOwnerTokenHash : String -> String -> String -> String -> Event
+markOwnerTokenHash course room backend ownerTokenHash =
+    [ ( "course", JE.string course )
+    , ( "room", JE.string room )
+    , ( "backend", JE.string backend )
+    , ( "ownerTokenHash", JE.string ownerTokenHash )
     ]
         |> JE.object
         |> publish "update_classroom_meta"
