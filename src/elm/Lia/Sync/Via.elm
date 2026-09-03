@@ -694,237 +694,245 @@ link title url =
 
 view : Bool -> Bool -> Backend -> Html Msg
 view locked editable backend =
-    if locked then
-        details
-            [ Html.p [ Attr.style "font-style" "italic" ]
-                [ Html.text "Infrastructure settings are locked while connected to this classroom." ]
-            ]
+    let
+        active =
+            editable && not locked
 
-    else
-    case backend of
-        GUN { urls, persistent } ->
-            details
-                [ input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputGun
-                    , value = urls
-                    , placeholder = "https://gun1.server, https://gun2.server, ..."
-                    , label = Html.text "relay server"
-                    , autocomplete = Just "gun-server"
-                    }
-                , fieldHint "Add multiple relay servers, separated by commas."
-                , checkbox
-                    { active = editable
-                    , value = persistent
-                    , msg = CheckboxGun
-                    , label = Html.text "persistent storage"
-                    }
-                , fieldHint "Writes the room's state to the relay server(s) so it survives after everyone disconnects — nothing is ever cached in your own browser either way. Left unchecked, the room only exists in the relay's memory and disappears once it empties."
-                ]
+        lockedHint =
+            if locked then
+                Html.p [ Attr.style "font-style" "italic" ]
+                    [ Html.text "Infrastructure settings are locked while connected to this classroom." ]
 
-        NoStr { relayUrls, turnConfig } ->
-            trysteroSettings editable "relay" "wss://relay.damus.io, wss://nos.lol, ..." relayUrls turnConfig
+            else
+                Html.text ""
 
-        MQTT { relayUrls, turnConfig } ->
-            trysteroSettings editable "broker" "wss://broker.emqx.io:8084/mqtt, wss://broker.hivemq.com:8884/mqtt, ..." relayUrls turnConfig
+        content =
+            case backend of
+                GUN { urls, persistent } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputGun
+                            , value = urls
+                            , placeholder = "https://gun1.server, https://gun2.server, ..."
+                            , label = Html.text "relay server"
+                            , autocomplete = Just "gun-server"
+                            }
+                        , fieldHint "Add multiple relay servers, separated by commas."
+                        , checkbox
+                            { active = active
+                            , value = persistent
+                            , msg = CheckboxGun
+                            , label = Html.text "persistent storage"
+                            }
+                        , fieldHint "Writes the room's state to the relay server(s) so it survives after everyone disconnects — nothing is ever cached in your own browser either way. Left unchecked, the room only exists in the relay's memory and disappears once it empties."
+                        ]
 
-        Torrent { relayUrls, turnConfig } ->
-            trysteroSettings editable "tracker" "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, ..." relayUrls turnConfig
+                NoStr { relayUrls, turnConfig } ->
+                    trysteroSettings active "relay" "wss://relay.damus.io, wss://nos.lol, ..." relayUrls turnConfig
 
-        IPFS { turnConfig } ->
-            details
-                [ input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputTrystero "turn"
-                    , value = turnConfig
-                    , placeholder = "[{\"urls\":\"turn:turn.example.com\",\"username\":\"user\",\"credential\":\"pass\"}]"
-                    , label = Html.text "TURN servers as JSON (optional)"
-                    , autocomplete = Just "trystero-turn"
-                    }
-                , fieldHint "Waku only finds peers and exchanges the WebRTC handshake — the actual chat and quiz data flows directly between browsers. Add TURN servers here if participants sit behind firewalls/NATs that block a direct WebRTC connection; there's no separate relay URL to configure for this strategy."
-                ]
+                MQTT { relayUrls, turnConfig } ->
+                    trysteroSettings active "broker" "wss://broker.emqx.io:8084/mqtt, wss://broker.hivemq.com:8884/mqtt, ..." relayUrls turnConfig
 
-        -- Jitsi domain ->
-        --     input
-        --         { active = editable
-        --         , type_ = "text"
-        --         , msg = InputJitsi
-        --         , value = domain
-        --         , placeholder = "domain.jit.si"
-        --         , label = Html.text "domain"
-        --         , autocomplete = Just "jitsi-domain"
-        --         }
-        -- Matrix { baseURL, userId, accessToken } ->
-        --     Html.div []
-        --         [ input
-        --             { active = editable
-        --             , type_ = "text"
-        --             , msg = InputMatrix "url"
-        --             , label = Html.text "base URL"
-        --             , value = baseURL
-        --             , placeholder = "https://matrix.org"
-        --             , autocomplete = Just "matrix-url"
-        --             }
-        --         , input
-        --             { active = editable
-        --             , type_ = "text"
-        --             , msg = InputMatrix "user"
-        --             , label = Html.text "user ID"
-        --             , value = userId
-        --             , placeholder = "@USERID:matrix.org"
-        --             , autocomplete = Just "matrix-user"
-        --             }
-        --         , input
-        --             { active = editable
-        --             , type_ = "text"
-        --             , msg = InputMatrix "token"
-        --             , label = Html.text "access token"
-        --             , value = accessToken
-        --             , placeholder = "....MDAxM2lkZW50aWZpZXIga2V5CjAwMTBjaWQgZ2Vu...."
-        --             , autocomplete = Just "matrix-token"
-        --             }
-        --         ]
-        PubNub { pubKey, subKey } ->
-            details
-                [ input
-                    { active = editable
-                    , type_ = "password"
-                    , msg = InputPubNub "pub"
-                    , label = Html.text "publishKey"
-                    , value = pubKey
-                    , placeholder = "pub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-                    , autocomplete = Just "pubnup-publishKey"
-                    }
-                , input
-                    { active = editable
-                    , type_ = "password"
-                    , msg = InputPubNub "sub"
-                    , label = Html.text "subscribeKey"
-                    , value = subKey
-                    , placeholder = "sub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-                    , autocomplete = Just "pubnup-subscribeKey"
-                    }
-                , fieldHint "Leave both empty to use LiaScript's shared keyset. For regular use, create your own free App/Keyset in the PubNub dashboard and paste its publish and subscribe key here instead, so you're not sharing capacity with everyone else."
-                ]
+                Torrent { relayUrls, turnConfig } ->
+                    trysteroSettings active "tracker" "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, ..." relayUrls turnConfig
 
-        Ably { apiKey, persistent } ->
-            details
-                [ input
-                    { active = editable
-                    , type_ = "password"
-                    , msg = InputAbly
-                    , label = Html.text "API key"
-                    , value = apiKey
-                    , placeholder = "xVLyHw.XXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-                    , autocomplete = Just "ably-apiKey"
-                    }
-                , fieldHint "Leave empty to use LiaScript's shared key. For regular use, create a free App in your own Ably dashboard and paste one of its API keys here instead, so you're not sharing capacity with everyone else."
-                , checkbox
-                    { active = editable
-                    , value = persistent
-                    , msg = CheckboxAbly
-                    , label = Html.text "persistent storage"
-                    }
-                , fieldHint "Uses Ably's LiveObjects to keep the chat and modified code available after everyone disconnects, retained for up to 90 days by default. Left unchecked, the state is dropped once the room empties."
-                ]
+                IPFS { turnConfig } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputTrystero "turn"
+                            , value = turnConfig
+                            , placeholder = "[{\"urls\":\"turn:turn.example.com\",\"username\":\"user\",\"credential\":\"pass\"}]"
+                            , label = Html.text "TURN servers as JSON (optional)"
+                            , autocomplete = Just "trystero-turn"
+                            }
+                        , fieldHint "Waku only finds peers and exchanges the WebRTC handshake — the actual chat and quiz data flows directly between browsers. Add TURN servers here if participants sit behind firewalls/NATs that block a direct WebRTC connection; there's no separate relay URL to configure for this strategy."
+                        ]
 
-        P2PT urls ->
-            details
-                [ input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputP2PT
-                    , value = urls
-                    , placeholder = "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, ..."
-                    , label = Html.text "WebTorrent tracker URLs (required, comma-separated)"
-                    , autocomplete = Just "websocket-urls"
-                    }
-                ]
+                -- Jitsi domain ->
+                --     input
+                --         { active = active
+                --         , type_ = "text"
+                --         , msg = InputJitsi
+                --         , value = domain
+                --         , placeholder = "domain.jit.si"
+                --         , label = Html.text "domain"
+                --         , autocomplete = Just "jitsi-domain"
+                --         }
+                -- Matrix { baseURL, userId, accessToken } ->
+                --     Html.div []
+                --         [ input
+                --             { active = active
+                --             , type_ = "text"
+                --             , msg = InputMatrix "url"
+                --             , label = Html.text "base URL"
+                --             , value = baseURL
+                --             , placeholder = "https://matrix.org"
+                --             , autocomplete = Just "matrix-url"
+                --             }
+                --         , input
+                --             { active = active
+                --             , type_ = "text"
+                --             , msg = InputMatrix "user"
+                --             , label = Html.text "user ID"
+                --             , value = userId
+                --             , placeholder = "@USERID:matrix.org"
+                --             , autocomplete = Just "matrix-user"
+                --             }
+                --         , input
+                --             { active = active
+                --             , type_ = "text"
+                --             , msg = InputMatrix "token"
+                --             , label = Html.text "access token"
+                --             , value = accessToken
+                --             , placeholder = "....MDAxM2lkZW50aWZpZXIga2V5CjAwMTBjaWQgZ2Vu...."
+                --             , autocomplete = Just "matrix-token"
+                --             }
+                --         ]
+                PubNub { pubKey, subKey } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "password"
+                            , msg = InputPubNub "pub"
+                            , label = Html.text "publishKey"
+                            , value = pubKey
+                            , placeholder = "pub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+                            , autocomplete = Just "pubnup-publishKey"
+                            }
+                        , input
+                            { active = active
+                            , type_ = "password"
+                            , msg = InputPubNub "sub"
+                            , label = Html.text "subscribeKey"
+                            , value = subKey
+                            , placeholder = "sub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+                            , autocomplete = Just "pubnup-subscribeKey"
+                            }
+                        , fieldHint "Leave both empty to use LiaScript's shared keyset. For regular use, create your own free App/Keyset in the PubNub dashboard and paste its publish and subscribe key here instead, so you're not sharing capacity with everyone else."
+                        ]
 
-        WebSocket { url } ->
-            details
-                [ input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputWebSocket
-                    , value = url
-                    , placeholder = "wss://your-server.example.com"
-                    , label = Html.text "server URL"
-                    , autocomplete = Just "websocket-url"
-                    }
-                , fieldHint "Required — the full WebSocket URL of your y-websocket-compatible server."
-                ]
+                Ably { apiKey, persistent } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "password"
+                            , msg = InputAbly
+                            , label = Html.text "API key"
+                            , value = apiKey
+                            , placeholder = "xVLyHw.XXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                            , autocomplete = Just "ably-apiKey"
+                            }
+                        , fieldHint "Leave empty to use LiaScript's shared key. For regular use, create a free App in your own Ably dashboard and paste one of its API keys here instead, so you're not sharing capacity with everyone else."
+                        , checkbox
+                            { active = active
+                            , value = persistent
+                            , msg = CheckboxAbly
+                            , label = Html.text "persistent storage"
+                            }
+                        , fieldHint "Uses Ably's LiveObjects to keep the chat and modified code available after everyone disconnects, retained for up to 90 days by default. Left unchecked, the state is dropped once the room empties."
+                        ]
 
-        PeerJS { host, port_, path, iceServers } ->
-            details
-                [ input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputPeerJS "host"
-                    , value = host
-                    , placeholder = "my-peerjs-server.example.com"
-                    , label = Html.text "server host (optional)"
-                    , autocomplete = Just "peerjs-host"
-                    }
-                , input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputPeerJS "port"
-                    , value = port_
-                    , placeholder = "443"
-                    , label = Html.text "server port (optional)"
-                    , autocomplete = Just "peerjs-port"
-                    }
-                , input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputPeerJS "path"
-                    , value = path
-                    , placeholder = "/"
-                    , label = Html.text "server path (optional)"
-                    , autocomplete = Just "peerjs-path"
-                    }
-                , fieldHint "All three fields above are optional — leave them empty to use the free PeerJS Cloud signaling server."
-                , input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputPeerJS "ice"
-                    , value = iceServers
-                    , placeholder = "[{\"urls\":\"stun:stun.l.google.com:19302\"}]"
-                    , label = Html.text "ICE / TURN servers as JSON (optional)"
-                    , autocomplete = Just "peerjs-ice"
-                    }
-                , iceServersHint
-                ]
+                P2PT urls ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputP2PT
+                            , value = urls
+                            , placeholder = "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, ..."
+                            , label = Html.text "WebTorrent tracker URLs (required, comma-separated)"
+                            , autocomplete = Just "websocket-urls"
+                            }
+                        ]
 
-        SimplePeer { signaling, iceServers } ->
-            details
-                [ input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputSimplePeer "signaling"
-                    , value = signaling
-                    , placeholder = "wss://your-signaling-server.example.com"
-                    , label = Html.text "signaling server URLs (required, comma-separated)"
-                    , autocomplete = Just "simplepeer-signaling"
-                    }
-                , fieldHint "Required. Multiple comma-separated URLs can be provided for redundancy."
-                , input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputSimplePeer "ice"
-                    , value = iceServers
-                    , placeholder = "[{\"urls\":\"stun:stun.l.google.com:19302\"}]"
-                    , label = Html.text "ICE / TURN servers as JSON (optional)"
-                    , autocomplete = Just "simplepeer-ice"
-                    }
-                , iceServersHint
-                ]
+                WebSocket { url } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputWebSocket
+                            , value = url
+                            , placeholder = "wss://your-server.example.com"
+                            , label = Html.text "server URL"
+                            , autocomplete = Just "websocket-url"
+                            }
+                        , fieldHint "Required — the full WebSocket URL of your y-websocket-compatible server."
+                        ]
 
-        _ ->
-            Html.text ""
+                PeerJS { host, port_, path, iceServers } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputPeerJS "host"
+                            , value = host
+                            , placeholder = "my-peerjs-server.example.com"
+                            , label = Html.text "server host (optional)"
+                            , autocomplete = Just "peerjs-host"
+                            }
+                        , input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputPeerJS "port"
+                            , value = port_
+                            , placeholder = "443"
+                            , label = Html.text "server port (optional)"
+                            , autocomplete = Just "peerjs-port"
+                            }
+                        , input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputPeerJS "path"
+                            , value = path
+                            , placeholder = "/"
+                            , label = Html.text "server path (optional)"
+                            , autocomplete = Just "peerjs-path"
+                            }
+                        , fieldHint "All three fields above are optional — leave them empty to use the free PeerJS Cloud signaling server."
+                        , input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputPeerJS "ice"
+                            , value = iceServers
+                            , placeholder = "[{\"urls\":\"stun:stun.l.google.com:19302\"}]"
+                            , label = Html.text "ICE / TURN servers as JSON (optional)"
+                            , autocomplete = Just "peerjs-ice"
+                            }
+                        , iceServersHint
+                        ]
+
+                SimplePeer { signaling, iceServers } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputSimplePeer "signaling"
+                            , value = signaling
+                            , placeholder = "wss://your-signaling-server.example.com"
+                            , label = Html.text "signaling server URLs (required, comma-separated)"
+                            , autocomplete = Just "simplepeer-signaling"
+                            }
+                        , fieldHint "Required. Multiple comma-separated URLs can be provided for redundancy."
+                        , input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputSimplePeer "ice"
+                            , value = iceServers
+                            , placeholder = "[{\"urls\":\"stun:stun.l.google.com:19302\"}]"
+                            , label = Html.text "ICE / TURN servers as JSON (optional)"
+                            , autocomplete = Just "simplepeer-ice"
+                            }
+                        , iceServersHint
+                        ]
+
+                _ ->
+                    Html.text ""
+    in
+    Html.div [] [ lockedHint, content ]
 
 
 trysteroSettings : Bool -> String -> String -> String -> String -> Html Msg
