@@ -451,6 +451,22 @@
       background: rgb(var(--lia-red));
     }
   }
+
+  // the small decorative peer-network graphic at the top of `Via.info`
+  &__graph {
+    display: block;
+    margin: 0 auto 1rem;
+    max-width: 280px;
+  }
+
+  &__graph-line {
+    stroke: rgb(var(--color-border));
+    stroke-width: 1;
+  }
+
+  &__graph-node {
+    fill: rgb(var(--color-highlight));
+  }
 }
 
 .lia-badge {

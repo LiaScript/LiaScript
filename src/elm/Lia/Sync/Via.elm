@@ -21,6 +21,8 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Lia.Utils as Util
+import Svg
+import Svg.Attributes as SvgAttr
 
 
 type Backend
@@ -464,53 +466,247 @@ mapHead fn list =
             list
 
 
-line : Html msg
-line =
-    Html.hr [ Attr.style "margin" "5px 0px" ] []
-
-
 info : Html msg
 info =
-    Html.p
-        []
-        [ Html.text "The LiaScript classroom enables a lightweight collaboration between small groups of users. "
-        , Html.text "\"Lightweight\" means that there is no chat (video-conferencing), no logging, and no user roles. "
-        , Html.text "Instead, there is only one global state created and shared between the browsers of all users. "
-        , Html.text "Thus, a user joins a room with her/his data and when she/he leaves, this data gets removed from the classroom. "
-        , Html.text "No data is stored, and no data gets preserved, it is only shared among uses during a classroom session. "
-        , Html.text "LiaScript enables the synchronization on the following elements:"
+    Html.div []
+        [ Html.h3 [ Attr.style "text-align" "center", Attr.style "margin-block-end" "0.3rem" ] [ Html.text "The LiaScript Classroom" ]
+        , Html.p [ Attr.style "text-align" "center", Attr.style "opacity" "0.8", Attr.style "margin-block-start" "0" ]
+            [ Html.text "A live, peer-to-peer meeting room built into every LiaScript course — for running a class together, without accounts, servers, or setup." ]
+        , peerGraph
+        , Html.p []
+            [ Html.text "The LiaScript classroom is a lightweight, peer-to-peer collaboration between small groups of users — no accounts, no server dashboard, nothing to install. "
+            , Html.text "Open any course, click "
+            , Html.em [] [ Html.text "Classroom" ]
+            , Html.text ", and everyone who joins the same room shares one live state. "
+            , Html.text "\"Lightweight\" also means there is no video-conferencing and no logging: a user joins a room with her/his data, and when she/he leaves, that data leaves with them again. Nothing is stored and nothing is preserved beyond the session — unless you deliberately ask it to be."
+            ]
+        , Html.h4 [] [ Html.text "Three ways in" ]
+        , Html.div [ Attr.style "display" "flex", Attr.style "flex-wrap" "wrap", Attr.style "gap" "0.75rem", Attr.style "margin" "0.75rem 0 1.25rem" ]
+            [ wayCard "icon-login" "Join a room" "Paste a shared link, or type the room name and pick the same backend, then connect."
+            , wayCard "icon-plus" "Start a room" "Pick a backend, name the room (or click the shuffle icon for a random one), add a password if you like, and share the resulting link."
+            , wayCard "icon-pencil" "Own Notes" "A permanent, offline-only room. Nothing ever leaves your browser."
+            ]
+        , Html.h4 [] [ Html.text "What syncs" ]
+        , Html.p [] [ Html.text "LiaScript enables the synchronization on the following elements:" ]
         , Html.ol [ Attr.style "padding" "10px 25px 0px" ]
             [ Html.li [] [ Html.text "Global overview on quizzes" ]
             , Html.li [] [ Html.text "Global overview on surveys" ]
             , Html.li [] [ Html.text "Collaborative editing of executable code snippets (you have to switch to sync-mode, per editor)" ]
             , Html.li [] [ Html.text "A chat that parses LiaScript, such that you can dynamically create quizzes, surveys, collaborative editors, but also to share videos, galleries, oEmbeds, etc..." ]
             ]
-        , Html.text "To synchronize the state between users, we apply "
-        , link "Conflict Free Replicated Datatypes (CRDTs)" "https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type"
-        , Html.text " as implemented by "
-        , yjsLink
-        , Html.text ". Communication is realized with the help of different backends, which only provide a relay service. "
-        , Html.text "The implementation can be found "
-        , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync"
-        , Html.text ". Different browsers might support different backends, which require different settings. "
-        , Html.text "You can help us with implementing other backend services. "
-        , line
-        , Html.text "Every room needs a unique name; you can click on the generator-button to do this randomly. "
-        , Html.text "After a successful connection, you can either share your settings with your audience or the new URL, which contains the entire classroom configuration. "
-        , Html.text "A combination of your course-URL and the room name are used to create a unique ID and to prevent collisions with other courses. "
-        , Html.text "However, if you want to establish a connection between exported courses (see "
-        , link "LiaScript-Exporter" ""
-        , Html.text ") on different platforms, such as "
-        , link "Moodle" "https://en.wikipedia.org/wiki/Moodle"
-        , Html.text ", "
-        , link "ILIAS" "https://en.wikipedia.org/wiki/ILIAS"
-        , Html.text ", "
-        , link "OPAL" "https://de.wikipedia.org/wiki/OPAL_(Lernplattform)"
-        , Html.text ", etc., you can put your room name in single or double quotation marks. "
-        , Html.text "This will instruct LiaScript to use the room name only (no course-URL), but you will have to make sure that all users are on the same course and version, to prevent collisions ..."
-        , line
-        , Html.text "Note, most backend services are free, and you can also host them by your own. "
-        , Html.text "There might be cases where the synchronization is slow or there are collisions, but we are working in the background on optimizations and fixes ;-)"
+        , Html.p []
+            [ Html.text "To synchronize the state between users, we apply "
+            , link "Conflict Free Replicated Datatypes (CRDTs)" "https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type"
+            , Html.text " as implemented by "
+            , yjsLink
+            , Html.text ". Communication is realized with the help of different backends, which only provide a relay service. "
+            , Html.text "The implementation can be found "
+            , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync"
+            , Html.text ". Different browsers might support different backends, which require different settings. "
+            , Html.text "You can help us with implementing other backend services."
+            ]
+        , Html.h4 [] [ Html.text "Who sees what" ]
+        , Html.p []
+            [ Html.text "There are exactly two roles, and no more: the "
+            , Html.strong [] [ Html.text "Initiator" ]
+            , Html.text ", who starts the room, and every "
+            , Html.strong [] [ Html.text "Participant" ]
+            , Html.text " who joins it. Everyone takes part fully — answering, chatting, editing code — but what the Initiator additionally sees depends on the room's mode:"
+            ]
+        , modeLegend
+        , Html.p []
+            [ Html.text "Holding the room's owner token (see "
+            , Html.strong [] [ Html.text "Proving you started the room" ]
+            , Html.text " below) doesn't add any control over other participants either — it only proves who started the room."
+            ]
+        , Html.h4 [] [ Html.text "Built for small, trusting groups" ]
+        , Html.p []
+            [ Html.text "Getting in comes down to two things. First, the room name itself: rooms aren't listed anywhere, so knowing the name (or the link that encodes it) is already most of what stands between a stranger and your room, the same way an unlisted video link works. Second, an optional password on top — worth adding whenever a link might get forwarded, posted somewhere semi-public, or simply guessed. Either way there is no per-person login: whoever has the name (and password, if set) is in, fully, the same as everyone else."
+            ]
+        , Html.p []
+            [ Html.text "That fits a class, a workshop, or a study group whose members already trust each other for the length of one session — not a large, semi-public, or long-running room. Anyone holding the room's keys can do everything a Participant can: answer, chat, edit shared code — there's no way to single out or remove one bad actor once they're inside. If a password leaks, or people you don't recognize show up, close the room and start a fresh one rather than trying to patch the old one."
+            ]
+        , Html.h4 [] [ Html.text "Saving a room for next time" ]
+        , Html.p []
+            [ Html.text "By default a room is a one-time meeting — reload the page and it's gone. Check "
+            , Html.em [] [ Html.text "\"Remember this classroom\"" ]
+            , Html.text " before connecting, and two things change: it reappears as a card on the classroom overview, ready to reconnect in one click, and its content — chat, code, quiz and survey state — is cached in your own browser, so reopening it shows everything instantly, even offline."
+            ]
+        , Html.p []
+            [ Html.text "That cache mirrors your own role, not the whole room: in Summary or Details mode, the pooled or per-participant results are only ever cached for the Initiator, exactly as they'd only be visible live. Delete a saved room any time — that clears its local cache too. "
+            , Html.text "\"Own Notes\" behaves the same way, permanently, since it's never connected to anyone else in the first place."
+            ]
+        , Html.h4 [] [ Html.text "Proving you started the room" ]
+        , Html.p []
+            [ Html.text "Anyone in a room can normally do anything — there's no built-in ranking. Ownership exists for one narrow purpose: proving, later, that "
+            , Html.em [] [ Html.text "you" ]
+            , Html.text " were the one who started a given room. Starting a room in Summary or Details mode generates an owner token for you, shown as a copyable hash. Use "
+            , Html.em [] [ Html.text "\"Copy owner link\"" ]
+            , Html.text " to hand a co-teacher a link that lets their browser claim the same ownership — say, so a colleague can run the session if you can't make it."
+            ]
+        , Html.h4 [] [ Html.text "Room names and sharing" ]
+        , Html.p []
+            [ Html.text "Every room needs a unique name; you can click on the generator-button to do this randomly. "
+            , Html.text "After a successful connection, you can either share your settings with your audience or the new URL, which contains the entire classroom configuration. "
+            , Html.text "A combination of your course-URL and the room name are used to create a unique ID and to prevent collisions with other courses. "
+            , Html.text "However, if you want to establish a connection between exported courses (see "
+            , link "LiaScript-Exporter" ""
+            , Html.text ") on different platforms, such as "
+            , link "Moodle" "https://en.wikipedia.org/wiki/Moodle"
+            , Html.text ", "
+            , link "ILIAS" "https://en.wikipedia.org/wiki/ILIAS"
+            , Html.text ", "
+            , link "OPAL" "https://de.wikipedia.org/wiki/OPAL_(Lernplattform)"
+            , Html.text ", etc., you can put your room name in single or double quotation marks. "
+            , Html.text "This will instruct LiaScript to use the room name only (no course-URL), but you will have to make sure that all users are on the same course and version, to prevent collisions ..."
+            ]
+        , Html.h4 [] [ Html.text "Choosing how you connect" ]
+        , Html.p []
+            [ Html.text "A room needs a relay to help browsers find each other — LiaScript speaks to eleven of them, grouped here by how much setup they need:" ]
+        , backendGroups
+        , Html.p []
+            [ Html.text "Note, most backend services are free, and you can also host them by your own. "
+            , Html.text "There might be cases where the synchronization is slow or there are collisions, but we are working in the background on optimizations and fixes ;-) "
+            , Html.text "Connections can also simply be blocked outright: school and company networks routinely restrict what's allowed out. Some block WebRTC, which rules out PeerJS, SimplePeer, and the peer-to-peer legs of Torrent, IPFS, and P2PT; others block WebSocket connections entirely, which rules out GUN, NoStr, MQTT, WebSocket, and Ably too. There's no way to know in advance — if a room won't connect, that's usually the network, not you. Try a different backend before assuming something's broken."
+            ]
+        , Html.blockquote [ Attr.class "lia-quote lia-quote__alert-tip" ]
+            [ Html.p []
+                [ Util.icon "icon-alert-tip" [ Attr.class "lia-quote__alert-icon" ]
+                , Html.text "Tip"
+                ]
+            , Html.p []
+                [ Html.text "If your network is locked down, or you'd rather not depend on a public relay being reachable, GUN, WebSocket, SimplePeer, and PeerJS can all be pointed at infrastructure you run yourself instead of the shared defaults — your own WebSocket server, your own GUN peer, your own signalling server. More setup once, but connectivity stops being a guess."
+                ]
+            ]
+        , Html.h4 [] [ Html.text "Privacy, in short" ]
+        , Html.blockquote [ Attr.class "lia-quote lia-quote__alert-note" ]
+            [ Html.p []
+                [ Util.icon "icon-alert-note" [ Attr.class "lia-quote__alert-icon" ]
+                , Html.text "Note"
+                ]
+            , Html.p []
+                [ Html.text "No accounts, ever — a room identifies people only by the name they optionally type in. By default, nothing about a session is stored anywhere once everyone disconnects; the state exists only while people are present." ]
+            , Html.p []
+                [ Html.text "A room password also scrambles the connection between browsers, so a relay only ever sees unreadable traffic — but it doesn't add any of the fine-grained secrecy a login system would (see "
+                , Html.strong [] [ Html.text "Built for small, trusting groups" ]
+                , Html.text " above)."
+                ]
+            , Html.p []
+                [ Html.text "The only things that persist on purpose are the ones you asked for: a room you checked \"Remember\" (cached in your own browser), \"Own Notes\" (always local), and a couple of backends that offer optional server-side storage if you turn it on." ]
+            ]
+        ]
+
+
+{-| A bordered, left-accented box - the shared visual unit behind the
+"three ways in" cards, the mode legend and the backend groups below.
+Colors are always drawn from LiaScript's own custom properties
+(`--color-highlight`, `--lia-success`/`--lia-warning`/`--lia-red`, the same
+ones `Lia.Sync.View`'s `modeBadge` already uses for its dots), never a
+literal hex value, so it always follows the active theme/accent.
+-}
+accentBox : String -> List (Html msg) -> Html msg
+accentBox accentColor content =
+    Html.div
+        [ Attr.style "background" "rgba(0, 0, 0, 0.25)"
+        , Attr.style "border" "1px solid rgb(var(--color-border))"
+        , Attr.style "border-left" ("3px solid " ++ accentColor)
+        , Attr.style "border-radius" "6px"
+        , Attr.style "padding" "0.9rem 1.1rem"
+        , Attr.style "margin-block-end" "0.75rem"
+        ]
+        content
+
+
+wayCard : String -> String -> String -> Html msg
+wayCard iconName label description =
+    Html.div
+        [ Attr.style "flex" "1 1 180px"
+        , Attr.style "min-width" "160px"
+
+        -- a flex container of its own so the single `accentBox` child
+        -- stretches to fill this wrapper's height (which itself already
+        -- matches its tallest sibling, via the parent row's default
+        -- `align-items: stretch`) - without this, all three cards would
+        -- shrink-wrap their own (differently long) text instead
+        , Attr.style "display" "flex"
+        ]
+        [ accentBox "rgb(var(--color-highlight))"
+            [ Html.div [ Attr.style "display" "flex", Attr.style "align-items" "center", Attr.style "gap" "0.5rem", Attr.style "margin-block-end" "0.4rem" ]
+                [ Util.icon iconName [ Attr.style "font-size" "1.2em" ]
+                , Html.strong [] [ Html.text label ]
+                ]
+            , Html.p [ Attr.style "margin" "0", Attr.style "opacity" "0.85" ] [ Html.text description ]
+            ]
+        ]
+
+
+{-| A legend explaining the three visibility modes (see `ClassroomMode` in
+`Lia.Sync.Types`), color-coded with the exact same tokens as the saved-
+classroom cards' `modeBadge` dots in `Lia.Sync.View` (green/orange/red for
+Shared/Summary/Details), so the two stay visually consistent.
+-}
+modeLegend : Html msg
+modeLegend =
+    Html.div [ Attr.style "margin" "0.75rem 0 1.25rem" ]
+        [ modeLegendItem "rgb(var(--lia-success))" "Shared" "Everyone is equal and sees the same pooled overview of quiz and survey results — the default, and the friendliest for peer learning."
+        , modeLegendItem "rgb(var(--lia-warning))" "Summary" "Participants answer as normal, but only the Initiator sees the aggregated overview."
+        , modeLegendItem "rgb(var(--lia-red))" "Details" "The strictest mode: the Initiator can see results broken down per participant, not just pooled. Use it deliberately — participants should know this mode is active."
+        ]
+
+
+modeLegendItem : String -> String -> String -> Html msg
+modeLegendItem accentColor label description =
+    accentBox accentColor
+        [ Html.div [ Attr.style "font-weight" "600", Attr.style "margin-block-end" "0.25rem" ] [ Html.text label ]
+        , Html.p [ Attr.style "margin" "0", Attr.style "opacity" "0.85" ] [ Html.text description ]
+        ]
+
+
+{-| The eleven connection backends, grouped by how much setup each needs.
+Badges reuse the app-wide `.lia-badge` pill (also used in the backend
+picker's option list) instead of introducing a table.
+-}
+backendGroups : Html msg
+backendGroups =
+    Html.div [ Attr.style "margin" "0.75rem 0 1.25rem" ]
+        [ backendGroup "rgb(var(--lia-success))" "No setup" [ "PeerJS", "PubNub", "Ably", "Edrys" ] "Works immediately on a shared free tier LiaScript provides. Fine for classes and quick sessions; capacity is split with everyone else using the default keys."
+        , backendGroup "rgb(var(--color-highlight))" "Decentralized / public relays" [ "GUN", "NoStr", "MQTT", "Torrent", "IPFS", "P2PT" ] "No single company runs these — traffic passes through volunteer-run community relays. Reliable enough for regular use, occasionally slower to connect."
+        , backendGroup "rgb(var(--lia-warning))" "Bring your own server" [ "WebSocket", "SimplePeer" ] "You (or your institution) host the relay. More control, but requires someone to run and maintain it — the two backends with no public fallback."
+        , backendGroup "rgb(var(--color-border))" "Just for you" [ "Local" ] "\"Own Notes\" — no network at all, nothing to configure."
+        ]
+
+
+backendGroup : String -> String -> List String -> String -> Html msg
+backendGroup accentColor title names description =
+    accentBox accentColor
+        [ Html.div [ Attr.style "font-weight" "600", Attr.style "margin-block-end" "0.4rem" ] [ Html.text title ]
+        , Html.div [ Attr.style "display" "flex", Attr.style "flex-wrap" "wrap", Attr.style "gap" "0.4rem", Attr.style "margin-block-end" "0.4rem" ]
+            (List.map (\name -> Html.span [ Attr.class "lia-badge" ] [ Html.text name ]) names)
+        , Html.p [ Attr.style "margin" "0", Attr.style "opacity" "0.85" ] [ Html.text description ]
+        ]
+
+
+{-| A small decorative peer-network graphic — five nodes, a few connecting
+lines — echoing the peer-to-peer nature of a classroom room. Purely
+illustrative, so it's marked `aria-hidden`.
+-}
+peerGraph : Html msg
+peerGraph =
+    Svg.svg
+        [ SvgAttr.viewBox "0 0 260 140"
+        , SvgAttr.class "lia-classroom__graph"
+        , Attr.attribute "aria-hidden" "true"
+        ]
+        [ Svg.line [ SvgAttr.class "lia-classroom__graph-line", SvgAttr.x1 "40", SvgAttr.y1 "40", SvgAttr.x2 "130", SvgAttr.y2 "20" ] []
+        , Svg.line [ SvgAttr.class "lia-classroom__graph-line", SvgAttr.x1 "40", SvgAttr.y1 "40", SvgAttr.x2 "90", SvgAttr.y2 "100" ] []
+        , Svg.line [ SvgAttr.class "lia-classroom__graph-line", SvgAttr.x1 "130", SvgAttr.y1 "20", SvgAttr.x2 "210", SvgAttr.y2 "60" ] []
+        , Svg.line [ SvgAttr.class "lia-classroom__graph-line", SvgAttr.x1 "90", SvgAttr.y1 "100", SvgAttr.x2 "210", SvgAttr.y2 "60" ] []
+        , Svg.line [ SvgAttr.class "lia-classroom__graph-line", SvgAttr.x1 "90", SvgAttr.y1 "100", SvgAttr.x2 "150", SvgAttr.y2 "125" ] []
+        , Svg.circle [ SvgAttr.class "lia-classroom__graph-node", SvgAttr.cx "40", SvgAttr.cy "40", SvgAttr.r "5" ] []
+        , Svg.circle [ SvgAttr.class "lia-classroom__graph-node", SvgAttr.cx "130", SvgAttr.cy "20", SvgAttr.r "5" ] []
+        , Svg.circle [ SvgAttr.class "lia-classroom__graph-node", SvgAttr.cx "210", SvgAttr.cy "60", SvgAttr.r "5" ] []
+        , Svg.circle [ SvgAttr.class "lia-classroom__graph-node", SvgAttr.cx "90", SvgAttr.cy "100", SvgAttr.r "5" ] []
+        , Svg.circle [ SvgAttr.class "lia-classroom__graph-node", SvgAttr.cx "150", SvgAttr.cy "125", SvgAttr.r "5" ] []
         ]
 
 
