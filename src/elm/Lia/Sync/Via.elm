@@ -21,8 +21,6 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Lia.Utils as Util
-import Svg
-import Svg.Attributes as SvgAttr
 
 
 type Backend
@@ -686,28 +684,23 @@ backendGroup accentColor title names description =
         ]
 
 
-{-| A small decorative peer-network graphic — five nodes, a few connecting
-lines — echoing the peer-to-peer nature of a classroom room. Purely
-illustrative, so it's marked `aria-hidden`.
+{-| A small decorative peer-network graphic, echoing the peer-to-peer nature
+of a classroom room. Served from `static/network.svg` (copied to the build
+root by `parcel-reporter-static-files-copy`, the same mechanism `icon.svg`
+already relies on - see `Const.icon`/`Index.View.Card.logo`), rather than
+hand-drawn, since it's a fixed illustration, not data. Purely decorative,
+so it's marked `aria-hidden` with an empty `alt`.
 -}
 peerGraph : Html msg
 peerGraph =
-    Svg.svg
-        [ SvgAttr.viewBox "0 0 260 140"
-        , SvgAttr.class "lia-classroom__graph"
+    Html.img
+        [ Attr.class "lia-classroom__graph"
+        , Attr.src "network.svg"
+        , Attr.attribute "loading" "lazy"
+        , Attr.alt ""
         , Attr.attribute "aria-hidden" "true"
         ]
-        [ Svg.line [ SvgAttr.class "lia-classroom__graph-line", SvgAttr.x1 "40", SvgAttr.y1 "40", SvgAttr.x2 "130", SvgAttr.y2 "20" ] []
-        , Svg.line [ SvgAttr.class "lia-classroom__graph-line", SvgAttr.x1 "40", SvgAttr.y1 "40", SvgAttr.x2 "90", SvgAttr.y2 "100" ] []
-        , Svg.line [ SvgAttr.class "lia-classroom__graph-line", SvgAttr.x1 "130", SvgAttr.y1 "20", SvgAttr.x2 "210", SvgAttr.y2 "60" ] []
-        , Svg.line [ SvgAttr.class "lia-classroom__graph-line", SvgAttr.x1 "90", SvgAttr.y1 "100", SvgAttr.x2 "210", SvgAttr.y2 "60" ] []
-        , Svg.line [ SvgAttr.class "lia-classroom__graph-line", SvgAttr.x1 "90", SvgAttr.y1 "100", SvgAttr.x2 "150", SvgAttr.y2 "125" ] []
-        , Svg.circle [ SvgAttr.class "lia-classroom__graph-node", SvgAttr.cx "40", SvgAttr.cy "40", SvgAttr.r "5" ] []
-        , Svg.circle [ SvgAttr.class "lia-classroom__graph-node", SvgAttr.cx "130", SvgAttr.cy "20", SvgAttr.r "5" ] []
-        , Svg.circle [ SvgAttr.class "lia-classroom__graph-node", SvgAttr.cx "210", SvgAttr.cy "60", SvgAttr.r "5" ] []
-        , Svg.circle [ SvgAttr.class "lia-classroom__graph-node", SvgAttr.cx "90", SvgAttr.cy "100", SvgAttr.r "5" ] []
-        , Svg.circle [ SvgAttr.class "lia-classroom__graph-node", SvgAttr.cx "150", SvgAttr.cy "125", SvgAttr.r "5" ] []
-        ]
+        []
 
 
 yjsLink : Html msg

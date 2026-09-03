@@ -33,7 +33,17 @@ view settings =
             , Attr.id "lia-modal-focus"
             , Attr.tabindex 0
             ]
-            [ Html.text "Classroom" ]
+            [ Html.text "Classroom"
+            , Html.img
+                [ Attr.src "network.svg"
+                , Attr.attribute "loading" "lazy"
+                , Attr.alt ""
+                , Attr.attribute "aria-hidden" "true"
+                , Attr.style "height" "5rem"
+                , Attr.style "margin-left" "1rem"
+                ]
+                []
+            ]
         , case settings.sync.select of
             Nothing ->
                 Html.div [ Attr.class "lia-classroom__overview" ]
