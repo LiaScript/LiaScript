@@ -512,6 +512,7 @@ update session model msg =
                                 , mode = toClassroomMode entry.mode
                                 , locked = True
                                 , passwordLocked = True
+                                , ownerTokenHash = entry.ownerTokenHash
                             }
                     }
                         |> Return.val

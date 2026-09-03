@@ -266,6 +266,8 @@ const Service = {
       name?: string
       title?: string
       notes?: string
+      mode?: number
+      ownerTokenHash?: string
     }
   ) {
     if (connector) {
@@ -277,7 +279,13 @@ const Service = {
     uidDB: string,
     room: string,
     backend: string,
-    meta: { title?: string; notes?: string; name?: string; owner?: boolean }
+    meta: {
+      title?: string
+      notes?: string
+      name?: string
+      owner?: boolean
+      ownerTokenHash?: string
+    }
   ) {
     if (connector) {
       return connector.updateClassroomMeta(uidDB, room, backend, meta)

@@ -433,6 +433,7 @@ class LiaDB {
       title?: string
       notes?: string
       mode?: number
+      ownerTokenHash?: string
     }
   ) {
     const db = await this.openShared_(uidDB)
@@ -448,6 +449,7 @@ class LiaDB {
       title: entry.title || null,
       notes: entry.notes || null,
       mode: entry.mode || 0,
+      ownerTokenHash: entry.ownerTokenHash || existing?.ownerTokenHash || null,
       created: existing ? existing.created : now,
       updated: now,
     })
@@ -472,8 +474,7 @@ class LiaDB {
       notes?: string
       name?: string
       owner?: boolean
-      token?: string
-      tokenHash?: string
+      ownerTokenHash?: string
     }
   ) {
     const db = await this.openShared_(uidDB)
@@ -482,16 +483,15 @@ class LiaDB {
       notes?: string | null
       name?: string | null
       owner?: boolean
-      token?: string | null
-      tokenHash?: string | null
+      ownerTokenHash?: string | null
     } = {}
 
     if (meta.title !== undefined) changes.title = meta.title || null
     if (meta.notes !== undefined) changes.notes = meta.notes || null
     if (meta.name !== undefined) changes.name = meta.name || null
     if (meta.owner !== undefined) changes.owner = meta.owner
-    if (meta.token !== undefined) changes.token = meta.token || null
-    if (meta.tokenHash !== undefined) changes.tokenHash = meta.tokenHash || null
+    if (meta.ownerTokenHash !== undefined)
+      changes.ownerTokenHash = meta.ownerTokenHash || null
 
     await db['classrooms'].update([room, backend], changes)
   }

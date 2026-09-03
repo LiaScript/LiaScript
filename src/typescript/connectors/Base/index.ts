@@ -132,6 +132,8 @@ export class Connector {
       name?: string
       title?: string
       notes?: string
+      mode?: number
+      ownerTokenHash?: string
     }
   ) {
     console.log('saveClassroom not implemented')
@@ -141,7 +143,13 @@ export class Connector {
     _uidDB: string,
     _room: string,
     _backend: string,
-    _meta: { title?: string; notes?: string; name?: string; owner?: boolean }
+    _meta: {
+      title?: string
+      notes?: string
+      name?: string
+      owner?: boolean
+      ownerTokenHash?: string
+    }
   ) {
     console.log('updateClassroomMeta not implemented')
   }
