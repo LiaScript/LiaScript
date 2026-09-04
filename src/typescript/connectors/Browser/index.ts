@@ -129,6 +129,14 @@ class Connector extends Base.Connector {
   async clearYjsUpdates(uidDB: string, key: string) {
     return this.database.clearYjsUpdates(uidDB, key)
   }
+
+  async getKey(uidDB: string, id: string) {
+    return this.database.getKey(uidDB, id)
+  }
+
+  async putKey(uidDB: string, id: string, value: any) {
+    return this.database.putKey(uidDB, id, value)
+  }
 }
 
 export { Connector }
