@@ -96,6 +96,10 @@ export class CRDT {
   protected signingKeys: Y.Map<string>
   protected signingKeyReady: Promise<CryptoKeyPair>
 
+  // One-shot safety-net re-check, see the comment above where it's armed
+  // in `init()`.
+  protected resyncTimer?: ReturnType<typeof setTimeout>
+
   constructor(
     peerID: string,
     callback?: (event: any, origin: null | string) => void,
@@ -254,6 +258,23 @@ export class CRDT {
     // in the CRDT from a sync that completed before init() was called.
     // Explicitly dispatch the current CRDT state to LiaScript once.
     await this.fireInitialState()
+
+    // Safety net for eventually-consistent transports (observed with GUN):
+    // the underlying transport can report its Yjs state-vector exchange as
+    // "synced" before it has actually finished delivering a peer's own
+    // historical quiz/survey answers from the relay - and because that
+    // first delivery creates this peer's section chain in `this.user` for
+    // the first time, `observeDeep` in `registerCallbacks()` isn't
+    // guaranteed to fire for it either (see the comment there). Without
+    // this, the section stays stuck showing "unanswered" indefinitely, with
+    // no further event to correct it. Re-check once more, a few seconds
+    // later, once the relay has had a chance to catch up.
+    clearTimeout(this.resyncTimer)
+    this.resyncTimer = setTimeout(() => {
+      this.fireQuizSurvey().catch((e: any) =>
+        console.warn('delayed quiz/survey re-check failed ->', e),
+      )
+    }, 4000)
   }
 
   // Only writes our own answer. LiaScript's join payload includes other
@@ -283,6 +304,37 @@ export class CRDT {
     }
   }
 
+  // Recompute and dispatch every section's quiz/survey state, as seen right
+  // now. Called from `fireInitialState()` (the normal one-shot snapshot) and
+  // again, once, from `init()`'s delayed safety-net re-check.
+  protected async fireQuizSurvey() {
+    const quizIds = this.collectSectionIds(QUIZ)
+    if (quizIds.size > 0) {
+      this.callback(
+        await Promise.all(
+          [...quizIds].map(async (id) => ({
+            id,
+            data: await this.getSection(id, QUIZ),
+          })),
+        ),
+        'quiz',
+      )
+    }
+
+    const surveyIds = this.collectSectionIds(SURVEY)
+    if (surveyIds.size > 0) {
+      this.callback(
+        await Promise.all(
+          [...surveyIds].map(async (id) => ({
+            id,
+            data: await this.getSection(id, SURVEY),
+          })),
+        ),
+        'survey',
+      )
+    }
+  }
+
   protected async fireInitialState() {
     // Peers
     const peers = this.getPeers()
@@ -302,33 +354,8 @@ export class CRDT {
       this.callback(cursors, 'cursor')
     }
 
-    // Quizzes — collect all section IDs that have any entries
-    const quizIds = this.collectSectionIds(QUIZ)
-    if (quizIds.size > 0) {
-      this.callback(
-        await Promise.all(
-          [...quizIds].map(async (id) => ({
-            id,
-            data: await this.getSection(id, QUIZ),
-          })),
-        ),
-        'quiz',
-      )
-    }
-
-    // Surveys
-    const surveyIds = this.collectSectionIds(SURVEY)
-    if (surveyIds.size > 0) {
-      this.callback(
-        await Promise.all(
-          [...surveyIds].map(async (id) => ({
-            id,
-            data: await this.getSection(id, SURVEY),
-          })),
-        ),
-        'survey',
-      )
-    }
+    // Quizzes and surveys
+    await this.fireQuizSurvey()
 
     // Code editors
     const codeIds = new Set<number>()
@@ -559,6 +586,7 @@ export class CRDT {
   }
 
   destroy() {
+    clearTimeout(this.resyncTimer)
     this.doc.destroy()
   }
 
