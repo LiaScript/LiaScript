@@ -8,7 +8,7 @@ import Browser.Navigation as Nav
 import Const
 import Index.Model as Index
 import Json.Encode as JE
-import Lia.Parser.PatReplace exposing (link)
+import Lia.Parser.PatReplace exposing (link, resourceOrigin)
 import Lia.Script
 import Lia.Sync.Types as Sync
 import Lia.Utils as Utils
@@ -114,13 +114,12 @@ init flags url key =
                     }
                 )
 
+        decodedQuery =
+            url.query
+                |> Maybe.andThen Utils.urlDecodeIfEncoded
+
         courseUrl =
-            { url
-                | query =
-                    url.query
-                        |> Maybe.andThen Utils.urlDecodeIfEncoded
-                        |> Maybe.map link
-            }
+            { url | query = decodedQuery |> Maybe.map link }
 
         openTableOfContents =
             flags.screen.width > Const.globalBreakpoints.sm
@@ -158,10 +157,7 @@ init flags url key =
 
                 else
                     query
-            , origin =
-                query
-                    |> Utils.urlBasePath
-                    |> Maybe.withDefault ""
+            , origin = resourceOrigin query
             , anchor = url.fragment
             }
                 |> model { courseUrl | query = Just query } Loading
@@ -187,10 +183,7 @@ init flags url key =
 
                         else
                             query
-                    , origin =
-                        courseUrl.query
-                            |> Maybe.andThen Utils.urlBasePath
-                            |> Maybe.withDefault ""
+                    , origin = resourceOrigin query
                     , anchor = fragment
                     }
                         |> model courseUrl Loading
@@ -201,10 +194,7 @@ init flags url key =
                         ( initialized, cmd ) =
                             { url = get_base courseUrl
                             , readme = room.course
-                            , origin =
-                                room.course
-                                    |> Utils.urlBasePath
-                                    |> Maybe.withDefault ""
+                            , origin = resourceOrigin room.course
                             , anchor = fragment
                             }
                                 |> model courseUrl Loading
