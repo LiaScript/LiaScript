@@ -3,9 +3,11 @@ module Lia.Sync.Update exposing
     , SyncMsg(..)
     , handle
     , isConnected
+    , synchronize
     , update
     )
 
+import Array
 import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
@@ -870,27 +872,28 @@ synchronize model json =
                         |> warn "decoding code" (JD.errorToString info)
 
         Ok ( "quiz", param ) ->
-            case
-                param
-                    |> dataDecoder (Container.decoder Quiz.decoder)
-                    |> Result.map (dataMerge model.sync.data.quiz)
-            of
-                Ok dataUpdate ->
+            case param |> dataDecoder (Container.decoder Quiz.decoder) of
+                Ok new ->
                     let
                         sync =
                             model.sync
 
                         data =
                             sync.data
+
+                        dataUpdate =
+                            dataMerge data.quiz new
                     in
                     { model
-                        | sync =
-                            { sync
-                                | data =
-                                    { data
-                                        | quiz = dataUpdate
-                                    }
-                            }
+                        | sync = { sync | data = { data | quiz = dataUpdate } }
+                        , sections =
+                            lockSections Quiz.lockAnswered
+                                .quiz_vector
+                                (\v s -> { s | quiz_vector = v })
+                                (id model.sync.state)
+                                dataUpdate
+                                (List.map Tuple.first new)
+                                model.sections
                     }
                         |> Return.val
 
@@ -900,27 +903,28 @@ synchronize model json =
                         |> warn "decoding quiz" (JD.errorToString info)
 
         Ok ( "survey", param ) ->
-            case
-                param
-                    |> dataDecoder (Container.decoder Survey.decoder)
-                    |> Result.map (dataMerge model.sync.data.survey)
-            of
-                Ok dataUpdate ->
+            case param |> dataDecoder (Container.decoder Survey.decoder) of
+                Ok new ->
                     let
                         sync =
                             model.sync
 
                         data =
                             sync.data
+
+                        dataUpdate =
+                            dataMerge data.survey new
                     in
                     { model
-                        | sync =
-                            { sync
-                                | data =
-                                    { data
-                                        | survey = dataUpdate
-                                    }
-                            }
+                        | sync = { sync | data = { data | survey = dataUpdate } }
+                        , sections =
+                            lockSections Survey.lockAnswered
+                                .survey_vector
+                                (\v s -> { s | survey_vector = v })
+                                (id model.sync.state)
+                                dataUpdate
+                                (List.map Tuple.first new)
+                                model.sections
                     }
                         |> Return.val
 
@@ -1029,3 +1033,38 @@ dataDecoder data =
 dataMerge : Dict Int data -> List ( Int, data ) -> Dict Int data
 dataMerge data new =
     List.foldl (\( key, value ) store -> Dict.insert key value store) data new
+
+
+{-| A "quiz"/"survey" sync event only ever updates `model.sync.data` - the
+CRDT-wide view of who answered what. But an already-parsed section (e.g. the
+one a peer is looking at while joining the room) renders from its own local
+`quiz_vector`/`survey_vector`, which is only ever locked once, at parse time
+(see `Lia.Markdown.Quiz.Update`/`Survey.Update`, `"load"`/`"restore"`). Without
+this, a section that was already open before the classroom round-trip
+delivered its data stays stuck showing the pre-sync (unanswered) state until
+it gets reparsed (e.g. by navigating away and back). Re-apply `lockAnswered`
+to every section touched by this event, right after merging into `sync.data`.
+-}
+lockSections :
+    (Maybe String -> Dict Int (Container.Container data) -> Maybe Int -> vector -> vector)
+    -> (Section.Section -> vector)
+    -> (vector -> Section.Section -> Section.Section)
+    -> Maybe String
+    -> Dict Int (Container.Container data)
+    -> List Int
+    -> Sections
+    -> Sections
+lockSections lockAnswered getVector setVector ownId dataUpdate sectionIds sections =
+    sectionIds
+        |> List.foldl
+            (\sectionId secs ->
+                case Array.get sectionId secs of
+                    Just section ->
+                        Array.set sectionId
+                            (setVector (lockAnswered ownId dataUpdate (Just sectionId) (getVector section)) section)
+                            secs
+
+                    Nothing ->
+                        secs
+            )
+            sections
