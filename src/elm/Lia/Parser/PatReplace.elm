@@ -38,6 +38,7 @@ link url =
 
     else
         url
+            |> whiteList
             |> replace
                 [ { by = GitHub.by
                   , pattern = GitHub.pattern
@@ -64,6 +65,27 @@ link url =
                   }
                 ]
             |> Tuple.second
+
+
+whiteList : String -> String
+whiteList url =
+    let
+        gitlabHosts =
+            [ "https://gitlab.com/"
+            , "https://www.gitlab.com/"
+            , "https://gitlab.opencode.de/"
+            , "https://www.gitlab.opencode.de/"
+            ]
+    in
+    if
+        List.any (\host -> String.startsWith host url)
+            gitlabHosts
+            && not (String.contains "/api/v4/" url)
+    then
+        String.replace "https://" "gitlab://" url
+
+    else
+        url
 
 
 {-| **private:** translates the `Const.urlProxy` string into a regular
