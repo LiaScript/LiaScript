@@ -508,7 +508,7 @@ urlDecodeIfEncoded : String -> Maybe String
 urlDecodeIfEncoded input =
     let
         decoded =
-            if String.startsWith "http" input then
+            if String.startsWith "http" input && not (String.contains "://" input) then
                 Url.percentDecode input
                     |> Maybe.withDefault input
 
