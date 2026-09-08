@@ -44,6 +44,11 @@ const Service = {
         sendReply(event)
         break
 
+      case 'load_all':
+        event.message.param = await connector.loadAll(param)
+        sendReply(event)
+        break
+
       case 'store':
         if (param.id < 10000) {
           connector.store(param)
@@ -259,10 +264,36 @@ const Service = {
 
   saveClassroom: async function (
     uidDB: string,
-    entry: { room: string; backend: string; password?: string }
+    entry: {
+      room: string
+      backend: string
+      password?: string
+      name?: string
+      title?: string
+      notes?: string
+      mode?: number
+      ownerTokenHash?: string
+    }
   ) {
     if (connector) {
       return connector.saveClassroom(uidDB, entry)
+    }
+  },
+
+  updateClassroomMeta: async function (
+    uidDB: string,
+    room: string,
+    backend: string,
+    meta: {
+      title?: string
+      notes?: string
+      name?: string
+      owner?: boolean
+      ownerTokenHash?: string
+    }
+  ) {
+    if (connector) {
+      return connector.updateClassroomMeta(uidDB, room, backend, meta)
     }
   },
 
@@ -306,6 +337,29 @@ const Service = {
   clearYjsUpdates: async function (uidDB: string, key: string) {
     if (connector) {
       return connector.clearYjsUpdates(uidDB, key)
+    }
+  },
+
+  compactYjsUpdates: async function (
+    uidDB: string,
+    key: string,
+    merge: (rows: Uint8Array[]) => Uint8Array | null
+  ) {
+    if (connector) {
+      return connector.compactYjsUpdates(uidDB, key, merge)
+    }
+    return null
+  },
+
+  getKey: async function (uidDB: string, id: string) {
+    if (connector) {
+      return connector.getKey(uidDB, id)
+    }
+  },
+
+  putKey: async function (uidDB: string, id: string, value: any) {
+    if (connector) {
+      return connector.putKey(uidDB, id, value)
     }
   },
 }

@@ -1,5 +1,6 @@
 import log from '../log'
 import { docId } from '../../sync/Base/persist'
+import * as peerCrypto from '../../sync/Base/peerCrypto'
 
 var sync: any
 var elmSend: Lia.Send | null
@@ -8,6 +9,7 @@ var Database: any
 var Edrys
 // var Jitsi
 // var Matrix
+var Ably
 var PubNub
 var Gun
 var Local
@@ -45,6 +47,7 @@ const Service = {
 
   supported: [
     // remove these strings if you want to enable or disable certain sync support
+    'ably',
     'edrys',
     'gun',
     //'jitsi',
@@ -80,17 +83,26 @@ const Service = {
   handle: async function (event: Lia.Event) {
     switch (event.message.cmd) {
       case 'connect': {
-        if (sync) sync = undefined
+        // A reconnect (password/room/backend/mode change, etc.) previously
+        // just dropped the reference here without tearing down the old
+        // instance - its WebSocket/transport, timers and GenericProvider
+        // stayed alive indefinitely. Harmless-ish when payloads were
+        // plaintext (a stray duplicate Yjs update is a no-op), but now that
+        // encrypted backends hard-fail on a mismatched key, a leaked old
+        // connection can spam decrypt-failure warnings forever.
+        if (sync) {
+          sync.disconnect()
+          sync = undefined
+        }
 
         if (elmSend) {
-          // for what so ever reason perform a deep-copy
-          const event_ = { ...event }
           const cbConnection = function (topic: string, msg: any) {
-            event_.message.cmd = topic
-            event_.message.param = msg
-            event_.reply = true
-
-            if (elmSend) elmSend(event_)
+            if (elmSend)
+              elmSend({
+                ...event,
+                message: { cmd: topic, param: msg },
+                reply: true,
+              })
           }
 
           const backend = event.message.param.backend
@@ -207,6 +219,24 @@ const Service = {
               break
             */
 
+            case 'ably':
+              if (!Ably) {
+                import('../../sync/Ably/index').then((e) => {
+                  Ably = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new Ably.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                true,
+              )
+              break
+
             case 'pubnub':
               if (!PubNub) {
                 import('../../sync/PubNub/index').then((e) => {
@@ -317,6 +347,11 @@ const Service = {
               room: config.room,
               backend: config.fullBackend,
               password: config.password,
+              name: config.name,
+              title: config.title,
+              notes: config.notes,
+              mode: config.mode,
+              ownerTokenHash: config.ownerTokenHash,
             })?.catch((e: any) => {
               log.warn('could not save classroom ->', e?.message || e)
             })
@@ -340,6 +375,62 @@ const Service = {
         break
       }
 
+      // Gates the actual connect for a join: Elm withholds 'connect' until
+      // this resolves (see the "password_ok" case in Lia.Sync.Update), so a
+      // wrong password never opens the room, not even for an instant.
+      // Deterministic check against the room's `pwCheck` hint (see
+      // peerCrypto.verifyPasswordCheck), unlike the P2P empty-room heuristic
+      // in Base/index.ts. A crypto failure (malformed salt/hint, near-never
+      // in practice) fails open rather than stranding the user in Pending
+      // forever - the same leniency plaintext connects already had before
+      // this check existed.
+      case 'check_password': {
+        const { password, pwSalt, pwCheck } = event.message.param
+
+        let ok = true
+        try {
+          ok = await peerCrypto.verifyPasswordCheck(password, pwSalt, pwCheck)
+        } catch (e: any) {
+          log.warn('password check failed ->', e?.message || e)
+        }
+
+        if (elmSend) {
+          elmSend({
+            ...event,
+            message: ok
+              ? { cmd: 'password_ok', param: null }
+              : { cmd: 'error', param: 'Wrong classroom password.' },
+            reply: true,
+          })
+        }
+
+        break
+      }
+
+      // Lets the creator mint the room's owner secret before ever
+      // connecting - ownership only ever comes from explicitly generating
+      // one here (or from following an owner-link carrying one), never
+      // implicitly from just being first to connect (see
+      // db.ts resolveOwnerToken()).
+      case 'generate_owner_token': {
+        try {
+          const token = peerCrypto.randomBytesBase64(32)
+          const hash = await peerCrypto.sha256Base64(token)
+
+          if (elmSend) {
+            elmSend({
+              ...event,
+              message: { cmd: 'owner_token', param: { token, hash } },
+              reply: true,
+            })
+          }
+        } catch (e: any) {
+          log.warn('owner token generation failed ->', e?.message || e)
+        }
+
+        break
+      }
+
       case 'list_classrooms': {
         const course = event.message.param
 
@@ -356,6 +447,28 @@ const Service = {
         } catch (e: any) {
           log.warn('could not list classrooms ->', e?.message || e)
           sendError(event, `could not load classrooms: ${e?.message || e}`)
+        }
+
+        break
+      }
+
+      case 'update_classroom_meta': {
+        const { course, room, backend, title, notes, name, owner, ownerTokenHash } =
+          event.message.param
+
+        try {
+          if (Database) {
+            await Database.updateClassroomMeta(course, room, backend, {
+              title,
+              notes,
+              name,
+              owner,
+              ownerTokenHash,
+            })
+          }
+        } catch (e: any) {
+          log.warn('could not update classroom ->', e?.message || e)
+          sendError(event, `could not update classroom: ${e?.message || e}`)
         }
 
         break

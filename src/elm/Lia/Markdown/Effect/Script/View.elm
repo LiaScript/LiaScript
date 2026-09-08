@@ -426,7 +426,8 @@ editor theme mode id subPattern code =
                 _ ->
                     ( EditCode id, code )
     in
-    modal (Edit False id)
+    modal True
+        (Edit False id)
         Nothing
         [ Editor.editor
             [ Editor.onChange msg

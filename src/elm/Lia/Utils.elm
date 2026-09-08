@@ -8,8 +8,10 @@ module Lia.Utils exposing
     , checkPersistency
     , deactivate
     , focus
+    , formatDate
     , get
     , icon
+    , identicon
     , modal
     , noTranslate
     , onEnter
@@ -22,6 +24,7 @@ module Lia.Utils exposing
     , urlBasePath
     , urlDecodeIfEncoded
     , urlQuery
+    , viewIdenticon
     )
 
 import Accessibility.Aria as A11y_Aria
@@ -37,6 +40,7 @@ import Json.Decode as JD
 import List.Extra
 import Process
 import Task
+import Time
 import Url
 
 
@@ -190,8 +194,8 @@ scheduleFocus delay msg elementID =
 
 {-| Create custom modals, which overlay the entire view.
 -}
-modal : msg -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
-modal msgClose controls content =
+modal : Bool -> msg -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
+modal activeBorder msgClose controls content =
     Html.div
         [ Attr.class "lia-modal"
         , A11y_Aria.modal True
@@ -219,7 +223,11 @@ modal msgClose controls content =
             ]
         , Html.div
             [ Attr.class "lia-modal__outer"
-            , Event.onClick msgClose
+            , if activeBorder then
+                Event.onClick msgClose
+
+              else
+                Attr.class ""
             ]
             []
         ]
@@ -296,6 +304,128 @@ string2Color maxValue url =
                     ++ (String.fromInt <| modBy maxValue b)
                     ++ ")"
            )
+
+
+{-| A curated set of neutral, inoffensive emoji (animals, plants, food,
+everyday objects) used by `identicon`. Deliberately excludes anything that
+could read as rude, violent, or otherwise inappropriate for a classroom.
+-}
+identiconSymbols : Array String
+identiconSymbols =
+    Array.fromList
+        [ "🐶"
+        , "🐱"
+        , "🦊"
+        , "🦁"
+        , "🐯"
+        , "🐼"
+        , "🐨"
+        , "🐰"
+        , "🐧"
+        , "🐦"
+        , "🦅"
+        , "🦄"
+        , "🐬"
+        , "🐳"
+        , "🦋"
+        , "🐞"
+        , "🐝"
+        , "🐢"
+        , "🦔"
+        , "🦒"
+        , "🦖"
+        , "🦕"
+        , "🌹"
+        , "🌻"
+        , "🌵"
+        , "🍀"
+        , "☀️"
+        , "🌙"
+        , "⭐"
+        , "🪐"
+        , "❄️"
+        , "🌊"
+        , "🍎"
+        , "🍓"
+        , "⚽"
+        , "🏀"
+        , "🏈"
+        , "🏓"
+        , "🛹"
+        , "🎿"
+        , "🏆"
+        , "🥇"
+        , "🎵"
+        , "🎸"
+        , "🎹"
+        , "🎧"
+        , "🎤"
+        , "🎨"
+        , "📷"
+        , "🎮"
+        , "🎁"
+        , "🎈"
+        , "🎉"
+        , "🎯"
+        , "🧸"
+        , "🏎️"
+        , "🚲"
+        , "✈️"
+        , "⛵"
+        , "💻"
+        , "📱"
+        , "⌚"
+        , "💡"
+        , "🔭"
+        , "🔬"
+        , "📚"
+        , "✏️"
+        , "🎒"
+        , "💎"
+        , "👑"
+        , "🕶️"
+        , "👟"
+        , "🎓"
+        , "🔑"
+        ]
+
+
+{-| A small, deterministic per-user "avatar" derived only from a string
+(typically a peer id): a `string2Color` background plus a symbol picked from
+`identiconSymbols`. The same id always yields the same result on every
+client, with no coordination needed -- useful to visually tell two users
+with the same display name apart.
+-}
+identicon : String -> { color : String, symbol : String }
+identicon id =
+    { color = string2Color 180 id
+    , symbol =
+        id
+            |> String.foldl (\c acc -> acc + Char.toCode c) 0
+            |> modBy (Array.length identiconSymbols)
+            |> (\i -> Array.get i identiconSymbols)
+            |> Maybe.withDefault "❔"
+    }
+
+
+{-| Render the `identicon` for a given id as "<emoji> <colored diamond>".
+Emoji glyphs are drawn by the platform's color emoji font and ignore CSS
+`color`, so only the diamond actually carries the `string2Color` hue -- the
+emoji contributes shape, the diamond contributes color. Marked
+`aria-hidden`, since it is a purely visual disambiguation aid -- the
+adjacent name text already carries the accessible label.
+-}
+viewIdenticon : String -> Html msg
+viewIdenticon id =
+    let
+        { color, symbol } =
+            identicon id
+    in
+    Html.span
+        [ Attr.attribute "aria-hidden" "true" ]
+        [ Html.span [ Attr.style "color" color ] [ Html.text " ◆" ]
+        , Html.text symbol
+        ]
 
 
 {-| Return rounded percentage up to two digits.
@@ -378,7 +508,7 @@ urlDecodeIfEncoded : String -> Maybe String
 urlDecodeIfEncoded input =
     let
         decoded =
-            if String.startsWith "http" input then
+            if String.startsWith "http" input && not (String.contains "://" input) then
                 Url.percentDecode input
                     |> Maybe.withDefault input
 
@@ -445,3 +575,64 @@ cleanupVscodeSimpleBrowserUrl url =
 
             else
                 url
+
+
+{-| Format an epoch-millisecond timestamp as `DD.MM.YYYY HH:MM`, in UTC (no
+user-local timezone is plumbed through the app anywhere yet).
+-}
+formatDate : Int -> String
+formatDate ms =
+    let
+        posix =
+            Time.millisToPosix ms
+
+        pad n =
+            n |> String.fromInt |> String.padLeft 2 '0'
+
+        month =
+            case Time.toMonth Time.utc posix of
+                Time.Jan ->
+                    1
+
+                Time.Feb ->
+                    2
+
+                Time.Mar ->
+                    3
+
+                Time.Apr ->
+                    4
+
+                Time.May ->
+                    5
+
+                Time.Jun ->
+                    6
+
+                Time.Jul ->
+                    7
+
+                Time.Aug ->
+                    8
+
+                Time.Sep ->
+                    9
+
+                Time.Oct ->
+                    10
+
+                Time.Nov ->
+                    11
+
+                Time.Dec ->
+                    12
+    in
+    pad (Time.toDay Time.utc posix)
+        ++ "."
+        ++ pad month
+        ++ "."
+        ++ String.fromInt (Time.toYear Time.utc posix)
+        ++ " "
+        ++ pad (Time.toHour Time.utc posix)
+        ++ ":"
+        ++ pad (Time.toMinute Time.utc posix)

@@ -1,6 +1,8 @@
 module Lia.Sync.Via exposing
     ( Backend(..)
     , Msg
+    , badge
+    , badges
     , checkbox
     , eq
     , fromString
@@ -8,12 +10,12 @@ module Lia.Sync.Via exposing
     , info
     , infoOn
     , input
+    , tagline
     , toString
     , update
     , view
     )
 
-import Conditional.List as CList
 import Const
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -27,12 +29,13 @@ type Backend
       --| Jitsi String
       --| Matrix { baseURL : String, userId : String, accessToken : String }
     | P2PT String
-    | IPFS
+    | IPFS { turnConfig : String }
     | PubNub { pubKey : String, subKey : String }
+    | Ably { apiKey : String, persistent : Bool }
       -- Trystero
-    | NoStr
-    | MQTT
-    | Torrent
+    | NoStr { relayUrls : String, turnConfig : String }
+    | MQTT { relayUrls : String, turnConfig : String }
+    | Torrent { relayUrls : String, turnConfig : String }
     | WebSocket { url : String }
     | PeerJS { host : String, port_ : String, path : String, iceServers : String }
     | SimplePeer { signaling : String, iceServers : String }
@@ -45,17 +48,41 @@ toString full via =
         Edrys ->
             "Edrys"
 
-        NoStr ->
+        NoStr { relayUrls, turnConfig } ->
             "NoStr"
+                ++ (if full then
+                        "|" ++ relayUrls ++ "|" ++ turnConfig
 
-        MQTT ->
+                    else
+                        ""
+                   )
+
+        MQTT { relayUrls, turnConfig } ->
             "MQTT"
+                ++ (if full then
+                        "|" ++ relayUrls ++ "|" ++ turnConfig
 
-        Torrent ->
+                    else
+                        ""
+                   )
+
+        Torrent { relayUrls, turnConfig } ->
             "Torrent"
+                ++ (if full then
+                        "|" ++ relayUrls ++ "|" ++ turnConfig
 
-        IPFS ->
+                    else
+                        ""
+                   )
+
+        IPFS { turnConfig } ->
             "IPFS"
+                ++ (if full then
+                        "|" ++ turnConfig
+
+                    else
+                        ""
+                   )
 
         GUN { urls, persistent } ->
             "GUN"
@@ -91,6 +118,22 @@ toString full via =
             "PubNub"
                 ++ (if full then
                         "|" ++ pubKey ++ "|" ++ subKey
+
+                    else
+                        ""
+                   )
+
+        Ably { apiKey, persistent } ->
+            "Ably"
+                ++ (if full then
+                        (if persistent then
+                            "|t"
+
+                         else
+                            "|f"
+                        )
+                            ++ "|"
+                            ++ apiKey
 
                     else
                         ""
@@ -146,16 +189,16 @@ icon via =
             GUN _ ->
                 "icon-gundb icon-xs"
 
-            NoStr ->
+            NoStr _ ->
                 "icon-nostr icon-xs"
 
-            MQTT ->
+            MQTT _ ->
                 "icon-mqtt icon-xs"
 
-            Torrent ->
+            Torrent _ ->
                 "icon-torrent icon-xs"
 
-            IPFS ->
+            IPFS _ ->
                 "icon-ipfs icon-xs"
 
             -- Jitsi _ ->
@@ -164,6 +207,9 @@ icon via =
             --     "icon-matrix icon-xs"
             PubNub _ ->
                 "icon-pubnub icon-xs"
+
+            Ably _ ->
+                "icon-ably icon-xs"
 
             P2PT _ ->
                 "icon-p2pt icon-xs"
@@ -180,10 +226,105 @@ icon via =
             Local ->
                 "icon-pencil icon-xs"
         )
-        [ Attr.style "padding-inline-end" "5px"
-        , Attr.style "vertical-align" "middle"
-        , Attr.style "font-size" "inherit"
-        ]
+        [ Attr.class "lia-sync-icon" ]
+
+
+{-| A handful of short, hand-picked tags describing a backend's key
+properties, distilled from the longer prose in `infoOn`. Used to render the
+small pill badges in the backend picker.
+-}
+badges : Backend -> List String
+badges via =
+    case via of
+        Edrys ->
+            [ "Embedded platform", "No setup" ]
+
+        GUN _ ->
+            [ "Decentralized", "Self-hostable", "WebSocket", "Public relays" ]
+
+        NoStr _ ->
+            [ "Relay based", "Open protocol", "WebSocket", "WebRTC", "Public relays" ]
+
+        MQTT _ ->
+            [ "Broker based", "Custom brokers", "WebSocket", "WebRTC", "Public relays" ]
+
+        Torrent _ ->
+            [ "BitTorrent", "Tracker based", "WebSocket", "WebRTC", "Public relays" ]
+
+        IPFS _ ->
+            [ "Peer-to-peer", "Decentralized", "WebSocket", "WebRTC", "Public relays" ]
+
+        PubNub _ ->
+            [ "Managed service", "Account required", "HTTP", "Dedicated infra" ]
+
+        Ably _ ->
+            [ "Managed service", "Account required", "WebSocket", "Dedicated infra" ]
+
+        P2PT _ ->
+            [ "WebTorrent", "Tracker based", "WebSocket", "WebRTC", "Public relays" ]
+
+        WebSocket _ ->
+            [ "Self-hostable", "Experimental", "Dedicated infra" ]
+
+        PeerJS _ ->
+            [ "WebRTC", "Public relays" ]
+
+        SimplePeer _ ->
+            [ "WebRTC", "Self-hostable", "Dedicated infra" ]
+
+        Local ->
+            [ "Offline", "No network" ]
+
+
+badge : String -> Html msg
+badge text =
+    Html.span [ Attr.class "lia-badge" ] [ Html.text text ]
+
+
+{-| A one-line description shown next to the backend's icon and name, above
+the badges. Kept short on purpose — the longer explanation follows below.
+-}
+tagline : Backend -> String
+tagline via =
+    case via of
+        Edrys ->
+            "Embedded remote-teaching platform, no setup required."
+
+        GUN _ ->
+            "Small, fast real-time database for syncing data."
+
+        NoStr _ ->
+            "Relay-based open protocol for decentralized exchange."
+
+        MQTT _ ->
+            "Broker-based realtime communication."
+
+        Torrent _ ->
+            "BitTorrent trackers used for WebRTC signaling."
+
+        IPFS _ ->
+            "Peer-to-peer hypermedia protocol for decentralized data."
+
+        PubNub _ ->
+            "Managed real-time messaging platform."
+
+        Ably _ ->
+            "Managed real-time messaging with a global edge network."
+
+        P2PT _ ->
+            "WebTorrent trackers used for WebRTC signaling."
+
+        WebSocket _ ->
+            "Full-duplex communication over your own WebSocket server."
+
+        PeerJS _ ->
+            "Simplified WebRTC peer-to-peer data channels."
+
+        SimplePeer _ ->
+            "Minimal WebRTC library for direct peer connections."
+
+        Local ->
+            "Offline notes, stored only in this browser."
 
 
 fromString : String -> Maybe Backend
@@ -193,16 +334,37 @@ fromString via =
             Just Edrys
 
         [ "nostr" ] ->
-            Just NoStr
+            Just (NoStr { relayUrls = "", turnConfig = "" })
+
+        [ "nostr", relayUrls ] ->
+            Just (NoStr { relayUrls = relayUrls, turnConfig = "" })
+
+        [ "nostr", relayUrls, turnConfig ] ->
+            Just (NoStr { relayUrls = relayUrls, turnConfig = turnConfig })
 
         [ "mqtt" ] ->
-            Just MQTT
+            Just (MQTT { relayUrls = "", turnConfig = "" })
+
+        [ "mqtt", relayUrls ] ->
+            Just (MQTT { relayUrls = relayUrls, turnConfig = "" })
+
+        [ "mqtt", relayUrls, turnConfig ] ->
+            Just (MQTT { relayUrls = relayUrls, turnConfig = turnConfig })
 
         [ "ipfs" ] ->
-            Just IPFS
+            Just (IPFS { turnConfig = "" })
+
+        [ "ipfs", turnConfig ] ->
+            Just (IPFS { turnConfig = turnConfig })
 
         [ "torrent" ] ->
-            Just Torrent
+            Just (Torrent { relayUrls = "", turnConfig = "" })
+
+        [ "torrent", relayUrls ] ->
+            Just (Torrent { relayUrls = relayUrls, turnConfig = "" })
+
+        [ "torrent", relayUrls, turnConfig ] ->
+            Just (Torrent { relayUrls = relayUrls, turnConfig = turnConfig })
 
         [ "gun" ] ->
             Just (GUN { urls = "", persistent = False })
@@ -242,6 +404,24 @@ fromString via =
 
         [ "pubnub", pub, sub ] ->
             Just <| PubNub { pubKey = pub, subKey = sub }
+
+        [ "ably" ] ->
+            Just <| Ably { apiKey = "", persistent = False }
+
+        [ "ably", "f" ] ->
+            Just <| Ably { apiKey = "", persistent = False }
+
+        [ "ably", "f", apiKey ] ->
+            Just <| Ably { apiKey = apiKey, persistent = False }
+
+        [ "ably", "t" ] ->
+            Just <| Ably { apiKey = "", persistent = True }
+
+        [ "ably", "t", apiKey ] ->
+            Just <| Ably { apiKey = apiKey, persistent = True }
+
+        [ "ably", apiKey ] ->
+            Just <| Ably { apiKey = apiKey, persistent = False }
 
         [ "websocket" ] ->
             Just (WebSocket { url = "" })
@@ -284,62 +464,243 @@ mapHead fn list =
             list
 
 
-box : List (Html msg) -> Html msg
-box =
-    Html.p
-        [ Attr.style "padding" "5px 15px 5px 15px"
-        , Attr.style "border" "1px solid white"
-        , Attr.style "margin-block-start" "2rem"
-        ]
-
-
-line : Html msg
-line =
-    Html.hr [ Attr.style "margin" "5px 0px" ] []
-
-
 info : Html msg
 info =
-    box
-        [ Html.text "The LiaScript classroom enables a lightweight collaboration between small groups of users. "
-        , Html.text "\"Lightweight\" means that there is no chat (video-conferencing), no logging, and no user roles. "
-        , Html.text "Instead, there is only one global state created and shared between the browsers of all users. "
-        , Html.text "Thus, a user joins a room with her/his data and when she/he leaves, this data gets removed from the classroom. "
-        , Html.text "No data is stored, and no data gets preserved, it is only shared among uses during a classroom session. "
-        , Html.text "LiaScript enables the synchronization on the following elements:"
+    Html.div []
+        [ Html.h3 [ Attr.style "text-align" "center", Attr.style "margin-block-end" "0.3rem" ] [ Html.text "The LiaScript Classroom" ]
+        , Html.p [ Attr.style "text-align" "center", Attr.style "opacity" "0.8", Attr.style "margin-block-start" "0" ]
+            [ Html.text "A live, peer-to-peer meeting room built into every LiaScript course — for running a class together, without accounts, servers, or setup." ]
+        , peerGraph
+        , Html.p []
+            [ Html.text "The LiaScript classroom is a lightweight, peer-to-peer collaboration between small groups of users — no accounts, no server dashboard, nothing to install. "
+            , Html.text "Open any course, click "
+            , Html.em [] [ Html.text "Classroom" ]
+            , Html.text ", and everyone who joins the same room shares one live state. "
+            , Html.text "\"Lightweight\" also means there is no video-conferencing and no logging: a user joins a room with her/his data, and when she/he leaves, that data leaves with them again. Nothing is stored and nothing is preserved beyond the session — unless you deliberately ask it to be."
+            ]
+        , Html.h4 [] [ Html.text "Three ways in" ]
+        , Html.div [ Attr.style "display" "flex", Attr.style "flex-wrap" "wrap", Attr.style "gap" "0.75rem", Attr.style "margin" "0.75rem 0 1.25rem" ]
+            [ wayCard "icon-login" "Join a room" "Paste a shared link, or type the room name and pick the same backend, then connect."
+            , wayCard "icon-plus" "Start a room" "Pick a backend, name the room (or click the shuffle icon for a random one), add a password if you like, and share the resulting link."
+            , wayCard "icon-pencil" "Own Notes" "A permanent, offline-only room. Nothing ever leaves your browser."
+            ]
+        , Html.h4 [] [ Html.text "What syncs" ]
+        , Html.p [] [ Html.text "LiaScript enables the synchronization on the following elements:" ]
         , Html.ol [ Attr.style "padding" "10px 25px 0px" ]
             [ Html.li [] [ Html.text "Global overview on quizzes" ]
             , Html.li [] [ Html.text "Global overview on surveys" ]
             , Html.li [] [ Html.text "Collaborative editing of executable code snippets (you have to switch to sync-mode, per editor)" ]
             , Html.li [] [ Html.text "A chat that parses LiaScript, such that you can dynamically create quizzes, surveys, collaborative editors, but also to share videos, galleries, oEmbeds, etc..." ]
             ]
-        , Html.text "To synchronize the state between users, we apply "
-        , link "Conflict Free Replicated Datatypes (CRDTs)" "https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type"
-        , Html.text " as implemented by "
-        , yjsLink
-        , Html.text ". Communication is realized with the help of different backends, which only provide a relay service. "
-        , Html.text "The implementation can be found "
-        , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync"
-        , Html.text ". Different browsers might support different backends, which require different settings. "
-        , Html.text "You can help us with implementing other backend services. "
-        , line
-        , Html.text "Every room needs a unique name; you can click on the generator-button to do this randomly. "
-        , Html.text "After a successful connection, you can either share your settings with your audience or the new URL, which contains the entire classroom configuration. "
-        , Html.text "A combination of your course-URL and the room name are used to create a unique ID and to prevent collisions with other courses. "
-        , Html.text "However, if you want to establish a connection between exported courses (see "
-        , link "LiaScript-Exporter" ""
-        , Html.text ") on different platforms, such as "
-        , link "Moodle" "https://en.wikipedia.org/wiki/Moodle"
-        , Html.text ", "
-        , link "ILIAS" "https://en.wikipedia.org/wiki/ILIAS"
-        , Html.text ", "
-        , link "OPAL" "https://de.wikipedia.org/wiki/OPAL_(Lernplattform)"
-        , Html.text ", etc., you can put your room name in single or double quotation marks. "
-        , Html.text "This will instruct LiaScript to use the room name only (no course-URL), but you will have to make sure that all users are on the same course and version, to prevent collisions ..."
-        , line
-        , Html.text "Note, most backend services are free, and you can also host them by your own. "
-        , Html.text "There might be cases where the synchronization is slow or there are collisions, but we are working in the background on optimizations and fixes ;-)"
+        , Html.p []
+            [ Html.text "To synchronize the state between users, we apply "
+            , link "Conflict Free Replicated Datatypes (CRDTs)" "https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type"
+            , Html.text " as implemented by "
+            , yjsLink
+            , Html.text ". Communication is realized with the help of different backends, which only provide a relay service. "
+            , Html.text "The implementation can be found "
+            , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync"
+            , Html.text ". Different browsers might support different backends, which require different settings. "
+            , Html.text "You can help us with implementing other backend services."
+            ]
+        , Html.h4 [] [ Html.text "Who sees what" ]
+        , Html.p []
+            [ Html.text "There are exactly two roles, and no more: the "
+            , Html.strong [] [ Html.text "Initiator" ]
+            , Html.text ", who starts the room, and every "
+            , Html.strong [] [ Html.text "Participant" ]
+            , Html.text " who joins it. Everyone takes part fully — answering, chatting, editing code — but what the Initiator additionally sees depends on the room's mode:"
+            ]
+        , modeLegend
+        , Html.p []
+            [ Html.text "Holding the room's owner token (see "
+            , Html.strong [] [ Html.text "Proving you started the room" ]
+            , Html.text " below) doesn't add any control over other participants either — it only proves who started the room."
+            ]
+        , Html.h4 [] [ Html.text "Built for small, trusting groups" ]
+        , Html.p []
+            [ Html.text "Getting in comes down to two things. First, the room name itself: rooms aren't listed anywhere, so knowing the name (or the link that encodes it) is already most of what stands between a stranger and your room, the same way an unlisted video link works. Second, an optional password on top — worth adding whenever a link might get forwarded, posted somewhere semi-public, or simply guessed. Either way there is no per-person login: whoever has the name (and password, if set) is in, fully, the same as everyone else."
+            ]
+        , Html.p []
+            [ Html.text "That fits a class, a workshop, or a study group whose members already trust each other for the length of one session — not a large, semi-public, or long-running room. Anyone holding the room's keys can do everything a Participant can: answer, chat, edit shared code — there's no way to single out or remove one bad actor once they're inside. If a password leaks, or people you don't recognize show up, close the room and start a fresh one rather than trying to patch the old one."
+            ]
+        , Html.h4 [] [ Html.text "Saving a room for next time" ]
+        , Html.p []
+            [ Html.text "By default a room is a one-time meeting — reload the page and it's gone. Check "
+            , Html.em [] [ Html.text "\"Remember this classroom\"" ]
+            , Html.text " before connecting, and two things change: it reappears as a card on the classroom overview, ready to reconnect in one click, and its content — chat, code, quiz and survey state — is cached in your own browser, so reopening it shows everything instantly, even offline."
+            ]
+        , Html.p []
+            [ Html.text "That cache mirrors your own role, not the whole room: in Summary or Details mode, the pooled or per-participant results are only ever cached for the Initiator, exactly as they'd only be visible live. Delete a saved room any time — that clears its local cache too. "
+            , Html.text "\"Own Notes\" behaves the same way, permanently, since it's never connected to anyone else in the first place."
+            ]
+        , Html.h4 [] [ Html.text "Proving you started the room" ]
+        , Html.p []
+            [ Html.text "Anyone in a room can normally do anything — there's no built-in ranking. Ownership exists for one narrow purpose: proving, later, that "
+            , Html.em [] [ Html.text "you" ]
+            , Html.text " were the one who started a given room. Starting a room in Summary or Details mode generates an owner token for you, shown as a copyable hash. Use "
+            , Html.em [] [ Html.text "\"Copy owner link\"" ]
+            , Html.text " to hand a co-teacher a link that lets their browser claim the same ownership — say, so a colleague can run the session if you can't make it."
+            ]
+        , Html.h4 [] [ Html.text "Room names and sharing" ]
+        , Html.p []
+            [ Html.text "Every room needs a unique name; you can click on the generator-button to do this randomly. "
+            , Html.text "After a successful connection, you can either share your settings with your audience or the new URL, which contains the entire classroom configuration. "
+            , Html.text "A combination of your course-URL and the room name are used to create a unique ID and to prevent collisions with other courses. "
+            , Html.text "However, if you want to establish a connection between exported courses (see "
+            , link "LiaScript-Exporter" ""
+            , Html.text ") on different platforms, such as "
+            , link "Moodle" "https://en.wikipedia.org/wiki/Moodle"
+            , Html.text ", "
+            , link "ILIAS" "https://en.wikipedia.org/wiki/ILIAS"
+            , Html.text ", "
+            , link "OPAL" "https://de.wikipedia.org/wiki/OPAL_(Lernplattform)"
+            , Html.text ", etc., you can put your room name in single or double quotation marks. "
+            , Html.text "This will instruct LiaScript to use the room name only (no course-URL), but you will have to make sure that all users are on the same course and version, to prevent collisions ..."
+            ]
+        , Html.h4 [] [ Html.text "Choosing how you connect" ]
+        , Html.p []
+            [ Html.text "A room needs a relay to help browsers find each other — LiaScript speaks to eleven of them, grouped here by how much setup they need:" ]
+        , backendGroups
+        , Html.p []
+            [ Html.text "Note, most backend services are free, and you can also host them by your own. "
+            , Html.text "There might be cases where the synchronization is slow or there are collisions, but we are working in the background on optimizations and fixes ;-) "
+            , Html.text "Connections can also simply be blocked outright: school and company networks routinely restrict what's allowed out. Some block WebRTC, which rules out PeerJS, SimplePeer, and the peer-to-peer legs of Torrent, IPFS, and P2PT; others block WebSocket connections entirely, which rules out GUN, NoStr, MQTT, WebSocket, and Ably too. There's no way to know in advance — if a room won't connect, that's usually the network, not you. Try a different backend before assuming something's broken."
+            ]
+        , Html.blockquote [ Attr.class "lia-quote lia-quote__alert-tip" ]
+            [ Html.p []
+                [ Util.icon "icon-alert-tip" [ Attr.class "lia-quote__alert-icon" ]
+                , Html.text "Tip"
+                ]
+            , Html.p []
+                [ Html.text "If your network is locked down, or you'd rather not depend on a public relay being reachable, GUN, WebSocket, SimplePeer, and PeerJS can all be pointed at infrastructure you run yourself instead of the shared defaults — your own WebSocket server, your own GUN peer, your own signalling server. More setup once, but connectivity stops being a guess."
+                ]
+            ]
+        , Html.h4 [] [ Html.text "Privacy, in short" ]
+        , Html.blockquote [ Attr.class "lia-quote lia-quote__alert-note" ]
+            [ Html.p []
+                [ Util.icon "icon-alert-note" [ Attr.class "lia-quote__alert-icon" ]
+                , Html.text "Note"
+                ]
+            , Html.p []
+                [ Html.text "No accounts, ever — a room identifies people only by the name they optionally type in. By default, nothing about a session is stored anywhere once everyone disconnects; the state exists only while people are present." ]
+            , Html.p []
+                [ Html.text "A room password also scrambles the connection between browsers, so a relay only ever sees unreadable traffic — but it doesn't add any of the fine-grained secrecy a login system would (see "
+                , Html.strong [] [ Html.text "Built for small, trusting groups" ]
+                , Html.text " above)."
+                ]
+            , Html.p []
+                [ Html.text "The only things that persist on purpose are the ones you asked for: a room you checked \"Remember\" (cached in your own browser), \"Own Notes\" (always local), and a couple of backends that offer optional server-side storage if you turn it on." ]
+            ]
         ]
+
+
+{-| A bordered, left-accented box - the shared visual unit behind the
+"three ways in" cards, the mode legend and the backend groups below.
+Colors are always drawn from LiaScript's own custom properties
+(`--color-highlight`, `--lia-success`/`--lia-warning`/`--lia-red`, the same
+ones `Lia.Sync.View`'s `modeBadge` already uses for its dots), never a
+literal hex value, so it always follows the active theme/accent.
+-}
+accentBox : String -> List (Html msg) -> Html msg
+accentBox accentColor content =
+    Html.div
+        [ Attr.style "background" "rgba(0, 0, 0, 0.25)"
+        , Attr.style "border" "1px solid rgb(var(--color-border))"
+        , Attr.style "border-left" ("3px solid " ++ accentColor)
+        , Attr.style "border-radius" "6px"
+        , Attr.style "padding" "0.9rem 1.1rem"
+        , Attr.style "margin-block-end" "0.75rem"
+        ]
+        content
+
+
+wayCard : String -> String -> String -> Html msg
+wayCard iconName label description =
+    Html.div
+        [ Attr.style "flex" "1 1 180px"
+        , Attr.style "min-width" "160px"
+
+        -- a flex container of its own so the single `accentBox` child
+        -- stretches to fill this wrapper's height (which itself already
+        -- matches its tallest sibling, via the parent row's default
+        -- `align-items: stretch`) - without this, all three cards would
+        -- shrink-wrap their own (differently long) text instead
+        , Attr.style "display" "flex"
+        ]
+        [ accentBox "rgb(var(--color-highlight))"
+            [ Html.div [ Attr.style "display" "flex", Attr.style "align-items" "center", Attr.style "gap" "0.5rem", Attr.style "margin-block-end" "0.4rem" ]
+                [ Util.icon iconName [ Attr.style "font-size" "1.2em" ]
+                , Html.strong [] [ Html.text label ]
+                ]
+            , Html.p [ Attr.style "margin" "0", Attr.style "opacity" "0.85" ] [ Html.text description ]
+            ]
+        ]
+
+
+{-| A legend explaining the three visibility modes (see `ClassroomMode` in
+`Lia.Sync.Types`), color-coded with the exact same tokens as the saved-
+classroom cards' `modeBadge` dots in `Lia.Sync.View` (green/orange/red for
+Shared/Summary/Details), so the two stay visually consistent.
+-}
+modeLegend : Html msg
+modeLegend =
+    Html.div [ Attr.style "margin" "0.75rem 0 1.25rem" ]
+        [ modeLegendItem "rgb(var(--lia-success))" "Shared" "Everyone is equal and sees the same pooled overview of quiz and survey results — the default, and the friendliest for peer learning."
+        , modeLegendItem "rgb(var(--lia-warning))" "Summary" "Participants answer as normal, but only the Initiator sees the aggregated overview."
+        , modeLegendItem "rgb(var(--lia-red))" "Details" "The strictest mode: the Initiator can see results broken down per participant, not just pooled. Use it deliberately — participants should know this mode is active."
+        ]
+
+
+modeLegendItem : String -> String -> String -> Html msg
+modeLegendItem accentColor label description =
+    accentBox accentColor
+        [ Html.div [ Attr.style "font-weight" "600", Attr.style "margin-block-end" "0.25rem" ] [ Html.text label ]
+        , Html.p [ Attr.style "margin" "0", Attr.style "opacity" "0.85" ] [ Html.text description ]
+        ]
+
+
+{-| The eleven connection backends, grouped by how much setup each needs.
+Badges reuse the app-wide `.lia-badge` pill (also used in the backend
+picker's option list) instead of introducing a table.
+-}
+backendGroups : Html msg
+backendGroups =
+    Html.div [ Attr.style "margin" "0.75rem 0 1.25rem" ]
+        [ backendGroup "rgb(var(--lia-success))" "No setup" [ "PeerJS", "PubNub", "Ably", "Edrys" ] "Works immediately on a shared free tier LiaScript provides. Fine for classes and quick sessions; capacity is split with everyone else using the default keys."
+        , backendGroup "rgb(var(--color-highlight))" "Decentralized / public relays" [ "GUN", "NoStr", "MQTT", "Torrent", "IPFS", "P2PT" ] "No single company runs these — traffic passes through volunteer-run community relays. Reliable enough for regular use, occasionally slower to connect."
+        , backendGroup "rgb(var(--lia-warning))" "Bring your own server" [ "WebSocket", "SimplePeer" ] "You (or your institution) host the relay. More control, but requires someone to run and maintain it — the two backends with no public fallback."
+        , backendGroup "rgb(var(--color-border))" "Just for you" [ "Local" ] "\"Own Notes\" — no network at all, nothing to configure."
+        ]
+
+
+backendGroup : String -> String -> List String -> String -> Html msg
+backendGroup accentColor title names description =
+    accentBox accentColor
+        [ Html.div [ Attr.style "font-weight" "600", Attr.style "margin-block-end" "0.4rem" ] [ Html.text title ]
+        , Html.div [ Attr.style "display" "flex", Attr.style "flex-wrap" "wrap", Attr.style "gap" "0.4rem", Attr.style "margin-block-end" "0.4rem" ]
+            (List.map (\name -> Html.span [ Attr.class "lia-badge" ] [ Html.text name ]) names)
+        , Html.p [ Attr.style "margin" "0", Attr.style "opacity" "0.85" ] [ Html.text description ]
+        ]
+
+
+{-| A small decorative peer-network graphic, echoing the peer-to-peer nature
+of a classroom room. Served from `static/network.svg` (copied to the build
+root by `parcel-reporter-static-files-copy`, the same mechanism `icon.svg`
+already relies on - see `Const.icon`/`Index.View.Card.logo`), rather than
+hand-drawn, since it's a fixed illustration, not data. Purely decorative,
+so it's marked `aria-hidden` with an empty `alt`.
+-}
+peerGraph : Html msg
+peerGraph =
+    Html.img
+        [ Attr.class "lia-classroom__graph"
+        , Attr.src "network.svg"
+        , Attr.attribute "loading" "lazy"
+        , Attr.alt ""
+        , Attr.attribute "aria-hidden" "true"
+        ]
+        []
 
 
 yjsLink : Html msg
@@ -349,52 +710,46 @@ yjsLink =
 
 infoOn : Bool -> Backend -> Html msg
 infoOn supported about =
-    box <|
+    Html.p [] <|
         case ( about, supported ) of
             ( Edrys, _ ) ->
                 [ link "Edrys" "https://edrys-labs.github.io"
-                , Html.text " is an open and modular remote teaching platform (and the first live LMS). "
+                , Html.text " is an open, modular remote-teaching platform. The site linked here runs "
+                , link "edrys-Lite" "https://github.com/edrys-labs/edrys-Lite"
+                , Html.text ", a serverless, browser-only rewrite that syncs directly between peers over WebTorrent — no backend server required. "
                 , Html.text "It is a great platform for building remote labs and share them by using only a browser locally. "
                 , Html.text "Thus, this synchronization will only work, if you are within an Edrys classroom, for more information try the following link: "
-                , link "https://github.com/edrys-labsg" "https://github.com/edrys-labs"
+                , link "https://github.com/edrys-labs" "https://github.com/edrys-labs"
                 , Html.text ". Additionally, your course has to be loaded via the "
                 , link "module-liascript" "https://github.com/edrys-labs/module-liascript"
                 , Html.text "."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( GUN _, _ ) ->
                 [ link "GunDB" "https://gun.eco"
-                , Html.text " is a small, easy, and fast real-time database for syncing data across various users."
-                , Html.text " You can use the default relay server hosted at "
+                , Html.text " is a small, easy, and fast real-time database for syncing data across various users, talking to relay servers over "
+                , link "WebSocket" "https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"
+                , Html.text ". You can use the default relay servers hosted at "
                 , link Const.gunDB_ServerURL Const.gunDB_ServerURL
-                , Html.text ". Or, if you don't trust us ;-) you can also use one of the free hosted relay servers listed "
+                , Html.text ", themselves community-hosted volunteer relays, not run by LiaScript — or pick others, or add your own, from the list "
                 , link "here" "https://github.com/amark/gun/wiki/volunteer.dht"
-                , Html.text ". Multiple peers have to be separated by commas."
-                , Html.text " The implementation of this classroom can be found "
+                , Html.text ". The implementation of this classroom can be found "
                 , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/Gun"
-                , Html.text ". By checking \"persistent storage\" you can ensure that the chat messages and the modified code will be accessible over a longer time period, otherwise the state is deleted."
-                , Html.text " However, since this is a free service, we cannot give guarantees that your messages will be stored forever and that the GunDB server might be offline."
-                , Html.text " If you want to be certain, you can host your own instance of a GunDB server and change the URL appropriately."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
+                , Html.text ". Since these are free, community-run services, we cannot guarantee your messages will be stored forever or that a relay stays online — if you need certainty, host your own GunDB instance and point the URL below at it."
                 ]
 
-            ( IPFS, _ ) ->
-                [ link "IPFS (InterPlanetary File System)" "https://ipfs.io"
-                , Html.text " is a peer-to-peer hypermedia protocol designed to make the web faster, safer, and more open. "
-                , Html.text "It enables users to host and share content in a decentralized manner, eliminating the need for traditional centralized servers. "
-                , Html.text "In the context of browser-based Pub/Sub (Publish/Subscribe) messaging, IPFS can facilitate real-time communication by allowing browsers to publish messages to specific topics and subscribe to receive messages from those topics. "
-                , Html.text "This decentralized approach enhances data availability and resilience, making it suitable for applications like chat or live streaming."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
+            ( IPFS _, _ ) ->
+                [ Html.text "Despite the name, this strategy doesn't use the classic "
+                , link "IPFS" "https://ipfs.tech"
+                , Html.text " file-storage network — under the hood it runs on "
+                , link "Waku" "https://waku.org"
+                , Html.text ", a "
+                , link "libp2p" "https://libp2p.io"
+                , Html.text "-based decentralized publish/subscribe messaging protocol, purely to find peers and exchange the WebRTC handshake. "
+                , Html.text "It has the least relay redundancy of the decentralized strategies offered here (behind MQTT and BitTorrent), so expect connections to occasionally take longer to establish."
                 ]
 
-            ( NoStr, _ ) ->
+            ( NoStr _, _ ) ->
                 [ link "NoStr" "https://nostr.com"
                 , Html.text " is a decentralized protocol designed for creating a censorship-resistant global social network."
                 , Html.text "The acronym stands for \"Notes and Other Stuff Transmitted by Relays\""
@@ -402,31 +757,27 @@ infoOn supported about =
                 , Html.text "Users are identified by public keys, and all events (like messages or updates) are signed for verification. "
                 , Html.text "NoStr's decentralization ensures resilience against censorship and single points of failure, as data is distributed across multiple nodes. "
                 , Html.text "It's an open standard, allowing anyone to build upon it, and its design promotes freedom of speech and global accessibility."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
+                , trysteroRelayHint "relay"
                 ]
 
-            ( MQTT, _ ) ->
+            ( MQTT _, _ ) ->
                 [ link "MQTT (Message Queuing Telemetry Transport)" "https://mqtt.org"
                 , Html.text " is a lightweight, publish-subscribe messaging protocol designed for machine-to-machine (M2M) communication, particularly in the Internet of Things (IoT) and industrial IoT (IIoT) contexts. "
                 , Html.text "It enables devices to efficiently publish and subscribe to data over the Internet, facilitating communication between embedded devices, sensors, and industrial PLCs. "
-                , Html.text "MQTT operates over a transport protocol like TCP/IP, ensuring ordered, lossless, bi-directional connections."
+                , Html.text "MQTT normally runs directly over TCP, but browsers can't open raw TCP sockets — so this backend speaks MQTT-over-WebSocket instead, which is why broker URLs look like "
+                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://" ]
+                , Html.text " addresses rather than a plain host:port. "
                 , Html.text "The protocol is event-driven, with a broker managing the distribution of messages between publishers and subscribers based on topics. "
                 , Html.text "This decoupling allows for scalable and reliable data exchange, making MQTT a standard for IoT data transmission."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
+                , trysteroRelayHint "broker"
                 ]
 
-            ( Torrent, _ ) ->
-                [ link "Torrent" "https://www.beautifulcode.co/blog/58-understanding-bittorrent-protocol"
-                , Html.text " is a peer-to-peer file-sharing protocol used for distributing large files across a network of computers. "
-                , Html.text "In the context of browser-based Pub/Sub (Publish/Subscribe) messaging, Torrent can facilitate the distribution of messages or data across a network of peers, enabling efficient, decentralized communication without a central server. "
-                , Html.text "This approach is particularly useful for real-time applications like chat or live streaming, ensuring data is quickly and reliably distributed to all interested peers."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
+            ( Torrent _, _ ) ->
+                [ link "WebTorrent" "https://webtorrent.io"
+                , Html.text " trackers are the same kind of signaling servers "
+                , link "BitTorrent" "https://en.wikipedia.org/wiki/BitTorrent"
+                , Html.text " clients use to find peers sharing a file — here they're repurposed to bootstrap real-time connections for chat and quizzes instead; no file-sharing involved."
+                , trysteroRelayHint "tracker"
                 ]
 
             -- ( Jitsi _, _ ) ->
@@ -450,55 +801,39 @@ infoOn supported about =
             --     ]
             ( PubNub _, _ ) ->
                 [ link "PubNub" "https://www.pubnub.com"
-                , Html.text " is a real-time communication platform. "
-                , Html.text "To create a classroom that uses this service, you will only require an account, which is free for testing. "
-                , Html.text "After that, you simply have to create a new App with a new Keyset within their dashboard. "
-                , Html.text "These are the keys you will have to provide for this room. "
-                , Html.text "After this, you can simply generate a new set of keys. "
-                , Html.text "The basic steps that are required, are described in more detail "
-                , link "here" "https://www.appypie.com/faqs/how-to-get-pubnub-publish-key-and-subscribe-key"
+                , Html.text " is a managed real-time communication platform — no server of your own to run. "
+                , Html.text "LiaScript ships with a shared, free-tier keyset so this works immediately, but its capacity is split across everyone who leaves the fields below empty. "
+                , Html.text "Unlike Ably or GunDB here, this backend has no persistent-storage option — the room's state only exists while participants are connected. "
+                , Html.text "If you'll use this regularly, create your own free account instead (no credit card required, capped at 3 keysets) — full setup steps are in PubNub's own docs "
+                , link "here" "https://www.pubnub.com/docs/general/setup/account-setup"
                 , Html.text "."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
+                ]
+
+            ( Ably _, _ ) ->
+                [ link "Ably" "https://ably.com"
+                , Html.text " is a managed real-time messaging platform with a global edge network — no server of your own to run. "
+                , Html.text "LiaScript ships with a shared, free-tier API key so this works immediately, but its capacity (200 concurrent connections, 6M messages/month) is split across everyone who leaves the field below empty. "
+                , Html.text "If you'll use this regularly, create your own free Ably account instead — no credit card required."
                 ]
 
             ( WebSocket _, _ ) ->
                 [ link "WebSocket" "https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"
                 , Html.text " provides full-duplex communication over a single TCP connection. "
-                , Html.text "To use this backend, you need a WebSocket server that supports the y-websocket protocol. "
-                , Html.text "You can host your own server using "
+                , Html.text "This backend only works with a server that speaks the "
                 , link "y-websocket" "https://github.com/yjs/y-websocket"
-                , Html.text " or any compatible implementation. "
-                , Html.text "Provide the full WebSocket URL, e.g. "
-                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://your-server.example.com" ]
-                , Html.text "."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
+                , Html.text " wire protocol — either y-websocket's own reference server or any compatible implementation, self-hosted; there's no public default to fall back to."
                 ]
 
             ( PeerJS _, _ ) ->
                 [ link "PeerJS" "https://peerjs.com"
                 , Html.text " simplifies WebRTC peer-to-peer data channel connections. "
                 , Html.text "By default it uses the free PeerJS Cloud signaling server — no setup required. "
-                , Html.text "For production use or larger groups you can host your own "
+                , Html.text "For production use or larger groups, host your own "
                 , link "PeerServer" "https://github.com/peers/peerjs-server"
-                , Html.text " and configure it with the fields below. "
-                , Html.text "All fields are optional. "
-                , Html.text "The \"ICE / TURN servers\" field accepts a JSON array of "
-                , link "RTCIceServer" "https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer"
-                , Html.text " objects (see "
-                , link "RTCPeerConnection config" "https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection"
-                , Html.text "), e.g. "
-                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "[{\"urls\":\"stun:stun.l.google.com:19302\"}]" ]
-                , Html.text ". Use TURN servers to improve connectivity in restricted networks. "
+                , Html.text " instead and point the fields below at it. "
                 , Html.text "The implementation can be found "
                 , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/PeerJS"
                 , Html.text "."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( SimplePeer _, _ ) ->
@@ -508,21 +843,12 @@ infoOn supported about =
                 , Html.text "A signaling server URL is "
                 , Html.strong [] [ Html.text "required" ]
                 , Html.text " — the previously public default server is no longer available. "
-                , Html.text "Host your own using "
+                , Html.text "Host your own — the signaling server bundled with "
                 , link "y-webrtc" "https://github.com/yjs/y-webrtc"
-                , Html.text ", which includes a ready-to-use signaling server. "
-                , Html.text "You can provide multiple comma-separated URLs for redundancy. "
-                , Html.text "The \"ICE / TURN servers\" field accepts a JSON array of "
-                , link "RTCIceServer" "https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer"
-                , Html.text " objects (optional), e.g. "
-                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "[{\"urls\":\"stun:stun.l.google.com:19302\"}]" ]
-                , Html.text ". Use TURN servers to improve connectivity in restricted networks. "
+                , Html.text " works fine here too, since it's a generic topic-based relay rather than something specific to that protocol. "
                 , Html.text "The implementation can be found "
                 , link "here" "https://github.com/LiaScript/LiaScript/tree/development/src/typescript/sync/SimplePeer"
                 , Html.text "."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
                 ]
 
             ( P2PT _, _ ) ->
@@ -534,12 +860,9 @@ infoOn supported about =
                 , link "WebRTC" "https://en.wikipedia.org/wiki/WebRTC"
                 , Html.text ". Therefor P2PT uses magnet-URIs as an app identifier to communicate with the WebTorrent trackers, which provide a list of web peers using the app."
                 , Html.text "With this information, P2PT enables an browser applications to share real-time data and send messages interaction between connected peers."
-                , Html.text "Thus, you have to provide WebSocket-URLs, which start with "
+                , Html.text "Thus, you have to provide one or more WebSocket tracker URLs, starting with "
                 , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://" ]
-                , Html.text "."
-                , Html.br [] []
-                , Html.br [] []
-                , allowScripts
+                , Html.text ", separated by commas if you list several — there is no built-in default, so at least one is required."
                 ]
 
             ( Local, _ ) ->
@@ -548,9 +871,9 @@ infoOn supported about =
                 ]
 
 
-allowScripts : Html msg
-allowScripts =
-    Html.text "If you want to allow scripts to be executed in the chat, you can check this box, allowing for dynamic content and interactivity. However, please be cautious as this may pose security risks if untrusted code is executed."
+trysteroRelayHint : String -> Html msg
+trysteroRelayHint kind =
+    Html.text (" This backend uses the " ++ kind ++ " only to discover peers and exchange the WebRTC handshake — the actual chat and quiz data still flows directly between browsers over WebRTC.")
 
 
 link : String -> String -> Html msg
@@ -558,176 +881,324 @@ link title url =
     Html.a [ Attr.href url, Attr.target "blank" ] [ Html.text title ]
 
 
-view : Bool -> Backend -> Html Msg
-view editable backend =
-    case backend of
-        GUN { urls, persistent } ->
-            Html.div []
-                [ input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputGun
-                    , value = urls
-                    , placeholder = "https://gun1.server, https://gun2.server, ..."
-                    , label = Html.text "relay server"
-                    , autocomplete = Just "gun-server"
-                    }
-                , checkbox
-                    { active = editable
-                    , value = persistent
-                    , msg = CheckboxGun
-                    , label = Html.text "persistent storage"
-                    }
-                ]
+view : Bool -> Bool -> Backend -> Html Msg
+view locked editable backend =
+    let
+        active =
+            editable && not locked
 
-        -- Jitsi domain ->
-        --     input
-        --         { active = editable
-        --         , type_ = "text"
-        --         , msg = InputJitsi
-        --         , value = domain
-        --         , placeholder = "domain.jit.si"
-        --         , label = Html.text "domain"
-        --         , autocomplete = Just "jitsi-domain"
-        --         }
-        -- Matrix { baseURL, userId, accessToken } ->
-        --     Html.div []
-        --         [ input
-        --             { active = editable
-        --             , type_ = "text"
-        --             , msg = InputMatrix "url"
-        --             , label = Html.text "base URL"
-        --             , value = baseURL
-        --             , placeholder = "https://matrix.org"
-        --             , autocomplete = Just "matrix-url"
-        --             }
-        --         , input
-        --             { active = editable
-        --             , type_ = "text"
-        --             , msg = InputMatrix "user"
-        --             , label = Html.text "user ID"
-        --             , value = userId
-        --             , placeholder = "@USERID:matrix.org"
-        --             , autocomplete = Just "matrix-user"
-        --             }
-        --         , input
-        --             { active = editable
-        --             , type_ = "text"
-        --             , msg = InputMatrix "token"
-        --             , label = Html.text "access token"
-        --             , value = accessToken
-        --             , placeholder = "....MDAxM2lkZW50aWZpZXIga2V5CjAwMTBjaWQgZ2Vu...."
-        --             , autocomplete = Just "matrix-token"
-        --             }
-        --         ]
-        PubNub { pubKey, subKey } ->
-            Html.div []
-                [ input
-                    { active = editable
-                    , type_ = "password"
-                    , msg = InputPubNub "pub"
-                    , label = Html.text "publishKey"
-                    , value = pubKey
-                    , placeholder = "pub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-                    , autocomplete = Just "pubnup-publishKey"
-                    }
-                , input
-                    { active = editable
-                    , type_ = "password"
-                    , msg = InputPubNub "sub"
-                    , label = Html.text "subscribeKey"
-                    , value = subKey
-                    , placeholder = "sub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-                    , autocomplete = Just "pubnup-subscribeKey"
-                    }
-                ]
+        lockedHint =
+            if locked then
+                Html.p [ Attr.style "font-style" "italic" ]
+                    [ Html.text "Infrastructure settings are locked while connected to this classroom." ]
 
-        P2PT urls ->
-            input
-                { active = editable
-                , type_ = "text"
-                , msg = InputP2PT
-                , value = urls
-                , placeholder = "wss://tracker.torrent"
-                , label = Html.text "WebTorrent tracker URLs"
-                , autocomplete = Just "websocket-urls"
-                }
+            else
+                Html.text ""
 
-        WebSocket { url } ->
-            input
-                { active = editable
-                , type_ = "text"
-                , msg = InputWebSocket
-                , value = url
-                , placeholder = "wss://your-server.example.com"
-                , label = Html.text "server URL"
-                , autocomplete = Just "websocket-url"
-                }
+        content =
+            case backend of
+                GUN { urls, persistent } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputGun
+                            , value = urls
+                            , placeholder = "https://gun1.server, https://gun2.server, ..."
+                            , label = Html.text "relay server"
+                            , autocomplete = Just "gun-server"
+                            }
+                        , fieldHint "Add multiple relay servers, separated by commas."
+                        , checkbox
+                            { active = active
+                            , value = persistent
+                            , msg = CheckboxGun
+                            , label = Html.text "persistent storage"
+                            }
+                        , fieldHint "Writes the room's state to the relay server(s) so it survives after everyone disconnects — nothing is ever cached in your own browser either way. Left unchecked, the room only exists in the relay's memory and disappears once it empties."
+                        ]
 
-        PeerJS { host, port_, path, iceServers } ->
-            Html.div []
-                [ input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputPeerJS "host"
-                    , value = host
-                    , placeholder = "my-peerjs-server.example.com"
-                    , label = Html.text "server host (optional)"
-                    , autocomplete = Just "peerjs-host"
-                    }
-                , input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputPeerJS "port"
-                    , value = port_
-                    , placeholder = "443"
-                    , label = Html.text "server port (optional)"
-                    , autocomplete = Just "peerjs-port"
-                    }
-                , input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputPeerJS "path"
-                    , value = path
-                    , placeholder = "/"
-                    , label = Html.text "server path (optional)"
-                    , autocomplete = Just "peerjs-path"
-                    }
-                , input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputPeerJS "ice"
-                    , value = iceServers
-                    , placeholder = "[{\"urls\":\"stun:stun.l.google.com:19302\"}]"
-                    , label = Html.text "ICE / TURN servers as JSON (optional)"
-                    , autocomplete = Just "peerjs-ice"
-                    }
-                ]
+                NoStr { relayUrls, turnConfig } ->
+                    trysteroSettings active "relay" "wss://relay.damus.io, wss://nos.lol, ..." relayUrls turnConfig
 
-        SimplePeer { signaling, iceServers } ->
-            Html.div []
-                [ input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputSimplePeer "signaling"
-                    , value = signaling
-                    , placeholder = "wss://your-signaling-server.example.com"
-                    , label = Html.text "signaling server URLs (required, comma-separated)"
-                    , autocomplete = Just "simplepeer-signaling"
-                    }
-                , input
-                    { active = editable
-                    , type_ = "text"
-                    , msg = InputSimplePeer "ice"
-                    , value = iceServers
-                    , placeholder = "[{\"urls\":\"stun:stun.l.google.com:19302\"}]"
-                    , label = Html.text "ICE / TURN servers as JSON (optional)"
-                    , autocomplete = Just "simplepeer-ice"
-                    }
-                ]
+                MQTT { relayUrls, turnConfig } ->
+                    trysteroSettings active "broker" "wss://broker.emqx.io:8084/mqtt, wss://broker.hivemq.com:8884/mqtt, ..." relayUrls turnConfig
 
-        _ ->
-            Html.text ""
+                Torrent { relayUrls, turnConfig } ->
+                    trysteroSettings active "tracker" "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, ..." relayUrls turnConfig
+
+                IPFS { turnConfig } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputTrystero "turn"
+                            , value = turnConfig
+                            , placeholder = "[{\"urls\":\"turn:turn.example.com\",\"username\":\"user\",\"credential\":\"pass\"}]"
+                            , label = Html.text "TURN servers as JSON (optional)"
+                            , autocomplete = Just "trystero-turn"
+                            }
+                        , fieldHint "Waku only finds peers and exchanges the WebRTC handshake — the actual chat and quiz data flows directly between browsers. Add TURN servers here if participants sit behind firewalls/NATs that block a direct WebRTC connection; there's no separate relay URL to configure for this strategy."
+                        ]
+
+                -- Jitsi domain ->
+                --     input
+                --         { active = active
+                --         , type_ = "text"
+                --         , msg = InputJitsi
+                --         , value = domain
+                --         , placeholder = "domain.jit.si"
+                --         , label = Html.text "domain"
+                --         , autocomplete = Just "jitsi-domain"
+                --         }
+                -- Matrix { baseURL, userId, accessToken } ->
+                --     Html.div []
+                --         [ input
+                --             { active = active
+                --             , type_ = "text"
+                --             , msg = InputMatrix "url"
+                --             , label = Html.text "base URL"
+                --             , value = baseURL
+                --             , placeholder = "https://matrix.org"
+                --             , autocomplete = Just "matrix-url"
+                --             }
+                --         , input
+                --             { active = active
+                --             , type_ = "text"
+                --             , msg = InputMatrix "user"
+                --             , label = Html.text "user ID"
+                --             , value = userId
+                --             , placeholder = "@USERID:matrix.org"
+                --             , autocomplete = Just "matrix-user"
+                --             }
+                --         , input
+                --             { active = active
+                --             , type_ = "text"
+                --             , msg = InputMatrix "token"
+                --             , label = Html.text "access token"
+                --             , value = accessToken
+                --             , placeholder = "....MDAxM2lkZW50aWZpZXIga2V5CjAwMTBjaWQgZ2Vu...."
+                --             , autocomplete = Just "matrix-token"
+                --             }
+                --         ]
+                PubNub { pubKey, subKey } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "password"
+                            , msg = InputPubNub "pub"
+                            , label = Html.text "publishKey"
+                            , value = pubKey
+                            , placeholder = "pub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+                            , autocomplete = Just "pubnup-publishKey"
+                            }
+                        , input
+                            { active = active
+                            , type_ = "password"
+                            , msg = InputPubNub "sub"
+                            , label = Html.text "subscribeKey"
+                            , value = subKey
+                            , placeholder = "sub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+                            , autocomplete = Just "pubnup-subscribeKey"
+                            }
+                        , fieldHint "Leave both empty to use LiaScript's shared keyset. For regular use, create your own free App/Keyset in the PubNub dashboard and paste its publish and subscribe key here instead, so you're not sharing capacity with everyone else."
+                        ]
+
+                Ably { apiKey, persistent } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "password"
+                            , msg = InputAbly
+                            , label = Html.text "API key"
+                            , value = apiKey
+                            , placeholder = "xVLyHw.XXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                            , autocomplete = Just "ably-apiKey"
+                            }
+                        , fieldHint "Leave empty to use LiaScript's shared key. For regular use, create a free App in your own Ably dashboard and paste one of its API keys here instead, so you're not sharing capacity with everyone else."
+                        , checkbox
+                            { active = active
+                            , value = persistent
+                            , msg = CheckboxAbly
+                            , label = Html.text "persistent storage"
+                            }
+                        , fieldHint "Uses Ably's LiveObjects to keep the chat and modified code available after everyone disconnects, retained for up to 90 days by default. Left unchecked, the state is dropped once the room empties."
+                        ]
+
+                P2PT urls ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputP2PT
+                            , value = urls
+                            , placeholder = "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, ..."
+                            , label = Html.text "WebTorrent tracker URLs (required, comma-separated)"
+                            , autocomplete = Just "websocket-urls"
+                            }
+                        ]
+
+                WebSocket { url } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputWebSocket
+                            , value = url
+                            , placeholder = "wss://your-server.example.com"
+                            , label = Html.text "server URL"
+                            , autocomplete = Just "websocket-url"
+                            }
+                        , fieldHint "Required — the full WebSocket URL of your y-websocket-compatible server."
+                        ]
+
+                PeerJS { host, port_, path, iceServers } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputPeerJS "host"
+                            , value = host
+                            , placeholder = "my-peerjs-server.example.com"
+                            , label = Html.text "server host (optional)"
+                            , autocomplete = Just "peerjs-host"
+                            }
+                        , input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputPeerJS "port"
+                            , value = port_
+                            , placeholder = "443"
+                            , label = Html.text "server port (optional)"
+                            , autocomplete = Just "peerjs-port"
+                            }
+                        , input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputPeerJS "path"
+                            , value = path
+                            , placeholder = "/"
+                            , label = Html.text "server path (optional)"
+                            , autocomplete = Just "peerjs-path"
+                            }
+                        , fieldHint "All three fields above are optional — leave them empty to use the free PeerJS Cloud signaling server."
+                        , input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputPeerJS "ice"
+                            , value = iceServers
+                            , placeholder = "[{\"urls\":\"stun:stun.l.google.com:19302\"}]"
+                            , label = Html.text "ICE / TURN servers as JSON (optional)"
+                            , autocomplete = Just "peerjs-ice"
+                            }
+                        , iceServersHint
+                        ]
+
+                SimplePeer { signaling, iceServers } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputSimplePeer "signaling"
+                            , value = signaling
+                            , placeholder = "wss://your-signaling-server.example.com"
+                            , label = Html.text "signaling server URLs (required, comma-separated)"
+                            , autocomplete = Just "simplepeer-signaling"
+                            }
+                        , fieldHint "Required. Multiple comma-separated URLs can be provided for redundancy."
+                        , input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputSimplePeer "ice"
+                            , value = iceServers
+                            , placeholder = "[{\"urls\":\"stun:stun.l.google.com:19302\"}]"
+                            , label = Html.text "ICE / TURN servers as JSON (optional)"
+                            , autocomplete = Just "simplepeer-ice"
+                            }
+                        , iceServersHint
+                        ]
+
+                _ ->
+                    Html.text ""
+    in
+    Html.div [] [ lockedHint, content ]
+
+
+trysteroSettings : Bool -> String -> String -> String -> String -> Html Msg
+trysteroSettings editable kind placeholder relayUrls turnConfig =
+    details
+        [ input
+            { active = editable
+            , type_ = "text"
+            , msg = InputTrystero "relay"
+            , value = relayUrls
+            , placeholder = placeholder
+            , label = Html.text (kind ++ " URLs (optional)")
+            , autocomplete = Just "trystero-relay"
+            }
+        , fieldHint ("Comma-separated. Leave empty to use Trystero's built-in default " ++ kind ++ "s.")
+        , input
+            { active = editable
+            , type_ = "text"
+            , msg = InputTrystero "turn"
+            , value = turnConfig
+            , placeholder = "[{\"urls\":\"turn:turn.example.com\",\"username\":\"user\",\"credential\":\"pass\"}]"
+            , label = Html.text "TURN servers as JSON (optional)"
+            , autocomplete = Just "trystero-turn"
+            }
+        , fieldHint "Only needed if some participants sit behind firewalls/NATs that block a direct WebRTC connection."
+        ]
+
+
+{-| A small greyed-out caption placed right under a field in "Infrastructure
+settings" to explain what it does, without bloating the longer `infoOn` prose
+above.
+-}
+fieldHint : String -> Html msg
+fieldHint text =
+    fieldHintHtml [ Html.text text ]
+
+
+{-| Like `fieldHint`, but for the (rare) case where the caption itself needs
+a link or inline code, e.g. `iceServersHint`.
+-}
+fieldHintHtml : List (Html msg) -> Html msg
+fieldHintHtml content =
+    Html.p
+        [ Attr.style "font-size" "smaller"
+        , Attr.style "opacity" "0.7"
+        , Attr.style "margin-block-start" "0.35rem"
+        , Attr.style "margin-block-end" "0"
+        ]
+        content
+
+
+{-| Shared by PeerJS and SimplePeer, whose "ICE / TURN servers" fields are
+identical in shape and meaning.
+-}
+iceServersHint : Html msg
+iceServersHint =
+    fieldHintHtml
+        [ Html.text "Optional. Takes a JSON array of "
+        , link "RTCIceServer" "https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer"
+        , Html.text " objects, e.g. "
+        , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "[{\"urls\":\"stun:stun.l.google.com:19302\"}]" ]
+        , Html.text ". Add TURN servers to improve connectivity in restricted networks."
+        ]
+
+
+details options =
+    Html.details [ Attr.style "margin-block-start" "2rem" ]
+        [ Html.summary
+            [ Attr.style "cursor" "pointer"
+            , Attr.style "font-weight" "bold"
+            , Attr.style "color" "white"
+            ]
+            [ Html.text "Infrastructure settings"
+            ]
+        , Html.div [ Attr.style "padding-right" "3.5rem" ]
+            options
+        ]
 
 
 input :
@@ -745,6 +1216,7 @@ input { active, msg, label, type_, value, placeholder, autocomplete } =
         [ Html.span
             [ Attr.class "lia-label"
             , Attr.style "margin-block-start" "2rem"
+            , Attr.style "width" "100%"
             ]
             [ label ]
         , Html.input
@@ -759,9 +1231,13 @@ input { active, msg, label, type_, value, placeholder, autocomplete } =
              , Attr.style "width" "100%"
              , Attr.placeholder placeholder
              ]
-                |> CList.addWhen
-                    (autocomplete
-                        |> Maybe.map (Attr.attribute "autocomplete")
+                |> List.append
+                    (case autocomplete of
+                        Just autoc ->
+                            [ Attr.name autoc, Attr.attribute "autocomplete" autoc ]
+
+                        Nothing ->
+                            []
                     )
             )
             []
@@ -802,12 +1278,15 @@ type Msg
     = InputGun String
     | CheckboxGun
     | InputPubNub String String
+    | InputAbly String
+    | CheckboxAbly
       --| InputMatrix String String
       --| InputJitsi String
     | InputP2PT String
     | InputWebSocket String
     | InputPeerJS String String
     | InputSimplePeer String String
+    | InputTrystero String String
 
 
 update : Msg -> Backend -> Backend
@@ -826,6 +1305,12 @@ update msg backend =
 
         ( InputPubNub "sub" new, PubNub data ) ->
             PubNub { data | subKey = new }
+
+        ( InputAbly new, Ably data ) ->
+            Ably { data | apiKey = new }
+
+        ( CheckboxAbly, Ably data ) ->
+            Ably { data | persistent = not data.persistent }
 
         -- ( InputMatrix "url" new, Matrix data ) ->
         --     Matrix { data | baseURL = new }
@@ -857,6 +1342,27 @@ update msg backend =
         ( InputSimplePeer "ice" v, SimplePeer data ) ->
             SimplePeer { data | iceServers = v }
 
+        ( InputTrystero "relay" v, NoStr data ) ->
+            NoStr { data | relayUrls = v }
+
+        ( InputTrystero "turn" v, NoStr data ) ->
+            NoStr { data | turnConfig = v }
+
+        ( InputTrystero "relay" v, MQTT data ) ->
+            MQTT { data | relayUrls = v }
+
+        ( InputTrystero "turn" v, MQTT data ) ->
+            MQTT { data | turnConfig = v }
+
+        ( InputTrystero "relay" v, Torrent data ) ->
+            Torrent { data | relayUrls = v }
+
+        ( InputTrystero "turn" v, Torrent data ) ->
+            Torrent { data | turnConfig = v }
+
+        ( InputTrystero "turn" v, IPFS data ) ->
+            IPFS { data | turnConfig = v }
+
         _ ->
             backend
 
@@ -872,6 +1378,9 @@ eq a b =
         ( PubNub _, PubNub _ ) ->
             True
 
+        ( Ably _, Ably _ ) ->
+            True
+
         -- ( Jitsi _, Jitsi _ ) ->
         --     True
         ( P2PT _, P2PT _ ) ->
@@ -884,6 +1393,18 @@ eq a b =
             True
 
         ( SimplePeer _, SimplePeer _ ) ->
+            True
+
+        ( NoStr _, NoStr _ ) ->
+            True
+
+        ( MQTT _, MQTT _ ) ->
+            True
+
+        ( Torrent _, Torrent _ ) ->
+            True
+
+        ( IPFS _, IPFS _ ) ->
             True
 
         _ ->

@@ -1,4 +1,4 @@
-module Service.Sync exposing (chat, code, codes, connect, cursor, deleteClassroom, disconnect, join, listClassrooms, publish, quiz, survey)
+module Service.Sync exposing (chat, checkPassword, code, codes, connect, cursor, deleteClassroom, disconnect, generateOwnerToken, join, listClassrooms, markOwner, markOwnerTokenHash, publish, quiz, survey, updateClassroomMeta)
 
 import Array exposing (Array)
 import Json.Encode as JE
@@ -13,6 +13,14 @@ connect :
     , room : String
     , password : String
     , persistent : Bool
+    , name : String
+    , title : String
+    , notes : String
+    , mode : Int
+    , ownerTokenHash : String
+    , pwSalt : String
+    , pwCheck : String
+    , ownerToken : Maybe String
     }
     -> Event
 connect param =
@@ -37,6 +45,7 @@ connect param =
             -- course-URL, see `Service.Database`
             , ( "uidDB", JE.string param.course )
             , ( "room", JE.string param.room )
+            , ( "mode", JE.int param.mode )
             , ( "password"
               , if String.isEmpty param.password then
                     JE.null
@@ -46,6 +55,20 @@ connect param =
               )
             , ( "persistent", JE.bool param.persistent )
             , ( "fullBackend", JE.string (Via.toString True param.backend) )
+            , ( "name"
+              , param.name
+                    |> JE.string
+              )
+            , ( "title", JE.string param.title )
+            , ( "notes", JE.string param.notes )
+            , ( "ownerTokenHash", JE.string param.ownerTokenHash )
+            , ( "pwSalt", JE.string param.pwSalt )
+            , ( "pwCheck", JE.string param.pwCheck )
+            , ( "ownerToken"
+              , param.ownerToken
+                    |> Maybe.map JE.string
+                    |> Maybe.withDefault JE.null
+              )
             , ( "config"
               , case param.backend of
                     Via.GUN { urls, persistent } ->
@@ -75,6 +98,12 @@ connect param =
                             , ( "subscribeKey", JE.string subKey )
                             ]
 
+                    Via.Ably { apiKey, persistent } ->
+                        JE.object
+                            [ ( "apiKey", JE.string apiKey )
+                            , ( "persistent", JE.bool persistent )
+                            ]
+
                     Via.P2PT urls ->
                         urls
                             |> String.split ","
@@ -99,6 +128,18 @@ connect param =
                             , ( "iceServers", JE.string iceServers )
                             ]
 
+                    Via.NoStr { relayUrls, turnConfig } ->
+                        trysteroConfig relayUrls turnConfig
+
+                    Via.MQTT { relayUrls, turnConfig } ->
+                        trysteroConfig relayUrls turnConfig
+
+                    Via.Torrent { relayUrls, turnConfig } ->
+                        trysteroConfig relayUrls turnConfig
+
+                    Via.IPFS { turnConfig } ->
+                        trysteroConfig "" turnConfig
+
                     _ ->
                         JE.null
               )
@@ -109,11 +150,102 @@ connect param =
         |> publish "connect"
 
 
+trysteroConfig : String -> String -> JE.Value
+trysteroConfig relayUrls turnConfig =
+    JE.object
+        [ ( "relayUrls"
+          , relayUrls
+                |> String.split ","
+                |> List.map String.trim
+                |> List.filter (String.isEmpty >> not)
+                |> JE.list JE.string
+          )
+        , ( "turnConfig", JE.string turnConfig )
+        ]
+
+
+{-| Persist a saved classroom's user-editable title/notes/name, without
+touching its password/mode/connection settings. See `listClassrooms` on why
+the `course` is not normalized, and `deleteClassroom` on the `backend`
+string.
+-}
+updateClassroomMeta : String -> String -> String -> { title : String, notes : String, name : String } -> Event
+updateClassroomMeta course room backend meta =
+    [ ( "course", JE.string course )
+    , ( "room", JE.string room )
+    , ( "backend", JE.string backend )
+    , ( "title", JE.string meta.title )
+    , ( "notes", JE.string meta.notes )
+    , ( "name", JE.string meta.name )
+    ]
+        |> JE.object
+        |> publish "update_classroom_meta"
+
+
+{-| Mirror the live CRDT-ownership flag (see the `"ownership"` event in
+`Lia.Sync.Update`) into the saved classroom entry, so it can be shown on its
+card without having to reconnect. Reuses the `update_classroom_meta` command,
+but — unlike `updateClassroomMeta` — omits `title`/`notes` so the TS side's
+partial update leaves them untouched.
+-}
+markOwner : String -> String -> String -> Bool -> Event
+markOwner course room backend owner =
+    [ ( "course", JE.string course )
+    , ( "room", JE.string room )
+    , ( "backend", JE.string backend )
+    , ( "owner", JE.bool owner )
+    ]
+        |> JE.object
+        |> publish "update_classroom_meta"
+
+
+{-| Mirror the room's (non-secret) `ownerTokenHash`, resolved on every
+successful connect - not only for the owner - into the saved classroom
+entry, so it can be read off/copied from its card without reconnecting.
+Same partial-update mechanism and rationale as `markOwner`.
+-}
+markOwnerTokenHash : String -> String -> String -> String -> Event
+markOwnerTokenHash course room backend ownerTokenHash =
+    [ ( "course", JE.string course )
+    , ( "room", JE.string room )
+    , ( "backend", JE.string backend )
+    , ( "ownerTokenHash", JE.string ownerTokenHash )
+    ]
+        |> JE.object
+        |> publish "update_classroom_meta"
+
+
 disconnect : String -> Event
 disconnect id =
     id
         |> JE.string
         |> publish "disconnect"
+
+
+{-| Ask TS to mint a fresh, cryptographically random owner secret (and its
+hash) before ever connecting - the only other way to become owner is via an
+owner-link, see `Session.encodeOwnerLink`. The reply arrives as an
+`"owner_token"` event carrying `{ token, hash }`.
+-}
+generateOwnerToken : Event
+generateOwnerToken =
+    publish "generate_owner_token" JE.null
+
+
+{-| Ask TS whether a typed password matches the room's `pwCheck` hint (see
+peerCrypto.verifyPasswordCheck), gating the actual `connect` - see the
+`Connect` case in `Lia.Sync.Update`, which withholds `connect` until this
+resolves. Deterministic, unlike the P2P empty-room heuristic: a mismatch
+comes back as `"error"`, a match as `"password_ok"`.
+-}
+checkPassword : { password : String, pwSalt : String, pwCheck : String } -> Event
+checkPassword param =
+    [ ( "password", JE.string param.password )
+    , ( "pwSalt", JE.string param.pwSalt )
+    , ( "pwCheck", JE.string param.pwCheck )
+    ]
+        |> JE.object
+        |> publish "check_password"
 
 
 join : JE.Value -> Event

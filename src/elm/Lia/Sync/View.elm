@@ -9,11 +9,10 @@ import Html.Events as Event
 import Index.View.Popup as Popup
 import Lia.Settings.Update exposing (Msg(..))
 import Lia.Sync.Classroom as Classroom
-import Lia.Sync.Types as Sync exposing (State(..), Sync)
+import Lia.Sync.Types as Sync exposing (ClassroomMode(..), State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
 import Lia.Sync.Via as Backend exposing (Backend)
-import Lia.Utils exposing (btn, btnIcon)
-import Time
+import Lia.Utils exposing (btn, btnIcon, formatDate, icon)
 
 
 view : Sync.Settings -> Html Msg
@@ -28,101 +27,320 @@ view settings =
                     False
     in
     Html.div
-        [ --Attr.style "min-width" "320px"
-          Attr.style "width" "80%"
-        , Attr.style "max-width" "600px"
-        , Attr.style "overflow" "auto"
-        ]
+        [ Attr.class "lia-classroom" ]
         [ Html.h1
             [ Attr.style "text-align" "center"
             , Attr.id "lia-modal-focus"
             , Attr.tabindex 0
             ]
-            [ Html.text "Classroom "
-            , settings.sync.select
-                |> Maybe.map
-                    (Tuple.second
-                        >> Backend.icon
-                        >> List.singleton
-                        >> Html.span
-                            [ Attr.style "font-size" "xxx-large"
-                            , Attr.style "vertical-align" "middle"
-                            ]
-                    )
-                |> Maybe.withDefault (Html.text "")
+            [ Html.text "Classroom"
+            , Html.img
+                [ Attr.src "network.svg"
+                , Attr.attribute "loading" "lazy"
+                , Attr.alt ""
+                , Attr.attribute "aria-hidden" "true"
+                , Attr.style "height" "5rem"
+                , Attr.style "margin-left" "1rem"
+                ]
+                []
             ]
-        , select open settings.sync
         , case settings.sync.select of
             Nothing ->
-                Html.div []
-                    [ savedList Nothing settings
-                    , Backend.info
+                Html.div [ Attr.class "lia-classroom__overview" ]
+                    [ Html.p [ Attr.class "lia-classroom__subtitle" ]
+                        [ Html.text "Work together with your class in real time — share quizzes, surveys, and live sessions. No accounts needed." ]
+                    , Html.div [ Attr.class "lia-classroom__quick-row" ]
+                        [ Html.div [ Attr.class "lia-classroom__quick-btn-wrap" ]
+                            [ Html.span [ Attr.class "lia-label", A11y_Aria.hidden True ] [ Html.text "\u{00A0}" ]
+                            , Html.br [] []
+                            , btnIcon
+                                { msg = Just OpenNotes
+                                , title = "Just for me — local notes, no connection"
+                                , tabbable = True
+                                , icon = "icon-pencil"
+                                }
+                                [ Attr.class "lia-classroom__notes-btn" ]
+                            ]
+                        , Html.div [ Attr.class "lia-classroom__dropdown-wrap" ] [ select "Connect to a classroom" open settings.sync ]
+                        ]
+                    , savedList settings
+                    , infoDetails
                     ]
 
             Just ( support, via ) ->
-                Html.div []
-                    [ savedList (Just via) settings
-                    , Backend.input
-                        { active = open && support
-                        , msg = Room
-                        , type_ = "text"
-                        , value = settings.room
-                        , placeholder = "Just any kind of typeable name"
-                        , label =
-                            Html.span []
-                                [ Html.text "room "
+                Html.div [ Attr.class "lia-classroom__columns" ]
+                    [ Html.div [ Attr.class "lia-classroom__form" ]
+                        [ select "Backend" (open && not settings.locked) settings.sync
+                        , Html.label []
+                            [ Html.span
+                                [ Attr.class "lia-label"
+                                , Attr.style "margin-block-start" "2rem"
+                                , Attr.style "width" "100%"
+                                ]
+                                [ Html.text "Room" ]
+                            , Html.div [ Attr.class "lia-classroom__field-row" ]
+                                [ Html.input
+                                    [ if open && support && not settings.locked then
+                                        Event.onInput Room
+
+                                      else
+                                        Attr.disabled True
+                                    , Attr.value settings.room
+                                    , Attr.style "color" "black"
+                                    , Attr.type_ "text"
+                                    , Attr.style "width" "100%"
+                                    , Attr.placeholder "Just any kind of typeable name"
+                                    , Attr.name "room"
+                                    , Attr.attribute "autocomplete" "room"
+                                    ]
+                                    []
                                 , btnIcon
                                     { title = "generate random"
-                                    , tabbable = open && support
+                                    , tabbable = open && support && not settings.locked
                                     , msg =
-                                        if open && support then
+                                        if open && support && not settings.locked then
                                             Just Random_Generate
 
                                         else
                                             Nothing
                                     , icon = "icon-refresh"
                                     }
-                                    [ Attr.class "lia-btn--transparent icon-sm"
-                                    , Attr.style "padding" "0"
+                                    [ Attr.class "lia-btn--outline lia-classroom__field-btn" ]
+                                ]
+                            ]
+                        , if via /= Backend.Local then
+                            Backend.input
+                                { active = open && support
+                                , msg = Name
+                                , label = Html.text "Your name (optional)"
+                                , type_ = "text"
+                                , value = settings.name
+                                , placeholder = "Enter your name to be displayed to others"
+                                , autocomplete = Just "name"
+                                }
+
+                          else
+                            Html.text ""
+                        , Html.label []
+                            [ Html.span
+                                [ Attr.class "lia-label"
+                                , Attr.style "margin-block-start" "2rem"
+                                , Attr.style "width" "100%"
+                                ]
+                                [ Html.text "Password (optional)" ]
+                            , Html.div [ Attr.class "lia-classroom__field-row" ]
+                                [ Html.input
+                                    [ if open && support && not settings.passwordLocked then
+                                        Event.onInput Password
+
+                                      else
+                                        Attr.disabled True
+                                    , Attr.value settings.password
+                                    , Attr.style "color" "black"
+                                    , Attr.type_ <|
+                                        if settings.passwordVisible && not settings.passwordLocked then
+                                            "text"
+
+                                        else
+                                            "password"
+                                    , Attr.style "width" "100%"
+                                    , Attr.name "password"
+                                    , Attr.attribute "autocomplete" "new-password"
+                                    ]
+                                    []
+                                , btnIcon
+                                    { title =
+                                        if settings.passwordVisible then
+                                            "hide password"
+
+                                        else
+                                            "show password"
+                                    , tabbable = open && support && not settings.passwordLocked
+                                    , msg =
+                                        if open && support && not settings.passwordLocked then
+                                            Just TogglePasswordVisibility
+
+                                        else
+                                            Nothing
+                                    , icon =
+                                        if settings.passwordVisible then
+                                            "icon-eye-open"
+
+                                        else
+                                            "icon-eye-closed"
+                                    }
+                                    [ Attr.class "lia-btn--outline lia-classroom__field-btn" ]
+                                ]
+                            ]
+                        , if via /= Backend.Local then
+                            viewMode (open && support && not settings.locked) settings.mode
+
+                          else
+                            Html.text ""
+                        , if settings.mode /= Shared then
+                            let
+                                editable =
+                                    open && support && not settings.locked && settings.state == Disconnected
+                            in
+                            Html.label []
+                                [ Html.span
+                                    [ Attr.class "lia-label"
+                                    , Attr.style "margin-block-start" "2rem"
+                                    , Attr.style "width" "100%"
+                                    ]
+                                    [ Html.text "Owner token hash"
+                                    , if settings.ownerToken /= Nothing || settings.owner then
+                                        Html.text " — 👑 you are the owner"
+
+                                      else
+                                        Html.text ""
+                                    ]
+                                , Html.p
+                                    [ Attr.class "lia-classroom__tagline"
+                                    , Attr.style "margin" "0 0 0.5rem"
+                                    ]
+                                    [ Html.text "Lets you prove later that you created this classroom, e.g. to a co-teacher. Safe to copy and share." ]
+
+                                -- Purely informational/confirmation - not needed to join at
+                                -- all (room + password already suffice, see the room/password
+                                -- fields above) and not itself proof of ownership either. Safe
+                                -- to write down and hand out freely, unlike the raw
+                                -- `ownerToken`, which never appears as copyable text anywhere -
+                                -- it only ever travels via "copy owner link" below.
+                                , Html.div [ Attr.class "lia-classroom__field-row" ]
+                                    [ Html.input
+                                        [ Attr.value settings.ownerTokenHash
+                                        , Attr.style "color" "black"
+                                        , Attr.type_ "text"
+                                        , Attr.style "width" "100%"
+                                        , Attr.placeholder "No owner set up - normal participant access only"
+                                        , Event.onInput OwnerTokenHash
+                                        ]
+                                        []
+
+                                    -- generating (or regenerating) only makes sense before
+                                    -- committing to a connection - once connected, whatever
+                                    -- token was used to establish (or not establish) ownership
+                                    -- is already fixed for this session
+                                    , btnIcon
+                                        { title = "generate owner token"
+                                        , tabbable = editable
+                                        , msg =
+                                            if editable then
+                                                Just GenerateOwnerToken
+
+                                            else
+                                                Nothing
+                                        , icon = "icon-refresh"
+                                        }
+                                        [ Attr.class "lia-btn--outline lia-classroom__field-btn" ]
                                     ]
                                 ]
-                        , autocomplete = Nothing
-                        }
-                    , Backend.input
-                        { active = open && support
-                        , msg = Password
-                        , label = Html.text "maybe password"
-                        , type_ = "password"
-                        , value = settings.password
-                        , placeholder = ""
-                        , autocomplete = Nothing
-                        }
-                    , Backend.view (open && support) via
-                        |> Html.map Config
-                        |> Html.map Backend
-                    , Html.div []
-                        [ Backend.checkbox
-                            { active = True
-                            , msg = EnabledScript settings.scriptsEnabled
-                            , label = Html.text "Allow scripts to be executed in the chat"
-                            , value = settings.scriptsEnabled
-                            }
+
+                          else
+                            Html.text ""
+                        , Html.div []
+                            [ Backend.checkbox
+                                { active = True
+                                , msg = EnabledScript settings.scriptsEnabled
+                                , label = Html.text "Allow scripts to be executed in the chat"
+                                , value = settings.scriptsEnabled
+                                }
+                            ]
+                        , Html.div []
+                            [ Backend.checkbox
+                                { active =
+                                    open
+                                        && support
+                                        && (via /= Backend.Local)
+                                , msg = TogglePersistent
+                                , label = Html.text "Remember this classroom (saves settings and caches its content locally)"
+                                , value = settings.persistent || via == Backend.Local
+                                }
+                            ]
+                        , if settings.persistent || via == Backend.Local then
+                            Html.div [ Attr.class "lia-classroom__local-fields" ]
+                                [ Backend.input
+                                    { active = open && support
+                                    , msg = LocalName
+                                    , label = Html.text "Name (local)"
+                                    , type_ = "text"
+                                    , value = settings.title
+                                    , placeholder = "A name to recognize this room by, e.g. \"Media Informatics Monday\""
+                                    , autocomplete = Nothing
+                                    }
+                                , Backend.input
+                                    { active = open && support
+                                    , msg = LocalNote
+                                    , label = Html.text "Note (local)"
+                                    , type_ = "text"
+                                    , value = settings.notes
+                                    , placeholder = "Optional, e.g. \"Lecture, Monday 10:00\""
+                                    , autocomplete = Nothing
+                                    }
+                                ]
+
+                          else
+                            Html.text ""
+                        , button settings
+
+                        -- , if settings.ownerToken /= Nothing then
+                        --     btn
+                        --         { title = "copy owner link"
+                        --         , tabbable = True
+                        --         , msg = Just CopyOwnerLink
+                        --         }
+                        --         [ Attr.style "margin-block-start" "1rem"
+                        --         , Attr.style "width" "100%"
+                        --         ]
+                        --         [ Html.text "🔑 Copy owner link" ]
+                        --   else
+                        --     Html.text ""
+                        , viewError settings.error
                         ]
-                    , Html.div []
-                        [ Backend.checkbox
-                            { active =
-                                open
-                                    && support
-                                    && (via /= Backend.Local)
-                            , msg = TogglePersistent
-                            , label = Html.text "Remember this classroom (saves settings and caches its content locally)"
-                            , value = settings.persistent || via == Backend.Local
-                            }
+                    , Html.div [ Attr.class "lia-classroom__divider" ] []
+                    , Html.div [ Attr.class "lia-classroom__info" ]
+                        [ Html.div [ Attr.class "lia-classroom__info-header" ]
+                            [ Html.div [ Attr.class "lia-classroom__card-icon" ]
+                                [ Backend.icon via ]
+                            , Html.div []
+                                [ Html.h2 [] [ Backend.toString False via |> Html.text ]
+                                , Html.p [ Attr.class "lia-classroom__tagline" ] [ Html.text (Backend.tagline via) ]
+                                ]
+                            ]
+                        , Html.div [ Attr.class "lia-classroom__badges" ]
+                            (via |> Backend.badges |> List.map Backend.badge)
+                        , Backend.infoOn support via
+                        , if settings.fromUrl then
+                            Html.text ""
+
+                          else
+                            Backend.view
+                                settings.locked
+                                (open && support)
+                                via
+                                |> Html.map Config
+                                |> Html.map Backend
                         ]
-                    , button settings
-                    , viewError settings.error
-                    , Backend.infoOn support via
                     ]
+        ]
+
+
+{-| The long, static "how does this work" explanation, tucked behind a
+collapsed `<details>` disclosure instead of always taking up space on the
+overview page - styled the same way as `Backend.Via`'s own "Infrastructure
+settings" disclosure, for visual consistency.
+-}
+infoDetails : Html msg
+infoDetails =
+    Html.details [ Attr.style "margin-block-start" "2rem" ]
+        [ Html.summary
+            [ Attr.style "cursor" "pointer"
+            , Attr.style "font-weight" "bold"
+            , Attr.style "color" "white"
+            ]
+            [ Html.text "What can a classroom do?" ]
+        , Backend.info
         ]
 
 
@@ -138,53 +356,26 @@ viewError message =
                 [ Html.text <| "Error: " ++ msg ]
 
 
-{-| Show the locally saved classrooms. The "Own Notes" entry (if it has ever
-been connected to) is always pinned as its own tile rather than a regular
-deletable row, on both the overview and its own backend page.
-
-On the overview page (`context == Nothing`) every other saved entry is
-listed alongside that pinned tile. On a backend-specific page
-(`context == Just via`) the list is narrowed down to entries saved for that
-backend; if none match (and it isn't the Local page, which always has its
-pinned tile), nothing is rendered at all.
-
+{-| Show the locally saved classrooms as a card grid. Only shown on the
+overview page (no backend selected yet) — once a backend is picked, the
+form takes over and the cards would just be visual clutter. The local
+"Own Notes" room is excluded here - it has its own quick-access button
+next to the backend dropdown instead of a grid tile.
 -}
-savedList : Maybe Backend -> Sync.Settings -> Html Msg
-savedList context settings =
+savedList : Sync.Settings -> Html Msg
+savedList settings =
     case settings.state of
         Sync.Disconnected ->
-            let
-                notes =
-                    settings.saved |> List.filter isNotesEntry |> List.head
+            case settings.saved |> List.filter (isNotesEntry >> not) of
+                [] ->
+                    Html.text ""
 
-                header rows =
+                entries ->
                     Html.div [ Attr.style "margin-block-start" "2rem" ]
-                        [ Html.span [ Attr.class "lia-label" ] [ Html.text "Saved Classrooms" ]
-                        , listContainer rows
+                        [ Html.span [ Attr.class "lia-label" ] [ Html.text "Your classrooms" ]
+                        , Html.div [ Attr.class "lia-classroom__cards" ]
+                            (List.map (savedCard settings.deletePopup) entries)
                         ]
-            in
-            case context of
-                Nothing ->
-                    settings.saved
-                        |> List.filter (isNotesEntry >> not)
-                        |> List.map (savedItem settings.deletePopup)
-                        |> (::) (notesTile notes)
-                        |> header
-
-                Just Backend.Local ->
-                    settings.saved
-                        |> List.filter (\entry -> matchesBackend Backend.Local entry && not (isNotesEntry entry))
-                        |> List.map (savedItem settings.deletePopup)
-                        |> (::) (notesTile notes)
-                        |> header
-
-                Just via ->
-                    case List.filter (matchesBackend via) settings.saved of
-                        [] ->
-                            Html.text ""
-
-                        entries ->
-                            header (List.map (savedItem settings.deletePopup) entries)
 
         _ ->
             Html.text ""
@@ -210,150 +401,138 @@ isNotesEntry entry =
     entry.room == Classroom.notesRoomName && matchesBackend Backend.Local entry
 
 
-{-| Bordered, height-capped, scrollable box for the saved-classrooms rows, so
-a long list doesn't push the rest of the modal down.
--}
-listContainer : List (Html msg) -> Html msg
-listContainer =
-    Html.div
-        [ Attr.style "border" "1px solid rgb(var(--color-border))"
-        , Attr.style "border-radius" "4px"
-        , Attr.style "max-height" "12rem"
-        , Attr.style "overflow-y" "auto"
-        , Attr.style "padding" "0 10px"
-        ]
-
-
-{-| Format a stored `updated` timestamp (epoch milliseconds) as
-`DD.MM.YYYY HH:MM`, in UTC (no user-local timezone is plumbed through the
-app anywhere yet).
--}
-formatDate : Int -> String
-formatDate ms =
-    let
-        posix =
-            Time.millisToPosix ms
-
-        pad n =
-            n |> String.fromInt |> String.padLeft 2 '0'
-
-        month =
-            case Time.toMonth Time.utc posix of
-                Time.Jan ->
-                    1
-
-                Time.Feb ->
-                    2
-
-                Time.Mar ->
-                    3
-
-                Time.Apr ->
-                    4
-
-                Time.May ->
-                    5
-
-                Time.Jun ->
-                    6
-
-                Time.Jul ->
-                    7
-
-                Time.Aug ->
-                    8
-
-                Time.Sep ->
-                    9
-
-                Time.Oct ->
-                    10
-
-                Time.Nov ->
-                    11
-
-                Time.Dec ->
-                    12
-    in
-    pad (Time.toDay Time.utc posix)
-        ++ "."
-        ++ pad month
-        ++ "."
-        ++ String.fromInt (Time.toYear Time.utc posix)
-        ++ " "
-        ++ pad (Time.toHour Time.utc posix)
-        ++ ":"
-        ++ pad (Time.toMinute Time.utc posix)
-
-
-{-| The pinned "Own Notes" shortcut. Shows the last-used date once the
-notes room has actually been connected to at least once; before that,
-there is nothing to show a date for.
--}
-notesTile : Maybe Classroom.Entry -> Html Msg
-notesTile entry =
-    Html.div
-        [ Attr.style "display" "flex"
-        , Attr.style "align-items" "center"
-        , Attr.style "justify-content" "space-between"
-        , Attr.style "padding" "5px 0"
-        ]
-        [ Html.button
-            [ Event.onClick OpenNotes
-            , Attr.class "lia-btn lia-btn--transparent"
-            ]
-            [ Backend.icon Backend.Local
-            , Html.text "Own Notes (offline)"
-            , entry
-                |> Maybe.map (.updated >> dateSpan)
-                |> Maybe.withDefault (Html.text "")
-            ]
-        ]
-
-
 dateSpan : Int -> Html msg
 dateSpan updated =
+    Html.span [ Attr.class "lia-classroom__date" ] [ Html.text (formatDate updated) ]
+
+
+{-| The mode (Shared/Summary/Details) a saved classroom was last used with,
+plus — since only the initiator sees the aggregated overview outside of
+Shared mode — whether this browser was that initiator the last time it
+connected (mirrored from the live `"ownership"` event, see
+`Lia.Sync.Update`).
+-}
+modeBadge : Int -> Html msg
+modeBadge modeInt =
+    let
+        ( label, modifier ) =
+            case Sync.toClassroomMode modeInt of
+                Shared ->
+                    ( "Shared", "lia-classroom__mode--shared" )
+
+                Summary ->
+                    ( "Summary", "lia-classroom__mode--summary" )
+
+                Details ->
+                    ( "Details", "lia-classroom__mode--details" )
+    in
     Html.span
-        [ Attr.style "opacity" "0.6"
-        , Attr.style "font-size" "smaller"
-        , Attr.style "padding-inline-start" "8px"
+        [ Attr.class "lia-classroom__mode" ]
+        [ Html.span [ Attr.class "lia-classroom__mode-dot", Attr.class modifier ] []
+        , Html.text label
         ]
-        [ Html.text (formatDate updated) ]
 
 
-savedItem : Maybe ( String, String ) -> Classroom.Entry -> Html Msg
-savedItem deletePopup entry =
-    Html.div
-        [ Attr.style "display" "flex"
-        , Attr.style "align-items" "center"
-        , Attr.style "justify-content" "space-between"
-        , Attr.style "padding" "5px 0"
-        ]
-        [ Html.button
-            [ Event.onClick (LoadClassroom entry)
-            , Attr.class "lia-btn lia-btn--transparent"
+{-| A saved classroom's card, shown only on the overview page. Icon on the
+left; the custom (editable) title and the room's actual name to its right;
+the backend badge on the far right. Title is freely editable (local update
+on every keystroke via `EditMeta`, persisted on blur via `SaveMeta`). Notes
+are read-only here (and only shown if one was actually written) — editing
+notes happens on the classroom's own configuration page, which doesn't
+render cards at all.
+-}
+savedCard : Maybe ( String, String ) -> Classroom.Entry -> Html Msg
+savedCard deletePopup entry =
+    let
+        meta =
+            { title = entry.title |> Maybe.withDefault ""
+            , notes = entry.notes |> Maybe.withDefault ""
+            , name = entry.name |> Maybe.withDefault ""
+            }
+    in
+    Html.article [ Attr.class "lia-card lia-classroom__card" ]
+        [ Html.div [ Attr.class "lia-classroom__card-top" ]
+            [ Html.div [ Attr.class "lia-classroom__card-icon" ]
+                [ entry.backend
+                    |> Backend.fromString
+                    |> Maybe.map Backend.icon
+                    |> Maybe.withDefault (Html.text "")
+                ]
+            , Html.div [ Attr.class "lia-classroom__card-heading" ]
+                [ Html.input
+                    [ Attr.class "lia-classroom__card-title"
+                    , Attr.value meta.title
+                    , Attr.placeholder entry.room
+                    , Event.onInput (\title -> EditMeta entry { meta | title = title })
+                    , Event.onBlur (SaveMeta entry)
+                    ]
+                    []
+                , Html.p [ Attr.class "lia-card__subtitle" ] [ Html.text entry.room ]
+                ]
+            , Html.span [ Attr.class "lia-classroom__card-backend" ]
+                [ entry.backend
+                    |> Backend.fromString
+                    |> Maybe.map (Backend.toString False)
+                    |> Maybe.withDefault ""
+                    |> Html.text
+                ]
             ]
-            [ entry.backend
-                |> Backend.fromString
-                |> Maybe.map Backend.icon
-                |> Maybe.withDefault (Html.text "")
-            , Html.text entry.room
-            , dateSpan entry.updated
+        , Html.div [ Attr.class "lia-card__content" ]
+            [ Html.textarea
+                [ Attr.class "lia-classroom__card-notes"
+                , Attr.rows 1
+                , Attr.placeholder "Add a comment…"
+                , Attr.value meta.notes
+                , Event.onInput (\notes -> EditMeta entry { meta | notes = notes })
+                , Event.onBlur (SaveMeta entry)
+                ]
+                []
+            , Html.footer [ Attr.class "lia-card__footer" ]
+                [ Html.div [ Attr.class "lia-classroom__card-row" ]
+                    [ Html.div [ Attr.class "lia-classroom__card-mode-row" ]
+                        [ modeBadge entry.mode ]
+                    , if entry.owner then
+                        Html.span [ Attr.class "lia-classroom__card-tag" ] [ Html.text "Initiator" ]
+
+                      else
+                        Html.text ""
+                    , Html.div [ Attr.class "lia-classroom__card-controls" ]
+                        [ case deletePopup of
+                            Just ( room, backend ) ->
+                                if room == entry.room && backend == entry.backend then
+                                    Popup.view
+                                        { text = "Delete this saved classroom and its locally cached content? This cannot be undone."
+                                        , action = { msg = ConfirmDeleteClassroom entry.room entry.backend, text = "Delete" }
+                                        , escape = CancelDeleteClassroom
+                                        }
+
+                                else
+                                    deleteBtn entry
+
+                            Nothing ->
+                                deleteBtn entry
+                        , btnIcon
+                            { msg = Just (LoadClassroom entry)
+                            , title = "Connect to this classroom"
+                            , tabbable = True
+                            , icon = "icon-login"
+                            }
+                            [ Attr.class "lia-classroom__card-ghost lia-classroom__card-ghost--accent" ]
+                        ]
+                    ]
+                , Html.div [ Attr.class "lia-classroom__card-meta-row" ]
+                    [ if String.isEmpty meta.name then
+                        Html.text ""
+
+                      else
+                        Html.span [ Attr.class "lia-classroom__card-user" ]
+                            [ icon "icon-person" [ Attr.class "lia-classroom__card-user-icon" ]
+                            , Html.span [ Attr.class "lia-classroom__card-user-name" ] [ Html.text meta.name ]
+                            ]
+                    , dateSpan entry.updated
+                    ]
+                ]
             ]
-        , case deletePopup of
-            Just ( room, backend ) ->
-                if room == entry.room && backend == entry.backend then
-                    Popup.view
-                        { text = "Delete this saved classroom and its locally cached content? This cannot be undone."
-                        , action = { msg = ConfirmDeleteClassroom entry.room entry.backend, text = "Delete" }
-                        , escape = CancelDeleteClassroom
-                        }
-
-                else
-                    deleteBtn entry
-
-            Nothing ->
-                deleteBtn entry
         ]
 
 
@@ -365,14 +544,14 @@ deleteBtn entry =
         , tabbable = True
         , icon = "icon-trash"
         }
-        [ Attr.class "lia-btn--tag lia-btn--transparent text-red-dark border-red-dark px-1" ]
+        [ Attr.class "lia-classroom__card-ghost lia-classroom__card-ghost--danger" ]
 
 
-select : Bool -> Sync -> Html Msg
-select editable sync =
+select : String -> Bool -> Sync -> Html Msg
+select label editable sync =
     Html.map Backend <|
         Html.label []
-            [ Html.span [ Attr.class "lia-label" ] [ Html.text "via Backend" ]
+            [ Html.span [ Attr.class "lia-label" ] [ Html.text label ]
             , Html.br [] []
             , Html.div
                 [ Attr.class "lia-dropdown"
@@ -399,7 +578,12 @@ select editable sync =
                     , Attr.tabindex 0
                     , A11y_Aria.expanded sync.open
                     ]
-                    [ maybeSelect sync.select
+                    [ case sync.select of
+                        Nothing ->
+                            Html.text "Choose a backend…"
+
+                        Just ( _, via ) ->
+                            selectString via
                     , Html.i
                         [ Attr.class <|
                             "icon"
@@ -447,7 +631,12 @@ option via =
                 |> A11y_Key.space
             ]
         ]
-        [ maybeSelect via ]
+        [ maybeSelect via
+        , via
+            |> Maybe.map (Tuple.second >> Backend.badges >> String.join " · ")
+            |> Maybe.map (Html.text >> List.singleton >> Html.span [ Attr.class "lia-classroom__option-tags" ])
+            |> Maybe.withDefault (Html.text "")
+        ]
 
 
 maybeSelect : Maybe ( Bool, Backend ) -> Html msg
@@ -466,19 +655,28 @@ selectString via =
 
 button : Sync.Settings -> Html Msg
 button settings =
+    let
+        attrs =
+            [ Attr.style "margin-block-start" "2rem"
+            , Attr.style "width" "100%"
+            ]
+    in
     case settings.state of
         Disconnected ->
             btn
                 { title = "connect"
                 , msg =
-                    if String.isEmpty settings.room then
+                    if
+                        String.isEmpty settings.room
+                            || (settings.mode /= Shared && String.isEmpty settings.ownerTokenHash)
+                    then
                         Nothing
 
                     else
                         Just Connect
                 , tabbable = True
                 }
-                [ Attr.style "margin-block-start" "2rem" ]
+                attrs
                 [ Html.text "connect" ]
 
         Connected _ ->
@@ -487,7 +685,7 @@ button settings =
                 , msg = Just Disconnect
                 , tabbable = True
                 }
-                [ Attr.style "margin-block-start" "2rem" ]
+                attrs
                 [ Html.text "disconnect" ]
 
         Pending ->
@@ -496,5 +694,73 @@ button settings =
                 , msg = Nothing
                 , tabbable = False
                 }
-                [ Attr.style "margin-block-start" "2rem" ]
+                attrs
                 [ Html.text "pending" ]
+
+
+viewMode : Bool -> ClassroomMode -> Html Msg
+viewMode active mode =
+    Html.label
+        [ Attr.class "lia-label"
+        , Attr.style "margin-block-start" "2rem"
+        , Attr.style "display" "flex"
+        , Attr.style "flex-direction" "column"
+        , Attr.style "align-items" "flex-start"
+        ]
+        [ Html.span
+            [ Attr.class "lia-label"
+            ]
+            [ Html.text "mode" ]
+        , Html.div
+            [ Attr.style "display" "flex"
+            , Attr.style "flex-direction" "row"
+            , Attr.style "gap" "1rem"
+            , Attr.style "align-items" "center"
+            ]
+            [ Html.select
+                [ if active then
+                    Event.onInput ClassroomMode
+
+                  else
+                    Attr.disabled True
+                , Attr.style "background" <|
+                    case mode of
+                        Shared ->
+                            "green"
+
+                        Summary ->
+                            "orange"
+
+                        Details ->
+                            "red"
+                ]
+                [ Html.option
+                    [ Attr.value "0"
+                    , Attr.selected <| mode == Shared
+                    ]
+                    [ Html.text "☮️ Shared" ]
+                , Html.option
+                    [ Attr.value "1"
+                    , Attr.selected <| mode == Summary
+                    ]
+                    [ Html.text "🛂 Summary" ]
+                , Html.option
+                    [ Attr.value "2"
+                    , Attr.selected <| mode == Details
+                    ]
+                    [ Html.text "🛰️ Details" ]
+                ]
+            , Html.span []
+                [ Html.text <|
+                    case mode of
+                        Shared ->
+                            "All are equal and see the summary of quizzes and surveys."
+
+                        Summary ->
+                            "Only the initiator can see the summaries."
+
+                        Details ->
+                            "(Kremlin mode) The initiator can see also details per participant."
+                ]
+            ]
+        ]

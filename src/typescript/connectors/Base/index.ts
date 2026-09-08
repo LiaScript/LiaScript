@@ -82,6 +82,12 @@ export class Connector {
 
   load(_record: Record) {}
 
+  loadAll(
+    _table: string
+  ): { id: number; data: any }[] | Promise<{ id: number; data: any }[]> {
+    return []
+  }
+
   store(_record: Record) {}
 
   update(_record: Record, _fn: (a: any) => any) {}
@@ -125,9 +131,33 @@ export class Connector {
 
   async saveClassroom(
     _uidDB: string,
-    _entry: { room: string; backend: string; password?: string }
+    _entry: {
+      room: string
+      backend: string
+      password?: string
+      name?: string
+      title?: string
+      notes?: string
+      mode?: number
+      ownerTokenHash?: string
+    }
   ) {
     console.log('saveClassroom not implemented')
+  }
+
+  async updateClassroomMeta(
+    _uidDB: string,
+    _room: string,
+    _backend: string,
+    _meta: {
+      title?: string
+      notes?: string
+      name?: string
+      owner?: boolean
+      ownerTokenHash?: string
+    }
+  ) {
+    console.log('updateClassroomMeta not implemented')
   }
 
   async deleteClassroom(_uidDB: string, _room: string, _backend: string) {
@@ -151,7 +181,23 @@ export class Connector {
     console.log('replaceYjsUpdates not implemented')
   }
 
+  async compactYjsUpdates(
+    _uidDB: string,
+    _key: string,
+    _merge: (rows: Uint8Array[]) => Uint8Array | null
+  ): Promise<Uint8Array | null> {
+    return null
+  }
+
   async clearYjsUpdates(_uidDB: string, _key: string) {
     console.log('clearYjsUpdates not implemented')
+  }
+
+  async getKey(_uidDB: string, _id: string): Promise<any> {
+    return undefined
+  }
+
+  async putKey(_uidDB: string, _id: string, _value: any) {
+    console.log('putKey not implemented')
   }
 }

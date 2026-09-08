@@ -36,6 +36,7 @@ import Hex
 import Html exposing (Attribute)
 import Html.Attributes as Attr
 import Lia.Markdown.HTML.NamedCharacterReferences as NamedCharacterReferences
+import Lia.Parser.PatReplace exposing (link)
 
 
 {-| Used internally to store HTML parameter as Tuples of `(name, value)`.
@@ -241,9 +242,11 @@ toURL basis appendix url =
         url
 
     else
-        basis
-            ++ url
-            ++ appendix
+        link
+            (basis
+                ++ url
+                ++ appendix
+            )
 
 
 {-| List of allowed supported protocols.

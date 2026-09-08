@@ -61,22 +61,9 @@ class LiaDB {
     })
 
     db.version(2).stores({
-      classrooms: '&room, updated',
-    })
-
-    // the room-name alone is not unique, two different backends can share the
-    // same room-name for the same course. Dexie cannot change a primary key
-    // in place, thus the table has to be dropped and recreated.
-    db.version(3).stores({
-      classrooms: null,
-    })
-
-    db.version(4).stores({
       classrooms: '[room+backend], updated',
-    })
-
-    db.version(5).stores({
       yjsUpdates: '++id, key',
+      keys: '&id',
     })
 
     return db
@@ -197,6 +184,28 @@ class LiaDB {
       return item.data
     }
     return null
+  }
+
+  /** Load every entry of a table for the current version in one query,
+   * instead of one `load` call per id. Used to preload all persisted
+   * quiz/survey answers when joining a classroom, without paying for
+   * one IndexedDB round-trip per slide.
+   *
+   * @param table - table to load, e.g. "quiz" or "survey"
+   * @param versionDB - optional version number for the database entry
+   * @returns the stored `data` per id, only for ids that have an entry
+   * @example
+   *    loadAll('quiz')
+   */
+  async loadAll(table: string, versionDB?: number) {
+    if (!this.db) return []
+
+    const rows = await this.db[table]
+      .where('version')
+      .equals(versionDB != undefined ? versionDB : this.version)
+      .toArray()
+
+    return rows.map((row: any) => ({ id: row.id, data: row.data }))
   }
 
   /** This is a shorthand for updating the stored slide number within the
@@ -430,11 +439,24 @@ class LiaDB {
   /** Insert or update a saved classroom entry for a course.
    *
    * @param uidDB - A string URL or URI, which identifies the source of a course.
-   * @param entry - room name and full encoded backend string (primary key), optional password
+   * @param entry - room name and full encoded backend string (primary key), optional password.
+   *   `mode` is stored too (not just cosmetic) - it is folded into the
+   *   network room identity (see `Sync.uniqueID`), so reconnecting under a
+   *   different mode joins a different room and loses the CRDT ownership
+   *   history.
    */
   async saveClassroom(
     uidDB: string,
-    entry: { room: string; backend: string; password?: string }
+    entry: {
+      room: string
+      backend: string
+      password?: string
+      name?: string
+      title?: string
+      notes?: string
+      mode?: number
+      ownerTokenHash?: string
+    }
   ) {
     const db = await this.openShared_(uidDB)
 
@@ -445,9 +467,55 @@ class LiaDB {
       room: entry.room,
       backend: entry.backend,
       password: entry.password || null,
+      name: entry.name || null,
+      title: entry.title || null,
+      notes: entry.notes || null,
+      mode: entry.mode || 0,
+      ownerTokenHash: entry.ownerTokenHash || existing?.ownerTokenHash || null,
       created: existing ? existing.created : now,
       updated: now,
     })
+  }
+
+  /** Partially update an already-saved classroom entry, without touching
+   * its password/mode/connection settings. Only the keys actually present
+   * in `meta` are written - e.g. a title/notes edit (from the saved-
+   * classrooms card grid) must not clobber the `owner` flag written
+   * separately once a connection resolves CRDT ownership, and vice versa.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param room - the classroom's room name (part of the primary key)
+   * @param backend - the full encoded backend string (part of the primary key)
+   */
+  async updateClassroomMeta(
+    uidDB: string,
+    room: string,
+    backend: string,
+    meta: {
+      title?: string
+      notes?: string
+      name?: string
+      owner?: boolean
+      ownerTokenHash?: string
+    }
+  ) {
+    const db = await this.openShared_(uidDB)
+    const changes: {
+      title?: string | null
+      notes?: string | null
+      name?: string | null
+      owner?: boolean
+      ownerTokenHash?: string | null
+    } = {}
+
+    if (meta.title !== undefined) changes.title = meta.title || null
+    if (meta.notes !== undefined) changes.notes = meta.notes || null
+    if (meta.name !== undefined) changes.name = meta.name || null
+    if (meta.owner !== undefined) changes.owner = meta.owner
+    if (meta.ownerTokenHash !== undefined)
+      changes.ownerTokenHash = meta.ownerTokenHash || null
+
+    await db['classrooms'].update([room, backend], changes)
   }
 
   /** Remove a saved classroom entry for a course.
@@ -508,6 +576,43 @@ class LiaDB {
     })
   }
 
+  /** Read every row of `key`, hand the data to `merge`, and replace the rows
+   * with its result — all inside one transaction, so a concurrent append
+   * (e.g. from a second tab on the same course and room) is either included
+   * in `rows` or queued behind the transaction, never lost between the read
+   * and the replace.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param key - identifies one classroom, see `sync/Base/persist.ts`'s `docId`
+   * @param merge - synchronous: Dexie transactions do not survive `await`s on
+   *   non-Dexie promises
+   */
+  async compactYjsUpdates(
+    uidDB: string,
+    key: string,
+    merge: (rows: Uint8Array[]) => Uint8Array | null
+  ): Promise<Uint8Array | null> {
+    const db = await this.openShared_(uidDB)
+
+    return db.transaction('rw', db['yjsUpdates'], async () => {
+      const rows = await db['yjsUpdates'].where('key').equals(key).toArray()
+      const merged = merge(rows.map((row: { data: Uint8Array }) => row.data))
+
+      if (rows.length === 0) return merged
+
+      await db['yjsUpdates'].where('key').equals(key).delete()
+
+      if (merged)
+        await db['yjsUpdates'].add({
+          key,
+          data: merged,
+          created: new Date().getTime(),
+        })
+
+      return merged
+    })
+  }
+
   /** Remove all cached Yjs updates for one classroom.
    *
    * @param uidDB - A string URL or URI, which identifies the source of a course.
@@ -517,6 +622,34 @@ class LiaDB {
     const db = await this.openShared_(uidDB)
 
     await db['yjsUpdates'].where('key').equals(key).delete()
+  }
+
+  /** Look up one classroom key/keypair cached for a course, see `putKey()`.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param id - identifies one key, see `sync/Base/keyStore.ts`'s `getOrCreateKey`
+   */
+  async getKey(uidDB: string, id: string): Promise<any> {
+    const db = await this.openShared_(uidDB)
+
+    const row = await db['keys'].get(id)
+
+    return row?.value
+  }
+
+  /** Cache one classroom `CryptoKey`/`CryptoKeyPair` for a course, so it can
+   * be reused across reconnects instead of regenerated - see
+   * `sync/Base/keyStore.ts`'s `getOrCreateKey`. Not scoped by `this.version`:
+   * classroom keys are per-room, not per-course-version.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param id - identifies one key, see `sync/Base/keyStore.ts`'s `getOrCreateKey`
+   * @param value - a `CryptoKey` or `CryptoKeyPair`, directly structured-cloneable
+   */
+  async putKey(uidDB: string, id: string, value: any) {
+    const db = await this.openShared_(uidDB)
+
+    await db['keys'].put({ id, value })
   }
 
   /** Delete all entries for all versions of a certain course defined by its
@@ -534,8 +667,8 @@ class LiaDB {
       delete this.dbCache[uidDB]
 
       try {
-        ;(await shared).close()
-      } catch (e) {}
+        ; (await shared).close()
+      } catch (e) { }
     }
 
     // `open()` keeps a second reference to that very same instance. Closing a

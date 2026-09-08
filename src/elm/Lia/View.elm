@@ -27,6 +27,7 @@ import Lia.Settings.Types exposing (Mode(..), PlaybackState(..), Settings, TTS)
 import Lia.Settings.Update as Settings_
 import Lia.Settings.View as Settings
 import Lia.Sync.Types as Sync_
+import Lia.Sync.Update as SyncUpdate
 import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (deactivate, modal)
@@ -265,7 +266,16 @@ viewPanes screen model =
                     , Attr.style "margin-block-start" "0px"
                     ]
             )
-            (Chat.view model.translation model.settings.light (initConfig screen model) model.chat
+            (Chat.view model.translation
+                model.settings.light
+                (initConfig screen model)
+                (if Sync_.isRoot model.sync then
+                    model.sync.peersHistory
+
+                 else
+                    model.sync.peers
+                )
+                model.chat
                 |> Html.map UpdateChat
             )
             model.pane
@@ -907,6 +917,23 @@ isHidden model =
             False
 
 
+{-| The Classroom modal's close ("×") button: on the backend/connect
+sub-page it steps back to the overview instead of closing the whole
+modal - only closes for real once already on the overview. But once
+actually connected to a classroom, "back to overview" would reset the
+room/password fields and rewrite the URL out from under the live
+session - so a connected user always just closes the modal instead.
+-}
+syncCloseMsg : Sync_.Settings -> Msg
+syncCloseMsg sync =
+    case ( Sync_.isConnected sync.state, sync.sync.select ) of
+        ( False, Just _ ) ->
+            UpdateSync (SyncUpdate.Backend (SyncUpdate.Select Nothing))
+
+        _ ->
+            UpdateSettings (Settings_.Toggle Settings_.Sync)
+
+
 showModal : Model -> Html Msg
 showModal model =
     case ( model.settings.sync, model.modal, model.settings.showQRCode ) of
@@ -915,10 +942,11 @@ showModal model =
                 |> Sync.view
                 |> Html.map UpdateSync
                 |> List.singleton
-                |> modal (UpdateSettings (Settings_.Toggle Settings_.Sync)) Nothing
+                |> modal False (syncCloseMsg model.sync) Nothing
 
         ( _, Just url, _ ) ->
-            modal (Media ( "", Nothing, Nothing ))
+            modal True
+                (Media ( "", Nothing, Nothing ))
                 Nothing
                 [ Html.figure
                     [ Attr.class "lia-figure"
@@ -943,7 +971,7 @@ showModal model =
                 ]
 
         ( _, _, True ) ->
-            modal
+            modal True
                 (UpdateSettings (Settings_.Toggle Settings_.QRCode))
                 Nothing
                 [ Html.div

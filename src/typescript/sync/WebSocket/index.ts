@@ -1,6 +1,8 @@
 import * as Base from '../Base/index'
 import { WebSocketTransport } from '../../../../node_modules/y-generic/dist/providers/websocket/index'
 import { GenericProvider } from 'y-generic'
+import { wrapTransport } from '../Base/security'
+import { Crypto } from '../Crypto'
 
 export class Sync extends Base.Sync {
   private transport?: WebSocketTransport
@@ -21,6 +23,8 @@ export class Sync extends Base.Sync {
     room: string
     password?: string
     config?: { url: string }
+    name: string
+    mode: number
   }) {
     super.connect(data)
 
@@ -29,7 +33,7 @@ export class Sync extends Base.Sync {
       data.config,
     )
 
-    this.serverUrl = data.config?.url
+    this.serverUrl = data.config?.url || process.env.WEBSOCKET_SERVER
 
     if (!this.serverUrl) {
       return this.sendDisconnectError(
@@ -37,20 +41,33 @@ export class Sync extends Base.Sync {
       )
     }
 
-    this.init(true)
+    if (this.password && !window['SimpleCrypto']) {
+      this.load([Crypto.url], this)
+    } else {
+      this.init(true)
+    }
   }
 
   init(ok: boolean, error?: string) {
     const id = this.uniqueID(this.password)
 
     if (ok && id) {
+      if (this.password) Crypto.init(this.password)
+
       this.transport = new WebSocketTransport()
 
-      this.provider = new GenericProvider(this.db.doc, this.transport, {
-        verifyUpdates: false,
-      })
+      this.provider = new GenericProvider(
+        this.db.doc,
+        // WebSocketTransport strips/re-adds GenericProvider's 4-byte CRC32
+        // header internally (wire-compat with plain y-websocket) - tell the
+        // wrapper so it doesn't corrupt our ciphertext, see security.ts.
+        wrapTransport(this.transport, this.password, 4),
+        {
+          verifyUpdates: false,
+        },
+      )
 
-      this.db.setAwareness(this.provider.awareness)
+      this.db.setAwareness(this.provider.awareness, this.name)
 
       let syncedOnce = false
 
@@ -90,6 +107,9 @@ export class Sync extends Base.Sync {
       this.provider.connect({
         serverUrl: this.serverUrl!,
         room: id,
+        waitFor: this.persistReady,
+      }).catch((e: any) => {
+        console.warn('WebSocket: initial connect failed ->', e?.message || e)
       })
     } else {
       let message = 'WebSocket unknown error'

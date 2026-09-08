@@ -3,6 +3,7 @@ module Lia.Markdown.Survey.View exposing (view)
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
 import Array
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -24,7 +25,7 @@ import Lia.Markdown.Inline.View
         ( dropHere
         , viewer
         )
-import Lia.Markdown.Quiz.View exposing (syncAttributes)
+import Lia.Markdown.Quiz.View exposing (openState, syncAttributes, viewMatrixTableSync, viewTableSync)
 import Lia.Markdown.Survey.Model
     exposing
         ( getErrorMessage
@@ -110,6 +111,7 @@ view config attr survey model renderedOptions =
                     survey.id
                 |> viewVectorSync config analysis questions (getSync config survey.id)
 
+        --- IGNORE ---
         Matrix button header vars questions ->
             (matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
                 |> view_matrix config header questions
@@ -120,96 +122,220 @@ view config attr survey model renderedOptions =
     )
 
 
-getSync : Config sub -> Int -> Maybe (List Sync)
+getSync : Config sub -> Int -> Maybe (Dict String Sync)
 getSync config id =
     Sync_.get config.sync .survey config.slide id
 
 
-viewTextSync : Config sub -> Int -> Maybe (List Sync) -> Html msg -> Html msg
+viewTextSync : Config sub -> Int -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewTextSync config lines syncData survey =
-    case ( syncData, lines ) of
-        ( Just data, 1 ) ->
-            case
-                data
-                    |> Sync.wordCount
-                    |> Maybe.map (wordCloud config)
-            of
-                Nothing ->
-                    survey
+    withSync config.sync
+        syncData
+        (\data ->
+            case lines of
+                1 ->
+                    let
+                        words =
+                            data |> Dict.values |> Sync.wordCount |> Maybe.withDefault []
+                    in
+                    [ survey
+                    , wordCloud config words
+                    ]
+                        |> viewSummary config.sync [ "Text" ] (toStringFn [ "Text" ]) data
 
-                Just diagram ->
-                    Html.div [] [ survey, diagram ]
+                _ ->
+                    let
+                        isOwner =
+                            config.sync |> Maybe.map Sync_.isRoot |> Maybe.withDefault False
 
-        ( Just data, _ ) ->
-            Html.div []
-                [ survey
-                , data
-                    |> Sync.text
-                    |> Maybe.map
-                        (List.map textBlock
-                            >> Html.div
-                                [ Attr.style "border" "1px solid rgb(var(--color-highlight))"
-                                , Attr.style "border-radius" "0.8rem"
-                                , Attr.style "max-height" "400px"
-                                , Attr.style "overflow" "auto"
-                                ]
-                        )
-                    |> Maybe.withDefault (Html.text "")
-                ]
+                        peers =
+                            config.sync |> Maybe.map .peersHistory |> Maybe.withDefault Dict.empty
+
+                        answers =
+                            data
+                                |> Dict.toList
+                                |> List.filterMap (\( id, entry ) -> Sync.toText entry |> Maybe.map (Tuple.pair id))
+                    in
+                    [ survey
+                    , case answers of
+                        [] ->
+                            Html.text ""
+
+                        list ->
+                            list
+                                |> List.map
+                                    (\( id, str ) ->
+                                        textBlock
+                                            (if isOwner then
+                                                Dict.get id peers
+
+                                             else
+                                                Nothing
+                                            )
+                                            str
+                                    )
+                                |> Html.div
+                                    [ Attr.style "border" "1px solid rgb(var(--color-highlight))"
+                                    , Attr.style "border-radius" "0.8rem"
+                                    , Attr.style "max-height" "400px"
+                                    , Attr.style "overflow" "auto"
+                                    ]
+                    ]
+                        |> viewSummary config.sync [] (\_ _ -> []) data
+        )
+        (Html.div [] [ survey ])
+
+
+{-| An owner in Details mode should see the pending roster immediately, even
+before `Sync.get` has any container at all for this element (no sync event
+has arrived for it yet) -- mirrors `Quiz.View.viewSync`'s `Dict.empty`
+fallback. Everyone else (a Shared-mode peer who hasn't answered yet, or a
+Summary-mode owner with no container yet) still sees nothing, since
+`syncData == Nothing` there is a genuine privacy gate, not just "no data
+yet".
+-}
+withSync : Maybe Sync_.Settings -> Maybe (Dict String Sync) -> (Dict String Sync -> Html msg) -> Html msg -> Html msg
+withSync sync syncData render fallback =
+    case sync of
+        Nothing ->
+            fallback
+
+        Just sync_ ->
+            case ( syncData, Sync_.isRoot sync_ ) of
+                ( Nothing, False ) ->
+                    fallback
+
+                ( maybeData, _ ) ->
+                    render (Maybe.withDefault Dict.empty maybeData)
+
+
+viewSummary : Maybe Sync_.Settings -> List String -> (String -> Dict String Sync -> List (Html msg)) -> Dict String Sync -> List (Html msg) -> Html msg
+viewSummary sync headers fn data =
+    case sync of
+        Just sync_ ->
+            viewTableSync sync_ headers fn data
+                >> Html.div []
 
         _ ->
-            Html.div [] [ survey ]
+            Html.div []
 
 
-viewVectorSync : Config sub -> Analysis -> List ( String, body ) -> Maybe (List Sync) -> Html msg -> Html msg
+{-| Same as `viewSummary`, but for `Matrix` surveys, whose "details" table
+gets a two-row header (main statement spanning its options) instead of one
+flat "statement / option" column per cell.
+-}
+viewSummaryMatrix : Maybe Sync_.Settings -> List ( String, List String ) -> (String -> Dict String Sync -> List (Html msg)) -> Dict String Sync -> List (Html msg) -> Html msg
+viewSummaryMatrix sync groups fn data =
+    case sync of
+        Just sync_ ->
+            viewMatrixTableSync sync_ groups fn data
+                >> Html.div []
+
+        _ ->
+            Html.div []
+
+
+{-| The "Open" bar (how many known peers haven't answered yet), reusing
+`Quiz.View.openState` -- only the Details-mode owner has the peer-roster
+data to compute it, everyone else gets `Nothing` (no extra bar).
+-}
+openIfRoot : Config sub -> Dict String Sync -> Maybe ( JE.Value, JE.Value )
+openIfRoot config data =
+    config.sync
+        |> Maybe.andThen
+            (\sync_ ->
+                if Sync_.isRoot sync_ then
+                    Just (openState sync_ data)
+
+                else
+                    Nothing
+            )
+
+
+{-| Renders each user's answer(s) via `Sync.toString`, looked up by `keys` --
+the "details" table row-fn shared by every survey type except the free-text
+list (which shows each answer directly, not as a table column, see
+`viewTextSync`).
+-}
+toStringFn : List String -> String -> Dict String Sync -> List (Html msg)
+toStringFn keys id values =
+    Dict.get id values
+        |> Maybe.map (Sync.toString keys)
+        |> Maybe.withDefault []
+        |> List.map Html.text
+
+
+viewVectorSync : Config sub -> Analysis -> List ( String, body ) -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewVectorSync config analyze questions syncData survey =
-    case
+    withSync config.sync
         syncData
-            |> Maybe.andThen (Sync.vector (List.map Tuple.first questions))
-    of
-        Nothing ->
-            survey
-
-        Just data ->
+        (\data ->
+            let
+                summary =
+                    data
+                        |> Dict.values
+                        |> Sync.vector (List.map Tuple.first questions)
+                        |> Maybe.withDefault []
+            in
             Html.div []
                 [ survey
                 , case analyze of
                     Categorical ->
-                        vectorBlockCategory config data
+                        [ vectorBlockCategory config (openIfRoot config data) summary ]
+                            |> viewSummary config.sync (questions |> List.map Tuple.first) (toStringFn (questions |> List.map Tuple.first)) data
 
                     Quantitative ->
-                        questions
+                        [ questions
                             |> List.filterMap (Tuple.first >> String.split " " >> List.head >> Maybe.andThen String.toFloat)
-                            |> vectorBlockQuantity config data
+                            |> vectorBlockQuantity config summary
+                        ]
+                            |> viewSummary config.sync (questions |> List.map Tuple.first) (toStringFn (questions |> List.map Tuple.first)) data
                 ]
+        )
+        survey
 
 
-viewMatrixSync : Config sub -> List Inlines -> List String -> Maybe (List Sync) -> Html msg -> Html msg
+viewMatrixSync : Config sub -> List Inlines -> List String -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewMatrixSync config categories questions syncData survey =
-    case
+    withSync config.sync
         syncData
-            |> Maybe.andThen (Sync.matrix questions)
-            |> Maybe.map (matrixBlock config categories)
-    of
-        Nothing ->
-            survey
+        (\data ->
+            let
+                summary =
+                    data
+                        |> Dict.values
+                        |> Sync.matrix questions
+                        |> Maybe.withDefault []
+            in
+            [ survey
+            , matrixBlock config categories (openIfRoot config data) summary
+            ]
+                |> viewSummaryMatrix config.sync
+                    (categories |> List.map (\category -> ( stringify category, questions )))
+                    (toStringFn questions)
+                    data
+        )
+        survey
 
-        Just diagram ->
-            Html.div [] [ survey, diagram ]
 
-
-viewSelectSync : Config sub -> List Inlines -> Maybe (List Sync) -> Html msg -> Html msg
+viewSelectSync : Config sub -> List Inlines -> Maybe (Dict String Sync) -> Html msg -> Html msg
 viewSelectSync config options syncData survey =
-    case
+    withSync config.sync
         syncData
-            |> Maybe.andThen (Sync.select (List.length options))
-            |> Maybe.map (vectorBlockCategory config)
-    of
-        Nothing ->
-            survey
-
-        Just diagram ->
-            Html.div [] [ survey, diagram ]
+        (\data ->
+            let
+                summary =
+                    data
+                        |> Dict.values
+                        |> Sync.select (List.length options)
+                        |> Maybe.withDefault []
+            in
+            [ survey
+            , vectorBlockCategory config (openIfRoot config data) summary
+            ]
+                |> viewSummary config.sync [ "State" ] (toStringFn [ "State" ]) data
+        )
+        survey
 
 
 wordCloud : Config sub -> List Sync.Data -> Html msg
@@ -261,46 +387,26 @@ wordCloud config data =
             Nothing
 
 
-vectorBlockCategory : Config sub -> List Sync.Data -> Html msg
-vectorBlockCategory config data =
-    JE.object
-        [ ( "grid"
-          , JE.object
-                [ ( "left", JE.int 10 )
-                , ( "top", JE.int 20 )
-                , ( "bottom", JE.int 20 )
-                , ( "right", JE.int 10 )
-                ]
-          )
-        , ( "xAxis"
-          , JE.object
-                [ ( "type", JE.string "category" )
-                , ( "data"
-                  , data
-                        |> List.map .value
-                        |> JE.list JE.string
-                  )
-                ]
-          )
-        , ( "yAxis"
-          , JE.object
-                [ ( "type", JE.string "value" )
-                , ( "show", JE.bool False )
-                ]
-          )
-        , ( "series"
-          , [ [ ( "type", JE.string "bar" )
-              , ( "smooth", JE.bool True )
-              , ( "areaStyle", JE.object [ ( "opacity", JE.float 0.8 ) ] )
-              , ( "data"
-                , data
-                    |> List.map
-                        (\d ->
-                            case d.absolute of
-                                0 ->
-                                    [ ( "value", JE.float d.relative ) ]
+{-| `open`, when given, is `Quiz.View.openState`'s ("Open", <chart-value>) pair
+-- an extra bar showing how many known peers haven't answered yet, exactly
+like the Quiz sync diagram. Only the Details-mode owner has the peer-roster
+data (`peersHistory`) needed to compute it, so callers pass `Nothing` for
+everyone else.
+-}
+vectorBlockCategory : Config sub -> Maybe ( JE.Value, JE.Value ) -> List Sync.Data -> Html msg
+vectorBlockCategory config open data =
+    let
+        chartData =
+            (data
+                |> List.map
+                    (\d ->
+                        ( JE.string d.value
+                        , case d.absolute of
+                            0 ->
+                                JE.object [ ( "value", JE.float d.relative ) ]
 
-                                _ ->
+                            _ ->
+                                JE.object
                                     [ ( "value", JE.float d.relative )
                                     , ( "label"
                                       , JE.object
@@ -316,8 +422,36 @@ vectorBlockCategory config data =
                                       )
                                     ]
                         )
-                    |> JE.list JE.object
-                )
+                    )
+            )
+                ++ (open |> Maybe.map List.singleton |> Maybe.withDefault [])
+    in
+    JE.object
+        [ ( "grid"
+          , JE.object
+                [ ( "left", JE.int 10 )
+                , ( "top", JE.int 20 )
+                , ( "bottom", JE.int 20 )
+                , ( "right", JE.int 10 )
+                ]
+          )
+        , ( "xAxis"
+          , JE.object
+                [ ( "type", JE.string "category" )
+                , ( "data", JE.list Tuple.first chartData )
+                ]
+          )
+        , ( "yAxis"
+          , JE.object
+                [ ( "type", JE.string "value" )
+                , ( "show", JE.bool False )
+                ]
+          )
+        , ( "series"
+          , [ [ ( "type", JE.string "bar" )
+              , ( "smooth", JE.bool True )
+              , ( "areaStyle", JE.object [ ( "opacity", JE.float 0.8 ) ] )
+              , ( "data", JE.list Tuple.second chartData )
               ]
             ]
                 |> JE.list JE.object
@@ -411,8 +545,27 @@ vectorBlockQuantity config data categories =
             Nothing
 
 
-matrixBlock : Config sub -> List Inlines -> List (List Sync.Data) -> Html msg
-matrixBlock config categories data =
+{-| `open`, when given, is `Quiz.View.openState`'s ("Open", <chart-value>)
+pair. It's rendered as one extra bar under its own "Open" category on the
+x-axis -- a dedicated series holding `null` everywhere except that category,
+so it doesn't get grouped in with the per-variable bars of the real
+questions (each of those series is padded with a trailing `null` to match).
+-}
+matrixBlock : Config sub -> List Inlines -> Maybe ( JE.Value, JE.Value ) -> List (List Sync.Data) -> Html msg
+matrixBlock config categories open data =
+    let
+        openSeries =
+            case open of
+                Just ( name, value ) ->
+                    [ [ ( "type", JE.string "bar" )
+                      , ( "name", name )
+                      , ( "data", JE.list identity (List.repeat (List.length categories) JE.null ++ [ value ]) )
+                      ]
+                    ]
+
+                Nothing ->
+                    []
+    in
     JE.object
         [ ( "grid"
           , JE.object
@@ -425,9 +578,9 @@ matrixBlock config categories data =
         , ( "legend"
           , JE.object
                 [ ( "data"
-                  , data
-                        |> List.map (List.head >> Maybe.map .value >> Maybe.withDefault "")
-                        |> JE.list JE.string
+                  , (data |> List.map (List.head >> Maybe.map .value >> Maybe.withDefault "") |> List.map JE.string)
+                        ++ (open |> Maybe.map (Tuple.first >> List.singleton) |> Maybe.withDefault [])
+                        |> JE.list identity
                   )
                 ]
           )
@@ -435,9 +588,9 @@ matrixBlock config categories data =
           , JE.object
                 [ ( "type", JE.string "category" )
                 , ( "data"
-                  , categories
-                        |> List.map stringify
-                        |> JE.list JE.string
+                  , (categories |> List.map (stringify >> JE.string))
+                        ++ (open |> Maybe.map (Tuple.first >> List.singleton) |> Maybe.withDefault [])
+                        |> JE.list identity
                   )
                 ]
           )
@@ -461,7 +614,7 @@ matrixBlock config categories data =
           )
         , ( "tooltip", JE.object [] )
         , ( "series"
-          , data
+          , (data
                 |> List.map
                     (\data_ ->
                         [ ( "type", JE.string "bar" )
@@ -473,34 +626,40 @@ matrixBlock config categories data =
                                 |> JE.string
                           )
                         , ( "data"
-                          , data_
+                          , ((data_
                                 |> List.map
                                     (\d ->
                                         case d.absolute of
                                             0 ->
-                                                [ ( "value", JE.float d.relative ) ]
+                                                JE.object [ ( "value", JE.float d.relative ) ]
 
                                             _ ->
-                                                [ ( "value", JE.float d.relative )
-                                                , ( "label"
-                                                  , JE.object
-                                                        [ ( "show", JE.bool True )
-                                                        , ( "formatter"
-                                                          , String.fromInt d.absolute
-                                                                ++ " ("
-                                                                ++ String.fromFloat d.relative
-                                                                ++ "%)"
-                                                                |> JE.string
-                                                          )
-                                                        , ( "rotate", JE.int 90 )
-                                                        ]
-                                                  )
-                                                ]
+                                                JE.object
+                                                    [ ( "value", JE.float d.relative )
+                                                    , ( "label"
+                                                      , JE.object
+                                                            [ ( "show", JE.bool True )
+                                                            , ( "formatter"
+                                                              , String.fromInt d.absolute
+                                                                    ++ " ("
+                                                                    ++ String.fromFloat d.relative
+                                                                    ++ "%)"
+                                                                    |> JE.string
+                                                              )
+                                                            , ( "rotate", JE.int 90 )
+                                                            ]
+                                                      )
+                                                    ]
                                     )
-                                |> JE.list JE.object
+                             )
+                                ++ (open |> Maybe.map (\_ -> [ JE.null ]) |> Maybe.withDefault [])
+                            )
+                                |> JE.list identity
                           )
                         ]
                     )
+            )
+                ++ openSeries
                 |> JE.list JE.object
           )
         ]
@@ -512,15 +671,32 @@ matrixBlock config categories data =
             Nothing
 
 
-textBlock : String -> Html msg
-textBlock str =
+textBlock : Maybe String -> String -> Html msg
+textBlock name str =
     Html.div
-        [ Attr.style "white-space" "pre"
-        , Attr.style "background-color" "rgb(179 179 179)"
-        , Attr.style "border-block-end" "2px dashed #666"
+        [ Attr.style "background-color" "rgb(var(--color-background))"
+        , Attr.style "border" "2px solid rgb(var(--color-border))"
+        , Attr.style "border-radius" "0.6rem"
         , Attr.style "padding" "0.8rem"
+        , Attr.style "margin" "0.5rem"
         ]
-        [ Html.text str ]
+        [ Html.div [ Attr.style "white-space" "pre" ] [ Html.text str ]
+        , case name of
+            Just user ->
+                Html.div
+                    [ Attr.style "border-top" "1px solid rgb(var(--color-border))"
+                    , Attr.style "margin-top" "0.5rem"
+                    , Attr.style "padding-top" "0.4rem"
+                    , Attr.style "text-align" "right"
+                    , Attr.style "font-style" "italic"
+                    , Attr.style "font-size" "0.85em"
+                    , Attr.style "color" "rgb(var(--color-highlight-dark))"
+                    ]
+                    [ Html.text ("— " ++ user) ]
+
+            Nothing ->
+                Html.text ""
+        ]
 
 
 viewError : Maybe String -> Html msg

@@ -1,6 +1,8 @@
 module Lia.Markdown.Quiz.Json exposing
     ( encode
+    , fromState
     , fromVector
+    , toState
     , toVector
     )
 

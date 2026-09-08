@@ -3,6 +3,7 @@ import { GenericProvider } from 'y-generic'
 import { DexieTransport } from './dexieTransport'
 import * as helper from '../../helper'
 import { CRDT } from './db'
+import * as peerCrypto from './peerCrypto'
 
 import { encode, decode } from 'uint8-to-base64'
 import { docId } from './persist'
@@ -48,12 +49,29 @@ export class Sync {
    */
   protected password?: string
 
+  /** Salted PBKDF2 hint (see peerCrypto.pbkdf2Base64) letting a joiner check
+   * locally whether their typed password matches, without a fast hash
+   * enabling offline brute-force of the room password. Set either from an
+   * incoming link (joining) or freshly minted on room creation, see
+   * `sendConnect()`.
+   */
+  protected pwSalt?: string
+  protected pwCheck?: string
+
+  /** The room's public owner-secret hash, known ahead of connecting whenever
+   * this is a join (from the link); absent when this browser is creating
+   * the room, which `sendConnect()` uses to decide whether to mint a fresh
+   * `pwSalt`/`pwCheck` pair alongside the owner token.
+   */
+  protected ownerTokenHash?: string
+
   /** Every user is identified by a unique, anonymous, and random string. This
    * token is stored within the local storage and allows to leave and reconnect
    * to classrooms without new identification
    */
   protected token: string
-
+  protected name: string = ''
+  protected mode: number = 0
   /** This is a simple semaphore, used to block any execution until all
    * required JavaScript libraries are loaded.
    */
@@ -128,38 +146,46 @@ export class Sync {
       token,
       useInternalCallback
         ? (event, origin) => {
-            if (self.db) {
-              switch (origin) {
-                case 'cursor': {
-                  this.sync('update', { cmd: 'cursor', param: event })
-                  break
-                }
-                case 'peer': {
-                  this.sync('update', { cmd: 'peer', param: event })
-                  break
-                }
-                case 'code': {
-                  this.sync('update', { cmd: 'code', param: event })
-                  break
-                }
-                case 'quiz': {
-                  this.sync('update', { cmd: 'quiz', param: event })
-                  break
-                }
-                case 'survey': {
-                  this.sync('update', { cmd: 'survey', param: event })
-                  break
-                }
-                case 'chat': {
-                  this.sync('update', { cmd: 'chat', param: event })
-                  break
-                }
-                default: {
-                  console.warn('Sync unknown origin', origin)
-                }
+          if (self.db) {
+            switch (origin) {
+              case 'cursor': {
+                this.sync('update', { cmd: 'cursor', param: event })
+                break
+              }
+              case 'peer': {
+                this.sync('update', { cmd: 'peer', param: event })
+                break
+              }
+              case 'identity': {
+                this.sync('update', { cmd: 'identity', param: event })
+                break
+              }
+              case 'code': {
+                this.sync('update', { cmd: 'code', param: event })
+                break
+              }
+              case 'quiz': {
+                this.sync('update', { cmd: 'quiz', param: event })
+                break
+              }
+              case 'survey': {
+                this.sync('update', { cmd: 'survey', param: event })
+                break
+              }
+              case 'chat': {
+                this.sync('update', { cmd: 'chat', param: event })
+                break
+              }
+              case 'ownership': {
+                this.sync('update', { cmd: 'ownership', param: event })
+                break
+              }
+              default: {
+                console.warn('Sync unknown origin', origin)
               }
             }
           }
+        }
         : undefined,
     )
   }
@@ -188,11 +214,35 @@ export class Sync {
     password?: string
     persistent?: boolean
     fullBackend?: string
+    name: string
+    mode: number
     config?: any
+    ownerTokenHash?: string
+    pwSalt?: string
+    pwCheck?: string
+    ownerToken?: string
   }) {
     this.room = data.room
     this.course = data.course
     this.password = data.password
+    this.mode = data.mode
+    this.pwSalt = data.pwSalt
+    this.pwCheck = data.pwCheck
+    this.ownerTokenHash = data.ownerTokenHash
+
+    // roomId only needs to be stable per classroom for this browser to
+    // reuse its owner keypair across reconnects - independent of which
+    // network backend is chosen. uidDB (falling back to course, same as the
+    // Yjs persistence path below) identifies which course-local database
+    // that keypair is cached in.
+    this.db.setMode(
+      data.mode,
+      `${data.course}|${data.room}|${data.password || ''}`,
+      data.uidDB || data.course,
+      { ownerTokenHash: data.ownerTokenHash, ownerToken: data.ownerToken },
+    )
+
+    this.name = data.name.trim()
 
     this.isConnected = true
 
@@ -256,12 +306,13 @@ export class Sync {
       uid = JSON.stringify({
         course: this.course,
         room: this.room,
-        pw: helper.getHashCode(this.password || ''), // prevent delete from wrong passwords
+        pw: helper.getHashCode(this.password || ''),
+        mode: this.mode
       })
     }
 
-    if (salt && uid) {
-      uid = helper.getHashCode(uid + salt).toString()
+    if (uid) {
+      uid = Math.abs(helper.getHashCode(uid + (salt || ''))).toString(16)
     }
 
     if (!uid) console.warn('Sync: no uniqueID')
@@ -287,10 +338,70 @@ export class Sync {
     this.sync('error', msg)
   }
 
-  sendConnect() {
-    this.sync('connect', this.token)
+  /** Show an advisory message without touching connection state - unlike
+   * sendDisconnectError, the connection is not actually failing (used by
+   * the password-mismatch heuristic in sendConnect(), where data keeps
+   * syncing fine underneath; resetting state/peers via the 'error' channel
+   * would be misleading).
+   */
+  sendWarning(msg: string) {
+    this.sync('warning', msg)
+  }
+
+  async sendConnect() {
+    const owner = await this.db.resolveOwnerToken()
+    this.ownerTokenHash = owner.hash
+
+    // Only the room's creator ever needs to mint these - a join always
+    // brings its own pwSalt/pwCheck (or none) from the link, which is what
+    // `!this.pwCheck` actually tests (independent of ownership now that
+    // ownership itself is opt-in rather than a side effect of being first).
+    if (this.password && !this.pwCheck) {
+      this.pwSalt = peerCrypto.randomBytesBase64(16)
+      this.pwCheck = await peerCrypto.pbkdf2Base64(this.password, this.pwSalt)
+    }
+
+    this.sync('connect', {
+      id: this.token,
+      ownerTokenHash: this.ownerTokenHash || '',
+      pwSalt: this.pwSalt || '',
+      pwCheck: this.pwCheck || '',
+      // Reported back even when Elm didn't already know it (e.g. resolved
+      // from this browser's own cache on a plain reconnect) - see
+      // resolveOwnerToken()'s doc comment.
+      ownerToken: owner.token || '',
+    })
 
     if (this.onConnect) this.onConnect()
+
+    // Ownership claiming no longer races unauthorized peers (see
+    // db.ts claimOwnership()/resolveOwnerToken()), so the only remaining
+    // reason to wait here is the one persistReady already documents: don't
+    // produce a Yjs update before local persistence can actually record it.
+    this.persistReady.catch(() => { }).then(() => {
+      // A wrong classroom password derives a different room id (see
+      // uniqueID()), so a mismatched peer never meets anyone and just sits
+      // in an empty room with no explicit signal why. This is a heuristic,
+      // not proof - a genuinely early joiner in a correct room also sees it
+      // - but it's a real, honest hint for the far more common case of a
+      // typo. Checked right before claimOwnership() so the warning never
+      // arrives after the peer has already been declared owner.
+      if (this.password) {
+        // getPeers() includes our own awareness entry (by design - the peer
+        // list UI shows yourself too), so it's never actually empty. Only
+        // OTHER peers count for "is anyone else here".
+        const others = Object.keys(this.db.getPeers()).filter(
+          (id) => id !== this.token,
+        )
+        if (others.length === 0) {
+          this.sendWarning(
+            'No other participants found — double-check that your classroom password matches theirs.',
+          )
+        }
+      }
+
+      this.db.claimOwnership()
+    })
   }
 
   pubsubSend(topic: string, message: any) {
@@ -371,18 +482,21 @@ export class Sync {
   }
 
   publish(event: Lia.Event) {
-    console.warn('publish needs to be implemented', event)
     switch (event.message.cmd) {
       case 'update': {
         break
       }
       case 'join': {
-        this.db.init(event.message.param)
+        this.db
+          .init(event.message.param)
+          .catch((e: any) => console.warn('db.init failed ->', e))
         break
       }
 
       case 'chat': {
-        this.db.addChatMessage(event.message.param)
+        this.db
+          .addChatMessage(event.message.param)
+          .catch((e: any) => console.warn('addChatMessage failed ->', e))
         break
       }
 
@@ -448,7 +562,7 @@ export class Sync {
 
       case 'cursor': {
         if (event.track?.[0][0] == 'code') {
-          this.db.setCursor(event.track[0][1], event.message.param)
+          this.db.setCursor(event.track[0][1], event.message.param, this.name)
         }
         break
       }

@@ -103,6 +103,30 @@ type Msg
     | Focus
 
 
+{-| Apply the bulk `"quizAll"`/`"surveyAll"` preload reply (see
+`Lia.Sync.Update.preloadEvents`) to every affected section at once, via
+`Markdown.handleAll`, instead of routing one event per section through the
+port bus.
+-}
+applyLoadAll : Model -> String -> Event -> Return Model Msg Markdown.Msg
+applyLoadAll model topic e_ =
+    e_.message.param
+        |> JD.decodeValue
+            (JD.list
+                (JD.map2 Tuple.pair
+                    (JD.field "id" JD.int)
+                    (JD.field "data" JD.value)
+                )
+            )
+        |> Result.map
+            (\entries ->
+                model.sections
+                    |> Markdown.handleAll model.sync model.definition topic entries
+                    |> Return.mapValCmd (\v -> { model | sections = v }) UpdateMarkdown
+            )
+        |> Result.withDefault (Return.val model)
+
+
 update : Session -> Msg -> Model -> Return Model Msg Markdown.Msg
 update session msg model =
     case msg of
@@ -262,6 +286,12 @@ update session msg model =
 
                         Just ( "load", id, _ ) ->
                             update session (Load True id) model
+
+                        Just ( "quizAll", _, e_ ) ->
+                            applyLoadAll model "quiz" e_
+
+                        Just ( "surveyAll", _, e_ ) ->
+                            applyLoadAll model "survey" e_
 
                         Just ( topic, id, e_ ) ->
                             case ( id < 10000, Array.get id model.sections ) of
