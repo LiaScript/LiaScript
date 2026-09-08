@@ -128,8 +128,16 @@ connect param =
                             , ( "iceServers", JE.string iceServers )
                             ]
 
-                    Via.NoStr { relayUrls, turnConfig } ->
-                        trysteroConfig relayUrls turnConfig
+                    Via.Nostr { relayUrls } ->
+                        JE.object
+                            [ ( "relayUrls"
+                              , relayUrls
+                                    |> String.split ","
+                                    |> List.map String.trim
+                                    |> List.filter (String.isEmpty >> not)
+                                    |> JE.list JE.string
+                              )
+                            ]
 
                     Via.MQTT { relayUrls, turnConfig } ->
                         trysteroConfig relayUrls turnConfig

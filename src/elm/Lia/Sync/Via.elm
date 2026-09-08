@@ -32,8 +32,9 @@ type Backend
     | IPFS { turnConfig : String }
     | PubNub { pubKey : String, subKey : String }
     | Ably { apiKey : String, persistent : Bool }
+    | Nostr { relayUrls : String }
       -- Trystero
-    | NoStr { relayUrls : String, turnConfig : String }
+      --| NoStr { relayUrls : String, turnConfig : String }
     | MQTT { relayUrls : String, turnConfig : String }
     | Torrent { relayUrls : String, turnConfig : String }
     | WebSocket { url : String }
@@ -48,15 +49,22 @@ toString full via =
         Edrys ->
             "Edrys"
 
-        NoStr { relayUrls, turnConfig } ->
-            "NoStr"
+        Nostr { relayUrls } ->
+            "Nostr"
                 ++ (if full then
-                        "|" ++ relayUrls ++ "|" ++ turnConfig
+                        "|" ++ relayUrls
 
                     else
                         ""
                    )
 
+        -- NoStr { relayUrls, turnConfig } ->
+        --     "NoStr"
+        --         ++ (if full then
+        --                 "|" ++ relayUrls ++ "|" ++ turnConfig
+        --             else
+        --                 ""
+        --            )
         MQTT { relayUrls, turnConfig } ->
             "MQTT"
                 ++ (if full then
@@ -189,7 +197,7 @@ icon via =
             GUN _ ->
                 "icon-gundb icon-xs"
 
-            NoStr _ ->
+            Nostr _ ->
                 "icon-nostr icon-xs"
 
             MQTT _ ->
@@ -242,8 +250,8 @@ badges via =
         GUN _ ->
             [ "Decentralized", "Self-hostable", "WebSocket", "Public relays" ]
 
-        NoStr _ ->
-            [ "Relay based", "Open protocol", "WebSocket", "WebRTC", "Public relays" ]
+        Nostr _ ->
+            [ "Relay based", "Open protocol", "WebSocket", "Public relays" ]
 
         MQTT _ ->
             [ "Broker based", "Custom brokers", "WebSocket", "WebRTC", "Public relays" ]
@@ -293,7 +301,7 @@ tagline via =
         GUN _ ->
             "Small, fast real-time database for syncing data."
 
-        NoStr _ ->
+        Nostr _ ->
             "Relay-based open protocol for decentralized exchange."
 
         MQTT _ ->
@@ -334,13 +342,10 @@ fromString via =
             Just Edrys
 
         [ "nostr" ] ->
-            Just (NoStr { relayUrls = "", turnConfig = "" })
+            Just (Nostr { relayUrls = "" })
 
         [ "nostr", relayUrls ] ->
-            Just (NoStr { relayUrls = relayUrls, turnConfig = "" })
-
-        [ "nostr", relayUrls, turnConfig ] ->
-            Just (NoStr { relayUrls = relayUrls, turnConfig = turnConfig })
+            Just (Nostr { relayUrls = relayUrls })
 
         [ "mqtt" ] ->
             Just (MQTT { relayUrls = "", turnConfig = "" })
@@ -565,7 +570,7 @@ info =
         , Html.p []
             [ Html.text "Note, most backend services are free, and you can also host them by your own. "
             , Html.text "There might be cases where the synchronization is slow or there are collisions, but we are working in the background on optimizations and fixes ;-) "
-            , Html.text "Connections can also simply be blocked outright: school and company networks routinely restrict what's allowed out. Some block WebRTC, which rules out PeerJS, SimplePeer, and the peer-to-peer legs of Torrent, IPFS, and P2PT; others block WebSocket connections entirely, which rules out GUN, NoStr, MQTT, WebSocket, and Ably too. There's no way to know in advance — if a room won't connect, that's usually the network, not you. Try a different backend before assuming something's broken."
+            , Html.text "Connections can also simply be blocked outright: school and company networks routinely restrict what's allowed out. Some block WebRTC, which rules out PeerJS, SimplePeer, and the peer-to-peer legs of Torrent, IPFS, and P2PT; others block WebSocket connections entirely, which rules out GUN, Nostr, MQTT, WebSocket, and Ably too. There's no way to know in advance — if a room won't connect, that's usually the network, not you. Try a different backend before assuming something's broken."
             ]
         , Html.blockquote [ Attr.class "lia-quote lia-quote__alert-tip" ]
             [ Html.p []
@@ -668,7 +673,7 @@ backendGroups : Html msg
 backendGroups =
     Html.div [ Attr.style "margin" "0.75rem 0 1.25rem" ]
         [ backendGroup "rgb(var(--lia-success))" "No setup" [ "PeerJS", "PubNub", "Ably", "Edrys" ] "Works immediately on a shared free tier LiaScript provides. Fine for classes and quick sessions; capacity is split with everyone else using the default keys."
-        , backendGroup "rgb(var(--color-highlight))" "Decentralized / public relays" [ "GUN", "NoStr", "MQTT", "Torrent", "IPFS", "P2PT" ] "No single company runs these — traffic passes through volunteer-run community relays. Reliable enough for regular use, occasionally slower to connect."
+        , backendGroup "rgb(var(--color-highlight))" "Decentralized / public relays" [ "GUN", "Nostr", "MQTT", "Torrent", "IPFS", "P2PT" ] "No single company runs these — traffic passes through volunteer-run community relays. Reliable enough for regular use, occasionally slower to connect."
         , backendGroup "rgb(var(--lia-warning))" "Bring your own server" [ "WebSocket", "SimplePeer" ] "You (or your institution) host the relay. More control, but requires someone to run and maintain it — the two backends with no public fallback."
         , backendGroup "rgb(var(--color-border))" "Just for you" [ "Local" ] "\"Own Notes\" — no network at all, nothing to configure."
         ]
@@ -749,15 +754,17 @@ infoOn supported about =
                 , Html.text "It has the least relay redundancy of the decentralized strategies offered here (behind MQTT and BitTorrent), so expect connections to occasionally take longer to establish."
                 ]
 
-            ( NoStr _, _ ) ->
-                [ link "NoStr" "https://nostr.com"
-                , Html.text " is a decentralized protocol designed for creating a censorship-resistant global social network."
-                , Html.text "The acronym stands for \"Notes and Other Stuff Transmitted by Relays\""
+            ( Nostr _, _ ) ->
+                [ link "Nostr" "https://nostr.com"
+                , Html.text " is a decentralized protocol designed for creating a censorship-resistant global social network — the acronym stands for \"Notes and Other Stuff Transmitted by Relays\". "
                 , Html.text "It operates through a network of clients and relays, where clients are interfaces for users to interact with the network, and relays act as databases storing and transmitting data. "
-                , Html.text "Users are identified by public keys, and all events (like messages or updates) are signed for verification. "
-                , Html.text "NoStr's decentralization ensures resilience against censorship and single points of failure, as data is distributed across multiple nodes. "
-                , Html.text "It's an open standard, allowing anyone to build upon it, and its design promotes freedom of speech and global accessibility."
-                , trysteroRelayHint "relay"
+                , Html.text "Unlike the Trystero-based backends here, this classroom actually runs "
+                , Html.strong [] [ Html.text "over" ]
+                , Html.text " Nostr: chat, quiz and code updates are published as signed Nostr events and fanned out through every configured relay, rather than the relay only helping two browsers find each other for a direct WebRTC link. "
+                , Html.text "Users are identified by public keys, and all events are signed for verification, giving resilience against censorship and single points of failure since data passes through multiple independent, volunteer-run relays. "
+                , Html.text "You can use the default relay servers hosted at "
+                , link Const.nostrRelayURLs Const.nostrRelayURLs
+                , Html.text " — themselves community-hosted volunteer relays, not run by LiaScript — or pick others, or add your own."
                 ]
 
             ( MQTT _, _ ) ->
@@ -918,8 +925,19 @@ view locked editable backend =
                         , fieldHint "Writes the room's state to the relay server(s) so it survives after everyone disconnects — nothing is ever cached in your own browser either way. Left unchecked, the room only exists in the relay's memory and disappears once it empties."
                         ]
 
-                NoStr { relayUrls, turnConfig } ->
-                    trysteroSettings active "relay" "wss://relay.damus.io, wss://nos.lol, ..." relayUrls turnConfig
+                Nostr { relayUrls } ->
+                    details
+                        [ input
+                            { active = active
+                            , type_ = "text"
+                            , msg = InputNostr
+                            , value = relayUrls
+                            , placeholder = Const.nostrRelayURLs
+                            , label = Html.text "relay URLs (optional)"
+                            , autocomplete = Just "nostr-relay"
+                            }
+                        , fieldHint "Comma-separated. Leave empty to use LiaScript's built-in default relays."
+                        ]
 
                 MQTT { relayUrls, turnConfig } ->
                     trysteroSettings active "broker" "wss://broker.emqx.io:8084/mqtt, wss://broker.hivemq.com:8884/mqtt, ..." relayUrls turnConfig
@@ -1287,6 +1305,7 @@ type Msg
     | InputPeerJS String String
     | InputSimplePeer String String
     | InputTrystero String String
+    | InputNostr String
 
 
 update : Msg -> Backend -> Backend
@@ -1342,11 +1361,8 @@ update msg backend =
         ( InputSimplePeer "ice" v, SimplePeer data ) ->
             SimplePeer { data | iceServers = v }
 
-        ( InputTrystero "relay" v, NoStr data ) ->
-            NoStr { data | relayUrls = v }
-
-        ( InputTrystero "turn" v, NoStr data ) ->
-            NoStr { data | turnConfig = v }
+        ( InputNostr v, Nostr data ) ->
+            Nostr { data | relayUrls = v }
 
         ( InputTrystero "relay" v, MQTT data ) ->
             MQTT { data | relayUrls = v }
@@ -1395,7 +1411,7 @@ eq a b =
         ( SimplePeer _, SimplePeer _ ) ->
             True
 
-        ( NoStr _, NoStr _ ) ->
+        ( Nostr _, Nostr _ ) ->
             True
 
         ( MQTT _, MQTT _ ) ->

@@ -15,6 +15,7 @@ var Gun
 var Local
 var P2PT
 var Trystero
+var Nostr
 var WebSocket_
 var PeerJS_
 var SimplePeer_
@@ -165,7 +166,9 @@ const Service = {
 
             case 'ipfs':
             case 'mqtt':
-            case 'nostr':
+            // 'nostr' used to be Trystero's WebRTC-signaling-over-Nostr
+            // strategy - retired in favor of the real Nostr-relay backend
+            // below (see case 'nostr').
             case 'torrent': {
               if (!Trystero) {
                 import('../../sync/Trystero/index').then((e) => {
@@ -176,7 +179,7 @@ const Service = {
               }
 
               sync = new Trystero.Sync(
-                backend as 'mqtt' | 'nostr' | 'torrent' | 'ipfs',
+                backend as 'mqtt' | 'torrent' | 'ipfs',
                 cbConnection,
                 elmSend,
                 onConnect,
@@ -186,6 +189,24 @@ const Service = {
 
               break
             }
+
+            case 'nostr':
+              if (!Nostr) {
+                import('../../sync/Nostr/index').then((e) => {
+                  Nostr = e
+                  Service.handle(event)
+                })
+                return
+              }
+
+              sync = new Nostr.Sync(
+                cbConnection,
+                elmSend,
+                onConnect,
+                onReceive,
+                true,
+              )
+              break
 
             // case 'jitsi':
             //   if (!Jitsi) {

@@ -160,7 +160,7 @@ init supportedBackends =
             , Via.PeerJS { host = "", port_ = "", path = "", iceServers = "" }
             , Via.SimplePeer { signaling = "", iceServers = "" }
             , Via.WebSocket { url = "" }
-            , Via.NoStr { relayUrls = "", turnConfig = "" }
+            , Via.Nostr { relayUrls = Const.nostrRelayURLs }
             , Via.MQTT { relayUrls = "", turnConfig = "" }
             , Via.Torrent { relayUrls = "", turnConfig = "" }
             , Via.IPFS { turnConfig = "" }
@@ -224,6 +224,9 @@ isMember list element =
             ( True, element )
 
         ( (Via.Ably _) :: _, Via.Ably _ ) ->
+            ( True, element )
+
+        ( (Via.Nostr _) :: _, Via.Nostr _ ) ->
             ( True, element )
 
         -- ( (Via.Jitsi _) :: _, Via.Jitsi _ ) ->
