@@ -127,6 +127,7 @@ export class Sync extends Base.Sync {
 
         this.provider.connect({
           room: id,
+          waitFor: this.persistReady,
           ...(this.password ? { password: this.password } : {}),
         } as any)
       })

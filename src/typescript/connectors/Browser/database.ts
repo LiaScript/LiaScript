@@ -576,6 +576,43 @@ class LiaDB {
     })
   }
 
+  /** Read every row of `key`, hand the data to `merge`, and replace the rows
+   * with its result — all inside one transaction, so a concurrent append
+   * (e.g. from a second tab on the same course and room) is either included
+   * in `rows` or queued behind the transaction, never lost between the read
+   * and the replace.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param key - identifies one classroom, see `sync/Base/persist.ts`'s `docId`
+   * @param merge - synchronous: Dexie transactions do not survive `await`s on
+   *   non-Dexie promises
+   */
+  async compactYjsUpdates(
+    uidDB: string,
+    key: string,
+    merge: (rows: Uint8Array[]) => Uint8Array | null
+  ): Promise<Uint8Array | null> {
+    const db = await this.openShared_(uidDB)
+
+    return db.transaction('rw', db['yjsUpdates'], async () => {
+      const rows = await db['yjsUpdates'].where('key').equals(key).toArray()
+      const merged = merge(rows.map((row: { data: Uint8Array }) => row.data))
+
+      if (rows.length === 0) return merged
+
+      await db['yjsUpdates'].where('key').equals(key).delete()
+
+      if (merged)
+        await db['yjsUpdates'].add({
+          key,
+          data: merged,
+          created: new Date().getTime(),
+        })
+
+      return merged
+    })
+  }
+
   /** Remove all cached Yjs updates for one classroom.
    *
    * @param uidDB - A string URL or URI, which identifies the source of a course.

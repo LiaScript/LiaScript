@@ -108,6 +108,7 @@ export class Sync extends Base.Sync {
         apiKey: this.apiKey,
         persistent: this.persistent,
         doc: this.persistent ? this.db.doc : undefined,
+        waitFor: this.persistReady,
         ...(this.password ? { password: this.password } : {}),
       } as any)
     } else {

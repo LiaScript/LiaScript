@@ -209,12 +209,12 @@ view settings =
                                 -- it only ever travels via "copy owner link" below.
                                 , Html.div [ Attr.class "lia-classroom__field-row" ]
                                     [ Html.input
-                                        [ Attr.readonly True
-                                        , Attr.value settings.ownerTokenHash
+                                        [ Attr.value settings.ownerTokenHash
                                         , Attr.style "color" "black"
                                         , Attr.type_ "text"
                                         , Attr.style "width" "100%"
                                         , Attr.placeholder "No owner set up - normal participant access only"
+                                        , Event.onInput OwnerTokenHash
                                         ]
                                         []
 
@@ -666,7 +666,10 @@ button settings =
             btn
                 { title = "connect"
                 , msg =
-                    if String.isEmpty settings.room then
+                    if
+                        String.isEmpty settings.room
+                            || (settings.mode /= Shared && String.isEmpty settings.ownerTokenHash)
+                    then
                         Nothing
 
                     else

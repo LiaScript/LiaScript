@@ -340,6 +340,17 @@ const Service = {
     }
   },
 
+  compactYjsUpdates: async function (
+    uidDB: string,
+    key: string,
+    merge: (rows: Uint8Array[]) => Uint8Array | null
+  ) {
+    if (connector) {
+      return connector.compactYjsUpdates(uidDB, key, merge)
+    }
+    return null
+  },
+
   getKey: async function (uidDB: string, id: string) {
     if (connector) {
       return connector.getKey(uidDB, id)

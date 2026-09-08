@@ -53,6 +53,7 @@ type Msg
     | Name String
     | LocalName String
     | LocalNote String
+    | OwnerTokenHash String
     | Backend SyncMsg
     | Connect
     | Disconnect
@@ -343,6 +344,10 @@ update session model msg =
 
         Name str ->
             { model | sync = { sync | name = str } }
+                |> Return.val
+
+        OwnerTokenHash str ->
+            { model | sync = { sync | ownerTokenHash = str } }
                 |> Return.val
 
         LocalName str ->

@@ -107,6 +107,7 @@ export class Sync extends Base.Sync {
       this.provider.connect({
         serverUrl: this.serverUrl!,
         room: id,
+        waitFor: this.persistReady,
       }).catch((e: any) => {
         console.warn('WebSocket: initial connect failed ->', e?.message || e)
       })

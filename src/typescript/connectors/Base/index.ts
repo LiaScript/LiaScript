@@ -181,6 +181,14 @@ export class Connector {
     console.log('replaceYjsUpdates not implemented')
   }
 
+  async compactYjsUpdates(
+    _uidDB: string,
+    _key: string,
+    _merge: (rows: Uint8Array[]) => Uint8Array | null
+  ): Promise<Uint8Array | null> {
+    return null
+  }
+
   async clearYjsUpdates(_uidDB: string, _key: string) {
     console.log('clearYjsUpdates not implemented')
   }

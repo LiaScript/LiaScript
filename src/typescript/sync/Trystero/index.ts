@@ -158,7 +158,7 @@ export class Sync extends Base.Sync {
         this.onReceive?.(topic, message)
       })
 
-      this.provider.connect({ room: id }).then(() => {
+      this.provider.connect({ room: id, waitFor: this.persistReady }).then(() => {
         // Wire awareness only once the transport is actually connected, so
         // the initial local-state broadcast isn't dropped by a transport
         // that silently no-ops send() while unconnected.

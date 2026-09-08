@@ -88,6 +88,7 @@ export class Sync extends Base.Sync {
         room: id,
         publishKey: this.publishKey,
         subscribeKey: this.subscribeKey,
+        waitFor: this.persistReady,
         ...(this.password ? { cipherKey: this.password } : {}),
       } as any)
     } else {

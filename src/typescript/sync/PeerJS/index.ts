@@ -124,6 +124,7 @@ export class Sync extends Base.Sync {
 
         this.provider.connect({
           room: id,
+          waitFor: this.persistReady,
           ...(this.password ? { password: this.password } : {}),
         } as any).then(() => {
           // Wire awareness only once the transport is actually connected, so
