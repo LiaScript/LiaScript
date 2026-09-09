@@ -2,6 +2,7 @@ module Lia.Parser.PatReplace exposing
     ( link
     , replace
     , repo
+    , resourceOrigin
     )
 
 import Const
@@ -13,6 +14,7 @@ import Lia.Parser.UrlPattern.GitHub as GitHub
 import Lia.Parser.UrlPattern.GitLab as GitLab
 import Lia.Parser.UrlPattern.NextCloud as NextCloud
 import Lia.Parser.UrlPattern.OneDrive as OneDrive
+import Lia.Utils
 import Regex
 
 
@@ -38,6 +40,7 @@ link url =
 
     else
         url
+            |> whiteList
             |> replace
                 [ { by = GitHub.by
                   , pattern = GitHub.pattern
@@ -64,6 +67,48 @@ link url =
                   }
                 ]
             |> Tuple.second
+
+
+{-| Compute the directory a resolved course/resource URL lives in, so a
+relative sibling path can be appended to it and re-resolved through `link`.
+
+For most backends the resolved URL is already a real hierarchy, so cutting
+off the last path segment (`Lia.Utils.urlBasePath`) is correct. GitLab's
+"get raw file" API URL is the exception - its file path is a single encoded
+segment, not a real folder - so that shape is unpacked back into its
+human-readable `-/raw/branch/dir/` form first (`GitLab.toDirectory`).
+
+-}
+resourceOrigin : String -> String
+resourceOrigin url =
+    case GitLab.toDirectory url of
+        Just dir ->
+            dir
+
+        Nothing ->
+            Lia.Utils.urlBasePath url
+                |> Maybe.withDefault ""
+
+
+whiteList : String -> String
+whiteList url =
+    let
+        gitlabHosts =
+            [ "https://gitlab.com/"
+            , "https://www.gitlab.com/"
+            , "https://gitlab.opencode.de/"
+            , "https://www.gitlab.opencode.de/"
+            ]
+    in
+    if
+        List.any (\host -> String.startsWith host url)
+            gitlabHosts
+            && not (String.contains "/api/v4/" url)
+    then
+        String.replace "https://" "gitlab://" url
+
+    else
+        url
 
 
 {-| **private:** translates the `Const.urlProxy` string into a regular

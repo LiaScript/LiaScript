@@ -207,7 +207,7 @@ export class LiaScript {
     Script.init(elmSend)
     Swipe.init(elem, elmSend)
     Translate.init(elmSend)
-    Sync.init(elmSend)
+    Sync.init(elmSend, Database)
     Zip.init(elmSend)
     Torrent.init(elmSend, Database)
     Nostr.init(elmSend)

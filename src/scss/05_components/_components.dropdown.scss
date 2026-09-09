@@ -14,7 +14,10 @@
 
     .icon {
       font-size: 2rem;
-      margin-inline-start: 2rem;
+      // pushes the chevron flush to the right edge regardless of whether
+      // the preceding selected-value content is wrapped in a `span` (the
+      // `margin-inline-end: auto` above only fires for that case)
+      margin-inline-start: auto;
     }
   }
 

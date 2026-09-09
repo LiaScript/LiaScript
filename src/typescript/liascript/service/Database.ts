@@ -44,6 +44,11 @@ const Service = {
         sendReply(event)
         break
 
+      case 'load_all':
+        event.message.param = await connector.loadAll(param)
+        sendReply(event)
+        break
+
       case 'store':
         if (param.id < 10000) {
           connector.store(param)
@@ -247,6 +252,114 @@ const Service = {
       return connector.getMisc(uidDB, versionDB, key)
     } else {
       console.warn('connector not initialized')
+    }
+  },
+
+  getClassrooms: async function (uidDB: string) {
+    if (connector) {
+      return connector.getClassrooms(uidDB)
+    }
+    return []
+  },
+
+  saveClassroom: async function (
+    uidDB: string,
+    entry: {
+      room: string
+      backend: string
+      password?: string
+      name?: string
+      title?: string
+      notes?: string
+      mode?: number
+      ownerTokenHash?: string
+    }
+  ) {
+    if (connector) {
+      return connector.saveClassroom(uidDB, entry)
+    }
+  },
+
+  updateClassroomMeta: async function (
+    uidDB: string,
+    room: string,
+    backend: string,
+    meta: {
+      title?: string
+      notes?: string
+      name?: string
+      owner?: boolean
+      ownerTokenHash?: string
+    }
+  ) {
+    if (connector) {
+      return connector.updateClassroomMeta(uidDB, room, backend, meta)
+    }
+  },
+
+  deleteClassroom: async function (
+    uidDB: string,
+    room: string,
+    backend: string
+  ) {
+    if (connector) {
+      return connector.deleteClassroom(uidDB, room, backend)
+    }
+  },
+
+  getYjsUpdates: async function (uidDB: string, key: string) {
+    if (connector) {
+      return connector.getYjsUpdates(uidDB, key)
+    }
+    return []
+  },
+
+  appendYjsUpdate: async function (
+    uidDB: string,
+    key: string,
+    data: Uint8Array
+  ) {
+    if (connector) {
+      return connector.appendYjsUpdate(uidDB, key, data)
+    }
+  },
+
+  replaceYjsUpdates: async function (
+    uidDB: string,
+    key: string,
+    data: Uint8Array
+  ) {
+    if (connector) {
+      return connector.replaceYjsUpdates(uidDB, key, data)
+    }
+  },
+
+  clearYjsUpdates: async function (uidDB: string, key: string) {
+    if (connector) {
+      return connector.clearYjsUpdates(uidDB, key)
+    }
+  },
+
+  compactYjsUpdates: async function (
+    uidDB: string,
+    key: string,
+    merge: (rows: Uint8Array[]) => Uint8Array | null
+  ) {
+    if (connector) {
+      return connector.compactYjsUpdates(uidDB, key, merge)
+    }
+    return null
+  },
+
+  getKey: async function (uidDB: string, id: string) {
+    if (connector) {
+      return connector.getKey(uidDB, id)
+    }
+  },
+
+  putKey: async function (uidDB: string, id: string, value: any) {
+    if (connector) {
+      return connector.putKey(uidDB, id, value)
     }
   },
 }

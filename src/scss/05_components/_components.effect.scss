@@ -100,7 +100,7 @@
         &::before {
           content: '';
           position: absolute;
-          left: 0;
+          inset-inline-start: 0;
           top: 50%;
           transform: translateY(-50%);
           width: 1px;

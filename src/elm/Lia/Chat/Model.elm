@@ -10,15 +10,18 @@ import Json.Encode as JE
 import Lia.Chat.Sync exposing (Change, Changes)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Effect.Script.Types exposing (Stdout(..))
+import Lia.Markdown.Quiz.Sync as Quiz
+import Lia.Markdown.Survey.Sync as Survey
 import Lia.Parser.Parser exposing (parse_section)
 import Lia.Section as Section exposing (Section)
+import Lia.Sync.Types as Classroom
 import Service.Event as Event exposing (Event)
 import Service.Script as Script
 
 
 type alias Model =
     { input : String
-    , messages : Dict String Section
+    , messages : Dict String { section : Section, peer : String, verified : Bool }
     }
 
 
@@ -29,20 +32,34 @@ init =
     }
 
 
-insert : Bool -> (String -> String) -> Definition -> Model -> Changes -> ( List Event, Model )
-insert scriptsEnabled searchIndex definition model changes =
+insert :
+    { sync | state : Classroom.State, data : Classroom.Data }
+    -> Bool
+    -> (String -> String)
+    -> Definition
+    -> Model
+    -> Changes
+    -> ( List Event, Model )
+insert classroom scriptsEnabled searchIndex definition model changes =
     let
         ( todo, messages ) =
             List.foldl
-                (parse scriptsEnabled searchIndex definition)
+                (parse classroom scriptsEnabled searchIndex definition)
                 ( [], model.messages )
                 changes
     in
     ( todo, { model | messages = messages } )
 
 
-parse : Bool -> (String -> String) -> Definition -> Change -> ( List Event, Dict String Section ) -> ( List Event, Dict String Section )
-parse scriptsEnabled searchIndex definition change ( todo, chat ) =
+parse :
+    { sync | state : Classroom.State, data : Classroom.Data }
+    -> Bool
+    -> (String -> String)
+    -> Definition
+    -> Change
+    -> ( List Event, Dict String { section : Section, peer : String, verified : Bool } )
+    -> ( List Event, Dict String { section : Section, peer : String, verified : Bool } )
+parse classroom scriptsEnabled searchIndex definition change ( todo, chat ) =
     case
         change.message
             ++ "\n\n"
@@ -97,6 +114,10 @@ parse scriptsEnabled searchIndex definition change ( todo, chat ) =
                                 | javascript =
                                     Array.fromList javascript
                             }
+                        , quiz_vector =
+                            Quiz.lockAnswered (Classroom.id classroom.state) classroom.data.quiz (Just change.id) new.quiz_vector
+                        , survey_vector =
+                            Survey.lockAnswered (Classroom.id classroom.state) classroom.data.survey (Just change.id) new.survey_vector
                     }
             in
             ( if Array.isEmpty section.code_model.evaluate then
@@ -106,7 +127,7 @@ parse scriptsEnabled searchIndex definition change ( todo, chat ) =
                 load change.id :: newTodo
             , Dict.insert
                 (String.fromInt change.id)
-                section
+                { section = section, peer = change.user, verified = change.verified }
                 chat
             )
 
