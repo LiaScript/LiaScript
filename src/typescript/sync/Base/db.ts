@@ -4,6 +4,7 @@ import * as State from './state'
 import * as helper from '../../helper'
 import * as peerCrypto from './peerCrypto'
 import { getOrCreateKey, getStoredValue, putStoredValue } from './keyStore'
+import { setArrayValue } from './yArray'
 
 import { YKeyValue } from 'y-utility/y-keyvalue'
 
@@ -224,8 +225,8 @@ export class CRDT {
       for (const w of writes) {
         const section = this.getOwnSectionArray(w.type, w.id)
         // Skip if we already have a live answer in the CRDT (e.g. rejoining).
-        if (section.length <= w.i || section.get(w.i) === undefined) {
-          this.setArrayValue(section, w.i, w.value)
+        if (section.length <= w.i || section.get(w.i) == null) {
+          setArrayValue(section, w.i, w.value)
         }
       }
 
@@ -692,7 +693,7 @@ export class CRDT {
 
       for (let qi = 0; qi < section.length; qi++) {
         const raw = section.get(qi)
-        if (raw === undefined) continue
+        if (raw == null) continue
 
         const value = await this.decryptSectionValue(peerId, raw)
         // undefined means "not authorized to read this peer's answer" -
@@ -863,7 +864,7 @@ export class CRDT {
 
     this.doc.transact(() => {
       const section = this.getOwnSectionArray(type, id)
-      this.setArrayValue(section, i, finalValue)
+      setArrayValue(section, i, finalValue)
     }, this.peerID)
   }
 
@@ -890,18 +891,6 @@ export class CRDT {
     }
 
     return section
-  }
-
-  // Single-writer per array (each peer only ever writes its own path), so a
-  // plain delete+insert replace is safe — no concurrent-edit races to
-  // reconcile, unlike a collaboratively-edited Y.Array.
-  protected setArrayValue(section: Y.Array<any>, i: number, value: any) {
-    if (section.length > i) {
-      section.delete(i, 1)
-    } else {
-      while (section.length < i) section.push([undefined])
-    }
-    section.insert(i, [value])
   }
 
   initCode(id: number, i: number, j: number, value: string) {
