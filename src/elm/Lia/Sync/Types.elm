@@ -271,7 +271,7 @@ initRoom config settings =
                 -- a room is only encoded into the URL after a successful
                 -- connect, thus reconnecting to it should also continue to
                 -- use (and update) its local cache
-                , persistent = True
+                , persistent = False
                 , mode = toClassroomMode config.mode
                 , locked = True
                 , fromUrl = True
