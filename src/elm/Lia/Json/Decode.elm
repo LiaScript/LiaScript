@@ -49,7 +49,16 @@ toModel seed pane sync =
                     |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap (Section.init seed)))
                     |> andMap "section_active" JD.int
                     |> JD.map2 (|>) (JD.succeed Nothing)
-                    |> andMap "definition" (Definition.decode (readme |> urlQuery |> Maybe.withDefault ""))
+                    |> andMap "definition"
+                        (Definition.decode
+                            (case readme |> urlQuery of
+                                Just query ->
+                                    "?" ++ query
+
+                                Nothing ->
+                                    ""
+                            )
+                        )
                     |> JD.map2 (|>) (JD.succeed Index.init)
                     |> JD.map2 (|>) (JD.succeed [])
                     |> JD.map2 (|>) (JD.succeed [])

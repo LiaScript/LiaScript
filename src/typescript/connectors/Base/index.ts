@@ -82,6 +82,12 @@ export class Connector {
 
   load(_record: Record) {}
 
+  loadAll(
+    _table: string
+  ): { id: number; data: any }[] | Promise<{ id: number; data: any }[]> {
+    return []
+  }
+
   store(_record: Record) {}
 
   update(_record: Record, _fn: (a: any) => any) {}
@@ -117,5 +123,81 @@ export class Connector {
 
   async getMisc(_uidDB: string, _versionDB: number | null, _key?: string) {
     console.log('getMisc not implemented')
+  }
+
+  async getClassrooms(_uidDB: string): Promise<any[]> {
+    return []
+  }
+
+  async saveClassroom(
+    _uidDB: string,
+    _entry: {
+      room: string
+      backend: string
+      password?: string
+      name?: string
+      title?: string
+      notes?: string
+      mode?: number
+      ownerTokenHash?: string
+    }
+  ) {
+    console.log('saveClassroom not implemented')
+  }
+
+  async updateClassroomMeta(
+    _uidDB: string,
+    _room: string,
+    _backend: string,
+    _meta: {
+      title?: string
+      notes?: string
+      name?: string
+      owner?: boolean
+      ownerTokenHash?: string
+    }
+  ) {
+    console.log('updateClassroomMeta not implemented')
+  }
+
+  async deleteClassroom(_uidDB: string, _room: string, _backend: string) {
+    console.log('deleteClassroom not implemented')
+  }
+
+  // The classroom/Yjs persistence below is - exactly like `addMisc`/`getMisc`
+  // above - a Browser-connector-only feature: SCORM, xAPI and H5P have no
+  // IndexedDB-backed course database, so they intentionally no-op these
+  // methods instead of implementing them.
+
+  async getYjsUpdates(_uidDB: string, _key: string): Promise<Uint8Array[]> {
+    return []
+  }
+
+  async appendYjsUpdate(_uidDB: string, _key: string, _data: Uint8Array) {
+    console.log('appendYjsUpdate not implemented')
+  }
+
+  async replaceYjsUpdates(_uidDB: string, _key: string, _data: Uint8Array) {
+    console.log('replaceYjsUpdates not implemented')
+  }
+
+  async compactYjsUpdates(
+    _uidDB: string,
+    _key: string,
+    _merge: (rows: Uint8Array[]) => Uint8Array | null
+  ): Promise<Uint8Array | null> {
+    return null
+  }
+
+  async clearYjsUpdates(_uidDB: string, _key: string) {
+    console.log('clearYjsUpdates not implemented')
+  }
+
+  async getKey(_uidDB: string, _id: string): Promise<any> {
+    return undefined
+  }
+
+  async putKey(_uidDB: string, _id: string, _value: any) {
+    console.log('putKey not implemented')
   }
 }

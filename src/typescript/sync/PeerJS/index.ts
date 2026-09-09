@@ -1,6 +1,8 @@
 import * as Base from '../Base/index'
 import { PeerJSTransport } from '../../../../node_modules/y-generic/dist/providers/peerjs/index'
 import { GenericProvider } from 'y-generic'
+import { wrapTransport } from '../Base/security'
+import { Crypto } from '../Crypto'
 
 export class Sync extends Base.Sync {
   private transport?: PeerJSTransport
@@ -23,6 +25,8 @@ export class Sync extends Base.Sync {
     course: string
     room: string
     password?: string
+    name: string
+    mode: number
     config?: {
       host?: string
       port?: string
@@ -36,21 +40,23 @@ export class Sync extends Base.Sync {
     this.port = data.config?.port ? parseInt(data.config.port, 10) : undefined
     this.peerPath = data.config?.path || undefined
 
-    if (data.config?.iceServers) {
+    const iceServersRaw = data.config?.iceServers || process.env.WEBRTC_ICE_SERVERS
+    if (iceServersRaw) {
       try {
-        this.iceServers = JSON.parse(data.config.iceServers)
+        this.iceServers = JSON.parse(iceServersRaw)
       } catch {
-        console.warn(
-          'PeerJS: invalid iceServers JSON, ignoring:',
-          data.config.iceServers,
-        )
+        console.warn('PeerJS: invalid iceServers JSON, ignoring:', iceServersRaw)
       }
     }
 
-    if (window['Peer']) {
+    const urls: string[] = []
+    if (!window['Peer']) urls.push('//unpkg.com/peerjs@1.5.4/dist/peerjs.min.js')
+    if (this.password && !window['SimpleCrypto']) urls.push(Crypto.url)
+
+    if (urls.length === 0) {
       this.init(true)
     } else {
-      this.load(['//unpkg.com/peerjs@1.5.4/dist/peerjs.min.js'], this)
+      this.load(urls, this)
     }
   }
 
@@ -58,6 +64,8 @@ export class Sync extends Base.Sync {
     const raw = this.uniqueID()
 
     if (ok && window['Peer'] && raw) {
+      if (this.password) Crypto.init(this.password)
+
       hashID(raw).then((id) => {
         const peerOptions: Record<string, any> = {}
         if (this.host) {
@@ -72,12 +80,12 @@ export class Sync extends Base.Sync {
         this.transport = new PeerJSTransport({
           peer: window['Peer'],
           ...(Object.keys(peerOptions).length > 0 ? { peerOptions } : {}),
-          ...(this.password ? { password: this.password } : {}),
         })
 
-        this.provider = new GenericProvider(this.db.doc, this.transport)
-
-        this.db.setAwareness(this.provider.awareness)
+        this.provider = new GenericProvider(
+          this.db.doc,
+          wrapTransport(this.transport, this.password),
+        )
 
         let syncedOnce = false
 
@@ -116,8 +124,14 @@ export class Sync extends Base.Sync {
 
         this.provider.connect({
           room: id,
+          waitFor: this.persistReady,
           ...(this.password ? { password: this.password } : {}),
-        } as any)
+        } as any).then(() => {
+          // Wire awareness only once the transport is actually connected, so
+          // the initial local-state broadcast isn't dropped by a transport
+          // that silently no-ops send() while unconnected.
+          this.db.setAwareness(this.provider.awareness, this.name)
+        })
       })
     } else {
       let message = 'PeerJS unknown error'

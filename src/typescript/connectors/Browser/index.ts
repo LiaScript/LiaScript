@@ -26,6 +26,10 @@ class Connector extends Base.Connector {
     return this.database.load(record)
   }
 
+  loadAll(table: string) {
+    return this.database.loadAll(table)
+  }
+
   store(record: Base.Record) {
     return this.database.store(record)
   }
@@ -77,6 +81,77 @@ class Connector extends Base.Connector {
 
   async getMisc(uidDB: string, versionDB: number | null, key?: string) {
     return this.database.getMisc(uidDB, versionDB, key)
+  }
+
+  async getClassrooms(uidDB: string) {
+    return this.database.getClassrooms(uidDB)
+  }
+
+  async saveClassroom(
+    uidDB: string,
+    entry: {
+      room: string
+      backend: string
+      password?: string
+      name?: string
+      title?: string
+      notes?: string
+      mode?: number
+      ownerTokenHash?: string
+    }
+  ) {
+    return this.database.saveClassroom(uidDB, entry)
+  }
+
+  async updateClassroomMeta(
+    uidDB: string,
+    room: string,
+    backend: string,
+    meta: {
+      title?: string
+      notes?: string
+      name?: string
+      owner?: boolean
+      ownerTokenHash?: string
+    }
+  ) {
+    return this.database.updateClassroomMeta(uidDB, room, backend, meta)
+  }
+
+  async deleteClassroom(uidDB: string, room: string, backend: string) {
+    return this.database.deleteClassroom(uidDB, room, backend)
+  }
+
+  async getYjsUpdates(uidDB: string, key: string) {
+    return this.database.getYjsUpdates(uidDB, key)
+  }
+
+  async appendYjsUpdate(uidDB: string, key: string, data: Uint8Array) {
+    return this.database.appendYjsUpdate(uidDB, key, data)
+  }
+
+  async replaceYjsUpdates(uidDB: string, key: string, data: Uint8Array) {
+    return this.database.replaceYjsUpdates(uidDB, key, data)
+  }
+
+  async clearYjsUpdates(uidDB: string, key: string) {
+    return this.database.clearYjsUpdates(uidDB, key)
+  }
+
+  async compactYjsUpdates(
+    uidDB: string,
+    key: string,
+    merge: (rows: Uint8Array[]) => Uint8Array | null
+  ) {
+    return this.database.compactYjsUpdates(uidDB, key, merge)
+  }
+
+  async getKey(uidDB: string, id: string) {
+    return this.database.getKey(uidDB, id)
+  }
+
+  async putKey(uidDB: string, id: string, value: any) {
+    return this.database.putKey(uidDB, id, value)
   }
 }
 

@@ -10,7 +10,6 @@ import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
 import Index.View.Card exposing (card)
 import Index.View.Modal as Modal
-import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.View as Settings
 import Lia.Utils exposing (blockKeydown, btn, deactivate)
@@ -120,7 +119,6 @@ searchBar url =
 
                 else
                     url
-                        |> link
                         |> (++) "./?"
                         |> LoadCourse
                         |> Just

@@ -4,6 +4,7 @@ module Const exposing
     , gunDB_ServerURL
     , icon
     , jitsi_Domain
+    , nostrRelayURLs
     , tooltipBreakpoint
     , urlLiascript
     , urlLiascriptCourse
@@ -97,7 +98,7 @@ urlLiascriptCourse =
 -}
 gunDB_ServerURL : String
 gunDB_ServerURL =
-    "https://gun.o8.is/gun, https://gun.defucc.me/gun, https://shogun-relay.scobrudot.dev/gun, https://relay.peer.ooo/gun"
+    "https://gun.defucc.me/gun, https://relay.peer.ooo/gun"
 
 
 {-| Indicator for the Visual Studio Web extension.
@@ -120,3 +121,10 @@ jitsi_Domain =
 webTorrent_TrackerURLs : String
 webTorrent_TrackerURLs =
     "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, wss://tracker.files.fm:7073/announce, wss://tracker.openwebtorrent.com:443/announce"
+
+
+{-| Default public Nostr relays used within the Sync module
+-}
+nostrRelayURLs : String
+nostrRelayURLs =
+    "wss://relay.damus.io, wss://nos.lol, wss://nostr.mom"

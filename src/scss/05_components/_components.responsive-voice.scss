@@ -23,8 +23,7 @@ $responsive-voice-hight: 5rem;
   &__playgroup {
     display: flex;
     align-items: center;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    padding-inline: 0.5rem;
 
     & > * {
       border: 1px solid rgb(var(--lia-grey));
@@ -40,24 +39,26 @@ $responsive-voice-hight: 5rem;
     }
 
     & > *:first-child {
-      border-radius: 2rem 0 0 2rem;
+      border-start-start-radius: 2rem;
+      border-end-start-radius: 2rem;
 
       .lia-btn__icon {
-        margin: 0 -0.4rem 0 -0.1rem;
+        margin-inline: -0.1rem -0.4rem;
       }
     }
 
     & > *:last-child {
-      border-radius: 0 2rem 2rem 0;
-      margin-left: -1px;
+      border-start-end-radius: 2rem;
+      border-end-end-radius: 2rem;
+      margin-inline-start: -1px;
 
       .lia-btn__icon {
-        margin: 0 -0.1rem 0 -0.4rem;
+        margin-inline: -0.4rem -0.1rem;
       }
     }
 
     & > *:first-child:not(:disabled) + * {
-      border-left-color: rgb(var(--color-highlight));
+      border-inline-start-color: rgb(var(--color-highlight));
     }
   }
 
