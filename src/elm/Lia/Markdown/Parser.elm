@@ -136,13 +136,13 @@ elements =
         , horizontal_line
         , md_annotations
             |> map Markdown.Survey
-            |> andMap Survey.parse
+            |> andMap (Survey.parse blocks)
         , md_annotations
-            |> andThen (\attr -> Quiz.parse attr |> map (Markdown.Quiz attr))
+            |> andThen (\attr -> Quiz.parse blocks attr |> map (Markdown.Quiz attr))
             |> andMap solution
         , md_annotations
             |> map Markdown.Task
-            |> andMap Task.parse
+            |> andMap (Task.parse blocks)
         , md_annotations
             |> andThen (Input.setGroupPermission True)
             |> quote
@@ -247,7 +247,7 @@ toQuiz ( md, isQuiz ) =
 
 
 toQuiz_ scriptID attr =
-    Quiz.gapText scriptID attr
+    Quiz.gapText blocks scriptID attr
         >> map (Markdown.Quiz attr)
         >> andMap solution
 
@@ -470,7 +470,8 @@ ordered_list : Parser Context (List ( String, Markdown.Blocks ))
 ordered_list =
     Indent.push "   "
         |> keep
-            (regex "[ \t]*-?\\d+"
+            (regex "[ \t]*"
+                |> keep (regex "-?\\d+")
                 |> map Tuple.pair
                 |> ignore (regex "\\.[ \t]*")
                 |> andMap (sepBy (many newlineWithIndentation) blocks)
@@ -575,7 +576,7 @@ paragraph : Parser Context Inlines
 paragraph =
     checkParagraph
         |> ignore Indent.skip
-        |> keep (many1 (Indent.check |> ignore allowedLine |> keep line |> ignore newline))
+        |> keep (many1 (Indent.check |> ignore (regex "[ \t]*") |> ignore allowedLine |> keep line |> ignore newline))
         |> map (List.intersperse [ Chars " " [] ] >> List.concat >> combine)
 
 

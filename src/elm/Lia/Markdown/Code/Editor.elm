@@ -185,7 +185,7 @@ onCtrlEnter msg =
         |> Html.Events.on "editorCtrlEnter"
 
 
-setCursors : List { cursor | id : String, color : String, state : Cursor } -> Html.Attribute msg
+setCursors : List { cursor | id : String, color : String, state : Cursor, name : String } -> Html.Attribute msg
 setCursors =
     JE.list
         (\cursor ->
@@ -199,6 +199,7 @@ setCursors =
                         ]
                   )
                 , ( "selection", JE.list JE.int cursor.state.selection )
+                , ( "name", JE.string cursor.name )
                 ]
         )
         >> Attr.property "cursors"

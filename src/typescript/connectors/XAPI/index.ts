@@ -1043,6 +1043,36 @@ export class Connector extends Base.Connector {
   }
 
   /**
+   * Load every id of a table (quiz, survey, task) from memory in one call,
+   * instead of one `load` per slide. Used to preload all persisted
+   * quiz/survey answers when joining a classroom.
+   * @param table Table to load
+   * @returns the stored data per id, only for ids that have an entry
+   */
+  async loadAll(table: string) {
+    await this.stateRestored
+
+    const states: Record<number, Record<number, any>> | undefined =
+      table === 'quiz'
+        ? this.quizStates
+        : table === 'survey'
+        ? this.surveyStates
+        : table === 'task'
+        ? this.taskStates
+        : undefined
+
+    if (!states) return []
+
+    return Object.entries(states).map(([id, entries]) => {
+      const data: any[] = []
+      for (const index in entries) {
+        data[parseInt(index)] = entries[index]
+      }
+      return { id: parseInt(id), data }
+    })
+  }
+
+  /**
    * Store data (quiz, survey, task)
    * @param record Record to store
    */

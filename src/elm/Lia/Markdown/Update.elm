@@ -1,6 +1,7 @@
 port module Lia.Markdown.Update exposing
     ( Msg(..)
     , handle
+    , handleAll
     , initEffect
     , nextEffect
     , previousEffect
@@ -24,7 +25,7 @@ import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Markdown.Task.Update as Task
-import Lia.Section exposing (Section, SubSection(..))
+import Lia.Section exposing (Section, Sections, SubSection(..))
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
 import Return exposing (Return)
@@ -95,7 +96,7 @@ update sync globals msg section =
 
         UpdateQuiz childMsg ->
             section.quiz_vector
-                |> Quiz.update (Sync.isConnected sync.state) (Just section.id) section.effect_model.javascript childMsg
+                |> Quiz.update sync (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | quiz_vector = v })
                 |> Return.mapEvents "quiz" section.id
                 |> Return.mapCmd UpdateQuiz
@@ -117,7 +118,7 @@ update sync globals msg section =
 
         UpdateSurvey childMsg ->
             section.survey_vector
-                |> Survey.update (Sync.isConnected sync.state) (Just section.id) section.effect_model.javascript childMsg
+                |> Survey.update sync (Just section.id) section.effect_model.javascript childMsg
                 |> Return.mapVal (\v -> { section | survey_vector = v })
                 |> Return.mapEvents "survey" section.id
                 |> Return.mapCmd UpdateSurvey
@@ -203,7 +204,7 @@ subUpdate js msg section =
                 UpdateQuiz childMsg ->
                     let
                         result =
-                            Quiz.update False Nothing js childMsg subsection.quiz_vector
+                            Quiz.update Sync.disconnected Nothing js childMsg subsection.quiz_vector
                     in
                     case result.sub of
                         Just _ ->
@@ -220,7 +221,7 @@ subUpdate js msg section =
                 UpdateSurvey childMsg ->
                     let
                         result =
-                            Survey.update False Nothing js childMsg subsection.survey_vector
+                            Survey.update Sync.disconnected Nothing js childMsg subsection.survey_vector
                     in
                     case result.sub of
                         Just _ ->
@@ -409,6 +410,68 @@ handle sync globals topic event section =
 
         _ ->
             Return.val section
+
+
+{-| Like `handle`, but applies one `topic` (`"quiz"`/`"survey"`) `"load"`
+event per `(sectionId, data)` entry to a whole `Sections` array, folding the
+resulting `Return`s together. Used to fan out a single bulk `load_all`
+reply to every affected section, instead of routing one event per section
+through the port bus. Only sections that haven't been parsed yet are
+touched - already-parsed sections already got their data through the
+normal per-section load.
+-}
+handleAll :
+    { sync
+        | state : Sync.State
+        , data : Sync.Data
+    }
+    -> Definition
+    -> String
+    -> List ( Int, JE.Value )
+    -> Sections
+    -> Return Sections Msg Msg
+handleAll sync globals topic entries sections =
+    entries
+        |> List.filter
+            (\( id, _ ) ->
+                Array.get id sections
+                    |> Maybe.map (.parsed >> not)
+                    |> Maybe.withDefault False
+            )
+        |> List.foldl
+            (\( id, data ) acc ->
+                case Array.get id acc.value of
+                    Just section ->
+                        handle sync
+                            globals
+                            topic
+                            { reply = False
+                            , track = []
+                            , service = ""
+                            , message = { cmd = "load", param = data }
+                            }
+                            section
+                            |> mergeInto id acc
+
+                    Nothing ->
+                        acc
+            )
+            (Return.val sections)
+
+
+mergeInto : Int -> Return Sections Msg Msg -> Return Section Msg Msg -> Return Sections Msg Msg
+mergeInto id acc r =
+    { value = Array.set id r.value acc.value
+    , command = Cmd.batch [ acc.command, r.command ]
+    , events = acc.events ++ r.events
+    , sub =
+        case r.sub of
+            Just s ->
+                Just s
+
+            Nothing ->
+                acc.sub
+    }
 
 
 ttsReplay : Bool -> Bool -> Maybe Section -> Maybe Event

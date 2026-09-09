@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 09/09/2026
+
+- feat: Classrooms 2.0 – persistent classrooms (saved list, offline/local backend, Dexie-backed Yjs cache), ownership tokens, password protection, configuration blocking, named rooms, summary/details views, network graph, quiz scores and surveys in classroom mode
+- feat: new sync backends Ably and Nostr (with persistence), default WebSocket/PubNub servers, ICE/signalling servers for PeerJS and SimplePeer, end-to-end encrypted peer traffic
+- feat: quizzes, hints and task lists now accept multiple Markdown blocks (breaking: stricter indentation for multi-block quizzes)
+- feat: native GitLab support incl. sub-groups and gitlab.opencode.de, additional URL protocols (sms, geo, ...)
+- improve: unicode identifiers, table/task-list styling, Arabic TTS buttons and translations, elm-patch performance
+- test: large new Elm parser test suite for quizzes, surveys, lists, tables and sync
+- chore: npm upgrades (katex, y-generic, elm-optimize-level-2, caniuse-lite)
+
 ## [1.1.0] - 08/07/2026
 
 - feat: RTL support for the code editor

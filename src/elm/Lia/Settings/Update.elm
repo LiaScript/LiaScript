@@ -20,6 +20,7 @@ import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Share
 import Service.Slide
+import Service.Sync
 import Service.TTS
 import Service.Translate
 
@@ -56,7 +57,7 @@ type Toggle
 
 
 update :
-    Maybe { title : String, comment : Inlines, effectID : Maybe Int, logo : Maybe String }
+    Maybe { title : String, comment : Inlines, effectID : Maybe Int, logo : Maybe String, readme : String }
     -> Msg
     -> Settings
     -> Return Settings Msg sub
@@ -191,6 +192,32 @@ update main msg model =
 
                      else
                         []
+                    )
+                |> Return.batchEvent
+                    (if model.sync == Just False then
+                        main
+                            |> Maybe.map .readme
+                            |> Maybe.andThen
+                                (\readme ->
+                                    -- no course context (e.g. the course index),
+                                    -- thus there is nothing to look up
+                                    if String.isEmpty readme then
+                                        Nothing
+
+                                    else
+                                        Just readme
+                                )
+                            |> Maybe.map
+                                (Service.Sync.listClassrooms
+                                    -- the reply has to be routed back into
+                                    -- Lia.Sync.Update, which is identified by
+                                    -- the "sync" topic, see Lia.Update
+                                    >> Event.push "sync"
+                                )
+                            |> Maybe.withDefault Event.none
+
+                     else
+                        Event.none
                     )
 
         Toggle QRCode ->
