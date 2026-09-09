@@ -31,7 +31,7 @@ jobs:
       - name: Set ELM_HOME
         run: echo "ELM_HOME=${GITHUB_WORKSPACE}/.elm" >> $GITHUB_ENV
       - name: Install Node.js dependencies
-        run: '[[ -f package-lock.json || -f npm-shrinkwrap.json ]] && npm ci || true'
+        run: '[[ -f package-lock.json || -f npm-shrinkwrap.json ]] && npm ci --allow-git=all || true'
       - name: Pre-Build
         run: npm run prebuild
       - name: Apply Patches
