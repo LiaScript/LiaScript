@@ -160,7 +160,7 @@ init supportedBackends =
             , Via.PeerJS { host = "", port_ = "", path = "", iceServers = "" }
             , Via.SimplePeer { signaling = "", iceServers = "" }
             , Via.WebSocket { url = "" }
-            , Via.Nostr { relayUrls = Const.nostrRelayURLs }
+            , Via.Nostr { relayUrls = Const.nostrRelayURLs, persistent = False }
             , Via.MQTT { relayUrls = "", turnConfig = "" }
             , Via.Torrent { relayUrls = "", turnConfig = "" }
             , Via.IPFS { turnConfig = "" }

@@ -128,7 +128,7 @@ connect param =
                             , ( "iceServers", JE.string iceServers )
                             ]
 
-                    Via.Nostr { relayUrls } ->
+                    Via.Nostr { relayUrls, persistent } ->
                         JE.object
                             [ ( "relayUrls"
                               , relayUrls
@@ -137,6 +137,7 @@ connect param =
                                     |> List.filter (String.isEmpty >> not)
                                     |> JE.list JE.string
                               )
+                            , ( "persistent", JE.bool persistent )
                             ]
 
                     Via.MQTT { relayUrls, turnConfig } ->

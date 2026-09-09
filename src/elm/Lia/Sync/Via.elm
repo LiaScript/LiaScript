@@ -32,7 +32,7 @@ type Backend
     | IPFS { turnConfig : String }
     | PubNub { pubKey : String, subKey : String }
     | Ably { apiKey : String, persistent : Bool }
-    | Nostr { relayUrls : String }
+    | Nostr { relayUrls : String, persistent : Bool }
       -- Trystero
       --| NoStr { relayUrls : String, turnConfig : String }
     | MQTT { relayUrls : String, turnConfig : String }
@@ -49,10 +49,17 @@ toString full via =
         Edrys ->
             "Edrys"
 
-        Nostr { relayUrls } ->
+        Nostr { relayUrls, persistent } ->
             "Nostr"
                 ++ (if full then
-                        "|" ++ relayUrls
+                        (if persistent then
+                            "|t"
+
+                         else
+                            "|f"
+                        )
+                            ++ "|"
+                            ++ relayUrls
 
                     else
                         ""
@@ -342,10 +349,22 @@ fromString via =
             Just Edrys
 
         [ "nostr" ] ->
-            Just (Nostr { relayUrls = "" })
+            Just (Nostr { relayUrls = "", persistent = False })
+
+        [ "nostr", "f" ] ->
+            Just (Nostr { relayUrls = "", persistent = False })
+
+        [ "nostr", "f", relayUrls ] ->
+            Just (Nostr { relayUrls = relayUrls, persistent = False })
+
+        [ "nostr", "t" ] ->
+            Just (Nostr { relayUrls = "", persistent = True })
+
+        [ "nostr", "t", relayUrls ] ->
+            Just (Nostr { relayUrls = relayUrls, persistent = True })
 
         [ "nostr", relayUrls ] ->
-            Just (Nostr { relayUrls = relayUrls })
+            Just (Nostr { relayUrls = relayUrls, persistent = False })
 
         [ "mqtt" ] ->
             Just (MQTT { relayUrls = "", turnConfig = "" })
@@ -925,7 +944,7 @@ view locked editable backend =
                         , fieldHint "Writes the room's state to the relay server(s) so it survives after everyone disconnects — nothing is ever cached in your own browser either way. Left unchecked, the room only exists in the relay's memory and disappears once it empties."
                         ]
 
-                Nostr { relayUrls } ->
+                Nostr { relayUrls, persistent } ->
                     details
                         [ input
                             { active = active
@@ -937,6 +956,13 @@ view locked editable backend =
                             , autocomplete = Just "nostr-relay"
                             }
                         , fieldHint "Comma-separated. Leave empty to use LiaScript's built-in default relays."
+                        , checkbox
+                            { active = active
+                            , value = persistent
+                            , msg = CheckboxNostr
+                            , label = Html.text "persistent storage"
+                            }
+                        , fieldHint "Publishes periodic full-document snapshots to the relay(s) as durable NIP-01 addressable events, so the room survives after everyone disconnects — nothing is ever cached in your own browser either way. Left unchecked, the room only exists as long as a relay keeps the live event stream around."
                         ]
 
                 MQTT { relayUrls, turnConfig } ->
@@ -1306,6 +1332,7 @@ type Msg
     | InputSimplePeer String String
     | InputTrystero String String
     | InputNostr String
+    | CheckboxNostr
 
 
 update : Msg -> Backend -> Backend
@@ -1363,6 +1390,9 @@ update msg backend =
 
         ( InputNostr v, Nostr data ) ->
             Nostr { data | relayUrls = v }
+
+        ( CheckboxNostr, Nostr data ) ->
+            Nostr { data | persistent = not data.persistent }
 
         ( InputTrystero "relay" v, MQTT data ) ->
             MQTT { data | relayUrls = v }

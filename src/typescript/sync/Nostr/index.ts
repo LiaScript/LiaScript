@@ -14,6 +14,7 @@ const NOSTR_TOOLS_URL =
 export class Sync extends Base.Sync {
   private transport?: NostrTransport
   private relayUrls?: string[]
+  private persistent: boolean = false
   private syncFallbackTimer: ReturnType<typeof setTimeout> | null = null
 
   destroy() {
@@ -29,7 +30,7 @@ export class Sync extends Base.Sync {
     course: string
     room: string
     password?: string
-    config?: { relayUrls?: string[] }
+    config?: { relayUrls?: string[]; persistent?: boolean }
     name: string
     mode: number
   }) {
@@ -38,6 +39,7 @@ export class Sync extends Base.Sync {
     this.relayUrls = data.config?.relayUrls?.length
       ? data.config.relayUrls
       : undefined
+    this.persistent = data.config?.persistent || false
 
     const urls: string[] = []
     if (!window['NostrTools']) urls.push(NOSTR_TOOLS_URL)
@@ -112,6 +114,8 @@ export class Sync extends Base.Sync {
       this.provider.connect({
         room: id,
         relays: this.relayUrls,
+        persistent: this.persistent,
+        doc: this.persistent ? this.db.doc : undefined,
         waitFor: this.persistReady,
         ...(this.password ? { password: this.password } : {}),
       } as any)
