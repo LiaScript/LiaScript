@@ -214,6 +214,7 @@ view settings =
                                         , Attr.type_ "text"
                                         , Attr.style "width" "100%"
                                         , Attr.placeholder "No owner set up - normal participant access only"
+                                        , Attr.readonly (not editable)
                                         , Event.onInput OwnerTokenHash
                                         ]
                                         []
