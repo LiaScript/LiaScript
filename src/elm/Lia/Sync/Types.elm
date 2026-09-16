@@ -16,6 +16,7 @@ module Lia.Sync.Types exposing
     , isConnected
     , isRoot
     , isSupported
+    , roster
     , title
     , toClassroomMode
     )
@@ -465,3 +466,17 @@ toClassroomMode mode =
 isRoot : Settings -> Bool
 isRoot settings =
     settings.owner && settings.mode == Details
+
+
+{-| Everyone the owner's Details table and Summary diagram have to account
+for: every peer ever seen (`peersHistory`) plus anyone who answered but is
+not (or no longer) in there. A peer who never typed a name is never written
+to the durable `identities` map (see `CRDT.setAwareness` in
+`sync/Base/db.ts`), so once it went offline - or after the owner reloaded a
+persisted room - it vanished from `peersHistory` while its answers still
+counted: more bars in the diagram than rows in the table, and a negative
+"Open" count.
+-}
+roster : { s | peersHistory : Dict String String } -> Dict String x -> Dict String String
+roster settings data =
+    Dict.union settings.peersHistory (Dict.map (\_ _ -> "") data)
