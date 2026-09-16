@@ -60,10 +60,22 @@ export class Sync extends Base.Sync {
 
       const NostrTools = window['NostrTools']
 
+      // nostr-tools never reconnects a dropped relay socket unless asked
+      // (`enableReconnect` defaults to false), and y-generic constructs the
+      // pool itself - so hand it a pool class that asks. Without it a phone
+      // coming back from the background keeps *publishing* (publish re-opens
+      // the socket) but never *receives* again: its subscriptions died with
+      // the socket, while the provider still reports "connected".
+      class ReconnectingPool extends NostrTools.SimplePool {
+        constructor() {
+          super({ enableReconnect: true })
+        }
+      }
+
       this.transport = new NostrTransport({
         finalizeEvent: NostrTools.finalizeEvent,
         getPublicKey: NostrTools.getPublicKey,
-        SimplePool: NostrTools.SimplePool,
+        SimplePool: ReconnectingPool,
       })
 
       this.provider = new GenericProvider(

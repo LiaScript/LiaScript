@@ -237,7 +237,7 @@ viewTableSyncWith :
 viewTableSyncWith syncSettings columnCount headerRows visualize data quiz =
     let
         peers =
-            syncSettings.peersHistory
+            Sync.roster syncSettings data
 
         isPending bool =
             Html.td
@@ -327,7 +327,7 @@ syncDiagram config sync length data =
         total =
             toFloat <|
                 if owner then
-                    Dict.size sync.peersHistory
+                    Dict.size (Sync.roster sync data)
 
                 else
                     length
@@ -436,7 +436,7 @@ openState : Sync.Settings -> Dict String x -> ( JE.Value, JE.Value )
 openState sync data =
     let
         absolute =
-            sync.peersHistory
+            Sync.roster sync data
                 |> Dict.size
 
         open =
