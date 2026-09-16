@@ -21,6 +21,8 @@ import Script from './service/Script'
 import Share from './service/Share'
 import Slide from './service/Slide'
 import Swipe from './service/Swipe'
+// polyfill: turns touch gestures into HTML5 drag & drop events (Drop quizzes / surveys)
+import { enableDragDropTouch } from '@dragdroptouch/drag-drop-touch'
 import Sync from './service/Sync'
 import * as TTS from './service/TTS'
 import Translate from './service/Translate'
@@ -206,6 +208,7 @@ export class LiaScript {
     TTS.Service.init(elmSend)
     Script.init(elmSend)
     Swipe.init(elem, elmSend)
+    enableDragDropTouch(elem, document)
     Translate.init(elmSend)
     Sync.init(elmSend, Database)
     Zip.init(elmSend)

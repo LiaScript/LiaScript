@@ -100,3 +100,8 @@ input[type='search']::-webkit-search-results-button,
 input[type='search']::-webkit-search-results-decoration {
   display: none;
 }
+
+/* let the drag & drop touch polyfill win over scrolling on draggable elements */
+[draggable='true'] {
+  touch-action: none;
+}
