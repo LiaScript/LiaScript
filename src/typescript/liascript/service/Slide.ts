@@ -44,7 +44,11 @@ const Service = {
         break
 
       case 'scroll_into_view': {
-        scrollIntoView(event.message.param.id, event.message.param.delay)
+        scrollIntoView(
+          event.message.param.id,
+          event.message.param.delay,
+          event.message.param.block
+        )
         break
       }
 
@@ -135,8 +139,13 @@ function isInViewport(element: HTMLElement) {
  *
  * @param id - id of the DOM element
  * @param delay - in milliseconds
+ * @param block - vertical alignment, defaults to 'start'
  */
-export function scrollIntoView(id: string, delay: number) {
+export function scrollIntoView(
+  id: string,
+  delay: number,
+  block?: ScrollLogicalPosition
+) {
   setTimeout(function () {
     const elem =
       [...document.querySelectorAll<HTMLElement>('#' + CSS.escape(id))].find(
@@ -153,7 +162,7 @@ export function scrollIntoView(id: string, delay: number) {
           // `behavior: 'smooth'` is ignored on Safari < 15.4 and IE, falling
           // back to an instant scroll. Add `scroll-behavior: smooth` on the
           // <main> container via CSS to cover those browsers.
-          elem.scrollIntoView({ behavior: 'smooth' })
+          elem.scrollIntoView({ behavior: 'smooth', block })
         })
       })
     }
