@@ -149,7 +149,8 @@ export function scrollIntoView(
   setTimeout(function () {
     const elem =
       [...document.querySelectorAll<HTMLElement>('#' + CSS.escape(id))].find(
-        el => el.closest('main:not([hidden=""])')
+        // skip only hidden persistent slides, notes and toc live outside of main
+        el => !el.closest('main[hidden]')
       ) ?? null
 
     if (elem) {
