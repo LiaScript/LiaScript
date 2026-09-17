@@ -134,6 +134,7 @@ view { lang, theme, model, code, sync, cursors } =
                                 }
                             , Html.div
                                 [ Attr.class "lia-code-terminal"
+                                , Attr.id ("lia-code-terminal-" ++ String.fromInt id_1)
                                 , A11y_Role.log
                                 , A11y_Aria.label (Translations.codeTerminal lang)
                                 , if project.running then

@@ -208,6 +208,14 @@ const buildRegion = (
   callback(regionStrings)
 }
 
+// \tag{5} is parsed as \text{(5)}, keep only the label itself
+const tagLabel = (tag: AnyParseNode[], atomType: Atom | 'normal') => [
+  'equation',
+  ...flatten(buildA11yStrings(tag, [], atomType)).filter(
+    (s) => !/^(start text|end text|left parenthesis|right parenthesis)$/.test(s)
+  ),
+]
+
 const handleObject = (
   tree: AnyParseNode,
   a11yStrings: NestedArray<string>,
@@ -579,7 +587,23 @@ const handleObject = (
     }
 
     case 'array': {
-      throw new Error('KaTeX-a11y: array not implemented yet')
+      buildRegion(a11yStrings, (regionStrings) => {
+        regionStrings.push('start array')
+        tree.body.forEach((row, i) => {
+          regionStrings.push(`row ${i + 1}`)
+          // one region per cell, so numbers in neighbouring cells are not merged
+          row.forEach((cell) =>
+            buildRegion(regionStrings, (cellStrings) =>
+              buildA11yStrings(cell, cellStrings, atomType)
+            )
+          )
+          // explicit \tag per row (align, gather, ...); auto numbers only exist in CSS
+          const tag = tree.tags?.[i]
+          if (Array.isArray(tag)) regionStrings.push(tagLabel(tag, atomType))
+        })
+        regionStrings.push('end array')
+      })
+      break
     }
 
     case 'raw': {
@@ -597,7 +621,9 @@ const handleObject = (
     }
 
     case 'tag': {
-      throw new Error('KaTeX-a11y: tag not implemented yet')
+      buildA11yStrings(tree.body, a11yStrings, atomType)
+      a11yStrings.push(tagLabel(tree.tag, atomType))
+      break
     }
 
     case 'verb': {

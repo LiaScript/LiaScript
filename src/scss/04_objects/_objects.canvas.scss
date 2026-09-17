@@ -199,7 +199,7 @@ $slide-margin-left-textbook: 19rem !default;
   &.lia-mode--textbook {
     .lia-slide__content {
       max-width: calc(71.1rem + #{$slide-margin-left-textbook} + 3rem);
-      padding-inline-start: 3rem !important;
+      padding-inline-start: 3rem;
 
       @include tools.breakpoint('sm') {
         margin: 1.25rem 0 2rem;
@@ -216,10 +216,6 @@ $slide-margin-left-textbook: 19rem !default;
     }
 
     @include tools.breakpoint('md') {
-      .lia-slide__content {
-        padding-inline-start: $slide-margin-left-textbook;
-      }
-
       .lia-pagination {
         margin-block-end: 2rem;
       }
