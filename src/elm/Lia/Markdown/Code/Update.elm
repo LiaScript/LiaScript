@@ -19,6 +19,7 @@ import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Return exposing (Return)
 import Service.Event as PEvent exposing (Event)
 import Service.Script as Script exposing (Eval)
+import Service.Slide
 import Service.Sync as Sync
 
 
@@ -228,6 +229,7 @@ update sync sectionID scripts msg model =
                                         }
                                     )
                                 |> maybe_update id model
+                                |> reveal id
 
                         _ ->
                             if isSyncModeActive id model then
@@ -240,6 +242,7 @@ update sync sectionID scripts msg model =
                                     |> maybe_project id (set_result e)
                                     |> Maybe.map (Event.updateVersion id sectionID)
                                     |> maybe_update id model
+                                    |> reveal id
 
                 ( Just "project", id, ( "log", param ) ) ->
                     case JD.decodeValue (JD.list JD.string) param of
@@ -265,6 +268,13 @@ update sync sectionID scripts msg model =
                                 model
                                     |> maybe_project id (logger log message)
                                     |> maybe_update id model
+                                    -- only on the first message, to not fight the user while a program keeps printing
+                                    |> (if Maybe.map (.log >> Log.isEmpty) (Array.get id model.evaluate) == Just True then
+                                            reveal id
+
+                                        else
+                                            identity
+                                       )
 
                         _ ->
                             Return.val model
@@ -516,6 +526,13 @@ maybe_project idx f =
     .evaluate
         >> Array.get idx
         >> Maybe.map (f >> Return.val)
+
+
+{-| Scroll the terminal of a project into the visible area, if it is not already.
+-}
+reveal : Int -> Return Model msg sub -> Return Model msg sub
+reveal id =
+    Return.batchEvent (Service.Slide.reveal ("lia-code-terminal-" ++ String.fromInt id))
 
 
 maybe_update : Int -> Model -> Maybe (Return Project msg sub) -> Return Model msg sub

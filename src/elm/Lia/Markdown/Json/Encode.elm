@@ -55,7 +55,7 @@ encBlock b =
                 [ ( "Problem", Inline.encode elements ) ]
 
             Quiz a quiz solution ->
-                [ ( "Quiz", Quiz.encode quiz )
+                [ ( "Quiz", Quiz.encode encBlock quiz )
                 , ( "solution"
                   , case solution of
                         Nothing ->
@@ -71,11 +71,11 @@ encBlock b =
                     |> HTML.maybeEncParameters a
 
             Survey a survey ->
-                [ ( "Survey", Survey.encode survey ) ]
+                [ ( "Survey", Survey.encode encBlock survey ) ]
                     |> HTML.maybeEncParameters a
 
             Task a tasks ->
-                [ ( "Task", Task.encode tasks ) ]
+                [ ( "Task", Task.encode encBlock tasks ) ]
                     |> HTML.maybeEncParameters a
 
             Gallery a { media, id } ->

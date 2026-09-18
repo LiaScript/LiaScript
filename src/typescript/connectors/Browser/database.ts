@@ -16,6 +16,10 @@ class LiaDB {
   private db: any
   private version: number
 
+  /** One shared, already-opened connection per course database, see
+   * `openShared_()`. */
+  private dbCache: { [uidDB: string]: Promise<Dexie> } = {}
+
   /** Create a DexieDB instance that stores all states for:
    *
    * - quizzes
@@ -56,7 +60,46 @@ class LiaDB {
       offline: '[id+version], version',
     })
 
+    db.version(2).stores({
+      classrooms: '[room+backend], updated',
+      yjsUpdates: '++id, key',
+      keys: '&id',
+    })
+
     return db
+  }
+
+  /** Open — and from then on re-use — one connection per course database.
+   *
+   * `open_()` builds a *brand new* `Dexie` instance on every call, and none of
+   * its callers ever close it again. That is acceptable for the rare
+   * classroom-list queries, but `appendYjsUpdate()` runs for every single Yjs
+   * frame (several per second while a classroom is connected, plus one per
+   * replayed frame on connect) — leaking that many IndexedDB connections
+   * exhausts the browser's connection budget, and every one of them has to
+   * pass the `indexedDB.open` security guard from `patches/dexie+4.2.1.patch`
+   * again.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   */
+  private async openShared_(uidDB: string): Promise<Dexie> {
+    let opening = this.dbCache[uidDB]
+
+    if (!opening) {
+      const db = this.open_(uidDB)
+
+      opening = db.open().then(() => db)
+
+      // a failed open must not be cached, otherwise the course would stay
+      // broken for the rest of the session
+      opening.catch(() => {
+        delete this.dbCache[uidDB]
+      })
+
+      this.dbCache[uidDB] = opening
+    }
+
+    return opening
   }
 
   /** Open the initial database connection, that is used during the entire
@@ -73,10 +116,11 @@ class LiaDB {
    */
   async open(uidDB: string, versionDB: number, init?: Record) {
     this.version = versionDB
-    this.db = this.open_(uidDB)
 
     try {
-      await this.db.open()
+      // the session connection is the very same instance that `openShared_()`
+      // hands out, so `deleteIndex()` only has to close one of them
+      this.db = await this.openShared_(uidDB)
     } catch (e: any) {
       log.warn('DB: open -> ', e.message)
       this.db = null
@@ -142,6 +186,28 @@ class LiaDB {
     return null
   }
 
+  /** Load every entry of a table for the current version in one query,
+   * instead of one `load` call per id. Used to preload all persisted
+   * quiz/survey answers when joining a classroom, without paying for
+   * one IndexedDB round-trip per slide.
+   *
+   * @param table - table to load, e.g. "quiz" or "survey"
+   * @param versionDB - optional version number for the database entry
+   * @returns the stored `data` per id, only for ids that have an entry
+   * @example
+   *    loadAll('quiz')
+   */
+  async loadAll(table: string, versionDB?: number) {
+    if (!this.db) return []
+
+    const rows = await this.db[table]
+      .where('version')
+      .equals(versionDB != undefined ? versionDB : this.version)
+      .toArray()
+
+    return rows.map((row: any) => ({ id: row.id, data: row.data }))
+  }
+
   /** This is a shorthand for updating the stored slide number within the
    * offline table of the currents database
    *
@@ -202,7 +268,7 @@ class LiaDB {
     const course = await this.dbIndex['courses'].get(uidDB)
 
     if (course) {
-      let db = this.open_(uidDB)
+      let db = await this.openShared_(uidDB)
 
       const offline = await db['offline'].get({
         id: 0,
@@ -285,7 +351,17 @@ class LiaDB {
 
       log.info('storing new version to index', item)
 
-      await this.db.offline.put({
+      // NOT `this.db`: `Database.ts`'s `index_store` fires `connector.open()`
+      // without awaiting it and calls `storeToIndex()` right after, so by the
+      // time we get here `open()` is usually still inside its asynchronous
+      // `openShared_()` handshake - `this.db` would be `undefined` on the very
+      // first course of a session, and still point at the PREVIOUS course on
+      // every later one. `openShared_()` hands out the exact same connection
+      // `open()` is waiting for, keyed by the course URL, so this is both safe
+      // and race-free.
+      let db = await this.openShared_(data.readme)
+
+      await db['offline'].put({
         id: 0,
         version: data.version,
         data: data,
@@ -298,8 +374,7 @@ class LiaDB {
 
       log.info('storing new version to index', item)
 
-      let db = this.open_(data.readme)
-      await db.open()
+      let db = await this.openShared_(data.readme)
 
       await db['offline'].put({
         id: 0,
@@ -321,8 +396,7 @@ class LiaDB {
     key: string,
     value: any
   ) {
-    const db = this.open_(uidDB)
-    await db.open()
+    const db = await this.openShared_(uidDB)
 
     await db.transaction('rw', db['offline'], async () => {
       let item = await db['offline'].get({
@@ -338,8 +412,7 @@ class LiaDB {
   }
 
   async getMisc(uidDB: string, versionDB: number | null, key?: string) {
-    const db = this.open_(uidDB)
-    await db.open()
+    const db = await this.openShared_(uidDB)
 
     const item = await db['offline'].get({
       id: 0,
@@ -353,6 +426,232 @@ class LiaDB {
     return item?.misc
   }
 
+  /** Return all saved classrooms for a course, most recently updated first.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   */
+  async getClassrooms(uidDB: string) {
+    const db = await this.openShared_(uidDB)
+
+    return await db['classrooms'].orderBy('updated').reverse().toArray()
+  }
+
+  /** Insert or update a saved classroom entry for a course.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param entry - room name and full encoded backend string (primary key), optional password.
+   *   `mode` is stored too (not just cosmetic) - it is folded into the
+   *   network room identity (see `Sync.uniqueID`), so reconnecting under a
+   *   different mode joins a different room and loses the CRDT ownership
+   *   history.
+   */
+  async saveClassroom(
+    uidDB: string,
+    entry: {
+      room: string
+      backend: string
+      password?: string
+      name?: string
+      title?: string
+      notes?: string
+      mode?: number
+      ownerTokenHash?: string
+    }
+  ) {
+    const db = await this.openShared_(uidDB)
+
+    const existing = await db['classrooms'].get([entry.room, entry.backend])
+    const now = new Date().getTime()
+
+    await db['classrooms'].put({
+      room: entry.room,
+      backend: entry.backend,
+      password: entry.password || null,
+      name: entry.name || null,
+      title: entry.title || null,
+      notes: entry.notes || null,
+      mode: entry.mode || 0,
+      ownerTokenHash: entry.ownerTokenHash || existing?.ownerTokenHash || null,
+      created: existing ? existing.created : now,
+      updated: now,
+    })
+  }
+
+  /** Partially update an already-saved classroom entry, without touching
+   * its password/mode/connection settings. Only the keys actually present
+   * in `meta` are written - e.g. a title/notes edit (from the saved-
+   * classrooms card grid) must not clobber the `owner` flag written
+   * separately once a connection resolves CRDT ownership, and vice versa.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param room - the classroom's room name (part of the primary key)
+   * @param backend - the full encoded backend string (part of the primary key)
+   */
+  async updateClassroomMeta(
+    uidDB: string,
+    room: string,
+    backend: string,
+    meta: {
+      title?: string
+      notes?: string
+      name?: string
+      owner?: boolean
+      ownerTokenHash?: string
+    }
+  ) {
+    const db = await this.openShared_(uidDB)
+    const changes: {
+      title?: string | null
+      notes?: string | null
+      name?: string | null
+      owner?: boolean
+      ownerTokenHash?: string | null
+    } = {}
+
+    if (meta.title !== undefined) changes.title = meta.title || null
+    if (meta.notes !== undefined) changes.notes = meta.notes || null
+    if (meta.name !== undefined) changes.name = meta.name || null
+    if (meta.owner !== undefined) changes.owner = meta.owner
+    if (meta.ownerTokenHash !== undefined)
+      changes.ownerTokenHash = meta.ownerTokenHash || null
+
+    await db['classrooms'].update([room, backend], changes)
+  }
+
+  /** Remove a saved classroom entry for a course.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param room - the classroom's room name (part of the primary key)
+   * @param backend - the full encoded backend string (part of the primary key)
+   */
+  async deleteClassroom(uidDB: string, room: string, backend: string) {
+    const db = await this.openShared_(uidDB)
+
+    await db['classrooms'].delete([room, backend])
+  }
+
+  /** Return all cached Yjs update chunks for one classroom, in the order they
+   * were written, so they can be replayed to reconstruct the document.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param key - identifies one classroom, see `sync/Base/persist.ts`'s `docId`
+   */
+  async getYjsUpdates(uidDB: string, key: string): Promise<Uint8Array[]> {
+    const db = await this.openShared_(uidDB)
+
+    const rows = await db['yjsUpdates'].where('key').equals(key).toArray()
+
+    return rows.map((row: { data: Uint8Array }) => row.data)
+  }
+
+  /** Append one Yjs update chunk to a classroom's local cache.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param key - identifies one classroom, see `sync/Base/persist.ts`'s `docId`
+   * @param data - one raw Yjs update
+   */
+  async appendYjsUpdate(uidDB: string, key: string, data: Uint8Array) {
+    const db = await this.openShared_(uidDB)
+
+    await db['yjsUpdates'].add({ key, data, created: new Date().getTime() })
+  }
+
+  /** Atomically replace *all* cached Yjs updates of one classroom by a single
+   * one. Used by `DexieTransport` to compact the cache right after it has
+   * replayed the previously stored rows into the document: the replacement is
+   * a full document snapshot that is equivalent to all of them together, so
+   * nothing is lost — but only if the delete and the insert cannot be
+   * separated, hence the transaction.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param key - identifies one classroom, see `sync/Base/persist.ts`'s `docId`
+   * @param data - one raw Yjs update that supersedes everything stored so far
+   */
+  async replaceYjsUpdates(uidDB: string, key: string, data: Uint8Array) {
+    const db = await this.openShared_(uidDB)
+
+    await db.transaction('rw', db['yjsUpdates'], async () => {
+      await db['yjsUpdates'].where('key').equals(key).delete()
+      await db['yjsUpdates'].add({ key, data, created: new Date().getTime() })
+    })
+  }
+
+  /** Read every row of `key`, hand the data to `merge`, and replace the rows
+   * with its result — all inside one transaction, so a concurrent append
+   * (e.g. from a second tab on the same course and room) is either included
+   * in `rows` or queued behind the transaction, never lost between the read
+   * and the replace.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param key - identifies one classroom, see `sync/Base/persist.ts`'s `docId`
+   * @param merge - synchronous: Dexie transactions do not survive `await`s on
+   *   non-Dexie promises
+   */
+  async compactYjsUpdates(
+    uidDB: string,
+    key: string,
+    merge: (rows: Uint8Array[]) => Uint8Array | null
+  ): Promise<Uint8Array | null> {
+    const db = await this.openShared_(uidDB)
+
+    return db.transaction('rw', db['yjsUpdates'], async () => {
+      const rows = await db['yjsUpdates'].where('key').equals(key).toArray()
+      const merged = merge(rows.map((row: { data: Uint8Array }) => row.data))
+
+      if (rows.length === 0) return merged
+
+      await db['yjsUpdates'].where('key').equals(key).delete()
+
+      if (merged)
+        await db['yjsUpdates'].add({
+          key,
+          data: merged,
+          created: new Date().getTime(),
+        })
+
+      return merged
+    })
+  }
+
+  /** Remove all cached Yjs updates for one classroom.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param key - identifies one classroom, see `sync/Base/persist.ts`'s `docId`
+   */
+  async clearYjsUpdates(uidDB: string, key: string) {
+    const db = await this.openShared_(uidDB)
+
+    await db['yjsUpdates'].where('key').equals(key).delete()
+  }
+
+  /** Look up one classroom key/keypair cached for a course, see `putKey()`.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param id - identifies one key, see `sync/Base/keyStore.ts`'s `getOrCreateKey`
+   */
+  async getKey(uidDB: string, id: string): Promise<any> {
+    const db = await this.openShared_(uidDB)
+
+    const row = await db['keys'].get(id)
+
+    return row?.value
+  }
+
+  /** Cache one classroom `CryptoKey`/`CryptoKeyPair` for a course, so it can
+   * be reused across reconnects instead of regenerated - see
+   * `sync/Base/keyStore.ts`'s `getOrCreateKey`. Not scoped by `this.version`:
+   * classroom keys are per-room, not per-course-version.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   * @param id - identifies one key, see `sync/Base/keyStore.ts`'s `getOrCreateKey`
+   * @param value - a `CryptoKey` or `CryptoKeyPair`, directly structured-cloneable
+   */
+  async putKey(uidDB: string, id: string, value: any) {
+    const db = await this.openShared_(uidDB)
+
+    await db['keys'].put({ id, value })
+  }
+
   /** Delete all entries for all versions of a certain course defined by its
    * URL. This removes all state information as well as the course from the
    * main index.
@@ -360,6 +659,26 @@ class LiaDB {
    * @param uidDB - A string URL or URI, which identifies the source of a course.
    */
   async deleteIndex(uidDB: string) {
+    // an open connection blocks `Dexie.delete()`, so the shared one has to be
+    // dropped first, see `openShared_()`
+    const shared = this.dbCache[uidDB]
+
+    if (shared) {
+      delete this.dbCache[uidDB]
+
+      try {
+        ; (await shared).close()
+      } catch (e) { }
+    }
+
+    // `open()` keeps a second reference to that very same instance. Closing a
+    // Dexie does not neutralize it - `autoOpen` is on by default, so a later
+    // `store()`/`slide()` through the stale `this.db` would re-create the
+    // database that is being deleted right here.
+    if (this.db?.name === uidDB) {
+      this.db = null
+    }
+
     await Promise.all([
       this.dbIndex['courses'].delete(uidDB),
       Dexie.delete(uidDB),
@@ -372,8 +691,7 @@ class LiaDB {
    * @param versionDB - The version number of the course
    */
   async reset(uidDB: string, versionDB: number) {
-    const db = this.open_(uidDB)
-    await db.open()
+    const db = await this.openShared_(uidDB)
 
     await Promise.all([
       db['code'].where('version').equals(versionDB).delete(),

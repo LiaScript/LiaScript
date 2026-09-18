@@ -1,0 +1,481 @@
+@use '../01_tools/tools.breakpoints' as tools;
+
+.lia-classroom {
+  width: 80%;
+  max-width: 1240px;
+  overflow: auto;
+  padding: 0 10px;
+
+  &__overview {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__subtitle {
+    margin: 0.4rem auto 2rem;
+    max-width: 52ch;
+    opacity: 0.75;
+    text-align: center;
+  }
+
+  // the "just for me" local-notes shortcut, sitting to the left of the
+  // backend dropdown - bottom-aligned with it via the invisible spacer
+  // label in the button's own column, matching the dropdown's own
+  // "Connect to a classroom" label row above it. `4rem` matches the
+  // dropdown control's own natural (unstyled) height - it gets that
+  // height from its base `.lia-dropdown` padding/border (see
+  // generic.shared.scss and components.dropdown.scss), not from
+  // anything set here, so it has to be matched explicitly.
+  &__quick-row {
+    // flex-start, not flex-end: the dropdown grows taller (downward) once
+    // opened, and the button must stay pinned to its top/closed edge
+    // rather than trailing the now-taller box's bottom
+    align-items: flex-start;
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  &__quick-btn-wrap {
+    flex: 0 0 auto;
+  }
+
+  &__dropdown-wrap {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  &__notes-btn {
+    align-items: center;
+    display: flex;
+    height: 4rem;
+    justify-content: center;
+    width: 4rem;
+  }
+
+  // an input with a trailing action button (e.g. the room name's "generate
+  // random" button) - stretch, not a fixed height on the button, so it
+  // always matches the input's own actual rendered height
+  &__field-row {
+    align-items: stretch;
+    display: flex;
+    gap: 0.5rem;
+
+    input {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+  }
+
+  &__field-btn {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+    justify-content: center;
+    width: 4rem;
+  }
+
+  &__columns {
+    display: flex;
+    align-items: stretch;
+    margin-block-start: 1rem;
+
+    @include tools.breakpoint('sm', 'max') {
+      flex-direction: column;
+    }
+  }
+
+  &__form,
+  &__info {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  // a dedicated element instead of a border on `__info`, since a border
+  // only ever matches its own element's height - it was either too short
+  // or too long depending on which column happened to be taller
+  &__divider {
+    align-self: stretch;
+    background: rgb(var(--color-border));
+    flex: 0 0 1px;
+    margin-inline: 2.4rem;
+    width: 1px;
+
+    // the explanation's own border, which the divider above replaces
+    ~ .lia-classroom__info > p {
+      border: none !important;
+    }
+
+    @include tools.breakpoint('sm', 'max') {
+      display: none;
+    }
+  }
+
+  &__info {
+    @include tools.breakpoint('sm', 'max') {
+      border-block-start: 1px solid rgb(var(--color-border));
+      margin-block-start: 2.4rem;
+      padding-block-start: 2.4rem;
+
+      > p {
+        border: none !important;
+      }
+    }
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-block-end: 1rem;
+  }
+
+  &__info-header {
+    align-items: center;
+    display: flex;
+    gap: 1.5rem;
+    margin-block-end: 1rem;
+
+    .lia-classroom__card-icon {
+      flex-shrink: 0;
+      font-size: 5.5rem;
+      height: 7rem;
+      margin-block-end: 0;
+      width: 7rem;
+    }
+
+    h2 {
+      margin: 0;
+    }
+  }
+
+  &__tagline {
+    margin: 0.2rem 0 0;
+    opacity: 0.8;
+  }
+
+  .lia-dropdown {
+    display: block;
+    width: 100%;
+  }
+
+  &__option-tags {
+    display: block;
+    font-size: smaller;
+    opacity: 0.6;
+  }
+
+  &__cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  &__card {
+    // NOT overflow: hidden - the delete-confirm Popup positions itself
+    // absolutely relative to this card and needs to be able to escape its
+    // bounds, otherwise it gets clipped at the card edge
+    background: rgba(0, 0, 0, 0.3);
+    margin-block-start: 0;
+    border: 1px solid rgb(var(--color-highlight));
+    border-radius: 6px;
+
+    .lia-card__content {
+      padding-block: 0.75rem 0.5rem;
+    }
+
+    .lia-card__header {
+      padding-inline: 2.4rem;
+    }
+
+    .lia-card__subtitle {
+      padding-inline: 2.4rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      color: #c8c8c8;
+    }
+
+    .lia-card__footer {
+      align-items: stretch;
+      border-top: 1px solid rgba(var(--color-border), 0.4);
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-block-start: 0.75rem;
+      padding-block-start: 0.75rem;
+    }
+  }
+
+  // icon on the left, editable title + the room's real name to its right,
+  // the backend badge on the far right
+  &__card-top {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    padding: 0.75rem 2.4rem 0;
+  }
+
+  &__card-heading {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    // already positioned by `__card-top`'s own padding/gap, so the
+    // header-matching inline padding from `.lia-card__subtitle` above
+    // would just double it up here
+    .lia-card__subtitle {
+      padding-inline: 0;
+    }
+  }
+
+  &__card-icon {
+    align-items: center;
+    border: 1px solid rgb(var(--color-border));
+    border-radius: 50%;
+    display: flex;
+    flex-shrink: 0;
+    font-size: 4.5rem;
+    height: 5rem;
+    justify-content: center;
+    width: 5rem;
+
+    // `.lia-sync-icon`'s padding-inline-end is meant for icon-followed-by-
+    // text rows (dropdown, badges) - here the icon is centered alone.
+    .lia-sync-icon {
+      padding-inline-end: 0;
+    }
+  }
+
+  &__card-backend {
+    align-self: flex-start;
+    border: 1px solid rgb(var(--color-border));
+    border-radius: 6px;
+    flex-shrink: 0;
+    font-size: smaller;
+    padding: 0.2rem 0.6rem;
+    white-space: nowrap;
+  }
+
+  &__card-title {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    border-radius: 1px;
+    color: inherit;
+    font-size: 1.1em;
+    font-weight: bold;
+    overflow: hidden;
+    padding: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+
+    &:hover,
+    &:focus {
+      border-bottom-color: rgb(var(--color-border));
+    }
+  }
+
+  // the top footer row: mode on the left, delete/connect controls on the
+  // right, and the initiator tag (when present) truly centered between them
+  // - a grid rather than flex + auto-margins, so its position doesn't drift
+  // with how wide the mode label happens to be ("Shared" vs "Details")
+  &__card-row {
+    align-items: center;
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  &__card-mode-row {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    grid-column: 1;
+    justify-self: start;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  // hardcoded white, not rgba(var(--color-text), x): inside the modal
+  // --color-text is the literal keyword "white" (see the comment above
+  // &__mode), and rgba() can't split a keyword into r/g/b channels - the
+  // whole declaration would silently be dropped as invalid
+  &__card-tag {
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 3px;
+    color: rgba(255, 255, 255, 0.55);
+    display: inline-flex;
+    flex-shrink: 0;
+    font-size: 0.7em;
+    grid-column: 2;
+    justify-content: center;
+    justify-self: center;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    // letter-spacing adds its gap after the last glyph too, so with equal
+    // left/right padding the text reads as shifted left - pull the right
+    // side in by that trailing gap to actually center it
+    padding: 0.25rem calc(0.35rem - 0.04em) 0.25rem 0.35rem;
+    text-transform: uppercase;
+  }
+
+  // the second footer row: who last used this room on the left, when on
+  // the right (under the controls above it) - the two aren't related
+  // enough to sit glued together. The date gets its own margin-inline-start:
+  // auto rather than the row using justify-content: space-between, since an
+  // absent name renders no element at all (an empty Html.text is not a flex
+  // item) and space-between with a single item sticks it to the start.
+  &__card-meta-row {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    min-width: 0;
+
+    .lia-classroom__date {
+      margin-inline-start: auto;
+    }
+  }
+
+  &__card-user {
+    align-items: center;
+    display: inline-flex;
+    font-size: smaller;
+    gap: 0.3rem;
+    min-width: 0;
+    opacity: 0.6;
+    overflow: hidden;
+  }
+
+  &__card-user-icon {
+    flex-shrink: 0;
+    font-size: 0.9em;
+  }
+
+  &__card-user-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__card-notes {
+    background: transparent;
+    color: inherit;
+    font-size: smaller;
+    margin: 0 2.4rem;
+    min-height: 0;
+    padding: 0.4rem;
+    resize: vertical;
+    width: calc(100% - 4.8rem);
+  }
+
+  &__card-controls {
+    display: flex;
+    gap: 0.1rem;
+    align-items: center;
+    flex-shrink: 0;
+    grid-column: 3;
+    justify-self: end;
+
+    // icon webfonts have no weight axis, so a heavier look is faked by
+    // stroking the glyph outline instead
+    .icon {
+      -webkit-text-stroke: 0.5px currentColor;
+    }
+  }
+
+  // a plain icon button - white at rest, only tinted (red/turquoise) on
+  // hover/focus, so a grid full of cards doesn't turn into a wall of
+  // colored boxes
+  &__card-ghost {
+    align-items: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: #fff;
+    display: inline-flex;
+    height: 2.8rem;
+    justify-content: center;
+    width: 2.8rem;
+
+    &:hover,
+    &:focus {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    &--danger:hover,
+    &--danger:focus {
+      color: red;
+    }
+
+    &--accent:hover,
+    &--accent:focus {
+      color: turquoise;
+    }
+  }
+
+  &__date {
+    flex-shrink: 0;
+    font-size: smaller;
+    opacity: 0.6;
+  }
+
+  // the modal always renders on a dark backdrop, regardless of the site's
+  // light/dark theme setting - so these always use the brighter, dark-
+  // scheme-appropriate color tokens (not the deeper "-dark"/"-darker"
+  // variants, which are hard to read here)
+  &__mode {
+    align-items: center;
+    display: inline-flex;
+    font-size: smaller;
+    font-weight: 600;
+    gap: 0.4rem;
+  }
+
+  &__mode-dot {
+    border-radius: 50%;
+    flex-shrink: 0;
+    height: 0.5rem;
+    width: 0.5rem;
+
+    &.lia-classroom__mode--shared {
+      background: rgb(var(--lia-success));
+    }
+
+    &.lia-classroom__mode--summary {
+      background: rgb(var(--lia-warning));
+    }
+
+    &.lia-classroom__mode--details {
+      background: rgb(var(--lia-red));
+    }
+  }
+
+  // the small decorative peer-network graphic (static/network.svg) at the
+  // top of `Via.info`
+  &__graph {
+    display: block;
+    margin: 0 auto 1rem;
+    max-width: 280px;
+    width: 100%;
+  }
+}
+
+.lia-badge {
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 999px;
+  display: inline-block;
+  font-size: smaller;
+  padding: 0.2rem 0.8rem;
+}
+
+// `Lia.Sync.Via.icon` - used in the backend dropdown, the modal title and
+// the classroom cards. Default spacing assumes it's followed by text (as
+// in the dropdown); contexts where it stands alone (e.g. card icons)
+// override padding-inline-end back to 0.
+.lia-sync-icon {
+  font-size: inherit;
+  padding-inline-end: 5px;
+  vertical-align: middle;
+}

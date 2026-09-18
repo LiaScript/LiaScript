@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-labelledby="title desc">
+  <title id="title">Glowing technical origami peer-to-peer topology</title>
+  <desc id="desc">Transparent geometric origami network for dark interfaces, with hierarchical white edges, luminous peer nodes, hub rings, restrained edge halos, and subtle data accents.</desc>
+
+  <defs>
+    <!-- Soft white halo for structural edges -->
+    <filter id="edgeGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+    </filter>
+
+    <!-- Compact glow for ordinary nodes / moving data markers -->
+    <filter id="nodeGlow" x="-350%" y="-350%" width="800%" height="800%">
+      <feGaussianBlur stdDeviation="3.2" result="blur1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6.5" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Stronger glow for primary peers -->
+    <filter id="peerGlow" x="-450%" y="-450%" width="1000%" height="1000%">
+      <feGaussianBlur stdDeviation="4.2" result="blur1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8.5" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Atmospheric edge glow: intentionally subtle so 240x240 stays crisp -->
+  <g id="primary-edge-glow"
+     fill="none"
+     stroke="#FFFFFF"
+     stroke-opacity="0.34"
+     stroke-width="7.4"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     vector-effect="non-scaling-stroke"
+     filter="url(#edgeGlow)">
+    <path d="M196 6 L123 121 L98 110 L43 196 L60 265 L111 179"/>
+    <path d="M196 6 L218 86 L358 53 L253 226 L269 296 L294 315 L240 396 L216 306"/>
+    <path d="M123 121 L183 161 L245 198 L218 86"/>
+    <path d="M245 198 L253 226"/>
+  </g>
+
+  <!-- Very faint glow for inner facet network -->
+  <g id="facet-edge-glow"
+     fill="none"
+     stroke="#BFE8FF"
+     stroke-opacity="0.17"
+     stroke-width="4.8"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     vector-effect="non-scaling-stroke"
+     filter="url(#edgeGlow)">
+    <line x1="43"  y1="196" x2="111" y2="179"/>
+    <line x1="111" y1="179" x2="183" y2="161"/>
+    <line x1="111" y1="179" x2="128" y2="252"/>
+    <line x1="128" y1="252" x2="199" y2="238"/>
+    <line x1="199" y1="238" x2="183" y2="161"/>
+    <line x1="199" y1="238" x2="204" y2="263"/>
+    <line x1="204" y1="263" x2="216" y2="306"/>
+    <line x1="204" y1="263" x2="269" y2="296"/>
+  </g>
+
+  <!-- Strong structural silhouette / primary links -->
+  <g id="primary-structure"
+     fill="none"
+     stroke="#FFFFFF"
+     stroke-opacity="0.92"
+     stroke-width="2.8"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     vector-effect="non-scaling-stroke">
+    <path d="M196 6 L123 121 L98 110 L43 196 L60 265 L111 179"/>
+    <path d="M196 6 L218 86 L358 53 L253 226 L269 296 L294 315 L240 396 L216 306"/>
+    <path d="M123 121 L183 161 L245 198 L218 86"/>
+    <path d="M245 198 L253 226"/>
+  </g>
+
+  <!-- Secondary facet geometry -->
+  <g id="facet-edges"
+     fill="none"
+     stroke="#EAF2FF"
+     stroke-opacity="0.58"
+     stroke-width="1.65"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     vector-effect="non-scaling-stroke">
+    <line x1="43"  y1="196" x2="111" y2="179"/>
+    <line x1="111" y1="179" x2="183" y2="161"/>
+    <line x1="111" y1="179" x2="128" y2="252"/>
+    <line x1="128" y1="252" x2="199" y2="238"/>
+    <line x1="199" y1="238" x2="183" y2="161"/>
+    <line x1="199" y1="238" x2="204" y2="263"/>
+    <line x1="204" y1="263" x2="216" y2="306"/>
+    <line x1="204" y1="263" x2="269" y2="296"/>
+  </g>
+
+  <!-- Tertiary / logical links: deliberately quieter -->
+  <g id="logical-links"
+     fill="none"
+     stroke="#D6E4F5"
+     stroke-opacity="0.48"
+     stroke-width="1.9"
+     stroke-dasharray="6 5"
+     stroke-linecap="round"
+     vector-effect="non-scaling-stroke">
+    <line x1="123" y1="121" x2="111" y2="179"/>
+    <line x1="128" y1="252" x2="216" y2="306"/>
+    <line x1="199" y1="238" x2="253" y2="226"/>
+  </g>
+
+  <!-- Tiny data markers sitting on selected links -->
+  <g id="data-markers" stroke="none" opacity="0.9">
+    <circle cx="159" cy="171" r="2.0" fill="#5EEBFF" filter="url(#nodeGlow)"/>
+    <circle cx="233" cy="240" r="2.0" fill="#A78BFA" filter="url(#nodeGlow)"/>
+    <circle cx="239" cy="281" r="2.0" fill="#5EEBFF" filter="url(#nodeGlow)"/>
+    <circle cx="154" cy="247" r="1.6" fill="#FFFFFF" opacity="0.72"/>
+  </g>
+
+  <!-- Wide translucent halos give the network a luminous depth without filling facets -->
+  <g id="node-halos" stroke="none">
+    <circle cx="218" cy="86"  r="14" fill="#59E6FF" opacity="0.22" filter="url(#nodeGlow)"/>
+    <circle cx="183" cy="161" r="14" fill="#8DA2FF" opacity="0.20" filter="url(#nodeGlow)"/>
+    <circle cx="199" cy="238" r="14" fill="#59E6FF" opacity="0.22" filter="url(#nodeGlow)"/>
+    <circle cx="216" cy="306" r="14" fill="#A77BFF" opacity="0.22" filter="url(#nodeGlow)"/>
+
+    <circle cx="123" cy="121" r="15" fill="#A77BFF" opacity="0.15" filter="url(#nodeGlow)"/>
+    <circle cx="111" cy="179" r="15" fill="#A77BFF" opacity="0.15" filter="url(#nodeGlow)"/>
+    <circle cx="253" cy="226" r="15" fill="#A77BFF" opacity="0.15" filter="url(#nodeGlow)"/>
+    <circle cx="269" cy="296" r="15" fill="#A77BFF" opacity="0.15" filter="url(#nodeGlow)"/>
+  </g>
+
+  <!-- Primary peers: solid, intentionally sparse -->
+  <g id="primary-peers" stroke="#07111F" stroke-width="1.5" vector-effect="non-scaling-stroke" filter="url(#peerGlow)">
+    <circle cx="218" cy="86"  r="5.6" fill="#59E6FF"/>
+    <circle cx="183" cy="161" r="5.6" fill="#8DA2FF"/>
+    <circle cx="199" cy="238" r="5.6" fill="#59E6FF"/>
+    <circle cx="216" cy="306" r="5.6" fill="#A77BFF"/>
+  </g>
+
+  <!-- Hubs / junctions: ring + core -->
+  <g id="hub-nodes" fill="#07111F" stroke="#A77BFF" stroke-width="1.9" vector-effect="non-scaling-stroke" filter="url(#nodeGlow)">
+    <circle cx="123" cy="121" r="6.6"/>
+    <circle cx="111" cy="179" r="6.6"/>
+    <circle cx="253" cy="226" r="6.6"/>
+    <circle cx="269" cy="296" r="6.6"/>
+  </g>
+  <g id="hub-cores" fill="#FFFFFF" opacity="0.9">
+    <circle cx="123" cy="121" r="1.8"/>
+    <circle cx="111" cy="179" r="1.8"/>
+    <circle cx="253" cy="226" r="1.8"/>
+    <circle cx="269" cy="296" r="1.8"/>
+  </g>
+
+  <!-- Secondary nodes: small and low-noise -->
+  <g id="secondary-nodes" stroke="#07111F" stroke-width="1.0" vector-effect="non-scaling-stroke" filter="url(#nodeGlow)">
+    <circle cx="196" cy="6"   r="3.6" fill="#DDEBFF"/>
+    <circle cx="358" cy="53"  r="3.6" fill="#59E6FF"/>
+    <circle cx="294" cy="315" r="3.6" fill="#DDEBFF"/>
+    <circle cx="240" cy="396" r="3.6" fill="#A77BFF"/>
+    <circle cx="43"  cy="196" r="3.6" fill="#DDEBFF"/>
+    <circle cx="60"  cy="265" r="3.6" fill="#8DA2FF"/>
+    <circle cx="98"  cy="110" r="3.0" fill="#59E6FF"/>
+    <circle cx="128" cy="252" r="3.0" fill="#DDEBFF"/>
+    <circle cx="204" cy="263" r="3.0" fill="#8DA2FF"/>
+    <circle cx="245" cy="198" r="3.0" fill="#DDEBFF"/>
+  </g>
+</svg>

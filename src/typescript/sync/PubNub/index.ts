@@ -22,11 +22,13 @@ export class Sync extends Base.Sync {
     room: string
     password?: string
     config?: any
+    name: string
+    mode: number
   }) {
     super.connect(data)
 
-    this.publishKey = data.config?.publishKey
-    this.subscribeKey = data.config?.subscribeKey
+    this.publishKey = data.config?.publishKey || process.env.PUBNUB_PUBLISH_KEY || undefined
+    this.subscribeKey = data.config?.subscribeKey || process.env.PUBNUB_SUBSCRIBE_KEY || undefined
 
     if (window['PubNub']) {
       this.init(true)
@@ -49,7 +51,7 @@ export class Sync extends Base.Sync {
 
       this.provider = new GenericProvider(this.db.doc, this.transport)
 
-      this.db.setAwareness(this.provider.awareness)
+      this.db.setAwareness(this.provider.awareness, this.name)
 
       let syncedOnce = false
 
@@ -86,6 +88,7 @@ export class Sync extends Base.Sync {
         room: id,
         publishKey: this.publishKey,
         subscribeKey: this.subscribeKey,
+        waitFor: this.persistReady,
         ...(this.password ? { cipherKey: this.password } : {}),
       } as any)
     } else {

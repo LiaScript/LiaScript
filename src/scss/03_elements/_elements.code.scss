@@ -83,10 +83,9 @@
         rgb(var(--color-highlight-dark)) 0%
       );
       margin: 0;
-      // when this value is changed, also the maxHeight value in
-      //   src/typescript/webcomponents/terminal.ts
-      // has to be changed accordingly
-      max-height: 20rem;
+      // grows with the viewport, but never below 20rem;
+      // src/typescript/webcomponents/terminal.ts reads this value at runtime
+      max-height: max(20rem, 40vh);
       resize: vertical;
       overflow-y: auto;
       padding: 1rem 1.6rem;
