@@ -129,7 +129,9 @@ customElements.define(
           let label = this.formula_
 
           try {
-            label = renderA11yString(label)
+            label = renderA11yString(label, {
+              displayMode: this.displayMode(),
+            })
           } catch (e) {
             console.warn(
               'formula: render a11y ->',

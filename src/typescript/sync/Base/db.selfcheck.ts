@@ -8,10 +8,15 @@
 // 2. `setArrayValue` (yArray.ts), the single write path for quiz/survey
 //    answers: answering a later question before an earlier one must pad
 //    with holes instead of throwing (Yjs rejects `undefined` content).
+// 3. `coalesce` (coalesce.ts), which serializes the quiz/survey re-dump
+//    behind every CRDT observer: a burst of triggers during one run must
+//    collapse into exactly one follow-up run, and runs must never overlap
+//    (an older async snapshot could otherwise land after a newer one).
 
 import * as Y from 'yjs'
 import { sha256Base64, randomBytesBase64 } from './peerCrypto.ts'
 import { setArrayValue } from './yArray.ts'
+import { coalesce } from './coalesce.ts'
 
 function assert(cond: boolean, message: string) {
   if (!cond) throw new Error('FAILED: ' + message)
@@ -64,6 +69,34 @@ async function main() {
     'overwrite replaces in place'
   )
   assert(section.get(1) === null, 'hole stays null')
+
+  let runs = 0
+  let inFlight = 0
+  let overlapped = false
+  let release: () => void = () => {}
+  const schedule = coalesce(() => {
+    runs++
+    inFlight++
+    if (inFlight > 1) overlapped = true
+    return new Promise<void>(resolve => {
+      release = () => {
+        inFlight--
+        resolve()
+      }
+    })
+  })
+  const tick = () => new Promise(r => setTimeout(r, 0))
+  schedule()
+  schedule()
+  schedule()
+  assert(runs === 1, 'triggers during a run do not start a second run')
+  release()
+  await tick()
+  assert(runs === 2, 'a burst collapses into exactly one follow-up run')
+  release()
+  await tick()
+  assert(runs === 2, 'no third run without a new trigger')
+  assert(!overlapped, 'runs never overlap')
 
   console.log('\nall checks passed')
 }
