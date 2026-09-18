@@ -129,5 +129,10 @@
   "dependencies": {
     "@dragdroptouch/drag-drop-touch": "^2.0.3",
     "pako": "^2.1.0"
+  },
+  "allowScripts": {
+    "elm@0.19.1-6": true,
+    "msgpackr-extract@3.0.2": true,
+    "lmdb": true
   }
 }
