@@ -183,23 +183,22 @@ customElements.define(
           break
         }
 
+        // attributes are usually set before connectedCallback, so always store
+        // them and only re-init if the chart already exists
         case 'locale': {
-          if (this.chart && this.locale !== newValue) {
+          if (this.locale !== newValue) {
             this.locale = newValue
-
-            this.initChart()
-            this.updateChart()
+            this.reinitChart()
           }
+          break
         }
 
         case 'mode': {
           newValue = newValue || ''
 
-          if (this.chart && this.mode !== newValue) {
+          if (this.mode !== newValue) {
             this.mode = newValue
-
-            this.initChart()
-            this.updateChart()
+            this.reinitChart()
           }
           break
         }
@@ -207,11 +206,9 @@ customElements.define(
         case 'renderer': {
           newValue = newValue || 'svg'
 
-          if (this.chart && this.renderer !== newValue) {
+          if (this.renderer !== newValue) {
             this.setRenderer(newValue)
-
-            this.initChart()
-            this.updateChart()
+            this.reinitChart()
           }
           break
         }
@@ -268,6 +265,13 @@ customElements.define(
         locale: this.locale,
         useDirtyRect: false,
       })
+    }
+
+    reinitChart() {
+      if (!this.chart) return
+
+      this.initChart()
+      this.updateChart()
     }
 
     resizeChart() {

@@ -77,7 +77,10 @@ function detect(el: HTMLElement, callback: (_: Dir) => void) {
       swipeDir = Dir.none
       startX = touchObj.pageX
       startY = touchObj.pageY
-      startTime = new Date().getTime() // record time when finger first makes contact with surface
+      // a touch on a draggable element is a (polyfilled) drag & drop, never a swipe
+      startTime = (e.target as Element)?.closest?.('[draggable="true"]')
+        ? 0
+        : new Date().getTime() // record time when finger first makes contact with surface
       // e.preventDefault()
     },
     { passive: true }

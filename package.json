@@ -1,6 +1,6 @@
 {
   "name": "@liascript/editor",
-  "version": "1.1.43--2.0.0",
+  "version": "1.1.43--2.0.1",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -126,6 +126,7 @@
     "test": "tests"
   },
   "dependencies": {
+    "@dragdroptouch/drag-drop-touch": "^2.0.3",
     "pako": "^2.1.0"
   }
 }

@@ -5,6 +5,7 @@ import * as helper from '../../helper'
 import * as peerCrypto from './peerCrypto'
 import { getOrCreateKey, getStoredValue, putStoredValue } from './keyStore'
 import { setArrayValue } from './yArray'
+import { coalesce } from './coalesce'
 
 import { YKeyValue } from 'y-utility/y-keyvalue'
 
@@ -100,6 +101,18 @@ export class CRDT {
   // One-shot safety-net re-check, see the comment above where it's armed
   // in `init()`.
   protected resyncTimer?: ReturnType<typeof setTimeout>
+
+  // The single entry point for every quiz/survey re-dump trigger (observers,
+  // safety net, owner-key readiness). `fireQuizSurvey` awaits one decrypt per
+  // answer, so two overlapping recomputes could hand Elm an older snapshot
+  // after a newer one; and with many pages x questions x peers each
+  // recompute is O(all answers) of Web Crypto - a burst of answers now costs
+  // two runs, not one per answer.
+  protected scheduleQuizSurvey = coalesce(() =>
+    this.fireQuizSurvey().catch((e: any) =>
+      console.warn('quiz/survey re-check failed ->', e),
+    ),
+  )
 
   constructor(
     peerID: string,
@@ -271,11 +284,7 @@ export class CRDT {
     // no further event to correct it. Re-check once more, a few seconds
     // later, once the relay has had a chance to catch up.
     clearTimeout(this.resyncTimer)
-    this.resyncTimer = setTimeout(() => {
-      this.fireQuizSurvey().catch((e: any) =>
-        console.warn('delayed quiz/survey re-check failed ->', e),
-      )
-    }, 4000)
+    this.resyncTimer = setTimeout(() => this.scheduleQuizSurvey(), 4000)
   }
 
   // Only writes our own answer. LiaScript's join payload includes other
@@ -306,8 +315,7 @@ export class CRDT {
   }
 
   // Recompute and dispatch every section's quiz/survey state, as seen right
-  // now. Called from `fireInitialState()` (the normal one-shot snapshot) and
-  // again, once, from `init()`'s delayed safety-net re-check.
+  // now. Only ever run through `scheduleQuizSurvey`, never directly.
   protected async fireQuizSurvey() {
     const quizIds = this.collectSectionIds(QUIZ)
     if (quizIds.size > 0) {
@@ -356,7 +364,7 @@ export class CRDT {
     }
 
     // Quizzes and surveys
-    await this.fireQuizSurvey()
+    this.scheduleQuizSurvey()
 
     // Code editors
     const codeIds = new Set<number>()
@@ -481,32 +489,15 @@ export class CRDT {
     // recomputing full current state on any change is cheap — just resend
     // everything instead of trying to diff precisely.
     this.user.observeDeep((events: Y.YEvent<any>[]) => {
-      if (events.length === 0) return
-
-      const quizIds = this.collectSectionIds(QUIZ)
-      if (quizIds.size > 0) {
-        Promise.all(
-          [...quizIds].map(async (id) => ({
-            id,
-            data: await this.getSection(id, QUIZ),
-          })),
-        )
-          .then((vec) => this.callback(vec, 'quiz'))
-          .catch((e: any) => console.warn('quiz decrypt failed ->', e))
-      }
-
-      const surveyIds = this.collectSectionIds(SURVEY)
-      if (surveyIds.size > 0) {
-        Promise.all(
-          [...surveyIds].map(async (id) => ({
-            id,
-            data: await this.getSection(id, SURVEY),
-          })),
-        )
-          .then((vec) => this.callback(vec, 'survey'))
-          .catch((e: any) => console.warn('survey decrypt failed ->', e))
-      }
+      if (events.length > 0) this.scheduleQuizSurvey()
     })
+
+    // A peer's content key, wrapped for the owner, arrives after that peer's
+    // answers whenever both were produced by its join (`init()` writes the
+    // answers synchronously, `rewrapForCurrentOwner()` wraps asynchronously).
+    // Those answers were skipped as unreadable by the recompute above, and
+    // nothing else would re-read them until someone happened to answer again.
+    this.wrappedKeys.observe(() => this.scheduleQuizSurvey())
 
     this.identities.observe(() => {
       this.callback(this.getIdentities(), 'identity')
@@ -792,6 +783,10 @@ export class CRDT {
       this.roomId ?? 'default',
       () => peerCrypto.generateECDHKeyPair(),
     )
+    // Everything that was decrypted while the keypair was still loading (a
+    // persisted room's snapshot arriving right after join) came back as
+    // unreadable, see decryptSectionValue - read it again now.
+    this.scheduleQuizSurvey()
     const pub = await peerCrypto.exportPublicKey(this.ownerKeyPair.publicKey)
 
     if (this.ownerKey.get(this.peerID) !== pub) {
