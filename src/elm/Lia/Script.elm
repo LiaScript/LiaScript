@@ -33,11 +33,12 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (loadResource)
 import Lia.Parser.Parser as Parser
+import Lia.Parser.PatReplace exposing (resourceOrigin)
 import Lia.Section as Section exposing (Sections)
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
-import Lia.Utils exposing (checkFalse, checkPersistency, urlBasePath, urlQuery)
+import Lia.Utils exposing (checkFalse, checkPersistency, urlQuery)
 import Lia.View
 import List.Extra
 import Return exposing (Return)
@@ -164,7 +165,7 @@ resources and to add additional macros.
 -}
 add_imports : { model : Model, base : String } -> String -> Model
 add_imports { model, base } code =
-    case Parser.parse_definition (urlBasePath base |> Maybe.withDefault "") (base |> urlQuery |> Maybe.withDefault "") code of
+    case Parser.parse_definition (resourceOrigin base) (base |> urlQuery |> Maybe.withDefault "") code of
         Ok ( definition, _ ) ->
             add_todos definition model
 

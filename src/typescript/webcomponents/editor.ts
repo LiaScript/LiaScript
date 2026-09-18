@@ -24,6 +24,7 @@ type Cursor = {
   color: string
   position: Position
   selection: Selection
+  name: string
 }
 
 function markerStyle(name: string): string {
@@ -769,8 +770,8 @@ customElements.define(
             session
           )
 
-          for (let { id, color, position } of this._cursors) {
-            this.cursorManager.addCursor(id, '', color, position)
+          for (let { id, name, color, position } of this._cursors) {
+            this.cursorManager.addCursor(id, name, color, position)
           }
         }
       } else {
@@ -810,26 +811,38 @@ customElements.define(
           }
 
           for (let newCursor of value) {
-            let add = true
+            const oldCursor = this._cursors.find((c) => c.id == newCursor.id)
 
-            for (let oldCursor of this._cursors) {
-              if (oldCursor.id == newCursor.id) {
-                add = false
-                break
-              }
-            }
-
-            if (add) {
+            if (!oldCursor) {
               this.cursorManager.addCursor(
                 newCursor.id,
-                '',
+                newCursor.name,
                 newCursor.color,
                 newCursor.position
               )
 
               this.selectManager.addSelection(
                 newCursor.id,
-                '',
+                newCursor.name,
+                newCursor.color,
+                this.toRange(newCursor.selection)
+              )
+            } else if (oldCursor.name !== newCursor.name) {
+              // The library has no setLabel — remove and re-add to update the name
+              this.cursorManager.removeCursor(newCursor.id)
+              try { this.selectManager.clearSelection(newCursor.id) } catch (e) { }
+              try { this.selectManager.removeSelection(newCursor.id) } catch (e) { }
+
+              this.cursorManager.addCursor(
+                newCursor.id,
+                newCursor.name,
+                newCursor.color,
+                newCursor.position
+              )
+
+              this.selectManager.addSelection(
+                newCursor.id,
+                newCursor.name,
                 newCursor.color,
                 this.toRange(newCursor.selection)
               )

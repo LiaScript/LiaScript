@@ -1,6 +1,7 @@
 module Service.Slide exposing
     ( fullscreen
     , initialize
+    , reveal
     , scrollDown
     , scrollIntoView
     , scrollUp
@@ -38,6 +39,18 @@ scrollIntoView : String -> Int -> Event
 scrollIntoView elementID delay =
     [ ( "id", JE.string elementID )
     , ( "delay", JE.int delay )
+    ]
+        |> JE.object
+        |> event "scroll_into_view"
+
+
+{-| Scroll an element (by id) only as far as needed to make it fully visible.
+-}
+reveal : String -> Event
+reveal elementID =
+    [ ( "id", JE.string elementID )
+    , ( "delay", JE.int 0 )
+    , ( "block", JE.string "nearest" )
     ]
         |> JE.object
         |> event "scroll_into_view"

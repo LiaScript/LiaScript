@@ -78,17 +78,17 @@ key_value_string ( key, value ) =
            )
 
 
-type alias Survey =
-    { survey : Type
+type alias Survey body =
+    { survey : Type body
     , id : Int
     }
 
 
-type Type
+type Type body
     = Text Int
     | Select (List Inlines)
     | DragAndDrop (List Inlines)
-    | Vector Bool (List ( String, Inlines )) Analysis
+    | Vector Bool (List ( String, List body )) Analysis
     | Matrix Bool (List Inlines) (List String) (List Inlines)
 
 

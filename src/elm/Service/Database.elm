@@ -6,6 +6,7 @@ module Service.Database exposing
     , index_restore
     , index_store
     , load
+    , loadAll
     , settings
     , store
     , update
@@ -25,6 +26,15 @@ load table id =
     Nothing
         |> record table id
         |> event "load"
+
+
+{-| Load every entry of a table in one request, instead of issuing one
+`load` per id. Used to preload all persisted quiz/survey answers when
+joining a classroom.
+-}
+loadAll : String -> Event
+loadAll table =
+    JE.string table |> event "load_all"
 
 
 store : String -> Int -> JE.Value -> Event

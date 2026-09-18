@@ -1,6 +1,6 @@
 {
   "name": "liascript",
-  "version": "1.1.0",
+  "version": "2.0.1",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -79,7 +79,7 @@
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "abortcontroller-polyfill": "^1.7.8",
     "ace-builds": "^1.43.6",
-    "caniuse-lite": "^1.0.30001787",
+    "caniuse-lite": "^1.0.30001809",
     "capacitor-resources": "^2.0.5",
     "crypto-browserify": "^3.5.1",
     "dexie": "^4.2.1",
@@ -88,13 +88,13 @@
     "echarts-wordcloud": "^2.1.0",
     "elm": "^0.19.1-5",
     "elm-hot": "^1.1.6",
-    "elm-optimize-level-2": "^0.3.5",
+    "elm-optimize-level-2": "^0.4.0",
     "elm-review": "^2.13.5",
     "elm-test": "^0.19.1-revision12",
     "eslint": "^9.39.4",
     "events": "^3.3.0",
     "jszip": "^3.10.1",
-    "katex": "^0.16.45",
+    "katex": "^0.18.4",
     "logger.ts": "^1.0.5",
     "minify": "^9.2.0",
     "node-elm-compiler": "^5.0.6",
@@ -135,7 +135,15 @@
     "@capacitor-community/text-to-speech": "git+https://github.com/capacitor-community/text-to-speech.git#v8.0.0",
     "@capacitor/android": "8.1.0",
     "@capacitor/core": "^8.0.0",
+    "@dragdroptouch/drag-drop-touch": "^2.0.3",
     "pako": "^2.1.0",
     "patch-package": "^8.0.0"
+  },
+  "allowScripts": {
+    "elm@0.19.1-6": true,
+    "msgpackr-extract@3.0.2": true,
+    "lmdb": true,
+    "core-js@2.6.12": true,
+    "core-js@3.50.0": true
   }
 }

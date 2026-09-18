@@ -14,7 +14,8 @@ import Lia.Utils exposing (btn, modal)
 
 files : Maybe String -> Html Msg
 files error =
-    modal (Modal Nothing)
+    modal True
+        (Modal Nothing)
         Nothing
         [ Html.div
             [ Attr.style "max-width" "800px"
@@ -73,7 +74,8 @@ btn_files_import =
 
 directory : Maybe String -> Html Msg
 directory error =
-    modal (Modal Nothing)
+    modal True
+        (Modal Nothing)
         Nothing
         [ Html.div
             [ Attr.style "max-width" "800px"

@@ -5,20 +5,24 @@ module Lia.Markdown.Survey.Sync exposing
     , density
     , encoder
     , event
+    , lockAnswered
     , matrix
     , select
     , sync
-    , text
+    , toState
+    , toString
+    , toText
     , vector
     , wordCount
     )
 
-import Array
+import Array exposing (Array)
 import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Types as Survey
+import Lia.Sync.Container as Container exposing (Container)
 import Lia.Utils exposing (percentage)
 import List.Extra
 import Service.Event as Event exposing (Event)
@@ -50,6 +54,39 @@ event id =
     sync
         >> Maybe.map (encoder >> Service.Sync.survey id)
         >> Maybe.withDefault Event.none
+
+
+{-| A survey submitted from another session/device (or synced faster than a
+local restore) is already known to the classroom. Lock it here too
+(restoring the submitted answer), so it can't be silently re-answered and
+overwrite the shared classroom state.
+-}
+lockAnswered :
+    Maybe String
+    -> Dict Int (Container Sync)
+    -> Maybe Int
+    -> Survey.Vector
+    -> Survey.Vector
+lockAnswered ownId answered sectionID vec =
+    case ( sectionID, ownId ) of
+        ( Just sID, Just myId ) ->
+            vec
+                |> Array.indexedMap
+                    (\idx elem ->
+                        if elem.submitted then
+                            elem
+
+                        else
+                            answered
+                                |> Dict.get sID
+                                |> Maybe.andThen (Container.get idx)
+                                |> Maybe.andThen (Dict.get myId)
+                                |> Maybe.map (\answer -> { elem | submitted = True, state = toState answer })
+                                |> Maybe.withDefault elem
+                    )
+
+        _ ->
+            vec
 
 
 wordCount : List Sync -> Maybe (List Data)
@@ -91,9 +128,9 @@ wordCount =
            )
 
 
-text : List Sync -> Maybe (List String)
-text =
-    List.filterMap toText >> ifEmpty
+toState : Sync -> Survey.State
+toState (Sync state) =
+    state
 
 
 toText : Sync -> Maybe String
@@ -166,6 +203,63 @@ toVector (Sync s) =
 
         _ ->
             Nothing
+
+
+toString : List String -> Sync -> List String
+toString keys (Sync s) =
+    case s of
+        Survey.Vector_State False dict ->
+            keys
+                |> List.filterMap (\key -> Dict.get key dict)
+                |> List.map
+                    (\value ->
+                        if value then
+                            "🗹"
+
+                        else
+                            ""
+                    )
+
+        Survey.Vector_State True dict ->
+            keys
+                |> List.filterMap (\key -> Dict.get key dict)
+                |> List.map
+                    (\value ->
+                        if value then
+                            "🗹"
+
+                        else
+                            "☐"
+                    )
+
+        Survey.Text_State str ->
+            [ str ]
+
+        Survey.Select_State _ i ->
+            [ String.fromInt (i + 1) ]
+
+        Survey.Matrix_State _ state ->
+            state
+                |> Array.toList
+                |> List.concatMap
+                    (\dict ->
+                        keys
+                            |> List.map
+                                (\key ->
+                                    case Dict.get key dict of
+                                        Just True ->
+                                            "🗹"
+
+                                        Just False ->
+                                            "☐"
+
+                                        Nothing ->
+                                            ""
+                                )
+                    )
+
+        _ ->
+            [ "todo ..." ]
 
 
 select : Int -> List Sync -> Maybe (List Data)

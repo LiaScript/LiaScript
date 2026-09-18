@@ -28,8 +28,8 @@ type alias Vector =
     Array Element
 
 
-type alias Hints =
-    List Inlines
+type alias Hints x =
+    List (List x)
 
 
 type alias Element =
@@ -70,14 +70,14 @@ type Type x
     = Generic_Type
     | Block_Type (Block.Quiz Inlines)
     | Multi_Type (Multi.Quiz x Inlines)
-    | Vector_Type Vector.Quiz
+    | Vector_Type (Vector.Quiz x)
     | Matrix_Type Matrix.Quiz
 
 
 type alias Quiz x =
     { quiz : Type x
     , id : Int
-    , hints : Hints
+    , hints : Hints x
     }
 
 

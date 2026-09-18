@@ -4,36 +4,40 @@ import Accessibility.Role as A11y_Role
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Lia.Markdown.Inline.Config exposing (Config)
-import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Markdown.Quiz.Update as QuizUpdate
 import Lia.Markdown.Quiz.Vector.Types exposing (Quiz, State(..))
-import Lia.Markdown.Quiz.Vector.Update exposing (Msg(..))
+import Lia.Markdown.Quiz.Vector.Update as VectorUpdate
+import Lia.Markdown.Update as Main
 
 
-view : Config sub -> Bool -> String -> Quiz -> State -> ( List (Attribute msg), List (Html (Msg sub)) )
-view config open class quiz state =
+{-| Render the current Vector-Quiz options, based on its state. The content of
+every option is rendered by the caller (`Lia.Markdown.View`, which recursively
+renders nested `Block` content via `viewBlocks`) and passed in as `rendered`,
+one `List (Html Main.Msg)` per option - exactly as with Task-list items.
+-}
+view : Bool -> String -> Int -> Quiz body -> State -> List (List (Html Main.Msg)) -> ( List (Attribute Main.Msg), List (Html Main.Msg) )
+view open class quizId quiz state rendered =
     case ( quiz.solution, state ) of
         ( SingleChoice _, SingleChoice list ) ->
-            ( [ A11y_Role.radioGroup ], table (radio config open class) quiz.options list )
+            ( [ A11y_Role.radioGroup ], table (radio open class quizId) rendered list )
 
         ( MultipleChoice _, MultipleChoice list ) ->
-            ( [ A11y_Role.list ], table (check config open class) quiz.options list )
+            ( [ A11y_Role.list ], table (check open class quizId) rendered list )
 
         _ ->
             ( [], [] )
 
 
-table : (Bool -> ( Int, Inlines ) -> Html (Msg sub)) -> List Inlines -> List Bool -> List (Html (Msg sub))
-table fn inlines bool =
-    inlines
+table : (Bool -> ( Int, List (Html Main.Msg) ) -> Html Main.Msg) -> List (List (Html Main.Msg)) -> List Bool -> List (Html Main.Msg)
+table fn contents bool =
+    contents
         |> List.indexedMap Tuple.pair
         |> List.map2 fn bool
 
 
-check : Config sub -> Bool -> String -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
-check config open colorClass checked ( id, line ) =
-    Html.label [ Attr.class "lia-label", A11y_Role.listItem ]
+check : Bool -> String -> Int -> Bool -> ( Int, List (Html Main.Msg) ) -> Html Main.Msg
+check open colorClass quizId checked ( id, body ) =
+    Html.label [ Attr.class "lia-label lia-label--top", A11y_Role.listItem ]
         [ Html.input
             [ Attr.class "lia-checkbox"
             , Attr.class colorClass
@@ -41,22 +45,19 @@ check config open colorClass checked ( id, line ) =
             , Attr.checked checked
             , A11y_Role.checkBox
             , if open then
-                onClick (Toggle id)
+                onClick (Main.UpdateQuiz (QuizUpdate.Vector_Update quizId (VectorUpdate.Toggle id)))
 
               else
                 Attr.disabled True
             ]
             []
-        , line
-            |> viewer config
-            |> Html.span []
-            |> Html.map Script
+        , Html.div [ Attr.style "width" "100%" ] body
         ]
 
 
-radio : Config sub -> Bool -> String -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
-radio config open colorClass checked ( id, line ) =
-    Html.label [ Attr.class "lia-label", A11y_Role.listItem ]
+radio : Bool -> String -> Int -> Bool -> ( Int, List (Html Main.Msg) ) -> Html Main.Msg
+radio open colorClass quizId checked ( id, body ) =
+    Html.label [ Attr.class "lia-label lia-label--top", A11y_Role.listItem ]
         [ Html.input
             [ Attr.class "lia-radio"
             , Attr.class colorClass
@@ -64,14 +65,11 @@ radio config open colorClass checked ( id, line ) =
             , Attr.checked checked
             , A11y_Role.radio
             , if open then
-                onClick (Toggle id)
+                onClick (Main.UpdateQuiz (QuizUpdate.Vector_Update quizId (VectorUpdate.Toggle id)))
 
               else
                 Attr.disabled True
             ]
             []
-        , line
-            |> viewer config
-            |> Html.span []
-            |> Html.map Script
+        , Html.div [ Attr.style "width" "100%" ] body
         ]
