@@ -22,7 +22,7 @@ jobs:
         run: echo "ELM_HOME=${GITHUB_WORKSPACE}/.elm" >> $GITHUB_ENV
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -69,32 +69,8 @@ jobs:
           zip -r opal-build.zip LiaScript/dist/*
 
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: 'Release for ${{ github.ref }}'
-          draft: false
-          prerelease: false
-
-      - name: Upload ZIP Asset (PWA)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: pwa-build.zip
-          asset_name: pwa-build.zip
-          asset_content_type: application/zip
-
-      - name: Upload ZIP Asset (Opal)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: opal-build.zip
-          asset_name: opal-build.zip
-          asset_content_type: application/zip
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" pwa-build.zip opal-build.zip \
+            --title "Release for ${{ github.ref }}" --notes ""
