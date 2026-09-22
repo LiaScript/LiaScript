@@ -39,22 +39,20 @@ export function wrapTransport(
     connect: (config) => transport.connect(config),
     disconnect: () => transport.disconnect(),
 
-    send: (data: Uint8Array) => {
-      const cipher = new TextEncoder().encode(Crypto.encode(encode(data)))
-      if (stripHeaderBytes === 0) return transport.send(cipher)
+    send: (data: Uint8Array) => transport.send(seal(data)),
 
-      const padded = new Uint8Array(stripHeaderBytes + cipher.length)
-      padded.set(cipher, stripHeaderBytes)
-      return transport.send(padded)
-    },
+    sendTo: transport.sendTo
+      ? (peerId: string, data: Uint8Array) =>
+          transport.sendTo!(peerId, seal(data))
+      : undefined,
 
-    onMessage: (callback: (data: Uint8Array) => void) =>
-      transport.onMessage((frame: Uint8Array) => {
+    onMessage: (callback: (data: Uint8Array, from?: string) => void) =>
+      transport.onMessage((frame: Uint8Array, from?: string) => {
         try {
           const cipher =
             stripHeaderBytes === 0 ? frame : frame.subarray(stripHeaderBytes)
           const data = decode(Crypto.decode(new TextDecoder().decode(cipher)))
-          callback(data)
+          callback(data, from)
         } catch (e) {
           // Wrong password or corrupted frame - drop it rather than crash.
           console.warn('security: dropping undecryptable frame ->', e)
@@ -66,6 +64,13 @@ export function wrapTransport(
           transport.onPeerConnect!(callback)
       : undefined,
 
+    onPeerDisconnect: transport.onPeerDisconnect
+      ? (callback: (peerId: string) => void) =>
+          transport.onPeerDisconnect!(callback)
+      : undefined,
+
+    flush: transport.flush ? () => transport.flush!() : undefined,
+
     get isConnected() {
       return transport.isConnected
     },
@@ -73,5 +78,18 @@ export function wrapTransport(
     get preferredBatchMs() {
       return transport.preferredBatchMs
     },
+
+    get expectedRttMs() {
+      return transport.expectedRttMs
+    },
+  }
+
+  function seal(data: Uint8Array): Uint8Array {
+    const cipher = new TextEncoder().encode(Crypto.encode(encode(data)))
+    if (stripHeaderBytes === 0) return cipher
+
+    const padded = new Uint8Array(stripHeaderBytes + cipher.length)
+    padded.set(cipher, stripHeaderBytes)
+    return padded
   }
 }

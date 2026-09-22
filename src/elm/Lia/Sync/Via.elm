@@ -39,7 +39,7 @@ type Backend
     | Torrent { relayUrls : String, turnConfig : String }
     | WebSocket { url : String }
     | PeerJS { host : String, port_ : String, path : String, iceServers : String }
-    | SimplePeer { signaling : String, iceServers : String }
+    | SimplePeer { signaling : String, iceServers : String, conference : Bool }
     | Local
 
 
@@ -181,10 +181,19 @@ toString full via =
                         ""
                    )
 
-        SimplePeer { signaling, iceServers } ->
+        SimplePeer { signaling, iceServers, conference } ->
             "SimplePeer"
                 ++ (if full then
-                        "|" ++ signaling ++ "|" ++ iceServers
+                        "|"
+                            ++ signaling
+                            ++ "|"
+                            ++ iceServers
+                            ++ (if conference then
+                                    "|t"
+
+                                else
+                                    ""
+                               )
 
                     else
                         ""
@@ -463,13 +472,16 @@ fromString via =
             Just (PeerJS { host = host, port_ = port_, path = path, iceServers = iceServers })
 
         [ "simplepeer" ] ->
-            Just (SimplePeer { signaling = "", iceServers = "" })
+            Just (SimplePeer { signaling = "", iceServers = "", conference = False })
 
         [ "simplepeer", signaling ] ->
-            Just (SimplePeer { signaling = signaling, iceServers = "" })
+            Just (SimplePeer { signaling = signaling, iceServers = "", conference = False })
 
         [ "simplepeer", signaling, iceServers ] ->
-            Just (SimplePeer { signaling = signaling, iceServers = iceServers })
+            Just (SimplePeer { signaling = signaling, iceServers = iceServers, conference = False })
+
+        [ "simplepeer", signaling, iceServers, conference ] ->
+            Just (SimplePeer { signaling = signaling, iceServers = iceServers, conference = conference == "t" })
 
         [ "local" ] ->
             Just Local
@@ -1138,7 +1150,7 @@ view locked editable backend =
                         , iceServersHint
                         ]
 
-                SimplePeer { signaling, iceServers } ->
+                SimplePeer { signaling, iceServers, conference } ->
                     details
                         [ input
                             { active = active
@@ -1160,6 +1172,13 @@ view locked editable backend =
                             , autocomplete = Just "simplepeer-ice"
                             }
                         , iceServersHint
+                        , checkbox
+                            { active = active
+                            , value = conference
+                            , msg = CheckboxSimplePeer
+                            , label = Html.text "conference mode (large rooms)"
+                            }
+                        , fieldHint "For rooms with more than about 50 participants, e.g. a lecture hall. Instead of connecting every browser to every other one, each connects to only a few and passes messages on. Everyone in the room has to use the same setting, so share the room link after enabling it. Leave it unchecked for smaller classes."
                         ]
 
                 _ ->
@@ -1330,6 +1349,7 @@ type Msg
     | InputWebSocket String
     | InputPeerJS String String
     | InputSimplePeer String String
+    | CheckboxSimplePeer
     | InputTrystero String String
     | InputNostr String
     | CheckboxNostr
@@ -1387,6 +1407,9 @@ update msg backend =
 
         ( InputSimplePeer "ice" v, SimplePeer data ) ->
             SimplePeer { data | iceServers = v }
+
+        ( CheckboxSimplePeer, SimplePeer data ) ->
+            SimplePeer { data | conference = not data.conference }
 
         ( InputNostr v, Nostr data ) ->
             Nostr { data | relayUrls = v }

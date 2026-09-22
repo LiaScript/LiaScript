@@ -208,7 +208,9 @@ export class LiaScript {
     TTS.Service.init(elmSend)
     Script.init(elmSend)
     Swipe.init(elem, elmSend)
-    enableDragDropTouch(elem, document)
+    // press-hold mode: a quick swipe over a draggable element must scroll,
+    // only a long press starts a drag & drop (see LiaScript/LiaScript#315)
+    enableDragDropTouch(elem, document, { isPressHoldMode: true })
     Translate.init(elmSend)
     Sync.init(elmSend, Database)
     Zip.init(elmSend)
