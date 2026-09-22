@@ -159,7 +159,7 @@ init supportedBackends =
             [ Via.Ably { apiKey = "", persistent = False }
             , Via.GUN { urls = Const.gunDB_ServerURL, persistent = False }
             , Via.PeerJS { host = "", port_ = "", path = "", iceServers = "" }
-            , Via.SimplePeer { signaling = "", iceServers = "" }
+            , Via.SimplePeer { signaling = "", iceServers = "", conference = False }
             , Via.WebSocket { url = "" }
             , Via.Nostr { relayUrls = Const.nostrRelayURLs, persistent = False }
             , Via.MQTT { relayUrls = "", turnConfig = "" }
