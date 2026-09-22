@@ -1,0 +1,18 @@
+diff --git a/node_modules/@dragdroptouch/drag-drop-touch/dist/drag-drop-touch.esm.js b/node_modules/@dragdroptouch/drag-drop-touch/dist/drag-drop-touch.esm.js
+index 553901b..04dc5fd 100644
+--- a/node_modules/@dragdroptouch/drag-drop-touch/dist/drag-drop-touch.esm.js
++++ b/node_modules/@dragdroptouch/drag-drop-touch/dist/drag-drop-touch.esm.js
+@@ -514,7 +514,12 @@ var DragDropTouch = class {
+    */
+   _closestDraggable(element) {
+     for (let e = element; e !== null; e = e.parentElement) {
+-      if (e.draggable) {
++      // LiaScript: `element.draggable` is true by default for <a href> and <img>,
++      // which turned every link and image into a drag source and thus blocked
++      // touch scrolling (LiaScript/LiaScript#315). Only honour elements that
++      // explicitly opt in via the attribute, which is how LiaScript marks its
++      // own drag & drop quiz/survey sources.
++      if (e.getAttribute && e.getAttribute("draggable") === "true") {
+         return e;
+       }
+     }
