@@ -97,7 +97,7 @@ urlLiascriptCourse =
 -}
 gunDB_ServerURL : String
 gunDB_ServerURL =
-    "https://gun.defucc.me/gun, https://relay.peer.ooo/gun"
+    "https://gun.rig.airfaas.com/gun, https://relay.peer.ooo/gun"
 
 
 {-| Default Jitsi domain
