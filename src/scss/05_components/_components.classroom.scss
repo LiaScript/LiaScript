@@ -468,6 +468,24 @@
   display: inline-block;
   font-size: smaller;
   padding: 0.2rem 0.8rem;
+
+  // `Lia.Sync.Via.capacityBadge` - the measured classroom size, set apart
+  // from the descriptive badges since it's what teachers look for first
+  &--capacity {
+    border-color: rgb(var(--color-highlight));
+    cursor: help;
+    font-weight: bold;
+  }
+
+  // `Lia.Sync.Via.persistenceBadge`
+  &--persistence {
+    cursor: help;
+  }
+
+  // data kept on public third-party relays (Nostr, GUN)
+  &--warning {
+    border-color: rgb(var(--lia-warning));
+  }
 }
 
 // `Lia.Sync.Via.icon` - used in the backend dropdown, the modal title and

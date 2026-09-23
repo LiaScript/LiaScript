@@ -156,19 +156,19 @@ init supportedBackends =
     in
     { sync =
         { support =
-            [ Via.Ably { apiKey = "", persistent = False }
-            , Via.GUN { urls = Const.gunDB_ServerURL, persistent = False }
-            , Via.PeerJS { host = "", port_ = "", path = "", iceServers = "" }
-            , Via.SimplePeer { signaling = "", iceServers = "", conference = False }
+            [ Via.SimplePeer { signaling = "", iceServers = "", conference = False }
             , Via.WebSocket { url = "" }
+            , Via.PeerJS { host = "", port_ = "", path = "", iceServers = "" }
             , Via.Nostr { relayUrls = Const.nostrRelayURLs, persistent = False }
-            , Via.MQTT { relayUrls = "", turnConfig = "" }
+            , Via.GUN { urls = Const.gunDB_ServerURL, persistent = False }
             , Via.Torrent { relayUrls = "", turnConfig = "" }
+            , Via.MQTT { relayUrls = "", turnConfig = "" }
             , Via.IPFS { turnConfig = "" }
 
             --, Via.Jitsi Const.jitsi_Domain
             --, Via.Matrix { baseURL = "", userId = "", accessToken = "" }
             --, Via.P2PT Const.webTorrent_TrackerURLs
+            , Via.Ably { apiKey = "", persistent = False }
             , Via.PubNub { pubKey = "", subKey = "" }
             , Via.Edrys
             ]

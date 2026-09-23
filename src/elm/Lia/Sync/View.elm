@@ -310,7 +310,9 @@ view settings =
                                 ]
                             ]
                         , Html.div [ Attr.class "lia-classroom__badges" ]
-                            (via |> Backend.badges |> List.map Backend.badge)
+                            (List.filterMap identity [ Backend.capacityBadge via, Backend.persistenceBadge via ]
+                                ++ (via |> Backend.badges |> List.map Backend.badge)
+                            )
                         , Backend.infoOn support via
                         , if settings.fromUrl then
                             Html.text ""
@@ -634,7 +636,13 @@ option via =
         ]
         [ maybeSelect via
         , via
-            |> Maybe.map (Tuple.second >> Backend.badges >> String.join " · ")
+            |> Maybe.map
+                (\( _, backend ) ->
+                    (List.filterMap identity [ Backend.capacityTag backend, Backend.persistenceTag backend ]
+                        ++ Backend.badges backend
+                    )
+                        |> String.join " · "
+                )
             |> Maybe.map (Html.text >> List.singleton >> Html.span [ Attr.class "lia-classroom__option-tags" ])
             |> Maybe.withDefault (Html.text "")
         ]
