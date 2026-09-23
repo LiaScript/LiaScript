@@ -20,14 +20,19 @@ var WebSocket_
 var PeerJS_
 var SimplePeer_
 
-/** Report a failure back into Elm, reusing the same "error" channel that is
- * also used for connection errors, see `Lia.Sync.Update`.
+/** Report a failure of the local classroom bookkeeping (saved-classrooms
+ * table) back into Elm. This deliberately uses the advisory "warning"
+ * channel, not "error": "error" is reserved for the connection itself and
+ * makes Elm reset its state to Disconnected - while the TS sync instance
+ * here would keep running, leaving Elm believing it is offline (no own
+ * answers synced, no summaries shown) although data still flows. A failed
+ * IndexedDB write must not do that, see `Lia.Sync.Update`.
  */
-function sendError(event: Lia.Event, message: string) {
+function sendWarning(event: Lia.Event, message: string) {
   if (elmSend) {
     elmSend({
       ...event,
-      message: { cmd: 'error', param: message },
+      message: { cmd: 'warning', param: message },
       reply: true,
     })
   }
@@ -467,7 +472,7 @@ const Service = {
           }
         } catch (e: any) {
           log.warn('could not list classrooms ->', e?.message || e)
-          sendError(event, `could not load classrooms: ${e?.message || e}`)
+          sendWarning(event, `could not load classrooms: ${e?.message || e}`)
         }
 
         break
@@ -489,7 +494,7 @@ const Service = {
           }
         } catch (e: any) {
           log.warn('could not update classroom ->', e?.message || e)
-          sendError(event, `could not update classroom: ${e?.message || e}`)
+          sendWarning(event, `could not update classroom: ${e?.message || e}`)
         }
 
         break
@@ -505,7 +510,7 @@ const Service = {
           }
         } catch (e: any) {
           log.warn('could not delete classroom ->', e?.message || e)
-          sendError(event, `could not delete classroom: ${e?.message || e}`)
+          sendWarning(event, `could not delete classroom: ${e?.message || e}`)
         }
 
         break

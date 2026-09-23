@@ -5,10 +5,22 @@
  *
  * The job has to handle its own errors; a rejection is treated like a
  * completed run.
+ *
+ * A job that never settles (an IndexedDB request or Web Crypto call that
+ * hangs) would otherwise block every later trigger forever, silently: the
+ * scheduler would stay "running" with nothing ever delivered again. With
+ * `stallMs` set, a run exceeding it is reported through `onStall` and no
+ * longer counted as running, so the next (or already pending) trigger runs
+ * again. If the stalled run settles after all, its late completion starts
+ * nothing on its own.
  */
-export function coalesce(job: () => Promise<unknown>): () => void {
+export function coalesce(
+  job: () => Promise<unknown>,
+  options: { stallMs?: number; onStall?: () => void } = {}
+): () => void {
   let running = false
   let dirty = false
+  let generation = 0
 
   const run = () => {
     if (running) {
@@ -16,8 +28,21 @@ export function coalesce(job: () => Promise<unknown>): () => void {
       return
     }
     running = true
+    const mine = ++generation
+
+    let watchdog: ReturnType<typeof setTimeout> | undefined
+    if (options.stallMs) {
+      watchdog = setTimeout(() => {
+        if (generation !== mine || !running) return
+        options.onStall?.()
+        done()
+      }, options.stallMs)
+    }
 
     const done = () => {
+      // a stalled run that settles late must not disturb its successor
+      if (generation !== mine) return
+      if (watchdog !== undefined) clearTimeout(watchdog)
       running = false
       if (dirty) {
         dirty = false
