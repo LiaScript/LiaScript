@@ -3,6 +3,10 @@ module Lia.Sync.Via exposing
     , Msg
     , badge
     , badges
+    , capacityBadge
+    , capacityTag
+    , persistenceBadge
+    , persistenceTag
     , checkbox
     , eq
     , fromString
@@ -303,6 +307,176 @@ badges via =
 badge : String -> Html msg
 badge text =
     Html.span [ Attr.class "lia-badge" ] [ Html.text text ]
+
+
+{-| Theoretical classroom size of a backend (short label) and what the
+classroom benchmark harness actually showed (tooltip). Kept apart from
+`badges`, because these are measurements rather than properties: backends
+without harness coverage get no badge instead of a guessed number.
+
+All harness runs put N browsers on a single machine, so the measured limits
+mix protocol cost with the saturation of the test machine. For full-mesh
+WebRTC backends the number roughly halves once phones are in the room.
+
+-}
+capacityInfo : Backend -> Maybe ( String, String )
+capacityInfo via =
+    case via of
+        WebSocket _ ->
+            Just
+                ( "100+ users"
+                , "Theoretical: each browser holds a single socket, so the limit is your server. Tested with 25 browsers."
+                )
+
+        SimplePeer { conference } ->
+            if conference then
+                Just
+                    ( "~300 users"
+                    , "Theoretical: conference mode simulated with 300 peers. Tested with 25 real browsers."
+                    )
+
+            else
+                Just
+                    ( "~50 users"
+                    , "Full mesh, each browser holds N−1 connections. Tested with 50 browsers; with phones in the room plan for 25–30. Switch to conference mode for larger groups."
+                    )
+
+        -- Trystero strategies
+        MQTT _ ->
+            trysteroCapacity
+
+        Torrent _ ->
+            trysteroCapacity
+
+        IPFS _ ->
+            trysteroCapacity
+
+        -- full mesh only, the conference mode is not wired up for PeerJS yet
+        PeerJS _ ->
+            Just
+                ( "~40 users"
+                , "Theoretical: the coordinator keeps a link to everyone and is a single point of failure. Tested with 25 browsers."
+                )
+
+        Nostr _ ->
+            thirdPartyRelayCapacity
+
+        GUN _ ->
+            thirdPartyRelayCapacity
+
+        PubNub _ ->
+            Just
+                ( "25 users"
+                , "Tested with 25 browsers; limited by 32 KiB per message and the free-tier quotas."
+                )
+
+        Ably _ ->
+            Just
+                ( "< 25 users (free tier)"
+                , "The free tier allows 50 messages/s per channel; 25 browsers already reach 56–103/s while joining and typing. A class needs a paid plan."
+                )
+
+        _ ->
+            Nothing
+
+
+trysteroCapacity : Maybe ( String, String )
+trysteroCapacity =
+    Just
+        ( "~45 users"
+        , "Hard edge at about 45 (~20 prepared offers per peer): 40 browsers join within a second, 45 take over a minute, at 50 the last ones never get in. Requires https."
+        )
+
+
+thirdPartyRelayCapacity : Maybe ( String, String )
+thirdPartyRelayCapacity =
+    Just
+        ( "25 users"
+        , "Tested with 25 browsers; beyond that unknown, as the limit is the third-party relay."
+        )
+
+
+{-| Plain-text capacity label, used in the backend dropdown.
+-}
+capacityTag : Backend -> Maybe String
+capacityTag =
+    capacityInfo >> Maybe.map Tuple.first
+
+
+{-| Highlighted pill badge for the capacity, rendered in front of `badges`.
+-}
+capacityBadge : Backend -> Maybe (Html msg)
+capacityBadge =
+    capacityInfo
+        >> Maybe.map
+            (\( label, hint ) ->
+                Html.span
+                    [ Attr.class "lia-badge lia-badge--capacity"
+                    , Attr.title hint
+                    ]
+                    [ Html.text label ]
+            )
+
+
+{-| Whether the room's data outlives the session. GUN, Nostr and Ably can
+keep it on the server if the `persistent` flag is switched on; the tag
+follows that flag. Worded for teachers rather than as "persistent", and the
+tooltip says who holds the data. Public relays are flagged as a warning,
+since anyone running them can keep what is stored there.
+-}
+persistenceInfo : Backend -> Maybe { label : String, hint : String, warn : Bool }
+persistenceInfo via =
+    let
+        state persistent whoHolds warn =
+            Just <|
+                if persistent then
+                    { label = "Saved on server"
+                    , hint = whoHolds ++ ", so the class can continue later."
+                    , warn = warn
+                    }
+
+                else
+                    { label = "Gone when class ends"
+                    , hint = "Chat, answers and notes only live in the participants' browsers. When the last one leaves, the room is empty. Saving on the server can be switched on."
+                    , warn = False
+                    }
+    in
+    case via of
+        Ably { persistent } ->
+            state persistent "Stored on Ably under your account" False
+
+        Nostr { persistent } ->
+            state persistent "Stored on public third-party relays; anyone running a relay can keep the data" True
+
+        GUN { persistent } ->
+            state persistent "Stored on public third-party relays; anyone running a relay can keep the data" True
+
+        _ ->
+            Nothing
+
+
+{-| Plain-text persistence label for the backend dropdown, where nothing is
+configured yet, so it only says that saving is possible.
+-}
+persistenceTag : Backend -> Maybe String
+persistenceTag =
+    persistenceInfo >> Maybe.map (always "Can save on server")
+
+
+{-| Pill badge for the persistence state, rendered after the capacity badge.
+-}
+persistenceBadge : Backend -> Maybe (Html msg)
+persistenceBadge =
+    persistenceInfo
+        >> Maybe.map
+            (\{ label, hint, warn } ->
+                Html.span
+                    [ Attr.class "lia-badge lia-badge--persistence"
+                    , Attr.classList [ ( "lia-badge--warning", warn ) ]
+                    , Attr.title hint
+                    ]
+                    [ Html.text label ]
+            )
 
 
 {-| A one-line description shown next to the backend's icon and name, above
@@ -951,7 +1125,7 @@ view locked editable backend =
                             { active = active
                             , value = persistent
                             , msg = CheckboxGun
-                            , label = Html.text "persistent storage"
+                            , label = Html.text "save class data on server"
                             }
                         , fieldHint "Writes the room's state to the relay server(s) so it survives after everyone disconnects — nothing is ever cached in your own browser either way. Left unchecked, the room only exists in the relay's memory and disappears once it empties."
                         ]
@@ -972,7 +1146,7 @@ view locked editable backend =
                             { active = active
                             , value = persistent
                             , msg = CheckboxNostr
-                            , label = Html.text "persistent storage"
+                            , label = Html.text "save class data on server"
                             }
                         , fieldHint "Publishes periodic full-document snapshots to the relay(s) as durable NIP-01 addressable events, so the room survives after everyone disconnects — nothing is ever cached in your own browser either way. Left unchecked, the room only exists as long as a relay keeps the live event stream around."
                         ]
@@ -1076,7 +1250,7 @@ view locked editable backend =
                             { active = active
                             , value = persistent
                             , msg = CheckboxAbly
-                            , label = Html.text "persistent storage"
+                            , label = Html.text "save class data on server"
                             }
                         , fieldHint "Uses Ably's LiveObjects to keep the chat and modified code available after everyone disconnects, retained for up to 90 days by default. Left unchecked, the state is dropped once the room empties."
                         ]
