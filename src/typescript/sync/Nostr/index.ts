@@ -11,6 +11,33 @@ import { Crypto } from '../Crypto'
 const NOSTR_TOOLS_URL =
   'https://cdn.jsdelivr.net/npm/nostr-tools@2/lib/nostr.bundle.js'
 
+/** The Nostr key this device uses in `room`, made once and kept in
+ * localStorage. A relay replaces a persistent snapshot only under the same
+ * (kind, key, room): with a new key per session every reload, every pupil
+ * and every day left one more full snapshot in the room, which nobody can
+ * delete (NIP-09: only its author) and every joiner downloads. With this one
+ * a room holds one per device that was ever in it. Per room rather than per
+ * device, since every event is signed with it on public relays - one key
+ * would tie a device's rooms together. Random rather than derived: no
+ * crypto.subtle, which a plain-http classroom address does not have.
+ * undefined (a key per session, as before) where localStorage is not
+ * available. */
+function roomKey(room: string): Uint8Array | undefined {
+  const name = 'lia-nostr-key:' + room
+  try {
+    let hex = localStorage.getItem(name)
+    if (!hex || !/^[0-9a-f]{64}$/.test(hex)) {
+      hex = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) =>
+        b.toString(16).padStart(2, '0'),
+      ).join('')
+      localStorage.setItem(name, hex)
+    }
+    return Uint8Array.from(hex.match(/../g)!, (h) => parseInt(h, 16))
+  } catch (e) {
+    return undefined
+  }
+}
+
 export class Sync extends Base.Sync {
   private transport?: NostrTransport
   private relayUrls?: string[]
@@ -76,6 +103,7 @@ export class Sync extends Base.Sync {
         finalizeEvent: NostrTools.finalizeEvent,
         getPublicKey: NostrTools.getPublicKey,
         SimplePool: ReconnectingPool,
+        secretKey: this.persistent ? roomKey(id) : undefined,
       })
 
       this.provider = new GenericProvider(
