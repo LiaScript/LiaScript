@@ -116,4 +116,4 @@ webTorrent_TrackerURLs =
 -}
 nostrRelayURLs : String
 nostrRelayURLs =
-    "wss://relay.damus.io, wss://nos.lol, wss://nostr.mom"
+    "wss://relay.edufeed.org, wss://nos.lol, wss://nostr.mom"
