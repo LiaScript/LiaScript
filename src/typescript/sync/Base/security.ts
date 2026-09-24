@@ -36,7 +36,12 @@ export function wrapTransport(
   if (!password) return transport
 
   return {
-    connect: (config) => transport.connect(config),
+    // A transport that stores frames of its own for later delivery (Nostr's
+    // persistent snapshot) builds them down there, under this wrapper: they
+    // went to the relay in the clear and came back as frames we could not
+    // open - a password room was never restored. `sealFrame` hands it our
+    // encryption; what it delivers from storage we then open like any frame.
+    connect: (config) => transport.connect({ ...config, sealFrame: seal }),
     disconnect: () => transport.disconnect(),
 
     send: (data: Uint8Array) => transport.send(seal(data)),
@@ -81,6 +86,13 @@ export function wrapTransport(
 
     get expectedRttMs() {
       return transport.expectedRttMs
+    },
+
+    // Without it a password room ran without compression, and a frame a
+    // transport builds itself (see sealFrame) carries the compression flag
+    // byte its hint promises - which the provider then misread.
+    get preferredCompressMinBytes() {
+      return transport.preferredCompressMinBytes
     },
   }
 
