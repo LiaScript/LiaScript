@@ -16,6 +16,12 @@ class LiaDB {
   private db: any
   private version: number
 
+  /** Resolves as soon as the connection requested by the latest `open()` has
+   * been assigned to `this.db`. `open()` is fired without being awaited and
+   * the first `load`/`store` events arrive right after it, so every access to
+   * `this.db` has to wait for this first, see `open()`. */
+  private opening: Promise<void> = Promise.resolve()
+
   /** One shared, already-opened connection per course database, see
    * `openShared_()`. */
   private dbCache: { [uidDB: string]: Promise<Dexie> } = {}
@@ -117,14 +123,11 @@ class LiaDB {
   async open(uidDB: string, versionDB: number, init?: Record) {
     this.version = versionDB
 
-    try {
-      // the session connection is the very same instance that `openShared_()`
-      // hands out, so `deleteIndex()` only has to close one of them
-      this.db = await this.openShared_(uidDB)
-    } catch (e: any) {
-      log.warn('DB: open -> ', e.message)
-      this.db = null
-    }
+    // has to be assigned synchronously: `this.db` is only set after an await,
+    // and on a reload the `load` events for the first slide are handled right
+    // after this call, while `this.db` would still be `null`
+    this.opening = this.connect_(uidDB)
+    await this.opening
 
     if (init && this.db) {
       const item = await this.db[init.table].get({
@@ -133,6 +136,22 @@ class LiaDB {
       })
 
       return item
+    }
+  }
+
+  /** **private:** Assign the shared connection of a course database to
+   * `this.db`, see `open()`.
+   *
+   * @param uidDB - A string URL or URI, which identifies the source of a course.
+   */
+  private async connect_(uidDB: string) {
+    try {
+      // the session connection is the very same instance that `openShared_()`
+      // hands out, so `deleteIndex()` only has to close one of them
+      this.db = await this.openShared_(uidDB)
+    } catch (e: any) {
+      log.warn('DB: open -> ', e.message)
+      this.db = null
     }
   }
 
@@ -146,6 +165,8 @@ class LiaDB {
    *    store({table: 'quiz', id: 12, data: {...any}})
    */
   async store(record: Record, versionDB?: number) {
+    await this.opening
+
     if (!this.db || this.version === 0) return
 
     log.warn(
@@ -169,6 +190,8 @@ class LiaDB {
    *    load({table: 'task', id: 12})
    */
   async load(record: Record, versionDB?: number) {
+    await this.opening
+
     if (!this.db) return
 
     log.info('loading => ', record.table, record.id)
@@ -198,6 +221,8 @@ class LiaDB {
    *    loadAll('quiz')
    */
   async loadAll(table: string, versionDB?: number) {
+    await this.opening
+
     if (!this.db) return []
 
     const rows = await this.db[table]
@@ -214,6 +239,8 @@ class LiaDB {
    * @param id - slide number
    */
   async slide(id: number) {
+    await this.opening
+
     try {
       let item = await this.db.offline.get({
         id: 0,
@@ -236,6 +263,8 @@ class LiaDB {
    * @param modify - transformation function
    */
   async transaction(record: Record, modify: (data: any) => any) {
+    await this.opening
+
     if (!this.db || this.version === 0) return
 
     let db = this.db
