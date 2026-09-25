@@ -1,6 +1,7 @@
 module Lia.Markdown.Survey.Types exposing
     ( Analysis(..)
     , Element
+    , Options
     , State(..)
     , Survey
     , Type(..)
@@ -23,6 +24,14 @@ type alias Element =
     , state : State
     , errorMsg : Maybe String
     , scriptID : Maybe Int
+    , opt : Options
+    }
+
+
+type alias Options =
+    { randomize : Maybe (List Int)
+    , score : Maybe Float
+    , updates_allowed : Bool
     }
 
 

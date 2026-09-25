@@ -27,22 +27,24 @@ import Combine
         , withState
         )
 import Dict
+import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (inlines, line, parse_inlines)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Parser as Block
 import Lia.Markdown.Quiz.Block.Types as BlockTypes
 import Lia.Markdown.Quiz.Parser exposing (maybeJS)
-import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..), analysisType)
+import Lia.Markdown.Survey.Types exposing (Options, State(..), Survey, Type(..), analysisType)
 import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
+import PseudoRandom
 
 
-parse : Parser Context Markdown.Block -> Parser Context (Survey Markdown.Block)
-parse blocks =
-    survey blocks |> andThen modify_State
+parse : Parser Context Markdown.Block -> Parameters -> Parser Context (Survey Markdown.Block)
+parse blocks attr =
+    survey blocks |> andThen (modify_State attr)
 
 
 survey : Parser Context Markdown.Block -> Parser Context (Survey Markdown.Block)
@@ -148,7 +150,7 @@ whole group is visually offset under a preceding question) that never made it
 onto the stack anywhere. The two failure modes this specifically guards
 against: (1) an absolute column on its own double-counts already-active
 indentation (an option one level inside a list would require the list's own
-width twice); (2) a *marker-width-only* measurement (ignoring the current
+width twice); (2) a _marker-width-only_ measurement (ignoring the current
 absolute column entirely) works for constructs reached through
 `Lia.Markdown.Parser.blocks`'s own dispatch, which already strips ambient
 indentation before this parser ever runs - but breaks for the (structurally
@@ -249,8 +251,8 @@ questions =
         |> many1
 
 
-modify_State : Survey body -> Parser Context (Survey body)
-modify_State survey_ =
+modify_State : Parameters -> Survey body -> Parser Context (Survey body)
+modify_State attr survey_ =
     let
         state =
             let
@@ -283,13 +285,69 @@ modify_State survey_ =
     succeed survey_
         |> ignore
             (maybeJS
-                |> map (add_state state)
+                |> map (add_state state survey_.survey attr)
                 |> andThen modifyState
             )
 
 
-add_state : State -> Maybe Int -> Context -> Context
-add_state state id c =
+getOptions : Context -> Type x -> Parameters -> Options
+getOptions state survey_ attr =
+    { randomize =
+        if Attributes.isSet "data-randomize" attr then
+            randomize survey_ state.seed
+
+        else
+            Nothing
+    , score =
+        attr
+            |> Attributes.get "data-score"
+            |> Maybe.andThen String.toFloat
+    , updates_allowed =
+        Attributes.isSet "data-updates-allowed" attr
+            || Attributes.isSet "data-updates" attr
+    }
+
+
+randomize :
+    Type x
+    -> Int
+    -> Maybe (List Int)
+randomize typeOf seed =
+    case typeOf of
+        Vector _ vec _ ->
+            Just
+                (PseudoRandom.integerSequence
+                    (List.length vec)
+                    seed
+                )
+
+        Matrix _ _ _ vec ->
+            Just
+                (PseudoRandom.integerSequence
+                    (List.length vec)
+                    seed
+                )
+
+        DragAndDrop vec ->
+            Just
+                (PseudoRandom.integerSequence
+                    (List.length vec)
+                    seed
+                )
+
+        Select vec ->
+            Just
+                (PseudoRandom.integerSequence
+                    (List.length vec)
+                    seed
+                )
+
+        _ ->
+            Nothing
+
+
+add_state : State -> Type x -> Parameters -> Maybe Int -> Context -> Context
+add_state state survey_ attr id c =
     { c
         | survey_vector =
             Array.push
@@ -297,6 +355,7 @@ add_state state id c =
                 , state = state
                 , errorMsg = Nothing
                 , scriptID = id
+                , opt = getOptions c survey_ attr
                 }
                 c.survey_vector
     }

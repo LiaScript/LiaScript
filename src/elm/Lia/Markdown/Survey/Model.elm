@@ -2,6 +2,7 @@ module Lia.Markdown.Survey.Model exposing
     ( getErrorMessage
     , get_drop_state
     , get_matrix_state
+    , get_options
     , get_select_state
     , get_submission_state
     , get_text_state
@@ -10,7 +11,7 @@ module Lia.Markdown.Survey.Model exposing
 
 import Array
 import Dict
-import Lia.Markdown.Survey.Types exposing (State(..), Vector)
+import Lia.Markdown.Survey.Types exposing (Options, State(..), Vector)
 
 
 getErrorMessage : Int -> Vector -> Maybe String
@@ -24,6 +25,14 @@ get_submission_state vector idx =
         |> Array.get idx
         |> Maybe.map .submitted
         |> Maybe.withDefault False
+
+
+get_options : Vector -> Int -> Options
+get_options vector idx =
+    vector
+        |> Array.get idx
+        |> Maybe.map .opt
+        |> Maybe.withDefault { randomize = Nothing, score = Nothing, updates_allowed = False }
 
 
 get_text_state : Vector -> Int -> String

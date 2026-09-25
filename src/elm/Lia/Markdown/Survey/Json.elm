@@ -142,11 +142,24 @@ toVector =
 
 toElement : JD.Decoder Element
 toElement =
-    JD.map4 Element
+    let
+        set : Bool -> State -> Maybe String -> Element
+        set submitted state errorMsg =
+            { submitted = submitted
+            , state = state
+            , errorMsg = errorMsg
+            , scriptID = Nothing
+            , opt =
+                { randomize = Nothing
+                , score = Nothing
+                , updates_allowed = False
+                }
+            }
+    in
+    JD.map3 set
         (JD.field "submitted" JD.bool)
         (JD.field "state" toState)
         (JD.maybe (JD.field "errorMessage" JD.string))
-        (JD.succeed Nothing)
 
 
 toState : JD.Decoder State
