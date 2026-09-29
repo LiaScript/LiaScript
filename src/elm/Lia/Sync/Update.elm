@@ -1,6 +1,7 @@
 module Lia.Sync.Update exposing
     ( Msg(..)
     , SyncMsg(..)
+    , decodeEntries
     , handle
     , isConnected
     , synchronize
@@ -847,96 +848,83 @@ synchronize model json =
                 |> Return.val
 
         Ok ( "code", param ) ->
-            case
-                param
-                    |> dataDecoder (JD.array Code.decoder)
-                    |> Result.map (dataMerge model.sync.data.code)
-            of
-                Ok dataUpdate ->
-                    let
-                        sync =
-                            model.sync
+            let
+                ( new, errors ) =
+                    decodeEntries (JD.array Code.decoder) param
 
-                        data =
-                            sync.data
-                    in
-                    { model
-                        | sync =
-                            { sync
-                                | data =
-                                    { data
-                                        | code = dataUpdate
-                                    }
+                sync =
+                    model.sync
+
+                data =
+                    sync.data
+            in
+            { model
+                | sync =
+                    { sync
+                        | data =
+                            { data
+                                | code = dataMerge data.code new
                             }
                     }
-                        |> Return.val
-
-                Err info ->
-                    model
-                        |> Return.val
-                        |> warn "decoding code" (JD.errorToString info)
+            }
+                |> Return.val
+                |> warnAll "decoding code" errors
 
         Ok ( "quiz", param ) ->
-            case param |> dataDecoder (Container.decoder Quiz.decoder) of
-                Ok new ->
-                    let
-                        sync =
-                            model.sync
+            let
+                ( new, errors ) =
+                    decodeEntries (Container.decoder Quiz.decoder) param
 
-                        data =
-                            sync.data
+                sync =
+                    model.sync
 
-                        dataUpdate =
-                            dataMerge data.quiz new
-                    in
-                    { model
-                        | sync = { sync | data = { data | quiz = dataUpdate } }
-                        , sections =
-                            lockSections Quiz.lockAnswered
-                                .quiz_vector
-                                (\v s -> { s | quiz_vector = v })
-                                (id model.sync.state)
-                                dataUpdate
-                                (List.map Tuple.first new)
-                                model.sections
-                    }
-                        |> Return.val
+                data =
+                    sync.data
 
-                Err info ->
-                    model
-                        |> Return.val
-                        |> warn "decoding quiz" (JD.errorToString info)
+                dataUpdate =
+                    dataMerge data.quiz new
+            in
+            { model
+                | sync = { sync | data = { data | quiz = dataUpdate } }
+                , sections =
+                    lockSections Quiz.lockAnswered
+                        .quiz_vector
+                        (\v s -> { s | quiz_vector = v })
+                        (id model.sync.state)
+                        dataUpdate
+                        (List.map Tuple.first new)
+                        model.sections
+            }
+                |> Return.val
+                |> warnAll "decoding quiz" errors
 
         Ok ( "survey", param ) ->
-            case param |> dataDecoder (Container.decoder Survey.decoder) of
-                Ok new ->
-                    let
-                        sync =
-                            model.sync
+            let
+                ( new, errors ) =
+                    decodeEntries (Container.decoder Survey.decoder) param
 
-                        data =
-                            sync.data
+                sync =
+                    model.sync
 
-                        dataUpdate =
-                            dataMerge data.survey new
-                    in
-                    { model
-                        | sync = { sync | data = { data | survey = dataUpdate } }
-                        , sections =
-                            lockSections Survey.lockAnswered
-                                .survey_vector
-                                (\v s -> { s | survey_vector = v })
-                                (id model.sync.state)
-                                dataUpdate
-                                (List.map Tuple.first new)
-                                model.sections
-                    }
-                        |> Return.val
+                data =
+                    sync.data
 
-                Err info ->
-                    model
-                        |> Return.val
-                        |> warn "decoding survey" (JD.errorToString info)
+                dataUpdate =
+                    dataMerge data.survey new
+            in
+            { model
+                | sync = { sync | data = { data | survey = dataUpdate } }
+                , sections =
+                    lockSections Survey.lockAnswered
+                        .survey_vector
+                        (\v s -> { s | survey_vector = v })
+                        (id model.sync.state)
+                        dataUpdate
+                        (List.map Tuple.first new)
+                        model.sections
+            }
+                |> Return.val
+                |> warnAll "decoding survey" errors
 
         Ok ( "ownership", param ) ->
             case JD.decodeValue JD.bool param of
@@ -975,6 +963,14 @@ synchronize model json =
 warn : String -> String -> Return model msg sub -> Return model msg sub
 warn what info =
     Return.batchEvent (Console.warn ("Sync: " ++ what ++ " -> " ++ info))
+
+
+{-| One console warning per broken entry of a partially decoded sync batch,
+see `decodeEntries` - the good entries have already been applied by then.
+-}
+warnAll : String -> List String -> Return model msg sub -> Return model msg sub
+warnAll what errors return =
+    List.foldl (warn what) return errors
 
 
 {-| Reply of the `"owner_token"` event - a freshly minted secret and its
@@ -1024,15 +1020,54 @@ connectAck =
         |> JDP.optional "ownerToken" JD.string ""
 
 
-dataDecoder : JD.Decoder data -> JD.Value -> Result JD.Error (List ( Int, data ))
-dataDecoder data =
-    JD.decodeValue
-        (JD.list
+{-| Decode a `[{ id, data }, ...]` sync payload entry by entry. The TS side
+re-dumps _every_ section on any change (see `fireQuizSurvey` in
+`sync/Base/db.ts`), so a single undecodable entry - one stale record from an
+older client or a persisting relay is enough - must not take the whole batch
+down with it: that would silently freeze every quiz/survey summary from that
+moment on, including the user's own answers. Good entries are returned as
+before, each broken one as a message naming its position and, when known,
+its section id.
+-}
+decodeEntries : JD.Decoder data -> JD.Value -> ( List ( Int, data ), List String )
+decodeEntries data value =
+    case JD.decodeValue (JD.list JD.value) value of
+        Err info ->
+            ( [], [ JD.errorToString info ] )
+
+        Ok entries ->
+            entries
+                |> List.indexedMap (decodeEntry data)
+                |> List.foldr
+                    (\result ( oks, errs ) ->
+                        case result of
+                            Ok ok ->
+                                ( ok :: oks, errs )
+
+                            Err err ->
+                                ( oks, err :: errs )
+                    )
+                    ( [], [] )
+
+
+decodeEntry : JD.Decoder data -> Int -> JD.Value -> Result String ( Int, data )
+decodeEntry data position value =
+    let
+        describe info =
+            case JD.decodeValue (JD.field "id" JD.int) value of
+                Ok id_ ->
+                    "entry " ++ String.fromInt position ++ " (id " ++ String.fromInt id_ ++ "): " ++ info
+
+                Err _ ->
+                    "entry " ++ String.fromInt position ++ ": " ++ info
+    in
+    value
+        |> JD.decodeValue
             (JD.map2 Tuple.pair
                 (JD.field "id" JD.int)
                 (JD.field "data" data)
             )
-        )
+        |> Result.mapError (JD.errorToString >> describe)
 
 
 dataMerge : Dict Int data -> List ( Int, data ) -> Dict Int data

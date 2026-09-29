@@ -94,7 +94,8 @@ export function allowedProtocol(url: string) {
     url.startsWith('ftps:') ||
     url.startsWith('magnet:') ||
     url.startsWith('bitcoin:') ||
-    url.startsWith('matrix:')
+    url.startsWith('matrix:') ||
+    url.startsWith('agent:')
   )
 }
 

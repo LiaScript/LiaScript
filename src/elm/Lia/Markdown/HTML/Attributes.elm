@@ -324,6 +324,10 @@ allowedProtocol url =
         "matrix" ->
             True
 
+        -- experimental protocol
+        "agent" ->
+            True
+
         _ ->
             False
 
