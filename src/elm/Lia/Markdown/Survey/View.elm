@@ -705,14 +705,21 @@ textBlock name str =
         ]
 
 
-viewError : Maybe String -> Html msg
-viewError message =
+viewError : String -> Maybe String -> Html msg
+viewError default message =
     case message of
         Nothing ->
             Html.text ""
 
         Just error ->
-            Html.div [ Attr.class "lia-quiz__feedback text-error" ] [ Html.text error ]
+            Html.div [ Attr.class "lia-quiz__feedback text-error" ]
+                [ Html.text <|
+                    if error == "" then
+                        default
+
+                    else
+                        error
+                ]
 
 
 view_survey :
@@ -746,9 +753,22 @@ view_survey config attr class model idx fn =
         )
         [ fn submitted
         , submit_button config submitted idx
+        , if submitted then
+            Html.div
+                [ Attr.class "lia-quiz__feedback text-success" ]
+                [ Html.text (surveySubmitted config.lang) ]
+
+          else
+            Html.text ""
         , model
             |> getErrorMessage idx
             |> viewError
+                (if class == "matrix" then
+                    Translations.surveyErrorMatrix config.lang
+
+                 else
+                    Translations.surveyError config.lang
+                )
         ]
 
 
