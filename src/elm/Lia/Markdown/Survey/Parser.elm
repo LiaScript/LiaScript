@@ -305,9 +305,11 @@ getOptions state survey_ attr =
     , updates_allowed =
         Attributes.isSet "data-updates-allowed" attr
             || Attributes.isSet "data-updates" attr
+            || Attributes.isSet "data-update" attr
     , incompleteness_allowed =
         Attributes.isSet "data-incompleteness-allowed" attr
             || Attributes.isSet "data-incompleteness" attr
+            || Attributes.isSet "data-incomplete" attr
     }
 
 
