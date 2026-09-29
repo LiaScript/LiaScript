@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 29/09/2026
+
+- feat: surveys can be shuffled via `data-randomize`
+- feat: surveys accept `data-updates-allowed` (short: `data-updates`, `data-update`) so answers can be changed after submitting
+- feat: surveys accept `data-incompleteness-allowed` (short: `data-incompleteness`, `data-incomplete`) so partially answered surveys can be submitted
+- feat: conference mode for the SimplePeer classroom backend, for larger groups than a full mesh can handle
+- feat: experimental `agent:` URL protocol
+- fix: classrooms missing updates
+- fix: reconstruction of the first slide's state
+- fix: Nostr persistence in password rooms, one snapshot per device and room instead of one per session
+- fix: Ably persistence (y-generic upgrade)
+- fix: touch scrolling (e.g. in the table of contents) blocked by the drag & drop touch polyfill, drag & drop now starts on press-hold
+- fix: blocking mode and light-mode definition
+- improve: survey error messages, now translated
+- improve: classroom backends show information on supported user counts, better ordering of backends
+- improve: new default servers – GunDB (`gun.rig.airfaas.com`) and Nostr relay `relay.edufeed.org`
+- chore: y-generic upgrades (v1.9.8), npm allow-scripts added
+
+
 ## [2.0.1] - 18/09/2026
 
 - fix: classroom details table lists every peer that answered, answers are re-read once their keys become readable
