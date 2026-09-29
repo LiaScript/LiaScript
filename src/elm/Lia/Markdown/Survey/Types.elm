@@ -32,6 +32,7 @@ type alias Options =
     { randomize : Maybe (List Int)
     , score : Maybe Float
     , updates_allowed : Bool
+    , incompleteness_allowed : Bool
     }
 
 

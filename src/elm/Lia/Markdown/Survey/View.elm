@@ -734,9 +734,6 @@ view_survey config attr class model idx fn =
     let
         submitted =
             get_submission_state model idx
-
-        opt =
-            get_options model idx
     in
     Html.div
         (annotation
@@ -775,27 +772,21 @@ view_survey config attr class model idx fn =
 submit_button : Config Main.Msg -> Bool -> Int -> Html Main.Msg
 submit_button config submitted idx =
     Html.div [ Attr.class "lia-quiz__control" ]
-        [ if submitted then
-            btn
+        [ btn
+            (if submitted then
                 { msg = Nothing
                 , tabbable = False
                 , title = surveySubmitted config.lang
                 }
-                [ Attr.class "lia-btn--outline lia-quiz__check"
-                , A11y_Role.button
-                ]
-                [ Html.text (surveySubmitted config.lang) ]
 
-          else
-            btn
+             else
                 { msg = Just <| Main.UpdateSurvey (Submit idx)
                 , tabbable = True
                 , title = surveySubmit config.lang
                 }
-                [ Attr.class "lia-btn--outline lia-quiz__check"
-                , A11y_Role.button
-                ]
-                [ Html.text (surveySubmit config.lang) ]
+            )
+            [ Attr.class "lia-btn--outline lia-quiz__check" ]
+            [ Html.text (surveySubmit config.lang) ]
         ]
 
 

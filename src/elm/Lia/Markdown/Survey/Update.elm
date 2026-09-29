@@ -104,7 +104,7 @@ update classroom sectionID scripts msg vector =
                 Just element ->
                     case element.scriptID of
                         Nothing ->
-                            if submittable vector id then
+                            if element.opt.incompleteness_allowed || submittable vector id then
                                 let
                                     new_vector =
                                         submit vector id

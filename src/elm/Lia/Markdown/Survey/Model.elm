@@ -32,7 +32,12 @@ get_options vector idx =
     vector
         |> Array.get idx
         |> Maybe.map .opt
-        |> Maybe.withDefault { randomize = Nothing, score = Nothing, updates_allowed = False }
+        |> Maybe.withDefault
+            { randomize = Nothing
+            , score = Nothing
+            , updates_allowed = False
+            , incompleteness_allowed = False
+            }
 
 
 get_text_state : Vector -> Int -> String

@@ -153,6 +153,7 @@ toElement =
                 { randomize = Nothing
                 , score = Nothing
                 , updates_allowed = False
+                , incompleteness_allowed = False
                 }
             }
     in
