@@ -98,7 +98,7 @@ urlLiascriptCourse =
 -}
 gunDB_ServerURL : String
 gunDB_ServerURL =
-    "https://gun.defucc.me/gun, https://relay.peer.ooo/gun"
+    "https://gun.rig.airfaas.com/gun, https://relay.peer.ooo/gun"
 
 
 {-| Indicator for the Visual Studio Web extension.
@@ -127,4 +127,4 @@ webTorrent_TrackerURLs =
 -}
 nostrRelayURLs : String
 nostrRelayURLs =
-    "wss://relay.damus.io, wss://nos.lol, wss://nostr.mom"
+    "wss://relay.edufeed.org, wss://nos.lol, wss://nostr.mom"
