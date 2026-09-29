@@ -47,6 +47,7 @@ type Msg sub
     | VectorUpdate Int String
     | MatrixUpdate Int Int String
     | Submit Int
+    | Reactivate Int
     | Handle Event
     | Script (Script.Msg sub)
     | None
@@ -99,6 +100,19 @@ update classroom sectionID scripts msg vector =
         --        update sectionID scripts (Submit id) vector
         --    else
         --        Return.val vector
+        Reactivate id ->
+            case vector |> Array.get id of
+                Just element ->
+                    if element.submitted then
+                        set_state vector id { element | submitted = False }
+                            |> Return.val
+
+                    else
+                        Return.val vector
+
+                _ ->
+                    Return.val vector
+
         Submit id ->
             case vector |> Array.get id of
                 Just element ->

@@ -12,6 +12,7 @@ import I18n.Translations as Translations
         ( surveySubmit
         , surveySubmitted
         , surveyText
+        , surveyUpdate
         )
 import Json.Decode as JD
 import Json.Encode as JE
@@ -734,6 +735,9 @@ view_survey config attr class model idx fn =
     let
         submitted =
             get_submission_state model idx
+
+        opt =
+            get_options model idx
     in
     Html.div
         (annotation
@@ -749,7 +753,7 @@ view_survey config attr class model idx fn =
             attr
         )
         [ fn submitted
-        , submit_button config submitted idx
+        , submit_button config opt.updates_allowed submitted idx
         , if submitted then
             Html.div
                 [ Attr.class "lia-quiz__feedback text-success" ]
@@ -769,24 +773,40 @@ view_survey config attr class model idx fn =
         ]
 
 
-submit_button : Config Main.Msg -> Bool -> Int -> Html Main.Msg
-submit_button config submitted idx =
+submit_button : Config Main.Msg -> Bool -> Bool -> Int -> Html Main.Msg
+submit_button config updates_allowed submitted idx =
     Html.div [ Attr.class "lia-quiz__control" ]
         [ btn
-            (if submitted then
-                { msg = Nothing
-                , tabbable = False
-                , title = surveySubmitted config.lang
-                }
-
-             else
+            (if not submitted then
                 { msg = Just <| Main.UpdateSurvey (Submit idx)
                 , tabbable = True
                 , title = surveySubmit config.lang
                 }
+
+             else if updates_allowed then
+                { msg = Just <| Main.UpdateSurvey (Reactivate idx)
+                , tabbable = True
+                , title = surveyUpdate config.lang
+                }
+
+             else
+                { msg = Nothing
+                , tabbable = False
+                , title = surveySubmitted config.lang
+                }
             )
             [ Attr.class "lia-btn--outline lia-quiz__check" ]
-            [ Html.text (surveySubmit config.lang) ]
+            [ Html.text
+                (if not submitted then
+                    surveySubmit config.lang
+
+                 else if updates_allowed then
+                    surveyUpdate config.lang
+
+                 else
+                    surveySubmit config.lang
+                )
+            ]
         ]
 
 
