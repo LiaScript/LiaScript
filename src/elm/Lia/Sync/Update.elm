@@ -34,6 +34,7 @@ import Lia.Sync.Types
         , decodePeers
         , fromClassroomMode
         , id
+        , restoreSaved
         , toClassroomMode
         )
 import Lia.Sync.Via as Backend exposing (Backend)
@@ -310,25 +311,31 @@ update session model msg =
 
                 ( "classrooms", param ) ->
                     let
-                        saved =
-                            param
-                                |> JD.decodeValue Classroom.decoder
-                                |> Result.withDefault sync.saved
+                        -- a room from the URL takes the name it was saved
+                        -- with, before the generic prefill below
+                        restored =
+                            restoreSaved
+                                { sync
+                                    | saved =
+                                        param
+                                            |> JD.decodeValue Classroom.decoder
+                                            |> Result.withDefault sync.saved
+                                }
 
                         -- prefill "Your name" from the most recently used
                         -- classroom, so returning users don't have to
                         -- retype it every time they open the dialog
                         name =
-                            if String.isEmpty sync.name then
-                                saved
+                            if String.isEmpty restored.name then
+                                restored.saved
                                     |> List.head
                                     |> Maybe.andThen .name
-                                    |> Maybe.withDefault sync.name
+                                    |> Maybe.withDefault restored.name
 
                             else
-                                sync.name
+                                restored.name
                     in
-                    { model | sync = { sync | saved = saved, name = name } }
+                    { model | sync = { restored | name = name } }
                         |> Return.val
 
                 _ ->
