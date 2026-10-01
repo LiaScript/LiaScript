@@ -135,8 +135,7 @@ elements =
             |> checkQuiz
         , horizontal_line
         , md_annotations
-            |> map Markdown.Survey
-            |> andMap (Survey.parse blocks)
+            |> andThen (\attr -> Survey.parse blocks attr |> map (Markdown.Survey attr))
         , md_annotations
             |> andThen (\attr -> Quiz.parse blocks attr |> map (Markdown.Quiz attr))
             |> andMap solution
