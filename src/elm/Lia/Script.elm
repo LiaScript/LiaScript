@@ -43,8 +43,9 @@ import Lia.View
 import List.Extra
 import Return exposing (Return)
 import Service.Database
-import Service.Event exposing (Event)
+import Service.Event as Event exposing (Event)
 import Service.Resource
+import Service.Sync
 import Session exposing (Screen, Session)
 import Url
 
@@ -117,7 +118,18 @@ load_first_slide session model =
             , to_do =
                 Service.Database.index_store model
                     :: Settings.customizeEvent model.settings
-                    :: model.to_do
+                    :: (if model.sync.fromUrl && not (String.isEmpty model.readme) then
+                            -- the saved classrooms are otherwise only listed
+                            -- when the dialog gets opened by hand, but a room
+                            -- from the URL needs them to find its local cache,
+                            -- see `Lia.Sync.Types.restoreSaved`
+                            Service.Sync.listClassrooms model.readme
+                                |> Event.push "sync"
+                                |> (\event -> event :: model.to_do)
+
+                        else
+                            model.to_do
+                       )
             , persistent =
                 checkPersistency model.definition.macro
         }
