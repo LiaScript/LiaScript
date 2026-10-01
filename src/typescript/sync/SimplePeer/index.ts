@@ -1,5 +1,6 @@
 import * as Base from '../Base/index'
 import { SimplePeerTransport } from '../../../../node_modules/y-generic/dist/providers/simple-peer/index'
+import { ConferenceTransport } from '../../../../node_modules/y-generic/dist/providers/conference/index'
 import { GenericProvider } from 'y-generic'
 import { wrapTransport } from '../Base/security'
 import { Crypto } from '../Crypto'
@@ -8,6 +9,7 @@ export class Sync extends Base.Sync {
   private transport?: SimplePeerTransport
   private signaling?: string[]
   private iceServers?: any[]
+  private conference: boolean = false
   private syncFallbackTimer: ReturnType<typeof setTimeout> | null = null
 
   destroy() {
@@ -23,11 +25,13 @@ export class Sync extends Base.Sync {
     course: string
     room: string
     password?: string
-    config?: { signaling?: string; iceServers?: string }
+    config?: { signaling?: string; iceServers?: string; conference?: boolean }
     name: string
     mode: number
   }) {
     super.connect(data)
+
+    this.conference = data.config?.conference || false
 
     this.signaling = data.config?.signaling
       ?.split(',')
@@ -73,7 +77,9 @@ export class Sync extends Base.Sync {
     if (ok && window['SimplePeer'] && raw) {
       if (this.password) Crypto.init(this.password)
 
-      hashID(raw).then((id) => {
+      // A conference room speaks another wire format: keep it on a topic of
+      // its own, so a peer that joins without the flag cannot break it.
+      hashID(this.conference ? raw + '|conference' : raw).then((id) => {
         const stun =
           this.iceServers ?? JSON.parse(process.env.STUN_SERVER || 'null')
 
@@ -83,9 +89,19 @@ export class Sync extends Base.Sync {
           ...(stun ? { iceServers: stun } : {}),
         })
 
+        // Conference mode: a partial mesh (ln(N) links per peer) relayed as
+        // if it were a full one, for rooms that would not fit into N-1
+        // RTCPeerConnections per browser. Changes the wire format - every
+        // peer of the room has to use it, which the room URL takes care of.
+        const transport = this.conference
+          ? new ConferenceTransport(this.transport, {
+              expectedPeers: CONFERENCE_EXPECTED_PEERS,
+            })
+          : this.transport
+
         this.provider = new GenericProvider(
           this.db.doc,
-          wrapTransport(this.transport, this.password),
+          wrapTransport(transport, this.password),
         )
 
         this.db.setAwareness(this.provider.awareness, this.name)
@@ -148,6 +164,10 @@ export class Sync extends Base.Sync {
     }
   }
 }
+
+/** Only a hint for the dial rule: too large costs a small room a second hop,
+ * too small costs a large room links - neither breaks it. */
+const CONFERENCE_EXPECTED_PEERS = 100
 
 async function hashID(id: string): Promise<string> {
   const encoded = new TextEncoder().encode(id)

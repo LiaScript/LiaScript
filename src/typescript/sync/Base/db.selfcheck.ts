@@ -98,6 +98,43 @@ async function main() {
   assert(runs === 2, 'no third run without a new trigger')
   assert(!overlapped, 'runs never overlap')
 
+  // Watchdog: a job that never settles must not stall every later trigger
+  // forever - after `stallMs` the scheduler reports it and accepts the next
+  // trigger again.
+  let stalledRuns = 0
+  let stallReports = 0
+  let settleFirst: () => void = () => {}
+  const guarded = coalesce(
+    () =>
+      new Promise<void>(resolve => {
+        stalledRuns++
+        if (stalledRuns === 1) settleFirst = resolve
+        else resolve()
+      }),
+    { stallMs: 20, onStall: () => stallReports++ }
+  )
+  guarded()
+  guarded()
+  assert(
+    stalledRuns === 1,
+    'watchdog: first run started, second trigger only marked dirty'
+  )
+  await new Promise(r => setTimeout(r, 60))
+  assert(
+    stallReports === 1,
+    'watchdog: a run exceeding stallMs is reported once'
+  )
+  assert(
+    stalledRuns === 2,
+    'watchdog: the pending trigger runs after the stall'
+  )
+  settleFirst()
+  await tick()
+  assert(
+    stalledRuns === 2,
+    'watchdog: the late settle of a stalled run starts nothing'
+  )
+
   console.log('\nall checks passed')
 }
 

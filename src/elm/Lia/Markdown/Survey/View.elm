@@ -12,6 +12,7 @@ import I18n.Translations as Translations
         ( surveySubmit
         , surveySubmitted
         , surveyText
+        , surveyUpdate
         )
 import Json.Decode as JD
 import Json.Encode as JE
@@ -31,6 +32,7 @@ import Lia.Markdown.Survey.Model
         ( getErrorMessage
         , get_drop_state
         , get_matrix_state
+        , get_options
         , get_select_state
         , get_submission_state
         , get_text_state
@@ -58,6 +60,7 @@ import Lia.Utils
         ( blockKeydown
         , btn
         , icon
+        , shuffle
         , string2Color
         )
 import List.Extra
@@ -70,6 +73,10 @@ option - exactly as with Task-list items and Quiz-Vector options.
 -}
 view : Config Main.Msg -> Parameters -> Survey Markdown.Block -> Vector -> List ( String, List (Html Main.Msg) ) -> ( Maybe Int, Html Main.Msg )
 view config attr survey model renderedOptions =
+    let
+        opt =
+            get_options model survey.id
+    in
     ( model
         |> Array.get survey.id
         |> Maybe.andThen .scriptID
@@ -82,14 +89,14 @@ view config attr survey model renderedOptions =
                 |> viewTextSync config lines (getSync config survey.id)
 
         Select inlines ->
-            (view_select config inlines (get_select_state model survey.id) survey.id
+            (view_select config opt.randomize inlines (get_select_state model survey.id) survey.id
                 >> Html.map Main.UpdateSurvey
             )
                 |> view_survey config attr "select" model survey.id
                 |> viewSelectSync config inlines (getSync config survey.id)
 
         DragAndDrop inlines ->
-            (view_drop config inlines (get_drop_state model survey.id) survey.id
+            (view_drop config opt.randomize inlines (get_drop_state model survey.id) survey.id
                 >> Html.map Main.UpdateSurvey
             )
                 |> view_survey config attr "drop" model survey.id
@@ -97,7 +104,7 @@ view config attr survey model renderedOptions =
 
         Vector button questions analysis ->
             vector button (VectorUpdate survey.id) (get_vector_state model survey.id)
-                |> view_vector renderedOptions
+                |> view_vector opt.randomize renderedOptions
                 |> view_survey
                     config
                     attr
@@ -114,7 +121,7 @@ view config attr survey model renderedOptions =
         --- IGNORE ---
         Matrix button header vars questions ->
             (matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
-                |> view_matrix config header questions
+                |> view_matrix config opt.randomize header questions
             )
                 >> Html.map Main.UpdateSurvey
                 |> view_survey config attr "matrix" model survey.id
@@ -699,14 +706,21 @@ textBlock name str =
         ]
 
 
-viewError : Maybe String -> Html msg
-viewError message =
+viewError : String -> Maybe String -> Html msg
+viewError default message =
     case message of
         Nothing ->
             Html.text ""
 
         Just error ->
-            Html.div [ Attr.class "lia-quiz__feedback text-error" ] [ Html.text error ]
+            Html.div [ Attr.class "lia-quiz__feedback text-error" ]
+                [ Html.text <|
+                    if error == "" then
+                        default
+
+                    else
+                        error
+                ]
 
 
 view_survey :
@@ -721,6 +735,9 @@ view_survey config attr class model idx fn =
     let
         submitted =
             get_submission_state model idx
+
+        opt =
+            get_options model idx
     in
     Html.div
         (annotation
@@ -736,42 +753,65 @@ view_survey config attr class model idx fn =
             attr
         )
         [ fn submitted
-        , submit_button config submitted idx
-        , model
-            |> getErrorMessage idx
-            |> viewError
-        ]
-
-
-submit_button : Config Main.Msg -> Bool -> Int -> Html Main.Msg
-submit_button config submitted idx =
-    Html.div [ Attr.class "lia-quiz__control" ]
-        [ if submitted then
-            btn
-                { msg = Nothing
-                , tabbable = False
-                , title = surveySubmitted config.lang
-                }
-                [ Attr.class "lia-btn--outline lia-quiz__check"
-                , A11y_Role.button
-                ]
+        , submit_button config opt.updates_allowed submitted idx
+        , if submitted then
+            Html.div
+                [ Attr.class "lia-quiz__feedback text-success" ]
                 [ Html.text (surveySubmitted config.lang) ]
 
           else
-            btn
+            Html.text ""
+        , model
+            |> getErrorMessage idx
+            |> viewError
+                (if class == "matrix" then
+                    Translations.surveyErrorMatrix config.lang
+
+                 else
+                    Translations.surveyError config.lang
+                )
+        ]
+
+
+submit_button : Config Main.Msg -> Bool -> Bool -> Int -> Html Main.Msg
+submit_button config updates_allowed submitted idx =
+    Html.div [ Attr.class "lia-quiz__control" ]
+        [ btn
+            (if not submitted then
                 { msg = Just <| Main.UpdateSurvey (Submit idx)
                 , tabbable = True
                 , title = surveySubmit config.lang
                 }
-                [ Attr.class "lia-btn--outline lia-quiz__check"
-                , A11y_Role.button
-                ]
-                [ Html.text (surveySubmit config.lang) ]
+
+             else if updates_allowed then
+                { msg = Just <| Main.UpdateSurvey (Reactivate idx)
+                , tabbable = True
+                , title = surveyUpdate config.lang
+                }
+
+             else
+                { msg = Nothing
+                , tabbable = False
+                , title = surveySubmitted config.lang
+                }
+            )
+            [ Attr.class "lia-btn--outline lia-quiz__check" ]
+            [ Html.text
+                (if not submitted then
+                    surveySubmit config.lang
+
+                 else if updates_allowed then
+                    surveyUpdate config.lang
+
+                 else
+                    surveySubmit config.lang
+                )
+            ]
         ]
 
 
-view_select : Config sub -> List Inlines -> ( Bool, Int ) -> Int -> Bool -> Html (Msg sub)
-view_select config options ( open, value ) id submitted =
+view_select : Config sub -> Maybe (List Int) -> List Inlines -> ( Bool, Int ) -> Int -> Bool -> Html (Msg sub)
+view_select config randomize options ( open, value ) id submitted =
     Html.div [ Attr.class "lia-quiz__answers" ]
         [ Html.div
             [ Attr.class "lia-dropdown" ]
@@ -795,6 +835,7 @@ view_select config options ( open, value ) id submitted =
                 ]
             , options
                 |> List.indexedMap (option config id)
+                |> shuffle randomize
                 |> Html.div
                     [ Attr.class "lia-dropdown__options"
                     , Attr.tabindex -1
@@ -809,8 +850,8 @@ view_select config options ( open, value ) id submitted =
         ]
 
 
-view_drop : Config sub -> List Inlines -> ( Bool, Bool, Int ) -> Int -> Bool -> Html (Msg sub)
-view_drop config options ( highlight, active, value ) id submitted =
+view_drop : Config sub -> Maybe (List Int) -> List Inlines -> ( Bool, Bool, Int ) -> Int -> Bool -> Html (Msg sub)
+view_drop config randomize options ( highlight, active, value ) id submitted =
     Html.div []
         [ Html.div
             [ Attr.style "width" "100%"
@@ -998,6 +1039,7 @@ view_drop config options ( highlight, active, value ) id submitted =
                                 ]
                             |> Just
                 )
+            |> shuffle randomize
             |> List.filterMap identity
             |> Html.div
                 [ Attr.style "display" "flex"
@@ -1064,24 +1106,26 @@ view_text config str lines idx submitted =
                 []
 
 
-view_vector : List ( String, List (Html Main.Msg) ) -> (Bool -> ( String, List (Html Main.Msg) ) -> Html Main.Msg) -> Bool -> Html Main.Msg
-view_vector options fn submitted =
+view_vector : Maybe (List Int) -> List ( String, List (Html Main.Msg) ) -> (Bool -> ( String, List (Html Main.Msg) ) -> Html Main.Msg) -> Bool -> Html Main.Msg
+view_vector randomize options fn submitted =
     let
         fnX =
             fn submitted
     in
     List.map fnX options
+        |> shuffle randomize
         |> Html.div [ Attr.class "lia-quiz__answers" ]
 
 
 view_matrix :
     Config sub
+    -> Maybe (List Int)
     -> List Inlines
     -> List Inlines
     -> (Bool -> ( Int, Inlines ) -> Html (Msg sub))
     -> Bool
     -> Html (Msg sub)
-view_matrix config header questions fn submitted =
+view_matrix config randomize header questions fn submitted =
     let
         fnX =
             fn submitted
@@ -1094,6 +1138,7 @@ view_matrix config header questions fn submitted =
             , questions
                 |> List.indexedMap Tuple.pair
                 |> List.map fnX
+                |> shuffle randomize
                 |> Html.tbody [ Attr.class "lia-table__body lia-survey-matrix__body", A11y_Role.rowHeader ]
             ]
         ]

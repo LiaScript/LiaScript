@@ -47,6 +47,7 @@ type Msg sub
     | VectorUpdate Int String
     | MatrixUpdate Int Int String
     | Submit Int
+    | Reactivate Int
     | Handle Event
     | Script (Script.Msg sub)
     | None
@@ -99,12 +100,25 @@ update classroom sectionID scripts msg vector =
         --        update sectionID scripts (Submit id) vector
         --    else
         --        Return.val vector
+        Reactivate id ->
+            case vector |> Array.get id of
+                Just element ->
+                    if element.submitted then
+                        set_state vector id { element | submitted = False }
+                            |> Return.val
+
+                    else
+                        Return.val vector
+
+                _ ->
+                    Return.val vector
+
         Submit id ->
             case vector |> Array.get id of
                 Just element ->
                     case element.scriptID of
                         Nothing ->
-                            if submittable vector id then
+                            if element.opt.incompleteness_allowed || submittable vector id then
                                 let
                                     new_vector =
                                         submit vector id
@@ -115,7 +129,8 @@ update classroom sectionID scripts msg vector =
                                     |> store sectionID
 
                             else
-                                vector
+                                -- this is a hack to trigger the error message for empty answers
+                                updateError vector id (Just "")
                                     |> Return.val
 
                         Just scriptID ->
@@ -379,11 +394,17 @@ update_vector : Vector -> Int -> String -> Vector
 update_vector vector idx var =
     case Array.get idx vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
         Just ( False, Vector_State False e, element ) ->
+            let
+                selected =
+                    e
+                        |> Dict.get var
+                        |> Maybe.withDefault False
+            in
             { element
                 | state =
                     e
                         |> Dict.map (\_ _ -> False)
-                        |> Dict.update var (\_ -> Just True)
+                        |> Dict.update var (\_ -> Just (not selected))
                         |> Vector_State False
             }
                 |> set_state vector idx
@@ -408,12 +429,17 @@ update_matrix vector col_id row_id var =
             let
                 row =
                     Array.get row_id matrix
+
+                selected =
+                    row
+                        |> Maybe.andThen (Dict.get var)
+                        |> Maybe.withDefault False
             in
             { element
                 | state =
                     row
                         |> Maybe.map (\d -> Dict.map (\_ _ -> False) d)
-                        |> Maybe.map (\d -> Dict.update var (\_ -> Just True) d)
+                        |> Maybe.map (\d -> Dict.update var (\_ -> Just (not selected)) d)
                         |> Maybe.map (\d -> Array.set row_id d matrix)
                         |> Maybe.withDefault matrix
                         |> Matrix_State False
@@ -448,7 +474,7 @@ submit : Vector -> Int -> Vector
 submit vector idx =
     case Array.get idx vector of
         Just element ->
-            Array.set idx { element | submitted = True } vector
+            Array.set idx { element | submitted = True, errorMsg = Nothing } vector
 
         _ ->
             vector

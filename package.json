@@ -1,6 +1,6 @@
 {
   "name": "liascript",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -133,8 +133,8 @@
     "pako": "^2.1.0"
   },
   "allowScripts": {
-    "lmdb": true,
+    "elm@0.19.1-6": true,
     "msgpackr-extract@3.0.2": true,
-    "elm@0.19.1-6": true
+    "lmdb": true
   }
 }

@@ -108,10 +108,23 @@ export class CRDT {
   // after a newer one; and with many pages x questions x peers each
   // recompute is O(all answers) of Web Crypto - a burst of answers now costs
   // two runs, not one per answer.
-  protected scheduleQuizSurvey = coalesce(() =>
-    this.fireQuizSurvey().catch((e: any) =>
-      console.warn('quiz/survey re-check failed ->', e),
-    ),
+  // A run that never settles (a hanging IndexedDB request or Web Crypto
+  // call inside `getSection`) would otherwise leave the scheduler "running"
+  // forever: every later answer only marks it dirty and nothing is ever
+  // delivered to Elm again, with no error anywhere. The watchdog reports such
+  // a run and lets the next trigger through, see `coalesce`.
+  protected scheduleQuizSurvey = coalesce(
+    () =>
+      this.fireQuizSurvey().catch((e: any) =>
+        console.warn('quiz/survey re-check failed ->', e),
+      ),
+    {
+      stallMs: 15000,
+      onStall: () =>
+        console.warn(
+          'quiz/survey re-check did not finish within 15s - giving up on it, the next change triggers a fresh one',
+        ),
+    },
   )
 
   constructor(

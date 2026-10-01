@@ -122,10 +122,11 @@ connect param =
                             , ( "iceServers", JE.string iceServers )
                             ]
 
-                    Via.SimplePeer { signaling, iceServers } ->
+                    Via.SimplePeer { signaling, iceServers, conference } ->
                         JE.object
                             [ ( "signaling", JE.string signaling )
                             , ( "iceServers", JE.string iceServers )
+                            , ( "conference", JE.bool conference )
                             ]
 
                     Via.Nostr { relayUrls, persistent } ->
