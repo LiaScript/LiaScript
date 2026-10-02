@@ -10,6 +10,7 @@ module Lia.Sync.Update exposing
 
 import Array
 import Dict exposing (Dict)
+import Helper.Array as Array
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
@@ -1102,16 +1103,18 @@ lockSections :
     -> Sections
     -> Sections
 lockSections lockAnswered getVector setVector ownId dataUpdate sectionIds sections =
-    sectionIds
-        |> List.foldl
-            (\sectionId secs ->
-                case Array.get sectionId secs of
-                    Just section ->
-                        Array.set sectionId
-                            (setVector (lockAnswered ownId dataUpdate (Just sectionId) (getVector section)) section)
-                            secs
-
-                    Nothing ->
-                        secs
-            )
-            sections
+    List.foldl
+        (\sectionId ->
+            Array.update sectionId
+                (\section ->
+                    setVector
+                        (lockAnswered ownId
+                            dataUpdate
+                            (Just sectionId)
+                            (getVector section)
+                        )
+                        section
+                )
+        )
+        sections
+        sectionIds

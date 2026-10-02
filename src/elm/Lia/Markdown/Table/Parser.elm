@@ -223,7 +223,7 @@ checkDiagram headLine rows =
         -- all element in first column are numbers
         if List.all ((/=) Nothing) firstColumn then
             -- headline contains elements and there is exactly one row
-            if headLine /= Nothing && List.length firstColumn == 1 then
+            if headLine /= Nothing && List.isSingleton firstColumn then
                 PieChart
 
             else if

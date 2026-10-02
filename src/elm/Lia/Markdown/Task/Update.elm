@@ -5,6 +5,7 @@ module Lia.Markdown.Task.Update exposing
     )
 
 import Array
+import Helper.Array as Array
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Update exposing (init, merge)
@@ -116,13 +117,7 @@ toggle : Int -> Element -> Element
 toggle y element =
     { element
         | state =
-            Array.set y
-                (element.state
-                    |> Array.get y
-                    |> Maybe.map not
-                    |> Maybe.withDefault False
-                )
-                element.state
+            Array.update y not element.state
     }
 
 

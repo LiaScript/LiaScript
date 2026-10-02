@@ -18,6 +18,7 @@ import Combine
         , succeed
         , withState
         )
+import Helper.Array as Array
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Quiz.Parser exposing (maybeJS)
 import Lia.Markdown.Quiz.Vector.Parser exposing (either)
@@ -118,9 +119,9 @@ modify_State ( states, tasks ) =
                             in
                             { effect_model
                                 | javascript =
-                                    case Array.get scriptID effect_model.javascript of
-                                        Just script ->
-                                            Array.set scriptID
+                                    effect_model.javascript
+                                        |> Array.update scriptID
+                                            (\script ->
                                                 { script
                                                     | result =
                                                         Just
@@ -132,10 +133,7 @@ modify_State ( states, tasks ) =
                                                                 )
                                                             )
                                                 }
-                                                effect_model.javascript
-
-                                        Nothing ->
-                                            effect_model.javascript
+                                            )
                             }
             }
     in
