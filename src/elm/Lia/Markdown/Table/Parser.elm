@@ -26,6 +26,7 @@ import Combine
         , withState
         )
 import Const
+import Helper.List as List
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (annotations, line2)
@@ -274,7 +275,7 @@ checkDiagram headLine rows =
                 None
 
         else if headLine /= Nothing then
-            if List.length firstColumn == 1 then
+            if List.isSingleton firstColumn then
                 --True
                 PieChart
 
