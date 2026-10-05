@@ -573,7 +573,7 @@ view_block config block =
             view_ascii config attr bob
 
         Task attr task ->
-            task.task
+            task.items
                 |> List.map (viewBlocks config)
                 |> Task.view config.section.task_vector attr task
                 |> scriptView config.view
