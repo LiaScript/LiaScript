@@ -53,13 +53,15 @@ import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), combine)
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Markdown.Quiz.Block.Parser as Input
-import Lia.Markdown.Quiz.Block.Types as Input
 import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (inlineCode, spaces)
 import Lia.Parser.Input as Context
 import Regex exposing (Regex)
 
 
+{-| Parse a string (newlines are treated as spaces) into a list of inlines,
+an unparsable string results in an empty list.
+-}
 parse_inlines : Context -> String -> Inlines
 parse_inlines state str =
     case
@@ -74,6 +76,9 @@ parse_inlines state str =
             []
 
 
+{-| Parse the content of an HTML comment `<!-- ... -->` with `p`, comments
+starting with three dashes `<!--- ... -->` are ignored completely.
+-}
 comment : Parser s a -> Parser s (List a)
 comment p =
     or ignore_comment
@@ -83,16 +88,18 @@ comment p =
         )
 
 
-{-| Special comment parser for the HTML comments that totally ignores
-everything within --- three dashed lines...
+{-| **@private:** Special comment parser for the HTML comments that totally
+ignores everything within --- three dashed lines...
 -}
 ignore_comment : Parser s (List a)
 ignore_comment =
     string "<!---"
         |> ignore (manyTill anyChar (string "-->"))
-        |> keep (succeed [])
+        |> onsuccess []
 
 
+{-| **@private:** Skip all following ignored and hidden comments.
+-}
 comments : Parser Context ()
 comments =
     choice
@@ -103,90 +110,116 @@ comments =
         |> skip
 
 
+{-| **@private:** The `base` and `appendix` of the current document, required
+to turn relative URLs into absolute ones.
+-}
+defines : Parser Context ( String, String )
+defines =
+    withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
+
+
+{-| **@private:** A single HTML attribute `key="value"`.
+-}
+attribute : Parser Context ( String, String )
+attribute =
+    andThen Attributes.parse defines
+
+
+{-| Parse the optional attributes `<!-- key="value" ... -->` of an element,
+followed comments are skipped.
+-}
 annotations : Parser Context Parameters
 annotations =
-    let
-        attr =
-            withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
-                |> andThen Attributes.parse
-    in
     spaces
-        |> keep (comment attr)
+        |> keep (comment attribute)
         |> maybe
         |> map (Maybe.withDefault [])
         |> ignore comments
 
 
+{-| Parse a `<script>...</script>` without attributes and return its body.
+-}
 javascript : Parser s String
 javascript =
     regexWith { caseInsensitive = True, multiline = False } "<script>"
         |> keep scriptBody
 
 
+{-| **@private:** Parse a `<script key="value" ...>...</script>` and return
+its attributes and body.
+-}
 javascriptWithAttributes : Parser Context ( Parameters, String )
 javascriptWithAttributes =
-    let
-        attr =
-            withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
-                |> andThen Attributes.parse
-    in
     regexWith { caseInsensitive = True, multiline = False } "<script"
-        |> keep (many (whitespace |> keep attr))
+        |> keep (many (whitespace |> keep attribute))
         |> ignore (string ">")
         |> map Tuple.pair
         |> andMap scriptBody
 
 
+{-| Parse a script and push it into the `effect_model` of the context, the
+`default` attributes are appended to the attributes of the script. The result
+are the attributes and the id of the next script.
+-}
 eScript : Parameters -> Parser Context ( Parameters, Int )
 eScript default =
-    let
-        state ( attr, script ) =
-            modifyState
-                (\s ->
-                    let
-                        effect_model =
-                            s.effect_model
-                    in
-                    { s
-                        | effect_model =
-                            { effect_model
-                                | javascript =
-                                    JS.push
-                                        s.defines.language
-                                        (s.effect_number
-                                            |> List.head
-                                            |> Maybe.withDefault 0
-                                        )
-                                        attr
-                                        (String.trim script)
-                                        effect_model.javascript
-                            }
-                    }
-                )
-                |> keep (succeed attr)
-    in
     javascriptWithAttributes
         |> map (Tuple.mapFirst (\attr -> List.append attr default))
-        |> andThen state
+        |> andThen (\( attr, script ) -> modifyState (pushScript attr script) |> onsuccess attr)
         |> map Tuple.pair
         |> andMap scriptID
 
 
+{-| **@private:** Add a script to the `effect_model`, it belongs to the
+current effect fragment.
+-}
+pushScript : Parameters -> String -> Context -> Context
+pushScript attr script state =
+    let
+        effect_model =
+            state.effect_model
+    in
+    { state
+        | effect_model =
+            { effect_model
+                | javascript =
+                    JS.push
+                        state.defines.language
+                        (state.effect_number
+                            |> List.head
+                            |> Maybe.withDefault 0
+                        )
+                        attr
+                        (String.trim script)
+                        effect_model.javascript
+            }
+    }
+
+
+{-| **@private:** The number of scripts pushed so far.
+-}
 scriptID : Parser Context Int
 scriptID =
     withState (.effect_model >> .javascript >> JS.count >> succeed)
 
 
+{-| Parse a line of inlines.
+-}
 line : Parser Context Inlines
 line =
     inlines |> many1 |> map combine
 
 
+{-| Parse a line of inlines within a table cell, see `inlines2`.
+-}
 line2 : Parser Context Inlines
 line2 =
     inlines2 |> many1 |> map combine
 
 
+{-| Parse a line of inlines, where every character that cannot be parsed is
+taken as it is.
+-}
 lineWithProblems : Parser Context Inlines
 lineWithProblems =
     or inlines (regex "." |> map (\x -> Chars x []))
@@ -194,50 +227,76 @@ lineWithProblems =
         |> map combine
 
 
+{-| Parse a single inline element.
+
+`inlines` is used recursively by many of its own sub-parsers, the `lazy` only
+defers to `inlineParser`, so that the parser itself is constructed only once
+and not for every parsed element.
+
+-}
 inlines : Parser Context Inline
 inlines =
-    lazy <|
-        \() ->
-            Context.checkAbort
-                |> keep Macro.macro
-                |> keep
-                    ([ code
-                     , Footnote.inline parse_inlines
-                     , reference
-                     , formula
-                     , inlines
-                        |> Effect.inline
-                        |> map EInline
-                     , input
-                     , strings
-                     ]
-                        |> choice
-                        |> andMap (Macro.macro |> keep annotations)
-                        |> or (eScript [] |> map (\( attr, id ) -> Script id attr))
-                    )
+    lazy (\() -> inlineParser)
 
 
-inlines2 : Parser Context Inline
-inlines2 =
-    Macro.macro
+{-| **@private:** See `inlines`.
+-}
+inlineParser : Parser Context Inline
+inlineParser =
+    Context.checkAbort
         |> keep
-            ([ code
-             , Footnote.inline parse_inlines
-             , input
-             , reference
-             , formula
-             , inlines
-                |> Effect.inline
-                |> map EInline
-             , stringExceptions
-             , strings
-             ]
-                |> choice
-                |> andMap (Macro.macro |> keep annotations)
-                |> or (eScript [] |> map (\( attr, id ) -> Script id attr))
+            (withAnnotations
+                [ code
+                , Footnote.inline parse_inlines
+                , reference
+                , formula
+                , effect
+                , input
+                , strings
+                ]
             )
 
 
+{-| **@private:** Inlines within a table cell, the cell separator `|` is not
+consumed.
+-}
+inlines2 : Parser Context Inline
+inlines2 =
+    withAnnotations
+        [ code
+        , Footnote.inline parse_inlines
+        , input
+        , reference
+        , formula
+        , effect
+        , stringExceptions
+        , strings
+        ]
+
+
+{-| **@private:** Macros get expanded in front of every element and its
+annotations. The first of the `parsers` that matches gets its annotations,
+a script is checked before all others.
+-}
+withAnnotations : List (Parser Context (Parameters -> Inline)) -> Parser Context Inline
+withAnnotations parsers =
+    Macro.macro
+        |> keep
+            (or (eScript [] |> map (\( attr, id ) -> Script id attr))
+                (choice parsers |> andMap (Macro.macro |> keep annotations))
+            )
+
+
+{-| **@private:** An effect fragment `{1}{content}`.
+-}
+effect : Parser Context (Parameters -> Inline)
+effect =
+    Effect.inline inlines |> map EInline
+
+
+{-| **@private:** A quiz input `[[ ... ]]`, which is only allowed if the
+context permits it.
+-}
 input : Parser Context (Parameters -> Inline)
 input =
     Context.getPermission
@@ -253,6 +312,8 @@ input =
             )
 
 
+{-| **@private:** An absolute URL either plain or wrapped in `<...>`.
+-}
 url : Parser Context String
 url =
     or (regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})(\\\\.|[^ \\]\\)\t\n\"])*")
@@ -260,24 +321,26 @@ url =
             |> keep (regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})[^>]*")
             |> ignore (string ">")
         )
-        |> map unescapeUrl
+        |> map (Regex.replace escapedParenthesis (.submatches >> List.head >> Maybe.andThen identity >> Maybe.withDefault ""))
         |> andThen baseURL
 
 
-unescapeUrl : String -> String
-unescapeUrl str =
-    Regex.replace
-        (Regex.fromString "\\\\([()])" |> Maybe.withDefault Regex.never)
-        (\match -> match.submatches |> List.head |> Maybe.andThen identity |> Maybe.withDefault "")
-        str
+{-| **@private:** `\(` and `\)` within URLs.
+-}
+escapedParenthesis : Regex
+escapedParenthesis =
+    Regex.fromString "\\\\([()])" |> Maybe.withDefault Regex.never
 
 
+{-| **@private:** Make a relative URL absolute.
+-}
 baseURL : String -> Parser Context String
 baseURL u =
-    withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
-        |> map (\( base, appendix ) -> toURL base appendix u)
+    map (\( base, appendix ) -> toURL base appendix u) defines
 
 
+{-| **@private:** An email address, `mailto:` is optional.
+-}
 email : Parser s String
 email =
     string "mailto:"
@@ -286,32 +349,40 @@ email =
         |> map ((++) "mailto:")
 
 
+{-| **@private:** A plain URL within the text becomes a link.
+-}
 inline_url : Parser Context (Parameters -> Inline)
 inline_url =
     map (\u -> Ref (Link [ Chars u [] ] u Nothing)) url
 
 
+{-| **@private:** The text `[...]` of a reference. Plain URLs within the text
+are not turned into links, nested links are not supported by markdown and
+can cause problems with the reference parsing.
+-}
 ref_info : Parser Context Inlines
 ref_info =
     string "["
         |> ignore (Context.addAbort "]")
         |> keep (manyTill inlines (string "]"))
         |> ignore Context.popAbort
-        |> map
-            -- remove links in the reference text, because they are not supported by markdown and can cause problems with the reference parsing
-            (List.map
-                (\element ->
-                    case element of
-                        Ref (Link [ Chars url_ [] ] _ Nothing) [] ->
-                            Chars url_ []
-
-                        _ ->
-                            element
-                )
-            )
-        |> map combine
+        |> map (List.map unlink >> combine)
 
 
+{-| **@private:** See `ref_info`.
+-}
+unlink : Inline -> Inline
+unlink element =
+    case element of
+        Ref (Link [ Chars url_ [] ] _ Nothing) [] ->
+            Chars url_ []
+
+        _ ->
+            element
+
+
+{-| **@private:** The optional title `"..."` or `'...'` of a reference.
+-}
 ref_title : Parser Context (Maybe Inlines)
 ref_title =
     spaces
@@ -321,6 +392,8 @@ ref_title =
         |> maybe
 
 
+{-| **@private:** Unpack an unstyled container.
+-}
 toInlines : Inline -> Inlines
 toInlines element =
     case element of
@@ -331,76 +404,46 @@ toInlines element =
             [ element ]
 
 
+{-| **@private:** The URL of a link, which might also be a local `#anchor`.
+-}
 ref_url_1 : Parser Context String
 ref_url_1 =
     choice
         [ url
         , andMap (regex "#[^ \t\\)]+") Context.searchIndex
-        , regex "[^\\)\n \"]*" |> andThen baseURL
+        , ref_url_2
         ]
 
 
+{-| **@private:** The URL of a media reference.
+-}
 ref_url_2 : Parser Context String
 ref_url_2 =
-    withState (\s -> succeed ( s.defines.base, s.defines.appendix ))
-        |> map
-            (\( base, appendix ) url_ ->
-                toURL base appendix url_
-            )
-        |> andMap (regex "[^\\)\n \"]*")
-        |> or url
+    or url (regex "[^\\)\n \"]*" |> andThen baseURL)
 
 
-
---ref_pattern : (a -> String -> String -> b) -> Parser s a -> Parser s String -> Parser s b
---ref_pattern : a -> b -> c -> Parser Context Reference
-
-
+{-| **@private:** The general reference pattern `[info](url "title")`.
+-}
 ref_pattern :
-    (m -> String -> Maybe Inlines -> Reference)
-    -> Parser Context m
-    -> Parser Context String
+    (info -> url -> Maybe Inlines -> Reference)
+    -> Parser Context info
+    -> Parser Context url
     -> Parser Context Reference
 ref_pattern ref_type info_type url_type =
-    map (nicer_ref ref_type) info_type
+    map ref_type info_type
         |> ignore (string "(")
         |> andMap url_type
         |> andMap ref_title
         |> ignore (string ")")
 
 
-nicer_ref :
-    (m -> String -> Maybe Inlines -> Reference)
-    -> m
-    -> String
-    -> Maybe Inlines
-    -> Reference
-nicer_ref ref_type info_string url_string title_string =
-    ref_type info_string
-        url_string
-        title_string
-
-
-ref_audio : Parser Context Reference
-ref_audio =
-    map Audio ref_info
-        |> ignore (string "(")
-        |> andMap (map Multimedia.audio ref_url_2)
-        |> andMap ref_title
-        |> ignore (string ")")
-        |> map refToEmbed
-
-
+{-| **@private:** Audio files from soundcloud or spotify can only be embedded.
+-}
 refToEmbed : Reference -> Reference
 refToEmbed ref =
     case ref of
-        Audio info ( extern, link ) title ->
-            if
-                not extern
-                    && (String.contains "soundcloud.com" link
-                            || String.contains "spotify.com" link
-                       )
-            then
+        Audio info ( False, link ) title ->
+            if String.contains "soundcloud.com" link || String.contains "spotify.com" link then
                 Embed info link title
 
             else
@@ -410,15 +453,8 @@ refToEmbed ref =
             ref
 
 
-ref_video : Parser Context Reference
-ref_video =
-    map Movie ref_info
-        |> ignore (string "(")
-        |> andMap (map Multimedia.movie ref_url_2)
-        |> andMap ref_title
-        |> ignore (string ")")
-
-
+{-| **@private:** All kinds of references, `[...](...)`, `![...](...)`, etc.
+-}
 reference : Parser Context (Parameters -> Inline)
 reference =
     [ refEmbed
@@ -434,6 +470,9 @@ reference =
         |> map Ref
 
 
+{-| Parse a single media reference (image, movie, audio, qr-code, or embed)
+with its annotations.
+-}
 mediaReference : Parser Context Inline
 mediaReference =
     [ refImage
@@ -452,6 +491,9 @@ refMail =
     ref_pattern Mail ref_info email
 
 
+{-| **@private:** `[preview-lia](url)` or `[preview-link](url)`, the title is
+ignored.
+-}
 refPreview : Parser Context Reference
 refPreview =
     regexWith { caseInsensitive = True, multiline = False } "\\[\\w*preview-"
@@ -494,13 +536,14 @@ refImage =
 refAudio : Parser Context Reference
 refAudio =
     string "?"
-        |> keep ref_audio
+        |> keep (ref_pattern Audio ref_info (map Multimedia.audio ref_url_2))
+        |> map refToEmbed
 
 
 refMovie : Parser Context Reference
 refMovie =
     string "!?"
-        |> keep ref_video
+        |> keep (ref_pattern Movie ref_info (map Multimedia.movie ref_url_2))
 
 
 refEmbed : Parser Context Reference
@@ -509,20 +552,24 @@ refEmbed =
         |> keep (ref_pattern Embed ref_info ref_url_1)
 
 
+{-| **@private:** Inlines enclosed by `str`.
+-}
 between_ : String -> Parser Context Inline
 between_ str =
-    string str
-        |> keep (many1Till inlines (string str))
-        |> map (combine >> toContainer)
+    between_2 str str
 
 
+{-| **@private:** Inlines enclosed by `begin` and `end`.
+-}
 between_2 : String -> String -> Parser Context Inline
 between_2 begin end =
     string begin
         |> keep (many1Till inlines (string end))
-        |> map (combine >> toContainer)
+        |> map toContainer
 
 
+{-| **@private:** Wrap multiple inlines into a container.
+-}
 toContainer : List Inline -> Inline
 toContainer inline_list =
     case combine inline_list of
@@ -533,6 +580,8 @@ toContainer inline_list =
             Container moreThanOne []
 
 
+{-| **@private:** Text, typography, styles, and inline HTML.
+-}
 strings : Parser Context (Parameters -> Inline)
 strings =
     Context.checkAbort
@@ -555,10 +604,8 @@ strings =
             )
 
 
-
--- Combined string style parsers
-
-
+{-| **@private:** Bold, italic, etc. and quoted text.
+-}
 stringWithStyle : Parser Context (Parameters -> Inline)
 stringWithStyle =
     choice
@@ -586,15 +633,18 @@ stringEscape =
         |> map Chars
 
 
+{-| **@private:** Text in double quotes or in single quotes (preceded by a
+space) gets the typographic quotation marks of the document language.
+-}
 stringQuote : Parser Context (Parameters -> Inline)
 stringQuote =
     or
         (between_ "\""
-            |> map (\text ( start, end ) -> [ Chars start [], text, Chars end [] ] |> Container)
+            |> map (\text ( start, end ) -> Container [ Chars start [], text, Chars end [] ])
             |> andMap (withState (.defines >> .typographic_quotation >> .double >> succeed))
         )
         (between_2 " '" "'"
-            |> map (\text ( start, end ) -> [ Chars (" " ++ start) [], text, Chars end [] ] |> Container)
+            |> map (\text ( start, end ) -> Container [ Chars (" " ++ start) [], text, Chars end [] ])
             |> andMap (withState (.defines >> .typographic_quotation >> .single >> succeed))
         )
 
@@ -602,17 +652,14 @@ stringQuote =
 dashes : Parser Context (Parameters -> Inline)
 dashes =
     choice
-        [ string "---"
-            |> keep (succeed (Chars "—"))
-        , string "--"
-            |> keep (succeed (Chars "–"))
+        [ string "---" |> onsuccess (Chars "—")
+        , string "--" |> onsuccess (Chars "–")
         ]
 
 
 ellipsis : Parser Context (Parameters -> Inline)
 ellipsis =
-    string "..."
-        |> keep (succeed (Chars "…"))
+    string "..." |> onsuccess (Chars "…")
 
 
 stringCharacters : Parser s (Parameters -> Inline)
@@ -633,6 +680,8 @@ stringBase2 =
         |> map Chars
 
 
+{-| **@private:** Stop in front of a table cell separator.
+-}
 stringExceptions : Parser Context (Parameters -> Inline)
 stringExceptions =
     string "|"
@@ -640,6 +689,8 @@ stringExceptions =
         |> onsuccess (Chars "")
 
 
+{-| **@private:** A backslash at the end of a line.
+-}
 lineBreak : Parser s (Parameters -> Inline)
 lineBreak =
     string "\\\n"
@@ -651,10 +702,12 @@ code =
     inlineCode |> map Verbatim
 
 
+{-| **@private:** Everything until `</script>`, strings, template strings, and
+comments are consumed at once, so that they can contain a `</script>`.
 
--- TODO: update also for multiline-comments and escapes in strings
+TODO: update also for multiline-comments and escapes in strings
 
-
+-}
 scriptBody : Parser s String
 scriptBody =
     regexWith { caseInsensitive = True, multiline = False } "</script>"

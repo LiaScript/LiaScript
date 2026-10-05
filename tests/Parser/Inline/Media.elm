@@ -9,12 +9,13 @@ module Parser.Inline.Media exposing
     , movie_platformRewrite_Suite
     , preview_Suite
     , qr_Suite
+    , url_Suite
     )
 
 import Expect
 import Lia.Markdown.Inline.Types exposing (Inline(..), Reference(..))
 import LiaFuzz exposing (httpUrl, words)
-import Parser.Inline.Fixtures exposing (audio, chars, embed, movie, parse, previewLia, previewLink, qr, toTests)
+import Parser.Inline.Fixtures exposing (audio, chars, embed, image, movie, parse, previewLia, previewLink, qr, toTests)
 import Test exposing (Test, describe, fuzz2, test)
 
 
@@ -112,6 +113,9 @@ preview_Suite =
 
             {- [preview-link](http://example.com) -}
             , ( "[preview-link](http://example.com)", previewLink "http://example.com" )
+
+            {- word characters around the keyword are ignored: [mypreview-linkx](http://example.com) -}
+            , ( "[mypreview-linkx](http://example.com)", previewLink "http://example.com" )
             ]
 
 
@@ -121,4 +125,16 @@ qr_Suite =
         toTests
             {- [qr-code](http://example.com) -}
             [ ( "[qr-code](http://example.com)", qr "http://example.com" )
+            ]
+
+
+url_Suite : Test
+url_Suite =
+    describe "media URLs are parsed as absolute URLs first" <|
+        toTests
+            {- ![alt](<http://example.com/a b.png>) -}
+            [ ( "![alt](<http://example.com/a b.png>)", image "alt" "http://example.com/a b.png" )
+
+            {- ![alt](http://example.com/a\(1\).png) -}
+            , ( "![alt](http://example.com/a\\(1\\).png)", image "alt" "http://example.com/a(1).png" )
             ]

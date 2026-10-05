@@ -76,7 +76,15 @@ defaultInput =
 associatedScript_Suite : Test
 associatedScript_Suite =
     describe "a <script>...</script> block directly following a quiz's options attaches as that quiz's check-script"
-        [ test "a Block_Type (standalone [[text]]) quiz with a script computing correctness" <|
+        [ test "explicit <script ...> attributes override the quiz defaults" <|
+            \_ ->
+                {- [[dam]]
+                   <script input="number" block="false">@input</script>
+                -}
+                firstScript "[[dam]]\n<script input=\"number\" block=\"false\">@input</script>\n"
+                    |> Maybe.map (\script -> ( script.input.type_, script.block ))
+                    |> Expect.equal (Just ( Just Input.Number_, False ))
+        , test "a Block_Type (standalone [[text]]) quiz with a script computing correctness" <|
             \_ ->
                 {- [[dam]]
                    <script>
