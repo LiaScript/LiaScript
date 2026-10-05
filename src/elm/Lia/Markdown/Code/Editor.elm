@@ -14,7 +14,6 @@ module Lia.Markdown.Code.Editor exposing
     , enableLiveAutocompletion
     , enableSnippets
     , encode
-    , extensions
     , firstLineNumber
     , focusing
     , fontSize
@@ -359,11 +358,6 @@ rtl =
 rtlText : Bool -> Html.Attribute msg
 rtlText =
     boolean "rtlText"
-
-
-extensions : List String -> Html.Attribute msg
-extensions =
-    JE.list JE.string >> Attr.property "extensions"
 
 
 boolean : String -> Bool -> Html.Attribute msg

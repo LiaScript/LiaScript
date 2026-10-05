@@ -443,7 +443,6 @@ editor theme mode id subPattern code =
             , Editor.enableBasicAutocompletion True
             , Editor.enableLiveAutocompletion True
             , Editor.enableSnippets True
-            , Editor.extensions [ "language_tools" ]
             , Attr.style "width" "96%"
             , Attr.style "max-width" "900px"
             , Attr.class "notranslate"
