@@ -51,7 +51,7 @@ import Lia.Markdown.Table.Parser as Table
 import Lia.Markdown.Task.Parser as Task
 import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context as Context exposing (Context)
-import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
+import Lia.Parser.Helper exposing (c_frame, newline, newlines, peek, spaces, trimSpaces)
 import Lia.Parser.Indentation as Indent
 import Lia.Parser.Input as Input
 import Lia.Parser.Preprocessor exposing (title_tag)
@@ -74,20 +74,30 @@ footnotes =
         |> skip
 
 
+{-| Parse a single block.
+
+`blocks` is used recursively by many of its own sub-parsers, the `lazy` only
+defers to `blockParser`, so that the parser itself is constructed only once
+and not for every parsed block.
+
+-}
 blocks : Parser Context Markdown.Block
 blocks =
-    lazy <|
-        \() ->
-            Context.checkAbort
-                |> ignore Indent.check
-                |> keep macro
-                |> ignore whitespace
-                |> keep elements
-                |> ignore
-                    (whitespace
-                        |> keep Effect.hidden_comment
-                        |> many
-                    )
+    lazy (\() -> blockParser)
+
+
+blockParser : Parser Context Markdown.Block
+blockParser =
+    Context.checkAbort
+        |> ignore Indent.check
+        |> keep macro
+        |> ignore whitespace
+        |> keep elements
+        |> ignore
+            (whitespace
+                |> keep Effect.hidden_comment
+                |> many
+            )
 
 
 elements : Parser Context Markdown.Block
@@ -652,19 +662,28 @@ htmlComment =
         |> onsuccess Markdown.HtmlComment
 
 
+{-| Annotations `<!-- key="value" -->` in front of a block. This is tried by
+almost every block parser, without a comment (which might also be the result
+of a macro) the result is `[]` and nothing is consumed.
+-}
 md_annotations : Parser Context Parameters
 md_annotations =
-    let
-        attr =
-            withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
-                |> andThen Attributes.parse
-    in
-    spaces
-        |> keep macro
-        |> keep (comment attr)
-        |> ignore
-            (regex "[\t ]*\n"
-                |> ignore Indent.check
-                |> maybe
-            )
-        |> optional []
+    peek
+        (trimSpaces >> (\input -> String.startsWith "<!--" input || String.startsWith "@" input || String.startsWith "```" input))
+        (spaces
+            |> keep macro
+            |> keep (comment md_attribute)
+            |> ignore
+                (regex "[\t ]*\n"
+                    |> ignore Indent.check
+                    |> maybe
+                )
+            |> optional []
+        )
+        (succeed [])
+
+
+md_attribute : Parser Context ( String, String )
+md_attribute =
+    withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
+        |> andThen Attributes.parse
