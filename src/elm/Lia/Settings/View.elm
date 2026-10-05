@@ -1017,7 +1017,8 @@ menuShare url sync lang tabbable settings =
             |> Attr.title
         ]
         []
-    , [ if settings.hasShareApi /= Nothing then
+    , [ -- only when visible: open share menu, or the open support menu on small screens
+        if settings.hasShareApi /= Nothing && (settings.action == Just ShowShare || settings.support_menu) then
             qrCodeView lang tabbable False True url
 
         else
