@@ -10,6 +10,7 @@ module Lia.Parser.Helper exposing
     , spaces1
     , string1Till
     , stringTill
+    , trimSpaces
     )
 
 import Combine
@@ -91,6 +92,17 @@ peek check p default =
             else
                 app default state stream
         )
+
+
+{-| Remove leading spaces and tabs.
+-}
+trimSpaces : String -> String
+trimSpaces str =
+    if String.startsWith " " str || String.startsWith "\t" str then
+        trimSpaces (String.dropLeft 1 str)
+
+    else
+        str
 
 
 c_frame : Parser s Int

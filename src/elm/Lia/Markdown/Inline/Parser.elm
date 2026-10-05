@@ -54,7 +54,7 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Markdown.Quiz.Block.Parser as Input
 import Lia.Parser.Context as Context exposing (Context)
-import Lia.Parser.Helper exposing (inlineCode, spaces)
+import Lia.Parser.Helper exposing (inlineCode, peek, spaces, trimSpaces)
 import Lia.Parser.Input as Context
 import Regex exposing (Regex)
 
@@ -130,11 +130,14 @@ followed comments are skipped.
 -}
 annotations : Parser Context Parameters
 annotations =
-    spaces
-        |> keep (comment attribute)
-        |> maybe
-        |> map (Maybe.withDefault [])
-        |> ignore comments
+    peek (trimSpaces >> String.startsWith "<!--")
+        (spaces
+            |> keep (comment attribute)
+            |> maybe
+            |> map (Maybe.withDefault [])
+            |> ignore comments
+        )
+        (succeed [])
 
 
 {-| Parse a `<script>...</script>` without attributes and return its body.
@@ -282,7 +285,7 @@ withAnnotations : List (Parser Context (Parameters -> Inline)) -> Parser Context
 withAnnotations parsers =
     Macro.macro
         |> keep
-            (or (eScript [] |> map (\( attr, id ) -> Script id attr))
+            (or (peek (String.startsWith "<") (eScript [] |> map (\( attr, id ) -> Script id attr)) (fail "no script"))
                 (choice parsers |> andMap (Macro.macro |> keep annotations))
             )
 
@@ -467,6 +470,7 @@ reference =
     , refLink
     ]
         |> choice
+        |> (\references -> peek (String.left 1 >> (\c -> c == "[" || c == "!" || c == "?")) references (fail "no reference"))
         |> map Ref
 
 
