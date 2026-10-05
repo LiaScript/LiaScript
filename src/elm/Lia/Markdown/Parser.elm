@@ -55,6 +55,7 @@ import Lia.Parser.Helper exposing (c_frame, newline, newlines, peek, spaces, tri
 import Lia.Parser.Indentation as Indent
 import Lia.Parser.Input as Input
 import Lia.Parser.Preprocessor exposing (title_tag)
+import Regex
 import SvgBob
 
 
@@ -422,10 +423,53 @@ subHeaderType1 =
 -}
 subHeaderType2 : Parser Context ( Int, Inlines )
 subHeaderType2 =
-    line
-        |> ignore (regex "[ \t]*\n")
-        |> map (\i title -> ( title, i ))
-        |> andMap underline
+    peek isSetext
+        (line
+            |> ignore (regex "[ \t]*\n")
+            |> map (\i title -> ( title, i ))
+            |> andMap underline
+        )
+        (fail "no underline")
+
+
+{-| **@private:** Every paragraph is tried as a header first, which would parse
+its first line twice. If the first line contains nothing that might span
+multiple lines (HTML, comments, block formulas, open quiz inputs, footnotes,
+effects, line breaks, or macros and macro listings), then the underline has to follow directly in
+the next line.
+-}
+isSetext : String -> Bool
+isSetext input =
+    case Regex.findAtMost 1 firstLine input of
+        [ { match } ] ->
+            List.any (\token -> String.contains token match) [ "<", "$$", "[^", "{", "\\", "@" ]
+                || openInput match
+                || (input
+                        |> String.dropLeft (String.length match)
+                        |> (\next -> String.startsWith "===" next || String.startsWith "---" next)
+                   )
+
+        _ ->
+            True
+
+
+{-| **@private:** A quiz input `[[ ... ]]` or `[->[ ... ]]` is parsed until
+the next `]]` (escaped brackets are excluded by `isSetext`), so it can only
+span multiple lines, if there is no `]]` after its start.
+-}
+openInput : String -> Bool
+openInput line_ =
+    case List.maximum (String.indexes "[[" line_ ++ String.indexes "[->[" line_) of
+        Just i ->
+            not (String.contains "]]" (String.dropLeft i line_))
+
+        Nothing ->
+            False
+
+
+firstLine : Regex.Regex
+firstLine =
+    Regex.fromString "^[^\\n]*\\n" |> Maybe.withDefault Regex.never
 
 
 underline : Parser Context Int
