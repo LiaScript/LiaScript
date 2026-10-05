@@ -23,6 +23,7 @@ import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput, stopPropagationOn)
+import Html.Lazy as Lazy
 import I18n.Translations as Trans exposing (Lang)
 import Json.Decode as JD
 import Lia.Definition.Types exposing (Definition)
@@ -645,8 +646,16 @@ submenu grouping isActive =
         |> Html.div
 
 
-qrCodeView : Lang -> Bool -> Bool -> Maybe (List (Attribute Msg) -> List (Attribute Msg)) -> String -> Html Msg
-qrCodeView lang tabbable marginBig grouping url =
+{-| Lazy, because encoding the QR matrix is expensive and the share menu is part
+of every frame, even when closed. `grouped` adds the share-menu focus group.
+-}
+qrCodeView : Lang -> Bool -> Bool -> Bool -> String -> Html Msg
+qrCodeView =
+    Lazy.lazy5 qrCode
+
+
+qrCode : Lang -> Bool -> Bool -> Bool -> String -> Html Msg
+qrCode lang tabbable marginBig grouped url =
     url
         |> QRCode.fromString
         |> Result.map
@@ -671,12 +680,11 @@ qrCodeView lang tabbable marginBig grouping url =
                      , Attr.class "lia-btn--transparent"
                      , Attr.style "padding" "0  "
                      ]
-                        |> (case grouping of
-                                Nothing ->
-                                    identity
+                        |> (if grouped then
+                                group ShowShare
 
-                                Just grouping_ ->
-                                    grouping_
+                            else
+                                identity
                            )
                     )
             )
@@ -1007,7 +1015,7 @@ menuShare url sync lang tabbable settings =
         ]
         []
     , [ if settings.hasShareApi /= Nothing then
-            qrCodeView lang tabbable False (Just grouping) url
+            qrCodeView lang tabbable False True url
 
         else
             Html.text ""

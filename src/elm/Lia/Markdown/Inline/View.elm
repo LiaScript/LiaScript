@@ -18,6 +18,7 @@ import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Keyed
+import Html.Lazy
 import I18n.Translations as Translations exposing (Lang)
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Msg exposing (Msg, Scripts)
@@ -975,11 +976,7 @@ reference config ref attr =
                 []
 
         QR_Link url title_ ->
-            [ url
-                |> QRCode.fromString
-                |> Result.map (QRCode.toSvg [ A11y_Aria.label <| Translations.qrCode config.lang ++ ": " ++ url ])
-                |> Result.withDefault (Html.text (Translations.qrErr config.lang))
-            ]
+            [ Html.Lazy.lazy2 qrCode config.lang url ]
                 |> Html.a
                     (Attr.href url
                         :: Attr.style "width" "300px"
@@ -1155,3 +1152,14 @@ link config alt_ url_ title_ attr =
             |> CList.addWhen (title config title_)
         )
         (viewer config alt_)
+
+
+{-| Lazy, because encoding the QR matrix is expensive and would otherwise run on
+every frame.
+-}
+qrCode : Lang -> String -> Html msg
+qrCode lang url =
+    url
+        |> QRCode.fromString
+        |> Result.map (QRCode.toSvg [ A11y_Aria.label <| Translations.qrCode lang ++ ": " ++ url ])
+        |> Result.withDefault (Html.text (Translations.qrErr lang))

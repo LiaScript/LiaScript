@@ -982,7 +982,7 @@ showModal model =
                     , Attr.style "margin-block-start" "calc(100vh * 0.08)"
                     ]
                     [ model.url
-                        |> Settings.qrCodeView model.translation True True Nothing
+                        |> Settings.qrCodeView model.translation True True False
                         |> Html.map UpdateSettings
                     ]
                 ]
