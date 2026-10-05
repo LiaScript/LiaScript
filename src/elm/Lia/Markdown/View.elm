@@ -747,24 +747,37 @@ viewQuote config attr alert elements =
 
 view_ascii : Config Msg -> Parameters -> ( Maybe Inlines, SvgBob.Configuration Blocks ) -> Html Msg
 view_ascii config attr ( caption, image ) =
-    image
-        |> (SvgBob.setColorsIn <|
-                if config.light then
-                    { text = "#4b4b4b"
-                    , background = "white"
-                    , stroke = "black"
-                    }
+    (if List.isEmpty image.foreign then
+        -- without embedded Markdown the drawing does not depend on the config
+        Lazy.lazy3 drawAscii config.light attr image
 
-                else
-                    { text = "white"
-                    , background = "#323232"
-                    , stroke = "#ddd"
-                    }
-           )
-        |> SvgBob.drawElements
-            (toAttribute attr)
-            (svgElement config)
+     else
+        drawAscii_ (svgElement config) config.light attr image
+    )
         |> svgFigure config caption
+
+
+drawAscii : Bool -> Parameters -> SvgBob.Configuration Blocks -> Html msg
+drawAscii =
+    drawAscii_ (\_ -> Html.text "")
+
+
+drawAscii_ : (Blocks -> Html msg) -> Bool -> Parameters -> SvgBob.Configuration Blocks -> Html msg
+drawAscii_ foreign light attr =
+    SvgBob.setColorsIn
+        (if light then
+            { text = "#4b4b4b"
+            , background = "white"
+            , stroke = "black"
+            }
+
+         else
+            { text = "white"
+            , background = "#323232"
+            , stroke = "#ddd"
+            }
+        )
+        >> SvgBob.drawElements (toAttribute attr) foreign
 
 
 svgElement config list =
