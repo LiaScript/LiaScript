@@ -1,3 +1,6 @@
+// has to come first, dependencies use `globalThis` on import
+import './globalThis'
+
 // @ts-ignore
 import { Elm } from '../../elm/Main.elm'
 

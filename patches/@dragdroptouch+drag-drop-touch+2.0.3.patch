@@ -1,28 +1,8 @@
 diff --git a/node_modules/@dragdroptouch/drag-drop-touch/dist/drag-drop-touch.esm.js b/node_modules/@dragdroptouch/drag-drop-touch/dist/drag-drop-touch.esm.js
-index 553901b..ba2d250 100644
+index 553901b..04dc5fd 100644
 --- a/node_modules/@dragdroptouch/drag-drop-touch/dist/drag-drop-touch.esm.js
 +++ b/node_modules/@dragdroptouch/drag-drop-touch/dist/drag-drop-touch.esm.js
-@@ -318,7 +318,9 @@ var DragDropTouch = class {
-         this._isDropZone = this._dispatchEvent(e, `dragover`, target);
-         if (this.configuration.allowDragScroll) {
-           const delta = this._getHotRegionDelta(e);
--          globalThis.scrollBy(delta.x, delta.y);
-+          // LiaScript: `window` instead of `globalThis`, which is undefined in
-+          // Firefox < 65 and thus on KaiOS 2.x
-+          window.scrollBy(delta.x, delta.y);
-         }
-       }
-     }
-@@ -427,7 +429,7 @@ var DragDropTouch = class {
-    */
-   _getHotRegionDelta(e) {
-     const { clientX: x, clientY: y } = e.touches[0];
--    const { innerWidth: w, innerHeight: h } = globalThis;
-+    const { innerWidth: w, innerHeight: h } = window;
-     const { dragScrollPercentage, dragScrollSpeed } = this.configuration;
-     const v1 = dragScrollPercentage / 100;
-     const v2 = 1 - v1;
-@@ -514,7 +516,12 @@ var DragDropTouch = class {
+@@ -514,7 +514,12 @@ var DragDropTouch = class {
     */
    _closestDraggable(element) {
      for (let e = element; e !== null; e = e.parentElement) {
@@ -35,15 +15,4 @@ index 553901b..ba2d250 100644
 +      if (e.getAttribute && e.getAttribute("draggable") === "true") {
          return e;
        }
-     }
-@@ -529,7 +536,9 @@ if (import.meta.url.includes(`?autoload`)) {
-     forceListen: true
-   });
- } else {
--  globalThis.DragDropTouch = {
-+  // LiaScript: this runs on import, `globalThis` would crash the entire app
-+  // bundle in Firefox < 65 (KaiOS 2.x), see above
-+  window.DragDropTouch = {
-     enable: function(dragRoot = document, dropRoot = document, options) {
-       enableDragDropTouch(dragRoot, dropRoot, options);
      }
