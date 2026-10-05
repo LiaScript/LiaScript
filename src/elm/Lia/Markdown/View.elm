@@ -14,7 +14,6 @@ import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Lazy as Lazy
-import Json.Encode as JE
 import I18n.Translations exposing (Lang)
 import Lia.Markdown.Chart.Types as ChartTypes
 import Lia.Markdown.Chart.View as Charts
@@ -32,7 +31,6 @@ import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types as Inline exposing (Inlines, htmlBlock, mediaBlock)
 import Lia.Markdown.Inline.View as Inline
-import Lia.Markdown.Json.Encode as Encode
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.Types as Survey
@@ -45,7 +43,6 @@ import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (icon, modal, shuffle)
 import Lia.Voice as Voice
-import MD5
 import SvgBob
 
 
@@ -164,13 +161,12 @@ viewContent config =
     fold config_ [] config_.section.body
 
 
-toHash : Block -> String
-toHash =
-    List.singleton
-        >> Encode.encode
-        >> JE.encode 0
-        >> MD5.hex
-        >> String.slice 0 8
+{-| Id of the block in front of a quiz, which labels the quiz (aria-labelledby),
+it only has to be unique within the page.
+-}
+quizLabel : Config Msg -> Quiz.Quiz Block -> String
+quizLabel config quiz =
+    "lia-quiz-" ++ String.fromInt config.section.id ++ "-" ++ String.fromInt quiz.id
 
 
 fold : Config Msg -> List (Html Msg) -> Blocks -> List (Html Msg)
@@ -182,7 +178,7 @@ fold config output blocks =
         (Paragraph a e) :: (Quiz attr quiz solution) :: bs ->
             let
                 id =
-                    toHash (Paragraph a e)
+                    quizLabel config quiz
             in
             fold config
                 (viewQuiz config (Just id) attr quiz solution
@@ -194,7 +190,7 @@ fold config output blocks =
         (HTML a e) :: (Quiz attr quiz solution) :: bs ->
             let
                 id =
-                    toHash (HTML a e)
+                    quizLabel config quiz
             in
             fold config
                 (viewQuiz config (Just id) attr quiz solution
