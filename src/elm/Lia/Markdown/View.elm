@@ -27,7 +27,7 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribut
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
-import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock, mediaBlock)
+import Lia.Markdown.Inline.Types as Inline exposing (Inlines, htmlBlock, mediaBlock)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Markdown.Json.Encode as Encode
 import Lia.Markdown.Quiz.Types as Quiz
@@ -649,7 +649,7 @@ scriptView viewer content =
         ( Just id, sub ) ->
             Html.div []
                 [ sub
-                , [ Inline.toScript id [ ( "display", "inline-block" ) ] ]
+                , [ Inline.Script id [ ( "display", "inline-block" ) ] ]
                     |> viewer
                     |> Html.div [ Attr.class "lia-paragraph" ]
                 ]
