@@ -13,6 +13,7 @@ import Conditional.String as CString
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import Html.Lazy
 import I18n.Translations as Translations exposing (Lang, baseSearch)
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
@@ -92,7 +93,7 @@ search lang active results model =
 content : Lang -> Bool -> Int -> (( Int, Script.Msg sub ) -> msg) -> Sections -> List (Html msg)
 content lang active sectionId msg =
     Array.toList
-        >> List.map (item lang active sectionId msg)
+        >> List.map (\section -> Html.Lazy.lazy5 item lang active (sectionId == section.id) msg section)
 
 
 bottom : Lang -> Bool -> msg -> Html msg
@@ -111,16 +112,19 @@ bottom lang active msg =
         ]
 
 
-item : Lang -> Bool -> Int -> (( Int, Script.Msg sub ) -> msg) -> Section -> Html msg
-item lang active sectionId msg section =
+{-| Rendered lazily by `content`, thus only sections that changed are rendered
+again, all arguments have to be stable references (`msg` a constructor).
+-}
+item : Lang -> Bool -> Bool -> (( Int, Script.Msg sub ) -> msg) -> Section -> Html msg
+item lang active isCurrent msg section =
     section.title
         |> List.map (view_inf Array.empty lang False False Nothing Nothing Nothing)
-        |> itemLink active sectionId section
+        |> itemLink active isCurrent section
         |> Html.map (Tuple.pair section.id >> msg)
 
 
-itemLink : Bool -> Int -> Section -> List (Html msg) -> Html msg
-itemLink active sectionId section =
+itemLink : Bool -> Bool -> Section -> List (Html msg) -> Html msg
+itemLink active isCurrent section =
     [ A11y_Key.tabbable active
     , A11y_Aria.hidden (not active)
     , section.indentation
@@ -134,5 +138,5 @@ itemLink active sectionId section =
         |> (++) "#"
         |> Attr.href
     ]
-        |> CList.appendIf (sectionId == section.id) [ Attr.id "focusedToc", Attr.class "lia-active" ]
+        |> CList.appendIf isCurrent [ Attr.id "focusedToc", Attr.class "lia-active" ]
         |> Html.a
