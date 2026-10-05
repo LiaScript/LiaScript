@@ -15,6 +15,8 @@ import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Lazy as Lazy
 import Json.Encode as JE
+import I18n.Translations exposing (Lang)
+import Lia.Markdown.Chart.Types as ChartTypes
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
 import Lia.Markdown.Config as Config exposing (Config)
@@ -563,12 +565,7 @@ view_block config block =
                 elements
 
         Chart attr chart ->
-            Lazy.lazy2 Charts.view
-                { lang = config.main.lang
-                , attr = attr
-                , light = config.light
-                }
-                chart
+            Lazy.lazy4 viewChart config.main.lang attr config.light chart
 
         ASCII attr bob ->
             view_ascii config attr bob
@@ -594,6 +591,13 @@ view_block config block =
 
         HtmlComment ->
             Html.text ""
+
+
+{-| Lazy needs stable arguments, a record literal would be new on every frame.
+-}
+viewChart : Lang -> Parameters -> Bool -> ChartTypes.Chart -> Html msg
+viewChart lang attr light =
+    Charts.view { lang = lang, attr = attr, light = light }
 
 
 {-| Hidden sections that are not `persistent` render an empty `main`, which does
