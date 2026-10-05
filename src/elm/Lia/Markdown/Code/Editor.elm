@@ -9,6 +9,7 @@ module Lia.Markdown.Code.Editor exposing
     , decodeCursor
     , editor
     , emptyCursor
+    , aceOptions
     , enableBasicAutocompletion
     , enableKeyboardAccessibility
     , enableLiveAutocompletion
@@ -329,6 +330,14 @@ annotations =
 useWrapMode : Bool -> Html.Attribute msg
 useWrapMode =
     boolean "useWrapMode"
+
+
+{-| Additional ace options defined by the course author, e.g.
+`data-ace-options="spellcheck hardWrap tabSize=8"`, see `editor.ts`.
+-}
+aceOptions : String -> Html.Attribute msg
+aceOptions =
+    JE.string >> Attr.property "aceOptions"
 
 
 enableBasicAutocompletion : Bool -> Html.Attribute msg

@@ -131,6 +131,10 @@ const EXTENSION: { [option: string]: string } = {
   enableBasicAutocompletion: 'language_tools',
   enableLiveAutocompletion: 'language_tools',
   enableSnippets: 'language_tools',
+  enableInlineAutocompletion: 'inline_autocomplete',
+  hardWrap: 'hardwrap',
+  spellcheck: 'spellcheck',
+  useElasticTabstops: 'elastic_tabstops_lite',
 }
 
 const extensions: { [name: string]: Promise<void> } = {}
@@ -159,6 +163,22 @@ function withExtensions(options: { [option: string]: any }) {
     }
     return known
   })
+}
+
+// "spellcheck hardWrap=80, tabSize=8" -> { spellcheck: true, hardWrap: 80, tabSize: 8 }
+function parseOptions(value: string) {
+  const options: { [option: string]: any } = {}
+
+  for (const entry of value.split(/[\s,]+/).filter(Boolean)) {
+    const [name, val] = entry.split('=')
+    try {
+      options[name] = val === undefined ? true : JSON.parse(val)
+    } catch (e) {
+      options[name] = val
+    }
+  }
+
+  return options
 }
 
 customElements.define(
@@ -204,6 +224,7 @@ customElements.define(
       enableBasicAutocompletion: boolean
       enableLiveAutocompletion: boolean
       enableSnippets: boolean
+      aceOptions: string
       rtl: boolean
       rtlText: boolean
     }
@@ -248,6 +269,7 @@ customElements.define(
         enableBasicAutocompletion: false,
         enableLiveAutocompletion: false,
         enableSnippets: false,
+        aceOptions: '',
         rtl: false,
         rtlText: false,
       }
@@ -291,10 +313,12 @@ customElements.define(
         rtlText: this.model.rtlText,
       })
 
+      // the author's options come last and can overwrite the defaults
       this.setOptions({
         enableBasicAutocompletion: this.model.enableBasicAutocompletion,
         enableLiveAutocompletion: this.model.enableLiveAutocompletion,
         enableSnippets: this.model.enableSnippets,
+        ...parseOptions(this.model.aceOptions),
       })
 
       if (!this.model.showCursor) {
@@ -520,6 +544,17 @@ customElements.define(
       if (!this._editor) return
 
       withExtensions(options).then((known) => this._editor.setOptions(known))
+    }
+
+    get aceOptions() {
+      return this.model.aceOptions
+    }
+
+    set aceOptions(value: string) {
+      if (this.model.aceOptions !== value) {
+        this.model.aceOptions = value
+        this.setOptions(parseOptions(value))
+      }
     }
 
     get rtl() {
