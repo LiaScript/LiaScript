@@ -35,7 +35,7 @@ import Dict
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.HTML.Attributes exposing (toURL)
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (c_frame, inlineCode, peek, stringTill)
+import Lia.Parser.Helper exposing (c_frame, inlineCode, peek, startsWith, stringTill)
 import Lia.Parser.Indentation as Indent
 import Lia.Utils exposing (toEscapeString)
 import Regex
@@ -84,7 +84,7 @@ or with a code block (macro listing).
 -}
 macro : Parser Context ()
 macro =
-    peek (\input -> String.startsWith "@" input || String.startsWith "```" input)
+    peek (\input -> startsWith "@" input || startsWith "```" input)
         macros
         (succeed ())
 

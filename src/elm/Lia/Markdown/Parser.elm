@@ -51,7 +51,7 @@ import Lia.Markdown.Table.Parser as Table
 import Lia.Markdown.Task.Parser as Task
 import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context as Context exposing (Context)
-import Lia.Parser.Helper exposing (c_frame, newline, newlines, peek, spaces, trimSpaces)
+import Lia.Parser.Helper exposing (c_frame, newline, newlines, peek, spaces, startsWith, trimSpaces)
 import Lia.Parser.Indentation as Indent
 import Lia.Parser.Input as Input
 import Lia.Parser.Preprocessor exposing (title_tag)
@@ -446,7 +446,7 @@ isSetext input =
                 || openInput match
                 || (input
                         |> String.dropLeft (String.length match)
-                        |> (\next -> String.startsWith "===" next || String.startsWith "---" next)
+                        |> (\next -> startsWith "===" next || startsWith "---" next)
                    )
 
         _ ->
@@ -713,7 +713,7 @@ of a macro) the result is `[]` and nothing is consumed.
 md_annotations : Parser Context Parameters
 md_annotations =
     peek
-        (trimSpaces >> (\input -> String.startsWith "<!--" input || String.startsWith "@" input || String.startsWith "```" input))
+        (trimSpaces >> (\input -> startsWith "<!--" input || startsWith "@" input || startsWith "```" input))
         (spaces
             |> keep macro
             |> keep (comment md_attribute)

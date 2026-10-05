@@ -54,7 +54,7 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Markdown.Quiz.Block.Parser as Input
 import Lia.Parser.Context as Context exposing (Context)
-import Lia.Parser.Helper exposing (inlineCode, peek, spaces, trimSpaces)
+import Lia.Parser.Helper exposing (inlineCode, peek, spaces, startsWith, trimSpaces)
 import Lia.Parser.Input as Context
 import Regex exposing (Regex)
 
@@ -130,7 +130,7 @@ followed comments are skipped.
 -}
 annotations : Parser Context Parameters
 annotations =
-    peek (trimSpaces >> String.startsWith "<!--")
+    peek (trimSpaces >> startsWith "<!--")
         (spaces
             |> keep (comment attribute)
             |> maybe
@@ -285,7 +285,7 @@ withAnnotations : List (Parser Context (Parameters -> Inline)) -> Parser Context
 withAnnotations parsers =
     Macro.macro
         |> keep
-            (or (peek (String.startsWith "<") (eScript [] |> map (\( attr, id ) -> Script id attr)) (fail "no script"))
+            (or (peek (startsWith "<") (eScript [] |> map (\( attr, id ) -> Script id attr)) (fail "no script"))
                 (choice parsers |> andMap (Macro.macro |> keep annotations))
             )
 

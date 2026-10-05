@@ -8,6 +8,7 @@ module Lia.Parser.Helper exposing
     , peek
     , spaces
     , spaces1
+    , startsWith
     , string1Till
     , stringTill
     , trimSpaces
@@ -94,11 +95,21 @@ peek check p default =
         )
 
 
+{-| Like `String.startsWith`, but that is implemented as
+`indexOf(prefix) === 0`, which searches the whole string if it does not start
+with `prefix`. On the remaining input of a parser this would be O(n) for every
+check.
+-}
+startsWith : String -> String -> Bool
+startsWith prefix str =
+    String.left (String.length prefix) str == prefix
+
+
 {-| Remove leading spaces and tabs.
 -}
 trimSpaces : String -> String
 trimSpaces str =
-    if String.startsWith " " str || String.startsWith "\t" str then
+    if startsWith " " str || startsWith "\t" str then
         trimSpaces (String.dropLeft 1 str)
 
     else
