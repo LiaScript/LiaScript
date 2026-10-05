@@ -305,9 +305,20 @@ initConfig screen model =
 
 showSection : Model -> Screen -> ( Int, Section ) -> Html Msg
 showSection model screen ( id, section ) =
-    initConfig screen model section
-        |> Markdown.view (model.section_active /= id) (Maybe.withDefault model.persistent section.persistent)
-        |> Html.map UpdateMarkdown
+    let
+        hidden =
+            model.section_active /= id
+
+        persistent =
+            Maybe.withDefault model.persistent section.persistent
+    in
+    if hidden && not persistent && section.error == Nothing then
+        Markdown.viewHidden
+
+    else
+        initConfig screen model section
+            |> Markdown.view hidden persistent
+            |> Html.map UpdateMarkdown
 
 
 {-| **@private:** used to display the text2speech output settings and spoken

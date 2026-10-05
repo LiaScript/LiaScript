@@ -2,6 +2,7 @@ module Lia.Markdown.View exposing
     ( addTranslation
     , view
     , viewContent
+    , viewHidden
     )
 
 import Accessibility.Key as A11y_Key
@@ -593,6 +594,14 @@ view_block config block =
 
         HtmlComment ->
             Html.text ""
+
+
+{-| Hidden sections that are not `persistent` render an empty `main`, which does
+not require a `Config`.
+-}
+viewHidden : Html msg
+viewHidden =
+    viewMain True []
 
 
 viewBlocks : Config Msg -> List Block -> List (Html Msg)
