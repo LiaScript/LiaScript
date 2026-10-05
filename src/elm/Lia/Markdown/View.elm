@@ -59,7 +59,7 @@ view hidden persistent config =
                     config.section.body
 
             else
-                viewMain hidden [ view_header config ]
+                viewMain hidden []
 
         Just msg ->
             viewMain hidden
