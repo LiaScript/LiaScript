@@ -5,6 +5,7 @@ module Lia.Parser.Helper exposing
     , newline
     , newlines
     , newlines1
+    , peek
     , spaces
     , spaces1
     , string1Till
@@ -14,6 +15,7 @@ module Lia.Parser.Helper exposing
 import Combine
     exposing
         ( Parser
+        , app
         , ignore
         , keep
         , many1Till
@@ -21,6 +23,7 @@ import Combine
         , map
         , modifyInput
         , modifyState
+        , primitive
         , regex
         , string
         , withColumn
@@ -67,6 +70,26 @@ debug log p =
                                 )
                         )
                 )
+        )
+
+
+{-| Run `p` only if the remaining input passes `check`, otherwise run
+`default`.
+
+This is a shortcut for parsers that can only start with a few known prefixes:
+the result is the same, but the alternatives within `p` do not have to fail one
+after another on every position.
+
+-}
+peek : (String -> Bool) -> Parser s a -> Parser s a -> Parser s a
+peek check p default =
+    primitive
+        (\state stream ->
+            if check stream.input then
+                app p state stream
+
+            else
+                app default state stream
         )
 
 

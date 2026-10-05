@@ -35,7 +35,7 @@ import Dict
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.HTML.Attributes exposing (toURL)
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (c_frame, inlineCode, stringTill)
+import Lia.Parser.Helper exposing (c_frame, inlineCode, peek, stringTill)
 import Lia.Parser.Indentation as Indent
 import Lia.Utils exposing (toEscapeString)
 import Regex
@@ -79,8 +79,18 @@ parameter_list =
     optional [] (parens (sepBy (string ",") parameter))
 
 
+{-| Expand all macros at the current position. Every macro starts with `@`
+or with a code block (macro listing).
+-}
 macro : Parser Context ()
 macro =
+    peek (\input -> String.startsWith "@" input || String.startsWith "```" input)
+        macros
+        (succeed ())
+
+
+macros : Parser Context ()
+macros =
     many1
         (choice
             [ uid_macro |> andThen (inject_macro False)
