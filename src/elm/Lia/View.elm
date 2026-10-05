@@ -684,19 +684,19 @@ slideTopBar languageCode lang screen url repositoryURL settings def progress syn
         , logo = Definition.getIcon def
         , buttons =
             List.concat
-                [ [ ( Settings.menuChat, "chat" )
-                  , ( Settings.menuMode, "mode" )
-                  , ( Settings.menuSettings screen.width, "settings" )
-                  , ( Settings.menuTranslations languageCode def, "lang" )
+                [ [ Settings.menu "chat" Settings.menuChat
+                  , Settings.menu "mode" Settings.menuMode
+                  , Settings.menu1 "settings" Settings.menuSettings screen.width
+                  , Settings.menu2 "lang" Settings.menuTranslations languageCode def
                   ]
                 , case settings.edit of
                     Nothing ->
                         []
 
                     Just editURL ->
-                        [ ( Settings.menuEdit editURL, "edit" ) ]
-                , [ ( Settings.menuShare url sync, "share" )
-                  , ( Settings.menuInformation repositoryURL def, "info" )
+                        [ Settings.menu1 "edit" Settings.menuEdit editURL ]
+                , [ Settings.menu2 "share" Settings.menuShare url sync
+                  , Settings.menu2 "info" Settings.menuInformation repositoryURL def
                   ]
                 ]
         , progress = progress

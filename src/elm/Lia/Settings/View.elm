@@ -3,6 +3,9 @@ module Lia.Settings.View exposing
     , btnSupport
     , design
     , header
+    , menu
+    , menu1
+    , menu2
     , menuChat
     , menuEdit
     , menuInformation
@@ -1142,6 +1145,36 @@ action msg open =
         |> List.append
 
 
+{-| Lazy menu entries for `header`. The menus are part of every frame and
+contain many event handlers, which Elm would otherwise patch on every frame.
+Lazy needs stable references, thus the menu function has to be a top-level
+function, additional parameters are passed separately with `menu1` and `menu2`.
+-}
+menu : String -> (Lang -> Bool -> Settings -> List (Html Msg)) -> Lang -> Bool -> Settings -> Html Msg
+menu =
+    Lazy.lazy5 menuItem
+
+
+menu1 : String -> (a -> Lang -> Bool -> Settings -> List (Html Msg)) -> a -> Lang -> Bool -> Settings -> Html Msg
+menu1 =
+    Lazy.lazy6 (\class fn a -> menuItem class (fn a))
+
+
+menu2 : String -> (a -> b -> Lang -> Bool -> Settings -> List (Html Msg)) -> a -> b -> Lang -> Bool -> Settings -> Html Msg
+menu2 =
+    Lazy.lazy7 (\class fn a b -> menuItem class (fn a b))
+
+
+menuItem : String -> (Lang -> Bool -> Settings -> List (Html Msg)) -> Lang -> Bool -> Settings -> Html Msg
+menuItem class fn lang tabbable settings =
+    Html.li
+        [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class
+        , A11y_Role.menuItem
+        , A11y_Aria.hasMenuPopUp
+        ]
+        (fn lang tabbable settings)
+
+
 doAction : Action -> Msg
 doAction =
     Action >> Toggle
@@ -1155,7 +1188,7 @@ header :
     , settings : Settings
     , logo : String
     , progress : String
-    , buttons : List ( Lang -> Bool -> Settings -> List (Html Msg), String )
+    , buttons : List (Lang -> Bool -> Settings -> Html Msg)
     }
     -> Html Msg
 header { online, active, lang, screen, settings, logo, progress, buttons } =
@@ -1206,15 +1239,7 @@ header { online, active, lang, screen, settings, logo, progress, buttons } =
                         else
                             List.tail >> Maybe.withDefault []
                        )
-                    |> List.map
-                        (\( fn, class ) ->
-                            Html.li
-                                [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class
-                                , A11y_Role.menuItem
-                                , A11y_Aria.hasMenuPopUp
-                                ]
-                                (fn lang tabbable settings)
-                        )
+                    |> List.map (\fn -> fn lang tabbable settings)
                     |> Html.ul
                         [ Attr.class "nav lia-support-menu__nav flow"
                         , A11y_Role.menuBar
