@@ -22,6 +22,7 @@ module Lia.Markdown.Chart.View exposing
 import Char exposing (toLower)
 import Conditional.List as CList
 import Dict exposing (Dict)
+import Helper.List as List
 import Html exposing (Html)
 import Html.Attributes as Attr
 import I18n.Translations exposing (getCodeFromLn)
@@ -934,7 +935,7 @@ encodeHeatMap yLabels { labels, category, data } =
 
 encodePieChart : Int -> Data (List ( String, Float )) -> JE.Value
 encodePieChart width { labels, category, data } =
-    if List.length data == 1 then
+    if List.isSingleton data then
         let
             pieces =
                 data
@@ -1028,7 +1029,7 @@ encodePieChart width { labels, category, data } =
 
 encodeFunnel : Data (List ( String, Float )) -> JE.Value
 encodeFunnel { labels, category, data, orientation } =
-    if List.length data == 1 then
+    if List.isSingleton data then
         let
             pieces =
                 data

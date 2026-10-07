@@ -7,6 +7,8 @@ import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 
 
+{-| Quiz inputs are not encoded.
+-}
 encode : Inlines -> JE.Value
 encode list =
     JE.list encInline list
@@ -89,7 +91,7 @@ encInline element =
                 , encParameters a
                 ]
 
-            Quiz ( length, id ) a ->
+            Quiz _ a ->
                 [ ( "TODO", JE.null )
                 , encParameters a
                 ]

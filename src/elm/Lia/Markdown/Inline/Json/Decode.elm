@@ -7,6 +7,9 @@ import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 
 
+{-| Formulas, quiz inputs, previews, qr-codes, and inner HTML cannot be
+decoded.
+-}
 decode : JD.Decoder Inlines
 decode =
     JD.list decInline

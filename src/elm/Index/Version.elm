@@ -25,6 +25,8 @@ It is assumed that:
 
 -}
 
+import List.Extra as List
+
 
 {-| Convert a semantic-version string (Major.Minor.Patch) to an integer, in
 order to compare it with other versions.
@@ -110,4 +112,4 @@ min =
 -}
 max : List String -> Maybe String
 max =
-    sort >> List.reverse >> List.head
+    List.sort >> List.last

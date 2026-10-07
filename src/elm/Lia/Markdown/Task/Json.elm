@@ -6,14 +6,14 @@ module Lia.Markdown.Task.Json exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Task.Types exposing (Task, Vector)
+import Lia.Markdown.Task.Types exposing (Element, Task, Vector)
 
 
 encode : (body -> JE.Value) -> Task body -> JE.Value
 encode encoder task =
     JE.object
         [ ( "id", JE.int task.id )
-        , ( "tasks", JE.list (JE.list encoder) task.task )
+        , ( "tasks", JE.list (JE.list encoder) task.items )
         ]
 
 
@@ -30,11 +30,6 @@ toVector : JD.Value -> Result JD.Error Vector
 toVector =
     JD.bool
         |> JD.array
-        |> JD.map
-            (\v ->
-                { state = v
-                , scriptID = Nothing
-                }
-            )
+        |> JD.map (\state -> Element state Nothing)
         |> JD.array
         |> JD.decodeValue

@@ -2,11 +2,13 @@ module Parser.Block.Task exposing
     ( checkedCase_fuzz_Suite
     , marker_fuzz_Suite
     , nested_Suite
+    , script_Suite
     , task_Suite
     )
 
 import Array
 import Expect
+import Lia.Markdown.Effect.Script.Types exposing (Stdout(..))
 import Lia.Markdown.Types exposing (Block(..))
 import LiaFuzz exposing (fuzzRegex)
 import Parser.Block.Fixtures exposing (paragraph, parseWithState)
@@ -27,7 +29,7 @@ task_Suite =
                         blocks
                             |> Expect.equal
                                 [ Task []
-                                    { task =
+                                    { items =
                                         [ [ paragraph "item one" ]
                                         , [ paragraph "item two" ]
                                         ]
@@ -56,7 +58,7 @@ marker_fuzz_Suite =
                 parseWithState (marker ++ " [ ] some task\n")
                     |> Tuple.first
                     |> Expect.equal
-                        [ Task [] { task = [ [ paragraph "some task" ] ], id = 0 } ]
+                        [ Task [] { items = [ [ paragraph "some task" ] ], id = 0 } ]
         ]
 
 
@@ -103,10 +105,10 @@ nested_Suite =
                         blocks
                             |> Expect.equal
                                 [ Task []
-                                    { task =
+                                    { items =
                                         [ [ paragraph "item one"
                                           , Task []
-                                                { task =
+                                                { items =
                                                     [ [ paragraph "nested one" ]
                                                     , [ paragraph "nested two" ]
                                                     ]
@@ -126,6 +128,36 @@ nested_Suite =
                                 [ Array.fromList [ False, True ] -- nested list (id 0)
                                 , Array.fromList [ False, True ] -- outer list (id 1)
                                 ]
+                    ]
+                    ()
+        ]
+
+
+{-| A `<script>` directly following a task list is attached to it: its index
+in `effect_model.javascript` is stored as the list's `scriptID`, and the
+initial checked-state is preset as the script's result.
+-}
+script_Suite : Test
+script_Suite =
+    describe "a <script> directly following a task list is attached to it"
+        [ test "scriptID points to the script, whose result is the initial state" <|
+            \_ ->
+                let
+                    state =
+                        parseWithState "- [ ] item one\n- [X] item two\n<script>@input</script>\n"
+                            |> Tuple.second
+                in
+                Expect.all
+                    [ \_ ->
+                        state.task_vector
+                            |> Array.get 0
+                            |> Maybe.map .scriptID
+                            |> Expect.equal (Just (Just 0))
+                    , \_ ->
+                        state.effect_model.javascript
+                            |> Array.get 0
+                            |> Maybe.andThen .result
+                            |> Expect.equal (Just (Text "[false,true]"))
                     ]
                     ()
         ]

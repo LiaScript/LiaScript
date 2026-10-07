@@ -18,6 +18,8 @@ import Combine
         , succeed
         , withState
         )
+import Helper.Array as Array
+import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Quiz.Parser exposing (maybeJS)
 import Lia.Markdown.Quiz.Vector.Parser exposing (either)
@@ -26,6 +28,7 @@ import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
+import Lia.Section exposing (SubSection)
 
 
 {-| Parse lines of GitHub flavored tasks:
@@ -97,46 +100,17 @@ and return the list of blocks to be visualized.
 modify_State : ( List Bool, List Markdown.Blocks ) -> Parser Context (Task Markdown.Block)
 modify_State ( states, tasks ) =
     let
+        element =
+            { state = Array.fromList states, scriptID = Nothing }
+
         addTask : Maybe Int -> Context -> Context
-        addTask m s =
+        addTask scriptID s =
             { s
-                | task_vector =
-                    Array.push
-                        { state = Array.fromList states
-                        , scriptID = m
-                        }
-                        s.task_vector
+                | task_vector = Array.push { element | scriptID = scriptID } s.task_vector
                 , effect_model =
-                    case m of
-                        Nothing ->
-                            s.effect_model
-
-                        Just scriptID ->
-                            let
-                                effect_model =
-                                    s.effect_model
-                            in
-                            { effect_model
-                                | javascript =
-                                    case Array.get scriptID effect_model.javascript of
-                                        Just script ->
-                                            Array.set scriptID
-                                                { script
-                                                    | result =
-                                                        Just
-                                                            (Script.Text
-                                                                (toString
-                                                                    { state = Array.fromList states
-                                                                    , scriptID = Nothing
-                                                                    }
-                                                                )
-                                                            )
-                                                }
-                                                effect_model.javascript
-
-                                        Nothing ->
-                                            effect_model.javascript
-                            }
+                    scriptID
+                        |> Maybe.map (setResult (toString element) s.effect_model)
+                        |> Maybe.withDefault s.effect_model
             }
     in
     (.task_vector >> Array.length >> succeed)
@@ -147,3 +121,15 @@ modify_State ( states, tasks ) =
                 |> map addTask
                 |> andThen modifyState
             )
+
+
+{-| **@private:** Show the initial task state as result of the attached script.
+-}
+setResult : String -> Effect.Model SubSection -> Int -> Effect.Model SubSection
+setResult state effect_model scriptID =
+    { effect_model
+        | javascript =
+            Array.update scriptID
+                (\script -> { script | result = Just (Script.Text state) })
+                effect_model.javascript
+    }
