@@ -25,6 +25,7 @@ yarn.lock
 
 # Test files
 test-rtl.html
+tests/tts-voices/*.json
 RTL_IMPLEMENTATION.md
 
 # Other

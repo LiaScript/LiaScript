@@ -11,12 +11,18 @@ import Lia.Parser.UrlPattern.Generic exposing (root)
 import Regex
 
 
+{-| The YouTube player, used to add the language.
+-}
+website : { youtube : String }
 website =
     { youtube = "https://www.youtube-nocookie.com/embed/"
     }
 
 
-{-| <http://embedcodedailymotion.blogspot.com/2016/05/dailymotion-embed-generator-tdborder.html>
+{-| Turn video URLs of known platforms into URLs of their embeddable players,
+the result is `( True, url )` if it is a player.
+
+<http://embedcodedailymotion.blogspot.com/2016/05/dailymotion-embed-generator-tdborder.html>
 
 <https://developers.google.com/youtube/player_parameters>
 
@@ -101,6 +107,9 @@ regex =
     Regex.fromString >> Maybe.withDefault Regex.never
 
 
+{-| Turn audio URLs of known platforms into URLs of their embeddable
+players, the result is `( True, url )` if it is a player.
+-}
 audio : String -> ( Bool, String )
 audio =
     [ { by =

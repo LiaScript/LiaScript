@@ -10,6 +10,7 @@ module Lia.Markdown.Survey.Update exposing
 import Array
 import Browser exposing (element)
 import Dict
+import Helper.Array as Array
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
@@ -66,30 +67,35 @@ update classroom sectionID scripts msg vector =
             Classroom.isConnected classroom.state
     in
     case msg of
-        TextUpdate idx str ->
-            update_text vector idx str
+        TextUpdate id str ->
+            vector
+                |> Array.update id (update_text str)
                 |> Return.val
 
         SelectUpdate id event ->
-            update_select vector id event
+            vector
+                |> Array.update id (update_select event)
                 |> Return.val
 
-        VectorUpdate idx var ->
-            update_vector vector idx var
+        VectorUpdate id var ->
+            vector
+                |> Array.update id (update_vector var)
                 |> Return.val
 
-        MatrixUpdate idx row var ->
-            update_matrix vector idx row var
+        MatrixUpdate id row var ->
+            vector
+                |> Array.update id (update_matrix row var)
                 |> Return.val
 
-        DropUpdate idx event ->
-            update_drop vector idx event
+        DropUpdate id event ->
+            vector
+                |> Array.update id (update_drop event)
                 |> Return.val
                 |> Return.cmd
                     (case event of
                         Enter False ->
                             Process.sleep 1
-                                |> Task.attempt (always <| DropUpdate idx Exit)
+                                |> Task.attempt (always <| DropUpdate id Exit)
 
                         _ ->
                             Cmd.none
@@ -101,17 +107,9 @@ update classroom sectionID scripts msg vector =
         --    else
         --        Return.val vector
         Reactivate id ->
-            case vector |> Array.get id of
-                Just element ->
-                    if element.submitted then
-                        set_state vector id { element | submitted = False }
-                            |> Return.val
-
-                    else
-                        Return.val vector
-
-                _ ->
-                    Return.val vector
+            vector
+                |> Array.update id (\element -> { element | submitted = False })
+                |> Return.val
 
         Submit id ->
             case vector |> Array.get id of
@@ -121,7 +119,7 @@ update classroom sectionID scripts msg vector =
                             if element.opt.incompleteness_allowed || submittable vector id then
                                 let
                                     new_vector =
-                                        submit vector id
+                                        Array.update id submit vector
                                 in
                                 new_vector
                                     |> Return.val
@@ -130,7 +128,8 @@ update classroom sectionID scripts msg vector =
 
                             else
                                 -- this is a hack to trigger the error message for empty answers
-                                updateError vector id (Just "")
+                                vector
+                                    |> Array.update id (updateError (Just ""))
                                     |> Return.val
 
                         Just scriptID ->
@@ -138,7 +137,8 @@ update classroom sectionID scripts msg vector =
                                 vector
 
                              else
-                                updateError vector id Nothing
+                                vector
+                                    |> Array.update id (updateError Nothing)
                             )
                                 |> Return.val
                                 |> Return.batchEvent
@@ -308,176 +308,128 @@ evalEventDecoder json =
             Return.val { e | errorMsg = Just eval.result }
 
 
-updateError : Vector -> Int -> Maybe String -> Vector
-updateError vector id message =
-    case Array.get id vector |> Maybe.map (\e -> ( e.submitted, e )) of
-        Just ( False, element ) ->
-            set_state vector id { element | errorMsg = message }
+updateError : Maybe String -> Element -> Element
+updateError message element =
+    if element.submitted then
+        element
+
+    else
+        { element | errorMsg = message }
+
+
+update_text : String -> Element -> Element
+update_text str element =
+    case ( element.submitted, element.state ) of
+        ( False, Text_State _ ) ->
+            { element | state = Text_State str }
 
         _ ->
-            vector
+            element
 
 
-update_text : Vector -> Int -> String -> Vector
-update_text vector idx str =
-    case Array.get idx vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
-        Just ( False, Text_State _, element ) ->
-            set_state vector idx { element | state = Text_State str }
+update_select : SelectMsg -> Element -> Element
+update_select event element =
+    case ( element.submitted, element.state, event ) of
+        ( False, Select_State b value, Choose ) ->
+            { element | state = Select_State (not b) value }
 
-        _ ->
-            vector
-
-
-update_select : Vector -> Int -> SelectMsg -> Vector
-update_select vector id event =
-    case Array.get id vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
-        Just ( False, Select_State b value, element ) ->
-            set_state vector
-                id
-                { element
-                    | state =
-                        case event of
-                            Choose ->
-                                Select_State (not b) value
-
-                            Update newValue ->
-                                Select_State False newValue
-                }
+        ( False, Select_State _ _, Update newValue ) ->
+            { element | state = Select_State False newValue }
 
         _ ->
-            vector
+            element
 
 
-update_drop : Vector -> Int -> DropMsg -> Vector
-update_drop vector id event =
-    case Array.get id vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
-        Just ( False, DragAndDrop_State highlight active value, element ) ->
-            set_state vector
-                id
-                { element
-                    | state =
-                        case event of
-                            Start ->
-                                DragAndDrop_State highlight True value
+update_drop : DropMsg -> Element -> Element
+update_drop event element =
+    case ( element.submitted, element.state ) of
+        ( False, DragAndDrop_State highlight active value ) ->
+            { element
+                | state =
+                    case event of
+                        Start ->
+                            DragAndDrop_State highlight True value
 
-                            Drop idx ->
-                                if highlight then
-                                    DragAndDrop_State False False idx
-
-                                else if not highlight && idx == value then
-                                    DragAndDrop_State False False -1
-
-                                else
-                                    DragAndDrop_State highlight False value
-
-                            Enter True ->
-                                DragAndDrop_State True active value
-
-                            Exit ->
-                                DragAndDrop_State False False -1
-
-                            Target ->
-                                DragAndDrop_State highlight False -1
-
-                            Source idx ->
+                        Drop idx ->
+                            if highlight then
                                 DragAndDrop_State False False idx
 
-                            _ ->
-                                DragAndDrop_State highlight active value
-                }
+                            else if idx == value then
+                                DragAndDrop_State False False -1
+
+                            else
+                                DragAndDrop_State highlight False value
+
+                        Enter True ->
+                            DragAndDrop_State True active value
+
+                        Exit ->
+                            DragAndDrop_State False False -1
+
+                        Target ->
+                            DragAndDrop_State highlight False -1
+
+                        Source idx ->
+                            DragAndDrop_State False False idx
+
+                        _ ->
+                            element.state
+            }
 
         _ ->
-            vector
+            element
 
 
-update_vector : Vector -> Int -> String -> Vector
-update_vector vector idx var =
-    case Array.get idx vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
-        Just ( False, Vector_State False e, element ) ->
-            let
-                selected =
-                    e
-                        |> Dict.get var
-                        |> Maybe.withDefault False
-            in
+update_vector : String -> Element -> Element
+update_vector var element =
+    case ( element.submitted, element.state ) of
+        ( False, Vector_State True dict ) ->
+            { element | state = Vector_State True (Dict.update var (Maybe.map not) dict) }
+
+        ( False, Vector_State False dict ) ->
             { element
                 | state =
-                    e
+                    dict
                         |> Dict.map (\_ _ -> False)
-                        |> Dict.update var (\_ -> Just (not selected))
+                        |> Dict.insert var (not (Dict.get var dict |> Maybe.withDefault False))
                         |> Vector_State False
             }
-                |> set_state vector idx
-
-        Just ( False, Vector_State True e, element ) ->
-            { element
-                | state =
-                    e
-                        |> Dict.update var (\b -> Maybe.map not b)
-                        |> Vector_State True
-            }
-                |> set_state vector idx
 
         _ ->
-            vector
+            element
 
 
-update_matrix : Vector -> Int -> Int -> String -> Vector
-update_matrix vector col_id row_id var =
-    case Array.get col_id vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
-        Just ( False, Matrix_State False matrix, element ) ->
-            let
-                row =
-                    Array.get row_id matrix
-
-                selected =
-                    row
-                        |> Maybe.andThen (Dict.get var)
-                        |> Maybe.withDefault False
-            in
+update_matrix : Int -> String -> Element -> Element
+update_matrix row_id var element =
+    case ( element.submitted, element.state ) of
+        ( False, Matrix_State True matrix ) ->
             { element
                 | state =
-                    row
-                        |> Maybe.map (\d -> Dict.map (\_ _ -> False) d)
-                        |> Maybe.map (\d -> Dict.update var (\_ -> Just (not selected)) d)
-                        |> Maybe.map (\d -> Array.set row_id d matrix)
-                        |> Maybe.withDefault matrix
-                        |> Matrix_State False
-            }
-                |> set_state vector col_id
-
-        Just ( False, Matrix_State True matrix, element ) ->
-            let
-                row =
-                    Array.get row_id matrix
-            in
-            { element
-                | state =
-                    row
-                        |> Maybe.map (\d -> Dict.update var (\b -> Maybe.map not b) d)
-                        |> Maybe.map (\d -> Array.set row_id d matrix)
-                        |> Maybe.withDefault matrix
+                    matrix
+                        |> Array.update row_id (Dict.update var (Maybe.map not))
                         |> Matrix_State True
             }
-                |> set_state vector col_id
+
+        ( False, Matrix_State False matrix ) ->
+            { element
+                | state =
+                    matrix
+                        |> Array.update row_id
+                            (\row ->
+                                row
+                                    |> Dict.map (\_ _ -> False)
+                                    |> Dict.insert var (not (Dict.get var row |> Maybe.withDefault False))
+                            )
+                        |> Matrix_State False
+            }
 
         _ ->
-            vector
+            element
 
 
-set_state : Vector -> Int -> Element -> Vector
-set_state vector id element =
-    Array.set id element vector
-
-
-submit : Vector -> Int -> Vector
-submit vector idx =
-    case Array.get idx vector of
-        Just element ->
-            Array.set idx { element | submitted = True, errorMsg = Nothing } vector
-
-        _ ->
-            vector
+submit : Element -> Element
+submit element =
+    { element | submitted = True, errorMsg = Nothing }
 
 
 submittable : Vector -> Int -> Bool
@@ -499,7 +451,7 @@ submittable vector idx =
         Just ( False, Vector_State _ state ) ->
             state
                 |> Dict.values
-                |> List.filter (\a -> a)
+                |> List.filter identity
                 |> List.length
                 |> (\s -> s > 0)
 
@@ -507,8 +459,8 @@ submittable vector idx =
             state
                 |> Array.toList
                 |> List.map Dict.values
-                |> List.map (\l -> List.filter (\a -> a) l)
-                |> List.all (\a -> List.length a > 0)
+                |> List.map (List.filter identity)
+                |> List.all (List.isEmpty >> not)
 
         _ ->
             False

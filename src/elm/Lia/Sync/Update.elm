@@ -10,6 +10,7 @@ module Lia.Sync.Update exposing
 
 import Array
 import Dict exposing (Dict)
+import Helper.Array as Array
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
@@ -34,6 +35,7 @@ import Lia.Sync.Types
         , decodePeers
         , fromClassroomMode
         , id
+        , restoreSaved
         , toClassroomMode
         )
 import Lia.Sync.Via as Backend exposing (Backend)
@@ -310,25 +312,31 @@ update session model msg =
 
                 ( "classrooms", param ) ->
                     let
-                        saved =
-                            param
-                                |> JD.decodeValue Classroom.decoder
-                                |> Result.withDefault sync.saved
+                        -- a room from the URL takes the name it was saved
+                        -- with, before the generic prefill below
+                        restored =
+                            restoreSaved
+                                { sync
+                                    | saved =
+                                        param
+                                            |> JD.decodeValue Classroom.decoder
+                                            |> Result.withDefault sync.saved
+                                }
 
                         -- prefill "Your name" from the most recently used
                         -- classroom, so returning users don't have to
                         -- retype it every time they open the dialog
                         name =
-                            if String.isEmpty sync.name then
-                                saved
+                            if String.isEmpty restored.name then
+                                restored.saved
                                     |> List.head
                                     |> Maybe.andThen .name
-                                    |> Maybe.withDefault sync.name
+                                    |> Maybe.withDefault restored.name
 
                             else
-                                sync.name
+                                restored.name
                     in
-                    { model | sync = { sync | saved = saved, name = name } }
+                    { model | sync = { restored | name = name } }
                         |> Return.val
 
                 _ ->
@@ -1095,16 +1103,18 @@ lockSections :
     -> Sections
     -> Sections
 lockSections lockAnswered getVector setVector ownId dataUpdate sectionIds sections =
-    sectionIds
-        |> List.foldl
-            (\sectionId secs ->
-                case Array.get sectionId secs of
-                    Just section ->
-                        Array.set sectionId
-                            (setVector (lockAnswered ownId dataUpdate (Just sectionId) (getVector section)) section)
-                            secs
-
-                    Nothing ->
-                        secs
-            )
-            sections
+    List.foldl
+        (\sectionId ->
+            Array.update sectionId
+                (\section ->
+                    setVector
+                        (lockAnswered ownId
+                            dataUpdate
+                            (Just sectionId)
+                            (getVector section)
+                        )
+                        section
+                )
+        )
+        sections
+        sectionIds

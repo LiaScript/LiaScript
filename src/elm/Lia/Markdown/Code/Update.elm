@@ -5,7 +5,7 @@ port module Lia.Markdown.Code.Update exposing
     )
 
 import Array exposing (Array)
-import Conditional.Array as CArray
+import Helper.Array as Array
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Code.Events as Event
@@ -82,7 +82,6 @@ update sync sectionID scripts msg model =
         Eval idx ->
             execute sync sectionID scripts model idx
 
-        --|> Return.sync (PEvent.initWithId "eval" idx JE.null)
         Update id_1 id_2 code_str ->
             if isSyncModeActive id_1 model then
                 Return.val model
@@ -98,24 +97,18 @@ update sync sectionID scripts msg model =
         FlipView (Evaluate projectID) fileID ->
             flipEval sectionID model projectID fileID
 
-        --|> Return.sync (PEvent.initWithId "flip_eval" id_1 (JE.int id_2))
         FlipView (Highlight projectID) fileID ->
             flipHigh model projectID fileID
 
-        --|> Return.sync (PEvent.initWithId "flip_high" id_1 (JE.int id_2))
         FlipFullscreen (Highlight id_1) id_2 ->
             { model
                 | highlight =
-                    CArray.setWhen id_1
-                        (model.highlight
-                            |> Array.get id_1
-                            |> Maybe.map
-                                (\pro ->
-                                    { pro
-                                        | file =
-                                            updateArray (\f -> { f | fullscreen = not f.fullscreen }) id_2 pro.file
-                                    }
-                                )
+                    Array.update id_1
+                        (\pro ->
+                            { pro
+                                | file =
+                                    Array.update id_2 (\f -> { f | fullscreen = not f.fullscreen }) pro.file
+                            }
                         )
                         model.highlight
             }
@@ -132,20 +125,15 @@ update sync sectionID scripts msg model =
         Load idx version ->
             load sectionID model idx version
 
-        --|> Return.sync (PEvent.initWithId "load" idx (JE.int version))
         First idx ->
             load sectionID model idx 0
 
-        --|> Return.sync (PEvent.initWithId "load" idx (JE.int 0))
         Last projectID ->
-            let
-                version =
-                    model
-                        |> maybe_project projectID (.version >> Array.length >> (+) -1)
-                        |> Maybe.map .value
-                        |> Maybe.withDefault 0
-            in
-            load sectionID model projectID version
+            model.evaluate
+                |> Array.get projectID
+                |> Maybe.map (.version >> Array.length >> (+) -1)
+                |> Maybe.withDefault 0
+                |> load sectionID model projectID
 
         Handle event ->
             case PEvent.destructure event of
@@ -161,14 +149,10 @@ update sync sectionID scripts msg model =
                     case e.result of
                         "LIA: wait" ->
                             if isSyncModeActive id model then
-                                model
-                                    |> maybe_project id (\p -> { p | syncLog = Log.empty })
-                                    |> maybe_update id model
+                                updateProject id (\p -> { p | syncLog = Log.empty }) model
 
                             else
-                                model
-                                    |> maybe_project id (\p -> { p | log = Log.empty })
-                                    |> maybe_update id model
+                                updateProject id (\p -> { p | log = Log.empty }) model
 
                         "LIA: stop" ->
                             model
@@ -184,19 +168,15 @@ update sync sectionID scripts msg model =
 
                         "LIA: clear" ->
                             if isSyncModeActive id model then
-                                model
-                                    |> maybe_project id (\p -> { p | syncLog = Log.empty })
-                                    |> maybe_update id model
+                                updateProject id (\p -> { p | syncLog = Log.empty }) model
 
                             else
-                                model
-                                    |> maybe_project id clr
-                                    |> maybe_update id model
+                                updateProject id clr model
 
                         -- preserve previous logging by setting ok to false
                         "LIA: terminal" ->
                             model
-                                |> maybe_project id
+                                |> updateProject id
                                     (\p ->
                                         { p
                                             | terminal =
@@ -208,14 +188,11 @@ update sync sectionID scripts msg model =
                                                     |> Just
                                         }
                                     )
-                                |> maybe_update id model
                                 |> reveal id
 
                         _ ->
                             if isSyncModeActive id model then
-                                model
-                                    |> maybe_project id ((\p -> { p | syncLog = Log.add_Eval e p.syncLog }) >> set_result e)
-                                    |> maybe_update id model
+                                updateProject id ((\p -> { p | syncLog = Log.add_Eval e p.syncLog }) >> set_result e) model
 
                             else
                                 model
@@ -229,7 +206,7 @@ update sync sectionID scripts msg model =
                         Ok [ log, message ] ->
                             if isSyncModeActive id model then
                                 model
-                                    |> maybe_project id
+                                    |> updateProject id
                                         (\p ->
                                             { p
                                                 | syncLog =
@@ -242,12 +219,10 @@ update sync sectionID scripts msg model =
                                                         p.syncLog
                                             }
                                         )
-                                    |> maybe_update id model
 
                             else
                                 model
-                                    |> maybe_project id (logger log message)
-                                    |> maybe_update id model
+                                    |> updateProject id (logger log message)
                                     -- only on the first message, to not fight the user while a program keeps printing
                                     |> (if Maybe.map (.log >> Log.isEmpty) (Array.get id model.evaluate) == Just True then
                                             reveal id
@@ -262,54 +237,11 @@ update sync sectionID scripts msg model =
                 _ ->
                     Return.val model
 
-        -- TODO:
-        -- case PEvent.destructure eval of
-        --     {- Just ( "sync", _, message ) ->
-        --        case PEvent.topicWithId event of
-        --            Just ( "flip_eval", Just id ) ->
-        --                message
-        --                    |> JD.decodeValue JD.int
-        --                    |> Result.map (flipEval model id)
-        --                    |> Result.withDefault (Return.val model)
-        --            Just ( "flip_high", Just id ) ->
-        --                message
-        --                    |> JD.decodeValue JD.int
-        --                    |> Result.map (flipHigh model id)
-        --                    |> Result.withDefault (Return.val model)
-        --            Just ( "eval", Just id ) ->
-        --                execute scripts model id
-        --            Just ( "update", Just id_1 ) ->
-        --                case
-        --                    JD.decodeValue
-        --                        (JD.map2 Tuple.pair
-        --                            (JD.field "id" JD.int)
-        --                            (JD.field "code" JD.string)
-        --                        )
-        --                        message
-        --                of
-        --                    Ok ( id_2, code ) ->
-        --                        update_file
-        --                            id_1
-        --                            id_2
-        --                            model
-        --                            (\f -> { f | code = code })
-        --                            (\_ -> [])
-        --                    _ ->
-        --                        Return.val model
-        --            Just ( "load", Just id ) ->
-        --                message
-        --                    |> JD.decodeValue JD.int
-        --                    |> Result.map (load model id)
-        --                    |> Result.withDefault (Return.val model)
-        --            _ ->
-        --                Return.val model
-        --     -}
-        --     _ ->
-        Stop idx ->
+        Stop id ->
             model
-                |> maybe_project idx (\p -> { p | running = False, terminal = Nothing })
-                |> Maybe.map (Return.batchEvent (Event.stop idx))
-                |> maybe_update idx model
+                |> maybe_project id halt
+                |> Maybe.map (Return.batchEvent (Event.stop id))
+                |> maybe_update id model
 
         Resize code height ->
             Return.val <|
@@ -353,11 +285,8 @@ update sync sectionID scripts msg model =
         ToggleSync id ->
             { model
                 | evaluate =
-                    CArray.setWhen id
-                        (model.evaluate
-                            |> Array.get id
-                            |> Maybe.map (\pro -> { pro | syncMode = not pro.syncMode })
-                        )
+                    Array.update id
+                        (\pro -> { pro | syncMode = not pro.syncMode })
                         model.evaluate
             }
                 |> Return.val
@@ -438,45 +367,11 @@ doSync sync sectionID ret =
             ret
 
 
-
---|> Return.batchEvents
-
-
 onResize : Int -> String -> Array Project -> Array Project
 onResize id height code =
-    CArray.setWhen id
-        (code
-            |> Array.get id
-            |> Maybe.map (\pro -> { pro | logSize = Just height })
-        )
+    Array.update id
+        (\pro -> { pro | logSize = Just height })
         code
-
-
-
-{-
-   update_terminal : (String -> Event) -> Terminal.Msg -> Project -> Return Project msg sub
-   update_terminal f msg project =
-       case project.terminal |> Maybe.map (Terminal.update msg) of
-           Just ( terminal, Nothing ) ->
-               { project | terminal = Just terminal }
-                   |> Return.val
-
-           Just ( terminal, Just str ) ->
-               { project
-                   | terminal = Just terminal
-                   , log =
-                       if project.syncMode then
-                           project.log
-
-                       else
-                           Log.add Log.Info str project.log
-               }
-                   |> Return.val
-                   |> Return.batchEvent (f str)
-
-           Nothing ->
-               Return.val project
--}
 
 
 update_terminal : Terminal.Msg -> Project -> ( Project, Maybe String )
@@ -521,29 +416,23 @@ maybe_update idx model =
         >> Maybe.withDefault (Return.val model)
 
 
+updateProject : Int -> (Project -> Project) -> Model -> Return Model msg sub
+updateProject idx f model =
+    Return.val { model | evaluate = Array.update idx f model.evaluate }
+
+
 update_file : Int -> Int -> Model -> (File -> File) -> (File -> List Event) -> Return Model msg sub
 update_file id_1 id_2 model f f_log =
-    case Array.get id_1 model.evaluate of
-        Just project ->
-            case
-                project.file
-                    |> Array.get id_2
-                    |> Maybe.map f
-            of
-                Just file ->
-                    { model
-                        | evaluate =
-                            Array.set id_1
-                                { project
-                                    | file = Array.set id_2 file project.file
-                                }
-                                model.evaluate
-                    }
-                        |> Return.val
-                        |> Return.batchEvents (f_log file)
-
-                Nothing ->
-                    Return.val model
+    case
+        model.evaluate
+            |> Array.get id_1
+            |> Maybe.andThen (.file >> Array.get id_2)
+            |> Maybe.map f
+    of
+        Just file ->
+            { model | evaluate = Array.update id_1 (\project -> { project | file = Array.set id_2 file project.file }) model.evaluate }
+                |> Return.val
+                |> Return.batchEvents (f_log file)
 
         Nothing ->
             Return.val model
@@ -564,99 +453,54 @@ is_version_new sectionID idx return =
             return
 
 
+withLog : Log.Log -> Project -> Project
+withLog log project =
+    { project
+        | version =
+            Array.update
+                project.version_active
+                (Tuple.mapSecond (always log))
+                project.version
+        , log = log
+    }
+
+
+halt : Project -> Project
+halt project =
+    { project | running = False, terminal = Nothing }
+
+
 stop : Project -> Project
 stop project =
-    case project.version |> Array.get project.version_active of
-        Just ( code, _ ) ->
-            { project
-                | version =
-                    if project.syncMode then
-                        project.version
+    if project.syncMode then
+        halt project
 
-                    else
-                        Array.set
-                            project.version_active
-                            ( code, project.log )
-                            project.version
-                , running = False
-                , terminal = Nothing
-            }
-
-        Nothing ->
-            project
+    else
+        withLog project.log (halt project)
 
 
 set_result : Eval -> Project -> Project
 set_result e project =
     if project.syncMode then
-        { project | running = False, terminal = Nothing }
+        halt project
 
     else
-        case project.version |> Array.get project.version_active of
-            Just ( code, _ ) ->
-                { project
-                    | version =
-                        Array.set
-                            project.version_active
-                            ( code, Log.add_Eval e project.log )
-                            project.version
-                    , running = False
-                    , terminal = Nothing
-                    , log = Log.add_Eval e project.log
-                }
-
-            Nothing ->
-                project
+        withLog (Log.add_Eval e project.log) (halt project)
 
 
 clr : Project -> Project
-clr project =
-    case project.version |> Array.get project.version_active of
-        Just ( code, _ ) ->
-            { project
-                | version =
-                    Array.set
-                        project.version_active
-                        ( code, Log.empty )
-                        project.version
-                , log = Log.empty
-            }
-
-        Nothing ->
-            project
+clr =
+    withLog Log.empty
 
 
 logger : String -> String -> Project -> Project
 logger level message project =
-    case
-        ( project.version
-            |> Array.get project.version_active
-            |> Maybe.map Tuple.first
-        , Log.fromString level
-        )
-    of
-        ( Just code, Just level_ ) ->
-            { project
-                | version =
-                    Array.set
-                        project.version_active
-                        ( code, Log.add level_ message project.log )
-                        project.version
-                , log = Log.add level_ message project.log
-            }
+    case Log.fromString level of
+        Just level_ ->
+            withLog (Log.add level_ message project.log) project
 
-        _ ->
+        Nothing ->
             project
-
-
-updateArray : (e -> e) -> Int -> Array e -> Array e
-updateArray fn i array =
-    CArray.setWhen i
-        (array
-            |> Array.get i
-            |> Maybe.map fn
-        )
-        array
 
 
 flipEval : Maybe Int -> Model -> Int -> Int -> Return Model msg sub
@@ -673,16 +517,12 @@ flipHigh : Model -> Int -> Int -> Return Model msg sub
 flipHigh model id_1 id_2 =
     { model
         | highlight =
-            CArray.setWhen id_1
-                (model.highlight
-                    |> Array.get id_1
-                    |> Maybe.map
-                        (\pro ->
-                            { pro
-                                | file =
-                                    updateArray (\f -> { f | visible = not f.visible }) id_2 pro.file
-                            }
-                        )
+            Array.update id_1
+                (\pro ->
+                    { pro
+                        | file =
+                            Array.update id_2 (\f -> { f | visible = not f.visible }) pro.file
+                    }
                 )
                 model.highlight
     }

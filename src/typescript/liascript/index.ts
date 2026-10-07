@@ -1,3 +1,6 @@
+// has to come first, dependencies use `globalThis` on import
+import './globalThis'
+
 // @ts-ignore
 import { Elm } from '../../elm/Main.elm'
 
@@ -10,7 +13,7 @@ import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only.js'
 
 import { Connector } from '../connectors/Base/index'
 
-import * as TOOLTIP from '../webcomponents/tooltip/index'
+import '../webcomponents/tooltip/index'
 
 // Services
 import Console from './service/Console'
@@ -179,9 +182,6 @@ export class LiaScript {
         },
       })
     }
-
-    // Attach a tooltip-div to the end of the DOM
-    TOOLTIP.initTooltip()
   }
 
   reset() {

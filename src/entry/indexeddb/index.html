@@ -55,14 +55,26 @@
     ></script>
     <script>
       //if (process.env.NODE_ENV !== 'development') {
-      if ('serviceWorker' in navigator) {
+      // legacy browsers that load the `nomodule` bundles (e.g. KaiOS 2.x) cannot
+      // parse the workbox-based service worker (async/await, classes), so only
+      // register it where the `type="module"` bundles are used as well
+      if (
+        'serviceWorker' in navigator &&
+        'noModule' in HTMLScriptElement.prototype
+      ) {
         window.addEventListener('load', function () {
           let sw = './sw.js'
           try {
+            // wrapped, since older Gecko throws if console methods are called
+            // detached from `console`
             navigator.serviceWorker
               .register(sw)
-              .then(console.log)
-              .catch(console.error)
+              .then(function (e) {
+                console.log(e)
+              })
+              .catch(function (e) {
+                console.error(e)
+              })
           } catch (e) {
             console.warn('sw: ', e)
           }

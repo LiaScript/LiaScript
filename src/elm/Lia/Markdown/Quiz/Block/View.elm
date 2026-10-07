@@ -15,7 +15,7 @@ import Lia.Markdown.Inline.View exposing (dropHere, viewer)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Utils exposing (blockKeydown, deactivate, icon, shuffle)
+import Lia.Utils exposing (blockKeydown, deactivate, icon, onEnter, shuffle)
 import List.Extra
 
 
@@ -289,6 +289,7 @@ text solution state =
         , Attr.disabled (not <| Solution.isOpen solution)
         , onInput Input
         , blockKeydown (Input state)
+        , onEnter Submit
         , A11y_Aria.label "quiz answer"
         ]
         []

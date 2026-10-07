@@ -126,6 +126,61 @@ function debounce(cb: (_: any) => void, delay: number = 1000) {
 }
 */
 
+// ace options that are unknown to ace until their extension is loaded
+const EXTENSION: { [option: string]: string } = {
+  enableBasicAutocompletion: 'language_tools',
+  enableLiveAutocompletion: 'language_tools',
+  enableSnippets: 'language_tools',
+  enableInlineAutocompletion: 'inline_autocomplete',
+  hardWrap: 'hardwrap',
+  spellcheck: 'spellcheck',
+  useElasticTabstops: 'elastic_tabstops_lite',
+}
+
+const extensions: { [name: string]: Promise<void> } = {}
+
+// Extensions are not bundled, ace loads them from the static ace files
+// (basePath). An extension is only loaded if one of its options is enabled,
+// options of extensions that are not loaded are dropped.
+function withExtensions(options: { [option: string]: any }) {
+  const loads: Promise<void>[] = []
+
+  for (const option in options) {
+    const ext = EXTENSION[option]
+    if (ext && options[option] && !extensions[ext]) {
+      extensions[ext] = new Promise((resolve) =>
+        ace.config.loadModule('ace/ext/' + ext, () => resolve())
+      )
+    }
+    if (ext && extensions[ext]) loads.push(extensions[ext])
+  }
+
+  return Promise.all(loads).then(() => {
+    const known: { [option: string]: any } = {}
+    for (const option in options) {
+      if (!EXTENSION[option] || extensions[EXTENSION[option]])
+        known[option] = options[option]
+    }
+    return known
+  })
+}
+
+// "spellcheck hardWrap=80, tabSize=8" -> { spellcheck: true, hardWrap: 80, tabSize: 8 }
+function parseOptions(value: string) {
+  const options: { [option: string]: any } = {}
+
+  for (const entry of value.split(/[\s,]+/).filter(Boolean)) {
+    const [name, val] = entry.split('=')
+    try {
+      options[name] = val === undefined ? true : JSON.parse(val)
+    } catch (e) {
+      options[name] = val
+    }
+  }
+
+  return options
+}
+
 customElements.define(
   'lia-editor',
   class extends HTMLElement {
@@ -159,7 +214,6 @@ customElements.define(
       readOnly: boolean
       showCursor: boolean
       showGutter: boolean
-      extensions: string[]
       maxLines: number
       marker: string
       minLines: number
@@ -167,6 +221,10 @@ customElements.define(
       fontSize: string
       fontFamily: string
       enableKeyboardAccessibility: boolean
+      enableBasicAutocompletion: boolean
+      enableLiveAutocompletion: boolean
+      enableSnippets: boolean
+      aceOptions: string
       rtl: boolean
       rtlText: boolean
     }
@@ -201,7 +259,6 @@ customElements.define(
         readOnly: false,
         showCursor: true,
         showGutter: true,
-        extensions: [],
         maxLines: Infinity,
         marker: '',
         minLines: 1,
@@ -209,6 +266,10 @@ customElements.define(
         fontSize: '1.5rem',
         fontFamily: 'var(--global-font-mono,)',
         enableKeyboardAccessibility: true,
+        enableBasicAutocompletion: false,
+        enableLiveAutocompletion: false,
+        enableSnippets: false,
+        aceOptions: '',
         rtl: false,
         rtlText: false,
       }
@@ -232,8 +293,6 @@ customElements.define(
     }
 
     connectedCallback() {
-      this.setExtension()
-
       this._editor = ace.edit(this, {
         value: this.model.value,
         theme: 'ace/theme/' + this.model.theme,
@@ -252,6 +311,14 @@ customElements.define(
         enableKeyboardAccessibility: this.model.enableKeyboardAccessibility,
         rtl: this.model.rtl,
         rtlText: this.model.rtlText,
+      })
+
+      // the author's options come last and can overwrite the defaults
+      this.setOptions({
+        enableBasicAutocompletion: this.model.enableBasicAutocompletion,
+        enableLiveAutocompletion: this.model.enableLiveAutocompletion,
+        enableSnippets: this.model.enableSnippets,
+        ...parseOptions(this.model.aceOptions),
       })
 
       if (!this.model.showCursor) {
@@ -417,30 +484,6 @@ customElements.define(
       }
     }
 
-    get extensions() {
-      return this.model.extensions
-    }
-
-    set extensions(values) {
-      if (this.model.extensions === values) return
-
-      this.model.extensions = values
-
-      if (!this._editor) return
-
-      this.setExtension()
-    }
-
-    setExtension() {
-      for (const ext in this.model.extensions) {
-        try {
-          ace.require('ace/ext/' + ext)
-        } catch (e) {
-          console.log('Problem Ace: require ', ext, ' => ', e.toString())
-        }
-      }
-    }
-
     get fontSize() {
       return this.model.fontSize
     }
@@ -460,6 +503,57 @@ customElements.define(
       if (this.model.enableKeyboardAccessibility !== value) {
         this.model.enableKeyboardAccessibility = value
         this.setOption('enableKeyboardAccessibility', value)
+      }
+    }
+
+    get enableBasicAutocompletion() {
+      return this.model.enableBasicAutocompletion
+    }
+
+    set enableBasicAutocompletion(value: boolean) {
+      if (this.model.enableBasicAutocompletion !== value) {
+        this.model.enableBasicAutocompletion = value
+        this.setOptions({ enableBasicAutocompletion: value })
+      }
+    }
+
+    get enableLiveAutocompletion() {
+      return this.model.enableLiveAutocompletion
+    }
+
+    set enableLiveAutocompletion(value: boolean) {
+      if (this.model.enableLiveAutocompletion !== value) {
+        this.model.enableLiveAutocompletion = value
+        this.setOptions({ enableLiveAutocompletion: value })
+      }
+    }
+
+    get enableSnippets() {
+      return this.model.enableSnippets
+    }
+
+    set enableSnippets(value: boolean) {
+      if (this.model.enableSnippets !== value) {
+        this.model.enableSnippets = value
+        this.setOptions({ enableSnippets: value })
+      }
+    }
+
+    // options that might require an extension, see EXTENSION
+    setOptions(options: { [option: string]: any }) {
+      if (!this._editor) return
+
+      withExtensions(options).then((known) => this._editor.setOptions(known))
+    }
+
+    get aceOptions() {
+      return this.model.aceOptions
+    }
+
+    set aceOptions(value: string) {
+      if (this.model.aceOptions !== value) {
+        this.model.aceOptions = value
+        this.setOptions(parseOptions(value))
       }
     }
 

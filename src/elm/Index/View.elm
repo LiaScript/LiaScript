@@ -29,8 +29,8 @@ view session settings model =
             , logo = Const.icon
             , progress = "0px"
             , buttons =
-                [ ( \_ _ _ -> [], "ignore" )
-                , ( Settings.menuSettings session.screen.width, "settings" )
+                [ \_ _ _ -> Html.text ""
+                , Settings.menu1 "settings" Settings.menuSettings session.screen.width
                 ]
             }
             |> Html.map UpdateSettings

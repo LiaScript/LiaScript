@@ -22,6 +22,7 @@ type Msg sub
     | DropExit
     | DropTarget
     | DropSource Int
+    | Submit
     | None
 
 
