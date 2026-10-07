@@ -16,6 +16,7 @@ module Lia.Sync.Types exposing
     , isConnected
     , isRoot
     , isSupported
+    , restoreSaved
     , roster
     , title
     , toClassroomMode
@@ -35,6 +36,7 @@ import Lia.Sync.Classroom as Classroom
 import Lia.Sync.Container as Container exposing (Container)
 import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
+import List.Extra
 
 
 type State
@@ -269,9 +271,9 @@ initRoom config settings =
                     }
                 , room = config.room
 
-                -- a room is only encoded into the URL after a successful
-                -- connect, thus reconnecting to it should also continue to
-                -- use (and update) its local cache
+                -- the URL alone cannot tell whether this browser saved the
+                -- room, see `restoreSaved`, which turns the local cache back
+                -- on once the saved classrooms are known
                 , persistent = False
                 , mode = toClassroomMode config.mode
                 , locked = True
@@ -284,6 +286,53 @@ initRoom config settings =
 
         Nothing ->
             { settings | error = Just ("Unknown Backend type: " ++ config.backend) }
+
+
+{-| A room opened from the page URL (`initRoom`) - a reload of a connected
+classroom, a bookmark, the browser's history - is the same classroom as a
+saved one with the same room, backend and mode, so it has to continue with
+its local cache, as "Your classrooms" would. Without this, a reload in class
+or the next day's return via the URL started from an empty document and
+stopped caching: the owner saw only whoever happened to be online, until a
+peer that still held the whole document synced it back.
+-}
+restoreSaved : Settings -> Settings
+restoreSaved settings =
+    case ( settings.fromUrl, settings.state, settings.sync.select ) of
+        ( True, Disconnected, Just ( _, backend ) ) ->
+            case
+                List.Extra.find
+                    (\entry ->
+                        (entry.room == settings.room)
+                            && (entry.backend == Via.toString True backend)
+                            && (toClassroomMode entry.mode == settings.mode)
+                    )
+                    settings.saved
+            of
+                Just entry ->
+                    { settings
+                        | persistent = True
+                        , name = orSaved settings.name entry.name
+                        , password = orSaved settings.password entry.password
+                        , title = orSaved settings.title entry.title
+                        , notes = orSaved settings.notes entry.notes
+                        , owner = entry.owner
+                    }
+
+                Nothing ->
+                    settings
+
+        _ ->
+            settings
+
+
+orSaved : String -> Maybe String -> String
+orSaved current saved =
+    if String.isEmpty current then
+        Maybe.withDefault current saved
+
+    else
+        current
 
 
 {-| Check if a backend is generally usable. `Via.Local` is not part of the

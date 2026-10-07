@@ -24,8 +24,10 @@ import Combine
         , succeed
         , withState
         )
+import Helper.Array as Array
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.Script.Input as Input
+import Lia.Markdown.Effect.Script.Types exposing (Script)
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (eScript, parse_inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
@@ -179,24 +181,19 @@ modify_State scriptID attr q =
 
 setScriptToHidden : Effect.Model SubSection -> Int -> Effect.Model SubSection
 setScriptToHidden effect_model scriptID =
-    case Array.get scriptID effect_model.javascript of
-        Just js ->
-            let
-                input =
-                    js.input
-            in
-            { effect_model
-                | javascript =
-                    effect_model.javascript
-                        |> Array.set scriptID
-                            { js
-                                | block = True
-                                , input = { input | type_ = Just Input.Hidden_ }
-                            }
-            }
+    { effect_model
+        | javascript =
+            Array.update scriptID hide effect_model.javascript
+    }
 
-        Nothing ->
-            effect_model
+
+hide : Script SubSection -> Script SubSection
+hide js =
+    let
+        input =
+            js.input
+    in
+    { js | block = True, input = { input | type_ = Just Input.Hidden_ } }
 
 
 getOptions : Context -> Type x -> Int -> Parameters -> Options

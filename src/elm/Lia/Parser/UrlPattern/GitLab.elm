@@ -2,7 +2,7 @@ module Lia.Parser.UrlPattern.GitLab exposing (..)
 
 import I18n.Translations exposing (Lang(..))
 import Lia.Parser.UrlPattern.Generic as Generic
-import List.Extra
+import List.Extra as List
 import Regex
 import Url exposing (percentDecode, percentEncode)
 
@@ -135,9 +135,10 @@ patternGeneric =
 
 {-| Inverse of `by`/`byGeneric`: given an already-resolved "get raw file" API
 URL - `.../api/v4/projects/OWNER%2FREPO/repository/files/PATH/raw?ref=BRANCH`
-- reconstruct the human-readable `-/raw/branch/dir/` directory URL it lives
-in, so that a relative sibling resource can be resolved from it again via
-`link`.
+
+  - reconstruct the human-readable `-/raw/branch/dir/` directory URL it lives
+    in, so that a relative sibling resource can be resolved from it again via
+    `link`.
 
 This exists because the API URL isn't a real directory hierarchy - the
 browser's address bar ends up holding this resolved form after every course
@@ -180,8 +181,8 @@ apiFileUrl =
 -}
 directoryOf : String -> String
 directoryOf path =
-    case path |> String.split "/" |> List.Extra.init of
-        Just (_ :: _ as dirs) ->
+    case path |> String.split "/" |> List.init of
+        Just ((_ :: _) as dirs) ->
             String.join "/" dirs ++ "/"
 
         _ ->
