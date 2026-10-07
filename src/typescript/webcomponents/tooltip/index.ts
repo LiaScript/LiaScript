@@ -1,19 +1,17 @@
 // @ts-ignore
 import * as EMBED from '../embed/index'
 import * as PREVIEW from '../preview-lia'
-import * as helper from '../../helper'
 import * as HTML from './html'
 
 /**
  * Tooltips are presented in one single div that is attached to the very end of
- * the DOM. This ID is used as the main unit to identify this element.
+ * the DOM, it is created on first use.
  */
 const TOOLTIP_ID = 'lia-tooltip'
 
 /**
- * Currently links pointing to LiaScript-courses are identified by this regular
- * expression, whereby only the part after "/course/?..." is extracted and only
- * if it ends with ".md".
+ * Links to LiaScript courses, only the part after "/course/?..." is extracted
+ * and only if it ends with ".md".
  *
  * TODO: URL-substitution as it is done internally by LiaScript has to be added
  */
@@ -21,475 +19,183 @@ const LIASCRIPT_PATTERN =
   /(?:https?:)(?:\/\/)liascript\.github\.io\/course\/\?(.+\.md)/i
 
 /**
- * All retrieved links are stored within this global variable. The key is
- * defined by the URL, whereby the body is a string that should replace the
- * innerHTML of the tooltip-container.
+ * Wikimedia projects (Wikipedia, Wiktionary, ...) offer a summary API, the
+ * groups are language, project and page title.
  */
-var backup = Object()
+const WIKIMEDIA_PATTERN =
+  /\/\/([a-z-]+)(?:\.m)?\.(wikipedia|wiktionary|wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wikimedia|wikidata)\.org\/wiki\/([^#?\s]+)/i
+
+/** total width of the tooltip in px, including the padding */
+const WIDTH = 455
+
+/** time in ms to move the mouse from the link onto the tooltip */
+const HIDE_DELAY = 300
 
 /**
- * Main implementation of the Tooltip-webcomponent. Currently with support for
- * three types of pages:
- *
- * 1. pages with an oEmbed service
- * 2. LiaScript courses, pointing to the LiaScript-course website
- * 3. everything else requires to load and interpret the content by using the
- *    `iframe.ts` module
- *
- * It is added to the HTML-DOM by:
+ * there is no fallback for tooltips, the card is cached and shown on the next
+ * hover, so waiting longer for the slow proxy is fine
+ */
+const PROXY_TIMEOUT = 30000
+
+type Meta = {
+  title?: string
+  description?: string
+  image?: string
+  image_alt?: string
+}
+
+/** one card per url, shared by all links, failed loads resolve to null */
+const cards = new Map<string, Promise<HTMLElement | null>>()
+
+let container: HTMLDivElement | undefined
+let hideTimer = 0
+
+/** the link that currently owns the tooltip, late loads of others are dropped */
+let active: PreviewLink | null = null
+
+/**
+ * Tooltip-webcomponent, which is added to the HTML-DOM by:
  *
  * ```html
- * <preview-link src="url" light="false">
+ * <preview-link src="url">
  *    <a href="url">...</a>
  * </preview-link>
  * ```
  *
- * In most cases, the internal element will contain a link, however, the
- * doubling of `src` and `href` is required, since the internal element can
- * als be something else.
- * With the second attribute is it possible to change the light mode of this
- * web component.
+ * The doubling of `src` and `href` is required, since the internal element can
+ * also be something else. The property `light` switches between light and
+ * dark mode.
  */
 class PreviewLink extends HTMLElement {
-  /**
-   * URL of the page to be previewed
-   */
-  public sourceUrl: string = ''
+  public light = true
 
   /**
-   * once a tooltip has been created, it is locally preserved within this
-   * member variable
+   * set on click or tap, it prevents the next activation, which is triggered
+   * when the focus returns from the opened tab
    */
-  public cache: string | null = null
+  private clicked = false
 
-  /**
-   * to prevent a site from being fetched multiple times accidentally, which
-   * might happen on multiple hover actions
-   */
-  public isFetching = false
-
-  /**
-   * This variable is used to prevent a tooltip from being loaded, if the user
-   * clicks or long-presses on a tablet. Such that the link should be clicked.
-   */
-  public isClicked = false
-
-  /**
-   * this marker is used to prevent a tooltip from loading, if the mouse has
-   * left the link, but the loading/parsing is still in progress
-   */
-  public isActive = false
-
-  /**
-   * the tooltip container, which has to be initialized with the `initTooltip`
-   * function and which identified by `TOOLTIP_ID`
-   */
-  public container?: HTMLElement
-
-  /**
-   * defines weather the tooltip should be displayed in dark or in light-mode
-   */
-  public lightMode: boolean = true
-
-  constructor() {
-    super()
-  }
-
-  /**
-   * called when the webcomponent is attached to the DOM and becomes visible
-   */
   connectedCallback() {
-    // the main URL, for which a tooltip has to be created
-    this.sourceUrl = this.getAttribute('src') || ''
-
-    // if such an URL exists
-    if (this.sourceUrl) {
-      // this makes urls more equal
-      if (this.sourceUrl.endsWith('/')) {
-        this.sourceUrl = this.sourceUrl.slice(0, -1)
-      }
-
-      // get the tooltip container
-      this.container = document.getElementById(TOOLTIP_ID) || undefined
-
-      // the tooltip-container is required
-      // to the first child additional events have to be associated
-      if (this.container && this.firstChild) {
-        // basic mouse events to cover hovering
-        this.firstChild.addEventListener('mouseenter', this._onmouseenter)
-        this.firstChild.addEventListener('mouseout', this._onmouseout)
-        this.firstChild.addEventListener('click', this._onclick)
-
-        // Accessibility events which are required for keyboard navigation
-        this.firstChild.addEventListener('focus', this._onfocus)
-        this.firstChild.addEventListener('focusout', this._onfocusout)
-        this.firstChild.addEventListener('keyup', this._onescape)
-      }
-    }
+    // listeners are bound to the element itself, so `this` is the PreviewLink
+    // and adding them again on a reconnect is a no-op
+    this.addEventListener('mouseenter', this.activate)
+    this.addEventListener('focusin', this.activate)
+    this.addEventListener('mouseleave', this.deactivate)
+    this.addEventListener('focusout', this.deactivate)
+    this.addEventListener('click', this.handleClick)
   }
 
-  /**
-   * called when the element gets released from the DOM
-   */
-  disconnectedCallback() {
-    if (this.firstChild) {
-      // delete all mouse hovering event-listeners
-      this.firstChild.removeEventListener('mouseenter', this._onmouseenter)
-      this.firstChild.removeEventListener('mouseout', this._onmouseout)
-      this.firstChild.removeEventListener('click', this._onclick)
-
-      // delete all keyboard related event-listeners
-      this.firstChild.removeEventListener('focus', this._onfocus)
-      this.firstChild.removeEventListener('focusout', this._onfocusout)
-      this.firstChild.removeEventListener('keyup', this._onescape)
-    }
-  }
-
-  /**
-   * Handler for click-events is used to prevent a tooltip from being loaded,
-   * if the user clicks onto the link.
-   */
-  _onclick() {
-    const parent = this.parentElement as PreviewLink
-
-    parent.isActive = false
-    parent.isClicked = true
-  }
-
-  /**
-   * for web-accessibility reasons, handles the keyboard escape, which becomes
-   * handy if tab is used for navigation
-   *
-   * @param event
-   */
-  _onescape(event: any) {
-    if (event.code === 'Escape') {
-      const parent = this.parentElement as PreviewLink
-
-      // this is required to enforce closing the tooltip even if the mouse is
-      // still hovering this element, such that it is hold alive by the main
-      // hover-events instantiated within `initTooltip()`
-      parent.setAttribute('data-active', 'false')
-      parent.deactivate()
-    }
-  }
-
-  /**
-   * handler for basic mouse hovering
-   */
-  _onmouseenter() {
-    // show, that there is some progress going on
-    this.style.cursor = 'progress'
-
-    // activate the tooltip at the current mouse-position
-    const boundingBox = this.getBoundingClientRect()
-    ;(this.parentElement as PreviewLink).activate(
-      boundingBox.left + boundingBox.width / 2,
-      boundingBox.top + boundingBox.height / 2
-    )
-  }
-
-  /**
-   * this event handler is called, if the mouse is not hovering anymore.
-   */
-  _onmouseout() {
-    ;(this.parentElement as PreviewLink).deactivate()
-  }
-
-  /**
-   * activate the tooltip if the current link received the focus
-   *
-   * @param _event - not required
-   */
-  _onfocus(_event: any) {
-    // in this case the center of the bounding box of the element in focus is
-    // used as the marker for the activation
-    const boundingBox = this.getBoundingClientRect()
-    ;(this.parentElement as PreviewLink).activate(
-      boundingBox.left + boundingBox.width / 2,
-      boundingBox.top + boundingBox.height / 2
-    )
-  }
-
-  /**
-   * as the opposite to onfocus, this closed the tooltip, when the link looses
-   * its focus
-   */
-  _onfocusout() {
-    const parent = this.parentElement as PreviewLink
-
-    // without this, the deactivate function might not trigger on tablets
-    // the "data-active" is only required for mouse manipulation
-    if (parent.container) {
-      parent.container.setAttribute('data-active', 'false')
-    }
-    parent.deactivate()
-  }
-
-  /**
-   * Helper method to calculate the ideal positioning of the tooltip on the
-   * screen
-   *
-   * @param positionX
-   * @param positionY
-   */
-  activate(positionX: number, positionY: number) {
-    if (this.container) {
-      // mark the tooltip as activated
-      this.isActive = true
-
-      if (this.isClicked) {
-        this.isClicked = false
-        return
-      }
-
-      // Calculate the tooltip positioning
-      this.container.style.left = `${
-        positionX - (425 * positionX) / window.innerWidth
-      }px`
-      if (positionY * 1.5 > window.innerHeight) {
-        this.container.style.top = ''
-        this.container.style.bottom = `${window.innerHeight - positionY + 10}px`
-      } else {
-        this.container.style.top = `${positionY + 10}px`
-        this.container.style.bottom = ''
-      }
-
-      // Check if we already have cached tooltip data
-      if (this.cache) {
-        this.show()
-      } else if (backup[this.sourceUrl]) {
-        this.cache = backup[this.sourceUrl]
-        this.show()
-      } else if (!this.isFetching) {
-        this.isFetching = true
-        let self = this
-
-        // Check if this is a link to a LiaScript course
-        let liascript_url = this.sourceUrl.match(LIASCRIPT_PATTERN)
-        if (liascript_url) {
-          PREVIEW.fetch(
-            liascript_url[1],
-            function (
-              url: string,
-              meta: {
-                title?: string
-                description?: string
-                logo?: string
-                logo_alt?: string
-              }
-            ) {
-              self.cache = toCard(
-                self.sourceUrl,
-                meta.title,
-                meta.description,
-                meta.logo,
-                meta.logo_alt
-              )
-              self.show()
-            }
-          )
-        } else {
-          // Generalize to detect Wikimedia project links (Wikipedia, Wiktionary, Wikibooks, etc.)
-          const wikimediaRegex =
-            /\/\/([a-z]+)\.(wikipedia|wiktionary|wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wikimedia|wikidata)\.org\/wiki\/([^#?\s]+(?:\([^#?\s]*\)[^#?\s]*)*)/i
-          const wikimediaMatch = this.sourceUrl.match(wikimediaRegex)
-          if (wikimediaMatch) {
-            let lang = wikimediaMatch[1]
-            let project = wikimediaMatch[2]
-            let title = wikimediaMatch[3]
-            // Decode first to avoid double encoding (e.g. '%28' becomes '(')
-            try {
-              title = decodeURIComponent(title)
-            } catch (e) {
-              console.error('Error decoding title:', e)
-            }
-            // Re-encode the title for a proper API request
-            let apiUrl = `https://${lang}.${project}.org/api/rest_v1/page/summary/${encodeURIComponent(
-              title
-            )}`
-
-            window
-              .fetch(apiUrl, {
-                headers: {
-                  Accept: 'application/json',
-                },
-              })
-              .then((response) => {
-                if (!response.ok) {
-                  throw new Error(`HTTP error! status: ${response.status}`)
-                }
-                return response.json()
-              })
-              .then((data) => {
-                this.cache = toCard(
-                  this.sourceUrl,
-                  data.title,
-                  data.extract,
-                  data.thumbnail?.source,
-                  data.thumbnail?.caption
-                )
-                this.show()
-              })
-              .catch((error) => {
-                console.error('Wikimedia API error:', error)
-                // Fallback: try using oEmbed or direct HTML parsing if the API fails
-                EMBED.extract(this.sourceUrl, {})
-                  .then((data) => {
-                    this.cache = toCard(
-                      this.sourceUrl,
-                      data.title,
-                      undefined,
-                      data.thumbnail_url
-                    )
-                    this.show()
-                  })
-                  .catch((_) => {
-                    fetch(
-                      this.sourceUrl,
-                      function (doc: string) {
-                        this.parse(doc)
-                      }.bind(this)
-                    )
-                  })
-              })
-          } else {
-            // For all other links, try the oEmbed service first
-            try {
-              EMBED.extract(this.sourceUrl, {})
-                .then((data) => {
-                  this.cache = toCard(
-                    this.sourceUrl,
-                    data.title,
-                    undefined,
-                    data.thumbnail_url
-                  )
-                  this.show()
-                })
-                .catch((_) => {
-                  // If no oEmbed service exists, fetch and parse the full HTML
-                  fetch(
-                    this.sourceUrl,
-                    function (doc: string) {
-                      this.parse(doc)
-                    }.bind(this)
-                  )
-                })
-            } catch (e) {}
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Helper for deactivating the tooltip
-   */
-  deactivate() {
-    if (
-      this.container &&
-      // this is false, when the mouse is above the tooltip
-      this.container.getAttribute('data-active') === 'false'
-    ) {
-      // this has to be set to false in order to prevent a later displayed
-      // tooltip, due to some loading delay
-      this.isActive = false
-      this.container.style.display = 'none'
-      this.container.style.zIndex = '-1000'
-    }
-  }
-
-  /**
-   * Load the doc-string into an iframe-sandbox and query it for the main
-   * information.
-   *
-   * @param doc
-   */
-  parse(html: string) {
-    // if for some reason, there has already been a tooltip cached
-    if (this.cache !== null) {
-      this.show()
+  activate() {
+    if (this.clicked) {
+      this.clicked = false
       return
     }
 
-    // run a local extractor to get all required values
-    let data = HTML.parse(this.sourceUrl, html)
+    const src = this.getAttribute('src')?.replace(/\/$/, '')
+    if (!src) return
 
-    // for some reason this might be required to get images from the proxy
-    // version, which might change the url
-    if (typeof data.image == 'string') {
-      // this cleans up the image url, if it is behind the proxy, which
-      // looks like this `https://proxy.../"realImageURL"`
-      const url = data.image.match(/.*?%22(.*)\/%22/)
-      if (url && url.length == 2) {
-        data.image = url[1]
-      }
-    }
+    clearTimeout(hideTimer)
+    active = this
+    this.cursor('progress')
 
-    // create a new tooltip
-    this.cache = toCard(
-      data.url,
-      data.title,
-      data.description,
-      data.image,
-      data.image_alt
+    load(src).then((card) => {
+      this.cursor('')
+      if (card && active === this) show(card, this)
+    })
+  }
+
+  deactivate() {
+    if (active === this) active = null
+    this.cursor('')
+    scheduleHide()
+  }
+
+  handleClick() {
+    this.clicked = true
+    this.deactivate()
+    hide()
+  }
+
+  /** the inner link defines its own cursor, so it has to be set there */
+  cursor(value: string) {
+    const child = this.firstElementChild as HTMLElement | null
+    if (child) child.style.cursor = value
+  }
+}
+
+function load(url: string): Promise<HTMLElement | null> {
+  // ponytail: failures stay cached as null, a reload retries
+  if (!cards.has(url)) {
+    cards.set(
+      url,
+      fetchMeta(url)
+        .then((meta) => toCard(url, meta))
+        .catch(() => null)
     )
+  }
+  return cards.get(url)!
+}
 
-    // if there is no tooltip, the reference to the tooltip container gets
-    // deleted to prevent it from loading an empty div
-    if (this.cache === '') {
-      this.container = undefined
-    }
-
-    this.show() // show the tooltip
-
-    // remove the iframe from the DOM, since it is not needed anymore
+/**
+ * LiaScript courses are parsed directly, Wikimedia pages use their summary
+ * API, everything else tries oEmbed first and then the page itself.
+ */
+function fetchMeta(url: string): Promise<Meta> {
+  const lia = url.match(LIASCRIPT_PATTERN)
+  if (lia) {
+    return new Promise((resolve, reject) =>
+      PREVIEW.fetch(
+        lia[1],
+        (_, meta) =>
+          resolve({
+            title: meta.title,
+            description: meta.description,
+            image: meta.logo,
+            image_alt: meta.logo_alt,
+          }),
+        reject
+      )
+    )
   }
 
-  /**
-   * display the tooltip
-   */
-  show() {
-    if (
-      this.container && // tooltip container
-      this.cache && // HTML string
-      this.isActive // has not been deactivated so far
-    ) {
-      if (this.lightMode) {
-        this.container.style.background = 'white'
-        this.container.style.boxShadow = '0 30px 90px -20px rgba(0, 0, 0, 0.3)'
-      } else {
-        this.container.style.background = '#202020'
-        this.container.style.boxShadow =
-          '0 30px 90px -20px rgba(120, 120, 120, 0.3)'
-      }
+  const page = () =>
+    EMBED.extract(url, {})
+      .then((data) => ({ title: data.title, image: data.thumbnail_url }))
+      .catch(() =>
+        EMBED.fetchText(url, true, PROXY_TIMEOUT).then((html) =>
+          HTML.parse(url, html)
+        )
+      )
 
-      this.container.style.zIndex = '20000'
-      this.container.style.display = 'inline-block'
-      this.container.innerHTML = this.cache
-    }
+  const wiki = url.match(WIKIMEDIA_PATTERN)
+  return wiki ? wikimedia(wiki).catch(page) : page()
+}
 
-    // remove the progress cursor from the internal link and set it to default
-    if (this.firstChild) (this.firstChild as HTMLElement).style.cursor = ''
-  }
+async function wikimedia([, lang, project, title]: RegExpMatchArray) {
+  // decode first to avoid double encoding (e.g. '%28' becomes '(')
+  try {
+    title = decodeURIComponent(title)
+  } catch (_) {}
 
-  // via this attribute it is possible to use the tooltip either in dark or
-  // light-mode
-  set light(value) {
-    // redraw only if the light mode has changed
-    if (this.lightMode !== value) {
-      this.lightMode = value
-      this.show()
-    }
-  }
-  get light() {
-    return this.lightMode
+  const response = await fetch(
+    `https://${lang}.${project}.org/api/rest_v1/page/summary/${encodeURIComponent(
+      title
+    )}`,
+    { headers: { Accept: 'application/json' } }
+  )
+  if (!response.ok) throw new Error(`wikimedia: ${response.status}`)
+
+  const data = await response.json()
+  return {
+    title: data.title,
+    description: data.extract,
+    image: data.thumbnail?.source,
   }
 }
 
 /**
- * Generate and return an HTML-string for a tooltip, which is stored within the
- * `backup` variable:
+ * Build the tooltip card. Every value comes from a foreign website, thus it is
+ * only inserted as text or attribute, never as HTML.
  *
  * ```
  * +-------------+
@@ -500,163 +206,108 @@ class PreviewLink extends HTMLElement {
  * | url         |
  * +-------------+
  * ```
- *
- * @param url - link to be opened
- * @param title - of the page
- * @param description - excerpt of the content
- * @param image - associated with the page
- * @returns a HTML-string representation on success, otherwise an empty string
  */
-function toCard(
-  url?: string,
-  title?: string,
-  description?: string,
-  image?: string,
-  image_alt?: string
-) {
-  if (!url) return ''
+function toCard(url: string, meta: Meta): HTMLElement | null {
+  if (!meta.title && !meta.description && !meta.image) return null
 
-  // if the starts with the internal proxy that is used, when CORS errors occur
-  url = url.replace(helper.PROXY, '')
+  const card = document.createElement('div')
 
-  let card = ''
-
-  if (image) {
+  if (meta.image) {
     try {
-      if (!helper.allowedProtocol(image)) {
-        // redefine the image url from relative to absolute
-        image = new URL(image, url).toString()
-      }
-
-      // add a possible alt attribute if exists
-      image_alt = image_alt ? `alt="${image_alt}"` : ''
-
+      const img = append(card, 'img')
+      img.src = new URL(meta.image, url).href
+      if (meta.image_alt) img.alt = meta.image_alt
       // the light background is required for transparent images in dark mode
-      card += `<img src="${image}" ${image_alt} style="background-color:white; margin-bottom: 1.5rem;">`
-    } catch (e) {}
-  }
-  if (title) card += `<h4>${title}</h4>`
-  if (description) card += description
-
-  if (card != '') {
-    card += `<hr style="border: 0px; height:1px; background:#888;"/><a style="font-size:x-small; display:block" href="${url}" target="_blank">${url}</a>`
+      img.style.cssText = 'background-color:white; margin-bottom:1.5rem'
+    } catch (_) {}
   }
 
-  // backup the result globally, so that a second parsing will not be necessary
-  backup[url] = card
+  if (meta.title) append(card, 'h4').textContent = meta.title
+  if (meta.description) append(card, 'p').textContent = meta.description
+
+  append(card, 'hr').style.cssText = 'border:0; height:1px; background:#888'
+
+  const a = append(card, 'a')
+  a.href = url
+  a.target = '_blank'
+  a.rel = 'noopener noreferrer'
+  a.textContent = url
+  a.style.cssText = 'font-size:x-small; display:block'
 
   return card
 }
 
-/**
- * This has to be called after the DOM has been created. It appends two
- * div-container to the end of the DOM:
- *
- * 1. for putting and showing tooltips
- * 2. for injecting sandbox iframes if the tooltips has to be parsed
- */
-export function initTooltip() {
-  // create the Tooltip element
-  if (!document.getElementById(TOOLTIP_ID)) {
-    setTimeout(function () {
-      const div = document.createElement('div')
-
-      div.id = TOOLTIP_ID
-
-      // since LiaScript modals can have a z-Index larger than 10000
-      div.style.zIndex = '-1000'
-
-      div.style.width = '425px'
-      //div.style.height = '400px '
-      div.style.padding = '15px'
-      div.style.background = 'white'
-      div.style.boxShadow = '0 30px 90px -20px rgba(0, 0, 0, 0.3)'
-      div.style.position = 'fixed'
-      div.style.display = 'none'
-      div.style.maxHeight = '480px'
-      div.style.overflow = 'auto'
-
-      // this additional marker is used to not close the tooltip, if the user
-      // moves the mouse onto the tooltip, this way, the original link triggers
-      // a closing, but this is prevented by this second marker
-      div.setAttribute('data-active', 'true')
-
-      // these two listeners are required when the mouse hovers the tooltip
-      // to stay visible or close it ...
-      div.addEventListener('mouseenter', () => {
-        div.style.display = 'inline-block'
-        div.style.zIndex = '20000'
-        div.setAttribute('data-active', 'true')
-      })
-      div.addEventListener('mouseleave', () => {
-        div.style.display = 'none'
-        div.style.zIndex = '-1000'
-        div.setAttribute('data-active', 'false')
-      })
-
-      document.body.appendChild(div)
-    }, 0)
-  }
+function append<K extends keyof HTMLElementTagNameMap>(
+  parent: HTMLElement,
+  tag: K
+): HTMLElementTagNameMap[K] {
+  return parent.appendChild(document.createElement(tag))
 }
 
-/**
- * Fetch the HTML-text for a certain website. This might happen two times,
- * if the target website has CORS disabled. The first try is the normal
- * fetch, the second one uses a proxy to get the HTML-string
- *
- * @param url - of the website
- * @param callback - to be called on success
- * @param trial - by default 0, the proxy-trial is 1
- */
-function fetch(url: string, callback: (doc: string) => void, trial = 0) {
-  // shortcut for directly use the proxy
-  if (trial == 0 && proxy(url)) {
-    fetch(helper.PROXY + url, callback, 1)
-    return
+/** position the tooltip below or above the link and display the card */
+function show(card: HTMLElement, link: PreviewLink) {
+  const tooltip = getContainer()
+  const box = link.getBoundingClientRect()
+  const x = box.left + box.width / 2
+  const y = box.top + box.height / 2
+  const width = Math.min(WIDTH, window.innerWidth - 20)
+
+  // the tooltip is shifted to the left, proportionally to the link position
+  tooltip.style.width = `${width}px`
+  tooltip.style.left = `${(x * (window.innerWidth - width)) / window.innerWidth}px`
+
+  if (y * 1.5 > window.innerHeight) {
+    tooltip.style.top = ''
+    tooltip.style.bottom = `${window.innerHeight - y + 10}px`
+  } else {
+    tooltip.style.top = `${y + 10}px`
+    tooltip.style.bottom = ''
   }
 
-  let http = new XMLHttpRequest()
-  http.open('GET', url, true) // async fetch
+  tooltip.style.background = link.light ? 'white' : '#202020'
+  tooltip.style.boxShadow = link.light
+    ? '0 30px 90px -20px rgba(0, 0, 0, 0.3)'
+    : '0 30px 90px -20px rgba(120, 120, 120, 0.3)'
 
-  http.onload = function (_e) {
-    // everything went fine
-    if (http.readyState === 4 && http.status === 200) {
-      try {
-        let html = http.responseText
-        try {
-          // get the real HTML file
-          html = JSON.parse(html).contents
-        } catch (e) {}
-        callback(html)
-      } catch (e) {
-        console.warn('fetching', e)
-      }
-    }
-  }
-
-  http.onerror = function (_e) {
-    if (trial === 0) {
-      // try to fetch the website with a proxy url
-      fetch(helper.PROXY + url, callback, 1)
-    }
-  }
-
-  // start fetching
-  http.send()
+  tooltip.textContent = ''
+  tooltip.appendChild(card)
+  tooltip.style.display = 'block'
 }
 
-/**
- * helper which checks the url against different servers, which require a
- * proxy and do not allow direct calling.
- *
- * - wikipedia
- */
-function proxy(url: string): boolean {
-  if (url.search(/wikipedia\.org/gi)) {
-    return true
-  }
-
-  return false
+function hide() {
+  clearTimeout(hideTimer)
+  if (container) container.style.display = 'none'
 }
+
+/** hiding is delayed, so that the mouse can move onto the tooltip */
+function scheduleHide() {
+  clearTimeout(hideTimer)
+  hideTimer = window.setTimeout(hide, HIDE_DELAY)
+}
+
+function getContainer() {
+  if (!container) {
+    container = document.createElement('div')
+    container.id = TOOLTIP_ID
+    container.setAttribute('role', 'tooltip')
+    // LiaScript modals can have a z-index larger than 10000
+    container.style.cssText =
+      'position:fixed; z-index:20000; display:none; box-sizing:border-box; padding:15px; max-height:480px; overflow:auto'
+
+    container.addEventListener('mouseenter', () => clearTimeout(hideTimer))
+    container.addEventListener('mouseleave', scheduleHide)
+
+    document.body.appendChild(container)
+  }
+  return container
+}
+
+// dismiss the tooltip with Escape, also when the link is only hovered
+document.addEventListener('keyup', (event) => {
+  if (event.key === 'Escape') {
+    active = null
+    hide()
+  }
+})
 
 customElements.define('preview-link', PreviewLink)

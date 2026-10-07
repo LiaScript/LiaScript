@@ -18,6 +18,7 @@ module Lia.Markdown.Effect.Script.Types exposing
     )
 
 import Array exposing (Array)
+import Helper.Array as Array
 import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
 import Lia.Markdown.Effect.Script.Intl as Intl exposing (Intl)
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
@@ -263,10 +264,5 @@ get fn id =
 
 
 set : Int -> (Script a -> Script a) -> Scripts a -> Scripts a
-set idx fn javascript =
-    case Array.get idx javascript of
-        Just js ->
-            Array.set idx (fn js) javascript
-
-        _ ->
-            javascript
+set =
+    Array.update

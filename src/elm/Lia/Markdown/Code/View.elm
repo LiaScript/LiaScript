@@ -539,7 +539,10 @@ evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync,
                 --, Editor.enableBasicAutocompletion isExecutable
                 --, Editor.enableLiveAutocompletion isExecutable
                 --, Editor.enableSnippets isExecutable
-                , Editor.extensions [ "language_tools" ]
+                , attr
+                    |> Params.get "data-ace-options"
+                    |> Maybe.withDefault ""
+                    |> Editor.aceOptions
                 , Editor.useWrapMode True
                 , Editor.onCtrlEnter (Eval id_1)
                 ]

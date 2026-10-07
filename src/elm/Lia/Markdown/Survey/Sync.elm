@@ -16,8 +16,9 @@ module Lia.Markdown.Survey.Sync exposing
     , wordCount
     )
 
-import Array exposing (Array)
+import Array
 import Dict exposing (Dict)
+import Helper.Array as Array
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Survey.Json as Json
@@ -277,14 +278,7 @@ select maxElements list =
             in
             data
                 |> List.foldl
-                    (\s array ->
-                        case Array.get s array of
-                            Just i ->
-                                Array.set s (i + 1) array
-
-                            Nothing ->
-                                array
-                    )
+                    (\s -> Array.update s (\i -> i + 1))
                     (Array.repeat maxElements 0)
                 |> Array.indexedMap (\index absolute -> Data (String.fromInt (index + 1)) absolute (percentage total absolute))
                 |> Array.toList

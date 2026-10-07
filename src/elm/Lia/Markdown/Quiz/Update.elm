@@ -8,6 +8,7 @@ module Lia.Markdown.Quiz.Update exposing
     )
 
 import Array exposing (Array)
+import Helper.Array as Array
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
@@ -192,9 +193,7 @@ update classroom sectionID scripts msg vector =
                                 |> Multi.update (Multi.handle xxx)
                                 |> Return.mapVal
                                     (\s ->
-                                        Array.get id vector
-                                            |> Maybe.map (\v -> Array.set id { v | state = Multi_State s } vector)
-                                            |> Maybe.withDefault vector
+                                        Array.update id (\v -> { v | state = Multi_State s }) vector
                                     )
 
                         _ ->

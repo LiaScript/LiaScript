@@ -51,10 +51,11 @@ import Lia.Markdown.Table.Parser as Table
 import Lia.Markdown.Task.Parser as Task
 import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context as Context exposing (Context)
-import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
+import Lia.Parser.Helper exposing (c_frame, newline, newlines, peek, spaces, startsWith, trimSpaces)
 import Lia.Parser.Indentation as Indent
 import Lia.Parser.Input as Input
 import Lia.Parser.Preprocessor exposing (title_tag)
+import Regex
 import SvgBob
 
 
@@ -74,20 +75,30 @@ footnotes =
         |> skip
 
 
+{-| Parse a single block.
+
+`blocks` is used recursively by many of its own sub-parsers, the `lazy` only
+defers to `blockParser`, so that the parser itself is constructed only once
+and not for every parsed block.
+
+-}
 blocks : Parser Context Markdown.Block
 blocks =
-    lazy <|
-        \() ->
-            Context.checkAbort
-                |> ignore Indent.check
-                |> keep macro
-                |> ignore whitespace
-                |> keep elements
-                |> ignore
-                    (whitespace
-                        |> keep Effect.hidden_comment
-                        |> many
-                    )
+    lazy (\() -> blockParser)
+
+
+blockParser : Parser Context Markdown.Block
+blockParser =
+    Context.checkAbort
+        |> ignore Indent.check
+        |> keep macro
+        |> ignore whitespace
+        |> keep elements
+        |> ignore
+            (whitespace
+                |> keep Effect.hidden_comment
+                |> many
+            )
 
 
 elements : Parser Context Markdown.Block
@@ -412,10 +423,53 @@ subHeaderType1 =
 -}
 subHeaderType2 : Parser Context ( Int, Inlines )
 subHeaderType2 =
-    line
-        |> ignore (regex "[ \t]*\n")
-        |> map (\i title -> ( title, i ))
-        |> andMap underline
+    peek isSetext
+        (line
+            |> ignore (regex "[ \t]*\n")
+            |> map (\i title -> ( title, i ))
+            |> andMap underline
+        )
+        (fail "no underline")
+
+
+{-| **@private:** Every paragraph is tried as a header first, which would parse
+its first line twice. If the first line contains nothing that might span
+multiple lines (HTML, comments, block formulas, open quiz inputs, footnotes,
+effects, line breaks, or macros and macro listings), then the underline has to follow directly in
+the next line.
+-}
+isSetext : String -> Bool
+isSetext input =
+    case Regex.findAtMost 1 firstLine input of
+        [ { match } ] ->
+            List.any (\token -> String.contains token match) [ "<", "$$", "[^", "{", "\\", "@" ]
+                || openInput match
+                || (input
+                        |> String.dropLeft (String.length match)
+                        |> (\next -> startsWith "===" next || startsWith "---" next)
+                   )
+
+        _ ->
+            True
+
+
+{-| **@private:** A quiz input `[[ ... ]]` or `[->[ ... ]]` is parsed until
+the next `]]` (escaped brackets are excluded by `isSetext`), so it can only
+span multiple lines, if there is no `]]` after its start.
+-}
+openInput : String -> Bool
+openInput line_ =
+    case List.maximum (String.indexes "[[" line_ ++ String.indexes "[->[" line_) of
+        Just i ->
+            not (String.contains "]]" (String.dropLeft i line_))
+
+        Nothing ->
+            False
+
+
+firstLine : Regex.Regex
+firstLine =
+    Regex.fromString "^[^\\n]*\\n" |> Maybe.withDefault Regex.never
 
 
 underline : Parser Context Int
@@ -652,19 +706,28 @@ htmlComment =
         |> onsuccess Markdown.HtmlComment
 
 
+{-| Annotations `<!-- key="value" -->` in front of a block. This is tried by
+almost every block parser, without a comment (which might also be the result
+of a macro) the result is `[]` and nothing is consumed.
+-}
 md_annotations : Parser Context Parameters
 md_annotations =
-    let
-        attr =
-            withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
-                |> andThen Attributes.parse
-    in
-    spaces
-        |> keep macro
-        |> keep (comment attr)
-        |> ignore
-            (regex "[\t ]*\n"
-                |> ignore Indent.check
-                |> maybe
-            )
-        |> optional []
+    peek
+        (trimSpaces >> (\input -> startsWith "<!--" input || startsWith "@" input || startsWith "```" input))
+        (spaces
+            |> keep macro
+            |> keep (comment md_attribute)
+            |> ignore
+                (regex "[\t ]*\n"
+                    |> ignore Indent.check
+                    |> maybe
+                )
+            |> optional []
+        )
+        (succeed [])
+
+
+md_attribute : Parser Context ( String, String )
+md_attribute =
+    withState (\c -> succeed ( c.defines.base, c.defines.appendix ))
+        |> andThen Attributes.parse
