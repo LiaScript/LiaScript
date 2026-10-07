@@ -3,15 +3,10 @@ import '../types/responsiveVoice'
 import LANGUAGE_FALLBACKS, {
   LEGACY_LANGUAGE_MAP,
 } from './helper/language-fallbacks'
+import { detectGender } from './helper/voice-gender'
 
 // @ts-ignore
 import EasySpeech from 'easy-speech/dist/EasySpeech'
-
-enum Gender {
-  Female,
-  Male,
-  Unknown,
-}
 
 var useBrowserTTS: null | boolean = null
 var browserVoices: Record<string, SpeechSynthesisVoice> = {}
@@ -859,14 +854,11 @@ function scoreVoice(
     score = 700 - idx * 25
   }
 
+  // a voice of unknown gender is preferred to one of the wrong gender
   const reqGender = detectGender(requestedVoiceName)
-  const voiceGender = detectGender(`${voice.name} ${voice.voiceURI}`)
-  if (
-    reqGender !== Gender.Unknown &&
-    voiceGender !== Gender.Unknown &&
-    reqGender === voiceGender
-  ) {
-    score += 10
+  const voiceGender = detectGender(voice.name, voice.voiceURI)
+  if (reqGender !== 'unknown' && voiceGender !== 'unknown') {
+    score += reqGender === voiceGender ? 10 : -10
   }
   const wanted = requestedVoiceName.trim().toLowerCase()
   const actual = `${voice.name} ${voice.voiceURI}`.trim().toLowerCase()
@@ -912,7 +904,7 @@ function getVoice(lang: string, voice: string) {
       lang: v.lang,
       normalizedLang: baseLang(v.lang),
       score,
-      gender: Gender[detectGender(`${v.name} ${v.voiceURI}`)],
+      gender: detectGender(v.name, v.voiceURI),
       default: v.default,
     })
 
@@ -934,43 +926,6 @@ function getVoice(lang: string, voice: string) {
   }
 
   return bestFit
-}
-
-function detectGender(voice: string) {
-  // Check explicit gender indicators first
-  if (voice.match(/female/i)) {
-    return Gender.Female
-  }
-
-  if (voice.match(/male/i)) {
-    return Gender.Male
-  }
-
-  // iOS/Safari male voices
-  const maleVoices =
-    /\b(Albert|Daniel|Eddy|Fred|Grandpa|Jacques|Junior|Maged|Ralph|Reed|Rishi|Rocko|Thomas|Zarvox|Xander)\b/i
-  if (voice.match(maleVoices)) {
-    return Gender.Male
-  }
-
-  // iOS/Safari female voices - comprehensive list
-  const femaleVoices =
-    /\b(Alice|Alva|Amelie|Amira|Anna|Carmit|Damayanti|Daria|Ellen|Grandma|Ioana|Joana|Kanya|Karen|Kathy|Kyoko|Lana|Laura|Lekha|Lesya|Linh|Luciana|Mariska|Meijia|Melina|Milena|Moira|Monica|Montserrat|Nora|Paulina|Princess|Samantha|Sandy|Sara|Satu|Shelley|Tessa|Tina|Tingting|Yelda|Yuna|Zosia|Zuzana)\b/i
-  if (voice.match(femaleVoices)) {
-    return Gender.Female
-  }
-
-  // Additional generic gender detection for other voices
-  if (voice.match(/\b(man|boy|guy|sir|mr\.?|he|him)\b/i)) {
-    return Gender.Male
-  }
-
-  if (voice.match(/\b(woman|girl|lady|ms\.?|mrs\.?|miss|she|her)\b/i)) {
-    return Gender.Female
-  }
-
-  // Neutral or non-human voices: Bahh, Bells, Flo, Sinji, Trinoids
-  return Gender.Unknown
 }
 
 function storeBackgroundVideo(player: HTMLElement, video: HTMLVideoElement) {
