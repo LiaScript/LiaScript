@@ -54,7 +54,11 @@ const PROXY_TIMEOUT = 5000
  * Fetch a text resource, if it fails due to CORS, retry via the proxy, which
  * wraps the response into `{ contents: string }`.
  */
-async function fetchText(url: string, useProxy = true): Promise<string> {
+export async function fetchText(
+  url: string,
+  useProxy = true,
+  timeout = PROXY_TIMEOUT
+): Promise<string> {
   try {
     const res = await fetch(url)
     if (res.ok) return await res.text()
@@ -65,7 +69,7 @@ async function fetchText(url: string, useProxy = true): Promise<string> {
   const res = await Promise.race([
     fetch(helper.PROXY + encodeURIComponent(url)),
     new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('oembed: proxy timeout')), PROXY_TIMEOUT)
+      setTimeout(() => reject(new Error('oembed: proxy timeout')), timeout)
     ),
   ])
   return (await res.json()).contents

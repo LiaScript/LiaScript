@@ -19,7 +19,8 @@ export function fetch(
       tags?: string[]
       version?: string
     }
-  ) => void
+  ) => void,
+  onError: () => void = () => {}
 ) {
   let http = new XMLHttpRequest()
 
@@ -57,15 +58,20 @@ export function fetch(
             callback(url, json)
           } else {
             console.warn('preview-lia', json)
+            onError()
           }
         })
 
         lia.ports.input.send(http.responseText)
       } catch (e) {
         console.warn('fetching', e)
+        onError()
       }
+    } else {
+      onError()
     }
   }
+  http.onerror = onError
   http.send()
 }
 
