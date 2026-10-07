@@ -15,6 +15,7 @@ module Lia.Markdown.Effect.Model exposing
 
 import Array exposing (Array)
 import Dict exposing (Dict)
+import Helper.Array as Array
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
@@ -81,23 +82,11 @@ getRecordings fn model =
 
 set_annotation : Int -> Int -> Dict Int Element -> Parameters -> Dict Int Element
 set_annotation id1 id2 m attr =
-    case Dict.get id1 m of
-        Just e ->
-            case Array.get id2 e.content of
-                Just par ->
-                    Dict.insert id1
-                        { e
-                            | content =
-                                e.content
-                                    |> Array.set id2 { par | attr = attr }
-                        }
-                        m
-
-                Nothing ->
-                    m
-
-        Nothing ->
-            m
+    Dict.update id1
+        (Maybe.map
+            (\e -> { e | content = Array.update id2 (\par -> { par | attr = attr }) e.content })
+        )
+        m
 
 
 get_paragraph : Bool -> Int -> Int -> Model a -> Maybe ( String, Content )

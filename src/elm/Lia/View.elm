@@ -305,9 +305,20 @@ initConfig screen model =
 
 showSection : Model -> Screen -> ( Int, Section ) -> Html Msg
 showSection model screen ( id, section ) =
-    initConfig screen model section
-        |> Markdown.view (model.section_active /= id) (Maybe.withDefault model.persistent section.persistent)
-        |> Html.map UpdateMarkdown
+    let
+        hidden =
+            model.section_active /= id
+
+        persistent =
+            Maybe.withDefault model.persistent section.persistent
+    in
+    if hidden && not persistent && section.error == Nothing then
+        Markdown.viewHidden
+
+    else
+        initConfig screen model section
+            |> Markdown.view hidden persistent
+            |> Html.map UpdateMarkdown
 
 
 {-| **@private:** used to display the text2speech output settings and spoken
@@ -684,19 +695,19 @@ slideTopBar languageCode lang screen url repositoryURL settings def progress syn
         , logo = Definition.getIcon def
         , buttons =
             List.concat
-                [ [ ( Settings.menuChat, "chat" )
-                  , ( Settings.menuMode, "mode" )
-                  , ( Settings.menuSettings screen.width, "settings" )
-                  , ( Settings.menuTranslations languageCode def, "lang" )
+                [ [ Settings.menu "chat" Settings.menuChat
+                  , Settings.menu "mode" Settings.menuMode
+                  , Settings.menu1 "settings" Settings.menuSettings screen.width
+                  , Settings.menu2 "lang" Settings.menuTranslations languageCode def
                   ]
                 , case settings.edit of
                     Nothing ->
                         []
 
                     Just editURL ->
-                        [ ( Settings.menuEdit editURL, "edit" ) ]
-                , [ ( Settings.menuShare url sync, "share" )
-                  , ( Settings.menuInformation repositoryURL def, "info" )
+                        [ Settings.menu1 "edit" Settings.menuEdit editURL ]
+                , [ Settings.menu2 "share" Settings.menuShare url sync
+                  , Settings.menu2 "info" Settings.menuInformation repositoryURL def
                   ]
                 ]
         , progress = progress
@@ -982,7 +993,7 @@ showModal model =
                     , Attr.style "margin-block-start" "calc(100vh * 0.08)"
                     ]
                     [ model.url
-                        |> Settings.qrCodeView model.translation True True Nothing
+                        |> Settings.qrCodeView model.translation True True False
                         |> Html.map UpdateSettings
                     ]
                 ]

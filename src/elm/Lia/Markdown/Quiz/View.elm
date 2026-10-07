@@ -49,6 +49,7 @@ import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Markdown.Quiz.Block.Update as BlockMsg
 import Lia.Markdown.Quiz.Block.View as Block
 import Lia.Markdown.Quiz.Matrix.View as Matrix
 import Lia.Markdown.Quiz.Multi.View as Multi
@@ -549,7 +550,7 @@ branch (pre-rendered option content, see `view`).
 viewState :
     Config Main.Msg
     -> Element
-    -> Quiz x
+    -> Quiz Markdown.Block
     -> List (List (Html Main.Msg))
     -> ( List (Attribute Main.Msg), List (Html Main.Msg) )
 viewState config elem quiz renderedOptions =
@@ -558,7 +559,22 @@ viewState config elem quiz renderedOptions =
             ( []
             , s
                 |> Block.view config elem.opt.randomize ( elem.solved, elem.trial ) q
-                |> List.map (Html.map (Block_Update quiz.id >> Main.UpdateQuiz))
+                |> List.map
+                    (Html.map
+                        (\msg ->
+                            Main.UpdateQuiz <|
+                                case msg of
+                                    BlockMsg.Submit ->
+                                        if elem.deactivated then
+                                            Block_Update quiz.id BlockMsg.None
+
+                                        else
+                                            Check quiz.id quiz.quiz
+
+                                    _ ->
+                                        Block_Update quiz.id msg
+                        )
+                    )
             )
 
         ( Vector_State s, Vector_Type q ) ->

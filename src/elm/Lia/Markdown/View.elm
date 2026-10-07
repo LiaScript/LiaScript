@@ -2,6 +2,7 @@ module Lia.Markdown.View exposing
     ( addTranslation
     , view
     , viewContent
+    , viewHidden
     )
 
 import Accessibility.Key as A11y_Key
@@ -13,7 +14,8 @@ import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Lazy as Lazy
-import Json.Encode as JE
+import I18n.Translations exposing (Lang)
+import Lia.Markdown.Chart.Types as ChartTypes
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
 import Lia.Markdown.Config as Config exposing (Config)
@@ -27,9 +29,8 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribut
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
-import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock, mediaBlock)
+import Lia.Markdown.Inline.Types as Inline exposing (Inlines, htmlBlock, mediaBlock)
 import Lia.Markdown.Inline.View as Inline
-import Lia.Markdown.Json.Encode as Encode
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.Types as Survey
@@ -42,7 +43,6 @@ import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (icon, modal, shuffle)
 import Lia.Voice as Voice
-import MD5
 import SvgBob
 
 
@@ -59,7 +59,7 @@ view hidden persistent config =
                     config.section.body
 
             else
-                viewMain hidden [ view_header config ]
+                viewMain hidden []
 
         Just msg ->
             viewMain hidden
@@ -161,13 +161,12 @@ viewContent config =
     fold config_ [] config_.section.body
 
 
-toHash : Block -> String
-toHash =
-    List.singleton
-        >> Encode.encode
-        >> JE.encode 0
-        >> MD5.hex
-        >> String.slice 0 8
+{-| Id of the block in front of a quiz, which labels the quiz (aria-labelledby),
+it only has to be unique within the page.
+-}
+quizLabel : Config Msg -> Quiz.Quiz Block -> String
+quizLabel config quiz =
+    "lia-quiz-" ++ String.fromInt config.section.id ++ "-" ++ String.fromInt quiz.id
 
 
 fold : Config Msg -> List (Html Msg) -> Blocks -> List (Html Msg)
@@ -179,7 +178,7 @@ fold config output blocks =
         (Paragraph a e) :: (Quiz attr quiz solution) :: bs ->
             let
                 id =
-                    toHash (Paragraph a e)
+                    quizLabel config quiz
             in
             fold config
                 (viewQuiz config (Just id) attr quiz solution
@@ -191,7 +190,7 @@ fold config output blocks =
         (HTML a e) :: (Quiz attr quiz solution) :: bs ->
             let
                 id =
-                    toHash (HTML a e)
+                    quizLabel config quiz
             in
             fold config
                 (viewQuiz config (Just id) attr quiz solution
@@ -562,18 +561,13 @@ view_block config block =
                 elements
 
         Chart attr chart ->
-            Lazy.lazy2 Charts.view
-                { lang = config.main.lang
-                , attr = attr
-                , light = config.light
-                }
-                chart
+            Lazy.lazy4 viewChart config.main.lang attr config.light chart
 
         ASCII attr bob ->
             view_ascii config attr bob
 
         Task attr task ->
-            task.task
+            task.items
                 |> List.map (viewBlocks config)
                 |> Task.view config.section.task_vector attr task
                 |> scriptView config.view
@@ -593,6 +587,21 @@ view_block config block =
 
         HtmlComment ->
             Html.text ""
+
+
+{-| Lazy needs stable arguments, a record literal would be new on every frame.
+-}
+viewChart : Lang -> Parameters -> Bool -> ChartTypes.Chart -> Html msg
+viewChart lang attr light =
+    Charts.view { lang = lang, attr = attr, light = light }
+
+
+{-| Hidden sections that are not `persistent` render an empty `main`, which does
+not require a `Config`.
+-}
+viewHidden : Html msg
+viewHidden =
+    viewMain True []
 
 
 viewBlocks : Config Msg -> List Block -> List (Html Msg)
@@ -649,7 +658,7 @@ scriptView viewer content =
         ( Just id, sub ) ->
             Html.div []
                 [ sub
-                , [ Inline.toScript id [ ( "display", "inline-block" ) ] ]
+                , [ Inline.Script id [ ( "display", "inline-block" ) ] ]
                     |> viewer
                     |> Html.div [ Attr.class "lia-paragraph" ]
                 ]
@@ -738,24 +747,37 @@ viewQuote config attr alert elements =
 
 view_ascii : Config Msg -> Parameters -> ( Maybe Inlines, SvgBob.Configuration Blocks ) -> Html Msg
 view_ascii config attr ( caption, image ) =
-    image
-        |> (SvgBob.setColorsIn <|
-                if config.light then
-                    { text = "#4b4b4b"
-                    , background = "white"
-                    , stroke = "black"
-                    }
+    (if List.isEmpty image.foreign then
+        -- without embedded Markdown the drawing does not depend on the config
+        Lazy.lazy3 drawAscii config.light attr image
 
-                else
-                    { text = "white"
-                    , background = "#323232"
-                    , stroke = "#ddd"
-                    }
-           )
-        |> SvgBob.drawElements
-            (toAttribute attr)
-            (svgElement config)
+     else
+        drawAscii_ (svgElement config) config.light attr image
+    )
         |> svgFigure config caption
+
+
+drawAscii : Bool -> Parameters -> SvgBob.Configuration Blocks -> Html msg
+drawAscii =
+    drawAscii_ (\_ -> Html.text "")
+
+
+drawAscii_ : (Blocks -> Html msg) -> Bool -> Parameters -> SvgBob.Configuration Blocks -> Html msg
+drawAscii_ foreign light attr =
+    SvgBob.setColorsIn
+        (if light then
+            { text = "#4b4b4b"
+            , background = "white"
+            , stroke = "black"
+            }
+
+         else
+            { text = "white"
+            , background = "#323232"
+            , stroke = "#ddd"
+            }
+        )
+        >> SvgBob.drawElements (toAttribute attr) foreign
 
 
 svgElement config list =
