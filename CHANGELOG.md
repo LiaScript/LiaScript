@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.2] - 07/10/2026
+
+- fix: text-to-speech picked voices of the wrong gender, e.g. Piper voices via speech-dispatcher in Firefox; gender is now detected for Apple, Microsoft, Google/ChromeOS, Android, espeak-ng, Piper and RHVoice voices, and a voice of the wrong gender ranks below one of unknown gender
+- fix: language codes appended to Firefox voice URIs (`?he`, `?mr`, `?ms`) were read as gender words
+- test: voice test data with gender (5329 voices from Apple, Microsoft, Google, Android, ChromeOS, speech-dispatcher, Piper and MMS), run with `node --test tests/tts-voices/`
+
+
 ## [2.1.1] - 07/10/2026
 
 - feat: code blocks accept `data-ace-options` (e.g. `data-ace-options="spellcheck hardWrap=80, tabSize=8"`), required ace extensions are loaded on demand
