@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 07/10/2026
+
+- feat: code blocks accept `data-ace-options` (e.g. `data-ace-options="spellcheck hardWrap=80, tabSize=8"`), required ace extensions are loaded on demand
+- fix: autocompletion and snippets in the code editor were never enabled
+- fix: app stuck on the loading screen on KaiOS 2.x (`globalThis` in drag & drop touch polyfill)
+- fix: service worker errors on legacy browsers, only registered where module bundles are loaded
+- fix: classroom opened from a URL (reload, bookmark, history) keeps using its local cache
+- fix: oEmbed provider matching (27 endpoint schemas never matched), aspect ratio of embeds, photo embeds, slow proxy fallback with timeout
+- fix: link tooltips – XSS, hover state, stuck loading cursor, proxy only on CORS errors
+- improve: quizzes with text input are checked on Enter
+- improve: rendering performance – lazy rendering of ASCII diagrams, QR codes, table of contents, top bar menus and hidden sections; quizzes labelled by id instead of an MD5 hash per frame
+- improve: parser performance – early skipping of macros, annotations, scripts and references, setext headers only tried if an underline can follow, inline parser built only once
+- test: HTML snapshot and characterization tests for gallery, tasks, sessions, URL resolution, sync decoding and identicons
+- chore: parser-combinators 7.1.0, updated oEmbed provider list
+
+
 ## [2.1.0] - 29/09/2026
 
 - feat: surveys can be shuffled via `data-randomize`
