@@ -3,11 +3,16 @@ import { Params, Endpoint } from './types.d'
 import * as helper from '../../helper'
 
 /**
- * All retrieved embeds are stored within this global variable. The key is
- * defined by the URL, whereby the body is a string that should replace the
- * innerHTML.
+ * All requested embeds are cached here as promises, keyed by URL and params,
+ * so that identical embeds on a page share a single request.
  */
-var backup = Object()
+const cache = new Map<string, Promise<any>>()
+
+/**
+ * Endpoint schemas compiled to regular expressions, built on first use.
+ * Only `*` is a wildcard, everything else (`.`, `?`, ...) is matched literally.
+ */
+let providers: [string, RegExp][] | undefined
 
 /**
  * Handle providers according to the spec:
@@ -17,177 +22,139 @@ var backup = Object()
  * The only difference is, that it will previously lookup the internal provider
  * list and if there is no proper result, it will grab the website, if possible,
  * and extract the provider URL from the link-tag within the header.
- *
- * @param url
- * @returns
  */
 async function findProvider(url: string): Promise<string | undefined> {
-  const link = url.replace('https://', '').replace('http://', '')
-
-  const candidate = endpoints.find((endpoint: Endpoint) => {
-    const [url, schema] = endpoint
-
-    if (!schema || !schema.length) {
-      return url.includes(link)
+  if (!providers) {
+    providers = []
+    for (const [endpoint, schemas] of endpoints as Endpoint[]) {
+      for (const schema of schemas || []) {
+        const pattern = schema
+          .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+          .replace(/\*/g, '.*')
+        providers.push([endpoint, new RegExp(pattern, 'i')])
+      }
     }
-
-    return schema.some((schema) => {
-      return link.match(new RegExp(schema.replace(/\*/g, '(?:.*)'), 'i'))
-    })
-  })
-
-  if (candidate) {
-    return 'https://' + candidate[0]
-  } else {
-    // try to grab the provider from the website
-    return fetchProviderFromWebsite(url)
   }
+
+  const link = url.replace(/^https?:\/\//, '')
+  const candidate = providers.find(([, regex]) => regex.test(link))
+
+  return candidate
+    ? 'https://' + candidate[0]
+    : fetchProviderFromWebsite(url)
+}
+
+/**
+ * The proxy takes anything between 3s and a minute (or fails with a 520), the
+ * iframe fallback is mostly the same result, so do not wait for it too long.
+ */
+const PROXY_TIMEOUT = 5000
+
+/**
+ * Fetch a text resource, if it fails due to CORS, retry via the proxy, which
+ * wraps the response into `{ contents: string }`.
+ */
+async function fetchText(url: string, useProxy = true): Promise<string> {
+  try {
+    const res = await fetch(url)
+    if (res.ok) return await res.text()
+  } catch (_) {}
+
+  if (!useProxy) throw new Error(`oembed: could not fetch "${url}"`)
+
+  const res = await Promise.race([
+    fetch(helper.PROXY + encodeURIComponent(url)),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('oembed: proxy timeout')), PROXY_TIMEOUT)
+    ),
+  ])
+  return (await res.json()).contents
 }
 
 async function fetchProviderFromWebsite(
-  url: string,
-  withoutProxy: boolean = true
+  url: string
 ): Promise<string | undefined> {
   try {
-    const res = await fetch(url)
-    const text = await res.text()
+    // ponytail: no proxy here, pages without CORS (most) fall back to the
+    // iframe at once instead of 10-60s later, sites that offer oEmbed only
+    // via <link> and block CORS need an entry in endpoints.ts
+    const html = await fetchText(url, false)
+    const href = new DOMParser()
+      .parseFromString(html, 'text/html')
+      .querySelector(
+        'link[type="application/json+oembed"], link[type="text/json+oembed"]'
+      )
+      ?.getAttribute('href')
 
-    // find the oembed service as defined here:
-    // https://oembed.com
-    const match = text.match(
-      /<link.+?type="(application\/)?json\+oembed".+?(\/?[ \\n\\t]*>)/gi
-    )
-
-    if (match?.[0]) {
-      const href = match[0].match(/.*?href="(.*?)"/i)
-
-      return href?.[1]
-    }
-  } catch (err) {
-    // if the first loading fails, a second attempt is done with a
-    // proxy server in between
-    if (withoutProxy) {
-      return fetchProviderFromWebsite(helper.PROXY + url, false)
-    }
-  }
+    return href ? new URL(href, url).href : undefined
+  } catch (_) {}
 }
 
-async function fetchEmbed(
-  link: string,
-  resourceUrl: string,
-  params: Params,
-  prefix?: string
-) {
-  resourceUrl = resourceUrl.replace(/\{format\}/g, 'json')
+async function fetchEmbed(link: string, resourceUrl: string, params: Params) {
+  // discovered providers already come with a query (url, format, ...)
+  const url = new URL(resourceUrl.replace(/\{format\}/g, 'json'))
 
-  let url = `${resourceUrl}?format=json&url=${encodeURIComponent(link)}`
+  url.searchParams.set('format', 'json')
+  url.searchParams.set('url', link)
+  if (params.maxwidth) url.searchParams.set('maxwidth', '' + params.maxwidth)
+  if (params.maxheight) url.searchParams.set('maxheight', '' + params.maxheight)
 
-  url = params.maxwidth ? `${url}&maxwidth=${params.maxwidth}` : url
-  url = params.maxheight ? `${url}&maxheight=${params.maxheight}` : url
-
-  let res: Response
-  let json: any
-
-  if (prefix) {
-    url = prefix + encodeURIComponent(url)
-
-    res = await fetch(url)
-    json = JSON.parse(await res.text())
-    json = JSON.parse(json.contents)
-  } else {
-    res = await fetch(url)
-    json = await res.json()
-  }
-
-  return json
+  return JSON.parse(await fetchText(url.href))
 }
 
-export async function extract(link: string, params: Params) {
+export function extract(link: string, params: Params): Promise<any> {
   // this makes urls more equal
   if (link.endsWith('/')) {
     link = link.slice(0, -1)
   }
 
-  // check if it has been loaded so far
-  if (backup[link] && backup[link][JSON.stringify(params)]) {
-    return backup[link][JSON.stringify(params)]
+  const key = link + JSON.stringify(params)
+
+  // ponytail: failures stay cached too, so revisiting a slide shows the iframe
+  // fallback at once, a reload retries
+  if (!cache.has(key)) {
+    cache.set(
+      key,
+      findProvider(link).then((provider) => {
+        if (!provider) {
+          throw new Error(`No provider found with given url "${link}"`)
+        }
+        return fetchEmbed(link, provider, params)
+      })
+    )
   }
 
-  const p = await findProvider(link)
-
-  if (!p) {
-    throw new Error(`No provider found with given url "${link}"`)
-  }
-
-  let data
-
-  try {
-    data = await fetchEmbed(link, p, params)
-  } catch (error) {
-    data = await fetchEmbed(link, p, params, helper.PROXY)
-  }
-
-  const key = JSON.stringify(params)
-
-  if (!backup[link]) {
-    let x = {}
-    x[key] = data
-    backup[link] = x
-  } else {
-    backup[link][key] = data
-  }
-  ;[]
-
-  return data
-}
-
-function iframe(url: string) {
-  return `<iframe src="${url}" style="width: 100%; height: inherit" allowfullscreen loading="lazy"></iframe>`
-}
-
-function init(event: Event) {
-  if (event.target instanceof HTMLElement) {
-    event.target.style.width = '100%'
-  }
+  return cache.get(key)!
 }
 
 customElements.define(
   'lia-embed',
   class extends HTMLElement {
-    private url_: string | null
+    private url_: string | null = null
     private div_: HTMLDivElement
     private maxwidth_: number | undefined
     private maxheight_: number | undefined
-    private thumbnail_: boolean
-    private paramCount: number
-    private dataAttributes: { [key: string]: string }
+    private thumbnail_: boolean = false
+    private connected_: boolean = false
+    private dataAttributes: { [key: string]: string } = {}
 
     constructor() {
       super()
-
-      this.url_ = null
 
       this.div_ = document.createElement('div')
       this.div_.style.width = 'inherit'
       this.div_.style.height = 'inherit'
       this.div_.style.display = 'inline-block'
 
-      this.thumbnail_ = false
-
-      this.paramCount = 0
-      this.dataAttributes = {}
+      this.attachShadow({ mode: 'closed' }).appendChild(this.div_)
     }
 
     connectedCallback() {
-      let shadowRoot = this.attachShadow({
-        mode: 'closed',
-      })
+      if (this.connected_) return
+      this.connected_ = true
 
-      shadowRoot.appendChild(this.div_)
-
-      const container = this.parentElement // document.getElementsByClassName("lia-slide__content")[0]
-
-      let scale = parseFloat(this.getAttribute('scale') || '0.674')
+      const container = this.parentElement
+      const scale = parseFloat(this.getAttribute('scale') || '0.674')
 
       try {
         const attributes = this.getAttribute('data-attributes')
@@ -200,21 +167,16 @@ customElements.define(
       }
 
       if (container) {
-        const paddingLeft = parseInt(
-          window
-            .getComputedStyle(container)
-            .getPropertyValue('padding-left')
-            .replace('px', '')
+        const paddingLeft = parseFloat(
+          window.getComputedStyle(container).paddingLeft
         )
 
-        this.maxwidth_ =
-          this.maxwidth_ != null
-            ? this.maxwidth_
-            : container.clientWidth - paddingLeft - 30
-        this.maxheight_ =
-          this.maxheight_ != null
-            ? this.maxheight_
-            : Math.floor(this.maxwidth_ * (scale || 0.674))
+        if (this.maxwidth_ == null) {
+          this.maxwidth_ = container.clientWidth - paddingLeft - 30
+        }
+        if (this.maxheight_ == null) {
+          this.maxheight_ = Math.floor(this.maxwidth_ * (scale || 0.674))
+        }
 
         if (this.maxheight_ > screen.availHeight) {
           this.maxheight_ = Math.floor(screen.availHeight * (scale || 0.76))
@@ -225,72 +187,108 @@ customElements.define(
     }
 
     render() {
-      if (this.paramCount > 2) {
-        let div = this.div_
-        let options = {
-          maxwidth: this.maxwidth_,
-          maxheight: this.maxheight_,
-        }
+      if (!this.connected_ || !this.url_) return
 
-        if (this.url_) {
-          let url_ = this.url_
-          let thumbnail_ = this.thumbnail_
-
-          extract(url_, options)
-            .then((json: any) => {
-              try {
-                if (thumbnail_ && json.thumbnail_url) {
-                  div.innerHTML = `<img style="width: inherit; height: inherit; object-fit: cover" src="${json.thumbnail_url}"></img>`
-                } else {
-                  div.innerHTML = json.html
-                  this.applyAttributesToIframe(div)
-                }
-              } catch (e) {
-                div.innerHTML = iframe(url_)
-                this.applyAttributesToIframe(div)
-              }
-
-              const newChild = div.children[0]
-              if (newChild) {
-                // directly loads iframe
-                if (newChild.nodeName === 'IFRAME') {
-                  newChild.addEventListener('load', init)
-                }
-                // SketchFab loads iframe in a div
-                else if (
-                  newChild.childElementCount === 1 &&
-                  newChild.children[0].nodeName === 'IFRAME'
-                ) {
-                  newChild.children[0].addEventListener('load', init)
-                }
-                // in all other cases simply add a dynamic length
-                else if (newChild instanceof HTMLElement) {
-                  newChild.style.width = '100%'
-                }
-              }
-            })
-            .catch((err: any) => {
-              div.innerHTML = `<iframe src="${url_}" style="width: 100%; height: ${
-                options.maxheight ? options.maxheight + 'px' : 'inherit'
-              };" allowfullscreen loading="lazy"></iframe>`
-
-              this.applyAttributesToIframe(div)
-            })
-        }
+      const url = this.url_
+      const thumbnail = this.thumbnail_
+      const div = this.div_
+      const options = {
+        maxwidth: this.maxwidth_,
+        maxheight: this.maxheight_,
       }
+
+      extract(url, options)
+        .then((json: any) => {
+          // the url has changed while loading
+          if (url !== this.url_) return
+
+          if (thumbnail && json.thumbnail_url) {
+            this.show(
+              this.element('img', {
+                src: json.thumbnail_url,
+                style: 'width: inherit; height: inherit; object-fit: cover',
+              })
+            )
+            return
+          }
+
+          if (json.html) {
+            div.innerHTML = json.html
+          } else if (json.type === 'photo' && json.url) {
+            this.show(
+              this.element('img', { src: json.url, style: 'width: 100%' })
+            )
+          } else {
+            this.iframe(url, 'inherit')
+            return
+          }
+
+          const frame = div.querySelector('iframe')
+          if (frame) {
+            // the provider sized the iframe for the width measured on connect,
+            // stretching it to 100% has to keep the ratio, otherwise it gets thin
+            frame.style.width = '100%'
+            const ratio = parseFloat(json.width) / parseFloat(json.height)
+            if (ratio > 0 && isFinite(ratio)) {
+              frame.style.height = 'auto'
+              // min(100%, 90vh) is dropped entirely, if the host height is auto
+              frame.style.maxHeight = this.style.height.endsWith('px')
+                ? '100%'
+                : '90vh'
+              frame.style.setProperty('aspect-ratio', '' + ratio)
+            }
+          } else if (div.firstElementChild instanceof HTMLElement) {
+            div.firstElementChild.style.width = '100%'
+          }
+
+          this.applyAttributes()
+        })
+        .catch(() => {
+          if (url === this.url_) {
+            this.iframe(
+              url,
+              options.maxheight ? options.maxheight + 'px' : 'inherit'
+            )
+          }
+        })
     }
 
-    private applyAttributesToIframe(div: HTMLElement) {
-      const iframe = div.firstElementChild as HTMLIFrameElement
-      if (iframe) {
-        for (const key in this.dataAttributes) {
-          if (this.dataAttributes.hasOwnProperty(key)) {
-            if (key === 'style') {
-              iframe.style.cssText += this.dataAttributes[key]
-            } else {
-              iframe.setAttribute(key, this.dataAttributes[key])
-            }
-          }
+    private element(tag: string, attributes: { [key: string]: string }) {
+      const elem = document.createElement(tag)
+      for (const [key, value] of Object.entries(attributes)) {
+        elem.setAttribute(key, value)
+      }
+      return elem
+    }
+
+    private show(elem: HTMLElement) {
+      this.div_.innerHTML = ''
+      this.div_.appendChild(elem)
+    }
+
+    private iframe(src: string, height: string) {
+      this.show(
+        this.element('iframe', {
+          src,
+          style: `width: 100%; height: ${height}`,
+          allowfullscreen: '',
+          loading: 'lazy',
+        })
+      )
+      this.applyAttributes()
+    }
+
+    private applyAttributes() {
+      const target =
+        this.div_.querySelector('iframe') || this.div_.firstElementChild
+
+      if (!(target instanceof HTMLElement)) return
+
+      for (const [key, value] of Object.entries(this.dataAttributes)) {
+        if (key === 'style') {
+          target.style.cssText += value
+        } else {
+          target.setAttribute(key, value)
         }
       }
     }
@@ -302,7 +300,6 @@ customElements.define(
     set url(value) {
       if (this.url_ !== value) {
         this.url_ = value
-        this.paramCount++
         this.render()
       }
     }
@@ -312,12 +309,7 @@ customElements.define(
     }
 
     set maxheight(value) {
-      if (this.maxheight_ !== value) {
-        this.paramCount++
-        if (value != 0) {
-          this.maxheight_ = value
-        }
-      }
+      if (value) this.maxheight_ = value
     }
 
     get maxwidth() {
@@ -325,12 +317,7 @@ customElements.define(
     }
 
     set maxwidth(value) {
-      if (this.maxwidth_ !== value) {
-        this.paramCount++
-        if (value != 0) {
-          this.maxwidth_ = value
-        }
-      }
+      if (value) this.maxwidth_ = value
     }
 
     get thumbnail() {
