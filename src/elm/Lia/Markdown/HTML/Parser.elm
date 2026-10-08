@@ -26,6 +26,9 @@ import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (newlines, stringTill)
 
 
+{-| Parse an HTML element, `parser` is used for the content of plain HTML
+nodes and for `<foreignObject>`s within an `<svg>`.
+-}
 parse : Parser Context x -> Parser Context (Node x)
 parse parser =
     regex "[ \t]*<[ \t]*"
@@ -36,6 +39,8 @@ parse parser =
         |> andThen (tag parser)
 
 
+{-| An attribute, relative URLs are resolved against the course base.
+-}
 attrParser : Parser Context ( String, String )
 attrParser =
     (\c -> succeed ( c.defines.base, c.defines.appendix ))
@@ -81,144 +86,102 @@ tag parser ( tagType, attributes ) =
             whitespace
                 |> ignore (string ">")
                 |> keep (stringTill (closingTag "svg"))
-                |> map Tuple.pair
-                |> andMap (withState (\state -> succeed state))
-                |> map
-                    (\( code, state ) ->
-                        let
-                            ( svgCode, foreignObjects ) =
-                                getAllForeignObjects state code
+                |> andThen (svg parser attributes)
 
-                            ( newState, parsedForeignObjects ) =
+
+{-| An `<svg>` without `<foreignObject>`s is kept as raw HTML. Otherwise the
+foreignObjects are cut out and their content is parsed as Markdown, the parser
+state (effects, footnotes, ...) is passed on from one to the next.
+-}
+svg : Parser Context x -> Parameters -> String -> Parser Context (Node x)
+svg parser attributes code =
+    case cutForeignObjects code of
+        ( _, [] ) ->
+            succeed (InnerHtml (toStringNode "svg" attributes code))
+
+        ( svgCode, foreignObjects ) ->
+            withState
+                (\state ->
+                    let
+                        ( newState, parsed ) =
+                            List.foldl
+                                (\( attrString, content ) ( beforeState, list ) ->
+                                    let
+                                        ( afterState, blocks ) =
+                                            subParse beforeState parser content
+                                    in
+                                    ( afterState, ( parseAttributes state attrString, blocks ) :: list )
+                                )
+                                ( state, [] )
                                 foreignObjects
-                                    |> List.foldl
-                                        (\( attr, content ) ( beforeState, accList ) ->
-                                            let
-                                                ( afterState, parsedContent ) =
-                                                    subParse beforeState parser content
-                                            in
-                                            ( afterState, ( attr, parsedContent ) :: accList )
-                                        )
-                                        ( state, [] )
-                        in
-                        case foreignObjects of
-                            [] ->
-                                ( state
-                                , toStringNode "svg" attributes svgCode |> InnerHtml
-                                )
-
-                            _ ->
-                                ( newState
-                                , SvgNode attributes svgCode parsedForeignObjects
-                                )
-                    )
-                |> andThen
-                    (\( state, node ) ->
-                        putState state
-                            |> keep (succeed node)
-                    )
+                    in
+                    putState newState
+                        |> keep (succeed (SvgNode attributes svgCode (List.reverse parsed)))
+                )
 
 
 subParse : Context -> Parser Context content -> String -> ( Context, List content )
-subParse defines parser code =
-    case
-        runParser
-            (regex "( |\t|\n)*" |> keep (many parser))
-            defines
-            (code ++ "\n")
-    of
-        Ok ( state, stream, s ) ->
-            ( state, s )
+subParse state parser code =
+    case runParser (regex "[ \t\n]*" |> keep (many parser)) state (code ++ "\n") of
+        Ok ( newState, _, content ) ->
+            ( newState, content )
 
-        _ ->
-            ( defines, [] )
+        Err _ ->
+            ( state, [] )
 
 
-getAllForeignObjects : Context -> String -> ( String, List ( Parameters, String ) )
-getAllForeignObjects context svgCode =
-    let
-        findForeignObjects remaining offset results svgParts =
-            case String.indexes "<foreignObject" remaining of
-                [] ->
-                    -- No more foreignObjects found, return the result
-                    ( String.join "" (List.reverse (remaining :: svgParts))
-                    , List.reverse results
-                    )
+parseAttributes : Context -> String -> Parameters
+parseAttributes state code =
+    case runParser (many attrParser) state code of
+        Ok ( _, _, attributes ) ->
+            attributes
 
-                startIndex :: _ ->
-                    let
-                        -- Add the SVG part before the foreignObject
-                        beforeForeignObject =
-                            String.left startIndex remaining
+        Err _ ->
+            []
 
-                        contentStart =
-                            startIndex + String.length "<foreignObject"
 
-                        afterStart =
-                            String.dropLeft contentStart remaining
+{-| Remove all `<foreignObject>`s from svg code and return them separately as
+pairs of their attribute string and content:
 
-                        tagEndIndex =
-                            Maybe.withDefault (String.length afterStart) (String.indexes ">" afterStart |> List.head)
+    cutForeignObjects "<g/><foreignObject x=1><b>hi</b></foreignObject><g/>"
+        == ( "<g/><g/>", [ ( "x=1", "<b>hi</b>" ) ] )
 
-                        -- Extract the attributes string
-                        attributesString =
-                            String.slice 0 tagEndIndex afterStart
-                                |> String.trim
+-}
+cutForeignObjects : String -> ( String, List ( String, String ) )
+cutForeignObjects code =
+    case breakOn "<foreignObject" code of
+        ( before, Just rest ) ->
+            let
+                ( attrString, afterTag ) =
+                    breakOn ">" rest |> Tuple.mapSecond (Maybe.withDefault "")
 
-                        -- Parse the attributes into Parameters
-                        attributes =
-                            parseAttributes attributesString
+                ( content, after ) =
+                    breakOn "</foreignObject>" afterTag |> Tuple.mapSecond (Maybe.withDefault "")
 
-                        contentStartIndex =
-                            contentStart + tagEndIndex + 1
+                ( svgCode, foreignObjects ) =
+                    cutForeignObjects after
+            in
+            ( before ++ svgCode, ( String.trim attrString, content ) :: foreignObjects )
 
-                        content =
-                            String.dropLeft contentStartIndex remaining
+        ( _, Nothing ) ->
+            ( code, [] )
 
-                        endTagIndex =
-                            Maybe.withDefault (String.length content) (String.indexes "</foreignObject>" content |> List.head)
 
-                        foreignObjectContent =
-                            String.left endTagIndex content
+{-| Split at the first occurrence of `separator`, which is dropped.
+-}
+breakOn : String -> String -> ( String, Maybe String )
+breakOn separator code =
+    case String.indexes separator code of
+        i :: _ ->
+            ( String.left i code, Just (String.dropLeft (i + String.length separator) code) )
 
-                        newRemaining =
-                            String.dropLeft (endTagIndex + String.length "</foreignObject>") content
-
-                        -- Continue with the rest
-                        newSvgParts =
-                            beforeForeignObject :: svgParts
-                    in
-                    findForeignObjects newRemaining
-                        (offset + contentStartIndex + endTagIndex + String.length "</foreignObject>")
-                        (( attributes, foreignObjectContent ) :: results)
-                        newSvgParts
-
-        -- Helper function to parse attributes string into Parameters
-        parseAttributes : String -> Parameters
-        parseAttributes attrStr =
-            case runParser (many attrParser) context attrStr of
-                Ok ( _, _, attr ) ->
-                    -- If parsing is successful, return the attributes
-                    attr
-
-                Err _ ->
-                    -- If parsing fails, return an empty list
-                    []
-    in
-    findForeignObjects svgCode 0 [] []
+        [] ->
+            ( code, Nothing )
 
 
 toStringNode : String -> Parameters -> String -> String
 toStringNode name attributes tagBody =
-    "<"
-        ++ name
-        ++ " "
-        ++ Params.toString attributes
-        ++ ">"
-        ++ tagBody
-        ++ "</"
-        ++ name
-        ++ ">"
+    "<" ++ name ++ " " ++ Params.toString attributes ++ ">" ++ tagBody ++ "</" ++ name ++ ">"
 
 
 tagName : Parser Context Tag.Type
