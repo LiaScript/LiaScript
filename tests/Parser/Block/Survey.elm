@@ -8,6 +8,7 @@ module Parser.Block.Survey exposing
     , optionInBulletList_Suite
     , reservedIds_Suite
     , select_Suite
+    , solution_Suite
     , textInput_Suite
     , textInput_length_fuzz_Suite
     , vector_Suite
@@ -25,6 +26,16 @@ import Parser.Inline.Fixtures exposing (chars)
 import Test exposing (Test, describe, fuzz, test)
 
 
+solution_Suite : Test
+solution_Suite =
+    describe "a solution block below a survey"
+        [ test "is attached to the survey, like with quizzes" <|
+            \_ ->
+                parse "[[___]]\n*****\nThanks!\n*****\n"
+                    |> Expect.equal [ Survey [] { survey = Text 1, id = 0 } (Just ( [ paragraph "Thanks!" ], 0 )) ]
+        ]
+
+
 textInput_Suite : Test
 textInput_Suite =
     describe "generating free-text survey inputs"
@@ -32,12 +43,12 @@ textInput_Suite =
             \_ ->
                 {- [[___]] -}
                 parse "[[___]]\n"
-                    |> Expect.equal [ Survey [] { survey = Text 1, id = 0 } ]
+                    |> Expect.equal [ Survey [] { survey = Text 1, id = 0 } Nothing ]
         , test "several space-separated underscore-runs become that many text fields" <|
             \_ ->
                 {- [[___ ____ _____]] -}
                 parse "[[___ ____ _____]]\n"
-                    |> Expect.equal [ Survey [] { survey = Text 3, id = 0 } ]
+                    |> Expect.equal [ Survey [] { survey = Text 3, id = 0 } Nothing ]
         ]
 
 
@@ -55,7 +66,7 @@ select_Suite =
                 {- [[opt1|opt2]] -}
                 parse "[[opt1|opt2]]\n"
                     |> Expect.equal
-                        [ Survey [] { survey = Select [ [ chars "opt1" ], [ chars "opt2" ] ], id = 0 } ]
+                        [ Survey [] { survey = Select [ [ chars "opt1" ], [ chars "opt2" ] ], id = 0 } Nothing ]
         ]
 
 
@@ -69,7 +80,7 @@ dragAndDrop_Suite =
                 {- [->[opt1|opt2]] -}
                 parse "[->[opt1|opt2]]\n"
                     |> Expect.equal
-                        [ Survey [] { survey = DragAndDrop [ [ chars "opt1" ], [ chars "opt2" ] ], id = 0 } ]
+                        [ Survey [] { survey = DragAndDrop [ [ chars "opt1" ], [ chars "opt2" ] ], id = 0 } Nothing ]
         ]
 
 
@@ -97,7 +108,7 @@ matrix_Suite =
                                     [ "ColA", "ColB" ]
                                     [ [ chars " Row1" ], [ chars " Row2" ] ]
                             , id = 0
-                            }
+                            } Nothing
                         ]
         ]
 
@@ -126,7 +137,7 @@ matrixIndentation_Suite =
                         [ "A", "B" ]
                         [ [ chars " Row1" ], [ chars " Row2" ] ]
                 , id = 0
-                }
+                } Nothing
             ]
     in
     describe "a matrix's header and rows accept every combination of optional dash marker and shared indent"
@@ -312,7 +323,7 @@ vector_Suite =
                                     ]
                                     Categorical
                             , id = 0
-                            }
+                            } Nothing
                         ]
         , test "single-choice, numeric ids -> Quantitative analysis" <|
             \_ ->
@@ -337,7 +348,7 @@ vector_Suite =
                                     ]
                                     Quantitative
                             , id = 0
-                            }
+                            } Nothing
                         ]
         , test "single-choice, non-numeric ids -> Categorical analysis" <|
             \_ ->
@@ -354,7 +365,7 @@ vector_Suite =
                                     ]
                                     Categorical
                             , id = 0
-                            }
+                            } Nothing
                         ]
         ]
 
@@ -370,7 +381,7 @@ textInput_length_fuzz_Suite =
             \underscores ->
                 {- e.g. [[__________]] -}
                 parse ("[[" ++ underscores ++ "]]\n")
-                    |> Expect.equal [ Survey [] { survey = Text 1, id = 0 } ]
+                    |> Expect.equal [ Survey [] { survey = Text 1, id = 0 } Nothing ]
         ]
 
 
@@ -396,19 +407,19 @@ indentedTypes_Suite =
             \_ ->
                 {- [[___]] -}
                 parse "    [[___]]\n"
-                    |> Expect.equal [ Survey [] { survey = Text 1, id = 0 } ]
+                    |> Expect.equal [ Survey [] { survey = Text 1, id = 0 } Nothing ]
         , test "a single-select question, indented" <|
             \_ ->
                 {- [[opt1|opt2]] -}
                 parse "    [[opt1|opt2]]\n"
                     |> Expect.equal
-                        [ Survey [] { survey = Select [ [ chars "opt1" ], [ chars "opt2" ] ], id = 0 } ]
+                        [ Survey [] { survey = Select [ [ chars "opt1" ], [ chars "opt2" ] ], id = 0 } Nothing ]
         , test "a drag-and-drop question, indented" <|
             \_ ->
                 {- [->[opt1|opt2]] -}
                 parse "    [->[opt1|opt2]]\n"
                     |> Expect.equal
-                        [ Survey [] { survey = DragAndDrop [ [ chars "opt1" ], [ chars "opt2" ] ], id = 0 } ]
+                        [ Survey [] { survey = DragAndDrop [ [ chars "opt1" ], [ chars "opt2" ] ], id = 0 } Nothing ]
         , test "a matrix question, header and rows all indented" <|
             \_ ->
                 {- [(ColA)(ColB)]
@@ -424,7 +435,7 @@ indentedTypes_Suite =
                                     [ "ColA", "ColB" ]
                                     [ [ chars " Row1" ], [ chars " Row2" ] ]
                             , id = 0
-                            }
+                            } Nothing
                         ]
         , test "a categorical Vector-survey, labeled options, indented under its question paragraph - the docs' own presentation style" <|
             \_ ->
@@ -453,7 +464,7 @@ indentedTypes_Suite =
                                     ]
                                     Categorical
                             , id = 0
-                            }
+                            } Nothing
                         ]
         , test "a categorical Vector-survey with bare, label-less ids does NOT merge when indented - it falls back to two standalone Quiz fill-in-the-blanks" <|
             \_ ->
@@ -508,7 +519,7 @@ optionInBulletList_Suite =
                                             ]
                                             Categorical
                                     , id = 0
-                                    }
+                                    } Nothing
                               ]
                             ]
                         ]
@@ -538,7 +549,7 @@ optionInBulletList_Suite =
                                             ]
                                             Categorical
                                     , id = 0
-                                    }
+                                    } Nothing
                               ]
                             ]
                         ]
@@ -572,7 +583,7 @@ optionInBlockquote_Suite =
                                         ]
                                         Categorical
                                 , id = 0
-                                }
+                                } Nothing
                             ]
                         ]
         ]

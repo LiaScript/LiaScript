@@ -17,6 +17,19 @@ encode =
     JE.list encBlock
 
 
+encSolution : Maybe ( Blocks, Int ) -> JE.Value
+encSolution solution =
+    case solution of
+        Nothing ->
+            JE.null
+
+        Just ( blocks, hidden_effects ) ->
+            JE.object
+                [ ( "hidden_effects", JE.int hidden_effects )
+                , ( "blocks", encode blocks )
+                ]
+
+
 encBlock : Block -> JE.Value
 encBlock b =
     JE.object <|
@@ -56,22 +69,14 @@ encBlock b =
 
             Quiz a quiz solution ->
                 [ ( "Quiz", Quiz.encode encBlock quiz )
-                , ( "solution"
-                  , case solution of
-                        Nothing ->
-                            JE.null
-
-                        Just ( blocks, hidden_effects ) ->
-                            JE.object
-                                [ ( "hidden_effects", JE.int hidden_effects )
-                                , ( "blocks", encode blocks )
-                                ]
-                  )
+                , ( "solution", encSolution solution )
                 ]
                     |> HTML.maybeEncParameters a
 
-            Survey a survey ->
-                [ ( "Survey", Survey.encode encBlock survey ) ]
+            Survey a survey solution ->
+                [ ( "Survey", Survey.encode encBlock survey )
+                , ( "solution", encSolution solution )
+                ]
                     |> HTML.maybeEncParameters a
 
             Task a tasks ->

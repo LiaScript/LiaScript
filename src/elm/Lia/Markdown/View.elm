@@ -517,8 +517,31 @@ view_block config block =
         Quiz attr quiz solution ->
             viewQuiz config Nothing attr quiz solution
 
-        Survey attr survey ->
+        Survey attr survey solution ->
             Surveys.view config.main attr survey config.section.survey_vector (surveyVectorOptions config survey.survey)
+                |> Tuple.mapSecond
+                    (\html ->
+                        case solution of
+                            Just ( blocks, _ ) ->
+                                if
+                                    config.section.survey_vector
+                                        |> Array.get survey.id
+                                        |> Maybe.map .submitted
+                                        |> Maybe.withDefault False
+                                then
+                                    Html.div []
+                                        [ html
+                                        , blocks
+                                            |> List.map (view_block config)
+                                            |> Html.div [ Attr.class "lia-quiz__solution" ]
+                                        ]
+
+                                else
+                                    html
+
+                            Nothing ->
+                                html
+                    )
                 |> scriptView config.view
 
         Comment ( id1, id2 ) ->
@@ -807,15 +830,19 @@ svgFigure config caption svg =
         ]
 
 
-{-| Comments within the solution of a quiz are only shown and read out loud
-(slides mode), after the quiz has been solved or resolved.
+{-| Comments within the solution of a quiz or survey are only shown and read out
+loud (slides mode), after the quiz has been solved or the survey submitted.
 -}
 hideUnsolvedComments :
-    { section | body : Blocks, quiz_vector : Quiz.Vector, effect_model : Comments.Model a }
+    { section | body : Blocks, quiz_vector : Quiz.Vector, survey_vector : Survey.Vector, effect_model : Comments.Model a }
     -> Comments.Model a
-hideUnsolvedComments { body, quiz_vector, effect_model } =
+hideUnsolvedComments section =
+    let
+        effect_model =
+            section.effect_model
+    in
     case
-        solutions quiz_vector body
+        solutions section section.body
             |> List.filter (.solved >> not)
             |> List.concatMap .comments
     of

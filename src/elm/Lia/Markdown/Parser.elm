@@ -148,9 +148,10 @@ elements =
         , horizontal_line
         , md_annotations
             |> andThen (\attr -> Survey.parse blocks attr |> map (Markdown.Survey attr))
+            |> andMap (solution "survey" (.survey_vector >> Array.length))
         , md_annotations
             |> andThen (\attr -> Quiz.parse blocks attr |> map (Markdown.Quiz attr))
-            |> andMap solution
+            |> andMap (solution "quiz" (.quiz_vector >> Array.length))
         , md_annotations
             |> map Markdown.Task
             |> andMap (Task.parse blocks)
@@ -260,7 +261,7 @@ toQuiz ( md, isQuiz ) =
 toQuiz_ scriptID attr =
     Quiz.gapText blocks scriptID attr
         >> map (Markdown.Quiz attr)
-        >> andMap solution
+        >> andMap (solution "quiz" (.quiz_vector >> Array.length))
 
 
 to_comment : ( Parameters, ( Int, Int ) ) -> Parser Context Markdown.Block
@@ -480,35 +481,41 @@ underline =
         (regex "-{3,}[ \t]*" |> keep (succeed 2))
 
 
-solution : Parser Context (Maybe ( Markdown.Blocks, Int ))
-solution =
-    let
-        rslt e1 blocks_ e2 =
-            ( blocks_, e2 - e1 )
-    in
+{-| A solution block `*****` below a quiz or survey, which gets visible after the
+quiz has been solved or the survey has been submitted. The name and counter are
+used to mark all comments within the solution with the class
+`lia-tts-{name}-{id}`, so that they can be read out loud at that moment.
+-}
+solution : String -> (Context -> Int) -> Parser Context (Maybe ( Markdown.Blocks, Int ))
+solution name count =
     regex "[\t ]*\\*{3,}[\t ]*\n+"
-        |> keep (withState (\s -> succeed s.effect_model.effects))
-        |> map rslt
-        |> andMap
-            (manyTill (blocks |> ignore newlines)
-                (regex "[\t ]*\\*{3,}[\t ]*")
+        |> keep
+            (withState
+                (\s ->
+                    succeed
+                        ( "lia-tts-" ++ name ++ "-" ++ String.fromInt (count s - 1)
+                        , s.effect_model.effects
+                        )
+                )
             )
-        |> andMap (withState (\s -> succeed s.effect_model.effects))
-        |> andThen (\result -> modifyState (markSolution (Tuple.first result)) |> onsuccess result)
+        |> andThen
+            (\( class, effects ) ->
+                manyTill (blocks |> ignore newlines)
+                    (regex "[\t ]*\\*{3,}[\t ]*")
+                    |> andThen
+                        (\blocks_ ->
+                            modifyState (markSolution class blocks_)
+                                |> keep (withState (\s -> succeed ( blocks_, s.effect_model.effects - effects )))
+                        )
+            )
         |> maybe
 
 
-{-| Comments within a quiz solution get the class `lia-tts-quiz-{id}`, so that
-they can be read out loud as soon as the solution gets visible.
--}
-markSolution : Markdown.Blocks -> Context -> Context
-markSolution blocks_ state =
+markSolution : String -> Markdown.Blocks -> Context -> Context
+markSolution class blocks_ state =
     let
         e =
             state.effect_model
-
-        class =
-            [ ( "class", "lia-tts-quiz-" ++ String.fromInt (Array.length state.quiz_vector - 1) ) ]
     in
     { state
         | effect_model =
@@ -518,7 +525,7 @@ markSolution blocks_ state =
                         (\block comments ->
                             case block of
                                 Markdown.Comment ( id1, id2 ) ->
-                                    set_annotation id1 id2 comments class
+                                    set_annotation id1 id2 comments [ ( "class", class ) ]
 
                                 _ ->
                                     comments

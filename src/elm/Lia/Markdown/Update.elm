@@ -25,6 +25,7 @@ import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Gallery.Update as Gallery
 import Lia.Markdown.Quiz.Types as QuizTypes
 import Lia.Markdown.Quiz.Update as Quiz
+import Lia.Markdown.Survey.Types as SurveyTypes
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Markdown.Task.Update as Task
@@ -478,65 +479,75 @@ mergeInto id acc r =
     }
 
 
-{-| All quizzes with a solution block, whether they are solved, and the
-comments within their solution.
+{-| All quizzes and surveys with a solution block, whether they are solved
+(submitted), the class of their comments, and the comments within the solution.
 
-ponytail: only top-level quizzes and quizzes within effect blocks are
-checked, recurse into lists, quotes and HTML if quizzes are used there.
+ponytail: only top-level blocks and blocks within effects are checked, recurse
+into lists, quotes and HTML if quizzes or surveys are used there.
 -}
-solutions : QuizTypes.Vector -> Markdown.Blocks -> List { solved : Bool, id : Int, comments : List ( Int, Int ) }
-solutions vector =
+solutions :
+    { s | quiz_vector : QuizTypes.Vector, survey_vector : SurveyTypes.Vector }
+    -> Markdown.Blocks
+    -> List { solved : Bool, class : String, comments : List ( Int, Int ) }
+solutions vectors =
+    let
+        toSolution solved name id blocks =
+            [ { solved = Maybe.withDefault False solved
+              , class = "lia-tts-" ++ name ++ "-" ++ String.fromInt id
+              , comments =
+                    List.filterMap
+                        (\b ->
+                            case b of
+                                Markdown.Comment id_ ->
+                                    Just id_
+
+                                _ ->
+                                    Nothing
+                        )
+                        blocks
+              }
+            ]
+    in
     List.concatMap
         (\block ->
             case block of
                 Markdown.Quiz _ quiz (Just ( solution, _ )) ->
-                    [ { solved =
-                            vector
-                                |> Array.get quiz.id
-                                |> Maybe.map QuizTypes.isSolved
-                                |> Maybe.withDefault False
-                      , id = quiz.id
-                      , comments =
-                            List.filterMap
-                                (\b ->
-                                    case b of
-                                        Markdown.Comment id ->
-                                            Just id
+                    toSolution
+                        (vectors.quiz_vector |> Array.get quiz.id |> Maybe.map QuizTypes.isSolved)
+                        "quiz"
+                        quiz.id
+                        solution
 
-                                        _ ->
-                                            Nothing
-                                )
-                                solution
-                      }
-                    ]
+                Markdown.Survey _ survey (Just ( solution, _ )) ->
+                    toSolution
+                        (vectors.survey_vector |> Array.get survey.id |> Maybe.map .submitted)
+                        "survey"
+                        survey.id
+                        solution
 
                 Markdown.Effect _ effect ->
-                    solutions vector effect.content
+                    solutions vectors effect.content
 
                 _ ->
                     []
         )
 
 
-{-| Only the comments of a quiz solution are read out loud, as soon as the
-quiz gets solved or resolved.
+{-| Only the comments of a solution are read out loud, as soon as the quiz gets
+solved or resolved or the survey gets submitted.
 -}
 readSolutions : Bool -> Section -> Return Section msg sub -> Return Section msg sub
 readSolutions sound old return =
     if sound then
         let
             wasSolved =
-                solutions old.quiz_vector old.body
+                solutions old old.body
                     |> List.filter .solved
-                    |> List.map .id
+                    |> List.map .class
         in
-        solutions return.value.quiz_vector return.value.body
-            |> List.filter (\q -> q.solved && not (List.member q.id wasSolved) && not (List.isEmpty q.comments))
-            |> List.map
-                (\q ->
-                    Service.TTS.readClass ("lia-tts-quiz-" ++ String.fromInt q.id)
-                        |> Event.pushWithId "settings" old.id
-                )
+        solutions return.value return.value.body
+            |> List.filter (\q -> q.solved && not (List.member q.class wasSolved) && not (List.isEmpty q.comments))
+            |> List.map (.class >> Service.TTS.readClass >> Event.pushWithId "settings" old.id)
             |> (\events -> Return.batchEvents events return)
 
     else
