@@ -14,7 +14,7 @@ import Html.Attributes as Attr
 import Html.Keyed as Keyed
 import Html.Lazy as Lazy
 import I18n.Translations as Translations exposing (Lang, sortAsc, sortDesc, sortNot)
-import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Orientation(..), Point)
+import Lia.Markdown.Chart.Types exposing (Data, Diagram(..), Labels, Orientation(..), Point)
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Config exposing (Config)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
@@ -168,105 +168,10 @@ chart lang width isFormatted attr mode class matrix =
                 }
 
         PieChart ->
-            if
-                body
-                    |> Matrix.column 0
-                    |> Maybe.map (List.all isNumber)
-                    |> Maybe.withDefault False
-            then
-                Chart.viewPieChart settings
-                    width
-                    { labels = labels
-                    , category = []
-                    , data =
-                        body
-                            |> Matrix.map .float
-                            |> List.map
-                                (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
-                                    >> List.filterMap identity
-                                )
-                    , orientation = orientation
-                    }
-
-            else
-                let
-                    classes =
-                        head
-                            |> List.tail
-                            |> Maybe.withDefault []
-                            |> List.map .string
-                in
-                Chart.viewPieChart settings
-                    width
-                    { labels = labels
-                    , category =
-                        body
-                            |> Matrix.column 0
-                            |> Maybe.withDefault []
-                            |> List.map .string
-                    , data =
-                        body
-                            |> Matrix.map .float
-                            |> List.filterMap List.tail
-                            |> List.map
-                                (List.map2 (\c -> Maybe.map (Tuple.pair c))
-                                    classes
-                                    >> List.filterMap identity
-                                )
-                    , orientation = orientation
-                    }
+            Chart.viewPieChart settings width (pieData labels orientation head body)
 
         Funnel ->
-            if
-                body
-                    |> Matrix.column 0
-                    |> Maybe.map (List.all isNumber)
-                    |> Maybe.withDefault False
-            then
-                Chart.viewFunnel settings
-                    width
-                    { labels = labels
-                    , category = []
-                    , data =
-                        body
-                            |> Matrix.map .float
-                            |> List.map
-                                (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
-                                    >> List.filterMap identity
-                                )
-                    , orientation = orientation
-                    }
-
-            else
-                let
-                    classes =
-                        head
-                            |> List.tail
-                            |> Maybe.withDefault []
-                            |> List.map .string
-                in
-                Chart.viewFunnel settings
-                    width
-                    { labels = labels
-                    , category =
-                        body
-                            |> Matrix.column 0
-                            |> Maybe.withDefault []
-                            |> List.map .string
-                    , data =
-                        body
-                            |> Matrix.map .float
-                            |> List.filterMap List.tail
-                            |> List.map
-                                (List.map2
-                                    (\c ->
-                                        Maybe.map (Tuple.pair c)
-                                    )
-                                    classes
-                                    >> List.filterMap identity
-                                )
-                    , orientation = orientation
-                    }
+            Chart.viewFunnel settings (pieData labels orientation head body)
 
         HeatMap ->
             let
@@ -354,112 +259,10 @@ chart lang width isFormatted attr mode class matrix =
                 }
 
         Graph ->
-            let
-                nodesA =
-                    head
-                        |> List.tail
-                        |> Maybe.withDefault []
-                        |> List.map .string
-
-                nodesB =
-                    body
-                        |> Matrix.column 0
-                        |> Maybe.withDefault []
-                        |> List.map .string
-
-                nodes =
-                    nodesA
-                        ++ nodesB
-                        |> Set.fromList
-                        |> Set.toList
-                        |> List.filter ((/=) "")
-            in
-            Chart.viewGraph settings
-                { labels = labels
-                , orientation = orientation
-                , category = nodes
-                , data =
-                    body
-                        |> List.concatMap
-                            (\row ->
-                                case row of
-                                    [] ->
-                                        []
-
-                                    b :: values ->
-                                        values
-                                            |> List.map2
-                                                (\a v ->
-                                                    case v.float of
-                                                        Just float ->
-                                                            if float == 0 then
-                                                                Nothing
-
-                                                            else
-                                                                Just ( a, b.string, float )
-
-                                                        _ ->
-                                                            Nothing
-                                                )
-                                                nodesA
-                            )
-                        |> List.filterMap identity
-                        |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
-                }
+            Chart.viewGraph settings (graphData labels orientation head body)
 
         Sankey ->
-            let
-                nodesA =
-                    head
-                        |> List.tail
-                        |> Maybe.withDefault []
-                        |> List.map .string
-
-                nodesB =
-                    body
-                        |> Matrix.column 0
-                        |> Maybe.withDefault []
-                        |> List.map .string
-
-                nodes =
-                    nodesA
-                        ++ nodesB
-                        |> Set.fromList
-                        |> Set.toList
-                        |> List.filter ((/=) "")
-            in
-            Chart.viewSankey settings
-                { labels = labels
-                , category = nodes
-                , orientation = orientation
-                , data =
-                    body
-                        |> List.concatMap
-                            (\row ->
-                                case row of
-                                    [] ->
-                                        []
-
-                                    b :: values ->
-                                        values
-                                            |> List.map2
-                                                (\a v ->
-                                                    case v.float of
-                                                        Just float ->
-                                                            if float == 0 then
-                                                                Nothing
-
-                                                            else
-                                                                Just ( a, b.string, float )
-
-                                                        _ ->
-                                                            Nothing
-                                                )
-                                                nodesA
-                            )
-                        |> List.filterMap identity
-                        |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
-                }
+            Chart.viewSankey settings (graphData labels orientation head body)
 
         Map ->
             let
@@ -572,6 +375,112 @@ chart lang width isFormatted attr mode class matrix =
                             |> Matrix.map .float
                             |> List.map2 Tuple.pair xLabels
                     }
+
+
+{-| Pie charts and funnels, one diagram per row if the first column holds
+categories, otherwise every row is one diagram over the header.
+-}
+pieData : Labels -> Maybe Orientation -> Row Cell -> Matrix Cell -> Data (List ( String, Float ))
+pieData labels orientation head body =
+    if
+        body
+            |> Matrix.column 0
+            |> Maybe.map (List.all isNumber)
+            |> Maybe.withDefault False
+    then
+        { labels = labels
+        , category = []
+        , data =
+            body
+                |> Matrix.map .float
+                |> List.map
+                    (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
+                        >> List.filterMap identity
+                    )
+        , orientation = orientation
+        }
+
+    else
+        let
+            classes =
+                head
+                    |> List.tail
+                    |> Maybe.withDefault []
+                    |> List.map .string
+        in
+        { labels = labels
+        , category =
+            body
+                |> Matrix.column 0
+                |> Maybe.withDefault []
+                |> List.map .string
+        , data =
+            body
+                |> Matrix.map .float
+                |> List.filterMap List.tail
+                |> List.map
+                    (List.map2 (\c -> Maybe.map (Tuple.pair c))
+                        classes
+                        >> List.filterMap identity
+                    )
+        , orientation = orientation
+        }
+
+
+{-| Graphs and sankey diagrams, the table is an adjacency matrix with the
+source nodes in the header and the target nodes in the first column.
+-}
+graphData : Labels -> Maybe Orientation -> Row Cell -> Matrix Cell -> Data ( String, String, Float )
+graphData labels orientation head body =
+    let
+        nodesA =
+            head
+                |> List.tail
+                |> Maybe.withDefault []
+                |> List.map .string
+
+        nodesB =
+            body
+                |> Matrix.column 0
+                |> Maybe.withDefault []
+                |> List.map .string
+    in
+    { labels = labels
+    , orientation = orientation
+    , category =
+        nodesA
+            ++ nodesB
+            |> Set.fromList
+            |> Set.toList
+            |> List.filter ((/=) "")
+    , data =
+        body
+            |> List.concatMap
+                (\row ->
+                    case row of
+                        [] ->
+                            []
+
+                        b :: values ->
+                            values
+                                |> List.map2
+                                    (\a v ->
+                                        case v.float of
+                                            Just float ->
+                                                if float == 0 then
+                                                    Nothing
+
+                                                else
+                                                    Just ( a, b.string, float )
+
+                                            _ ->
+                                                Nothing
+                                    )
+                                    nodesA
+                )
+            |> List.filterMap identity
+            |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
+    }
 
 
 getLabels : Parameters -> Row Cell -> Labels
