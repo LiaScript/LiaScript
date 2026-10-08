@@ -140,12 +140,27 @@ toCell config ( attr, inlines ) =
     , inlines = inlines
     , string = string
     , float =
-        -- "12.5 kg" is a number with a unit
-        string
-            |> String.split " "
-            |> List.head
-            |> Maybe.andThen String.toFloat
+        -- "12.5 kg" is a number with a unit, "5. April" an ordinal and
+        -- "44 % mittlerer Abschluss" text
+        case String.words string of
+            [ number ] ->
+                toFloat number
+
+            [ number, _ ] ->
+                toFloat number
+
+            _ ->
+                Nothing
     }
+
+
+toFloat : String -> Maybe Float
+toFloat number =
+    if String.endsWith "." number then
+        Nothing
+
+    else
+        String.toFloat number
 
 
 isNumber : Cell -> Bool

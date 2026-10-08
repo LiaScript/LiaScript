@@ -1,10 +1,8 @@
 module Lia.Markdown.Table.Matrix exposing
     ( Matrix
     , Row
-    , any
     , column
     , map
-    , some
     , split
     , tail
     , transpose
@@ -71,23 +69,3 @@ transpose matrix =
             []
         )
         matrix
-
-
-any : (cell -> Bool) -> Matrix cell -> Bool
-any fn =
-    List.any (List.any fn)
-
-
-{-| At least `percent` of all cells pass the test, also `True` for no cells.
--}
-some : Float -> (cell -> Bool) -> Matrix cell -> Bool
-some percent fn matrix =
-    let
-        cells =
-            List.concat matrix
-    in
-    List.isEmpty cells
-        || (toFloat (List.length (List.filter fn cells))
-                / toFloat (List.length cells)
-                >= percent
-           )

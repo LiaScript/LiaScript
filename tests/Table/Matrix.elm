@@ -17,26 +17,6 @@ reference matrix =
         matrix
 
 
-{-| The former implementation of `some`.
--}
-someReference : Float -> (cell -> Bool) -> List (List cell) -> Bool
-someReference percent fn =
-    Matrix.map fn
-        >> List.concat
-        >> List.foldl
-            (\cell ( true, false ) ->
-                if cell then
-                    ( true + 1, false )
-
-                else
-                    ( true, false + 1 )
-            )
-            ( 0, 0 )
-        >> (\( true, false ) ->
-                (true / (true + false)) >= percent
-           )
-
-
 suite : Test
 suite =
     describe "Lia.Markdown.Table.Matrix"
@@ -45,10 +25,6 @@ suite =
             \i matrix ->
                 Matrix.column i matrix
                     |> Expect.equal (matrix |> Matrix.transpose |> Util.get i)
-        , fuzz (Fuzz.list (Fuzz.list Fuzz.bool)) "some equals the former counting fold" <|
-            \matrix ->
-                Matrix.some 0.3 identity matrix
-                    |> Expect.equal (someReference 0.3 identity matrix)
         ]
 
 

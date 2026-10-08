@@ -155,13 +155,13 @@ diagramType attr =
                 |> List.filter (className >> (==) name)
                 |> List.head
 
-        Nothing ->
+        _ ->
             Nothing
 
 
 {-| Guess the diagram type of a table with the header `headLine` (`Nothing`
-for simple tables) and the rows `rows`. Tables without numbers outside of the
-first column stay plain tables.
+for simple tables) and the rows `rows`. Tables need more numeric than text
+columns besides the first one, otherwise they stay plain tables.
 -}
 checkDiagram : Maybe (List Cell) -> Matrix Cell -> Class
 checkDiagram headLine rows =
@@ -169,14 +169,20 @@ checkDiagram headLine rows =
         firstColumn =
             List.map (List.head >> Maybe.andThen .float) rows
 
-        -- all columns but the first, truncated to the shortest row
-        values =
+        -- all columns but the first, truncated to the shortest row, a column
+        -- is numeric if most of its filled cells are numbers
+        ( numeric, text ) =
             rows
                 |> Matrix.transpose
                 |> Matrix.tail
+                |> List.map (List.filter (.string >> (/=) ""))
+                |> List.filter ((/=) [])
+                |> List.partition (\column -> 2 * List.length (List.filter isNumber column) > List.length column)
 
-        mostlyNumbers =
-            Matrix.some 0.3 isNumber values
+        numbers =
+            numeric
+                |> Matrix.map .float
+                |> List.map (List.filterMap identity)
 
         -- at least two numeric column names, numbers on both axes
         numericHead =
@@ -187,35 +193,59 @@ checkDiagram headLine rows =
                 _ ->
                     False
     in
-    if not (rows |> List.filterMap List.tail |> Matrix.any isNumber) then
+    if List.length numeric <= List.length text then
         None
 
-    else if List.all ((/=) Nothing) firstColumn then
-        -- the first column holds x values
-        if headLine /= Nothing && List.isSingleton rows then
-            PieChart
-
-        else if
-            firstColumn
-                |> List.filterMap identity
-                |> Set.fromList
-                |> Set.size
-                |> (==) (List.length rows)
+    else if
+        -- an adjacency matrix with equal row and column names, self-references
+        -- on the diagonal are not supported by graphs
+        Maybe.map (List.drop 1 >> List.map .string) headLine
+            == Maybe.map (List.map .string) (Matrix.column 0 rows)
+    then
+        if
+            rows
+                |> List.indexedMap (\i -> List.drop (i + 1) >> List.head >> Maybe.andThen .float)
+                |> List.all (Maybe.withDefault 0 >> (==) 0)
         then
-            if numericHead then
-                HeatMap
+            Graph
 
-            else if mostlyNumbers then
-                LinePlot
+        else
+            HeatMap
 
-            else
-                None
+    else if List.all (List.all (\x -> x == 0 || x == 1)) (List.filterMap identity firstColumn :: numbers) then
+        -- truth tables
+        None
 
-        else if mostlyNumbers then
-            ScatterPlot
+    else if List.isSingleton rows then
+        -- the shares of a pie are positive, digits of place value tables not
+        if
+            headLine
+                /= Nothing
+                && List.all (List.all (.float >> Maybe.withDefault 0 >> (<) 0) << List.drop 1) rows
+        then
+            PieChart
 
         else
             None
+
+    else if List.all ((/=) Nothing) firstColumn then
+        -- the first column holds x values
+        if
+            numericHead
+                && (firstColumn
+                        |> List.filterMap identity
+                        |> Set.fromList
+                        |> Set.size
+                        |> (==) (List.length rows)
+                   )
+        then
+            HeatMap
+
+        else if monotonic (List.filterMap identity firstColumn) then
+            LinePlot
+
+        else
+            ScatterPlot
 
     else
         -- the first column holds categories
@@ -224,35 +254,47 @@ checkDiagram headLine rows =
                 None
 
             Just head ->
-                if List.isSingleton rows then
-                    PieChart
-
-                else if
-                    -- an adjacency matrix with equal row and column names
-                    Just (List.map .string (List.drop 1 head))
-                        == Maybe.map (List.map .string) (Matrix.column 0 rows)
+                let
+                    maxima =
+                        numbers
+                            |> List.filterMap (List.map abs >> List.maximum)
+                            |> List.filter ((<) 0)
+                in
+                if
+                    -- dates and times like 2024-03-01, 01.05.2024 or 08:00
+                    rows
+                        |> List.filterMap (List.head >> Maybe.map .string)
+                        |> List.filter ((/=) "")
+                        |> List.all (String.left 1 >> String.all Char.isDigit)
                 then
-                    Graph
+                    LinePlot
 
-                else if List.length rows * List.length head >= 50 then
+                else if List.length numeric >= 3 && List.length rows * List.length head >= 50 then
                     Parallel
 
-                else
-                    let
-                        maxima =
-                            values
-                                |> Matrix.map .float
-                                |> List.filterMap (List.filterMap identity >> List.maximum)
-
-                        bound =
-                            Maybe.withDefault 0 >> abs
-                    in
+                else if
                     -- the column maxima differ by more than an order of magnitude
-                    if bound (List.maximum maxima) > 10 * bound (List.minimum maxima) then
+                    Maybe.withDefault 0 (List.maximum maxima) > 10 * Maybe.withDefault 0 (List.minimum maxima)
+                then
+                    if List.length numeric >= 3 then
                         Radar
 
                     else
-                        BarChart
+                        Parallel
+
+                else
+                    BarChart
+
+
+{-| Strictly increasing or decreasing x values can be connected by lines.
+-}
+monotonic : List Float -> Bool
+monotonic xs =
+    let
+        steps =
+            List.map2 (-) (List.drop 1 xs) xs
+    in
+    List.all ((<) 0) steps || List.all ((>) 0) steps
 
 
 row : Parser Context (List ( Parameters, Inlines ))
