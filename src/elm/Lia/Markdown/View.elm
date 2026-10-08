@@ -347,7 +347,7 @@ viewMain hidden =
 
 view_footnote : (Block -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
 view_footnote viewer key footnotes =
-    case Maybe.andThen (Footnotes.getNote footnotes) key of
+    case Maybe.andThen (\k -> Dict.get k footnotes) key of
         Just notes ->
             [ notes
                 |> List.map viewer
