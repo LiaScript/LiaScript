@@ -176,8 +176,21 @@ decodeList =
 toString : State -> String
 toString state =
     state
-        |> Array.toList
-        |> List.map (Block.toString True)
+        |> Array.toIndexedList
+        |> List.map
+            (\( id, block ) ->
+                case block of
+                    -- inline drops store [ input, option ], options of other inputs are wrong
+                    Block.Drop _ _ [ input, option ] ->
+                        if input == id then
+                            String.fromInt option
+
+                        else
+                            "-1"
+
+                    _ ->
+                        Block.toString True block
+            )
         |> String.join ","
         |> (\str -> "[" ++ str ++ "]")
 

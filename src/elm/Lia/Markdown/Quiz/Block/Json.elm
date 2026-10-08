@@ -45,8 +45,12 @@ fromState state =
             Drop _ _ [ x ] ->
                 [ ( "Drop", JE.int x ) ]
 
-            Drop _ _ _ ->
+            Drop _ _ [] ->
                 [ ( "Drop", JE.int -1 ) ]
+
+            -- inline drops store [ input, option ]
+            Drop _ _ list ->
+                [ ( "Drop", JE.list JE.int list ) ]
 
 
 toState : JD.Decoder State
@@ -54,4 +58,19 @@ toState =
     JD.oneOf
         [ JD.field "Text" JD.string |> JD.map Text
         , JD.field "Select" JD.int |> JD.map (List.singleton >> Select False)
+        , JD.field "Drop"
+            (JD.oneOf
+                [ JD.int
+                    |> JD.map
+                        (\i ->
+                            if i < 0 then
+                                []
+
+                            else
+                                [ i ]
+                        )
+                , JD.list JD.int
+                ]
+            )
+            |> JD.map (Drop False False)
         ]
