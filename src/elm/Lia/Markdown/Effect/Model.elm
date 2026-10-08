@@ -84,7 +84,7 @@ set_annotation : Int -> Int -> Dict Int Element -> Parameters -> Dict Int Elemen
 set_annotation id1 id2 m attr =
     Dict.update id1
         (Maybe.map
-            (\e -> { e | content = Array.update id2 (\par -> { par | attr = attr }) e.content })
+            (\e -> { e | content = Array.update id2 (\par -> { par | attr = par.attr ++ attr }) e.content })
         )
         m
 

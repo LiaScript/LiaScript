@@ -176,7 +176,7 @@ viewSlide modalIsActive screen model =
                 , mode = model.settings.mode
                 , formulas = model.definition.formulas
                 , media = model.media
-                , effect = section.effect_model
+                , effect = Markdown.hideUnsolvedComments section
                 , id = model.section_active
                 , modalIsActive = modalIsActive
                 }

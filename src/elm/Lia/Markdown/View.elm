@@ -1,5 +1,6 @@
 module Lia.Markdown.View exposing
     ( addTranslation
+    , hideUnsolvedComments
     , view
     , viewContent
     , viewHidden
@@ -38,7 +39,7 @@ import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Task.View as Task
 import Lia.Markdown.Types exposing (Alert(..), Block(..), Blocks)
-import Lia.Markdown.Update exposing (Msg(..))
+import Lia.Markdown.Update exposing (Msg(..), solutions)
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (icon, modal, shuffle)
@@ -804,6 +805,40 @@ svgFigure config caption svg =
                     |> config.view
                     |> Html.figcaption [ Attr.class "lia-figure__caption" ]
         ]
+
+
+{-| Comments within the solution of a quiz are only shown and read out loud
+(slides mode), after the quiz has been solved or resolved.
+-}
+hideUnsolvedComments :
+    { section | body : Blocks, quiz_vector : Quiz.Vector, effect_model : Comments.Model a }
+    -> Comments.Model a
+hideUnsolvedComments { body, quiz_vector, effect_model } =
+    case
+        solutions quiz_vector body
+            |> List.filter (.solved >> not)
+            |> List.concatMap .comments
+    of
+        [] ->
+            effect_model
+
+        hidden ->
+            { effect_model
+                | comments =
+                    effect_model.comments
+                        |> Dict.map
+                            (\id1 element ->
+                                { element
+                                    | content =
+                                        element.content
+                                            |> Array.toIndexedList
+                                            |> List.filter (\( id2, _ ) -> not (List.member ( id1, id2 ) hidden))
+                                            |> List.map Tuple.second
+                                            |> Array.fromList
+                                }
+                            )
+                        |> Dict.filter (\_ element -> not (Array.isEmpty element.content))
+            }
 
 
 viewQuiz : Config Msg -> Maybe String -> Parameters -> Quiz.Quiz Block -> Maybe ( Blocks, Int ) -> Html Msg

@@ -1,5 +1,6 @@
 module Lia.Markdown.Parser exposing (run)
 
+import Array
 import Combine
     exposing
         ( Parser
@@ -493,7 +494,39 @@ solution =
                 (regex "[\t ]*\\*{3,}[\t ]*")
             )
         |> andMap (withState (\s -> succeed s.effect_model.effects))
+        |> andThen (\result -> modifyState (markSolution (Tuple.first result)) |> onsuccess result)
         |> maybe
+
+
+{-| Comments within a quiz solution get the class `lia-tts-quiz-{id}`, so that
+they can be read out loud as soon as the solution gets visible.
+-}
+markSolution : Markdown.Blocks -> Context -> Context
+markSolution blocks_ state =
+    let
+        e =
+            state.effect_model
+
+        class =
+            [ ( "class", "lia-tts-quiz-" ++ String.fromInt (Array.length state.quiz_vector - 1) ) ]
+    in
+    { state
+        | effect_model =
+            { e
+                | comments =
+                    List.foldl
+                        (\block comments ->
+                            case block of
+                                Markdown.Comment ( id1, id2 ) ->
+                                    set_annotation id1 id2 comments class
+
+                                _ ->
+                                    comments
+                        )
+                        e.comments
+                        blocks_
+            }
+    }
 
 
 ident_blocks : Parser Context Markdown.Blocks

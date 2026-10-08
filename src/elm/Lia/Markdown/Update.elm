@@ -5,6 +5,8 @@ port module Lia.Markdown.Update exposing
     , initEffect
     , nextEffect
     , previousEffect
+    , readSolutions
+    , solutions
     , subscriptions
     , ttsReplay
     , update
@@ -21,10 +23,12 @@ import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Gallery.Update as Gallery
+import Lia.Markdown.Quiz.Types as QuizTypes
 import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Markdown.Task.Update as Task
+import Lia.Markdown.Types as Markdown
 import Lia.Section exposing (Section, Sections, SubSection(..))
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
@@ -472,6 +476,71 @@ mergeInto id acc r =
             Nothing ->
                 acc.sub
     }
+
+
+{-| All quizzes with a solution block, whether they are solved, and the
+comments within their solution.
+
+ponytail: only top-level quizzes and quizzes within effect blocks are
+checked, recurse into lists, quotes and HTML if quizzes are used there.
+-}
+solutions : QuizTypes.Vector -> Markdown.Blocks -> List { solved : Bool, id : Int, comments : List ( Int, Int ) }
+solutions vector =
+    List.concatMap
+        (\block ->
+            case block of
+                Markdown.Quiz _ quiz (Just ( solution, _ )) ->
+                    [ { solved =
+                            vector
+                                |> Array.get quiz.id
+                                |> Maybe.map QuizTypes.isSolved
+                                |> Maybe.withDefault False
+                      , id = quiz.id
+                      , comments =
+                            List.filterMap
+                                (\b ->
+                                    case b of
+                                        Markdown.Comment id ->
+                                            Just id
+
+                                        _ ->
+                                            Nothing
+                                )
+                                solution
+                      }
+                    ]
+
+                Markdown.Effect _ effect ->
+                    solutions vector effect.content
+
+                _ ->
+                    []
+        )
+
+
+{-| Only the comments of a quiz solution are read out loud, as soon as the
+quiz gets solved or resolved.
+-}
+readSolutions : Bool -> Section -> Return Section msg sub -> Return Section msg sub
+readSolutions sound old return =
+    if sound then
+        let
+            wasSolved =
+                solutions old.quiz_vector old.body
+                    |> List.filter .solved
+                    |> List.map .id
+        in
+        solutions return.value.quiz_vector return.value.body
+            |> List.filter (\q -> q.solved && not (List.member q.id wasSolved) && not (List.isEmpty q.comments))
+            |> List.map
+                (\q ->
+                    Service.TTS.readClass ("lia-tts-quiz-" ++ String.fromInt q.id)
+                        |> Event.pushWithId "settings" old.id
+                )
+            |> (\events -> Return.batchEvents events return)
+
+    else
+        return
 
 
 ttsReplay : Bool -> Bool -> Maybe Section -> Maybe Event

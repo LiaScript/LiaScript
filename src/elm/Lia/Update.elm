@@ -396,6 +396,7 @@ update session msg model =
                 ( UpdateMarkdown childMsg, Just sec ) ->
                     sec
                         |> Markdown.update model.sync model.definition childMsg
+                        |> Markdown.readSolutions (model.settings.sound && model.settings.mode /= Textbook) sec
                         |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( NextSection, Just sec ) ->
