@@ -116,7 +116,11 @@ diagramTranspose attr matrix =
 
 diagramOrientation : Parameters -> Maybe Orientation
 diagramOrientation attr =
-    case Param.get "data-orientation" attr of
+    case
+        attr
+            |> Param.get "data-orientation"
+            |> Maybe.map String.toLower
+    of
         Just "horizontal" ->
             Just Horizontal
 
@@ -463,21 +467,12 @@ getLabels attr row =
 -}
 getMinMax : String -> Parameters -> { min : Maybe String, max : Maybe String }
 getMinMax name attr =
-    case Param.get name attr |> Maybe.map (String.split "," >> List.map String.trim) of
-        Just [ "", "" ] ->
-            { min = Nothing, max = Nothing }
-
-        Just [ "", max ] ->
-            { min = Nothing, max = Just max }
-
-        Just [ min, "" ] ->
-            { min = Just min, max = Nothing }
-
+    case attr |> Param.get name |> Maybe.map (String.split "," >> List.map (String.trim >> nonEmpty)) of
         Just [ min ] ->
-            { min = Just min, max = Nothing }
+            { min = min, max = Nothing }
 
         Just [ min, max ] ->
-            { min = Just min, max = Just max }
+            { min = min, max = max }
 
         _ ->
             { min = Nothing, max = Nothing }
@@ -626,7 +621,7 @@ viewFormatted config state table =
             (\column ( format, ( attr, inlines ) ) ->
                 Html.th
                     (Attr.class "lia-table__header"
-                        :: (if table.id == column && state.column == column then
+                        :: (if state.column == column then
                                 if state.dir then
                                     A11y_Aria.sortAscending
 
