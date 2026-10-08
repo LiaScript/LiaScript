@@ -61,13 +61,8 @@ split matrix =
 
 transpose : Matrix cell -> Matrix cell
 transpose matrix =
-    List.foldl
-        (\input output ->
-            List.map2
-                (\i o -> List.append o [ i ])
-                input
-                output
-        )
+    List.foldr
+        (List.map2 (::))
         (List.repeat
             (matrix
                 |> List.head

@@ -12,11 +12,14 @@ import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Keyed as Keyed
+import Html.Lazy as Lazy
 import I18n.Translations as Translations exposing (Lang, sortAsc, sortDesc, sortNot)
 import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Orientation(..), Point)
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Config exposing (Config)
+import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
+import Lia.Markdown.Inline.Stringify as Stringify
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix, Row)
 import Lia.Markdown.Table.Types
@@ -44,11 +47,20 @@ view config attr table =
             getState table.id config.section.table_vector
     in
     if diagramShow attr state.diagram then
-        viewDiagram
-            config
-            table
-            state
-            attr
+        if Array.isEmpty config.main.input.state then
+            -- quiz inputs are only set within quizzes, elsewhere these keys define the chart
+            Lazy.lazy8 viewLazyDiagram
+                config.main.lang
+                config.screen.width
+                config.light
+                config.main.scripts
+                config.main.visible
+                attr
+                table
+                state
+
+        else
+            viewDiagram config.main config.main.lang config.screen.width config.light attr table state
 
     else if table.head == [] && table.format == [] then
         state
@@ -61,19 +73,31 @@ view config attr table =
             |> toTable config.main.lang table.id attr table.class
 
 
-viewDiagram : Config sub -> Table -> State -> Parameters -> Html Msg
-viewDiagram config table state attr =
+viewLazyDiagram : Lang -> Int -> Bool -> Scripts a -> Maybe Int -> Parameters -> Table -> State -> Html Msg
+viewLazyDiagram lang width light scripts visible =
+    viewDiagram
+        { scripts = scripts
+        , visible = visible
+        , input = { state = Array.empty, options = Array.empty }
+        }
+        lang
+        width
+        light
+
+
+viewDiagram : Stringify.Config config input a -> Lang -> Int -> Bool -> Parameters -> Table -> State -> Html Msg
+viewDiagram main lang width light attr table state =
     Html.div
         [ blockKeydown (UpdateTable Sub.NoOp)
         , A11y_Live.polite
         ]
         [ toggleBtn table.id ( "table", "Table" )
         , table.body
-            |> toMatrix config.main
+            |> toMatrix main
             |> sort state
-            |> (::) (List.indexedMap (toCell config.main -1) table.head)
+            |> (::) (List.indexedMap (toCell main -1) table.head)
             |> diagramTranspose attr
-            |> chart config.main.lang config.screen.width (table.format /= []) attr config.light table.class
+            |> chart lang width (table.format /= []) attr light table.class
         ]
 
 
