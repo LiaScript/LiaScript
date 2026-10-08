@@ -267,41 +267,94 @@ function playback(event: Lia.Event) {
   const options = getAudioSettings(text)
 
   if (typeof text !== 'string') {
-    text = innerText(text)
+    text = innerText(text, lang)
   }
 
   speak(text, voice, lang, options, event)
 }
 
-function innerText(node) {
+function innerText(node, lang = 'en') {
   if (node.nodeType === Node.TEXT_NODE) {
-    // If the child node is a text node, append its text content
     return node.textContent
-  } else if (node.tagName === 'INPUT') {
-    // If the child node is an input element, append its value
-    return node.value
-  } else if (
-    node.classList.contains('lia-effect__circle') ||
-    node.classList.contains('lia-quiz-multi')
-  ) {
+  } else if (node.nodeType !== Node.ELEMENT_NODE || node.tagName === 'BUTTON') {
     return ''
+  } else if (node.tagName === 'INPUT') {
+    // Text inputs are read by their value, checkboxes and radios would be "on"
+    return node.type === 'checkbox' || node.type === 'radio' ? '' : node.value
+  }
+
+  const display = window.getComputedStyle(node).display
+
+  if (display === 'none' || node.classList.contains('lia-effect__circle')) {
+    return ''
+  }
+
+  const read = (n: Node) => innerText(n, lang)
+  const all = (selector: string) =>
+    Array.from(node.querySelectorAll(selector)) as HTMLElement[]
+
+  // Quizzes, surveys and tasks are read as lists: "green, blue or red",
+  // checkboxes as "milk and bread", the buttons at the end "check or resolve"
+  if (
+    node.classList.contains('lia-quiz__answers') &&
+    node.querySelector(':scope > .lia-label')
+  ) {
+    return list(
+      all(':scope > .lia-label').map(read),
+      node.querySelector('input[type=checkbox]')
+        ? 'conjunction'
+        : 'disjunction',
+      lang
+    )
   } else if (node.classList.contains('lia-dropdown')) {
-    node = node.childNodes[0]
+    return list(all('.lia-dropdown__option').map(read), 'disjunction', lang)
+  } else if (node.classList.contains('lia-survey-matrix')) {
+    const columns = list(all('th').map(read), 'disjunction', lang)
+    return all('tr')
+      .map(row => trim(read(row)) + ': ' + columns)
+      .join('')
+  } else if (node.classList.contains('lia-quiz__control')) {
+    return list(
+      all('button').map(b => b.innerText.trim() || b.title),
+      'disjunction',
+      lang
+    )
   }
 
   let text = ''
+  node.childNodes.forEach((n: Node) => {
+    text += read(n)
+  })
 
-  try {
-    if (window.getComputedStyle(node).display !== 'none') {
-      node.childNodes.forEach((n: Node) => {
-        text += innerText(n)
-      })
-    }
-  } catch (e: any) {
-    console.warn('TTS: could not read innerText -->', e.message)
+  // Block elements (paragraphs, options, list items, table cells) get a
+  // pause, otherwise "vier" and "fünf" would be read as "vierfünf"
+  if (!display.startsWith('inline') && text.trim()) {
+    text = text.trimEnd()
+    text += /[.!?:;,]$/.test(text) ? ' ' : '. '
   }
 
   return text
+}
+
+function trim(text: string) {
+  return text.trim().replace(/[.,;:]$/, '')
+}
+
+function list(
+  items: string[],
+  type: 'conjunction' | 'disjunction',
+  lang: string
+) {
+  items = items.map(trim).filter(item => item)
+
+  if (items.length === 0) return ''
+
+  try {
+    return new (Intl as any).ListFormat(lang, { type }).format(items) + '. '
+  } catch (e) {
+    // Intl.ListFormat is not available on older browsers (KaiOS)
+    return items.join(', ') + '. '
+  }
 }
 
 function getAudioSettings(element: HTMLElement | Element) {
