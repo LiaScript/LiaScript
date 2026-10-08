@@ -533,7 +533,10 @@ view_block config block =
                                         [ html
                                         , blocks
                                             |> List.map (view_block config)
-                                            |> Html.div [ Attr.class "lia-quiz__solution" ]
+                                            |> Html.div
+                                                [ Attr.class "lia-quiz__solution"
+                                                , Attr.id ("lia-survey-solution-" ++ String.fromInt survey.id)
+                                                ]
                                         ]
 
                                 else
@@ -919,7 +922,10 @@ quizControl config labeledBy attr quiz solution =
                                 List.append list
                                     [ answer
                                         |> List.map (view_block config)
-                                        |> Html.div [ Attr.class "lia-quiz__solution" ]
+                                        |> Html.div
+                                            [ Attr.class "lia-quiz__solution"
+                                            , Attr.id ("lia-quiz-solution-" ++ String.fromInt quiz.id)
+                                            ]
                                     ]
                             )
                         |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))

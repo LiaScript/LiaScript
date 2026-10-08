@@ -24,6 +24,7 @@ import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Script
+import Service.Slide
 import Task
 
 
@@ -125,12 +126,14 @@ update classroom sectionID scripts msg vector =
                                     |> Return.val
                                     |> doSync connected sectionID (Just id)
                                     |> store sectionID
+                                    |> reveal id
 
                             else
                                 -- this is a hack to trigger the error message for empty answers
                                 vector
                                     |> Array.update id (updateError (Just ""))
                                     |> Return.val
+                                    |> reveal id
 
                         Just scriptID ->
                             (if element.errorMsg == Nothing then
@@ -211,6 +214,7 @@ update classroom sectionID scripts msg vector =
                                 |> store sectionID
                                 |> Return.script (JS.submit scriptID event)
                                 |> doSync connected sectionID (Just section)
+                                |> reveal section
 
                         Nothing ->
                             param
@@ -218,6 +222,7 @@ update classroom sectionID scripts msg vector =
                                 |> update_ section vector
                                 |> store sectionID
                                 |> doSync connected sectionID (Just section)
+                                |> reveal section
 
                 {- let
                        eval =
@@ -254,6 +259,18 @@ update classroom sectionID scripts msg vector =
 lockAnswered : { sync | state : Classroom.State, data : Classroom.Data } -> Maybe Int -> Vector -> Vector
 lockAnswered classroom sectionID =
     Sync.lockAnswered (Classroom.id classroom.state) classroom.data.survey sectionID
+
+
+{-| Scroll the feedback and the solution of a survey into the visible area, if
+they are not already.
+-}
+reveal : Int -> Return Vector msg sub -> Return Vector msg sub
+reveal id =
+    -- ports dispatch in reverse order, the solution (below the feedback) has to win
+    Return.batchEvents
+        [ Service.Slide.reveal ("lia-survey-solution-" ++ String.fromInt id)
+        , Service.Slide.reveal ("lia-survey-feedback-" ++ String.fromInt id)
+        ]
 
 
 update_ :

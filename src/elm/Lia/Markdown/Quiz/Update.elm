@@ -37,6 +37,7 @@ import Service.Console
 import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Script
+import Service.Slide
 
 
 type Msg sub
@@ -86,6 +87,7 @@ update classroom sectionID scripts msg vector =
                                 |> update_ id vector
                                 |> store sectionID
                                 |> doSync connected sectionID (Just id)
+                                |> reveal id
 
                         Just scriptID ->
                             let
@@ -126,6 +128,7 @@ update classroom sectionID scripts msg vector =
             (\e -> Return.val { e | hint = e.hint + 1 })
                 |> update_ idx vector
                 |> store sectionID
+                |> Return.batchEvent (Service.Slide.reveal ("lia-quiz-hints-" ++ String.fromInt idx))
 
         ShowSolution id solution ->
             (\e -> Return.val { e | state = toState solution, solved = Solution.ReSolved, error_msg = "" })
@@ -147,6 +150,7 @@ update classroom sectionID scripts msg vector =
                                 return
                    )
                 |> doSync connected sectionID (Just id)
+                |> reveal id
 
         Handle event ->
             case Event.destructure event of
@@ -213,6 +217,7 @@ update classroom sectionID scripts msg vector =
                                 |> store sectionID
                                 |> Return.script (JS.submit scriptID event)
                                 |> doSync connected sectionID (Just id)
+                                |> reveal id
 
                         Nothing ->
                             param
@@ -220,6 +225,7 @@ update classroom sectionID scripts msg vector =
                                 |> update_ id vector
                                 |> store sectionID
                                 |> doSync connected sectionID (Just id)
+                                |> reveal id
 
                 ( Just "restore", _, ( cmd, param ) ) ->
                     param
@@ -441,6 +447,18 @@ store sectionID return =
 
         Nothing ->
             return
+
+
+{-| Scroll the feedback and the solution of a quiz into the visible area, if
+they are not already.
+-}
+reveal : Int -> Return Vector msg sub -> Return Vector msg sub
+reveal id =
+    -- ports dispatch in reverse order, the solution (below the feedback) has to win
+    Return.batchEvents
+        [ Service.Slide.reveal ("lia-quiz-solution-" ++ String.fromInt id)
+        , Service.Slide.reveal ("lia-quiz-feedback-" ++ String.fromInt id)
+        ]
 
 
 check : Type Markdown.Block -> Element -> Return Element msg sub

@@ -706,14 +706,14 @@ textBlock name str =
         ]
 
 
-viewError : String -> Maybe String -> Html msg
-viewError default message =
+viewError : Int -> String -> Maybe String -> Html msg
+viewError idx default message =
     case message of
         Nothing ->
             Html.text ""
 
         Just error ->
-            Html.div [ Attr.class "lia-quiz__feedback text-error" ]
+            Html.div [ Attr.class "lia-quiz__feedback text-error", Attr.id (feedbackID idx) ]
                 [ Html.text <|
                     if error == "" then
                         default
@@ -721,6 +721,11 @@ viewError default message =
                     else
                         error
                 ]
+
+
+feedbackID : Int -> String
+feedbackID idx =
+    "lia-survey-feedback-" ++ String.fromInt idx
 
 
 view_survey :
@@ -756,14 +761,14 @@ view_survey config attr class model idx fn =
         , submit_button config opt.updates_allowed submitted idx
         , if submitted then
             Html.div
-                [ Attr.class "lia-quiz__feedback text-success" ]
+                [ Attr.class "lia-quiz__feedback text-success", Attr.id (feedbackID idx) ]
                 [ Html.text (surveySubmitted config.lang) ]
 
           else
             Html.text ""
         , model
             |> getErrorMessage idx
-            |> viewError
+            |> viewError idx
                 (if class == "matrix" then
                     Translations.surveyErrorMatrix config.lang
 

@@ -652,8 +652,8 @@ viewQuiz config labeledBy state quiz renderedHints ( attr, body ) =
             , title = Translations.quizHint config.lang
             }
         ]
-    , viewFeedback config state
-    , viewHints state.hint renderedHints
+    , viewFeedback config quiz.id state
+    , viewHints quiz.id state.hint renderedHints
     ]
 
 
@@ -685,17 +685,25 @@ viewQuiz config labeledBy state quiz renderedHints ( attr, body ) =
 -}
 
 
-viewFeedback : Config Main.Msg -> Element -> Html Main.Msg
-viewFeedback config state =
+viewFeedback : Config Main.Msg -> Int -> Element -> Html Main.Msg
+viewFeedback config id state =
+    let
+        feedback color =
+            Html.div
+                [ Attr.class ("lia-quiz__feedback " ++ color)
+                , Attr.id ("lia-quiz-feedback-" ++ String.fromInt id)
+                , A11y_Live.polite
+                ]
+    in
     if state.error_msg /= "" then
-        Html.div [ Attr.class "lia-quiz__feedback text-error", A11y_Live.polite ]
+        feedback "text-error"
             [ Html.text state.error_msg
             ]
 
     else
         case state.solved of
             Solution.Solved ->
-                Html.div [ Attr.class "lia-quiz__feedback text-success", A11y_Live.polite ]
+                feedback "text-success"
                     -- TODO: maybe lable success, failure, ... locale independend
                     [ showCustomFeedback
                         config
@@ -704,7 +712,7 @@ viewFeedback config state =
                     ]
 
             Solution.ReSolved ->
-                Html.div [ Attr.class "lia-quiz__feedback text-disabled", A11y_Live.polite ]
+                feedback "text-disabled"
                     [ showCustomFeedback
                         config
                         state.opt.text_resolved
@@ -716,7 +724,7 @@ viewFeedback config state =
                     Html.text ""
 
                 else
-                    Html.div [ Attr.class "lia-quiz__feedback text-error", A11y_Live.polite ]
+                    feedback "text-error"
                         [ showCustomFeedback
                             config
                             state.opt.text_failed
@@ -794,8 +802,8 @@ shown within a list and an additional button will be displayed to reveal more
 hints, if there are still hints not shown to the user and if the quiz has not
 been solved yet.
 -}
-viewHints : Int -> List (List (Html Main.Msg)) -> Html Main.Msg
-viewHints counter hints =
+viewHints : Int -> Int -> List (List (Html Main.Msg)) -> Html Main.Msg
+viewHints id counter hints =
     if List.isEmpty hints then
         Html.text ""
 
@@ -805,6 +813,7 @@ viewHints counter hints =
             |> List.map (Html.li [])
             |> Html.ul
                 [ Attr.class "lia-list--unordered lia-quiz__hints"
+                , Attr.id ("lia-quiz-hints-" ++ String.fromInt id)
                 , A11y_Live.polite
                 ]
 
