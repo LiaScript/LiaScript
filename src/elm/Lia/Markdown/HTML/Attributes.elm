@@ -79,7 +79,7 @@ filterNames names =
 
 isMemberOf : List String -> ( String, x ) -> Bool
 isMemberOf names ( name, _ ) =
-    List.member name names
+    List.member (String.toLower name) names
 
 
 {-| Return True or False, if a parameter is set in the parameter list:
