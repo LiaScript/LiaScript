@@ -5,8 +5,9 @@ port module Lia.Markdown.Update exposing
     , initEffect
     , nextEffect
     , previousEffect
-    , readSolutions
+    , revealSolutions
     , solutions
+    , solved
     , subscriptions
     , ttsReplay
     , update
@@ -14,12 +15,14 @@ port module Lia.Markdown.Update exposing
     )
 
 import Array
+import Conditional.List as CList
 import Dict
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
+import Lia.Markdown.Effect.Script.Update as ScriptUpdate
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Gallery.Update as Gallery
@@ -491,8 +494,8 @@ solutions :
     -> List { solved : Bool, class : String, comments : List ( Int, Int ) }
 solutions vectors =
     let
-        toSolution solved name id blocks =
-            [ { solved = Maybe.withDefault False solved
+        toSolution isSolved name id blocks =
+            [ { solved = Maybe.withDefault False isSolved
               , class = "lia-tts-" ++ name ++ "-" ++ String.fromInt id
               , comments =
                     List.filterMap
@@ -533,25 +536,49 @@ solutions vectors =
         )
 
 
-{-| Only the comments of a solution are read out loud, as soon as the quiz gets
-solved or resolved or the survey gets submitted.
+{-| Classes of all solutions that are currently visible.
 -}
-readSolutions : Bool -> Section -> Return Section msg sub -> Return Section msg sub
-readSolutions sound old return =
-    if sound then
-        let
-            wasSolved =
-                solutions old old.body
-                    |> List.filter .solved
-                    |> List.map .class
-        in
-        solutions return.value return.value.body
-            |> List.filter (\q -> q.solved && not (List.member q.class wasSolved) && not (List.isEmpty q.comments))
-            |> List.map (.class >> Service.TTS.readClass >> Event.pushWithId "settings" old.id)
-            |> (\events -> Return.batchEvents events return)
+solved : Section -> List String
+solved section =
+    solutions section section.body
+        |> List.filter .solved
+        |> List.map .class
 
-    else
-        return
+
+{-| A solution that got visible (quiz solved or resolved, survey submitted),
+which was not within the list of solved classes before, gets its scripts
+released and executed (only visible ones, unless `runAll`), and only its
+comments are read out loud.
+-}
+revealSolutions : { sound : Bool, runAll : Bool } -> List String -> Return Section msg sub -> Return Section msg sub
+revealSolutions { sound, runAll } before return =
+    solutions return.value return.value.body
+        |> List.filter (\q -> q.solved && not (List.member q.class before))
+        |> List.foldl
+            (\q ret ->
+                let
+                    section =
+                        ret.value
+
+                    effect_model =
+                        section.effect_model
+
+                    ( javascript, scripts ) =
+                        ScriptUpdate.revealSolution runAll effect_model.visible q.class effect_model.javascript
+                in
+                { ret | value = { section | effect_model = { effect_model | javascript = javascript } } }
+                    |> Return.batchEvents
+                        (scripts
+                            -- delayed, so that the solution is rendered before
+                            |> List.map (ScriptUpdate.execute 100 >> Event.pushWithId "effect" section.id)
+                            |> CList.addIf (sound && not (List.isEmpty q.comments))
+                                (q.class
+                                    |> Service.TTS.readClass
+                                    |> Event.pushWithId "settings" section.id
+                                )
+                        )
+            )
+            return
 
 
 ttsReplay : Bool -> Bool -> Maybe Section -> Maybe Event

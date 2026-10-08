@@ -1,6 +1,7 @@
 module Lia.Markdown.Effect.Script.Update exposing
     ( execute
     , getAll
+    , revealSolution
     , getVisible
     , handle
     , run
@@ -460,8 +461,42 @@ getIdle : (Script a -> x) -> Scripts a -> List ( Int, x )
 getIdle =
     Script.filterMap
         (\js ->
-            not js.running && not js.block && not (js.runOnce && js.counter >= 1) && (js.input.type_ /= Just (Input.Button_ True))
+            not js.running && not js.block && not (js.runOnce && js.counter >= 1) && (js.input.type_ /= Just (Input.Button_ True)) && js.solution == Nothing
         )
+
+
+{-| Scripts within a quiz or survey solution are not executed, until the
+solution gets visible. Then they are released to the normal effect handling,
+and all scripts of the solution, that are already visible (all if `runAll`), are
+returned for execution.
+-}
+revealSolution : Bool -> Int -> String -> Scripts a -> ( Scripts a, List ( Int, Bool, String ) )
+revealSolution runAll visible key javascript =
+    let
+        released =
+            Array.map
+                (\js ->
+                    if js.solution == Just key then
+                        { js | solution = Nothing }
+
+                    else
+                        js
+                )
+                javascript
+    in
+    ( released
+    , javascript
+        |> Script.filterMap (\js -> js.solution == Just key && not js.running && (runAll || js.effect_id <= visible)) identity
+        |> List.map
+            (\( id, node ) ->
+                { id = id
+                , worker = node.worker
+                , script = node.script
+                , input_ = Input.getValue node.input
+                }
+            )
+        |> Script.replaceInputs released
+    )
 
 
 getAll : Scripts a -> List ( Int, Bool, String )

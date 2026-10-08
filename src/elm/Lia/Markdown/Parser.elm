@@ -484,7 +484,8 @@ underline =
 {-| A solution block `*****` below a quiz or survey, which gets visible after the
 quiz has been solved or the survey has been submitted. The name and counter are
 used to mark all comments within the solution with the class
-`lia-tts-{name}-{id}`, so that they can be read out loud at that moment.
+`lia-tts-{name}-{id}`, so that they can be read out loud at that moment. All
+scripts within the solution are only executed at that moment too.
 -}
 solution : String -> (Context -> Int) -> Parser Context (Maybe ( Markdown.Blocks, Int ))
 solution name count =
@@ -495,24 +496,25 @@ solution name count =
                     succeed
                         ( "lia-tts-" ++ name ++ "-" ++ String.fromInt (count s - 1)
                         , s.effect_model.effects
+                        , Array.length s.effect_model.javascript
                         )
                 )
             )
         |> andThen
-            (\( class, effects ) ->
+            (\( class, effects, scripts ) ->
                 manyTill (blocks |> ignore newlines)
                     (regex "[\t ]*\\*{3,}[\t ]*")
                     |> andThen
                         (\blocks_ ->
-                            modifyState (markSolution class blocks_)
+                            modifyState (markSolution class scripts blocks_)
                                 |> keep (withState (\s -> succeed ( blocks_, s.effect_model.effects - effects )))
                         )
             )
         |> maybe
 
 
-markSolution : String -> Markdown.Blocks -> Context -> Context
-markSolution class blocks_ state =
+markSolution : String -> Int -> Markdown.Blocks -> Context -> Context
+markSolution class scripts blocks_ state =
     let
         e =
             state.effect_model
@@ -520,7 +522,17 @@ markSolution class blocks_ state =
     { state
         | effect_model =
             { e
-                | comments =
+                | javascript =
+                    Array.indexedMap
+                        (\id js ->
+                            if id >= scripts && js.solution == Nothing then
+                                { js | solution = Just class }
+
+                            else
+                                js
+                        )
+                        e.javascript
+                , comments =
                     List.foldl
                         (\block comments ->
                             case block of

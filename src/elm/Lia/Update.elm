@@ -298,6 +298,7 @@ update session msg model =
                                 ( True, Just sec ) ->
                                     sec
                                         |> Markdown.handle model.sync model.definition topic e_
+                                        |> Markdown.revealSolutions { sound = False, runAll = model.settings.mode == Textbook } (Markdown.solved sec)
                                         |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
 
                                 ( False, Nothing ) ->
@@ -333,6 +334,7 @@ update session msg model =
                         Just ( id, Just sec ) ->
                             sec
                                 |> Markdown.handle model.sync model.definition topic e
+                                |> Markdown.revealSolutions { sound = False, runAll = model.settings.mode == Textbook } (Markdown.solved sec)
                                 |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
 
                         Just ( id, Nothing ) ->
@@ -396,7 +398,11 @@ update session msg model =
                 ( UpdateMarkdown childMsg, Just sec ) ->
                     sec
                         |> Markdown.update model.sync model.definition childMsg
-                        |> Markdown.readSolutions (model.settings.sound && model.settings.mode /= Textbook) sec
+                        |> Markdown.revealSolutions
+                            { sound = model.settings.sound && model.settings.mode /= Textbook
+                            , runAll = model.settings.mode == Textbook
+                            }
+                            (Markdown.solved sec)
                         |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( NextSection, Just sec ) ->
@@ -428,6 +434,7 @@ update session msg model =
                                     Markdown.initEffect model.sync model.definition False model.settings.sound sec
                     in
                     return
+                        |> Markdown.revealSolutions { sound = False, runAll = model.settings.mode == Textbook } []
                         |> Return.mapValCmd (set_active_section { model | to_do = [] }) UpdateMarkdown
                         |> Return.batchEvents (initializeSlide model :: model.to_do)
 

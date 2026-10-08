@@ -99,6 +99,7 @@ type alias Script a =
     , input : Input
     , intl : Maybe Intl
     , worker : Bool
+    , solution : Maybe String -- only executed, when this quiz/survey solution gets visible
     }
 
 
@@ -172,6 +173,7 @@ push lang id params script javascript =
         , input = Input.from params
         , intl = Intl.from lang params
         , worker = Attr.isSet "worker" params
+        , solution = Nothing
         }
         javascript
 
