@@ -37,6 +37,7 @@ import Html exposing (Attribute)
 import Html.Attributes as Attr
 import Lia.Markdown.HTML.NamedCharacterReferences as NamedCharacterReferences
 import Lia.Parser.PatReplace exposing (link)
+import List.Extra
 
 
 {-| Used internally to store HTML parameter as Tuples of `(name, value)`.
@@ -49,24 +50,17 @@ type alias Parameters =
 
 
 {-| Search the attribute list for a certain key, the corresponding value will be
-returned, if present.
+returned, if present. Keys are matched case-insensitively, `name` has to be
+passed in lowercase.
 
     get "height" [ ( "width", "100%" ), ( "height", "300px" ) ]
         == Just "300px"
 
 -}
 get : String -> Parameters -> Maybe String
-get name attr =
-    case attr of
-        [] ->
-            Nothing
-
-        ( key, value ) :: xs ->
-            if key == name then
-                Just value
-
-            else
-                get name xs
+get name =
+    List.Extra.find (Tuple.first >> String.toLower >> (==) name)
+        >> Maybe.map Tuple.second
 
 
 {-| Filter a list of Parameters with a list of names, so that only Parameters

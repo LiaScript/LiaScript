@@ -510,12 +510,12 @@ evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync,
                 , Editor.readOnly readOnly
                 , Editor.highlightActiveLine (not readOnly)
                 , attr
-                    |> Params.get "data-tabSize"
+                    |> Params.get "data-tabsize"
                     |> Maybe.andThen String.toInt
                     |> Maybe.withDefault 2
                     |> Editor.tabSize
                 , attr
-                    |> Params.get "data-fontSize"
+                    |> Params.get "data-fontsize"
                     |> Maybe.withDefault "1.5rem"
                     |> Editor.fontSize
                 , attr
@@ -523,7 +523,7 @@ evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync,
                     |> Maybe.withDefault ""
                     |> Editor.marker
                 , attr
-                    |> Params.get "data-firstLineNumber"
+                    |> Params.get "data-firstlinenumber"
                     |> Maybe.andThen String.toInt
                     |> Maybe.withDefault 1
                     |> Editor.firstLineNumber
@@ -531,12 +531,12 @@ evaluate { isExecutable, theme, attr, isRunning, id_1, id_2, file, errors, sync,
                     |> Params.isSet "data-rtl"
                     |> Editor.rtl
                 , attr
-                    |> Params.isSet "data-rtlText"
+                    |> Params.isSet "data-rtltext"
                     |> Editor.rtlText
                 , Editor.showGutter <|
-                    if Params.get "data-showGutter" attr /= Nothing then
+                    if Params.get "data-showgutter" attr /= Nothing then
                         attr
-                            |> Params.isSet "data-showGutter"
+                            |> Params.isSet "data-showgutter"
 
                     else
                         isExecutable
