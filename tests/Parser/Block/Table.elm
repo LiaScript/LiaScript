@@ -1,16 +1,18 @@
 module Parser.Block.Table exposing
     ( alignment_Suite
+    , autoClass_Suite
     , chartClass_Suite
     , sortable_Suite
     , table_Suite
     )
 
 import Const
+import Expect
 import Lia.Markdown.Table.Types exposing (Class(..))
 import Lia.Markdown.Types exposing (Block(..))
-import Parser.Block.Fixtures exposing (toTests)
+import Parser.Block.Fixtures exposing (parse, toTests)
 import Parser.Inline.Fixtures exposing (chars)
-import Test exposing (Test, describe)
+import Test exposing (Test, describe, test)
 
 
 table_Suite : Test
@@ -140,4 +142,40 @@ chartClass_Suite =
                     , id = 0
                     }
               )
+            ]
+
+
+{-| Without `data-type` the diagram type is guessed from the content
+(`Table.Parser.checkDiagram`).
+-}
+autoClass_Suite : Test
+autoClass_Suite =
+    let
+        table attr head rows =
+            attr ++ head ++ "\n|" ++ String.repeat (List.length (String.indexes "|" head) - 1) "---|" ++ "\n" ++ String.join "\n" rows ++ "\n"
+
+        classOf md =
+            case parse md of
+                [ Table _ t ] ->
+                    Just t.class
+
+                _ ->
+                    Nothing
+    in
+    describe "the diagram type is guessed from the table's content" <|
+        List.map
+            (\( name, md, class ) -> test name <| \_ -> classOf md |> Expect.equal (Just class))
+            [ ( "unique numeric x values", table "" "| x | a | b |" [ "| 1 | 2 | 3 |", "| 2 | 4 | 5 |" ], LinePlot )
+            , ( "repeated numeric x values", table "" "| x | a | b |" [ "| 1 | 2 | 3 |", "| 1 | 4 | 5 |" ], ScatterPlot )
+            , ( "numbers on both axes", table "" "| | 1 | 2 |" [ "| 1 | 2 | 3 |", "| 2 | 4 | 5 |" ], HeatMap )
+            , ( "one numeric row", table "" "| | a | b |" [ "| 1 | 2 | 3 |" ], PieChart )
+            , ( "one category row", table "" "| | a | b |" [ "| k | 2 | 3 |" ], PieChart )
+            , ( "adjacency matrix", table "" "| | a | b |" [ "| a | 0 | 1 |", "| b | 1 | 0 |" ], Graph )
+            , ( "categories", table "" "| | a | b |" [ "| x | 10 | 11 |", "| y | 9 | 12 |" ], BarChart )
+            , ( "categories with differing scales", table "" "| | a | b |" [ "| x | 150 | 1 |", "| y | 90 | 12 |" ], Radar )
+            , ( "at least 50 cells", table "" "| | a | b | c | d |" (List.repeat 10 "| k | 1 | 2 | 3 | 4 |"), Parallel )
+            , ( "text only", table "" "| | a | b |" [ "| x | u | v |", "| y | w | z |" ], None )
+            , ( "simple table without header", "| x | 1 |\n| y | 2 |\n", None )
+            , ( "data-transpose", table "<!-- data-transpose -->\n" "| x | a | b |" [ "| 1 | 2 | 3 |", "| 2 | 4 | 5 |" ], BarChart )
+            , ( "data-src", table "<!-- data-src=\"geo.json\" -->\n" "| | a |" [ "| x | 1 |" ], Map )
             ]
