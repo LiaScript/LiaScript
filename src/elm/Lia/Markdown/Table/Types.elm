@@ -49,6 +49,7 @@ type Class
     | Graph
     | Map
     | Funnel
+    | WordCloud
 
 
 {-| The name of a diagram type, as used for `data-type`, the JSON export and
@@ -95,6 +96,9 @@ className class =
 
         Funnel ->
             "funnel"
+
+        WordCloud ->
+            "wordcloud"
 
 
 {-| The view states of all tables within a section, indexed by `Table.id`.

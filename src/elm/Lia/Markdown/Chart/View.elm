@@ -17,6 +17,7 @@ module Lia.Markdown.Chart.View exposing
     , viewPoints
     , viewRadarChart
     , viewSankey
+    , viewWordCloud
     )
 
 import Char exposing (toLower)
@@ -29,6 +30,7 @@ import I18n.Translations exposing (getCodeFromLn)
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Data, Diagram(..), Orientation(..), Settings, invertDiagram)
 import Lia.Markdown.HTML.Attributes exposing (annotation)
+import Lia.Utils exposing (string2Color)
 import List.Statistics as Stat
 import Maybe
 
@@ -96,6 +98,11 @@ viewPieChart settings width =
 viewFunnel : Settings -> Data (List ( String, Float )) -> Html msg
 viewFunnel settings =
     encodeFunnel >> eCharts settings Nothing
+
+
+viewWordCloud : Settings -> Int -> Data (List ( String, Float )) -> Html msg
+viewWordCloud settings width =
+    encodeWordCloud width >> eCharts settings Nothing
 
 
 viewHeatMap : Settings -> List String -> Data (List ( Int, Int, Maybe Float )) -> Html msg
@@ -976,14 +983,7 @@ encodeSingle chart specific pieces =
         }
     , itemTooltip
     ]
-        |> CList.addIf (hasTitle chart)
-            ( "title"
-            , JE.object
-                [ ( "text", chart.labels.main |> Maybe.withDefault "" |> JE.string )
-                , ( "subtext", JE.string (subtitle chart) )
-                , ( "left", JE.string "center" )
-                ]
-            )
+        |> CList.addIf (hasTitle chart) (titles chart)
         |> JE.object
 
 
@@ -992,10 +992,6 @@ the type and position of the i-th diagram.
 -}
 encodeMultiple : Data (List ( String, Float )) -> (Int -> List ( String, JE.Value )) -> JE.Value
 encodeMultiple chart specific =
-    let
-        step =
-            stepWidth chart.data
-    in
     [ ( "series"
       , chart.data
             |> List.indexedMap
@@ -1031,23 +1027,125 @@ encodeMultiple chart specific =
         |> encodeLegend [ ( "top", JE.string "30px" ) ]
     , itemTooltip
     ]
-        |> CList.addIf (hasTitle chart)
-            ( "title"
-            , chart.category
+        |> CList.addIf (hasTitle chart) (titles chart)
+        |> JE.object
+
+
+{-| The main title, a single diagram shows its category as subtitle, multiple
+diagrams side by side get theirs below.
+-}
+titles : Data (List x) -> ( String, JE.Value )
+titles chart =
+    let
+        main =
+            ( "text", chart.labels.main |> Maybe.withDefault "" |> JE.string )
+    in
+    ( "title"
+    , case chart.data of
+        [ _ ] ->
+            JE.object
+                [ main
+                , ( "subtext", JE.string (subtitle chart) )
+                , ( "left", JE.string "center" )
+                ]
+
+        _ ->
+            chart.category
                 |> List.indexedMap
                     (\i sub ->
                         [ ( "subtext", JE.string sub )
                         , ( "bottom", JE.int 40 )
                         , ( "textAlign", JE.string "center" )
-                        , ( "left", JE.string (percent (toFloat (2 * i) * step + step)) )
+                        , ( "left", JE.string (percent (toFloat (2 * i + 1) * stepWidth chart.data)) )
                         ]
                     )
-                |> (::)
-                    [ ( "text", chart.labels.main |> Maybe.withDefault "" |> JE.string )
-                    , ( "left", JE.string "center" )
-                    ]
+                |> (::) [ main, ( "left", JE.string "center" ) ]
                 |> JE.list JE.object
-            )
+    )
+
+
+{-| Word clouds side by side, like pies. All clouds share one font scale, so
+equal values have equal sizes, and every word keeps its color.
+-}
+encodeWordCloud : Int -> Data (List ( String, Float )) -> JE.Value
+encodeWordCloud width chart =
+    let
+        step =
+            stepWidth chart.data
+
+        values =
+            List.concatMap (List.map Tuple.second) chart.data
+
+        ( low, high ) =
+            values |> Stat.minmax |> Maybe.withDefault ( 0, 0 )
+
+        largest =
+            toFloat width / toFloat (5 * List.length chart.data) |> clamp 16 50
+
+        fontSize value =
+            if high == low then
+                largest
+
+            else
+                12 + (value - low) / (high - low) * (largest - 12)
+
+        sizeRange words =
+            List.map Tuple.second words
+                |> Stat.minmax
+                |> Maybe.map (\( min, max ) -> [ fontSize min, fontSize max ])
+                |> Maybe.withDefault [ largest, largest ]
+    in
+    [ ( "series"
+      , chart.data
+            |> List.indexedMap
+                (\i words ->
+                    [ ( "type", JE.string "wordCloud" )
+                    , ( "left", JE.string (percent (toFloat (2 * i) * step)) )
+                    , ( "width", JE.string (percent (2 * step)) )
+                    , ( "top"
+                      , JE.string <|
+                            if hasTitle chart then
+                                "15%"
+
+                            else
+                                "5%"
+                      )
+                    , ( "height", JE.string "70%" )
+                    , ( "sizeRange", JE.list JE.float (sizeRange words) )
+                    , ( "gridSize", JE.int 5 )
+                    , ( "shrinkToFit", JE.bool True )
+                    , ( "layoutAnimation", JE.bool True )
+                    , ( "emphasis", JE.object [ ( "focus", JE.string "self" ) ] )
+                    , ( "data"
+                      , words
+                            |> JE.list
+                                (\( name, value ) ->
+                                    JE.object
+                                        [ ( "name", JE.string name )
+                                        , ( "value", JE.float value )
+                                        , ( "textStyle", JE.object [ ( "color", JE.string (string2Color 160 name) ) ] )
+                                        ]
+                                )
+                      )
+                    ]
+                )
+            |> JE.list JE.object
+      )
+    , toolbox Nothing
+        { saveAsImage = True
+        , dataView = True
+        , dataZoom = False
+        , magicType = False
+        , restore = False
+        }
+    , ( "tooltip"
+      , JE.object
+            [ ( "trigger", JE.string "item" )
+            , ( "formatter", JE.string "{b} : {c}" )
+            ]
+      )
+    ]
+        |> CList.addIf (hasTitle chart) (titles chart)
         |> JE.object
 
 

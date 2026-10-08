@@ -172,6 +172,9 @@ chart lang width isFormatted attr mode class matrix =
         Funnel ->
             Chart.viewFunnel settings (pieData labels orientation head body)
 
+        WordCloud ->
+            Chart.viewWordCloud settings width (pieData labels orientation head body)
+
         HeatMap ->
             let
                 y =
@@ -347,7 +350,7 @@ valueColumns =
     Matrix.transpose >> Matrix.tail >> Matrix.map .float
 
 
-{-| Pie charts and funnels, one diagram per row if the first column holds
+{-| Pie charts, funnels and word clouds, one diagram per row if the first column holds
 categories, otherwise every row is one diagram over the header.
 -}
 pieData : Labels -> Maybe Orientation -> Row Cell -> Matrix Cell -> Data (List ( String, Float ))
@@ -545,6 +548,9 @@ chartName lang class =
 
         Funnel ->
             Translations.chartFunnel lang
+
+        WordCloud ->
+            Translations.chartWordcloud lang
 
         None ->
             ""

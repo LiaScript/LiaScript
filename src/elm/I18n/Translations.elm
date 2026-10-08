@@ -13216,6 +13216,16 @@ chartFunnel lang =
             "Funnel chart"
 
 
+chartWordcloud : Lang -> String
+chartWordcloud lang =
+    case lang of
+        De ->
+            "Wortwolke"
+
+        _ ->
+            "Word cloud"
+
+
 qrCode : Lang -> String
 qrCode lang =
     case lang of

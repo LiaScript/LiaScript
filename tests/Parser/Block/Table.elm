@@ -187,5 +187,6 @@ autoClass_Suite =
             , ( "text only", table "" "| | a | b |" [ "| x | u | v |", "| y | w | z |" ], None )
             , ( "simple table without header", "| x | 1 |\n| y | 2 |\n", None )
             , ( "data-transpose", table "<!-- data-transpose -->\n" "| x | a | b |" [ "| 1 | 2 | 3 |", "| 2 | 4 | 5 |" ], BarChart )
+            , ( "data-type wordcloud", table "<!-- data-type=\"wordcloud\" -->\n" "| | a | b |" [ "| x | 1 | 2 |" ], WordCloud )
             , ( "data-src", table "<!-- data-src=\"geo.json\" -->\n" "| | a |" [ "| x | 1 |" ], Map )
             ]

@@ -151,7 +151,7 @@ diagramType attr =
             Just PieChart
 
         Just name ->
-            [ None, LinePlot, ScatterPlot, BarChart, PieChart, HeatMap, Radar, Parallel, Sankey, BoxPlot, Graph, Map, Funnel ]
+            [ None, LinePlot, ScatterPlot, BarChart, PieChart, HeatMap, Radar, Parallel, Sankey, BoxPlot, Graph, Map, Funnel, WordCloud ]
                 |> List.filter (className >> (==) name)
                 |> List.head
 
