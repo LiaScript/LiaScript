@@ -457,13 +457,21 @@ export class Engine {
     const passed = this.mastery !== null && total > 0 && scaled >= this.mastery && surveysDone
 
     if (this.profile.version === '1.2') {
-      if (total > 0) this.write(cmi.scoreRaw, String(round(scaled * 100, 2)))
-
-      let status = done ? 'completed' : 'incomplete'
       if (this.mastery !== null && total > 0) {
-        status = passed ? 'passed' : done ? 'failed' : 'incomplete'
+        // In 1.2 passed, failed and completed end the attempt: afterwards an
+        // LMS like Moodle only reopens it for review. And with a mastery
+        // score, Moodle turns any reported score into passed or failed when
+        // the learner leaves. So score and result are reported once
+        // everything is done, the attempt stays open until then.
+        if (done) {
+          this.write(cmi.scoreRaw, String(round(scaled * 100, 2)))
+          this.upgrade(cmi.completion, passed ? 'passed' : 'failed')
+        }
+        return
       }
-      this.upgrade(cmi.completion, status)
+
+      if (total > 0) this.write(cmi.scoreRaw, String(round(scaled * 100, 2)))
+      this.upgrade(cmi.completion, done ? 'completed' : 'incomplete')
       return
     }
 

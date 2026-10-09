@@ -313,8 +313,13 @@ function codeText(projects: any, onlyVisible: boolean): string {
 export function report(item: Item, state: any, version: Version): Report | null {
   if (state === undefined || state === null) return null
 
-  if (version === '1.2') return report12(item, state)
-  return report2004(item, state)
+  const out = version === '1.2' ? report12(item, state) : report2004(item, state)
+
+  // a revealed solution fills the quiz with that solution: the learner's
+  // last checked answer, already reported, is the one to keep
+  if (out && item.table === 'quiz' && state.solved === -1) delete out.response
+
+  return out
 }
 
 function report12(item: Item, state: any): Report | null {
