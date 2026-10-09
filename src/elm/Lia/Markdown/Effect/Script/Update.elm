@@ -11,12 +11,13 @@ module Lia.Markdown.Effect.Script.Update exposing
     )
 
 import Array
+import Helper.Array as Array
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Types as Script exposing (Msg(..), Script, Scripts, Stdout(..))
 import Lia.Parser.Parser exposing (parse_subsection)
-import Lia.Section exposing (SubSection(..))
+import Lia.Section exposing (SubSection)
 import Lia.Utils exposing (focus)
 import List.Extra
 import Process
@@ -26,6 +27,9 @@ import Service.Script exposing (Eval)
 import Task
 
 
+{-| Set the input of script `id` to the given value and pass it through as its
+result, without executing any code.
+-}
 run : Int -> String -> Msg sub
 run =
     Execute
@@ -64,15 +68,7 @@ update :
 update main msg scripts =
     case msg of
         Sub id sub ->
-            case scripts |> Array.get id |> Maybe.andThen .result of
-                Just (IFrame lia) ->
-                    lia
-                        |> main.update scripts sub
-                        |> Return.mapValCmd (\v -> Script.set id (\s -> { s | result = Just (IFrame v) }) scripts) (Sub id)
-                        |> Return.mapEvents "sub" id
-
-                _ ->
-                    Return.val scripts
+            iframe id (main.update scripts sub) scripts
 
         Execute id value ->
             case Array.get id scripts of
@@ -96,81 +92,45 @@ update main msg scripts =
         Activate active id ->
             case Array.get id scripts of
                 Just node ->
-                    if active then
-                        Array.set id
-                            { node
+                    let
+                        activate js =
+                            { js
                                 | input =
                                     if node.updated then
-                                        node.input
+                                        js.input
 
                                     else
-                                        Input.active active node.input
+                                        Input.active active js.input
                                 , updated = False
                             }
-                            scripts
+                    in
+                    if active then
+                        scripts
+                            |> Array.set id (activate node)
                             |> Return.val
                             |> Return.cmd (focus NoOp "lia-focus")
 
                     else
-                        reRun
-                            (\js ->
-                                { js
-                                    | input =
-                                        if node.updated then
-                                            js.input
-
-                                        else
-                                            Input.active active js.input
-                                    , updated = False
-                                }
-                            )
-                            (focus NoOp ("lia-script-" ++ String.fromInt id))
-                            id
-                            scripts
+                        reRun activate (focus NoOp ("lia-script-" ++ String.fromInt id)) id scripts
 
                 Nothing ->
                     Return.val scripts
 
         Value id exec str ->
-            if exec then
-                reRun (\js -> { js | input = Input.value str js.input }) Cmd.none id scripts
-
-            else
-                scripts
-                    |> Script.set id (\js -> { js | input = Input.value str js.input })
-                    |> Return.val
+            change exec (\js -> { js | input = Input.value str js.input }) id scripts
 
         Checkbox id exec str ->
-            if exec then
-                reRun (\js -> { js | input = Input.toggle str js.input, updated = True }) Cmd.none id scripts
-
-            else
-                scripts
-                    |> Script.set id (\js -> { js | input = Input.toggle str js.input, updated = True })
-                    |> Return.val
+            change exec (\js -> { js | input = Input.toggle str js.input, updated = True }) id scripts
 
         Radio id exec str ->
-            if exec then
-                reRun (\js -> { js | input = Input.value str js.input, updated = True }) Cmd.none id scripts
-
-            else
-                scripts
-                    |> Script.set id (\js -> { js | input = Input.value str js.input, updated = True })
-                    |> Return.val
+            change exec (\js -> { js | input = Input.value str js.input, updated = True }) id scripts
 
         Click id ->
             reRun identity Cmd.none id scripts
 
         Reset id ->
             reRun
-                (\js ->
-                    { js
-                        | input =
-                            js.input
-                                |> Input.default
-                                |> Input.active True
-                    }
-                )
+                (\js -> { js | input = js.input |> Input.default |> Input.active True })
                 Cmd.none
                 id
                 scripts
@@ -188,7 +148,7 @@ update main msg scripts =
 
         Edit bool id ->
             let
-                fn js =
+                edit js =
                     { js
                         | edit = bool
                         , input = Input.active False js.input
@@ -196,22 +156,22 @@ update main msg scripts =
             in
             if bool then
                 scripts
-                    |> Script.set id fn
+                    |> Array.update id edit
                     |> Return.val
                     |> Return.cmd (focus NoOp "lia-focus")
 
             else
-                reRun fn Cmd.none id scripts
+                reRun edit Cmd.none id scripts
                     |> Return.cmd (focus NoOp ("lia-script-" ++ String.fromInt id))
 
         EditCode id str ->
             scripts
-                |> Script.set id (\js -> { js | script = str })
+                |> Array.update id (\js -> { js | script = str })
                 |> Return.val
 
         EditParam id subPattern str ->
             scripts
-                |> Script.set id
+                |> Array.update id
                     (\js ->
                         { js
                             | script =
@@ -224,134 +184,76 @@ update main msg scripts =
 
         Handle event ->
             case Event.destructure event of
-                ( Just "script", section, ( "exec", param ) ) ->
-                    let
-                        ( publish, javascript ) =
-                            scripts
-                                |> update_ False main.globals section param
+                ( Just "script", id, ( "exec", param ) ) ->
+                    evaluated False main.globals id param scripts
 
-                        node =
-                            javascript
-                                |> Script.get identity section
+                ( Just "script", id, ( "async", param ) ) ->
+                    evaluated True main.globals id param scripts
 
-                        nodeUpdate =
-                            if
-                                node
-                                    |> Maybe.map .update
-                                    |> Maybe.withDefault False
-                            then
-                                node
-                                    |> Maybe.map
-                                        (\n ->
-                                            [ { id = section
-                                              , worker = n.worker
-                                              , script = n.script
-                                              , input_ = Input.getValue n.input
-                                              }
-                                            ]
-                                        )
-                                    |> Maybe.withDefault []
-                                    |> Script.replaceInputs javascript
-
-                            else
-                                []
-                    in
-                    case Maybe.andThen .output node of
-                        Nothing ->
-                            Script.set
-                                section
-                                (\js -> { js | update = False })
-                                javascript
-                                |> Return.val
-                                |> Return.batchEvents (List.map (execute 0) nodeUpdate)
-
-                        Just output ->
-                            javascript
-                                |> Script.updateChildren output
-                                |> Script.set section (\js -> { js | update = False })
-                                |> Return.val
-                                |> Return.batchEvents
-                                    (if publish then
-                                        javascript
-                                            |> Script.scriptChildren output
-                                            |> List.append nodeUpdate
-                                            |> List.map (execute 0)
-
-                                     else
-                                        []
-                                    )
-
-                ( Just "script", section, ( "async", param ) ) ->
-                    let
-                        ( publish, javascript ) =
-                            scripts
-                                |> update_ True main.globals section param
-
-                        node =
-                            javascript
-                                |> Script.get identity section
-                    in
-                    case Maybe.andThen .output node of
-                        Nothing ->
-                            Return.val javascript
-
-                        Just output ->
-                            Script.updateChildren output javascript
-                                |> Return.val
-                                |> Return.batchEvents
-                                    (if publish then
-                                        javascript
-                                            |> Script.scriptChildren output
-                                            |> List.map (execute 0)
-
-                                     else
-                                        []
-                                    )
-
-                ( Just "sub", section, ( _, param ) ) ->
-                    let
-                        subParams =
-                            case Event.popWithId event of
+                ( Just "sub", id, ( _, param ) ) ->
+                    iframe id
+                        (main.handle scripts
+                            (case Event.popWithId event of
                                 Just ( "sub", _, e ) ->
                                     Event.encode e
 
                                 _ ->
                                     param
-                    in
-                    case
+                            )
+                        )
                         scripts
-                            |> Array.get section
-                            |> Maybe.andThen .result
-                    of
-                        Just (IFrame lia) ->
-                            lia
-                                |> main.handle scripts subParams
-                                |> Return.mapValCmd (\v -> Script.set section (\s -> { s | result = Just (IFrame v) }) scripts) (Sub section)
-                                |> Return.mapEvents "sub" section
-
-                        _ ->
-                            Return.val scripts
 
                 _ ->
                     Return.val scripts
 
 
+{-| Pass a message to the LiaScript result (`IFrame`) of script `id`.
+-}
+iframe : Int -> (SubSection -> Return SubSection sub sub) -> Scripts SubSection -> Return (Scripts SubSection) (Msg sub) sub
+iframe id fn scripts =
+    case Array.get id scripts |> Maybe.andThen .result of
+        Just (IFrame lia) ->
+            lia
+                |> fn
+                |> Return.mapValCmd (\v -> Array.update id (\s -> { s | result = Just (IFrame v) }) scripts) (Sub id)
+                |> Return.mapEvents "sub" id
+
+        _ ->
+            Return.val scripts
+
+
+{-| Change an input, rerun the script only if `exec` is set (update-on-change).
+-}
+change : Bool -> (Script a -> Script a) -> Int -> Scripts a -> Return (Scripts a) (Msg sub) sub
+change exec fn id scripts =
+    if exec then
+        reRun fn Cmd.none id scripts
+
+    else
+        scripts
+            |> Array.update id fn
+            |> Return.val
+
+
+{-| Apply `fn` to script `id` and execute it, if it is not running or blocked.
+A running script is marked to be executed again, after it has finished.
+-}
 reRun : (Script a -> Script a) -> Cmd (Msg sub) -> Int -> Scripts a -> Return (Scripts a) (Msg sub) sub
 reRun fn cmd id scripts =
     let
         scripts_ =
-            scripts
-                |> Script.set id
-                    (\js ->
-                        fn <|
-                            if js.running then
-                                { js | update = True }
+            Array.update id
+                (\js ->
+                    fn <|
+                        if js.running then
+                            { js | update = True }
 
-                            else
-                                js
-                    )
+                        else
+                            js
+                )
+                scripts
     in
-    case Script.get identity id scripts_ of
+    case Array.get id scripts_ of
         Just node ->
             scripts_
                 |> Return.val
@@ -361,18 +263,125 @@ reRun fn cmd id scripts =
                         []
 
                      else
-                        [ { id = id
-                          , worker = node.worker
-                          , script = node.script
-                          , input_ = Input.getValue node.input
-                          }
-                        ]
-                            |> Script.replaceInputs scripts
+                        toExecute scripts_ [ ( id, node ) ]
                             |> List.map (execute 0)
                     )
 
         Nothing ->
             Return.val scripts_
+
+
+{-| Store the result of an `exec` or `async` event of script `id`. If the
+result has changed, all idle subscribers of its output are executed. After a
+finished `exec`, a script that was marked for `update` is executed again.
+-}
+evaluated : Bool -> Maybe Definition -> Int -> JE.Value -> Scripts SubSection -> Return (Scripts SubSection) (Msg sub) sub
+evaluated async globals id param scripts =
+    case Array.get id scripts of
+        Just old ->
+            let
+                node =
+                    eval async globals id (Service.Script.decode param) old
+
+                javascript =
+                    Array.set id node scripts
+
+                publish =
+                    node.result /= old.result || (node.update && not node.running)
+
+                again =
+                    if not async && node.update then
+                        toExecute javascript [ ( id, node ) ]
+
+                    else
+                        []
+
+                done =
+                    if async then
+                        identity
+
+                    else
+                        Array.update id (\js -> { js | update = False })
+            in
+            case node.output of
+                Nothing ->
+                    javascript
+                        |> done
+                        |> Return.val
+                        |> Return.batchEvents (List.map (execute 0) again)
+
+                Just output ->
+                    javascript
+                        |> Array.map
+                            (\js ->
+                                if js.running && List.member output js.inputs then
+                                    { js | update = True }
+
+                                else
+                                    js
+                            )
+                        |> done
+                        |> Return.val
+                        |> Return.batchEvents
+                            (if publish then
+                                javascript
+                                    |> select (\js -> not js.running && not js.block && List.member output js.inputs)
+                                    |> toExecute javascript
+                                    |> (++) again
+                                    |> List.map (execute 0)
+
+                             else
+                                []
+                            )
+
+        Nothing ->
+            Return.val scripts
+
+
+{-| Apply an evaluation result, the special results are:
+
+  - `LIA: wait`: the script keeps running, the result stays
+  - `LIA: stop`: the script has stopped, the result stays
+  - `LIA: clear`: the result is removed
+
+`async` results are sent while the script is still running.
+
+-}
+eval : Bool -> Maybe Definition -> Int -> Eval -> Script SubSection -> Script SubSection
+eval async globals id e js =
+    case e.result of
+        "LIA: wait" ->
+            { js | running = True, counter = js.counter + 1 }
+
+        "LIA: stop" ->
+            { js | running = False, counter = js.counter + 1 }
+
+        "LIA: clear" ->
+            { js | running = async, counter = js.counter + 1, result = Nothing }
+
+        result ->
+            { js
+                | running = async
+                , counter = js.counter + 1
+                , result =
+                    Just <|
+                        if not e.ok then
+                            Error result
+
+                        else if String.startsWith "HTML:" result then
+                            HTML (String.dropLeft 5 result)
+
+                        else if String.startsWith "LIASCRIPT:" result then
+                            case parse_subsection globals id (String.dropLeft 10 result) of
+                                Ok sub ->
+                                    IFrame sub
+
+                                Err info ->
+                                    Error info
+
+                        else
+                            Text result
+            }
 
 
 execute : Int -> ( Int, Bool, String ) -> Event
@@ -381,88 +390,54 @@ execute delay ( id, worker, code ) =
         |> Event.pushWithId "script" id
 
 
-update_ : Bool -> Maybe Definition -> Int -> JE.Value -> Scripts SubSection -> ( Bool, Scripts SubSection )
-update_ async defintion id e scripts =
-    case Array.get id scripts of
-        Just js ->
-            let
-                new =
-                    eval_ async defintion id (Service.Script.decode e) js
-            in
-            ( new.result /= js.result || (new.update && not new.running)
-            , Array.set id new scripts
-            )
-
-        _ ->
-            ( False, scripts )
-
-
-eval_ : Bool -> Maybe Definition -> Int -> Eval -> Script SubSection -> Script SubSection
-eval_ async defintion id e js =
-    let
-        waiting =
-            e.result == "LIA: wait"
-    in
-    { js
-        | running =
-            if async && e.result /= "LIA: stop" then
-                True
-
-            else if e.result == "LIA: stop" then
-                False
-
-            else
-                waiting
-        , counter = js.counter + 1
-        , result =
-            if waiting then
-                js.result
-
-            else if e.result == "LIA: stop" then
-                js.result
-
-            else if e.result == "LIA: clear" then
-                Nothing
-
-            else
-                Just <|
-                    if e.ok then
-                        if String.startsWith "HTML:" e.result then
-                            e.result
-                                |> String.dropLeft 5
-                                |> HTML
-
-                        else if String.startsWith "LIASCRIPT:" e.result then
-                            case
-                                e.result
-                                    |> String.dropLeft 10
-                                    |> parse_subsection defintion id
-                            of
-                                Ok rslt ->
-                                    IFrame rslt
-
-                                Err info ->
-                                    Error info
-
-                        else
-                            Text e.result
-
-                    else
-                        Error e.result
-    }
-
-
 setRunning : Int -> Bool -> Scripts a -> Scripts a
-setRunning id state javascript =
-    Script.set id (\js -> { js | running = state }) javascript
+setRunning id state =
+    Array.update id (\js -> { js | running = state })
 
 
-getIdle : (Script a -> x) -> Scripts a -> List ( Int, x )
-getIdle =
-    Script.filterMap
-        (\js ->
-            not js.running && not js.block && not (js.runOnce && js.counter >= 1) && (js.input.type_ /= Just (Input.Button_ True)) && js.solution == Nothing
+{-| All scripts that match the filter, with their ids.
+-}
+select : (Script a -> Bool) -> Scripts a -> List ( Int, Script a )
+select filter =
+    Array.toIndexedList >> List.filter (Tuple.second >> filter)
+
+
+{-| `(id, worker, code)` for every script to execute, the `@input` macros in
+the code are replaced by the outputs of `javascript` and the script's own input.
+-}
+toExecute : Scripts a -> List ( Int, Script a ) -> List ( Int, Bool, String )
+toExecute javascript =
+    let
+        inputs =
+            Script.outputs javascript
+    in
+    List.map
+        (\( id, js ) ->
+            ( id
+            , js.worker
+            , inputs
+                |> List.foldl Service.Script.replace_inputKey js.script
+                |> (case Input.getValue js.input of
+                        Just str ->
+                            Service.Script.replace_input str
+
+                        Nothing ->
+                            identity
+                   )
+            )
         )
+
+
+{-| Scripts that can be executed when a section or effect gets visible, submit
+buttons and unrevealed solutions are excluded.
+-}
+idle : Script a -> Bool
+idle js =
+    not js.running
+        && not js.block
+        && not (js.runOnce && js.counter >= 1)
+        && (js.input.type_ /= Just (Input.Button_ True))
+        && (js.solution == Nothing)
 
 
 {-| Scripts within a quiz or survey solution are not executed, until the
@@ -486,49 +461,22 @@ revealSolution runAll visible key javascript =
     in
     ( released
     , javascript
-        |> Script.filterMap (\js -> js.solution == Just key && not js.running && (runAll || js.effect_id <= visible)) identity
-        |> List.map
-            (\( id, node ) ->
-                { id = id
-                , worker = node.worker
-                , script = node.script
-                , input_ = Input.getValue node.input
-                }
-            )
-        |> Script.replaceInputs released
+        |> select (\js -> js.solution == Just key && not js.running && (runAll || js.effect_id <= visible))
+        |> toExecute released
     )
 
 
 getAll : Scripts a -> List ( Int, Bool, String )
 getAll javascript =
     javascript
-        |> getIdle identity
-        |> List.map
-            (\( id, node ) ->
-                { id = id
-                , worker = node.worker
-                , script = node.script
-                , input_ = Input.getValue node.input
-                }
-            )
-        |> Script.replaceInputs javascript
+        |> select idle
+        |> toExecute javascript
 
 
+{-| All idle scripts bound to the effect `visible`.
+-}
 getVisible : Int -> Scripts a -> List ( Int, Bool, String )
 getVisible visible javascript =
     javascript
-        |> getIdle identity
-        |> List.filterMap
-            (\( id, node ) ->
-                if node.effect_id == visible && node.input.type_ /= Just (Input.Button_ True) then
-                    Just
-                        { id = id
-                        , worker = node.worker
-                        , script = node.script
-                        , input_ = Input.getValue node.input
-                        }
-
-                else
-                    Nothing
-            )
-        |> Script.replaceInputs javascript
+        |> select (\js -> idle js && js.effect_id == visible)
+        |> toExecute javascript

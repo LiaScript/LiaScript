@@ -9,22 +9,27 @@ import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
-import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
+import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Intl as Intl
-import Lia.Markdown.Effect.Script.Types exposing (Modifiable(..), Msg(..), Script, Stdout(..), isError)
+import Lia.Markdown.Effect.Script.Types exposing (Modifiable(..), Msg(..), Script, Stdout(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
-import Lia.Section exposing (SubSection(..))
-import Lia.Utils exposing (blockKeydown, icon, modal, onEnter)
+import Lia.Section exposing (SubSection)
+import Lia.Utils exposing (blockKeydown, icon, modal)
 import List.Extra
 
 
+{-| Render script `id` of `config.scripts`. Nothing is shown until the script
+has a result. Depending on its state, the result, the input element (if the
+`input` attribute is set and the input is active) or the code editor (after a
+double click on a modifiable script) is shown.
+-}
 view : Config sub -> Int -> Parameters -> Html (Msg sub)
 view config id attr =
     case Array.get id config.scripts of
         Just node ->
             case node.result of
-                Just _ ->
+                Just result ->
                     if node.edit then
                         Html.span [ Attr.class "flex items-center" ]
                             [ editor config.theme
@@ -42,17 +47,17 @@ view config id attr =
                                 Html.text ""
 
                               else
-                                script config True attr id node
+                                script config True attr id node result
                             ]
 
                     else if Input.isHidden node.input then
                         Html.text ""
 
                     else if node.input.active then
-                        input config attr id node
+                        input config attr id node result
 
                     else
-                        script config True attr id node
+                        script config True attr id node result
 
                 Nothing ->
                     Html.text ""
@@ -63,223 +68,208 @@ view config id attr =
 
 class : Script SubSection -> String
 class node =
-    if node.input.type_ /= Nothing && (node.modify /= No) then
-        "lia-script lia-script--with-border"
+    case ( node.input.type_, node.modify ) of
+        ( Just _, No ) ->
+            "lia-script lia-script--border"
 
-    else if node.input.type_ /= Nothing then
-        "lia-script lia-script--border"
+        ( Just _, _ ) ->
+            "lia-script lia-script--with-border"
 
-    else if node.modify /= No then
-        "lia-script"
+        ( Nothing, No ) ->
+            ""
 
-    else
-        ""
+        ( Nothing, _ ) ->
+            "lia-script"
 
 
-script : Config sub -> Bool -> Parameters -> Int -> Script SubSection -> Html (Msg sub)
-script config withStyling attr id node =
-    case node.result of
-        Nothing ->
+{-| The result as `<output>`. Buttons execute the script on click, other inputs
+get activated, modifiable scripts can be edited. Within an active input
+(`withStyling = False`) it is prefixed with an arrow.
+-}
+script : Config sub -> Bool -> Parameters -> Int -> Script SubSection -> Stdout SubSection -> Html (Msg sub)
+script config withStyling attr id node result =
+    let
+        modifiable =
+            node.modify /= No
+    in
+    Html.output
+        (annotation
+            (if withStyling then
+                class node
+
+             else
+                ""
+            )
+            attr
+            |> List.append
+                (case node.input.type_ of
+                    Just (Input.Button_ _) ->
+                        [ Event.onClick (Click id)
+                        , [ A11y_Key.enter (Click id)
+                          , A11y_Key.space (Click id)
+                          ]
+                            |> CList.appendIf modifiable
+                                [ shiftEnter (Edit True id)
+                                , shiftSpace (Edit True id)
+                                ]
+                            |> A11y_Key.onKeyDown
+                        ]
+
+                    _ ->
+                        []
+                )
+            |> CList.addIf (modifiable || node.input.type_ /= Nothing) (Attr.tabindex 0)
+            |> CList.addIf modifiable (Attr.id ("lia-script-" ++ String.fromInt id))
+            |> CList.appendIf modifiable (onEdit id)
+            |> CList.addIf
+                (case result of
+                    Error _ ->
+                        True
+
+                    _ ->
+                        False
+                )
+                (Attr.style "color" "#dc0000")
+            |> CList.appendIf
+                (case node.input.type_ of
+                    Nothing ->
+                        False
+
+                    Just (Input.Button_ _) ->
+                        False
+
+                    Just _ ->
+                        True
+                )
+                (onActivate True id)
+        )
+        [ if withStyling then
             Html.text ""
 
-        Just result ->
-            Html.output
-                (annotation
-                    (if withStyling then
-                        class node
+          else
+            icon "icon-chevron-double-right" []
+        , case result of
+            Text str ->
+                Intl.view node.intl str
 
-                     else
-                        ""
-                    )
-                    attr
-                    --|> CList.addIf (not withStyling) (Attr.style "margin-" "1rem")
-                    |> List.append
-                        (case node.input.type_ of
-                            Just (Input.Button_ _) ->
-                                [ Event.onClick (Click id)
-                                , [ A11y_Key.enter (Click id)
-                                  , A11y_Key.space (Click id)
-                                  ]
-                                    |> CList.appendIf (node.modify /= No)
-                                        [ shiftEnter (Edit True id)
-                                        , shiftSpace (Edit True id)
-                                        ]
-                                    |> A11y_Key.onKeyDown
-                                ]
+            Error str ->
+                Html.text str
 
-                            _ ->
-                                []
-                        )
-                    |> CList.addIf (node.modify /= No || node.input.type_ /= Nothing) (Attr.tabindex 0)
-                    |> CList.addIf (node.modify /= No) (Attr.id ("lia-script-" ++ String.fromInt id))
-                    |> CList.appendIf (node.modify /= No) (onEdit True id)
-                    |> CList.addIf (isError result) (Attr.style "color" "#dc0000")
-                    |> CList.appendIf
-                        (case node.input.type_ of
-                            Nothing ->
-                                False
+            HTML str ->
+                Html.span
+                    [ str
+                        |> JE.string
+                        |> Attr.property "innerHTML"
+                    ]
+                    []
 
-                            Just (Input.Button_ _) ->
-                                False
+            IFrame lia ->
+                case config.view of
+                    Just inline ->
+                        inline config.slide id lia
+                            |> Html.span []
 
-                            Just _ ->
-                                True
-                        )
-                        (onActivate True id)
-                 --|> (::)
-                 --    (Event.on "click"
-                 --        (JD.maybe
-                 --            (JD.field "detail" JD.int)
-                 --            |> JD.map (Maybe.withDefault -1 >> Click)
-                 --        )
-                 --    )
-                )
-                [ if not withStyling then
-                    icon "icon-chevron-double-right" []
+                    Nothing ->
+                        Html.text "todo"
+        ]
 
-                  else
-                    Html.text ""
-                , case result of
-                    Text str ->
-                        Intl.view node.intl str
 
-                    Error str ->
-                        Html.text str
-
-                    HTML str ->
-                        Html.span
-                            [ str
-                                |> JE.string
-                                |> Attr.property "innerHTML"
-                            ]
-                            []
-
-                    IFrame lia ->
-                        case config.view of
-                            Just inline ->
-                                inline config.slide id lia
-                                    |> Html.span []
-
-                            Nothing ->
-                                Html.text "todo"
+{-| The active input element, followed by the result.
+-}
+input : Config sub -> Parameters -> Int -> Script SubSection -> Stdout SubSection -> Html (Msg sub)
+input config attr id node result =
+    let
+        withResult control =
+            Html.span
+                [ Attr.class (class node) ]
+                [ reset id
+                , control
+                , script config False attr id node result
                 ]
-
-
-input : Config sub -> Parameters -> Int -> Script SubSection -> Html (Msg sub)
-input config attr id node =
+    in
     case node.input.type_ of
         Just (Input.Button_ _) ->
-            script config True attr id node
+            script config True attr id node result
 
         Just (Input.Checkbox_ []) ->
             [ Html.input
-                ([ Attr.class "lia-checkbox"
-                 , Attr.checked (node.input.value == "true")
-                 , Attr.type_ "checkbox"
-                 , Attr.id "lia-focus"
-                 , Event.onCheck
-                    (\b ->
-                        Value id node.input.updateOnChange <|
-                            if b then
-                                "true"
+                (onActivate False id
+                    ++ [ Attr.class "lia-checkbox"
+                       , Attr.checked (node.input.value == "true")
+                       , Attr.type_ "checkbox"
+                       , Attr.id "lia-focus"
+                       , Event.onCheck
+                            (\b ->
+                                Value id node.input.updateOnChange <|
+                                    if b then
+                                        "true"
 
-                            else
-                                "false"
-                    )
-                 ]
-                    |> List.append (onActivate False id)
+                                    else
+                                        "false"
+                            )
+                       ]
                 )
                 []
             ]
                 |> Html.span [ Attr.class "flex items-center" ]
-                |> span config attr id node
+                |> withResult
 
-        Just (Input.Checkbox_ options) ->
-            options
-                |> checkbox node.input.updateOnChange id node.input.value attr
-                |> span config attr id node
+        Just (Input.Checkbox_ list) ->
+            let
+                checked =
+                    node.input.value
+                        |> Input.decodeList
+                        |> Maybe.withDefault []
+            in
+            list
+                |> options "checkbox" Checkbox (\o -> List.member o checked) node.input.updateOnChange id
+                |> withResult
 
-        Just (Input.Radio_ options) ->
-            options
-                |> radio node.input.updateOnChange id node.input.value attr
-                |> span config attr id node
+        Just (Input.Radio_ list) ->
+            list
+                |> options "radio" Radio ((==) node.input.value) node.input.updateOnChange id
+                |> withResult
 
-        Just (Input.Select_ options) ->
-            options
-                |> select id node.input.value attr
-                |> span config attr id node
+        Just (Input.Select_ list) ->
+            list
+                |> List.map (\o -> Html.option [ Attr.value o ] [ Html.text o ])
+                |> Html.select (Attr.class "lia-select" :: attributes True id node.input.value attr)
+                |> withResult
 
         Just Input.Textarea_ ->
-            textarea id node.input.value attr node.input.updateOnChange
-                |> span config attr id node
+            Html.textarea (attributes node.input.updateOnChange id node.input.value attr) []
+                |> withResult
 
-        Just _ ->
-            base node.input id attr node.input.value
-                |> span config attr id node
+        Just type_ ->
+            base type_ node.input.updateOnChange id attr node.input.value
+                |> withResult
 
         Nothing ->
-            script config True attr id node
+            script config True attr id node result
 
 
-select : Int -> String -> Parameters -> List String -> Html (Msg sub)
-select id value attr =
-    List.map (\o -> Html.option [ Attr.value o ] [ Html.text o ])
-        >> Html.select (Attr.class "lia-select" :: attributes True id value attr)
-
-
-checkbox : Bool -> Int -> String -> Parameters -> List String -> Html (Msg sub)
-checkbox updateOnChange id value _ =
-    let
-        list =
-            value
-                |> Input.decodeList
-                |> Maybe.withDefault []
-    in
+{-| A labeled checkbox or radio button for every option.
+-}
+options : String -> (Int -> Bool -> String -> Msg sub) -> (String -> Bool) -> Bool -> Int -> List String -> Html (Msg sub)
+options type_ msg checked updateOnChange id =
     List.map
         (\o ->
             Html.label [ Attr.class "lia-label mr-1" ]
                 [ Html.input
-                    ([ Attr.value o
-                     , Attr.type_ "checkbox"
-                     , Event.onCheck (always (Checkbox id updateOnChange o))
-                     , Attr.checked (List.member o list)
-                     , Attr.autofocus True
-                     , Attr.class "lia-checkbox"
-                     ]
-                        |> List.append (onActivate False id)
+                    (onActivate False id
+                        ++ [ Attr.value o
+                           , Attr.type_ type_
+                           , Event.onCheck (always (msg id updateOnChange o))
+                           , Attr.checked (checked o)
+                           , Attr.autofocus True
+                           , Attr.class ("lia-" ++ type_)
+                           ]
                     )
                     []
                 , Html.text o
                 ]
         )
         >> Html.span [ Attr.class "flex items-center" ]
-
-
-radio : Bool -> Int -> String -> Parameters -> List String -> Html (Msg sub)
-radio updateOnChange id value _ =
-    List.map
-        (\o ->
-            Html.label [ Attr.class "lia-label mr-1" ]
-                [ Html.input
-                    ([ Attr.value o
-                     , Attr.type_ "radio"
-                     , Event.onCheck (always (Radio id updateOnChange o))
-                     , Attr.checked (o == value)
-                     , Attr.autofocus True
-                     , Attr.class "lia-radio"
-                     ]
-                        |> List.append (onActivate False id)
-                    )
-                    []
-                , Html.text o
-                ]
-        )
-        >> Html.span [ Attr.class "flex items-center" ]
-
-
-textarea : Int -> String -> Parameters -> Bool -> Html (Msg sub)
-textarea id value attr updateOnChange =
-    Html.textarea (attributes updateOnChange id value attr) []
 
 
 attributes : Bool -> Int -> String -> Parameters -> List (Html.Attribute (Msg sub))
@@ -292,17 +282,6 @@ attributes updateOnChange id value =
             , blockKeydown NoOp
             ]
         >> List.append (onActivate False id)
-
-
-span : Config sub -> Parameters -> Int -> Script SubSection -> Html (Msg sub) -> Html (Msg sub)
-span config attr id node control =
-    Html.span
-        [ Attr.class (class node)
-        ]
-        [ reset id
-        , control
-        , script config False attr id node
-        ]
 
 
 reset : Int -> Html (Msg sub)
@@ -318,49 +297,42 @@ reset id =
         []
 
 
-base : Input -> Int -> Parameters -> String -> Html (Msg sub)
-base input_ id attr value =
+{-| A plain `<input>` of the given type, Enter executes the script, Escape
+resets it.
+-}
+base : Input.Type_ -> Bool -> Int -> Parameters -> String -> Html (Msg sub)
+base type_ updateOnChange id attr value =
     Html.input
-        (toAttribute attr
-            |> List.append
-                [ input_.updateOnChange
-                    |> Value id
-                    |> Event.onInput
-                , input_.type_
-                    |> Maybe.map Input.type_
-                    |> Maybe.withDefault "text"
-                    |> Attr.type_
-                , input_.type_
-                    |> Maybe.map
-                        (\i ->
-                            case Input.type_ i of
-                                "range" ->
-                                    "lia-range"
+        (onActivate False id
+            ++ [ Event.onInput (Value id updateOnChange)
+               , Attr.type_ (Input.type_ type_)
+               , Attr.class
+                    (case type_ of
+                        Input.Range_ ->
+                            "lia-range"
 
-                                "radio" ->
-                                    "lia-radio"
+                        Input.Color_ ->
+                            ""
 
-                                "color" ->
-                                    ""
-
-                                _ ->
-                                    "lia-input"
-                        )
-                    |> Maybe.withDefault ""
-                    |> Attr.class
-                , Attr.value value
-                , Attr.id "lia-focus"
-                , blockKeydown NoOp
-                , A11y_Key.onKeyUp
+                        _ ->
+                            "lia-input"
+                    )
+               , Attr.value value
+               , Attr.id "lia-focus"
+               , blockKeydown NoOp
+               , A11y_Key.onKeyUp
                     [ A11y_Key.enter (Activate False id)
                     , A11y_Key.escape (Reset id)
                     ]
-                ]
-            |> List.append (onActivate False id)
+               ]
+            ++ toAttribute attr
         )
         []
 
 
+{-| `True`: activate the input by click, Enter or Space on the result.
+`False`: deactivate it when the input loses the focus or on Escape.
+-}
 onActivate : Bool -> Int -> List (Html.Attribute (Msg sub))
 onActivate bool id =
     if bool then
@@ -372,7 +344,6 @@ onActivate bool id =
         ]
 
     else
-        --JD.succeed >> Event.on "focusout"
         [ Event.onBlur (Delay 200 (Activate False id))
         , A11y_Key.onKeyDown
             [ A11y_Key.escape (Delay 200 (Activate False id))
@@ -396,22 +367,22 @@ shiftSpace msg =
     }
 
 
-onEdit : Bool -> Int -> List (Html.Attribute (Msg sub))
-onEdit bool id =
-    if bool then
-        [ Event.onDoubleClick (Edit True id)
-        , A11y_Key.onKeyDown
-            [ shiftEnter (Edit True id)
-            , shiftSpace (Edit True id)
-            ]
-        , A11y_Aria.keyShortcuts [ "Shift+Enter" ]
+{-| Open the code editor by double click or Shift+Enter/Space.
+-}
+onEdit : Int -> List (Html.Attribute (Msg sub))
+onEdit id =
+    [ Event.onDoubleClick (Edit True id)
+    , A11y_Key.onKeyDown
+        [ shiftEnter (Edit True id)
+        , shiftSpace (Edit True id)
         ]
-
-    else
-        [ Delay 300 (Edit False id) |> Event.onBlur
-        ]
+    , A11y_Aria.keyShortcuts [ "Shift+Enter" ]
+    ]
 
 
+{-| Modal code editor, with a `Partially` modifiable script only the part
+between the first two appearances of `subPattern` can be edited.
+-}
 editor : Maybe String -> String -> Int -> Maybe String -> String -> Html (Msg sub)
 editor theme mode id subPattern code =
     let
