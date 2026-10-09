@@ -20,6 +20,7 @@ before the rest of the input is parsed, so the body can contain any markdown.
 
 -}
 
+import Array exposing (Array)
 import Combine
     exposing
         ( Parser
@@ -30,7 +31,6 @@ import Combine
         , ignore
         , keep
         , many
-        , many1
         , manyTill
         , map
         , maybe
@@ -232,25 +232,26 @@ inject ignoreIndentation call =
             case get id state.defines of
                 Just body ->
                     let
-                        ( newState, _, code ) =
-                            List.foldl eval_parameter
-                                ( state
-                                , 0
-                                , if ignoreIndentation || state.indentation == [] then
-                                    body
+                        ( newState, values ) =
+                            List.foldl eval_parameter ( state, [] ) call.params
 
-                                  else
-                                    body
-                                        |> String.lines
-                                        |> String.join
-                                            (state.indentation
-                                                |> String.concat
-                                                |> String.replace "?" ""
-                                                |> String.replace "*" ""
-                                                |> (++) "\n"
-                                            )
-                                )
-                                call.params
+                        code =
+                            (if ignoreIndentation || state.indentation == [] then
+                                body
+
+                             else
+                                body
+                                    |> String.lines
+                                    |> String.join
+                                        (state.indentation
+                                            |> String.concat
+                                            |> String.replace "?" ""
+                                            |> String.replace "*" ""
+                                            |> (++) "\n"
+                                        )
+                            )
+                                |> substitute (Array.fromList (List.reverse values))
+                                |> unguard
                     in
                     (if call.escape then
                         toEscapeString code
@@ -310,23 +311,49 @@ get id def =
             Dict.get id def.macro
 
 
-{-| Expand the macros within parameter `i` and replace `@'i` and `@i` in the
-body. Escaped `\@` are protected by `guard`.
+{-| Expand the macros within a parameter, in order, since `@uid` counts up.
+The values are collected in reverse. Escaped `\@` stay guarded until the
+whole body is done.
 -}
-eval_parameter : String -> ( Context, Int, String ) -> ( Context, Int, String )
-eval_parameter param ( state, i, code ) =
+eval_parameter : String -> ( Context, List String ) -> ( Context, List String )
+eval_parameter param ( state, values ) =
     let
         ( newState, value ) =
             expand state (guard param)
     in
-    ( newState
-    , i + 1
-    , code
-        |> guard
-        |> String.replace ("@'" ++ String.fromInt i) (toEscapeString value)
-        |> String.replace ("@" ++ String.fromInt i) value
-        |> unguard
-    )
+    ( newState, value :: values )
+
+
+{-| Replace `@0`, `@1`, ... and the escaped `@'0`, ... by the parameter
+values in one pass, so `@10` is not taken for `@1` and inserted values are
+not searched again. `\@0` and unknown indices are kept.
+-}
+substitute : Array String -> String -> String
+substitute values =
+    Regex.replace parameterRef
+        (\m ->
+            case m.submatches of
+                [ quote, Just i ] ->
+                    case String.toInt i |> Maybe.andThen (\j -> Array.get j values) of
+                        Just value ->
+                            if quote == Just "'" then
+                                toEscapeString value
+
+                            else
+                                value
+
+                        Nothing ->
+                            m.match
+
+                _ ->
+                    m.match
+        )
+
+
+parameterRef : Regex.Regex
+parameterRef =
+    Regex.fromString "\\\\@|@('?)(\\d+)"
+        |> Maybe.withDefault Regex.never
 
 
 {-| Replaces `\@` so it is neither expanded nor taken for a parameter.
@@ -346,21 +373,15 @@ unguard =
     String.replace guard_pattern "\\@"
 
 
-{-| Expand all macros within a string (a parameter). `@input` is kept for
-the code evaluation. Returns the string unchanged from the first position
-that cannot be parsed.
+{-| Expand all macros within a string (a parameter). An `@` that is no known
+macro (e.g. `@input`) is kept as text. The rest of the input is only left if
+a recursive macro stops the expansion.
 -}
 expand : Context -> String -> ( Context, String )
 expand state str =
     case runParser expandAll state str of
         Ok ( newState, stream, expanded ) ->
-            if stream.input == "" then
-                ( newState, expanded )
-
-            else
-                stream.input
-                    |> expand newState
-                    |> Tuple.mapSecond ((++) expanded)
+            ( newState, expanded ++ stream.input )
 
         _ ->
             ( state, str )
@@ -369,10 +390,10 @@ expand state str =
 expandAll : Parser Context String
 expandAll =
     macro
-        |> keep (regex "[^@]+")
-        |> or (regex "@input[^@]+")
-        |> many1
+        |> keep (or (regex "[^@]+") (string "@"))
+        |> many
         |> map String.concat
+        |> ignore macro
 
 
 {-| Show the expanded macro as text: markdown is escaped, line breaks become

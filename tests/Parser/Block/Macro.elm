@@ -168,10 +168,10 @@ expansion_Suite =
             \_ ->
                 expand [ ( "fn", "@0" ), ( "aa", "A" ) ] [] "@fn(x @input y @aa)|"
                     |> Expect.equal "x @input y A|"
-        , test "an unknown macro stops expansion within a parameter" <|
+        , test "an unknown macro within a parameter is kept as text" <|
             \_ ->
                 expand [ ( "fn", "@0" ), ( "aa", "A" ) ] [] "@fn(@aa x@unknown @aa)|"
-                    |> Expect.equal "A x@unknown @aa|"
+                    |> Expect.equal "A x@unknown A|"
         , test "chained macros expand one after the other" <|
             \_ ->
                 expand [ ( "aa", "@bb x" ), ( "bb", "B" ) ] [] "@aa|"
@@ -188,10 +188,22 @@ expansion_Suite =
             \_ ->
                 expand [ ( "fn", "a\n@0" ) ] [ "  " ] "```@fn\nx\n```|"
                     |> Expect.equal "a\nx|"
-        , test "@1 also replaces the prefix of @10" <|
+        , test "@10 is the eleventh parameter, not @1 followed by 0" <|
             \_ ->
                 expand [ ( "fn", "@10@1" ) ] [] "@fn(a,b,c,d,e,f,g,h,i,j,k)|"
-                    |> Expect.equal "b0b|"
+                    |> Expect.equal "kb|"
+        , test "inserted values are not searched for parameters again" <|
+            \_ ->
+                expand [ ( "fn", "@0 @1" ) ] [] "@fn(@1,b)|"
+                    |> Expect.equal "@1 b|"
+        , test "a macro expanding to nothing at the end of a parameter" <|
+            \_ ->
+                expand [ ( "fn", "[@0]" ), ( "aa", "" ) ] [] "@fn(x @aa)|"
+                    |> Expect.equal "[x ]|"
+        , test "a recursive macro within a parameter terminates" <|
+            \_ ->
+                expand [ ( "fn", "[@0]" ), ( "aa", "x@aa" ) ] [] "@fn(@aa)|"
+                    |> Expect.equal "[x@aa]|"
         , test "names need two characters" <|
             \_ ->
                 expand [ ( "a", "A" ) ] [] "@a|"
