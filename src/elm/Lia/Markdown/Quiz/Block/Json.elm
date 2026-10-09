@@ -11,6 +11,8 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 
 
+{-| Encode the quiz definition.
+-}
 encode : Quiz Inlines -> ( String, JE.Value )
 encode quiz =
     ( case quiz.solution of
@@ -29,6 +31,9 @@ encode quiz =
     )
 
 
+{-| Only the selection is stored. A selection or a drop with a single option is
+stored as number, gap-text drops as list.
+-}
 fromState : State -> JE.Value
 fromState state =
     JE.object <|
@@ -53,6 +58,7 @@ fromState state =
                 [ ( "Drop", JE.list JE.int list ) ]
 
 
+{-| -}
 toState : JD.Decoder State
 toState =
     JD.oneOf

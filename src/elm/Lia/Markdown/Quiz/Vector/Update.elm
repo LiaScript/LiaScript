@@ -6,69 +6,49 @@ module Lia.Markdown.Quiz.Vector.Update exposing
     )
 
 import Json.Encode as JE
-import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Quiz.Vector.Types exposing (State(..))
 import List.Extra
-import Return exposing (Return)
 
 
-type Msg sub
+{-| Click on the option with the given index.
+-}
+type Msg
     = Toggle Int
-    | Script (Script.Msg sub)
 
 
-update : Msg sub -> State -> Return State msg sub
-update msg state =
-    case msg of
-        Toggle id ->
-            state
-                |> toggle id
-                |> Return.val
-
-        Script sub ->
-            state
-                |> Return.val
-                |> Return.script sub
+{-| -}
+update : Msg -> State -> State
+update (Toggle id) =
+    toggle id
 
 
+{-| Toggle the option `id`. A single choice allows only one selected option,
+selecting it again clears the selection.
+-}
 toggle : Int -> State -> State
 toggle id state =
     case state of
         SingleChoice list ->
             list
-                |> toggleSingle id
+                |> List.indexedMap (\i value -> i == id && not value)
                 |> SingleChoice
 
         MultipleChoice list ->
             list
-                |> toggleMultiple id
+                |> List.indexedMap
+                    (\i value ->
+                        if i == id then
+                            not value
+
+                        else
+                            value
+                    )
                 |> MultipleChoice
 
 
-toggleSingle : Int -> List Bool -> List Bool
-toggleSingle id =
-    List.indexedMap
-        (\i value ->
-            if i == id then
-                not value
-
-            else
-                False
-        )
-
-
-toggleMultiple : Int -> List Bool -> List Bool
-toggleMultiple id =
-    List.indexedMap
-        (\i value ->
-            if i == id then
-                not value
-
-            else
-                value
-        )
-
-
+{-| The input as passed to a checking script: the index of the selected option
+(`-1` if none) or a list of `0` and `1`.
+-}
 toString : State -> String
 toString state =
     case state of

@@ -16,16 +16,31 @@ import Lia.Markdown.Quiz.Multi.Types exposing (State)
 import Return exposing (Return)
 
 
+{-| The inputs of a gap-text are rendered as inline elements, their events are
+sent via JavaScript (`window.LIA.send`, see `Multi.View`) as `Handle`.
+-}
 type Msg sub
     = Script (Script.Msg sub)
     | Handle ( String, JE.Value )
 
 
+{-| -}
 handle : ( String, JE.Value ) -> Msg sub
 handle =
     Handle
 
 
+{-| All commands carry the `id` of the input and a `value`, `dragend` and
+`dragsource` carry the position `[ input, option ]`:
+
+  - `input`: text input
+  - `choose` and `toggle`: select an option and open/close a dropdown
+  - `dragstart`, `dragenter`, `dragend`: drag and drop, the highlighted drop
+    zone takes the dragged option, which is removed from the zone it was in
+  - `dragtarget` and `dragsource`: click and drop, first select a drop zone,
+    then the option to put into it
+
+-}
 update : Msg sub -> State -> Return State msg sub
 update msg state =
     case msg of
@@ -145,8 +160,8 @@ update msg state =
                             decodeList param
                     in
                     state
-                        |> Array.indexedMap
-                            (\i block ->
+                        |> Array.map
+                            (\block ->
                                 case block of
                                     Block.Drop _ True _ ->
                                         Block.Drop False False pos
@@ -173,6 +188,10 @@ decodeList =
         >> Maybe.withDefault []
 
 
+{-| The input as passed to a checking script, a list with one entry per input,
+texts are quoted. A dropped option counts only for the input it was dropped
+onto.
+-}
 toString : State -> String
 toString state =
     state
