@@ -26,6 +26,7 @@ type Msg
     | Error String
     | BrowserTTS Bool
     | ResponsiveVoiceTTS Bool
+    | Avatar (Maybe String)
 
 
 {-| Simple abort of any talking without sending a response
@@ -156,6 +157,14 @@ decode e =
 
                         Err _ ->
                             ResponsiveVoiceTTS False
+
+                -- an external template registered a custom element as the
+                -- narrator avatar via `window.LIA.narrator.registerAvatar`
+                "avatar" ->
+                    e.message.param
+                        |> JD.decodeValue (JD.nullable JD.string)
+                        |> Result.withDefault Nothing
+                        |> Avatar
 
                 unknown ->
                     Error <| "unknown cmd => " ++ unknown

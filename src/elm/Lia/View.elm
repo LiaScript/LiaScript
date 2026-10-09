@@ -183,6 +183,7 @@ viewSlide modalIsActive screen model =
             , viewVideoComment
                 { active = model.settings.sound
                 , hide = model.settings.hideVideoComments || model.settings.mode == Textbook
+                , avatar = model.settings.tts.avatar
                 }
                 model.overlayVideo
                 section.effect_model
@@ -812,7 +813,14 @@ appendAudioFragments audio info =
             :: List.map audioRecordings audio
 
 
-viewVideoComment : { active : Bool, hide : Bool } -> Overlay.Model -> Effect.Model SubSection -> Html Msg
+{-| The draggable overlay for narrator comments. It shows the video recordings
+of the current animation step. If there are none, but a template has
+registered a narrator avatar (`window.LIA.narrator.registerAvatar`), the
+custom element of that avatar is shown instead, together with the narrator
+and the `data-*` annotations of the current comments as attributes. Videos
+always take precedence over the avatar.
+-}
+viewVideoComment : { active : Bool, hide : Bool, avatar : Maybe String } -> Overlay.Model -> Effect.Model SubSection -> Html Msg
 viewVideoComment comments overlay effects =
     let
         urls =
@@ -825,9 +833,62 @@ viewVideoComment comments overlay effects =
         videos =
             String.join "," urls
 
+        avatar =
+            if comments.active && List.isEmpty urls then
+                Maybe.map2 Tuple.pair comments.avatar (Effect.current_narrator effects)
+
+            else
+                Nothing
+
         hide =
-            String.isEmpty videos
+            String.isEmpty videos && avatar == Nothing
     in
+    case avatar of
+        Just ( tag, ( narrator, attr ) ) ->
+            Html.node tag
+                (Attr.id "lia-tts-avatar"
+                    :: Attr.attribute "data-voice" narrator
+                    :: Attr.attribute "data-step" (String.fromInt effects.visible)
+                    -- stacked above a leftover video preview frame
+                    -- (cf. storeBackgroundVideo in TTS.ts), but below the
+                    -- drag and resize handles of the overlay
+                    :: Attr.style "display" "block"
+                    :: Attr.style "position" "absolute"
+                    :: Attr.style "top" "0"
+                    :: Attr.style "left" "0"
+                    :: Attr.style "width" "100%"
+                    :: Attr.style "height" "100%"
+                    :: toAttribute attr
+                )
+                []
+                |> viewCommentOverlay comments hide overlay
+
+        Nothing ->
+            viewVideos hide urls
+                |> Html.div
+                    [ Attr.id "lia-tts-videos"
+                    , Attr.style "width" "100%"
+                    , Attr.style "height" "100%"
+                    , Attr.attribute "data-urls" videos
+                    ]
+                |> viewCommentOverlay comments hide overlay
+
+
+viewCommentOverlay : { comments | active : Bool, hide : Bool } -> Bool -> Overlay.Model -> Html Msg -> Html Msg
+viewCommentOverlay comments hide overlay =
+    Overlay.view
+        (if hide || not comments.active || comments.hide then
+            [ Attr.style "display" "none" ]
+
+         else
+            [ Attr.class "fade-in" ]
+        )
+        overlay
+        >> Html.map UpdateOverlay
+
+
+viewVideos : Bool -> List String -> List (Html Msg)
+viewVideos hide urls =
     urls
         |> List.map
             (\url ->
@@ -855,21 +916,6 @@ viewVideoComment comments overlay effects =
                     ]
                     []
             )
-        |> Html.div
-            [ Attr.id "lia-tts-videos"
-            , Attr.style "width" "100%"
-            , Attr.style "height" "100%"
-            , Attr.attribute "data-urls" videos
-            ]
-        |> Overlay.view
-            (if hide || not comments.active || comments.hide then
-                [ Attr.style "display" "none" ]
-
-             else
-                [ Attr.class "fade-in" ]
-            )
-            overlay
-        |> Html.map UpdateOverlay
 
 
 audioRecordings : String -> Html msg

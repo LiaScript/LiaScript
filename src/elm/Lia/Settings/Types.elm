@@ -54,6 +54,10 @@ type alias TTS =
     { preferBrowser : Bool
     , isBrowserSupported : Bool
     , isResponsiveVoiceSupported : Bool
+
+    -- tag name of a custom element registered by a template, that is shown
+    -- as the narrator avatar for comments without a video recording
+    , avatar : Maybe String
     }
 
 
@@ -102,6 +106,7 @@ init hasShareApi isFullscreen mode =
         { preferBrowser = False
         , isBrowserSupported = False
         , isResponsiveVoiceSupported = False
+        , avatar = Nothing
         }
     , chat =
         { show = False

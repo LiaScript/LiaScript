@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- feat: narrator hook `window.LIA.narrator` for templates; `lia-narrator` events on `window` report start, stop, pause, resume, word boundaries, progress and media changes of the narrator comments, with the source (`tts`, `audio`, `video`), the comment elements, voice, language and the playing media element; `LIA.narrator.state` holds the current state
+- feat: narrator avatars, `LIA.narrator.registerAvatar('my-avatar')` registers a custom element that is shown in the draggable overlay of the video comments for every animation step with comments but without a video; it gets `data-voice`, `data-step` and all `data-*` annotations of the comments (e.g. `<!-- data-speaker="anna" -->` in front of `--{{1}}--`) as attributes; videos always take precedence
+- improve: the setting "Hide video comments" also hides avatars ("Hide video & avatar comments")
+- fix: text-to-speech failed, if there was no element `#lia-tts-videos`
+
+
 ## [2.1.2] - 07/10/2026
 
 - fix: text-to-speech picked voices of the wrong gender, e.g. Piper voices via speech-dispatcher in Firefox; gender is now detected for Apple, Microsoft, Google/ChromeOS, Android, espeak-ng, Piper and RHVoice voices, and a voice of the wrong gender ranks below one of unknown gender

@@ -3286,7 +3286,7 @@ commentHide lang =
             "Skjul videokommentarer"
 
         De ->
-            "Videokommentare ausblenden"
+            "Video- & Avatar-Kommentare ausblenden"
 
         El ->
             "Απόκρυψη σχολίων βίντεο"
@@ -3394,7 +3394,7 @@ commentHide lang =
             "隱藏影片評論"
 
         _ ->
-            "Hide video comments"
+            "Hide video & avatar comments"
 
 
 no_translation : Lang -> String

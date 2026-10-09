@@ -40,6 +40,39 @@ suite =
                     |> Maybe.andThen (.content >> Array.get 0)
                     |> Maybe.map .attr
                     |> Expect.equal (Just [ ( "a", "1" ), ( "b", "2" ) ])
+        , test "current_narrator returns the narrator and only data-* annotations" <|
+            \_ ->
+                { visible = 1
+                , effects = 1
+                , comments =
+                    Dict.singleton 1
+                        { narrator = "Deutsch Female"
+                        , content =
+                            Array.fromList
+                                [ { visible = True, attr = [ ( "data-speaker", "anna" ), ( "style", "color: red" ) ], content = [], audio = Array.empty, video = Array.empty }
+                                , { visible = True, attr = [ ( "data-mood", "happy" ) ], content = [], audio = Array.empty, video = Array.empty }
+                                ]
+                        }
+                , javascript = Array.empty
+                , speaking = Nothing
+                , paused = Nothing
+                }
+                    |> Model.current_narrator
+                    |> Expect.equal (Just ( "Deutsch Female", [ ( "data-speaker", "anna" ), ( "data-mood", "happy" ) ] ))
+        , test "current_narrator is Nothing without comments at the current step" <|
+            \_ ->
+                Model.init
+                    |> Model.current_narrator
+                    |> Expect.equal Nothing
+        , test "an annotation in front of a comment is attached to it" <|
+            \_ ->
+                parseWithState "    <!-- data-speaker=\"anna\" -->\n    --{{1}}--\nHello\n"
+                    |> Tuple.second
+                    |> .effect_model
+                    |> (\e -> { e | visible = 1 })
+                    |> Model.current_narrator
+                    |> Maybe.map Tuple.second
+                    |> Expect.equal (Just [ ( "data-speaker", "anna" ) ])
         , test "hidden comment with a tab after <!--" <|
             \_ ->
                 parseWithState "Text <!--\t--{{2}}-- hidden -->\n"

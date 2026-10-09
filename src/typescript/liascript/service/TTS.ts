@@ -4,6 +4,7 @@ import LANGUAGE_FALLBACKS, {
   LEGACY_LANGUAGE_MAP,
 } from './helper/language-fallbacks'
 import { detectGender } from './helper/voice-gender'
+import * as Narrator from './Narrator'
 
 // @ts-ignore
 import EasySpeech from 'easy-speech/dist/EasySpeech'
@@ -96,6 +97,15 @@ export const Service = {
 
   init: function (elmSend_: Lia.Send) {
     elmSend = elmSend_
+
+    Narrator.init((tag: string | null) =>
+      sendReply({
+        reply: true,
+        track: [[SETTINGS, 0]],
+        service: 'tts',
+        message: { cmd: 'avatar', param: tag },
+      })
+    )
 
     setTimeout(function () {
       firstSpeak = false
@@ -270,6 +280,7 @@ function playback(event: Lia.Event) {
     text = innerText(text, lang)
   }
 
+  Narrator.begin(event, { source: 'tts', text, voice, lang })
   speak(text, voice, lang, options, event)
 }
 
@@ -378,6 +389,9 @@ function getAudioSettings(element: HTMLElement | Element) {
 function read(event: Lia.Event) {
   cancel()
 
+  // the class name of the comments, before it gets overwritten by a response
+  const id: string = event.message.param
+
   let element = document.getElementsByClassName(event.message.param)
 
   if (element.length) {
@@ -406,9 +420,20 @@ function read(event: Lia.Event) {
 
     const player: any = document.getElementById(VIDEO)
     const videos: HTMLVideoElement[] =
-      (Array.from(player?.children as unknown[]) as HTMLVideoElement[]) || []
+      Array.from(player?.children || []) as HTMLVideoElement[]
+
+    const narrator = {
+      id,
+      elements: Array.from(element) as HTMLElement[],
+      text,
+      voice,
+      lang,
+      translated: translation,
+    }
 
     if (videos.length > 0 && player) {
+      Narrator.begin(event, { ...narrator, source: 'video' })
+
       let currentIndex = 0
       let isEnding = false
       let ttsFinished = !translation
@@ -519,6 +544,7 @@ function read(event: Lia.Event) {
 
         storeBackgroundVideo(player, video)
         activeMedia.media = video
+        Narrator.setMedia(video)
         activeMedia.event = event
         startProgressInterval(event)
 
@@ -542,6 +568,8 @@ function read(event: Lia.Event) {
         })
       }
     } else if (hasAudioURLs) {
+      Narrator.begin(event, { ...narrator, source: 'audio' })
+
       const audioUrls: HTMLMediaElement[] = Array.from(
         document.getElementsByClassName(AUDIO) as HTMLCollectionOf<HTMLMediaElement>
       )
@@ -605,6 +633,7 @@ function read(event: Lia.Event) {
         audio.preservesPitch = true
         audio.playbackRate = options.rate
         activeMedia.media = audio
+        Narrator.setMedia(audio)
         activeMedia.event = event
 
         const sendInitialProgress = () => {
@@ -631,6 +660,7 @@ function read(event: Lia.Event) {
       startProgressInterval(event)
       playNextAudio()
     } else if (text !== '' && element[0] !== undefined) {
+      Narrator.begin(event, { ...narrator, source: 'tts' })
       speak(text, voice, lang, options, event)
     }
   }
@@ -675,6 +705,7 @@ export function inject(key: string) {
 }
 
 function cancel() {
+  Narrator.stop()
   browserTTSSpeakArgs = null
   browserTTSIntentionalPause = false
   clearMediaState()
@@ -695,7 +726,7 @@ function cancel() {
   try {
     const player: any = document.getElementById(VIDEO)
     const videos: HTMLMediaElement[] =
-      (Array.from(player?.children as unknown[]) as HTMLMediaElement[]) || []
+      Array.from(player?.children || []) as HTMLMediaElement[]
 
     for (let i = 0; i < videos.length; i++) {
       videos[i].pause()
@@ -806,6 +837,9 @@ function easySpeak(
       browserTTSIntentionalPause = false
       handlers.onError(e)
     },
+    boundary: (e: SpeechSynthesisEvent) => {
+      Narrator.boundary(e.charIndex, e.charLength)
+    },
     pitch: options.pitch,
     rate: options.rate,
   })
@@ -846,6 +880,7 @@ function sendResponse(
 ) {
   event.message.cmd = cmd
   event.message.param = param
+  Narrator.response(event, cmd, param)
   sendReply(event)
 }
 

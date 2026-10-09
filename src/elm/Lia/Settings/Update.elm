@@ -124,6 +124,13 @@ update main msg model =
                                         in
                                         { model | tts = { tts | isResponsiveVoiceSupported = support } }
 
+                                    Service.TTS.Avatar avatar ->
+                                        let
+                                            tts =
+                                                model.tts
+                                        in
+                                        { model | tts = { tts | avatar = avatar } }
+
                                     _ ->
                                         model
 

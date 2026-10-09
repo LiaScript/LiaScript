@@ -3,6 +3,7 @@ module Lia.Markdown.Effect.Model exposing
     , Element
     , Model
     , current_comment
+    , current_narrator
     , current_paragraphs
     , getAudioRecordings
     , getHiddenComments
@@ -167,6 +168,25 @@ current_comment model =
 
     else
         Nothing
+
+
+{-| The narrator of the current animation step together with the `data-*`
+annotations of its comments, e.g. `data-speaker` set via
+`<!-- data-speaker="anna" -->` in front of `--{{1}}--`. Used to pass the
+current speaker to a narrator avatar.
+-}
+current_narrator : Model a -> Maybe ( String, Parameters )
+current_narrator model =
+    Dict.get model.visible model.comments
+        |> Maybe.map
+            (\element ->
+                ( element.narrator
+                , element.content
+                    |> Array.toList
+                    |> List.concatMap .attr
+                    |> List.filter (Tuple.first >> String.startsWith "data-")
+                )
+            )
 
 
 {-| All comments that start with a hidden comment, as `(step, narrator, text)`.
