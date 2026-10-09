@@ -69,7 +69,7 @@ import Lia.Markdown.Survey.Types
         , analysisType
         )
 import Lia.Markdown.Types as Markdown
-import Lia.Parser.Context exposing (Context)
+import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
 import PseudoRandom
@@ -300,13 +300,21 @@ rows =
 
 
 {-| **private:** Push the initial state of the survey to the `survey_vector`,
-together with a script that directly follows the survey.
+together with a script that directly follows the survey. A randomized survey
+takes the next seed, so that every one gets its own order.
 -}
 addState : Parameters -> Survey body -> Parser Context (Survey body)
 addState attr survey =
-    maybeJS
+    (if Attributes.isSet "data-randomize" attr then
+        map Just Context.getSeed
+
+     else
+        succeed Nothing
+    )
+        |> map Tuple.pair
+        |> andMap maybeJS
         |> map
-            (\scriptID context ->
+            (\( seed, scriptID ) context ->
                 { context
                     | survey_vector =
                         Array.push
@@ -314,7 +322,7 @@ addState attr survey =
                             , state = initState survey.survey
                             , errorMsg = Nothing
                             , scriptID = scriptID
-                            , opt = getOptions context.seed survey.survey attr
+                            , opt = getOptions seed survey.survey attr
                             }
                             context.survey_vector
                 }
@@ -352,18 +360,13 @@ initState survey =
                 |> Matrix_State checkbox
 
 
-getOptions : Int -> Type body -> Parameters -> Options
+getOptions : Maybe Int -> Type body -> Parameters -> Options
 getOptions seed survey attr =
     let
         isSet =
             List.any (\name -> Attributes.isSet name attr)
     in
-    { randomize =
-        if Attributes.isSet "data-randomize" attr then
-            randomize survey seed
-
-        else
-            Nothing
+    { randomize = Maybe.andThen (randomize survey) seed
     , score =
         attr
             |> Attributes.get "data-score"

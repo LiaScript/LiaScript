@@ -496,24 +496,27 @@ lockAnswered classroom sectionID =
 
 
 {-| Run the script of every element that has one, with `fn` creating the
-script message. Also used by surveys and tasks.
+script message. Also used by surveys and tasks. Since a `Return` can carry
+only one script message, several are combined into a `Batch`.
 -}
 init :
     (Int -> { a | scriptID : Maybe Int } -> Script.Msg sub)
     -> Return (Array { a | scriptID : Maybe Int }) msg sub
     -> Return (Array { a | scriptID : Maybe Int }) msg sub
 init fn return =
-    Array.foldl
-        (\state ret ->
-            case state.scriptID of
-                Just id ->
-                    Return.script (fn id state) ret
-
-                _ ->
-                    ret
-        )
-        return
+    case
         return.value
+            |> Array.toList
+            |> List.filterMap (\state -> Maybe.map (\id -> fn id state) state.scriptID)
+    of
+        [] ->
+            return
+
+        [ msg ] ->
+            Return.script msg return
+
+        msgs ->
+            Return.script (Script.Batch msgs) return
 
 
 {-| Send the solved quiz `vectorID` (or all, if `Nothing`) to the classroom,

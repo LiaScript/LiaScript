@@ -221,6 +221,9 @@ toString keys (Sync s) =
         Survey.Select_State _ i ->
             [ String.fromInt (i + 1) ]
 
+        Survey.DragAndDrop_State _ _ i ->
+            [ String.fromInt (i + 1) ]
+
         Survey.Matrix_State _ state ->
             state
                 |> Array.toList
@@ -234,9 +237,6 @@ toString keys (Sync s) =
                             )
                             keys
                     )
-
-        Survey.DragAndDrop_State _ _ _ ->
-            [ "todo ..." ]
 
 
 checkbox : Bool -> String

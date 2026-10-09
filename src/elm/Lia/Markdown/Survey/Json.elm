@@ -159,10 +159,6 @@ toElement =
 
 
 {-| Decode a state encoded by `fromState`.
-
-**Note:** The matrix types are decoded swapped (`"SingleChoiceMatrix"` becomes
-`Matrix_State False`).
-
 -}
 toState : JD.Decoder State
 toState =
@@ -178,7 +174,7 @@ toState =
         , JD.field "MultipleChoice" (JD.dict JD.bool)
             |> JD.map (Vector_State False)
         , JD.field "SingleChoiceMatrix" (JD.array (JD.dict JD.bool))
-            |> JD.map (Matrix_State False)
-        , JD.field "MultipleChoiceMatrix" (JD.array (JD.dict JD.bool))
             |> JD.map (Matrix_State True)
+        , JD.field "MultipleChoiceMatrix" (JD.array (JD.dict JD.bool))
+            |> JD.map (Matrix_State False)
         ]

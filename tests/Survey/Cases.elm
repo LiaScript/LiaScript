@@ -5,15 +5,21 @@ LiaTemplates corpora, which are otherwise used as a golden master.
 -}
 
 import Array
+import Combine
 import Dict
 import Expect
 import Json.Encode as JE
+import Lia.Definition.Types as Definition
+import Lia.Markdown.Effect.Script.Types as Script
+import Lia.Markdown.Parser as Parser
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Sync as Sync
 import Lia.Markdown.Survey.Types exposing (Element, State(..), Vector, toString)
 import Lia.Markdown.Survey.Update as Update exposing (DropMsg(..), Msg(..), SelectMsg(..))
+import Lia.Parser.Context as Context
 import Lia.Sync.Types as Classroom
 import Parser.Block.Fixtures exposing (parseWithState)
+import Return
 import Service.Event as Event
 import Test exposing (Test, describe, test)
 
@@ -26,6 +32,58 @@ suite =
         , scripts
         , summaries
         , json
+        , fixes
+        ]
+
+
+fixes : Test
+fixes =
+    describe "Survey fixes"
+        [ test "a restored matrix keeps checkboxes and radio buttons" <|
+            \_ ->
+                [ "[[a][b]]\n[ ] one\n", "[(a)(b)]\n[ ] one\n" ]
+                    |> List.map
+                        (\code ->
+                            restore code [ MatrixUpdate 0 0 "b" ]
+                                |> .value
+                                |> Update.update Classroom.disconnected (Just 0) Array.empty (MatrixUpdate 0 0 "a")
+                                |> .value
+                                |> Array.get 0
+                                |> Maybe.map (.state >> toString)
+                        )
+                    |> Expect.equal [ Just "[{\"a\": 1, \"b\": 1}]", Just "[{\"a\": 1, \"b\": 0}]" ]
+        , test "a restored survey keeps the options of the course" <|
+            \_ ->
+                restore "<!-- data-randomize data-updates data-incomplete -->\n[[ a | b ]]\n" [ SelectUpdate 0 (Update 1) ]
+                    |> .value
+                    |> Array.get 0
+                    |> Maybe.map (\e -> ( e.opt.randomize /= Nothing, e.opt.updates_allowed, e.opt.incompleteness_allowed ))
+                    |> Expect.equal (Just ( True, True, True ))
+        , test "all scripts are executed after restoring" <|
+            \_ ->
+                restore "[[___]]\n<script>@input</script>\n\n[[___]]\n<script>@input</script>\n" [ TextUpdate 0 "x", TextUpdate 1 "y" ]
+                    |> .sub
+                    |> Expect.equal (Just (Script.Batch [ Script.Execute 0 "x", Script.Execute 1 "y" ]))
+        , test "drag and drop answers are shown in the details table" <|
+            \_ ->
+                answers [ DragAndDrop_State False False 1 ]
+                    |> List.map (Sync.toString [ "State" ])
+                    |> Expect.equal [ [ "2" ] ]
+        , test "every randomized survey gets its own order" <|
+            \_ ->
+                "<!-- data-randomize -->\n[[ a | b | c | d | e ]]\n\n<!-- data-randomize -->\n[[ a | b | c | d | e ]]\n"
+                    |> Combine.runParser Parser.run (Definition.default "" "" |> Context.init Nothing Nothing |> (\c -> { c | seed = 42 }))
+                    |> Result.map (\( context, _, _ ) -> Array.toList context.survey_vector)
+                    |> Result.withDefault []
+                    |> List.map (.opt >> .randomize)
+                    |> (\orders ->
+                            case orders of
+                                [ Just a, Just b ] ->
+                                    Expect.notEqual a b
+
+                                _ ->
+                                    Expect.fail (Debug.toString orders)
+                       )
         ]
 
 
@@ -224,6 +282,17 @@ vector code =
     List.foldl
         (\msg -> Update.update Classroom.disconnected (Just 0) Array.empty msg >> .value)
         (parseWithState code |> Tuple.second |> .survey_vector)
+
+
+{-| Store the surveys after `msgs` and load them into the freshly parsed ones.
+-}
+restore : String -> List (Msg ()) -> Return.Return Vector (Msg ()) ()
+restore code msgs =
+    Update.update Classroom.disconnected
+        (Just 0)
+        Array.empty
+        (Handle (Event.init "x" { cmd = "load", param = Json.fromVector (vector code msgs) }))
+        (vector code [])
 
 
 {-| The first survey after every message.

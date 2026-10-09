@@ -59,6 +59,7 @@ type Msg sub
     | NoOp
     | Handle Event
     | Delay Float (Msg sub)
+    | Batch (List (Msg sub))
     | Sub Int sub
 
 

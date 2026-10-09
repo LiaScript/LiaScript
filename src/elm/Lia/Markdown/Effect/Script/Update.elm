@@ -138,6 +138,28 @@ update main msg scripts =
         NoOp ->
             Return.val scripts
 
+        Batch msgs ->
+            List.foldl
+                (\subMsg ret ->
+                    let
+                        r =
+                            update main subMsg ret.value
+                    in
+                    { r
+                        | command = Cmd.batch [ ret.command, r.command ]
+                        , events = ret.events ++ r.events
+                        , sub =
+                            case r.sub of
+                                Just _ ->
+                                    r.sub
+
+                                Nothing ->
+                                    ret.sub
+                    }
+                )
+                (Return.val scripts)
+                msgs
+
         Delay milliseconds subMsg ->
             scripts
                 |> Return.val

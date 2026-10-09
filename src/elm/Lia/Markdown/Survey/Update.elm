@@ -89,7 +89,7 @@ update classroom sectionID scripts msg vector =
         restore param =
             param
                 |> Json.toVector
-                |> Result.map (merge (\parsed stored -> { stored | scriptID = parsed.scriptID }) vector)
+                |> Result.map (merge (\parsed stored -> { stored | scriptID = parsed.scriptID, opt = parsed.opt }) vector)
                 |> Result.withDefault vector
                 |> lockAnswered classroom sectionID
                 |> Return.val
