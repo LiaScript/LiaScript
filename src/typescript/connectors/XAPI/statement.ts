@@ -2,6 +2,64 @@
  * Utilities for generating xAPI statements
  */
 
+import type { Interaction } from '../SCORMSuspend/report'
+import { codeText } from '../SCORMSuspend/report'
+import * as Code from './code'
+
+const ANSWER = 'http://liascript.github.io/extensions/answer'
+
+/**
+ * Describes the object as the interaction, keeping the extensions restoring
+ * relies on, and reports the response in its format and as plain text.
+ */
+function describeAs(statement: any, interaction?: Interaction) {
+  if (!interaction) return statement
+
+  statement.object.definition = {
+    ...interaction.definition,
+    extensions: statement.object.definition.extensions,
+  }
+
+  delete statement.result.response
+  if (interaction.response !== undefined) {
+    statement.result.response = interaction.response
+  }
+  if (interaction.answer !== undefined) {
+    statement.result.extensions = {
+      ...statement.result.extensions,
+      [ANSWER]: interaction.answer,
+    }
+  }
+  return statement
+}
+
+/** The slide and the course, as context of an element on that slide */
+function slideContext(courseId: string, courseTitle: string, slideId: number) {
+  return {
+    contextActivities: {
+      parent: [
+        {
+          id: `${courseId}/slides/${slideId}`,
+          objectType: 'Activity',
+          definition: {
+            type: 'http://adlnet.gov/expapi/activities/module',
+          },
+        },
+      ],
+      grouping: [
+        {
+          id: courseId,
+          objectType: 'Activity',
+          definition: {
+            type: 'http://adlnet.gov/expapi/activities/course',
+            name: { 'en-US': courseTitle },
+          },
+        },
+      ],
+    },
+  }
+}
+
 /**
  * Helper: Create course activity object
  */
@@ -63,7 +121,8 @@ export function generateExperiencedStatement(
   slideId: number,
   slideName: string,
   registration?: string,
-  duration?: string
+  duration?: string,
+  lang = 'en-US'
 ) {
   const statement: any = {
     actor,
@@ -76,7 +135,7 @@ export function generateExperiencedStatement(
       objectType: 'Activity',
       definition: {
         type: 'http://adlnet.gov/expapi/activities/module',
-        name: { 'en-US': slideName || `Slide ${slideId}` },
+        name: { [lang]: slideName || `Slide ${slideId}` },
         extensions: {
           'http://liascript.github.io/extensions/slideId': slideId,
         },
@@ -99,7 +158,9 @@ export function generateExperiencedStatement(
 }
 
 /**
- * Generate an answered statement for quiz responses and surveys
+ * Generate an answered statement for quiz responses and surveys. With an
+ * interaction (from the course's meta data) the question is described
+ * readably; otherwise the response is the learner's state as JSON.
  */
 export function generateAnsweredStatement(
   actor: any,
@@ -115,7 +176,8 @@ export function generateAnsweredStatement(
   quizState?: any,
   registration?: string,
   surveyIndex?: number,
-  isSurvey = false
+  isSurvey = false,
+  interaction?: Interaction
 ) {
   const itemType = isSurvey ? 'survey' : 'quiz'
   const itemIndex = isSurvey ? surveyIndex : quizId
@@ -170,29 +232,7 @@ export function generateAnsweredStatement(
         max: maxScore,
       },
     },
-    context: {
-      contextActivities: {
-        parent: [
-          {
-            id: `${courseId}/slides/${slideId}`,
-            objectType: 'Activity',
-            definition: {
-              type: 'http://adlnet.gov/expapi/activities/module',
-            },
-          },
-        ],
-        grouping: [
-          {
-            id: courseId,
-            objectType: 'Activity',
-            definition: {
-              type: 'http://adlnet.gov/expapi/activities/course',
-              name: { 'en-US': courseTitle },
-            },
-          },
-        ],
-      },
-    },
+    context: slideContext(courseId, courseTitle, slideId),
     timestamp: new Date().toISOString(),
   }
 
@@ -220,7 +260,7 @@ export function generateAnsweredStatement(
     }
   }
 
-  return statement
+  return describeAs(statement, interaction)
 }
 
 /**
@@ -233,7 +273,8 @@ export function generateTaskStatement(
   slideId: number,
   taskId: number,
   taskState: boolean[],
-  registration?: string
+  registration?: string,
+  interaction?: Interaction
 ) {
   const completedCount = taskState.filter((checked) => checked).length
   const totalCount = taskState.length
@@ -274,29 +315,7 @@ export function generateTaskStatement(
         'http://liascript.github.io/extensions/state': taskState,
       },
     },
-    context: {
-      contextActivities: {
-        parent: [
-          {
-            id: `${courseId}/slides/${slideId}`,
-            objectType: 'Activity',
-            definition: {
-              type: 'http://adlnet.gov/expapi/activities/module',
-            },
-          },
-        ],
-        grouping: [
-          {
-            id: courseId,
-            objectType: 'Activity',
-            definition: {
-              type: 'http://adlnet.gov/expapi/activities/course',
-              name: { 'en-US': courseTitle },
-            },
-          },
-        ],
-      },
-    },
+    context: slideContext(courseId, courseTitle, slideId),
     timestamp: new Date().toISOString(),
   }
 
@@ -305,7 +324,63 @@ export function generateTaskStatement(
     statement.context.registration = registration
   }
 
-  return statement
+  return describeAs(statement, interaction)
+}
+
+/**
+ * Generate an interacted statement for the code of a project the learner
+ * changed. It carries the files of every project of the slide, to restore
+ * the slide from it (see code.ts).
+ */
+export function generateCodeStatement(
+  actor: any,
+  courseId: string,
+  courseTitle: string,
+  slideId: number,
+  codeIndex: number,
+  projects: any[],
+  registration?: string,
+  interaction?: Interaction
+) {
+  const project = projects[codeIndex]
+  const files = (project?.file || []).map((file: any) => file.name).join(', ')
+  const code = codeText(project, true) || codeText(project, false)
+
+  const statement: any = {
+    actor: actor,
+    verb: {
+      id: 'http://adlnet.gov/expapi/verbs/interacted',
+      display: { 'en-US': 'interacted' },
+    },
+    object: {
+      id: `${courseId}/slides/${slideId}/code/${codeIndex}`,
+      objectType: 'Activity',
+      definition: {
+        type: 'http://adlnet.gov/expapi/activities/cmi.interaction',
+        name: { 'en-US': `Slide ${slideId} - Code ${codeIndex}` },
+        description: { 'en-US': files ? `Code (${files})` : 'Code' },
+        interactionType: 'long-fill-in',
+        extensions: {
+          'http://liascript.github.io/extensions/slideId': slideId,
+          'http://liascript.github.io/extensions/codeIndex': codeIndex,
+        },
+      },
+    },
+    result: {
+      ...(code ? { response: code } : {}),
+      extensions: {
+        [Code.EXTENSION]: Code.encodeSlide(projects),
+      },
+    },
+    context: slideContext(courseId, courseTitle, slideId),
+    timestamp: new Date().toISOString(),
+  }
+
+  if (registration) {
+    statement.context.registration = registration
+  }
+
+  return describeAs(statement, interaction)
 }
 
 /**

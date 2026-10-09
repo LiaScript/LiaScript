@@ -149,34 +149,62 @@ export class LRSConnection {
   }
 
   /**
-   * Get statements from the LRS
+   * Get statements from the LRS. An LRS returns them in pages and links the
+   * next one in `more`; up to `pages` pages are read and joined.
    * @param query Query parameters for filtering statements
-   * @returns Promise resolving to the statements
+   * @param pages The most pages to read (default: 10)
+   * @returns Promise resolving to the statements, null if none could be read
    */
-  async getStatements(query: Record<string, any> = {}): Promise<any> {
-    try {
-      // Build a URLSearchParams with proper serialization
-      const params = new URLSearchParams()
+  async getStatements(
+    query: Record<string, any> = {},
+    pages: number = 10
+  ): Promise<any> {
+    // Build a URLSearchParams with proper serialization
+    const params = new URLSearchParams()
 
-      // Properly handle each parameter
-      for (const [key, value] of Object.entries(query)) {
-        if (value === null || value === undefined) {
-          continue // Skip null or undefined values
-        }
-
-        if (typeof value === 'object') {
-          // Stringify objects properly for query parameters
-          params.append(key, JSON.stringify(value))
-        } else {
-          params.append(key, String(value))
-        }
+    // Properly handle each parameter
+    for (const [key, value] of Object.entries(query)) {
+      if (value === null || value === undefined) {
+        continue // Skip null or undefined values
       }
 
-      // Build URL with endpoint + statements + query params
-      const url = `${this.endpoint}statements${
-        params.toString() ? `?${params.toString()}` : ''
-      }`
+      if (typeof value === 'object') {
+        // Stringify objects properly for query parameters
+        params.append(key, JSON.stringify(value))
+      } else {
+        params.append(key, String(value))
+      }
+    }
 
+    // Build URL with endpoint + statements + query params
+    let url = `${this.endpoint}statements${
+      params.toString() ? `?${params.toString()}` : ''
+    }`
+
+    let result: any = null
+
+    for (let page = 0; page < pages && url; page++) {
+      const data = await this.getPage(url)
+      if (!data) break
+
+      if (!result) {
+        result = { ...data, statements: [...(data.statements || [])] }
+      } else {
+        result.statements.push(...(data.statements || []))
+        result.more = data.more
+      }
+
+      // `more` is relative to the LRS: an absolute path, or relative to the
+      // endpoint
+      url = data.more ? new URL(data.more, this.endpoint).toString() : ''
+    }
+
+    return result
+  }
+
+  /** One page of statements, or null */
+  private async getPage(url: string): Promise<any> {
+    try {
       if (this.debug) {
         console.log('Getting statements from LRS:', url)
       }

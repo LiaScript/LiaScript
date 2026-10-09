@@ -5,6 +5,10 @@ import { Settings } from '../Base/settings'
 import * as Utils from '../utils'
 import * as Statement from './statement'
 import * as LRS from './lrs'
+import * as Code from './code'
+import * as Report from '../SCORMSuspend/report'
+import * as State from '../SCORMSuspend/state'
+import type { LiaMeta } from '../SCORMSuspend/meta'
 
 /**
  * xAPI Connector for LiaScript
@@ -28,6 +32,16 @@ export class Connector extends Base.Connector {
   private quizStates: Record<number, Record<number, any>>
   private surveyStates: Record<number, Record<number, any>>
   private taskStates: Record<number, Record<number, any>>
+  /** code projects per slide: restored from the LRS … */
+  private codeStates: Record<number, any[]>
+  /** … and as Elm knows them, changed or not */
+  private codeProjects: Record<number, any[] | null>
+  /** the course description the exporter wrote (`config_.meta`), if any */
+  private meta: LiaMeta | null = null
+  /** key of language maps */
+  private lang = 'en-US'
+  /** every quiz, survey, task and code project the meta describes */
+  private items = new Map<string, Report.Item>()
   private startTime: number
   private lastActivityTime: number
   private accumulatedTime: number // Time from previous sessions in milliseconds
@@ -67,6 +81,8 @@ export class Connector extends Base.Connector {
     this.quizStates = {}
     this.surveyStates = {}
     this.taskStates = {}
+    this.codeStates = {}
+    this.codeProjects = {}
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
     this.accumulatedTime = 0 // No previous session time yet
@@ -144,6 +160,24 @@ export class Connector extends Base.Connector {
             })
           }
         })
+
+        // Readable statements need the course description; without it (an
+        // older package) they stay generic
+        if (windowAny.config_.meta?.version === 1) {
+          this.meta = windowAny.config_.meta
+          this.lang = Report.language(this.meta)
+          Report.catalogue(
+            {
+              quiz: windowAny.config_.quiz || [],
+              survey: windowAny.config_.survey || [],
+              task: windowAny.config_.task || [],
+            },
+            this.meta,
+            Infinity
+          ).forEach((item) =>
+            this.items.set(`${item.table}:${item.slide}:${item.index}`, item)
+          )
+        }
 
         if (this.debug) {
           console.log('Initialized structures from config:', {
@@ -226,6 +260,29 @@ export class Connector extends Base.Connector {
     } catch (e) {
       return this.generateUUID()
     }
+  }
+
+  /**
+   * The readable description of an element and its state, if the course
+   * description knows the element
+   */
+  private describe(
+    table: Report.Table,
+    slide: number,
+    index: number,
+    state: any
+  ): Report.Interaction | undefined {
+    const item = this.items.get(`${table}:${slide}:${index}`)
+    return item ? Report.interaction(item, state, this.lang) : undefined
+  }
+
+  /** The states of a slide as an array, as LiaScript uses them */
+  private list(states: Record<number, Record<number, any>>, id: number) {
+    const array: any[] = []
+    for (const index in states[id] || {}) {
+      array[parseInt(index)] = states[id][index]
+    }
+    return array
   }
 
   /**
@@ -478,6 +535,9 @@ export class Connector extends Base.Connector {
         }
       }
 
+      // Code: every slide from its newest code statement
+      this.codeStates = Code.restore(response.statements)
+
       // Now process the latest quiz statements only
       for (const key in latestQuizStatements) {
         const stmt = latestQuizStatements[key]
@@ -645,6 +705,7 @@ export class Connector extends Base.Connector {
           quizStates: Object.keys(this.quizStates).length,
           surveyStates: Object.keys(this.surveyStates).length,
           taskStates: Object.keys(this.taskStates).length,
+          codeStates: Object.keys(this.codeStates).length,
           totalScore: this.totalScore,
           maxScore: this.maxScore,
           completionSent: this.completionSent,
@@ -981,10 +1042,12 @@ export class Connector extends Base.Connector {
     this.visitedSlides.add(id)
     this.lastVisitedSlide = id
 
-    // Get slide title if available
+    // Get slide title if available: `3. Lists and Tasks`
     let slideTitle = `Slide ${id}`
     const windowAny = window as any
-    if (
+    if (this.meta?.slides[id]?.title) {
+      slideTitle = `${id + 1}. ${this.meta.slides[id].title}`
+    } else if (
       windowAny.LIA &&
       windowAny.LIA.course &&
       windowAny.LIA.course.slides[id]
@@ -1003,7 +1066,8 @@ export class Connector extends Base.Connector {
       id,
       slideTitle,
       this.registration,
-      duration
+      duration,
+      this.lang
     )
 
     this.lrs
@@ -1033,6 +1097,13 @@ export class Connector extends Base.Connector {
     await this.stateRestored
 
     const { table, id } = record
+
+    if (table === 'code') {
+      // null lets LiaScript store its initial projects
+      this.codeProjects[id] =
+        this.codeStates[id] ?? this.codeProjects[id] ?? null
+      return this.codeProjects[id]
+    }
 
     if (table === 'quiz' && this.quizStates[id]) {
       // Convert object to array format expected by LiaScript
@@ -1116,6 +1187,12 @@ export class Connector extends Base.Connector {
     this.lastActivityTime = Date.now()
     const { table, id, data } = record
 
+    // LiaScript stores the initial projects of a slide: nothing changed yet
+    if (table === 'code') {
+      this.codeProjects[id] = JSON.parse(JSON.stringify(data))
+      return
+    }
+
     // Handle quizzes
     if (table === 'quiz') {
       if (!this.quizStates[id]) {
@@ -1164,7 +1241,10 @@ export class Connector extends Base.Connector {
           quiz.solved === 1 ? quiz.score || 1 : 0,
           quiz.score || 1,
           quiz,
-          this.registration
+          this.registration,
+          undefined,
+          false,
+          this.describe('quiz', id, i, quiz)
         )
 
         this.lrs
@@ -1187,11 +1267,20 @@ export class Connector extends Base.Connector {
         this.surveyStates[id] = {}
       }
 
-      // Process each survey on the slide
-      data.forEach((survey: any, i: number) => {
-        if (!survey) return
+      // Every change on a slide stores all of its surveys; only one that
+      // changed and is submitted is an answer
+      const submitted = State.changes(
+        'survey',
+        this.list(this.surveyStates, id),
+        data
+      ).filter((change) => change.urgent)
 
-        this.surveyStates[id][i] = survey
+      data.forEach((survey: any, i: number) => {
+        if (survey) this.surveyStates[id][i] = survey
+      })
+
+      submitted.forEach(({ index: i }) => {
+        const survey = data[i]
 
         // Send answered statement for survey
         const statement = Statement.generateAnsweredStatement(
@@ -1201,14 +1290,15 @@ export class Connector extends Base.Connector {
           id,
           i,
           'Survey',
-          JSON.stringify(survey.state),
+          survey.state,
           survey.submitted,
           0, // Surveys don't have scores
           0,
           survey,
           this.registration,
           i, // Use surveyIndex instead of quizIndex
-          true // isSurvey flag
+          true, // isSurvey flag
+          this.describe('survey', id, i, survey)
         )
 
         this.lrs
@@ -1230,11 +1320,20 @@ export class Connector extends Base.Connector {
         this.taskStates[id] = {}
       }
 
-      // Process each task on the slide
-      data.forEach((task: any, i: number) => {
-        if (!task) return
+      // Only the task lists that changed
+      const changed = State.changes(
+        'task',
+        this.list(this.taskStates, id),
+        data
+      )
 
-        this.taskStates[id][i] = task
+      data.forEach((task: any, i: number) => {
+        if (task) this.taskStates[id][i] = task
+      })
+
+      changed.forEach(({ index: i }) => {
+        const task = data[i]
+        if (!task) return
 
         // Send interacted statement for task
         const statement = Statement.generateTaskStatement(
@@ -1244,7 +1343,8 @@ export class Connector extends Base.Connector {
           id,
           i,
           task,
-          this.registration
+          this.registration,
+          this.describe('task', id, i, task)
         )
 
         this.lrs
@@ -1260,13 +1360,49 @@ export class Connector extends Base.Connector {
   }
 
   /**
-   * Update data
+   * LiaScript's changes to code projects: runs, version switches, views.
+   * A project whose code changed is sent with the code of the whole slide.
    * @param record Record to update
    * @param fn Update function
    */
   update(record: Base.Record, fn: (a: any) => any) {
-    super.update(record, fn)
-    this.store(record)
+    const { table, id } = record
+    if (table !== 'code' || !this.active || !this.lrs) return
+
+    const before = this.codeProjects[id]
+    if (!before) return
+
+    let after: any[]
+    try {
+      after = fn(JSON.parse(JSON.stringify(before)))
+    } catch (e) {
+      console.warn('xAPI: code update failed', e)
+      return
+    }
+
+    this.lastActivityTime = Date.now()
+    this.codeProjects[id] = after
+    this.codeStates[id] = after
+
+    for (const i of Code.changed(before, after)) {
+      const statement = Statement.generateCodeStatement(
+        this.actor,
+        this.courseId,
+        this.courseTitle,
+        id,
+        i,
+        after,
+        this.registration,
+        this.describe('code', id, i, after[i])
+      )
+
+      this.lrs
+        .sendStatement(statement)
+        .then(() => {
+          if (this.debug) console.log(`Sent code: slide ${id}, project ${i}`)
+        })
+        .catch((err) => console.error('Failed to send code statement:', err))
+    }
   }
 
   /**
@@ -1283,6 +1419,8 @@ export class Connector extends Base.Connector {
     this.quizStates = {}
     this.surveyStates = {}
     this.taskStates = {}
+    this.codeStates = {}
+    this.codeProjects = {}
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
     this.accumulatedTime = 0

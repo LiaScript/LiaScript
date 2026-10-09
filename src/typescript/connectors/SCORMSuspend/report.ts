@@ -71,9 +71,14 @@ export function sanitize(text: string, limit: number): string {
     .replace(/"/g, '＂')
 
   if (clean.startsWith('{')) clean = ' ' + clean
-  if (clean.length <= limit) return clean
+  return cut(clean, limit)
+}
 
-  const chars = Array.from(clean)
+/** Text over `limit` UTF-16 units, cut with a `…[+N]` marker. */
+function cut(text: string, limit: number): string {
+  if (text.length <= limit) return text
+
+  const chars = Array.from(text)
   let kept = ''
   for (let keep = 0; keep < chars.length; keep++) {
     const next = kept + chars[keep]
@@ -86,9 +91,10 @@ export function sanitize(text: string, limit: number): string {
   return kept
 }
 
-/** A 2004 delimited list must not contain its own delimiters. */
-const part = (text: string, limit: number) =>
-  sanitize(String(text).replace(/\[,\]/g, '[ ,]').replace(/\[\.\]/g, '[ .]'), limit)
+/** A delimited list (2004 and xAPI) must not contain its own delimiters. */
+const piece = (text: string) => String(text).replace(/\[,\]/g, '[ ,]').replace(/\[\.\]/g, '[ .]')
+
+const part = (text: string, limit: number) => sanitize(piece(text), limit)
 
 /** Latin letters without their accents: `Grüße` → `Grusse` */
 export const transliterate = (text: string) =>
@@ -134,9 +140,10 @@ function quizMeta(meta: QuizMeta | undefined, initial: any): QuizMeta | undefine
 /**
  * Every reportable element, in course order: per slide its quizzes, surveys,
  * task lists and code projects. Code projects are only known from the meta.
- * Beyond MAX_ITEMS, quizzes are kept first, then surveys, code and tasks.
+ * Beyond `max` (SCORM: MAX_ITEMS), quizzes are kept first, then surveys, code
+ * and tasks.
  */
-export function catalogue(defaults: Defaults, meta?: LiaMeta | null): Item[] {
+export function catalogue(defaults: Defaults, meta?: LiaMeta | null, max = MAX_ITEMS): Item[] {
   const slides = Math.max(
     defaults.quiz.length,
     defaults.survey.length,
@@ -173,13 +180,13 @@ export function catalogue(defaults: Defaults, meta?: LiaMeta | null): Item[] {
     ;(slideMeta?.code || []).forEach((code, i) => add('code', i, code))
   }
 
-  if (items.length <= MAX_ITEMS) return items
+  if (items.length <= max) return items
 
   const priority: Table[] = ['quiz', 'survey', 'code', 'task']
   const kept = new Set(
     priority
       .flatMap((table) => items.filter((item) => item.table === table))
-      .slice(0, MAX_ITEMS)
+      .slice(0, max)
   )
   return items.filter((item) => kept.has(item))
 }
@@ -298,7 +305,7 @@ const weighting = (weight: number, version: Version) =>
     ? String(Math.max(-100, Math.min(100, Math.round(weight * 100) / 100)))
     : String(Math.round(weight * 10000) / 10000)
 
-function codeText(projects: any, onlyVisible: boolean): string {
+export function codeText(projects: any, onlyVisible: boolean): string {
   const files: any[] = projects?.file || []
   return files
     .filter((file) => !onlyVisible || file.visible)
@@ -579,5 +586,253 @@ export function typeOf(item: Item, initial: any, version: Version): string {
       return 'choice'
     case 'code':
       return 'long-fill-in'
+  }
+}
+
+// --- xAPI ---------------------------------------------------------------------
+
+/*
+ * The xAPI connector describes every element as a `cmi.interaction` activity.
+ * xAPI uses the formats of SCORM 2004 for responses and patterns (`o1[,]o3`,
+ * `r1[.]c2`), but explains option ids with `choices`, `source` and `target`
+ * instead of a legend, and has no length limits: texts keep their line breaks
+ * and are only cut beyond XAPI_TEXT_LIMIT.
+ */
+
+export type LanguageMap = Record<string, string>
+
+export interface Component {
+  id: string
+  description: LanguageMap
+}
+
+export interface InteractionDefinition {
+  type: string
+  name: LanguageMap
+  description: LanguageMap
+  interactionType: string
+  choices?: Component[]
+  source?: Component[]
+  target?: Component[]
+  correctResponsesPattern?: string[]
+}
+
+export interface Interaction {
+  definition: InteractionDefinition
+  /** `result.response`, in the format of the interaction type */
+  response?: string
+  /** the answer as plain text, as SCORM 1.2 reports it */
+  answer?: string
+}
+
+export const XAPI_TEXT_LIMIT = 10000
+
+const LANGUAGE_TAG = /^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$/
+
+/** The key of language maps: the course language, if it is a valid tag. */
+export function language(meta?: LiaMeta | null): string {
+  const lang = (meta?.lang || '').trim()
+  return LANGUAGE_TAG.test(lang) ? lang : 'en-US'
+}
+
+const KIND: Record<Table, string> = { quiz: 'Quiz', survey: 'Survey', task: 'Task', code: 'Code' }
+
+/** the question, or where the element is: `Lists and Tasks (Task 1)` */
+function nameOf(item: Item): string {
+  const question = (item.meta as any)?.question
+  if (question) return question
+
+  const what = `${KIND[item.table]} ${item.index + 1}`
+  return item.title ? `${item.title} (${what})` : `${KIND[item.table]} ${item.slide + 1}.${item.index + 1}`
+}
+
+/**
+ * The xAPI description of an item, and the learner's response for its state.
+ * There is no response while there is nothing to report: a quiz never
+ * checked or whose solution was revealed, a survey not submitted.
+ */
+export function interaction(item: Item, state: any, lang = 'en-US'): Interaction {
+  const meta: any = item.meta
+  const name = nameOf(item)
+  const text = (value: string): LanguageMap => ({ [lang]: value })
+  const component = (id: string, label: string): Component => ({ id, description: text(label) })
+
+  const definition: InteractionDefinition = {
+    type: 'http://adlnet.gov/expapi/activities/cmi.interaction',
+    name: text(name),
+    description: text(name),
+    interactionType: 'other',
+  }
+  const out: Interaction = { definition }
+
+  /** explains the ids for views that do not show choices, source or target */
+  const legend = (...lists: Component[][]) => {
+    const entries = lists.flat().map((c) => `${c.id}=${c.description[lang]}`)
+    if (entries.length) definition.description = text(`${name} [${entries.join(', ')}]`)
+  }
+  const answer = (value: string | undefined) => {
+    if (value !== undefined) out.answer = cut(value, XAPI_TEXT_LIMIT)
+  }
+  const respond = (value: string | undefined) => {
+    if (value) out.response = cut(value, XAPI_TEXT_LIMIT)
+  }
+
+  switch (item.table) {
+    case 'quiz': {
+      const value = state?.state
+      const kind = value && Object.keys(value)[0]
+      // checked at least once, and not filled with the revealed solution
+      const answered = !!state && (state.solved === 1 || (state.solved === 0 && state.trial > 0))
+
+      switch (kind) {
+        case 'Text':
+          definition.interactionType = 'fill-in'
+          if (meta?.solution != null) definition.correctResponsesPattern = [piece(meta.solution)]
+          if (answered) respond(piece(value.Text))
+          break
+
+        case 'SingleChoice':
+        case 'MultipleChoice': {
+          definition.interactionType = 'choice'
+          definition.choices = (value[kind] as boolean[]).map((_, i) => component(optionId(i), label(meta?.options, i)))
+          if (meta?.solution) definition.correctResponsesPattern = [selected(meta.solution).map(optionId).join('[,]')]
+          if (answered) respond(selected(value[kind]).map(optionId).join('[,]'))
+          legend(definition.choices)
+          break
+        }
+
+        case 'Select':
+        case 'Drop': {
+          definition.interactionType = 'choice'
+          definition.choices = (meta?.options || []).map((o: string, i: number) => component(optionId(i), o))
+          if (meta?.solution?.length) definition.correctResponsesPattern = [optionId(meta.solution[0])]
+          if (answered && value[kind] >= 0) respond(optionId(value[kind]))
+          legend(definition.choices!)
+          break
+        }
+
+        case 'Matrix': {
+          definition.interactionType = 'matching'
+          const rows: any[] = value.Matrix
+          const cells = rows.length ? (rows[0][Object.keys(rows[0])[0]] as boolean[]).length : 0
+          definition.source = rows.map((_, r) => component(`r${r + 1}`, label(meta?.rows, r)))
+          definition.target = Array.from({ length: Math.max(cells, meta?.columns?.length || 0) }, (_, c) =>
+            component(`c${c + 1}`, label(meta?.columns, c))
+          )
+          const pairs = (matrix: boolean[][]) =>
+            matrix.flatMap((row, r) => selected(row).map((c) => `r${r + 1}[.]c${c + 1}`)).join('[,]')
+          if (meta?.solution) definition.correctResponsesPattern = [pairs(meta.solution)]
+          if (answered) respond(pairs(rows.map((row) => row[Object.keys(row)[0]])))
+          legend(definition.source, definition.target)
+          break
+        }
+
+        case 'Multi': {
+          definition.interactionType = 'fill-in'
+          const solutions: string[] | undefined = meta?.gaps?.map((gap: any) =>
+            gap.type === 'text' ? gap.solution ?? '' : gap.solution?.length ? label(gap.options, gap.solution[0]) : ''
+          )
+          if (solutions) definition.correctResponsesPattern = [solutions.map(piece).join('[,]')]
+          if (answered) {
+            respond((value.Multi as any[]).map((gap, g) => piece(readable(gap, meta?.gaps?.[g]) ?? '')).join('[,]'))
+          }
+          break
+        }
+
+        // script-checked (`Generic`): the result is all there is
+      }
+
+      if (answered) answer(readable(value, meta))
+      return out
+    }
+
+    case 'survey': {
+      const value = state?.state
+      const kind = value && Object.keys(value)[0]
+      const options: { key: string; label: string }[] = meta?.options || []
+      const submitted = !!state?.submitted
+      const optionLabel = (key: string) => options.find((o) => o.key === key)?.label || key
+
+      switch (kind) {
+        case 'Text':
+          definition.interactionType = meta?.type === 'textarea' ? 'long-fill-in' : 'fill-in'
+          if (submitted) respond(piece(value.Text))
+          break
+
+        case 'SingleChoice':
+        case 'MultipleChoice': {
+          definition.interactionType = 'choice'
+          const keys = ordered(Object.keys(value[kind]), options)
+          definition.choices = keys.map((key, i) => component(surveyId(key, i), optionLabel(key)))
+          if (submitted) {
+            respond(
+              keys
+                .filter((key) => value[kind][key])
+                .map((key) => surveyId(key, keys.indexOf(key)))
+                .join('[,]')
+            )
+          }
+          legend(definition.choices)
+          break
+        }
+
+        case 'Select':
+        case 'Drop':
+          definition.interactionType = 'choice'
+          definition.choices = options.map((o, i) => component(optionId(i), o.label))
+          if (submitted && value[kind] >= 0) respond(optionId(value[kind]))
+          legend(definition.choices)
+          break
+
+        case 'SingleChoiceMatrix':
+        case 'MultipleChoiceMatrix': {
+          definition.interactionType = 'matching'
+          const rows: any[] = value[kind]
+          const keys = rows.length ? ordered(Object.keys(rows[0]), options) : []
+          definition.source = rows.map((_, r) => component(`r${r + 1}`, label(meta?.rows, r)))
+          definition.target = keys.map((key, i) => component(surveyId(key, i), optionLabel(key)))
+          if (submitted) {
+            respond(
+              rows
+                .flatMap((row, r) =>
+                  keys.filter((key) => row[key]).map((key) => `r${r + 1}[.]${surveyId(key, keys.indexOf(key))}`)
+                )
+                .join('[,]')
+            )
+          }
+          legend(definition.source, definition.target)
+          break
+        }
+
+        default:
+          if (submitted && value !== undefined) respond(JSON.stringify(value))
+      }
+
+      if (submitted) answer(readable(value, meta))
+      return out
+    }
+
+    case 'task': {
+      const items: string[] = meta?.items || []
+      const done: boolean[] = Array.isArray(state) ? state : []
+      definition.interactionType = 'choice'
+      definition.choices = done.map((_, i) => component(`i${i + 1}`, label(items, i)))
+      respond(selected(done).map((i) => `i${i + 1}`).join('[,]'))
+      answer(done.map((bit, i) => `[${bit ? 'x' : ' '}] ${label(items, i)}`).join('; '))
+      legend(definition.choices)
+      return out
+    }
+
+    case 'code': {
+      definition.interactionType = 'long-fill-in'
+      const files = ((meta as CodeMeta | undefined)?.files || state?.file || []).map((f: any) => f.name).join(', ')
+      if (files) definition.description = text(`${name} (${files})`)
+      if (state?.file) {
+        const code = codeText(state, true) || codeText(state, false)
+        respond(code)
+        answer(code)
+      }
+      return out
+    }
   }
 }

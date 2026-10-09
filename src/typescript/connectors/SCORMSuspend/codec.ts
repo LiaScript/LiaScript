@@ -270,7 +270,7 @@ const EMPTY_LOG = { ok: true, level: -1, messages: [], details: [] }
  * version history, no logs. `file` is what the editor shows, which Elm also
  * sets when the learner switches to another version.
  */
-function encodeProject(project: any): any[] {
+export function encodeProject(project: any): any[] {
   return project.file.map((file: any) => [
     file.lang,
     file.name,
