@@ -17,6 +17,7 @@
 import { deflateRaw, inflateRaw } from 'pako'
 import * as Base64 from './base64url'
 import { md5 } from './md5'
+import type { CodeMeta } from './meta'
 
 export const FORMAT_VERSION = 1
 export const HEADER = 'LS' + FORMAT_VERSION + 'Z'
@@ -303,6 +304,17 @@ export function decodeProject(files: any[]): any {
     log: clone(EMPTY_LOG),
     repository,
   }
+}
+
+/**
+ * Whether restored projects still match a slide's code blocks: as many
+ * projects, with the same file names and languages. If not, the course
+ * changed since: Elm would drop the blocks the stored state lacks, or run
+ * old files in a block that moved there.
+ */
+export function fits(projects: any[], blocks: CodeMeta[] | undefined): boolean {
+  const layout = (files: any[][]) => JSON.stringify(files.map((list) => list.map((file) => [file.name, file.lang])))
+  return layout(projects.map((project) => project?.file || [])) === layout((blocks || []).map((block) => block.files))
 }
 
 // --- snapshot ⇄ payload -------------------------------------------------------

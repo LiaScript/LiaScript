@@ -11,7 +11,15 @@ export interface Change {
   urgent: boolean
 }
 
-const same = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b)
+/** JSON with sorted keys: a store may return objects in another key order */
+const canonical = (value: any): string =>
+  JSON.stringify(value, (_, v) =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? Object.fromEntries(Object.keys(v).sort().map((key) => [key, v[key]]))
+      : v
+  )
+
+export const same = (a: any, b: any) => canonical(a) === canonical(b)
 
 export function changes(table: Table, before: any[] | undefined, after: any[]): Change[] {
   const list: Change[] = []

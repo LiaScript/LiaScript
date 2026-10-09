@@ -6,6 +6,7 @@ import * as Utils from '../utils'
 import * as Statement from './statement'
 import * as LRS from './lrs'
 import * as Code from './code'
+import * as Restore from './restore'
 import * as Report from '../SCORMSuspend/report'
 import * as State from '../SCORMSuspend/state'
 import type { LiaMeta } from '../SCORMSuspend/meta'
@@ -24,8 +25,6 @@ export class Connector extends Base.Connector {
   private registration: string
   private active: boolean
   private debug: boolean
-  private totalScore: number
-  private maxScore: number
   private visitedSlides: Set<number>
   private lastVisitedSlide: number
   private totalSlides: number
@@ -49,6 +48,8 @@ export class Connector extends Base.Connector {
   private progressThreshold: number = 0
   private masteryScore: number = 0
   private stateRestored: Promise<void>
+  /** the terminated or suspended statement of this page was sent */
+  private unloadSent = false
 
   /**
    * Create a new xAPI connector
@@ -73,8 +74,6 @@ export class Connector extends Base.Connector {
 
     this.active = false
     this.debug = config.debug || false
-    this.totalScore = 0
-    this.maxScore = 0
     this.visitedSlides = new Set()
     this.lastVisitedSlide = 0
     this.totalSlides = 0
@@ -215,8 +214,10 @@ export class Connector extends Base.Connector {
           )
         }
 
-        // Set up window unload event to send terminated statement
+        // Send a terminated or suspended statement when the page is left;
+        // pagehide also fires where beforeunload does not (mobile, bfcache)
         window.addEventListener('beforeunload', this.handleUnload.bind(this))
+        window.addEventListener('pagehide', this.handleUnload.bind(this))
 
         // Restore state from LRS immediately (async)
         // Store the promise so load() can wait for restoration to complete
@@ -303,7 +304,7 @@ export class Connector extends Base.Connector {
    * Handle window unload event to send terminated or suspended statement
    */
   private handleUnload() {
-    if (!this.active || !this.lrs) return
+    if (!this.active || !this.lrs || this.unloadSent) return
 
     const duration = Statement.formatDuration(this.getTotalDuration())
 
@@ -335,22 +336,10 @@ export class Connector extends Base.Connector {
       )
     }
 
-    // Use sendBeacon for more reliable delivery during page unload
-    if (navigator.sendBeacon && this.lrs.endpoint) {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'X-Experience-API-Version': '1.0.3',
-      }
-
-      if (this.lrs.auth) {
-        headers['Authorization'] = this.lrs.auth
-      }
-
-      navigator.sendBeacon(this.lrs.endpoint, JSON.stringify([statement]))
-    } else {
-      // Fallback to synchronous XHR
-      this.lrs.sendStatement(statement)
-    }
+    // a keepalive request outlives the page and, unlike sendBeacon, carries
+    // the credentials
+    this.unloadSent = true
+    this.lrs.sendOnUnload(statement)
   }
 
   /**
@@ -555,43 +544,11 @@ export class Connector extends Base.Connector {
           this.quizStates[slideId] = {}
         }
 
-        // Reconstruct quiz state from statement
-        const result = stmt.result || {}
-        const extensions = result.extensions || {}
-
-        const trial =
-          extensions['http://liascript.github.io/extensions/trial'] || 0
-
-        // Determine solved status:
-        // solved: 1 = correctly solved (got the right answer)
-        // solved: -1 = resolved (clicked resolve button to show solution)
-        // solved: 0 = still trying (has attempts but not resolved)
-        let solved = 0
-        if (result.success === true) {
-          solved = 1 // Successfully answered correctly
-        } else if (result.success === false) {
-          // Check if resolved (completion=true) vs still trying
-          if (result.completion === true) {
-            solved = -1 // Resolved (showed solution)
-          } else {
-            solved = 0 // Still trying (failed attempts)
-          }
-        }
-
-        const quizState: any = {
-          solved,
-          state:
-            extensions['http://liascript.github.io/extensions/state'] || [],
-          trial,
-          hint: extensions['http://liascript.github.io/extensions/hint'] || 0,
-          error_msg: '',
-          score: result.score?.raw || 0,
-        }
-
-        // Add response/input if available
-        if (result.response) {
-          quizState.input = result.response
-        }
+        // Reconstruct quiz state from statement, in the shape of the course's
+        const quizState = Restore.quizState(
+          stmt,
+          this.quizStates[slideId][quizIndex]
+        )
 
         // Update the quiz state (replacing null or existing state)
         this.quizStates[slideId][quizIndex] = quizState
@@ -601,16 +558,6 @@ export class Connector extends Base.Connector {
             `Restored quiz state: slide ${slideId}, quiz ${quizIndex}`,
             quizState
           )
-        }
-
-        // Update scores
-        if (result.score?.raw !== undefined) {
-          if (result.success) {
-            this.totalScore += result.score.raw
-          }
-          if (result.score.max !== undefined) {
-            this.maxScore += result.score.max
-          }
         }
       }
 
@@ -706,8 +653,6 @@ export class Connector extends Base.Connector {
           surveyStates: Object.keys(this.surveyStates).length,
           taskStates: Object.keys(this.taskStates).length,
           codeStates: Object.keys(this.codeStates).length,
-          totalScore: this.totalScore,
-          maxScore: this.maxScore,
           completionSent: this.completionSent,
           accumulatedTime: this.accumulatedTime,
         })
@@ -1209,17 +1154,11 @@ export class Connector extends Base.Connector {
         // Every change on a slide stores all of its quizzes; only one the
         // learner has worked on, and only when it changed, is an answer
         const attempted = quiz.trial > 0 || quiz.solved !== 0
-        if (!attempted || JSON.stringify(previous) === JSON.stringify(quiz)) {
+        if (!attempted || State.same(previous, quiz)) {
           return
         }
 
-        console.warn('Storing quiz:', id, i, quiz)
-
-        // Update scores
-        if (quiz.score !== undefined) {
-          if (quiz.solved === 1) this.totalScore += quiz.score
-          this.maxScore += quiz.score
-        }
+        if (this.debug) console.log('Storing quiz:', id, i, quiz)
 
         // Extract quiz type from state object
         const quizType =
@@ -1412,8 +1351,6 @@ export class Connector extends Base.Connector {
    */
   reset(uidDB?: string, versionDB?: number) {
     // Reset state
-    this.totalScore = 0
-    this.maxScore = 0
     this.visitedSlides.clear()
     this.lastVisitedSlide = 0
     this.quizStates = {}

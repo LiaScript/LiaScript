@@ -205,10 +205,48 @@ export class LRSConnection {
 
       // `more` is relative to the LRS: an absolute path, or relative to the
       // endpoint
-      url = data.more ? new URL(data.more, this.endpoint).toString() : ''
+      url = data.more ? this.resolve(data.more) : ''
     }
 
     return result
+  }
+
+  /**
+   * A URL relative to the endpoint, which itself may be relative to the
+   * page (`/xapi/`); '' if it cannot be resolved
+   */
+  private resolve(url: string): string {
+    try {
+      const base = new URL(this.endpoint, (globalThis as any).location?.href)
+      return new URL(url, base).toString()
+    } catch (e) {
+      console.warn('xAPI: cannot resolve', url, 'against', this.endpoint)
+      return ''
+    }
+  }
+
+  /**
+   * Send a statement while the page is closed. Unlike sendBeacon, a keepalive
+   * request carries the credentials, and the request outlives the page.
+   * @param statement The xAPI statement to send
+   */
+  sendOnUnload(statement: any) {
+    try {
+      fetch(this.endpoint + 'statements', {
+        method: 'POST',
+        keepalive: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Experience-API-Version': this.version,
+          Authorization: this.auth,
+        },
+        body: JSON.stringify(this.ensureStringReferences(statement)),
+      }).catch((error) =>
+        console.error('Error sending statement to LRS:', error)
+      )
+    } catch (error) {
+      console.error('Error sending statement to LRS:', error)
+    }
   }
 
   /** One page of statements, or null */

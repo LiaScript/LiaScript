@@ -172,6 +172,16 @@ export class Engine {
     switch (unpacked.kind) {
       case 'ok': {
         const { snapshot, skipped } = Codec.decodePayload(unpacked.payload, this.options.defaults)
+        // code blocks that changed since start afresh
+        const meta = this.options.meta
+        if (meta) {
+          snapshot.code.forEach((projects, s) => {
+            if (projects && !Codec.fits(projects, meta.slides[s]?.code)) {
+              snapshot.code[s] = null
+              skipped.push(`code ${s}`)
+            }
+          })
+        }
         if (skipped.length) this.warn('the course changed, not restored:', skipped.join(', '))
         this.snapshot = snapshot
         this.projects = snapshot.code.slice()

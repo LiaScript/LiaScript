@@ -376,7 +376,12 @@ function report12(item: Item, state: any): Report | null {
 
 /** `o1`, `o2`, … for option i; a survey keeps its own key where it is valid. */
 const optionId = (i: number) => `o${i + 1}`
-const surveyId = (key: string, i: number) => (SHORT_ID.test(key) ? key : optionId(i))
+/**
+ * A survey's option ids: its own keys if all of them are valid ids, `o1`,
+ * `o2`, … otherwise, so that no two options share an id.
+ */
+const surveyId = (key: string, keys: string[]) =>
+  keys.every((k) => SHORT_ID.test(k)) ? key : optionId(keys.indexOf(key))
 
 /** "question [o1=3, o2=4]" within 250 characters, the legend kept if possible. */
 function describe(question: string, legend: string[]): string {
@@ -504,10 +509,10 @@ function report2004(item: Item, state: any): Report | null {
           out.type = 'choice'
           const keys = ordered(Object.keys(value[kind]), options)
           const picked = keys.filter((key) => value[kind][key])
-          if (picked.length) out.response = picked.map((key) => surveyId(key, keys.indexOf(key))).join('[,]')
+          if (picked.length) out.response = picked.map((key) => surveyId(key, keys)).join('[,]')
           out.description = describe(
             question,
-            keys.map((key, i) => `${surveyId(key, i)}=${options.find((o) => o.key === key)?.label || key}`)
+            keys.map((key, i) => `${surveyId(key, keys)}=${options.find((o) => o.key === key)?.label || key}`)
           )
           break
         }
@@ -526,12 +531,12 @@ function report2004(item: Item, state: any): Report | null {
           const rows: any[] = value[kind]
           const keys = rows.length ? ordered(Object.keys(rows[0]), options) : []
           const pairs = rows
-            .flatMap((row, r) => keys.filter((key) => row[key]).map((key) => `r${r + 1}[.]${surveyId(key, keys.indexOf(key))}`))
+            .flatMap((row, r) => keys.filter((key) => row[key]).map((key) => `r${r + 1}[.]${surveyId(key, keys)}`))
             .slice(0, 36)
           if (pairs.length) out.response = pairs.join('[,]')
           out.description = describe(question, [
             ...rows.map((_, r) => `r${r + 1}=${label(meta?.rows, r)}`),
-            ...keys.map((key, i) => `${surveyId(key, i)}=${options.find((o) => o.key === key)?.label || key}`),
+            ...keys.map((key, i) => `${surveyId(key, keys)}=${options.find((o) => o.key === key)?.label || key}`),
           ])
           break
         }
@@ -652,6 +657,25 @@ function nameOf(item: Item): string {
  * checked or whose solution was revealed, a survey not submitted.
  */
 export function interaction(item: Item, state: any, lang = 'en-US'): Interaction {
+  const out = describeItem(item, state, lang)
+  const { definition } = out
+
+  // every id the response or a pattern uses is a listed choice, even without
+  // a label for it in the course description
+  if (definition.choices) {
+    const used = [out.response, ...(definition.correctResponsesPattern || [])]
+      .filter((value): value is string => !!value)
+      .flatMap((value) => value.split('[,]'))
+    for (const id of used) {
+      if (!definition.choices.some((choice) => choice.id === id)) {
+        definition.choices.push({ id, description: { [lang]: /^o\d+$/.test(id) ? `#${id.slice(1)}` : id } })
+      }
+    }
+  }
+  return out
+}
+
+function describeItem(item: Item, state: any, lang: string): Interaction {
   const meta: any = item.meta
   const name = nameOf(item)
   const text = (value: string): LanguageMap => ({ [lang]: value })
@@ -705,7 +729,8 @@ export function interaction(item: Item, state: any, lang = 'en-US'): Interaction
         case 'Drop': {
           definition.interactionType = 'choice'
           definition.choices = (meta?.options || []).map((o: string, i: number) => component(optionId(i), o))
-          if (meta?.solution?.length) definition.correctResponsesPattern = [optionId(meta.solution[0])]
+          // several options may be correct, each is a pattern of its own
+          if (meta?.solution?.length) definition.correctResponsesPattern = meta.solution.map(optionId)
           if (answered && value[kind] >= 0) respond(optionId(value[kind]))
           legend(definition.choices!)
           break
@@ -763,12 +788,12 @@ export function interaction(item: Item, state: any, lang = 'en-US'): Interaction
         case 'MultipleChoice': {
           definition.interactionType = 'choice'
           const keys = ordered(Object.keys(value[kind]), options)
-          definition.choices = keys.map((key, i) => component(surveyId(key, i), optionLabel(key)))
+          definition.choices = keys.map((key, i) => component(surveyId(key, keys), optionLabel(key)))
           if (submitted) {
             respond(
               keys
                 .filter((key) => value[kind][key])
-                .map((key) => surveyId(key, keys.indexOf(key)))
+                .map((key) => surveyId(key, keys))
                 .join('[,]')
             )
           }
@@ -790,12 +815,12 @@ export function interaction(item: Item, state: any, lang = 'en-US'): Interaction
           const rows: any[] = value[kind]
           const keys = rows.length ? ordered(Object.keys(rows[0]), options) : []
           definition.source = rows.map((_, r) => component(`r${r + 1}`, label(meta?.rows, r)))
-          definition.target = keys.map((key, i) => component(surveyId(key, i), optionLabel(key)))
+          definition.target = keys.map((key, i) => component(surveyId(key, keys), optionLabel(key)))
           if (submitted) {
             respond(
               rows
                 .flatMap((row, r) =>
-                  keys.filter((key) => row[key]).map((key) => `r${r + 1}[.]${surveyId(key, keys.indexOf(key))}`)
+                  keys.filter((key) => row[key]).map((key) => `r${r + 1}[.]${surveyId(key, keys)}`)
                 )
                 .join('[,]')
             )
@@ -828,9 +853,8 @@ export function interaction(item: Item, state: any, lang = 'en-US'): Interaction
       const files = ((meta as CodeMeta | undefined)?.files || state?.file || []).map((f: any) => f.name).join(', ')
       if (files) definition.description = text(`${name} (${files})`)
       if (state?.file) {
-        const code = codeText(state, true) || codeText(state, false)
-        respond(code)
-        answer(code)
+        // already plain text: no copy in the answer extension
+        respond(codeText(state, true) || codeText(state, false))
       }
       return out
     }
