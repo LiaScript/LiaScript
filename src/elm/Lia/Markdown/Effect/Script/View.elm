@@ -7,6 +7,7 @@ import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
+import I18n.Translations exposing (Lang, codeReset)
 import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Effect.Script.Input as Input
@@ -182,7 +183,7 @@ input config attr id node result =
         withResult control =
             Html.span
                 [ Attr.class (class node) ]
-                [ reset id
+                [ reset config.lang id
                 , control
                 , script config False attr id node result
                 ]
@@ -284,15 +285,15 @@ attributes updateOnChange id value =
         >> List.append (onActivate False id)
 
 
-reset : Int -> Html (Msg sub)
-reset id =
+{-| Resets the input to its default value and reruns the script. Enter and
+Space trigger the native click of a button.
+-}
+reset : Lang -> Int -> Html (Msg sub)
+reset lang id =
     Html.button
         [ Attr.class "lia-script__refresh icon icon-refresh"
+        , Attr.title (codeReset lang)
         , Event.onClick (Reset id)
-        , A11y_Key.onKeyDown
-            [ A11y_Key.enter (Click id)
-            , A11y_Key.space (Click id)
-            ]
         ]
         []
 

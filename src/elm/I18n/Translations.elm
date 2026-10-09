@@ -9336,6 +9336,16 @@ codeCopy lang =
             "copy to clipboard"
 
 
+codeReset : Lang -> String
+codeReset lang =
+    case lang of
+        De ->
+            "Eingabe zurücksetzen"
+
+        _ ->
+            "reset input"
+
+
 quizCheck : Lang -> String
 quizCheck lang =
     case lang of
