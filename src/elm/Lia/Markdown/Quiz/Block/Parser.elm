@@ -21,7 +21,6 @@ import Combine.Char exposing (anyChar)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
-import Regex
 
 
 {-| A block quiz on its own line: a text input `[[solution]]`, a selection
@@ -71,20 +70,28 @@ string1Till =
         >> map String.fromList
 
 
-{-| **private:** Split the options at every `|` that is not escaped.
+{-| **private:** Split the options at every `|` that is not escaped. Without a
+regex lookbehind, old browsers (Gecko 48, KaiOS) do not support it.
 -}
 splitAtUnescapedPipe : String -> List String
 splitAtUnescapedPipe =
-    Regex.split unescapedPipe
+    String.split "|"
+        >> List.foldl
+            (\part parts ->
+                case parts of
+                    previous :: rest ->
+                        if String.endsWith "\\" previous then
+                            (previous ++ "|" ++ part) :: rest
+
+                        else
+                            part :: parts
+
+                    [] ->
+                        [ part ]
+            )
+            []
+        >> List.reverse
         >> List.map (String.replace "\\|" "|")
-
-
-{-| **private:** A pipe that's not preceded by a backslash.
--}
-unescapedPipe : Regex.Regex
-unescapedPipe =
-    Regex.fromString "(?<!\\\\)\\|"
-        |> Maybe.withDefault Regex.never
 
 
 unescapeString : String -> String

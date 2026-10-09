@@ -309,7 +309,8 @@ handle =
   - `true`: solved
   - `LIA: wait`: the script has not finished, the quiz stays deactivated
   - `LIA: ...`: other script commands only activate the quiz again
-  - `true, false, ...`: one result per input, solved if all are `true`
+  - `true, false, ...` or `[true, false, ...]`: one result per input, solved
+    if all are `true`
   - anything else: wrong
   - an error is shown as `error_msg`
 
@@ -339,6 +340,8 @@ evalEventDecoder json e =
         let
             results =
                 eval.result
+                    |> String.replace "[" ""
+                    |> String.replace "]" ""
                     |> String.split ","
                     |> List.filterMap
                         (\bool ->

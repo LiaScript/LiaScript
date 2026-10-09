@@ -30,6 +30,7 @@ import Lia.Settings.Types exposing (Mode(..))
 import Lia.Sync.Container as Container
 import Lia.Sync.Types as Sync
 import Parser.Block.Fixtures exposing (parseWithState)
+import Service.Event as Event
 import Test exposing (Test, describe, test)
 import Test.Html.Event as HtmlEvent
 import Test.Html.Query as Query
@@ -40,6 +41,46 @@ suite : Test
 suite =
     describe "Quiz"
         [ cases
+        , fixes
+        ]
+
+
+fixes : Test
+fixes =
+    describe "Quiz fixes"
+        [ test "a matrix may be written as list with + or *" <|
+            \_ ->
+                [ "+ [(a) (b)]\n+ [(X) ( )] one\n+ [( ) (X)] two\n"
+                , "* [(a) (b)]\n* [(X) ( )] one\n* [( ) (X)] two\n"
+                ]
+                    |> List.map (parseQuiz >> Maybe.map (Tuple.first >> .quiz >> Quiz.toState >> Quiz.getClass))
+                    |> Expect.equal [ Just "matrix", Just "matrix" ]
+        , test "escaped pipes do not separate the options of a selection" <|
+            \_ ->
+                parseQuiz "[[ a\\|b | (c) | d\\\\|e ]]\n"
+                    |> Maybe.map (Tuple.first >> .quiz >> options)
+                    |> Expect.equal (Just 3)
+        , test "a script result with brackets marks the correct inputs" <|
+            \_ ->
+                case parseQuiz "<!-- data-show-partial-solution -->\na [[x]] b [[y]] <script>@input</script>\n" of
+                    Just ( quiz, e ) ->
+                        [ "[true,false]", "[true, true]", "true,false" ]
+                            |> List.map
+                                (\result ->
+                                    Array.fromList [ e ]
+                                        |> Update.update Sync.disconnected Nothing Array.empty (Update.handle (evalResult result))
+                                        |> .value
+                                        |> Array.get 0
+                                        |> Maybe.map (\el -> ( el.solved, Array.toList el.partiallySolved ))
+                                )
+                            |> Expect.equal
+                                [ Just ( Solution.Open, [ True, False ] )
+                                , Just ( Solution.Solved, [ True, True ] )
+                                , Just ( Solution.Open, [ True, False ] )
+                                ]
+
+                    Nothing ->
+                        Expect.fail "no quiz"
         ]
 
 
@@ -211,6 +252,25 @@ cases =
                     Nothing ->
                         Expect.fail "no quiz"
         ]
+
+
+options : Quiz.Type x -> Int
+options quiz =
+    case quiz of
+        Block_Type q ->
+            List.length q.options
+
+        _ ->
+            0
+
+
+evalResult : String -> Event.Event
+evalResult result =
+    Event.init "script"
+        { cmd = "eval"
+        , param = JE.object [ ( "ok", JE.bool True ), ( "result", JE.string result ), ( "details", JE.list identity [] ) ]
+        }
+        |> Event.pushWithId "eval" 0
 
 
 isGeneric : Quiz.Type x -> Bool
