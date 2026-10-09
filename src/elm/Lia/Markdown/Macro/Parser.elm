@@ -3,6 +3,23 @@ module Lia.Markdown.Macro.Parser exposing
     , macro
     )
 
+{-| Macro expansion. A macro call is replaced textually by the macro body
+before the rest of the input is parsed, so the body can contain any markdown.
+
+  - `@name`, `@name(p0, p1, ...)`: the body with `@0`, `@1`, ... replaced by
+    the parameters (`@'0` inserts the parameter as an escaped JS string)
+  - `@'name`: the whole result as an escaped JS string
+  - `@@name`, `@-@name`: debug, show the expanded body as text (`@@` within a
+    gray code box)
+  - `@[name](url)`, `@[name(p0, ...)](url)`: the url (resolved against the
+    course base) is appended as the last parameter
+  - a code block whose first line contains `@name(...)`: its content is
+    appended as the last parameter (macro listing)
+  - `@author`, `@date`, `@email`, `@version`, `@section` and `@uid` are taken
+    from the course definition
+
+-}
+
 import Combine
     exposing
         ( Parser
@@ -12,6 +29,7 @@ import Combine
         , fail
         , ignore
         , keep
+        , many
         , many1
         , manyTill
         , map
@@ -41,42 +59,21 @@ import Lia.Utils exposing (toEscapeString)
 import Regex
 
 
-identifier : Parser s String
-identifier =
-    regex "\\w[\\w\\d._]+"
+{-| A parsed macro call. `name` keeps its `@`, `@@` or `@-@` prefix,
+`escape` is set by `@'`.
+-}
+type alias Call =
+    { name : String
+    , escape : Bool
+    , params : List String
+    }
 
 
-start =
-    regex "@-?@?"
-        |> map (\ad escape name_ -> ( ad ++ name_, escape ))
-        |> andMap
-            (string "'"
-                |> onsuccess True
-                |> optional False
-            )
-
-
-pattern : Parser s ( String, Bool )
-pattern =
-    andMap identifier start
-
-
-parameter : Parser Context String
-parameter =
-    [ c_frame
-        |> andThen
-            (\startLength ->
-                stringTill (string (String.repeat startLength "`"))
-            )
-    , inlineCode
-    , regex "[^),]+"
-    ]
-        |> choice
-
-
-parameter_list : Parser Context (List String)
-parameter_list =
-    optional [] (parens (sepBy (string ",") parameter))
+{-| Store a macro definition (from the course header).
+-}
+add : ( String, String ) -> Definition -> Definition
+add ( name, code ) def =
+    { def | macro = Dict.insert name code def.macro }
 
 
 {-| Expand all macros at the current position. Every macro starts with `@`
@@ -89,29 +86,46 @@ macro =
         (succeed ())
 
 
+{-| Expand macro after macro, since an expansion may start with another
+call. Stops at the first position that is not a known macro, or when an
+expansion leaves the input unchanged (e.g. `@a` defined as `@a`).
+-}
 macros : Parser Context ()
 macros =
-    many1
-        (choice
-            [ uid_macro |> andThen (inject_macro False)
-            , simple_macro |> andThen (inject_macro False)
-            , reference_macro |> andThen (inject_macro False)
-            , macro_listing
-            ]
-        )
-        |> maybe
+    choice [ uid_macro, simple_macro, reference_macro ]
+        |> andThen (inject False)
+        |> or macro_listing
+        |> many
         |> skip
 
 
-uid_macro : Parser Context ( ( String, Bool ), List String )
+{-| The prefix of a call, `@`, `@@` or `@-@`, plus an optional `'`.
+-}
+start : Parser s (String -> List String -> Call)
+start =
+    regex "@-?@?"
+        |> map (\prefix escape name -> Call (prefix ++ name) escape)
+        |> andMap (optional False (onsuccess True (string "'")))
+
+
+{-| A macro name, at least two characters.
+-}
+identifier : Parser s String
+identifier =
+    regex "\\w[\\w.]+"
+
+
+{-| `@uid` counts up on every call, see `get`.
+-}
+uid_macro : Parser Context Call
 uid_macro =
     string "@uid"
-        |> keep (modifyState uid_update)
-        |> onsuccess ( ( "@uid", False ), [] )
+        |> keep (modifyState nextUid)
+        |> onsuccess (Call "@uid" False [])
 
 
-uid_update : Context -> Context
-uid_update state =
+nextUid : Context -> Context
+nextUid state =
     let
         def =
             state.defines
@@ -119,144 +133,205 @@ uid_update state =
     { state | defines = { def | uid = def.uid + 1 } }
 
 
-simple_macro : Parser Context ( ( String, Bool ), List String )
+{-| `@name` or `@name(p0, p1, ...)`.
+-}
+simple_macro : Parser Context Call
 simple_macro =
-    pattern
-        |> map Tuple.pair
+    start
+        |> andMap identifier
         |> andMap parameter_list
 
 
-reference_macro : Parser Context ( ( String, Bool ), List String )
+{-| `@[name](url)` or `@[name(p0, ...)](url "title")`, the url becomes the
+last parameter, a title is dropped.
+-}
+reference_macro : Parser Context Call
 reference_macro =
     start
         |> ignore (string "[")
         |> andMap identifier
-        |> map Tuple.pair
         |> andMap
             (parameter_list
                 |> ignore (string "](")
-                |> map (\list url ( baseURL, appendix ) -> List.append list [ toURL baseURL appendix url ])
+                |> map (\list url ( base, appendix ) -> list ++ [ toURL base appendix url ])
                 |> andMap (regex "[^) ]*")
-                |> ignore (regex "(\\)|[^)]*\\))")
+                |> ignore (regex "[^)]*\\)")
                 |> andMap (withState (\c -> succeed ( c.defines.base, c.defines.appendix )))
             )
 
 
-code_block : Int -> Parser Context (List String)
-code_block backticks_count =
-    let
-        backticks =
-            String.repeat backticks_count "`"
-    in
-    manyTill
-        (maybe Indent.check
-            |> keep
-                (regex
-                    ("(.(?!"
-                        ++ backticks
-                        ++ "))*\n?"
-                    )
-                )
-        )
-        (maybe Indent.check
-            |> keep (string backticks)
-        )
-        |> map
-            (String.concat
-                >> String.dropRight 1
-                >> List.singleton
-            )
+{-| An optional, comma separated parameter list in parentheses.
+-}
+parameter_list : Parser Context (List String)
+parameter_list =
+    optional [] (parens (sepBy (string ",") parameter))
 
 
+{-| A parameter is either a backtick block (may contain `,` and `)`),
+inline code or plain text.
+-}
+parameter : Parser Context String
+parameter =
+    choice
+        [ c_frame |> andThen (\n -> stringTill (string (String.repeat n "`")))
+        , inlineCode
+        , regex "[^),]+"
+        ]
+
+
+{-| A code block whose first line names a macro, e.g. ```` ```js @run(x) ````.
+The block content becomes the last parameter.
+-}
 macro_listing : Parser Context ()
 macro_listing =
-    (c_frame
+    c_frame
         |> ignore (regex "[\t ]*[a-zA-Z0-9_]*[\t ]*")
         |> map Tuple.pair
-        |> andMap pattern
-    )
-        |> andThen
-            (\( backticks, name ) ->
-                (parameter_list |> ignore (regex "[\t ]*\n"))
-                    |> andThen
-                        (\params ->
-                            map (List.append params) (code_block backticks)
-                                |> andThen (\p -> inject_macro True ( name, p ))
-                        )
+        |> andMap
+            (start
+                |> andMap identifier
+                |> andMap parameter_list
+                |> ignore (regex "[\t ]*\n")
             )
+        |> andThen
+            (\( backticks, call ) ->
+                code_block backticks
+                    |> map (\code -> { call | params = call.params ++ [ code ] })
+            )
+        |> andThen (inject True)
 
 
-inject_macro : Bool -> ( ( String, Bool ), List String ) -> Parser Context ()
-inject_macro ignore_indentation ( ( name, escape ), params ) =
+{-| The block content up to the closing backticks, without the last
+newline. Indentation is removed from every line.
+-}
+code_block : Int -> Parser Context String
+code_block n =
     let
-        inject state =
-            case get name state.defines of
-                Just ( isDebug, deepDebug, code ) ->
+        backticks =
+            String.repeat n "`"
+    in
+    manyTill
+        (maybe Indent.check |> keep (regex ("(.(?!" ++ backticks ++ "))*\n?")))
+        (maybe Indent.check |> keep (string backticks))
+        |> map (String.concat >> String.dropRight 1)
+
+
+{-| Put the expanded macro in front of the remaining input. Fails for unknown
+macros. Unless `ignoreIndentation`, every new line of the body gets the
+current indentation (list items, quotes, ...), so the result stays within
+the surrounding block.
+-}
+inject : Bool -> Call -> Parser Context ()
+inject ignoreIndentation call =
+    withState
+        (\state ->
+            let
+                ( present, id ) =
+                    mode call.name
+            in
+            case get id state.defines of
+                Just body ->
                     let
-                        code_ =
-                            if ignore_indentation || state.indentation == [] then
-                                code
+                        ( newState, _, code ) =
+                            List.foldl eval_parameter
+                                ( state
+                                , 0
+                                , if ignoreIndentation || state.indentation == [] then
+                                    body
 
-                            else
-                                code
-                                    |> String.lines
-                                    |> String.join
-                                        (state.indentation
-                                            |> String.concat
-                                            |> String.replace "?" ""
-                                            |> String.replace "*" ""
-                                            |> (++) "\n"
-                                        )
-
-                        ( new_state, _, new_code ) =
-                            List.foldl
-                                eval_parameter
-                                ( state, 0, code_ )
-                                params
+                                  else
+                                    body
+                                        |> String.lines
+                                        |> String.join
+                                            (state.indentation
+                                                |> String.concat
+                                                |> String.replace "?" ""
+                                                |> String.replace "*" ""
+                                                |> (++) "\n"
+                                            )
+                                )
+                                call.params
                     in
-                    (++)
-                        ((if escape then
-                            toEscapeString new_code
+                    (if call.escape then
+                        toEscapeString code
 
-                          else
-                            new_code
-                         )
-                            |> (if isDebug then
-                                    debug deepDebug
-
-                                else
-                                    identity
-                               )
-                        )
+                     else
+                        code
+                    )
+                        |> present
+                        |> (++)
                         |> modifyInput
-                        |> ignore (putState new_state)
+                        |> ignore (putState newState)
 
                 Nothing ->
                     fail "macro definition not found"
-    in
-    withState inject
+        )
 
 
+{-| Split the prefix off a macro name and return how to present the result:
+`@@` as debug code box, `@-@` as inline debug text, `@` as is.
+-}
+mode : String -> ( String -> String, String )
+mode name =
+    if String.startsWith "@@" name then
+        ( debug True, String.dropLeft 2 name )
+
+    else if String.startsWith "@-@" name then
+        ( debug False, String.dropLeft 3 name )
+
+    else
+        ( identity, String.dropLeft 1 name )
+
+
+{-| The body of a macro, built-in values first.
+-}
+get : String -> Definition -> Maybe String
+get id def =
+    case id of
+        "author" ->
+            Just def.author
+
+        "date" ->
+            Just def.date
+
+        "email" ->
+            Just def.email
+
+        "version" ->
+            Just def.version
+
+        "section" ->
+            Just (String.fromInt def.section)
+
+        "uid" ->
+            Just (String.fromInt def.section ++ "_" ++ String.fromInt def.uid)
+
+        _ ->
+            Dict.get id def.macro
+
+
+{-| Expand the macros within parameter `i` and replace `@'i` and `@i` in the
+body. Escaped `\@` are protected by `guard`.
+-}
 eval_parameter : String -> ( Context, Int, String ) -> ( Context, Int, String )
 eval_parameter param ( state, i, code ) =
     let
-        ( new_state, new_param ) =
-            param
-                |> guard
-                |> macro_parse state
+        ( newState, value ) =
+            expand state (guard param)
     in
-    ( new_state
+    ( newState
     , i + 1
     , code
         |> guard
-        |> String.replace ("@'" ++ String.fromInt i) (toEscapeString new_param)
-        |> String.replace ("@" ++ String.fromInt i) new_param
+        |> String.replace ("@'" ++ String.fromInt i) (toEscapeString value)
+        |> String.replace ("@" ++ String.fromInt i) value
         |> unguard
     )
 
 
-{-| This pattern is used to replace escaped @-signs, otherwise LiaScript will also try to parse them as macros
+{-| Replaces `\@` so it is neither expanded nor taken for a parameter.
 -}
+guard_pattern : String
 guard_pattern =
     "iex3OAQpP4u3QT9xq"
 
@@ -271,51 +346,47 @@ unguard =
     String.replace guard_pattern "\\@"
 
 
-get : String -> Definition -> Maybe ( Bool, Bool, String )
-get name def =
-    let
-        ( isDebug, deepDebug, id ) =
-            if String.startsWith "@@" name then
-                ( True, True, String.dropLeft 2 name )
-
-            else if String.startsWith "@-@" name then
-                ( True, False, String.dropLeft 3 name )
+{-| Expand all macros within a string (a parameter). `@input` is kept for
+the code evaluation. Returns the string unchanged from the first position
+that cannot be parsed.
+-}
+expand : Context -> String -> ( Context, String )
+expand state str =
+    case runParser expandAll state str of
+        Ok ( newState, stream, expanded ) ->
+            if stream.input == "" then
+                ( newState, expanded )
 
             else
-                ( False, False, String.dropLeft 1 name )
-    in
-    Maybe.map (\x -> ( isDebug, deepDebug, x )) <|
-        case id of
-            "author" ->
-                Just def.author
+                stream.input
+                    |> expand newState
+                    |> Tuple.mapSecond ((++) expanded)
 
-            "date" ->
-                Just def.date
-
-            "email" ->
-                Just def.email
-
-            "version" ->
-                Just def.version
-
-            "section" ->
-                Just (String.fromInt def.section)
-
-            "uid" ->
-                Just (String.fromInt def.section ++ "_" ++ String.fromInt def.uid)
-
-            _ ->
-                Dict.get id def.macro
+        _ ->
+            ( state, str )
 
 
+expandAll : Parser Context String
+expandAll =
+    macro
+        |> keep (regex "[^@]+")
+        |> or (regex "@input[^@]+")
+        |> many1
+        |> map String.concat
+
+
+{-| Show the expanded macro as text: markdown is escaped, line breaks become
+`<br>`, nested macros are marked as `@-@name`. `box` puts it into a gray
+code block.
+-}
 debug : Bool -> String -> String
-debug env =
-    debugReplace "[*+`{}#^|$\\[\\]]" (.match >> (++) "\\")
+debug box =
+    Regex.replace markdownChars (.match >> (++) "\\")
         >> String.replace "<" "\\<"
         >> String.replace ">" "\\>"
         >> String.replace "\\\\`" "`"
         >> String.replace "\n" "<br id='ls'>"
-        >> debugReplace "@[a-zA-Z]+[\\w\\d._\\-]*"
+        >> Regex.replace macroNames
             (\x ->
                 if x.match /= "@input" then
                     "@-" ++ x.match
@@ -324,56 +395,21 @@ debug env =
                     x.match
             )
         >> String.replace "\\<br id='ls'\\>" "<br id='ls'>"
-        >> debugEnvironment env
-
-
-debugEnvironment : Bool -> String -> String
-debugEnvironment env code =
-    if env then
-        "<lia-keep><pre id='ls'><code style='background: #CCCCCC; white-space: pre;'>"
-            ++ code
-            ++ "</code></pre></lia-keep>"
-
-    else
-        code
-
-
-debugReplace : String -> (Regex.Match -> String) -> String -> String
-debugReplace pat fn string =
-    case Regex.fromString pat of
-        Just regex ->
-            Regex.replace regex fn string
-
-        Nothing ->
-            string
-
-
-add : ( String, String ) -> Definition -> Definition
-add ( name, code ) def =
-    { def | macro = Dict.insert name code def.macro }
-
-
-macro_parse : Context -> String -> ( Context, String )
-macro_parse defines str =
-    case
-        runParser
-            (macro
-                |> keep (regex "[^@]+")
-                |> or (regex "@input[^@]+")
-                |> many1
-                |> map String.concat
-            )
-            defines
-            str
-    of
-        Ok ( state, stream, s ) ->
-            if stream.input == "" then
-                ( state, s )
+        >> (if box then
+                \code -> "<lia-keep><pre id='ls'><code style='background: #CCCCCC; white-space: pre;'>" ++ code ++ "</code></pre></lia-keep>"
 
             else
-                stream.input
-                    |> macro_parse state
-                    |> Tuple.mapSecond ((++) s)
+                identity
+           )
 
-        _ ->
-            ( defines, str )
+
+markdownChars : Regex.Regex
+markdownChars =
+    Regex.fromString "[*+`{}#^|$\\[\\]]"
+        |> Maybe.withDefault Regex.never
+
+
+macroNames : Regex.Regex
+macroNames =
+    Regex.fromString "@[a-zA-Z]+[\\w\\d._\\-]*"
+        |> Maybe.withDefault Regex.never

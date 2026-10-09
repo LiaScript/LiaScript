@@ -1,5 +1,6 @@
 module Parser.Block.Macro exposing
-    ( inlineUsage_Suite
+    ( expansion_Suite
+    , inlineUsage_Suite
     , parameterized_Suite
     , simple_Suite
     , undefined_Suite
@@ -90,4 +91,113 @@ undefined_Suite =
             \_ ->
                 parseWithMacros [] "@doesNotExist\n"
                     |> Expect.equal [ paragraph "@doesNotExist" ]
+        ]
+
+
+{-| Expand the macros at the start of `str` and return the resulting input,
+with `indentation` as the current block indentation.
+-}
+expand : List ( String, String ) -> List String -> String -> String
+expand macros indentation str =
+    let
+        state =
+            List.foldl Macro.add (default "https://example.com/course/" "") macros
+                |> (\def -> { def | section = 2 })
+                |> Context.init Nothing Nothing
+    in
+    case Combine.runParser (Macro.macro |> Combine.keep (Combine.regex "[\\s\\S]*")) { state | indentation = indentation } str of
+        Ok ( _, _, result ) ->
+            result
+
+        Err _ ->
+            "ERR"
+
+
+expansion_Suite : Test
+expansion_Suite =
+    describe "the expanded input"
+        [ test "escape @'name as JS string" <|
+            \_ ->
+                expand [ ( "str", "a\"b\nc" ) ] [] "@'str|"
+                    |> Expect.equal "a\\\"b\\nc|"
+        , test "escape @'0 inserts the parameter as JS string" <|
+            \_ ->
+                expand [ ( "fn", "x(@'0)" ) ] [] "@fn(a\"b)|"
+                    |> Expect.equal "x(a\\\"b)|"
+        , test "escaped \\@ is neither a parameter nor a macro" <|
+            \_ ->
+                expand [ ( "fn", "\\@0 @0" ), ( "aa", "A" ) ] [] "@fn(\\@aa)|"
+                    |> Expect.equal "\\@0 \\@aa|"
+        , test "@@name shows the body in a debug box" <|
+            \_ ->
+                expand [ ( "fn", "*b* <i> @x\n@input" ) ] [] "@@fn|"
+                    |> Expect.equal "<lia-keep><pre id='ls'><code style='background: #CCCCCC; white-space: pre;'>\\*b\\* \\<i\\> @-@x<br id='ls'>@input</code></pre></lia-keep>|"
+        , test "@-@name shows the body as inline debug text" <|
+            \_ ->
+                expand [ ( "fn", "*b* `c` @x \\`d" ) ] [] "@-@fn|"
+                    |> Expect.equal "\\*b\\* \\`c\\` @-@x `d|"
+        , test "@uid counts up on every call" <|
+            \_ ->
+                expand [ ( "fn", "@0 @1" ) ] [] "@fn(@uid,@uid)@uid|"
+                    |> Expect.equal "2_0 2_1@uid|"
+        , test "built-in values come from the definition" <|
+            \_ ->
+                expand [ ( "fn", "@0" ) ] [] "@fn(@section;@author;@uid;@version)|"
+                    |> Expect.equal "2;;2_0;0.0.1|"
+        , test "reference macro appends the resolved url" <|
+            \_ ->
+                expand [ ( "img", "@0-@1" ) ] [] "@[img(p)](pic.png \"title\")|"
+                    |> Expect.equal "p-https://example.com/course/pic.png|"
+        , test "escaped reference macro" <|
+            \_ ->
+                expand [ ( "img", "@0" ) ] [] "@'[img](a\"b.png)|"
+                    |> Expect.equal "https://example.com/course/a\\\"b.png|"
+        , test "macro listing appends the block content" <|
+            \_ ->
+                expand [ ( "run", "@0:@1" ) ] [] "```js @run(a)\nline1\nline2\n```|"
+                    |> Expect.equal "a:line1\nline2|"
+        , test "longer listing frames may contain ```" <|
+            \_ ->
+                expand [ ( "run", "@0" ) ] [] "```` @run\n```\nx\n````|"
+                    |> Expect.equal "```\nx|"
+        , test "parameters may be inline code or code blocks" <|
+            \_ ->
+                expand [ ( "fn", "@0;@1;@2" ) ] [] "@fn(`a,b`,```c)```,d)|"
+                    |> Expect.equal "a,b;c);d|"
+        , test "@input is kept within parameters" <|
+            \_ ->
+                expand [ ( "fn", "@0" ), ( "aa", "A" ) ] [] "@fn(x @input y @aa)|"
+                    |> Expect.equal "x @input y A|"
+        , test "an unknown macro stops expansion within a parameter" <|
+            \_ ->
+                expand [ ( "fn", "@0" ), ( "aa", "A" ) ] [] "@fn(@aa x@unknown @aa)|"
+                    |> Expect.equal "A x@unknown @aa|"
+        , test "chained macros expand one after the other" <|
+            \_ ->
+                expand [ ( "aa", "@bb x" ), ( "bb", "B" ) ] [] "@aa|"
+                    |> Expect.equal "B x|"
+        , test "a self-referential macro terminates" <|
+            \_ ->
+                expand [ ( "aa", "@aa" ) ] [] "@aa|"
+                    |> Expect.equal "@aa|"
+        , test "the body gets the current indentation" <|
+            \_ ->
+                expand [ ( "fn", "a\nb\nc" ) ] [ "  ", "?* " ] "@fn|"
+                    |> Expect.equal "a\n   b\n   c|"
+        , test "listings ignore the indentation" <|
+            \_ ->
+                expand [ ( "fn", "a\n@0" ) ] [ "  " ] "```@fn\nx\n```|"
+                    |> Expect.equal "a\nx|"
+        , test "@1 also replaces the prefix of @10" <|
+            \_ ->
+                expand [ ( "fn", "@10@1" ) ] [] "@fn(a,b,c,d,e,f,g,h,i,j,k)|"
+                    |> Expect.equal "b0b|"
+        , test "names need two characters" <|
+            \_ ->
+                expand [ ( "a", "A" ) ] [] "@a|"
+                    |> Expect.equal "@a|"
+        , test "macro with dots and digits in its name" <|
+            \_ ->
+                expand [ ( "a.b1", "X" ) ] [] "@a.b1|"
+                    |> Expect.equal "X|"
         ]
