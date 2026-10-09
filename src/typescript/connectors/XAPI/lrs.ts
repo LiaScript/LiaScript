@@ -149,15 +149,16 @@ export class LRSConnection {
   }
 
   /**
-   * Get statements from the LRS. An LRS returns them in pages and links the
-   * next one in `more`; up to `pages` pages are read and joined.
+   * Get statements from the LRS. An LRS returns them in pages of its own
+   * size (lrsql: 50) and links the next one in `more`; pages are read and
+   * joined up to `max` statements, newest first.
    * @param query Query parameters for filtering statements
-   * @param pages The most pages to read (default: 10)
+   * @param max The most statements to read (default: 10000)
    * @returns Promise resolving to the statements, null if none could be read
    */
   async getStatements(
     query: Record<string, any> = {},
-    pages: number = 10
+    max: number = 10000
   ): Promise<any> {
     // Build a URLSearchParams with proper serialization
     const params = new URLSearchParams()
@@ -183,7 +184,15 @@ export class LRSConnection {
 
     let result: any = null
 
-    for (let page = 0; page < pages && url; page++) {
+    // a bound for an LRS that returns pages of a single statement
+    for (let page = 0; page < 1000 && url; page++) {
+      if (result && result.statements.length >= max) {
+        console.warn(
+          `xAPI: read the newest ${result.statements.length} statements, older ones are not restored`
+        )
+        break
+      }
+
       const data = await this.getPage(url)
       if (!data) break
 

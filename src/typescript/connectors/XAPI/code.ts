@@ -9,6 +9,7 @@
  */
 
 import { decodeProject, encodeProject } from '../SCORMSuspend/codec'
+import type { SlideMeta } from '../SCORMSuspend/meta'
 
 export const EXTENSION = 'http://liascript.github.io/extensions/code'
 
@@ -32,11 +33,21 @@ export function changed(before: any[] | null | undefined, after: any[]): number[
   return after.flatMap((project, i) => (sources(before?.[i]) === sources(project) ? [] : [i]))
 }
 
+/** [name, lang] of every file of every project */
+const layout = (projects: { name: string; lang: string }[][]) =>
+  JSON.stringify(projects.map((files) => files.map((file) => [file.name, file.lang])))
+
 /**
  * The projects per slide, from the newest code statement of each slide.
- * A statement whose code cannot be read is skipped.
+ * A statement whose code cannot be read is skipped. With the course
+ * description (`slides`), a slide whose code blocks changed since (another
+ * number of blocks, other files) starts afresh: Elm would drop blocks or run
+ * the old files in a new block.
  */
-export function restore(statements: any[]): Record<number, any[]> {
+export function restore(
+  statements: any[],
+  slides?: SlideMeta[] | null
+): Record<number, any[]> {
   const newest: Record<number, any> = {}
 
   for (const statement of statements) {
@@ -54,7 +65,16 @@ export function restore(statements: any[]): Record<number, any[]> {
   const projects: Record<number, any[]> = {}
   for (const [slide, statement] of Object.entries(newest) as [any, any][]) {
     try {
-      projects[slide] = statement.result.extensions[EXTENSION].map(decodeProject)
+      const restored = statement.result.extensions[EXTENSION].map(decodeProject)
+      if (
+        slides &&
+        layout(restored.map((project: any) => project.file)) !==
+          layout((slides[slide]?.code || []).map((block) => block.files))
+      ) {
+        console.warn(`xAPI: the code of slide ${slide} changed, it starts afresh`)
+        continue
+      }
+      projects[slide] = restored
     } catch (e) {
       // written by something else, or damaged: the course's code stays
     }

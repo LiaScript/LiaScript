@@ -536,7 +536,7 @@ export class Connector extends Base.Connector {
       }
 
       // Code: every slide from its newest code statement
-      this.codeStates = Code.restore(response.statements)
+      this.codeStates = Code.restore(response.statements, this.meta?.slides)
 
       // Now process the latest quiz statements only
       for (const key in latestQuizStatements) {
