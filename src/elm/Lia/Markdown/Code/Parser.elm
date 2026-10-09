@@ -21,7 +21,6 @@ import Combine
         , modifyState
         , onsuccess
         , optional
-        , or
         , regex
         , sepBy1
         , string
@@ -114,7 +113,7 @@ listing attr =
                 header
                     |> map (\lang ( visible, name ) code -> ( Snippet attr lang (String.trim name) code, visible ))
                     |> andMap title
-                    |> andMap (or (body "`" len) (body "~" len))
+                    |> andMap (body len)
             )
 
 
@@ -144,22 +143,19 @@ title =
         |> ignore newline
 
 
-{-| All lines up to a closing fence of `len` times `char`, alone on its line.
-A line that contains the fence anywhere after its first character fails the
-whole body.
+{-| All lines up to a closing fence of `len` backticks, alone on its line.
+A fence line that is not a valid closing fence (wrong indentation) fails the
+whole body, instead of swallowing the rest of the document.
 -}
-body : String -> Int -> Parser Context String
-body char len =
+body : Int -> Parser Context String
+body len =
     let
         fence =
-            char ++ "{" ++ String.fromInt len ++ "}"
+            "`{" ++ String.fromInt len ++ "}"
     in
     manyTill
-        (Indent.maybeCheck |> keep (regex ("(?:.(?!" ++ fence ++ "))*\n")))
+        (Indent.maybeCheck |> keep (regex ("(?![ \t]*" ++ fence ++ "[ \t]*\n).*\n")))
         (Indent.check
-            |> ignore (regex "[ \t]*")
-            |> keep (regex fence)
-            |> ignore spaces
-            |> ignore newline
+            |> ignore (regex ("[ \t]*" ++ fence ++ "[ \t]*\n"))
         )
         |> map (String.concat >> String.dropRight 1)

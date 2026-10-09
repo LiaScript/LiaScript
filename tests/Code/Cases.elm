@@ -43,6 +43,7 @@ suite =
         , classroom
         , storage
         , view
+        , fixes
         ]
 
 
@@ -76,7 +77,7 @@ view =
                     |> Query.has [ Selector.attribute (Attr.title "switch to collaborative editor") ]
         , test "the collaborative editor has no versions to switch between" <|
             \_ ->
-                render course shared [ Update 0 0 "b", Eval 0, result True "x", First 0, ToggleSync 0 ]
+                render course shared [ Update (Evaluate 0) 0 "b", Eval 0, result True "x", First 0, ToggleSync 0 ]
                     |> Query.findAll [ Selector.class "lia-code-control__version", Selector.tag "div" ]
                     |> Query.first
                     |> Expect.all
@@ -85,7 +86,7 @@ view =
                         ]
         , test "the version controls are disabled while running" <|
             \_ ->
-                render course Array.empty [ Update 0 0 "b", Eval 0, result True "x", First 0, Eval 0 ]
+                render course Array.empty [ Update (Evaluate 0) 0 "b", Eval 0, result True "x", First 0, Eval 0 ]
                     |> Query.find [ Selector.attribute (Attr.title (Translations.codeNext En)) ]
                     |> Query.has [ Selector.attribute (Attr.disabled True) ]
         , test "the collaborative editor sends its changes to the classroom" <|
@@ -100,7 +101,14 @@ view =
                     |> Query.fromHtml
                     |> Query.find [ Selector.tag "lia-editor" ]
                     |> Event.simulate (Event.custom "editorUpdate" (JE.object [ ( "detail", JE.string "x" ) ]))
-                    |> Event.expect (Update 0 0 "x")
+                    |> Event.expect (Update (Evaluate 0) 0 "x")
+        , test "without a classroom the local output is shown, even in sync mode" <|
+            \_ ->
+                course
+                    |> (\m -> { m | evaluate = Array.map (\p -> { p | syncMode = True, syncLog = Log.add Log.Info "shared output" p.syncLog }) m.evaluate })
+                    |> (\m -> View.view { lang = En, theme = "", model = m, code = Evaluate 0, sync = Array.empty, cursors = [] })
+                    |> Query.fromHtml
+                    |> Query.hasNot [ Selector.text "shared output" ]
         , test "the output of a highlighted block keeps the height set by the user" <|
             \_ ->
                 parseWithState "```js\na\n```\n```  @output\nout\n```\n"
@@ -123,11 +131,58 @@ view =
                     |> Query.has [ Selector.style "min-height" "calc( 2 * var(--global-font-size, 1.5rem) * var(--font-size-multiplier) * 1.3333 + 1.47rem)" ]
         , test "an older version can be left forward" <|
             \_ ->
-                render course Array.empty [ Update 0 0 "b", Eval 0, result True "x", First 0 ]
+                render course Array.empty [ Update (Evaluate 0) 0 "b", Eval 0, result True "x", First 0 ]
                     |> Expect.all
                         [ Query.find [ Selector.attribute (Attr.title (Translations.codeNext En)) ] >> Event.simulate Event.click >> Event.expect (Load 0 1)
                         , Query.find [ Selector.attribute (Attr.title (Translations.codeLast En)) ] >> Event.simulate Event.click >> Event.expect (Last 0)
                         ]
+        ]
+
+
+fixes : Test
+fixes =
+    describe "fixes"
+        [ test "a fence within a line neither ends nor breaks the block" <|
+            \_ ->
+                parse [] "```js\nlet s = \"```\"\n```\n\n```js\nb\n```\n"
+                    |> .highlight
+                    |> Array.toList
+                    |> List.map code
+                    |> Expect.equal [ [ "let s = \"```\"" ], [ "b" ] ]
+        , test "tildes do not close a code block" <|
+            \_ ->
+                parse [] "```js\na\n~~~\n"
+                    |> .highlight
+                    |> Array.length
+                    |> Expect.equal 0
+        , test "after leaving the classroom the local editor is back" <|
+            \_ ->
+                run [ ToggleSync 0 ]
+                    |> Update.update Array.empty (Just 0) Array.empty (Update (Evaluate 0) 0 "b")
+                    |> .value
+                    |> project
+                    |> Maybe.map (\p -> ( p.syncMode, code p ))
+                    |> Expect.equal (Just ( False, [ "b" ] ))
+        , test "an editable highlighted block changes its own code only" <|
+            \_ ->
+                parseWithState "```js\nh\n```\n\n```js\na\n```\n<script>@input</script>\n"
+                    |> Tuple.second
+                    |> .code_model
+                    |> Update.update Array.empty (Just 0) Array.empty (Update (Highlight 0) 0 "x")
+                    |> .value
+                    |> (\m -> ( Array.toList m.highlight |> List.map code, Array.toList m.evaluate |> List.map code ))
+                    |> Expect.equal ( [ [ "x" ] ], [ [ "a" ] ] )
+        , test "after sending an empty line, up shows the last command" <|
+            \_ ->
+                history [ Terminal.Input "a", Terminal.Enter, Terminal.Input "", Terminal.Enter, Terminal.Input "", Terminal.History True ]
+                    |> List.reverse
+                    |> List.head
+                    |> Expect.equal (Just "a")
+        , test "a command repeated from the history becomes the last entry" <|
+            \_ ->
+                history [ Terminal.Input "a", Terminal.Enter, Terminal.Input "", Terminal.Input "b", Terminal.Enter, Terminal.Input "", Terminal.History True, Terminal.History True, Terminal.Enter, Terminal.Input "", Terminal.History True, Terminal.History True ]
+                    |> List.drop 10
+                    |> Expect.equal [ "a", "b" ]
         ]
 
 
@@ -156,7 +211,7 @@ versions =
     describe "versions"
         [ test "running changed code appends and activates a new version" <|
             \_ ->
-                run [ Update 0 0 "b", Eval 0 ]
+                run [ Update (Evaluate 0) 0 "b", Eval 0 ]
                     |> project
                     |> Maybe.map (\p -> ( Array.length p.version, p.version_active, p.running ))
                     |> Expect.equal (Just ( 2, 1, True ))
@@ -177,7 +232,7 @@ versions =
                     |> Expect.equal True
         , test "within subsections versions are created without storing them" <|
             \_ ->
-                run [ Update 0 0 "b" ]
+                run [ Update (Evaluate 0) 0 "b" ]
                     |> Update.update Array.empty Nothing Array.empty (Eval 0)
                     |> (\r -> ( Maybe.map (.version >> Array.length) (project r.value), List.length r.events ))
                     |> Expect.equal ( Just 2, 1 )
@@ -189,7 +244,7 @@ versions =
                     |> Expect.equal (Just 1)
         , test "a new version is stored with its new code only" <|
             \_ ->
-                update [ Update 0 0 "b" ] (Eval 0)
+                update [ Update (Evaluate 0) 0 "b" ] (Eval 0)
                     |> .events
                     |> List.map (Event.encode >> JE.encode 0)
                     |> List.filter (String.contains "\"append\"")
@@ -197,13 +252,13 @@ versions =
                     |> Expect.equal [ True ]
         , test "loading the first version restores its code and log" <|
             \_ ->
-                run [ result True "first", Update 0 0 "b", Eval 0, result True "second", First 0 ]
+                run [ result True "first", Update (Evaluate 0) 0 "b", Eval 0, result True "second", First 0 ]
                     |> project
                     |> Maybe.map (\p -> ( code p, messages p.log ))
                     |> Expect.equal (Just ( [ "a" ], [ "first" ] ))
         , test "Last loads the latest version" <|
             \_ ->
-                run [ Update 0 0 "b", Eval 0, First 0, Last 0 ]
+                run [ Update (Evaluate 0) 0 "b", Eval 0, First 0, Last 0 ]
                     |> project
                     |> Maybe.map (\p -> ( code p, p.version_active ))
                     |> Expect.equal (Just ( [ "b" ], 1 ))
@@ -296,14 +351,14 @@ classroom =
         [ test "in sync mode the local code cannot be changed" <|
             \_ ->
                 run [ ToggleSync 0 ]
-                    |> Update.update shared (Just 0) Array.empty (Update 0 0 "b")
+                    |> Update.update shared (Just 0) Array.empty (Update (Evaluate 0) 0 "b")
                     |> .value
                     |> project
                     |> Maybe.map code
                     |> Expect.equal (Just [ "a" ])
         , test "in sync mode local changes do not become a version" <|
             \_ ->
-                Update.update shared (Just 0) Array.empty (Eval 0) (run [ Update 0 0 "b", ToggleSync 0 ])
+                Update.update shared (Just 0) Array.empty (Eval 0) (run [ Update (Evaluate 0) 0 "b", ToggleSync 0 ])
                     |> .value
                     |> project
                     |> Maybe.map (.version >> Array.length)
@@ -327,7 +382,7 @@ storage =
             \_ ->
                 let
                     stored =
-                        run [ Update 0 0 "b", Eval 0 ]
+                        run [ Update (Evaluate 0) 0 "b", Eval 0 ]
                             |> .evaluate
                             |> Array.map (\p -> { p | evaluation = "old" })
                             |> Json.fromVector

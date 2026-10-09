@@ -37,7 +37,7 @@ optionally the file id within the project.
 type Msg
     = Eval Int
     | Stop Int
-    | Update Int Int String
+    | Update Code Int String
     | Synchronize Int Int JE.Value
     | SynchronizeCursor Int Int JE.Value
     | FlipView Code Int
@@ -64,9 +64,20 @@ handle =
 
 {-| `sync` is the classroom code of the section (empty if there is none),
 `sectionID` is `Nothing` within subsections, there nothing gets stored.
+Without a classroom (anymore) all projects are back in the local editor.
 -}
 update : Array Sync -> Maybe Int -> Scripts a -> Msg -> Model -> Return Model msg sub
 update sync sectionID scripts msg model =
+    process sync sectionID scripts msg <|
+        if Array.isEmpty sync then
+            { model | evaluate = Array.map (\p -> { p | syncMode = False }) model.evaluate }
+
+        else
+            model
+
+
+process : Array Sync -> Maybe Int -> Scripts a -> Msg -> Model -> Return Model msg sub
+process sync sectionID scripts msg model =
     case msg of
         Eval id ->
             model
@@ -79,12 +90,15 @@ update sync sectionID scripts msg model =
                             |> appendVersion sectionID id
                     )
 
-        Update id fileID code ->
+        Update (Evaluate id) fileID code ->
             if isSyncModeActive id model then
                 Return.val model
 
             else
                 updateFile id fileID (\f -> { f | code = code }) (always []) model
+
+        Update (Highlight id) fileID code ->
+            Return.val { model | highlight = mapFile id fileID (\f -> { f | code = code }) model.highlight }
 
         FlipView (Evaluate id) fileID ->
             updateFile id fileID toggleVisible (Event.flip_view sectionID id fileID) model
@@ -198,10 +212,14 @@ update sync sectionID scripts msg model =
                 code =
                     case project of
                         Evaluate id ->
-                            sync
-                                |> Array.get id
-                                |> Maybe.andThen (Array.get fileID)
-                                |> Maybe.withDefault (local model.evaluate)
+                            if isSyncModeActive id model then
+                                sync
+                                    |> Array.get id
+                                    |> Maybe.andThen (Array.get fileID)
+                                    |> Maybe.withDefault (local model.evaluate)
+
+                            else
+                                local model.evaluate
 
                         Highlight _ ->
                             local model.highlight

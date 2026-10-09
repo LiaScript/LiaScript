@@ -134,7 +134,7 @@ view { lang, theme, model, code, sync, cursors } =
                                     ]
                                     [ viewLog code
                                         project.logSize
-                                        (if project.syncMode then
+                                        (if shared then
                                             project.syncLog
 
                                          else
@@ -406,14 +406,13 @@ viewEditor { isExecutable, theme, attr, isRunning, code, fileID, file, errors, s
          , Editor.enableLiveAutocompletion isExecutable
          , Editor.enableSnippets isExecutable
          , Editor.aceOptions (string "data-ace-options" "")
-         , Editor.onCtrlEnter (Eval id)
          ]
             ++ minHeight file.visible maxLines
             ++ Params.toAttribute attr
             |> CList.appendIf (not readOnly)
                 (if sync == Nothing then
                     [ Editor.catchCursorUpdates False
-                    , Editor.onChange <| Update id fileID
+                    , Editor.onChange <| Update code fileID
                     ]
 
                  else
@@ -422,6 +421,7 @@ viewEditor { isExecutable, theme, attr, isRunning, code, fileID, file, errors, s
                     , Editor.onChangeCursorValue <| SynchronizeCursor id fileID
                     ]
                 )
+            |> CList.appendIf isExecutable [ Editor.onCtrlEnter (Eval id) ]
         )
         []
 

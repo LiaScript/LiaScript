@@ -185,30 +185,23 @@ view terminal =
 
 
 {-| Clear the input and add it to the history, unless it is empty or equal to
-the entry currently shown. In both cases the history position moves one
-step forward.
+the last entry. Browsing starts again at the end of the history.
 -}
 print_to : Terminal -> Terminal
 print_to terminal =
-    if
-        (terminal.history
-            |> Array.get terminal.history_value
-            |> Maybe.map (\h -> h /= terminal.input)
-            |> Maybe.withDefault True
-        )
-            && (terminal.input /= "")
-    then
-        { terminal
-            | input = ""
-            , history = Array.push terminal.input terminal.history
-            , history_value = Array.length terminal.history + 1
-        }
+    let
+        history =
+            if terminal.input == "" || Array.get (Array.length terminal.history - 1) terminal.history == Just terminal.input then
+                terminal.history
 
-    else
-        { terminal
-            | input = ""
-            , history_value = terminal.history_value + 1
-        }
+            else
+                Array.push terminal.input terminal.history
+    in
+    { terminal
+        | input = ""
+        , history = history
+        , history_value = Array.length history
+    }
 
 
 {-| Show the previous (`up`) or next history entry, past the end the backup
