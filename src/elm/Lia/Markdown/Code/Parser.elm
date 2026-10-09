@@ -1,6 +1,12 @@
 module Lia.Markdown.Code.Parser exposing (parse)
 
-import Array
+{-| Parser for code blocks: one or more consecutive listings, optionally
+followed by a macro that expands to a `<script>`, which makes the block
+executable. A last listing titled `@output` is not shown as a file but as
+the initial output of the terminal.
+-}
+
+import Array exposing (Array)
 import Combine
     exposing
         ( Parser
@@ -19,10 +25,9 @@ import Combine
         , regex
         , sepBy1
         , string
-        , succeed
         , withState
         )
-import Lia.Markdown.Code.Log as Log
+import Lia.Markdown.Code.Log as Log exposing (Log)
 import Lia.Markdown.Code.Types exposing (Code(..), Snippet, initProject)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (javascript)
@@ -33,6 +38,10 @@ import Lia.Parser.Indentation as Indent
 import Service.Script exposing (Eval)
 
 
+{-| Parse a code block, every listing can be preceded by annotations (`attr`)
+and macros. The result points to the project that was added to the
+`code_model` of the parser state.
+-}
 parse : Parser Context Parameters -> Parser Context Code
 parse attr =
     sepBy1 Indent.check
@@ -41,26 +50,76 @@ parse attr =
             |> ignore (maybe macro)
             |> andThen listing
         )
-        |> map Tuple.pair
+        |> map store
         |> andMap
             (maybe Indent.check
                 |> keep macro
                 |> keep javascript
                 |> maybe
             )
-        |> andThen result
+        |> andThen identity
 
 
-result : ( List ( Snippet, Bool ), Maybe String ) -> Parser Context Code
-result ( lst, script ) =
-    case script of
-        Just str ->
-            evaluate lst str
+{-| Add the listings as a new project, executable if there is a script.
+-}
+store : List ( Snippet, Bool ) -> Maybe String -> Parser Context Code
+store listings script =
+    let
+        ( snippets, log ) =
+            output listings
+    in
+    withState
+        (\state ->
+            let
+                model =
+                    state.code_model
+            in
+            case script of
+                Just evaluation ->
+                    modifyState (\s -> { s | code_model = { model | evaluate = Array.push (initProject False snippets evaluation log) model.evaluate } })
+                        |> onsuccess (Evaluate (Array.length model.evaluate))
 
-        Nothing ->
-            highlight lst
+                Nothing ->
+                    modifyState (\s -> { s | code_model = { model | highlight = Array.push (initProject True snippets "" log) model.highlight } })
+                        |> onsuccess (Highlight (Array.length model.highlight))
+        )
 
 
+{-| Split off a last listing titled `@output` (case-insensitive) as log.
+-}
+output : List ( Snippet, Bool ) -> ( Array ( Snippet, Bool ), Log )
+output listings =
+    case List.reverse listings of
+        ( snippet, visible ) :: rest ->
+            if String.toLower snippet.name == "@output" then
+                ( Array.fromList (List.reverse rest)
+                , Log.add_Eval (Eval visible snippet.code []) Log.empty
+                )
+
+            else
+                ( Array.fromList listings, Log.empty )
+
+        [] ->
+            ( Array.empty, Log.empty )
+
+
+{-| A single listing: fence, language, optional `+`/`-` (visible/hidden)
+with title and the body up to a closing fence of the same length.
+-}
+listing : Parameters -> Parser Context ( Snippet, Bool )
+listing attr =
+    c_frame
+        |> andThen
+            (\len ->
+                header
+                    |> map (\lang ( visible, name ) code -> ( Snippet attr lang (String.trim name) code, visible ))
+                    |> andMap title
+                    |> andMap (or (body "`" len) (body "~" len))
+            )
+
+
+{-| The language, lowercased.
+-}
 header : Parser Context String
 header =
     spaces
@@ -68,6 +127,8 @@ header =
         |> map String.toLower
 
 
+{-| Visibility (`+` is the default) and title, the rest of the line.
+-}
 title : Parser Context ( Bool, String )
 title =
     spaces
@@ -83,112 +144,22 @@ title =
         |> ignore newline
 
 
-code_body : String -> Int -> Parser Context String
-code_body char len =
+{-| All lines up to a closing fence of `len` times `char`, alone on its line.
+A line that contains the fence anywhere after its first character fails the
+whole body.
+-}
+body : String -> Int -> Parser Context String
+body char len =
     let
-        control_frame =
+        fence =
             char ++ "{" ++ String.fromInt len ++ "}"
     in
     manyTill
-        (Indent.maybeCheck |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\n")))
+        (Indent.maybeCheck |> keep (regex ("(?:.(?!" ++ fence ++ "))*\n")))
         (Indent.check
             |> ignore (regex "[ \t]*")
-            |> keep
-                (regex control_frame
-                    |> ignore spaces
-                    |> ignore newline
-                )
+            |> keep (regex fence)
+            |> ignore spaces
+            |> ignore newline
         )
         |> map (String.concat >> String.dropRight 1)
-
-
-listing : Parameters -> Parser Context ( Snippet, Bool )
-listing attr =
-    let
-        body len =
-            header
-                |> map (\h ( v, t ) c -> ( Snippet attr h (String.trim t) c, v ))
-                |> andMap title
-                |> andMap (or (code_body "`" len) (code_body "~" len))
-    in
-    c_frame |> andThen body
-
-
-evaluate : List ( Snippet, Bool ) -> String -> Parser Context Code
-evaluate lang_title_code comment =
-    let
-        ar =
-            Array.fromList lang_title_code
-
-        ( output, array ) =
-            case Array.get (Array.length ar - 1) ar of
-                Just ( snippet, vis ) ->
-                    if String.toLower snippet.name == "@output" then
-                        ( Log.add_Eval (Eval vis snippet.code []) Log.empty
-                        , Array.slice 0 -1 ar
-                        )
-
-                    else
-                        ( Log.empty, ar )
-
-                _ ->
-                    ( Log.empty, ar )
-
-        add_state s =
-            let
-                model =
-                    s.code_model
-            in
-            { s
-                | code_model =
-                    { model | evaluate = Array.push (initProject False array comment output) model.evaluate }
-            }
-    in
-    (.code_model
-        >> .evaluate
-        >> Array.length
-        >> Evaluate
-        >> succeed
-    )
-        |> withState
-        |> ignore (modifyState add_state)
-
-
-highlight : List ( Snippet, Bool ) -> Parser Context Code
-highlight lang_title_code =
-    let
-        ar =
-            Array.fromList lang_title_code
-
-        ( output, array ) =
-            case Array.get (Array.length ar - 1) ar of
-                Just ( snippet, vis ) ->
-                    if String.toLower snippet.name == "@output" then
-                        ( Log.add_Eval (Eval vis snippet.code []) Log.empty
-                        , Array.slice 0 -1 ar
-                        )
-
-                    else
-                        ( Log.empty, ar )
-
-                _ ->
-                    ( Log.empty, ar )
-
-        add_state s =
-            let
-                model =
-                    s.code_model
-            in
-            { s
-                | code_model =
-                    { model | highlight = Array.push (initProject True array "" output) model.highlight }
-            }
-    in
-    (.code_model
-        >> .highlight
-        >> Array.length
-        >> Highlight
-        >> succeed
-    )
-        |> withState
-        |> ignore (modifyState add_state)
