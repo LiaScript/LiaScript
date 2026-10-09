@@ -2,19 +2,21 @@ module Lia.Markdown.Survey.Sync exposing
     ( Data
     , Sync
     , decoder
-    , density
     , encoder
     , event
     , lockAnswered
     , matrix
     , select
     , sync
-    , toState
     , toString
     , toText
     , vector
     , wordCount
     )
+
+{-| Sharing survey answers within a classroom and summarizing the answers of
+all peers for the diagrams and tables of `Survey.View`.
+-}
 
 import Array
 import Dict exposing (Dict)
@@ -30,10 +32,15 @@ import Service.Event as Event exposing (Event)
 import Service.Sync
 
 
+{-| The submitted answer of a peer.
+-}
 type Sync
     = Sync Survey.State
 
 
+{-| A summarized answer: how many peers chose it (`absolute`) and the share in
+percent (`relative`).
+-}
 type alias Data =
     { value : String
     , absolute : Int
@@ -41,6 +48,8 @@ type alias Data =
     }
 
 
+{-| Only submitted surveys are shared.
+-}
 sync : Survey.Element -> Maybe Sync
 sync survey =
     if survey.submitted then
@@ -50,6 +59,9 @@ sync survey =
         Nothing
 
 
+{-| The event that shares the answer of survey `id`, `Event.none` if it is not
+submitted.
+-}
 event : Int -> Survey.Element -> Event
 event id =
     sync
@@ -71,69 +83,52 @@ lockAnswered :
 lockAnswered ownId answered sectionID vec =
     case ( sectionID, ownId ) of
         ( Just sID, Just myId ) ->
-            vec
-                |> Array.indexedMap
-                    (\idx elem ->
-                        if elem.submitted then
-                            elem
+            case Dict.get sID answered of
+                Just container ->
+                    Array.indexedMap
+                        (\idx elem ->
+                            if elem.submitted then
+                                elem
 
-                        else
-                            answered
-                                |> Dict.get sID
-                                |> Maybe.andThen (Container.get idx)
-                                |> Maybe.andThen (Dict.get myId)
-                                |> Maybe.map (\answer -> { elem | submitted = True, state = toState answer })
-                                |> Maybe.withDefault elem
-                    )
+                            else
+                                case Container.get idx container |> Maybe.andThen (Dict.get myId) of
+                                    Just (Sync state) ->
+                                        { elem | submitted = True, state = state }
+
+                                    Nothing ->
+                                        elem
+                        )
+                        vec
+
+                Nothing ->
+                    vec
 
         _ ->
             vec
 
 
+{-| Count the comma-separated words of all text answers, case-insensitive.
+-}
 wordCount : List Sync -> Maybe (List Data)
-wordCount =
-    List.foldl
-        (\s ( dict, counter ) ->
-            s
-                |> toText
-                |> Maybe.map
-                    (String.toUpper
-                        >> String.split ","
-                        >> List.map String.trim
-                    )
-                |> Maybe.map
-                    (\list ->
-                        List.foldl
-                            (\key ( d, c ) ->
-                                ( Dict.insert key
-                                    (d
-                                        |> Dict.get key
-                                        |> Maybe.map ((+) 1)
-                                        |> Maybe.withDefault 1
-                                    )
-                                    d
-                                , c + 1
-                                )
-                            )
-                            ( dict, counter )
-                            list
-                    )
-                |> Maybe.withDefault ( dict, counter )
-        )
-        ( Dict.empty, 0 )
-        >> (\( dict, total ) ->
-                dict
-                    |> Dict.toList
-                    |> List.map (\( key, value ) -> Data key value (percentage total value))
-                    |> ifEmpty
-           )
+wordCount list =
+    let
+        words =
+            list
+                |> List.filterMap toText
+                |> List.concatMap (String.toUpper >> String.split "," >> List.map String.trim)
+
+        total =
+            toFloat (List.length words)
+    in
+    words
+        |> List.foldl (\word -> Dict.update word (Maybe.withDefault 0 >> (+) 1 >> Just)) Dict.empty
+        |> Dict.toList
+        |> List.map (\( word, absolute ) -> Data word absolute (percentage total absolute))
+        |> ifEmpty
 
 
-toState : Sync -> Survey.State
-toState (Sync state) =
-    state
-
-
+{-| The text of a text answer.
+-}
 toText : Sync -> Maybe String
 toText (Sync s) =
     case s of
@@ -153,59 +148,53 @@ ifEmpty list =
         Just list
 
 
+{-| How often every option (the ids in `orderBy`) of a vector was chosen.
+-}
 vector : List String -> List Sync -> Maybe (List Data)
-vector orderBy list =
-    case List.filterMap toVector list of
-        [] ->
-            Nothing
-
-        data ->
-            let
-                total =
-                    data
-                        |> List.length
-                        |> toFloat
-
-                union =
-                    List.foldl
-                        (\v1 v2 ->
-                            Dict.merge
-                                Dict.insert
-                                (\key a b -> Dict.insert key (a + b))
-                                Dict.insert
-                                v1
-                                v2
-                                Dict.empty
-                        )
-                        Dict.empty
-                        data
-            in
-            orderBy
-                |> List.foldr
-                    (\key result ->
-                        (union
-                            |> Dict.get key
-                            |> Maybe.map (\absolute -> Data key absolute (percentage total absolute))
-                            |> Maybe.withDefault (Data key 0 0)
-                        )
-                            :: result
-                    )
-                    []
-                |> ifEmpty
+vector orderBy =
+    List.filterMap toVector >> summarize orderBy
 
 
-toVector : Sync -> Maybe (Dict String Int)
+{-| **private:** Count the checked variables in `orderBy`, `Nothing` if there
+are no answers.
+-}
+summarize : List String -> List (Dict String Bool) -> Maybe (List Data)
+summarize orderBy answers =
+    if List.isEmpty answers then
+        Nothing
+
+    else
+        let
+            total =
+                toFloat (List.length answers)
+        in
+        orderBy
+            |> List.map
+                (\key ->
+                    let
+                        absolute =
+                            answers
+                                |> List.filter (Dict.get key >> (==) (Just True))
+                                |> List.length
+                    in
+                    Data key absolute (percentage total absolute)
+                )
+            |> ifEmpty
+
+
+toVector : Sync -> Maybe (Dict String Bool)
 toVector (Sync s) =
     case s of
         Survey.Vector_State _ dict ->
-            dict
-                |> Dict.map boolToInt
-                |> Just
+            Just dict
 
         _ ->
             Nothing
 
 
+{-| The answer of a peer as cells of the details table, `keys` are the ids of
+the options (vector and matrix).
+-}
 toString : List String -> Sync -> List String
 toString keys (Sync s) =
     case s of
@@ -224,14 +213,7 @@ toString keys (Sync s) =
         Survey.Vector_State True dict ->
             keys
                 |> List.filterMap (\key -> Dict.get key dict)
-                |> List.map
-                    (\value ->
-                        if value then
-                            "🗹"
-
-                        else
-                            "☐"
-                    )
+                |> List.map checkbox
 
         Survey.Text_State str ->
             [ str ]
@@ -244,25 +226,31 @@ toString keys (Sync s) =
                 |> Array.toList
                 |> List.concatMap
                     (\dict ->
-                        keys
-                            |> List.map
-                                (\key ->
-                                    case Dict.get key dict of
-                                        Just True ->
-                                            "🗹"
-
-                                        Just False ->
-                                            "☐"
-
-                                        Nothing ->
-                                            ""
-                                )
+                        List.map
+                            (\key ->
+                                Dict.get key dict
+                                    |> Maybe.map checkbox
+                                    |> Maybe.withDefault ""
+                            )
+                            keys
                     )
 
-        _ ->
+        Survey.DragAndDrop_State _ _ _ ->
             [ "todo ..." ]
 
 
+checkbox : Bool -> String
+checkbox value =
+    if value then
+        "🗹"
+
+    else
+        "☐"
+
+
+{-| How often every option (`1` to `maxElements`) of a select or drop survey
+was chosen.
+-}
 select : Int -> List Sync -> Maybe (List Data)
 select maxElements list =
     case List.filterMap toSelect list of
@@ -272,16 +260,12 @@ select maxElements list =
         data ->
             let
                 total =
-                    data
-                        |> List.length
-                        |> toFloat
+                    toFloat (List.length data)
             in
             data
-                |> List.foldl
-                    (\s -> Array.update s (\i -> i + 1))
-                    (Array.repeat maxElements 0)
-                |> Array.indexedMap (\index absolute -> Data (String.fromInt (index + 1)) absolute (percentage total absolute))
-                |> Array.toList
+                |> List.foldl (\i -> Array.update i ((+) 1)) (Array.repeat maxElements 0)
+                |> Array.toIndexedList
+                |> List.map (\( i, absolute ) -> Data (String.fromInt (i + 1)) absolute (percentage total absolute))
                 |> ifEmpty
 
 
@@ -298,116 +282,41 @@ toSelect (Sync s) =
             Nothing
 
 
+{-| How often every option (the ids in `orderBy`) was chosen per row of a
+matrix, as one list of rows per option. If the peers have different numbers
+of rows, only the common rows are counted.
+-}
 matrix : List String -> List Sync -> Maybe (List (List Data))
 matrix orderBy list =
-    list
-        |> List.filterMap toMatrix
-        |> List.foldl
-            (\state result ->
-                case result of
-                    Just collection ->
-                        collection
-                            |> List.map2 (\s c -> Sync (Survey.Vector_State True s) :: c) state
-                            |> Just
-
-                    Nothing ->
-                        state
-                            |> List.map (Survey.Vector_State True >> Sync >> List.singleton)
-                            |> Just
-            )
+    case List.filterMap toMatrix list of
+        [] ->
             Nothing
-        |> Maybe.map
-            (List.map (vector orderBy)
-                >> List.map (Maybe.withDefault (List.map (\key -> Data key 0 0) orderBy))
-                >> List.Extra.transpose
-            )
+
+        first :: rest ->
+            rest
+                |> List.foldl (List.map2 (::)) (List.map List.singleton first)
+                |> List.map (summarize orderBy >> Maybe.withDefault [])
+                |> List.Extra.transpose
+                |> Just
 
 
 toMatrix : Sync -> Maybe (List (Dict String Bool))
 toMatrix (Sync s) =
     case s of
         Survey.Matrix_State _ state ->
-            state
-                |> Array.toList
-                |> Just
+            Just (Array.toList state)
 
         _ ->
             Nothing
 
 
-boolToInt : String -> Bool -> Int
-boolToInt _ v =
-    if v then
-        1
-
-    else
-        0
-
-
+{-| -}
 encoder : Sync -> JE.Value
 encoder (Sync state) =
     Json.fromState state
 
 
+{-| -}
 decoder : JD.Decoder Sync
 decoder =
     JD.map Sync Json.toState
-
-
-e : Float
-e =
-    2.718281828459045
-
-
-gaussKDE : Float -> Float -> Float
-gaussKDE xi x =
-    (1 / sqrt (2 * Basics.pi)) * e ^ (((xi - x) ^ 2) / -2)
-
-
-density : { steps : Maybe Int, width : Float } -> List Float -> { x : List Float, y : List Float }
-density { steps, width } sample =
-    let
-        mini =
-            List.minimum sample
-                |> Maybe.withDefault 0
-
-        maxi =
-            List.maximum sample
-                |> Maybe.withDefault 0
-
-        diff =
-            round (maxi - mini)
-
-        realSteps =
-            Maybe.withDefault
-                (if diff == 0 then
-                    4 * round width
-
-                 else
-                    4 * diff
-                )
-                steps
-
-        stepWidth =
-            ((maxi + width) - (mini - width))
-                / toFloat realSteps
-
-        xiData =
-            (mini - width)
-                |> List.repeat realSteps
-                |> List.indexedMap (\i v -> v + (toFloat i * stepWidth))
-
-        factor =
-            1 / (2 * width + toFloat (List.length sample))
-    in
-    { x = xiData
-    , y =
-        xiData
-            |> List.map
-                (\xi ->
-                    sample
-                        |> List.map (gaussKDE xi)
-                        |> List.sum
-                        |> (*) factor
-                )
-    }
