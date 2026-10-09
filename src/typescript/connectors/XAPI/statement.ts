@@ -156,8 +156,12 @@ export function generateAnsweredStatement(
       },
     },
     result: {
-      success: success,
-      completion: isSurvey ? success : true, // For surveys, completion indicates submitted
+      // xAPI allows a boolean or nothing; null makes the LRS reject the
+      // statement. For quizzes, null means "attempted, not yet decided".
+      ...(typeof success === 'boolean' ? { success } : {}),
+      // For surveys, completion indicates submitted; a quiz is complete once
+      // solved or resolved
+      completion: isSurvey ? success === true : success !== null,
       response: JSON.stringify(response),
       score: {
         scaled: maxScore > 0 ? score / maxScore : 0,

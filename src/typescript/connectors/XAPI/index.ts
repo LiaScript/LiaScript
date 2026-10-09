@@ -71,7 +71,8 @@ export class Connector extends Base.Connector {
     this.lastActivityTime = this.startTime
     this.accumulatedTime = 0 // No previous session time yet
     this.completionSent = false
-    this.registration = config.registration || this.generateUUID()
+    this.registration =
+      config.registration || this.storedRegistration(config.courseId, config.actor)
 
     // Default actor if none provided
     this.actor = config.actor || {
@@ -201,6 +202,29 @@ export class Connector extends Base.Connector {
       this.lrs = null
       // No state to restore, resolve immediately
       this.stateRestored = Promise.resolve()
+    }
+  }
+
+  /**
+   * The registration of a launch that did not get one from the LMS.
+   *
+   * State is restored from the statements of the current registration, so a
+   * fresh one per page load would never find the learner's earlier answers.
+   * It is kept per course and learner in localStorage instead.
+   */
+  private storedRegistration(courseId?: string, actor?: any): string {
+    const who = actor?.mbox || actor?.account?.name || actor?.name || 'anonymous'
+    const key = `lia-xapi-registration:${courseId || location.pathname}:${who}`
+
+    try {
+      const known = localStorage.getItem(key)
+      if (known) return known
+
+      const fresh = this.generateUUID()
+      localStorage.setItem(key, fresh)
+      return fresh
+    } catch (e) {
+      return this.generateUUID()
     }
   }
 
@@ -879,6 +903,11 @@ export class Connector extends Base.Connector {
   async open(uidDB: string, versionDB: number, slide: number) {
     if (!this.active || !this.lrs) return
 
+    // Where the learner left off, read before this visit's first slide
+    // replaces it
+    await this.stateRestored
+    const resumeAt = this.lastVisitedSlide
+
     // Reset tracking state
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
@@ -924,6 +953,11 @@ export class Connector extends Base.Connector {
     // Track initial slide
     if (slide !== undefined) {
       this.slide(slide)
+    }
+
+    // Return to the last visited slide, as the SCORM connectors do
+    if (resumeAt && resumeAt !== slide) {
+      setTimeout(() => (window as any)['LIA'].goto(resumeAt), 500)
     }
 
     // Check if course was already completed (from restored state)
@@ -1092,7 +1126,15 @@ export class Connector extends Base.Connector {
       data.forEach((quiz: any, i: number) => {
         if (!quiz) return
 
+        const previous = this.quizStates[id][i]
         this.quizStates[id][i] = quiz
+
+        // Every change on a slide stores all of its quizzes; only one the
+        // learner has worked on, and only when it changed, is an answer
+        const attempted = quiz.trial > 0 || quiz.solved !== 0
+        if (!attempted || JSON.stringify(previous) === JSON.stringify(quiz)) {
+          return
+        }
 
         console.warn('Storing quiz:', id, i, quiz)
 
@@ -1116,9 +1158,10 @@ export class Connector extends Base.Connector {
           id,
           i,
           quizType,
-          quiz.input || quiz.answer || '',
+          // the learner's input, as LiaScript keeps it
+          quiz.state ?? '',
           quiz.solved === 1 ? true : quiz.solved === -1 ? false : null,
-          quiz.score || 1,
+          quiz.solved === 1 ? quiz.score || 1 : 0,
           quiz.score || 1,
           quiz,
           this.registration
