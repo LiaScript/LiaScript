@@ -1,31 +1,44 @@
 module Lia.Definition.Types exposing
     ( Definition
     , Resource(..)
-    , addToResources
-    , add_formula
-    , add_imports
     , add_macros
-    , add_translation
     , default
     , getIcon
     , merge
     , setPersistent
     )
 
+{-| The definitions of a course, taken from the main comment at the top of the
+document (`author`, `language`, `@macros`, ...) and from the comments at the
+beginning of a section. The parser is `Lia.Definition.Parser`.
+-}
+
 import Const
 import Dict exposing (Dict)
-import Lia.Markdown.HTML.Attributes exposing (toURL)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Mode)
 
 
+{-| External resources: CSS `link`, JavaScript `script` and ES `SCRIPT`
+modules.
+-}
 type Resource
     = Link String
     | Script String
     | Module String
 
 
+{-| All course definitions:
+
+  - `base` and `appendix` (`?query` of the course URL, empty or starting with
+    `?`) turn relative URLs into absolute ones
+  - `macro` stores all `@macros`, also `comment`, `icon` and `persistent`
+  - `section` and `uid` are set while parsing a section, to generate unique
+    ids for `@uid`
+  - `lightMode` and `mode` are only set if defined, otherwise the user
+    settings are kept
+
+-}
 type alias Definition =
     { author : String
     , date : String
@@ -49,13 +62,15 @@ type alias Definition =
     , attributes : List Inlines
     , section : Int
     , uid : Int
-    , debug : Bool
     , onload : String
     , lightMode : Maybe Bool
     , mode : Maybe Mode
     }
 
 
+{-| Definitions of a course without a header. The `appendix` is passed
+without the leading `?`.
+-}
 default : String -> String -> Definition
 default base appendix =
     { author = ""
@@ -85,88 +100,34 @@ default base appendix =
     , attributes = []
     , section = -1
     , uid = -1
-    , debug = False
     , onload = ""
     , lightMode = Nothing
     , mode = Nothing
     }
 
 
-add_translation : String -> Definition -> Definition
-add_translation str def =
-    case String.words str of
-        [ lang, url ] ->
-            { def
-                | translation =
-                    Dict.insert lang (toURL def.base def.appendix url) def.translation
-            }
-
-        _ ->
-            def
-
-
-add_formula : String -> Definition -> Definition
-add_formula str def =
-    case str |> String.trim |> String.split " " of
-        name :: formula ->
-            { def
-                | formulas =
-                    Dict.insert
-                        (if String.startsWith "\\" name then
-                            name
-
-                         else
-                            "\\" ++ name
-                        )
-                        (formula
-                            |> String.join " "
-                            |> String.trim
-                        )
-                        def.formulas
-            }
-
-        _ ->
-            def
-
-
+{-| Add the definitions of an imported template `temp` to the course `orig`.
+Macros and formulas of `orig` win, attributes and resources are appended and
+a different `onload` is appended to the original one.
+-}
 add_macros : Definition -> Definition -> Definition
 add_macros orig temp =
     { orig
         | macro = Dict.union orig.macro temp.macro
         , attributes = List.append orig.attributes temp.attributes
         , onload =
-            String.trim
-                (orig.onload
-                    ++ (if orig.onload /= temp.onload then
-                            ";\n" ++ temp.onload
+            if orig.onload /= temp.onload then
+                String.trim (orig.onload ++ ";\n" ++ temp.onload)
 
-                        else
-                            ""
-                       )
-                )
+            else
+                String.trim orig.onload
         , resources = List.append orig.resources temp.resources
         , formulas = Dict.union orig.formulas temp.formulas
     }
 
 
-add_imports : String -> Definition -> Definition
-add_imports url def =
-    { def | imports = append link def.base def.appendix url def.imports }
-
-
-addToResources : (String -> Resource) -> String -> Definition -> Definition
-addToResources to urls def =
-    { def | resources = append to def.base def.appendix urls def.resources }
-
-
-append : (String -> a) -> String -> String -> String -> List a -> List a
-append to base appendix urls list =
-    urls
-        |> String.words
-        |> List.map (toURL base appendix >> to)
-        |> List.append list
-
-
+{-| The URL of the course icon, defined by `icon` or the LiaScript default.
+-}
 getIcon : Definition -> String
 getIcon =
     .macro
@@ -174,6 +135,8 @@ getIcon =
         >> Maybe.withDefault Const.icon
 
 
+{-| Overwrite the `persistent` macro.
+-}
 setPersistent : Bool -> Definition -> Definition
 setPersistent b def =
     { def
@@ -190,7 +153,8 @@ setPersistent b def =
 
 
 {-| Merge the main and the section definition if the section definition is
-present.
+present. Non-empty `author`, `email` and `date` and all macros of the section
+win.
 -}
 merge : Definition -> Maybe Definition -> Definition
 merge main sub =
@@ -200,23 +164,19 @@ merge main sub =
 
         Just def ->
             { main
-                | author =
-                    if String.isEmpty def.author then
-                        main.author
-
-                    else
-                        def.author
-                , email =
-                    if String.isEmpty def.email then
-                        main.email
-
-                    else
-                        def.email
-                , date =
-                    if String.isEmpty def.date then
-                        main.date
-
-                    else
-                        def.date
+                | author = orElse main.author def.author
+                , email = orElse main.email def.email
+                , date = orElse main.date def.date
                 , macro = Dict.union def.macro main.macro
             }
+
+
+{-| `str` or the `fallback` if `str` is empty.
+-}
+orElse : String -> String -> String
+orElse fallback str =
+    if String.isEmpty str then
+        fallback
+
+    else
+        str
