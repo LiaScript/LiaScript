@@ -128,10 +128,10 @@ expansion_Suite =
             \_ ->
                 expand [ ( "fn", "\\@0 @0" ), ( "aa", "A" ) ] [] "@fn(\\@aa)|"
                     |> Expect.equal "\\@0 \\@aa|"
-        , test "@@name shows the body in a debug box" <|
+        , test "@@name shows the body unparsed in a debug box" <|
             \_ ->
-                expand [ ( "fn", "*b* <i> @x\n@input" ) ] [] "@@fn|"
-                    |> Expect.equal "<lia-keep><pre id='ls'><code style='background: #CCCCCC; white-space: pre;'>\\*b\\* \\<i\\> @-@x<br id='ls'>@input</code></pre></lia-keep>|"
+                expand [ ( "fn", "*b* <i> & @x\n@input" ) ] [] "@@fn|"
+                    |> Expect.equal "<lia-keep><pre id='ls'><code style='background: #CCCCCC; white-space: pre;'>*b* &lt;i&gt; &amp; @x<br id='ls'>@input</code></pre></lia-keep>|"
         , test "@-@name shows the body as inline debug text" <|
             \_ ->
                 expand [ ( "fn", "*b* `c` @x \\`d" ) ] [] "@-@fn|"

@@ -275,10 +275,10 @@ inject ignoreIndentation call =
 mode : String -> ( String -> String, String )
 mode name =
     if String.startsWith "@@" name then
-        ( debug True, String.dropLeft 2 name )
+        ( debugBox, String.dropLeft 2 name )
 
     else if String.startsWith "@-@" name then
-        ( debug False, String.dropLeft 3 name )
+        ( debugInline, String.dropLeft 3 name )
 
     else
         ( identity, String.dropLeft 1 name )
@@ -396,12 +396,26 @@ expandAll =
         |> ignore macro
 
 
-{-| Show the expanded macro as text: markdown is escaped, line breaks become
-`<br>`, nested macros are marked as `@-@name`. `box` puts it into a gray
-code block.
+{-| `@@`: show the expanded macro in a gray code box. `<lia-keep>` is not
+parsed any further, so only HTML is escaped.
 -}
-debug : Bool -> String -> String
-debug box =
+debugBox : String -> String
+debugBox code =
+    "<lia-keep><pre id='ls'><code style='background: #CCCCCC; white-space: pre;'>"
+        ++ (code
+                |> String.replace "&" "&amp;"
+                |> String.replace "<" "&lt;"
+                |> String.replace ">" "&gt;"
+                |> String.replace "\n" "<br id='ls'>"
+           )
+        ++ "</code></pre></lia-keep>"
+
+
+{-| `@-@`: show the expanded macro as inline text. Markdown is escaped, line
+breaks become `<br>`, nested macros are marked as `@-@name`.
+-}
+debugInline : String -> String
+debugInline =
     Regex.replace markdownChars (.match >> (++) "\\")
         >> String.replace "<" "\\<"
         >> String.replace ">" "\\>"
@@ -416,12 +430,6 @@ debug box =
                     x.match
             )
         >> String.replace "\\<br id='ls'\\>" "<br id='ls'>"
-        >> (if box then
-                \code -> "<lia-keep><pre id='ls'><code style='background: #CCCCCC; white-space: pre;'>" ++ code ++ "</code></pre></lia-keep>"
-
-            else
-                identity
-           )
 
 
 markdownChars : Regex.Regex
