@@ -93,11 +93,17 @@ subView config slide id sub =
 
                     input =
                         main.input
+
+                    subMain =
+                        { main | scripts = x.effect_model.javascript, input = { input | path = ( "effect", slide ) :: ( "sub", id ) :: input.path } }
                 in
                 List.map
                     (view_block
                         { config
-                            | main = { main | scripts = x.effect_model.javascript, input = { input | path = ( "effect", slide ) :: ( "sub", id ) :: input.path } }
+                            | main = subMain
+
+                            -- inlines (and their scripts) have to use the scripts of the sub-section too
+                            , view = Inline.viewer subMain >> List.map (Html.map Script)
                             , section =
                                 { section
                                     | table_vector = x.table_vector

@@ -232,60 +232,36 @@ subUpdate js msg section =
                         |> Return.mapEvents "gallery" subsection.id
 
                 UpdateQuiz childMsg ->
-                    let
-                        result =
-                            Quiz.update Sync.disconnected Nothing js childMsg subsection.quiz_vector
-                    in
-                    case result.sub of
-                        Just _ ->
-                            subUpdate js
-                                (UpdateQuiz childMsg)
-                                (SubSection { subsection | quiz_vector = result.value })
-
-                        _ ->
-                            result
-                                |> Return.mapVal (\v -> SubSection { subsection | quiz_vector = v })
-                                |> Return.mapEvents "quiz" subsection.id
-                                |> Return.mapCmd UpdateQuiz
+                    subsection.quiz_vector
+                        |> Quiz.update Sync.disconnected Nothing js childMsg
+                        |> Return.mapVal (\v -> { subsection | quiz_vector = v })
+                        |> Return.mapEvents "quiz" subsection.id
+                        |> Return.mapCmd UpdateQuiz
+                        |> subScript
+                        |> Return.mapVal SubSection
 
                 UpdateSurvey childMsg ->
-                    let
-                        result =
-                            Survey.update Sync.disconnected Nothing js childMsg subsection.survey_vector
-                    in
-                    case result.sub of
-                        Just _ ->
-                            subUpdate js
-                                (UpdateSurvey childMsg)
-                                (SubSection { subsection | survey_vector = result.value })
-
-                        _ ->
-                            result
-                                |> Return.mapVal (\v -> SubSection { subsection | survey_vector = v })
-                                |> Return.mapEvents "survey" subsection.id
-                                |> Return.mapCmd UpdateSurvey
+                    subsection.survey_vector
+                        |> Survey.update Sync.disconnected Nothing js childMsg
+                        |> Return.mapVal (\v -> { subsection | survey_vector = v })
+                        |> Return.mapEvents "survey" subsection.id
+                        |> Return.mapCmd UpdateSurvey
+                        |> subScript
+                        |> Return.mapVal SubSection
 
                 UpdateTask childMsg ->
-                    let
-                        result =
-                            Task.update Nothing js childMsg subsection.task_vector
-                    in
-                    case result.sub of
-                        Just _ ->
-                            subUpdate js
-                                (UpdateTask childMsg)
-                                (SubSection { subsection | task_vector = result.value })
-
-                        _ ->
-                            result
-                                |> Return.mapVal (\v -> SubSection { subsection | task_vector = v })
-                                |> Return.mapEvents "task" subsection.id
+                    subsection.task_vector
+                        |> Task.update Nothing js childMsg
+                        |> Return.mapVal (\v -> { subsection | task_vector = v })
+                        |> Return.mapEvents "task" subsection.id
+                        |> subScript
+                        |> Return.mapVal SubSection
 
                 Script childMsg ->
                     subsection.effect_model
                         |> Effect.updateSub (subs Nothing) childMsg
                         |> Return.mapValCmd (\v -> SubSection { subsection | effect_model = v }) (UpdateEffect True)
-                        |> Return.mapEvents "script" subsection.id
+                        |> Return.mapEvents "effect" subsection.id
 
                 _ ->
                     Return.val section
@@ -296,7 +272,7 @@ subUpdate js msg section =
                     sub.effect_model
                         |> Effect.updateSub (subs Nothing) childMsg
                         |> Return.mapValCmd (\v -> SubSubSection { sub | effect_model = v }) (UpdateEffect True)
-                        |> Return.mapEvents "script" sub.id
+                        |> Return.mapEvents "effect" sub.id
 
                 UpdateEffect sound childMsg ->
                     sub.effect_model
@@ -306,6 +282,17 @@ subUpdate js msg section =
 
                 _ ->
                     Return.val section
+
+
+{-| Like `updateScript`, but the script message belongs to the scripts of the
+sub-section, it must not reach the scripts of the section.
+-}
+subScript :
+    Return { sec | id : Int, effect_model : E.Model SubSection } Msg Msg
+    -> Return { sec | id : Int, effect_model : E.Model SubSection } Msg Msg
+subScript return =
+    updateScript return
+        |> (\r -> { r | sub = Nothing })
 
 
 {-| Apply the script message `sub` of a return to the effect model.

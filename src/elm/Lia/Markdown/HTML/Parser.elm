@@ -23,7 +23,8 @@ import Combine
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
 import Lia.Markdown.HTML.Types as Tag exposing (Node(..))
 import Lia.Parser.Context as Context exposing (Context)
-import Lia.Parser.Helper exposing (newlines, stringTill)
+import Lia.Parser.Helper exposing (newlines, peek, stringTill)
+import Regex
 
 
 {-| Parse an HTML element, `parser` is used for the content of plain HTML
@@ -52,17 +53,22 @@ tag : Parser Context x -> ( Tag.Type, Parameters ) -> Parser Context (Node x)
 tag parser ( tagType, attributes ) =
     case tagType of
         Tag.HtmlNode name ->
-            succeed (Node name attributes)
-                |> ignore (regex "[ \t]*>[ \t]*\n*")
-                |> ignore (Context.addAbort ("</" ++ name ++ ">"))
-                |> andMap
-                    (manyTill
-                        (newlines
-                            |> keep parser
+            -- without a closing tag the content would be parsed up to the end
+            -- of the input, and every tag within it again and again
+            peek (Regex.contains (closingTagRegex name))
+                (succeed (Node name attributes)
+                    |> ignore (regex "[ \t]*>[ \t]*\n*")
+                    |> ignore (Context.addAbort ("</" ++ name ++ ">"))
+                    |> andMap
+                        (manyTill
+                            (newlines
+                                |> keep parser
+                            )
+                            (closingTag name)
                         )
-                        (closingTag name)
-                    )
-                |> ignore Context.popAbort
+                    |> ignore Context.popAbort
+                )
+                (fail ("no closing tag: " ++ name))
 
         Tag.HtmlVoidNode name ->
             succeed (Node name attributes [])
@@ -234,6 +240,14 @@ closingTag name =
     regex "[ \t\n]*</[ \t]*"
         |> keep chompName
         |> ignore (regex "\\s*>")
+
+
+{-| Matches anything that `closingTag name` accepts.
+-}
+closingTagRegex : String -> Regex.Regex
+closingTagRegex name =
+    Regex.fromStringWith { caseInsensitive = True, multiline = False } ("</[ \t]*" ++ name ++ "\\s*>")
+        |> Maybe.withDefault Regex.never
 
 
 isVoidElement : String -> Bool

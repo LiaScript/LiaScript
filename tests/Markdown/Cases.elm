@@ -177,6 +177,14 @@ suite =
             \_ ->
                 events "<script>1</script>\n\n![a](a.png)\n![b](b.png)\n" (MU.UpdateGallery (GalleryUpdate.Script (Script.Click 0)))
                     |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"script\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"exec\",\"param\":{\"delay\":0,\"code\":\"1\",\"worker\":false}}}" ]
+        , test "unclosed tags are parsed in linear time" <|
+            \_ ->
+                List.range 0 25
+                    |> List.map (\i -> "[<t" ++ String.fromInt i ++ ">] ")
+                    |> String.concat
+                    |> (\line -> parse (line ++ "\n"))
+                    |> Result.map List.length
+                    |> Expect.equal (Ok 1)
         , test "footnotes are shown and hidden" <|
             \_ ->
                 case section "text[^1]\n\n[^1]: note\n" of
@@ -368,11 +376,51 @@ suite =
             , test "scripts within a sub-section are run" <|
                 \_ ->
                     subEvents "<script>2</script>\n\ntext\n" (\_ -> Just (MU.Script (Script.Click 0)))
-                        |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"sub\",1],[\"script\",1],[\"script\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"exec\",\"param\":{\"delay\":0,\"code\":\"2\",\"worker\":false}}}" ]
+                        |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"sub\",1],[\"effect\",1],[\"script\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"exec\",\"param\":{\"delay\":0,\"code\":\"2\",\"worker\":false}}}" ]
             , test "scripts within a sub-sub-section are run" <|
                 \_ ->
                     subEvents "text <script>2</script>\n" (\_ -> Just (MU.Script (Script.Click 0)))
-                        |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"sub\",1],[\"script\",1],[\"script\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"exec\",\"param\":{\"delay\":0,\"code\":\"2\",\"worker\":false}}}" ]
+                        |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"sub\",1],[\"effect\",1],[\"script\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"exec\",\"param\":{\"delay\":0,\"code\":\"2\",\"worker\":false}}}" ]
+            , test "the result of a script within a sub-section is shown" <|
+                \_ ->
+                    case withSub "<script>2</script>\n\ntext\n" of
+                        Ok s ->
+                            let
+                                clicked =
+                                    MU.update (Sync.init []) (default "" "") (MU.Script (Script.Sub 1 (MU.Script (Script.Click 0)))) s
+
+                                -- JavaScript replies with the same track, the section is popped by Lia.Update
+                                reply =
+                                    clicked.events
+                                        |> List.head
+                                        |> Maybe.andThen (Event.popWithId >> Maybe.map (\( _, _, e ) -> e))
+                                        |> Maybe.map
+                                            (\e ->
+                                                { e
+                                                    | message =
+                                                        { cmd = "exec"
+                                                        , param = JE.object [ ( "ok", JE.bool True ), ( "result", JE.string "forty-two" ), ( "details", JE.list identity [] ) ]
+                                                        }
+                                                }
+                                            )
+                            in
+                            case reply of
+                                Just event ->
+                                    MU.handle (Sync.init []) (default "" "") "effect" event clicked.value
+                                        |> .value
+                                        |> render Textbook
+                                        |> String.contains "forty-two"
+                                        |> Expect.equal True
+
+                                Nothing ->
+                                    Expect.fail "no event"
+
+                        Err e ->
+                            Expect.fail e
+            , test "a script message of a quiz within a sub-section is applied once" <|
+                \_ ->
+                    subEvents "[( )] <script>1</script>\n[(X)] b\n" (\_ -> Just (MU.UpdateQuiz (QuizUpdate.Script (Script.Click 0))))
+                        |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"sub\",1],[\"effect\",1],[\"script\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"exec\",\"param\":{\"delay\":0,\"code\":\"1\",\"worker\":false}}}" ]
             , test "a gallery within a sub-section opens its media" <|
                 \_ ->
                     case withSub "![a](a.png)\n![b](b.png)\n" of
