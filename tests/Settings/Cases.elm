@@ -250,6 +250,11 @@ suite =
                                     |> (\e -> e == Expect.pass)
                             )
                         |> Expect.equal [ False, True, False ]
+            , test "the share icon for small screens is labeled share" <|
+                \_ ->
+                    view (View.menuShare "https://x" syncSupported En True base)
+                        |> Query.find [ Selector.class "hide-md-up" ]
+                        |> Query.has [ Selector.attribute (Html.Attributes.title "Share") ]
             , test "translate with Google" <|
                 \_ ->
                     view (View.menuTranslations "de" (Definition.default "" "") En True base)
@@ -263,7 +268,8 @@ suite =
                             header True True base
                     in
                     Expect.all
-                        [ \_ -> h |> Query.findAll [ Selector.id "lia-btn-chat" ] |> Query.first |> HE.simulate HE.click |> HE.expect (Toggle Chat)
+                        [ \_ -> h |> Query.find [ Selector.id "lia-btn-chat" ] |> HE.simulate HE.click |> HE.expect (Toggle Chat)
+                        , \_ -> h |> Query.find [ Selector.id "lia-btn-chat-toggler" ] |> HE.simulate HE.click |> HE.expect (Toggle Chat)
                         , \_ -> h |> Query.find [ Selector.id "lia-btn-support" ] |> HE.simulate HE.click |> HE.expect (Toggle SupportMenu)
                         ]
                         ()

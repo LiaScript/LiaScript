@@ -186,7 +186,7 @@ viewFullscreen grouping lang tabbable isFullscreen =
 {-| -}
 menuChat : Lang -> Bool -> Settings -> List (Html Msg)
 menuChat lang tabbable settings =
-    [ btnChat { lang = lang, tabbable = tabbable, chat = settings.chat, hide = False } ]
+    [ btnChat { id = "lia-btn-chat", lang = lang, tabbable = tabbable, chat = settings.chat, hide = False } ]
 
 
 viewTheme : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> String -> Bool -> Html Msg
@@ -781,8 +781,8 @@ btnSupport lang open =
         ]
 
 
-btnChat : { lang : Lang, tabbable : Bool, hide : Bool, chat : { show : Bool, updates : Bool } } -> Html Msg
-btnChat { lang, tabbable, hide, chat } =
+btnChat : { id : String, lang : Lang, tabbable : Bool, hide : Bool, chat : { show : Bool, updates : Bool } } -> Html Msg
+btnChat { id, lang, tabbable, hide, chat } =
     if hide then
         Html.span [ Attr.style "margin-inline-end" "4rem" ] []
 
@@ -804,7 +804,7 @@ btnChat { lang, tabbable, hide, chat } =
             , msg = Just (Toggle Chat)
             , icon = iconName
             }
-            [ Attr.id "lia-btn-chat"
+            [ Attr.id id
             , Attr.class "lia-btn lia-btn--transparent"
             , A11y_Aria.hasMenuPopUp
             , A11y_Aria.expanded chat.show
@@ -969,7 +969,7 @@ menuShare url sync lang tabbable settings =
     , Html.i
         [ Attr.class "icon icon-social hide-md-up"
         , lang
-            |> Trans.confInformation
+            |> Trans.confShare
             |> Attr.title
         ]
         []
@@ -1185,7 +1185,7 @@ header { online, active, lang, screen, settings, logo, progress, buttons } =
                     [ Attr.class "lia-support-menu__toggler"
                     , Attr.style "left" "-4rem"
                     ]
-                    [ btnChat { lang = lang, hide = settings.support_menu, tabbable = True, chat = settings.chat }
+                    [ btnChat { id = "lia-btn-chat-toggler", lang = lang, hide = settings.support_menu, tabbable = True, chat = settings.chat }
                     , btnSupport lang settings.support_menu
                     ]
 
