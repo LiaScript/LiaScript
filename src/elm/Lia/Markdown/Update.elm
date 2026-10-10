@@ -138,7 +138,6 @@ update sync globals msg section =
             section.gallery_vector
                 |> Gallery.update childMsg
                 |> Return.mapVal (\v -> { section | gallery_vector = v })
-                |> Return.mapEvents "gallery" section.id
                 |> updateScript
 
         UpdateSurvey childMsg ->
@@ -229,7 +228,6 @@ subUpdate js msg section =
                     subsection.gallery_vector
                         |> Gallery.update childMsg
                         |> Return.mapVal (\v -> SubSection { subsection | gallery_vector = v })
-                        |> Return.mapEvents "gallery" subsection.id
 
                 UpdateQuiz childMsg ->
                     subsection.quiz_vector
@@ -420,9 +418,6 @@ toMsg event topic =
 
         "table" ->
             Just (UpdateTable (Table.handle event))
-
-        "gallery" ->
-            Just (UpdateGallery (Gallery.handle event))
 
         _ ->
             Nothing
