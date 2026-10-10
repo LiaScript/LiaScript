@@ -650,7 +650,7 @@ info =
             , Html.text "After a successful connection, you can either share your settings with your audience or the new URL, which contains the entire classroom configuration. "
             , Html.text "A combination of your course-URL and the room name are used to create a unique ID and to prevent collisions with other courses. "
             , Html.text "However, if you want to establish a connection between exported courses (see "
-            , link "LiaScript-Exporter" ""
+            , link "LiaScript-Exporter" "https://github.com/LiaScript/LiaScript-Exporter"
             , Html.text ") on different platforms, such as "
             , link "Moodle" "https://en.wikipedia.org/wiki/Moodle"
             , Html.text ", "
@@ -832,7 +832,7 @@ infoOn about =
                 , Html.text " is a small, easy, and fast real-time database for syncing data across various users, talking to relay servers over "
                 , link "WebSocket" "https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"
                 , Html.text ". You can use the default relay servers hosted at "
-                , link Const.gunDB_ServerURL Const.gunDB_ServerURL
+                , Html.code [] [ Html.text Const.gunDB_ServerURL ]
                 , Html.text ", themselves community-hosted volunteer relays, not run by LiaScript — or pick others, or add your own, from the list "
                 , link "here" "https://github.com/amark/gun/wiki/volunteer.dht"
                 , Html.text ". The implementation of this classroom can be found "
@@ -860,7 +860,7 @@ infoOn about =
                 , Html.text " Nostr: chat, quiz and code updates are published as signed Nostr events and fanned out through every configured relay, rather than the relay only helping two browsers find each other for a direct WebRTC link. "
                 , Html.text "Users are identified by public keys, and all events are signed for verification, giving resilience against censorship and single points of failure since data passes through multiple independent, volunteer-run relays. "
                 , Html.text "You can use the default relay servers hosted at "
-                , link Const.nostrRelayURLs Const.nostrRelayURLs
+                , Html.code [] [ Html.text Const.nostrRelayURLs ]
                 , Html.text " — themselves community-hosted volunteer relays, not run by LiaScript — or pick others, or add your own."
                 ]
 
@@ -963,7 +963,7 @@ trysteroRelayHint kind =
 
 link : String -> String -> Html msg
 link title url =
-    Html.a [ Attr.href url, Attr.target "blank" ] [ Html.text title ]
+    Html.a [ Attr.href url, Attr.target "_blank" ] [ Html.text title ]
 
 
 view : Bool -> Bool -> Backend -> Html Msg
