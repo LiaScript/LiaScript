@@ -484,6 +484,52 @@ suite =
                         Err e ->
                             Expect.fail e
             ]
+        , describe "script bodies"
+            (List.map
+                (\( code, expected ) ->
+                    test ("<script>" ++ code) <|
+                        \_ ->
+                            section ("<script>" ++ code ++ "\n")
+                                |> Result.map (.effect_model >> .javascript >> Array.toList >> List.map .script)
+                                |> Expect.equal (Ok expected)
+                )
+                [ -- unclosed strings used to backtrack exponentially (this took minutes)
+                  ( "`abcdefghijklmnopqrstuvwxyz0123456789-1. \n(<lia-keep>", [] )
+                , ( "'abcdefghijklmnopqrstuvwxyz0123456789-1. \n(<lia-keep>", [] )
+                , ( "let s = '</script>'; 1</script>", [ "let s = '</script>'; 1" ] )
+                , ( "let s = \"</script>\"; 1</script>", [ "let s = \"</script>\"; 1" ] )
+                , ( "`a\\`</script>` + 1</script>", [ "`a\\`</script>` + 1" ] )
+
+                -- a backslash escapes the next character, also a backslash
+                , ( "let s = '\\\\'; 1</script>", [ "let s = '\\\\'; 1" ] )
+                , ( "let s = \"\\\\\"; 1</script>", [ "let s = \"\\\\\"; 1" ] )
+                , ( "`\\\\\\`</script>`</script>", [ "`\\\\\\`</script>`" ] )
+                , ( "`\\\\`; 1</script>", [ "`\\\\`; 1" ] )
+
+                -- strings end at the end of the line, also after a backslash
+                , ( "let s = 'a\\\n</script>", [ "let s = 'a\\" ] )
+
+                -- only </script> ends the code, other closing tags belong to it
+                , ( "s.replace(/</g, '&lt;')</script>", [ "s.replace(/</g, '&lt;')" ] )
+                , ( "// see </div>\nx = 1</script>", [ "// see </div>\nx = 1" ] )
+                , ( "x = `<ul>${xs.map(x => `<li>${x}</li>`).join('')}</ul>`</script>", [ "x = `<ul>${xs.map(x => `<li>${x}</li>`).join('')}</ul>`" ] )
+                , ( "x = `${ { a: '`' }.a }`</script>", [ "x = `${ { a: '`' }.a }`" ] )
+
+                -- quotes in regular expressions, a / after a value is a division
+                , ( "x = /'/.test(s); y = '</script>'</script>", [ "x = /'/.test(s); y = '</script>'" ] )
+                , ( "x = s.split(/\"/)</script>", [ "x = s.split(/\"/)" ] )
+                , ( "x = a / 2; s = \"a/b\"</script>", [ "x = a / 2; s = \"a/b\"" ] )
+                , ( "x = (a) / 2 / '</script>'</script>", [ "x = (a) / 2 / '</script>'" ] )
+                , ( "x = { k: 1 } / 2 / '</script>'</script>", [ "x = { k: 1 } / 2 / '</script>'" ] )
+                , ( "if (a) { b }\n/'/.test(s)</script>", [ "if (a) { b }\n/'/.test(s)" ] )
+                , ( "return /[/']/</script>", [ "return /[/']/" ] )
+
+                -- but a line comment ends at </script>, as in HTML
+                , ( "x = 1 // one</script>", [ "x = 1 // one" ] )
+                , ( "x = 1 <!-- one</script>", [ "x = 1 <!-- one" ] )
+                , ( "/* </script> */</script>", [ "/* </script> */" ] )
+                ]
+            )
         ]
 
 
