@@ -1,6 +1,7 @@
 module Lia.Model exposing
     ( Model
     , clear
+    , getTitle
     , init
     , loadResource
     )
@@ -12,6 +13,7 @@ import Json.Encode as JE
 import Lia.Chat.Model as Chat
 import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
 import Lia.Index.Model as Index
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Parser.PatReplace exposing (repo)
 import Lia.Section exposing (Sections)
 import Lia.Settings.Json
@@ -190,29 +192,43 @@ as well as a list of events to be send through the elm-port.
 loadResource : List Resource -> List Resource -> ( List Resource, List Event )
 loadResource old new =
     let
-        member x =
-            not (List.member x old)
-
-        to_load =
-            List.filter member new
+        toLoad =
+            List.filter (\res -> not (List.member res old)) new
     in
-    ( List.append old to_load
-    , List.map
-        (\res ->
-            case res of
-                Script url ->
-                    Service.Resource.script url
-
-                Link url ->
-                    Service.Resource.link url
-
-                Module url ->
-                    Service.Resource.script_module url
-        )
-        to_load
+    ( old ++ toLoad
+    , List.map load toLoad
     )
 
 
+load : Resource -> Event
+load res =
+    case res of
+        Script url ->
+            Service.Resource.script url
+
+        Link url ->
+            Service.Resource.link url
+
+        Module url ->
+            Service.Resource.script_module url
+
+
+{-| The stringified title of the first section, `"Lia"` if there is none:
+
+    `# **Main Title**` -> "Main Title"
+
+-}
+getTitle : Sections -> String
+getTitle =
+    Array.get 0
+        >> Maybe.map (.title >> stringify >> String.trim)
+        >> Maybe.withDefault "Lia"
+
+
+{-| Reset everything that belongs to the loaded course (when going back to the
+index), but keep the user settings, the classroom, the pane and the video
+overlay. The seed changes, so that the next course gets other random values.
+-}
 clear : Model -> Model
 clear model =
     { model
