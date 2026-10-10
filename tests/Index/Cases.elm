@@ -86,14 +86,24 @@ suite =
                                 |> Query.find [ Selector.tag "input" ]
                                 |> HE.simulate (HE.custom "keydown" (JE.object [ ( "key", JE.string "Enter" ), ( "keyCode", JE.int 13 ), ( "shiftKey", JE.bool False ) ]))
                                 |> HE.expect (ScanIndex "")
-                   , test "other keys are not handled" <|
+                   , test "other keys do not reach the slide navigation" <|
                         \_ ->
                             searchView True [ True ] "a"
                                 |> Query.find [ Selector.tag "input" ]
                                 |> HE.simulate (HE.custom "keydown" (JE.object [ ( "key", JE.string "ArrowLeft" ), ( "keyCode", JE.int 37 ), ( "shiftKey", JE.bool False ) ]))
-                                |> HE.toResult
-                                |> Result.toMaybe
-                                |> Expect.equal Nothing
+                                |> Expect.all [ HE.expect NoOp, HE.expectStopPropagation ]
+                   , test "Enter does not reach the slide navigation either" <|
+                        \_ ->
+                            searchView True [ True ] "a"
+                                |> Query.find [ Selector.tag "input" ]
+                                |> HE.simulate (HE.custom "keydown" (JE.object [ ( "key", JE.string "Enter" ), ( "keyCode", JE.int 13 ), ( "shiftKey", JE.bool False ) ]))
+                                |> HE.expectStopPropagation
+                   , test "Shift+Enter keeps the search" <|
+                        \_ ->
+                            searchView True [ True ] "a"
+                                |> Query.find [ Selector.tag "input" ]
+                                |> HE.simulate (HE.custom "keydown" (JE.object [ ( "key", JE.string "Enter" ), ( "keyCode", JE.int 13 ), ( "shiftKey", JE.bool True ) ]))
+                                |> HE.expect NoOp
                    , test "the clear button deletes the search" <|
                         \_ ->
                             searchView True [ True ] "a"
