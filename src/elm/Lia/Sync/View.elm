@@ -7,7 +7,6 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Index.View.Popup as Popup
-import Lia.Settings.Update exposing (Msg(..))
 import Lia.Sync.Classroom as Classroom
 import Lia.Sync.Types as Sync exposing (ClassroomMode(..), State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
@@ -19,12 +18,7 @@ view : Sync.Settings -> Html Msg
 view settings =
     let
         open =
-            case settings.state of
-                Sync.Disconnected ->
-                    True
-
-                _ ->
-                    False
+            settings.state == Sync.Disconnected
     in
     Html.div
         [ Attr.class "lia-classroom" ]
@@ -313,7 +307,7 @@ view settings =
                             (List.filterMap identity [ Backend.capacityBadge via, Backend.persistenceBadge via ]
                                 ++ (via |> Backend.badges |> List.map Backend.badge)
                             )
-                        , Backend.infoOn support via
+                        , Backend.infoOn via
                         , if settings.fromUrl then
                             Html.text ""
 

@@ -166,10 +166,6 @@ init supportedBackends =
             , Via.Torrent { relayUrls = "", turnConfig = "" }
             , Via.MQTT { relayUrls = "", turnConfig = "" }
             , Via.IPFS { turnConfig = "" }
-
-            --, Via.Jitsi Const.jitsi_Domain
-            --, Via.Matrix { baseURL = "", userId = "", accessToken = "" }
-            --, Via.P2PT Const.webTorrent_TrackerURLs
             , Via.Ably { apiKey = "", persistent = False }
             , Via.PubNub { pubKey = "", subKey = "" }
             , Via.Edrys
@@ -186,12 +182,7 @@ init supportedBackends =
     , peers = Dict.empty
     , peersHistory = Dict.empty
     , error = Nothing
-    , data =
-        { cursor = []
-        , survey = Dict.empty
-        , quiz = Dict.empty
-        , code = Dict.empty
-        }
+    , data = disconnected.data
     , scriptsEnabled = False
     , persistent = False
     , saved = []
@@ -221,8 +212,6 @@ isMember list element =
         ( (Via.GUN _) :: _, Via.GUN _ ) ->
             ( True, element )
 
-        -- ( (Via.Matrix _) :: _, Via.Matrix _ ) ->
-        --     ( True, element )
         ( (Via.PubNub _) :: _, Via.PubNub _ ) ->
             ( True, element )
 
@@ -232,8 +221,6 @@ isMember list element =
         ( (Via.Nostr _) :: _, Via.Nostr _ ) ->
             ( True, element )
 
-        -- ( (Via.Jitsi _) :: _, Via.Jitsi _ ) ->
-        --     ( True, element )
         ( (Via.P2PT _) :: _, Via.P2PT _ ) ->
             ( True, element )
 
@@ -359,13 +346,9 @@ filter shouldFilter settings container =
     case ( id settings.state, shouldFilter ) of
         ( Just main, True ) ->
             -- only show the result of a voting or quizzes if the user has also solved it ...
-            if
+            if Dict.member main container then
                 container
-                    |> Dict.keys
-                    |> List.member main
-            then
-                container
-                    |> Dict.filter (filter_ (Dict.insert main settings.name settings.peers))
+                    |> Dict.filter (\peer _ -> peer == main || Dict.member peer settings.peers)
                     |> Just
 
             else
@@ -382,40 +365,18 @@ get : Maybe Settings -> (Data -> Dict Int (Container sync)) -> Int -> Int -> May
 get settings selector id1 id2 =
     case settings of
         Just s ->
-            if s.mode == Shared then
+            if s.mode == Shared || s.owner then
                 s.data
                     |> selector
                     |> Dict.get id1
-                    |> Maybe.andThen (Container.get id2 >> Maybe.map2 (filter True) settings)
-                    |> Maybe.withDefault Nothing
-
-            else if s.owner then
-                s.data
-                    |> selector
-                    |> Dict.get id1
-                    |> Maybe.andThen (Container.get id2 >> Maybe.map2 (filter False) settings)
-                    |> Maybe.withDefault Nothing
+                    |> Maybe.andThen (Container.get id2)
+                    |> Maybe.andThen (filter (s.mode == Shared) s)
 
             else
                 Nothing
 
-        _ ->
+        Nothing ->
             Nothing
-
-
-
--- case settings |> Maybe.map (.data >> selector ) of
---     ( Just s, Just local ) ->
---         local
---             |> Container.get id_
---             |> Maybe.andThen (filter s)
---     _ ->
---         Nothing
-
-
-filter_ : Dict String String -> String -> sync -> Bool
-filter_ ids key _ =
-    Dict.member key ids
 
 
 {-| Get the own unique user-id only if a connection was established.
