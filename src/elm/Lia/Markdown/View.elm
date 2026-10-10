@@ -29,6 +29,7 @@ import Lia.Markdown.Gallery.View as Gallery
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
+import Lia.Markdown.Inline.Config as InlineConfig
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types as Inline exposing (Inlines, htmlBlock, mediaBlock)
 import Lia.Markdown.Inline.View as Inline
@@ -78,58 +79,67 @@ the effects of the section.
 -}
 subView : Config Msg -> Int -> Int -> SubSection -> List (Html (Script.Msg Msg))
 subView config slide id sub =
+    let
+        section =
+            config.section
+
+        effects =
+            config.section.effect_model
+
+        main =
+            config.main
+    in
     List.map (Html.map (Script.Sub id)) <|
         case sub of
             SubSection x ->
                 let
-                    section =
-                        config.section
-
-                    effects =
-                        config.section.effect_model
-
-                    main =
-                        config.main
-
                     input =
                         main.input
-
-                    subMain =
-                        { main | scripts = x.effect_model.javascript, input = { input | path = ( "effect", slide ) :: ( "sub", id ) :: input.path } }
                 in
                 List.map
                     (view_block
-                        { config
-                            | main = subMain
-
-                            -- inlines (and their scripts) have to use the scripts of the sub-section too
-                            , view = Inline.viewer subMain >> List.map (Html.map Script)
-                            , section =
-                                { section
-                                    | table_vector = x.table_vector
-                                    , quiz_vector = x.quiz_vector
-                                    , survey_vector = x.survey_vector
-                                    , code_model = x.code_model
-                                    , task_vector = x.task_vector
-                                    , gallery_vector = x.gallery_vector
-                                    , effect_model =
-                                        { effects
-                                            | comments = x.effect_model.comments
-                                            , javascript = x.effect_model.javascript
-                                        }
-                                }
-                        }
+                        (withSubViewer
+                            { config
+                                | main = { main | scripts = x.effect_model.javascript, input = { input | path = ( "effect", slide ) :: ( "sub", id ) :: input.path } }
+                                , section =
+                                    { section
+                                        | table_vector = x.table_vector
+                                        , quiz_vector = x.quiz_vector
+                                        , survey_vector = x.survey_vector
+                                        , code_model = x.code_model
+                                        , task_vector = x.task_vector
+                                        , gallery_vector = x.gallery_vector
+                                        , effect_model =
+                                            { effects
+                                                | comments = x.effect_model.comments
+                                                , javascript = x.effect_model.javascript
+                                            }
+                                    }
+                            }
+                        )
                     )
                     x.body
 
             SubSubSection x ->
-                let
-                    main =
-                        config.main
-                in
-                x.body
-                    |> Inline.viewer { main | scripts = x.effect_model.javascript }
-                    |> List.map (Html.map Script)
+                { config
+                    | main = { main | scripts = x.effect_model.javascript }
+                    , section = { section | effect_model = { effects | javascript = x.effect_model.javascript } }
+                }
+                    |> withSubViewer
+                    |> .view
+                    |> (|>) x.body
+
+
+{-| Inlines (and their scripts) of a sub-section use its own scripts, results of
+these scripts are sub-sections again.
+-}
+withSubViewer : Config Msg -> Config Msg
+withSubViewer config =
+    let
+        main =
+            InlineConfig.setViewer (subView config) config.main
+    in
+    { config | main = main, view = Inline.viewer main >> List.map (Html.map Script) }
 
 
 {-| The title, the opened footnote, all blocks, and at the end either all

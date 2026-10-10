@@ -17,7 +17,7 @@ import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Types as Script exposing (Msg(..), Script, Scripts, Stdout(..))
 import Lia.Parser.Parser exposing (parse_subsection)
-import Lia.Section exposing (SubSection)
+import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (focus)
 import List.Extra
 import Process
@@ -302,8 +302,9 @@ evaluated async globals id param scripts =
     case Array.get id scripts of
         Just old ->
             let
-                node =
+                ( node, started ) =
                     eval async globals id (Service.Script.decode param) old
+                        |> start id old
 
                 javascript =
                     Array.set id node scripts
@@ -325,7 +326,7 @@ evaluated async globals id param scripts =
                     else
                         Array.update id (\js -> { js | update = False })
             in
-            case node.output of
+            (case node.output of
                 Nothing ->
                     javascript
                         |> done
@@ -355,9 +356,47 @@ evaluated async globals id param scripts =
                              else
                                 []
                             )
+            )
+                |> Return.batchEvents started
 
         Nothing ->
             Return.val scripts
+
+
+{-| A new LiaScript result runs its visible scripts, like a section does when it
+gets shown. Their events are tracked through the result (`sub`) and its effects,
+so that the replies find their way back, also for results within results.
+-}
+start : Int -> Script SubSection -> Script SubSection -> ( Script SubSection, List Event )
+start id old node =
+    case node.result of
+        Just (IFrame sub) ->
+            if node.result /= old.result then
+                let
+                    runVisible model =
+                        let
+                            scripts =
+                                getVisible model.visible model.javascript
+                        in
+                        ( { model | javascript = List.foldl (\( i, _, _ ) -> setRunning i True) model.javascript scripts }
+                          -- delayed, so that the result is rendered before
+                        , List.map (execute 100 >> Event.pushWithId "effect" id >> Event.pushWithId "sub" id) scripts
+                        )
+                in
+                case sub of
+                    SubSection s ->
+                        runVisible s.effect_model
+                            |> Tuple.mapFirst (\m -> { node | result = Just (IFrame (SubSection { s | effect_model = m })) })
+
+                    SubSubSection s ->
+                        runVisible s.effect_model
+                            |> Tuple.mapFirst (\m -> { node | result = Just (IFrame (SubSubSection { s | effect_model = m })) })
+
+            else
+                ( node, [] )
+
+        _ ->
+            ( node, [] )
 
 
 {-| Apply an evaluation result, the special results are:

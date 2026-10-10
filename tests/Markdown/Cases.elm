@@ -7,7 +7,11 @@ corpora, which are otherwise used as a golden master.
 import Array
 import Dict
 import Expect
+import Test.Html.Event as HE
+import Test.Html.Query as Query
+import Test.Html.Selector as Selector
 import HtmlSnapshot
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Gallery.Update as GalleryUpdate
@@ -19,6 +23,7 @@ import Lia.Markdown.Update as MU
 import Lia.Markdown.View as MView
 import Lia.Settings.Types as Settings exposing (Mode(..))
 import Lia.Sync.Types as Sync
+import Return
 import Service.Event as Event
 import Lia.Definition.Types exposing (default)
 import Lia.Markdown.Inline.Types as Inline
@@ -361,6 +366,38 @@ suite =
                             )
                         |> Expect.equal (Ok 2)
             ]
+        , describe "LiaScript results within LiaScript results"
+            [ test "scripts of results are run and their results are shown, at any depth" <|
+                \_ ->
+                    nestedCourse
+                        |> Result.map (render Textbook >> (\html -> List.map (\text -> String.contains text html) [ "Level one", "Level two", "deep" ]))
+                        |> Expect.equal (Ok [ True, True, True ])
+            , test "a quiz within a result within a result is checked by its own script" <|
+                \_ ->
+                    case nestedCourse |> Result.andThen typeX of
+                        Ok s ->
+                            case nestedSub [ 0, 0 ] s |> Maybe.andThen (subQuiz (\quiz -> QuizUpdate.Check quiz.id quiz.quiz)) of
+                                Just msg ->
+                                    MU.update (Sync.init []) (default "" "") (MU.Script (Script.Sub 0 (MU.Script (Script.Sub 0 msg)))) s
+                                        |> (\r -> settle 20 r.events r.value)
+                                        |> nestedSub [ 0, 0 ]
+                                        |> Maybe.map
+                                            (\sub ->
+                                                case sub of
+                                                    Section.SubSection { quiz_vector } ->
+                                                        quiz_vector |> Array.toList |> List.map (.solved >> Debug.toString)
+
+                                                    Section.SubSubSection _ ->
+                                                        []
+                                            )
+                                        |> Expect.equal (Just [ "Solved" ])
+
+                                Nothing ->
+                                    Expect.fail "no nested quiz"
+
+                        Err e ->
+                            Expect.fail e
+            ]
         , describe "LiaScript results of scripts (sub-sections)"
             [ test "quiz events are tracked with the id of the script" <|
                 \_ ->
@@ -369,25 +406,23 @@ suite =
                             [ "{\"reply\":false,\"track\":[[\"effect\",0],[\"sub\",1],[\"quiz\",1]],\"service\":\"slide\",\"message\":{\"cmd\":\"scroll_into_view\",\"param\":{\"id\":\"lia-quiz-solution-0\",\"delay\":0,\"block\":\"nearest\"}}}"
                             , "{\"reply\":false,\"track\":[[\"effect\",0],[\"sub\",1],[\"quiz\",1]],\"service\":\"slide\",\"message\":{\"cmd\":\"scroll_into_view\",\"param\":{\"id\":\"lia-quiz-feedback-0\",\"delay\":0,\"block\":\"nearest\"}}}"
                             ]
-            , test "task events are tracked with the id of the script" <|
+            , test "tasks within a sub-section are checked by their own scripts" <|
                 \_ ->
                     subEvents "- [ ] a\n<script>@input</script>\n" (\_ -> Just (MU.UpdateTask (TaskUpdate.Toggle 0 0)))
-                        |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"sub\",1],[\"task\",1],[\"eval\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"eval\",\"param\":\"0\"}}" ]
-            , test "scripts within a sub-section are run" <|
+                        |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"sub\",1],[\"task\",1],[\"eval\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"eval\",\"param\":\"[true]\"}}" ]
+            , test "the scripts of a sub-section are started, when it is created" <|
                 \_ ->
-                    subEvents "<script>2</script>\n\ntext\n" (\_ -> Just (MU.Script (Script.Click 0)))
-                        |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"sub\",1],[\"effect\",1],[\"script\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"exec\",\"param\":{\"delay\":0,\"code\":\"2\",\"worker\":false}}}" ]
-            , test "scripts within a sub-sub-section are run" <|
+                    startEvents "<script>2</script>\n\ntext\n"
+                        |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"sub\",1],[\"effect\",1],[\"script\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"exec\",\"param\":{\"delay\":100,\"code\":\"2\",\"worker\":false}}}" ]
+            , test "the scripts of a sub-sub-section are started, when it is created" <|
                 \_ ->
-                    subEvents "text <script>2</script>\n" (\_ -> Just (MU.Script (Script.Click 0)))
-                        |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"sub\",1],[\"effect\",1],[\"script\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"exec\",\"param\":{\"delay\":0,\"code\":\"2\",\"worker\":false}}}" ]
+                    startEvents "text <script>2</script>\n"
+                        |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"sub\",1],[\"effect\",1],[\"script\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"exec\",\"param\":{\"delay\":100,\"code\":\"2\",\"worker\":false}}}" ]
             , test "the result of a script within a sub-section is shown" <|
                 \_ ->
-                    case withSub "<script>2</script>\n\ntext\n" of
-                        Ok s ->
+                    case withSubReturn "<script>2</script>\n\ntext\n" of
+                        Ok clicked ->
                             let
-                                clicked =
-                                    MU.update (Sync.init []) (default "" "") (MU.Script (Script.Sub 1 (MU.Script (Script.Click 0)))) s
 
                                 -- JavaScript replies with the same track, the section is popped by Lia.Update
                                 reply =
@@ -419,8 +454,15 @@ suite =
                             Expect.fail e
             , test "a script message of a quiz within a sub-section is applied once" <|
                 \_ ->
-                    subEvents "[( )] <script>1</script>\n[(X)] b\n" (\_ -> Just (MU.UpdateQuiz (QuizUpdate.Script (Script.Click 0))))
-                        |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"sub\",1],[\"effect\",1],[\"script\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"exec\",\"param\":{\"delay\":0,\"code\":\"1\",\"worker\":false}}}" ]
+                    -- the script started with the sub-section has to finish first
+                    case withSubReturn "[( )] <script>7</script>\n[(X)] b\n" |> Result.map (\r -> settleWith (\_ -> Just "done") 5 r.events r.value) of
+                        Ok s ->
+                            MU.update (Sync.init []) (default "" "") (MU.Script (Script.Sub 1 (MU.UpdateQuiz (QuizUpdate.Script (Script.Click 0))))) s
+                                |> encodeEvents
+                                |> Expect.equal [ "{\"reply\":true,\"track\":[[\"effect\",0],[\"sub\",1],[\"effect\",1],[\"script\",0]],\"service\":\"script\",\"message\":{\"cmd\":\"exec\",\"param\":{\"delay\":0,\"code\":\"7\",\"worker\":false}}}" ]
+
+                        Err e ->
+                            Expect.fail e
             , test "a gallery within a sub-section opens its media" <|
                 \_ ->
                     case withSub "![a](a.png)\n![b](b.png)\n" of
@@ -514,25 +556,152 @@ render mode s =
         |> HtmlSnapshot.toString
 
 
+{-| A course whose script returns LiaScript with a script, which returns
+LiaScript with a quiz (checked by a script) and a script that returns text.
+-}
+nestedCourse : Result String Section.Section
+nestedCourse =
+    section "<script>0</script>\n"
+        |> Result.map
+            (\s ->
+                MU.update (Sync.init []) (default "" "") (MU.Script (Script.Click 0)) s
+                    |> (\r -> settle 20 r.events r.value)
+            )
+
+
+{-| Type `x` into the (only) input of the rendered section, the message takes
+its way through all LiaScript results.
+-}
+typeX : Section.Section -> Result String Section.Section
+typeX s =
+    MConfig.init En { old = "en", new = "en", name = Nothing } (Settings.init Nothing False Textbook) (Sync.init []) { width = 1000, height = 800 } s.id Nothing Dict.empty s
+        |> MView.view False True
+        |> Query.fromHtml
+        |> Query.find [ Selector.tag "input" ]
+        |> HE.simulate (HE.input "x")
+        |> HE.toResult
+        |> Result.map (\msg -> (MU.update (Sync.init []) (default "" "") msg s).value)
+
+
+{-| Plays JavaScript: every `exec` and `eval` of a script is answered, until no
+event is left. As in `Lia.Update` the first point of the track selects the
+section, its topic is passed to `Markdown.handle`.
+-}
+settle : Int -> List Event.Event -> Section.Section -> Section.Section
+settle =
+    settleWith answer
+
+
+settleWith : (Event.Event -> Maybe String) -> Int -> List Event.Event -> Section.Section -> Section.Section
+settleWith reply rounds pending s =
+    if rounds == 0 then
+        s
+
+    else
+        case pending of
+            [] ->
+                s
+
+            event :: rest ->
+                case ( Event.popWithId event, event.service, reply event ) of
+                    ( Just ( topic, _, inner ), "script", Just result ) ->
+                        let
+                            r =
+                                MU.handle (Sync.init [])
+                                    (default "" "")
+                                    topic
+                                    { inner | message = { cmd = event.message.cmd, param = JE.object [ ( "ok", JE.bool True ), ( "result", JE.string result ), ( "details", JE.list identity [] ) ] } }
+                                    s
+                        in
+                        settleWith reply (rounds - 1) (rest ++ r.events) r.value
+
+                    _ ->
+                        settleWith reply rounds rest s
+
+
+answer : Event.Event -> Maybe String
+answer event =
+    case ( event.message.cmd, JD.decodeValue (JD.oneOf [ JD.field "code" JD.string, JD.string ]) event.message.param ) of
+        ( "exec", Ok "0" ) ->
+            Just "LIASCRIPT:Level one\n\n<script>1</script>\n"
+
+        ( "exec", Ok "1" ) ->
+            Just "LIASCRIPT:Level two\n\n[[x]]\n<script>\"@input\" == \"x\"</script>\n\n<script>2</script>\n"
+
+        ( "exec", Ok "2" ) ->
+            Just "deep"
+
+        ( "eval", Ok code ) ->
+            Just
+                (if code == "\"x\" == \"x\"" then
+                    "true"
+
+                 else
+                    "false"
+                )
+
+        _ ->
+            Nothing
+
+
+{-| The sub-section that is the result of script `id`, `ids` from the section
+down.
+-}
+nestedSub : List Int -> Section.Section -> Maybe Section.SubSection
+nestedSub ids s =
+    let
+        result id javascript =
+            case javascript |> Array.get id |> Maybe.andThen .result of
+                Just (Script.IFrame sub) ->
+                    Just sub
+
+                _ ->
+                    Nothing
+
+        scriptsOf sub =
+            case sub of
+                Section.SubSection x ->
+                    x.effect_model.javascript
+
+                Section.SubSubSection x ->
+                    x.effect_model.javascript
+    in
+    case ids of
+        id :: rest ->
+            List.foldl (\i -> Maybe.andThen (scriptsOf >> result i)) (result id s.effect_model.javascript) rest
+
+        [] ->
+            Nothing
+
+
 {-| A section with two scripts, the second one returned LiaScript `code`.
 -}
 withSub : String -> Result String Section.Section
-withSub code =
+withSub =
+    withSubReturn >> Result.map .value
+
+
+withSubReturn : String -> Result String (Return.Return Section.Section MU.Msg MU.Msg)
+withSubReturn code =
     section "<script>0</script>\n\n<script>1</script>\n"
         |> Result.map
-            (\s ->
-                (MU.handle (Sync.init [])
-                    (default "" "")
-                    "effect"
-                    (Event.init "script"
-                        { cmd = "exec"
-                        , param = JE.object [ ( "ok", JE.bool True ), ( "result", JE.string ("LIASCRIPT:" ++ code) ), ( "details", JE.list identity [] ) ]
-                        }
-                        |> Event.pushWithId "script" 1
-                    )
-                    s
-                ).value
+            (MU.handle (Sync.init [])
+                (default "" "")
+                "effect"
+                (Event.init "script"
+                    { cmd = "exec"
+                    , param = JE.object [ ( "ok", JE.bool True ), ( "result", JE.string ("LIASCRIPT:" ++ code) ), ( "details", JE.list identity [] ) ]
+                    }
+                    |> Event.pushWithId "script" 1
+                )
             )
+
+
+{-| The events of creating a sub-section.
+-}
+startEvents : String -> List String
+startEvents =
+    withSubReturn >> Result.map encodeEvents >> Result.withDefault []
 
 
 {-| The sub-section of the second script.

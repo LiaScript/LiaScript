@@ -153,7 +153,8 @@ script main msg model =
         |> Return.mapValCmd (\v -> { model | javascript = v }) Script
 
 
-{-| Mark all scripts as running, for which an `exec` event is sent.
+{-| Mark all scripts as running, for which an `exec` event is sent (events of
+LiaScript results are tracked through `"sub"` and belong to their scripts).
 -}
 markRunning : Return (Model a) (Msg sub) sub -> Return (Model a) (Msg sub) sub
 markRunning return =
@@ -163,8 +164,8 @@ markRunning return =
                 | javascript =
                     List.foldl
                         (\e js ->
-                            case ( Event.id e, e.message.cmd ) of
-                                ( Just id, "exec" ) ->
+                            case ( Event.poi e, e.message.cmd ) of
+                                ( Just ( "script", id ), "exec" ) ->
                                     if id < 0 then
                                         js
 

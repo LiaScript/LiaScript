@@ -195,14 +195,15 @@ subs globals =
 
 
 {-| Like `update`, but for the LiaScript results of scripts, which have no
-classroom and no own definition.
+classroom and no own definition. The scripts passed in are the ones of the
+parent, quizzes, surveys, tasks and code blocks refer to their own scripts.
 -}
 subUpdate :
     Scripts SubSection
     -> Msg
     -> SubSection
     -> Return SubSection Msg Msg
-subUpdate js msg section =
+subUpdate _ msg section =
     case section of
         SubSection subsection ->
             case msg of
@@ -220,7 +221,7 @@ subUpdate js msg section =
 
                 UpdateCode childMsg ->
                     subsection.code_model
-                        |> Code.update Array.empty Nothing js childMsg
+                        |> Code.update Array.empty Nothing subsection.effect_model.javascript childMsg
                         |> Return.mapValCmd (\v -> SubSection { subsection | code_model = v }) UpdateCode
                         |> Return.mapEvents "code" subsection.id
 
@@ -231,7 +232,7 @@ subUpdate js msg section =
 
                 UpdateQuiz childMsg ->
                     subsection.quiz_vector
-                        |> Quiz.update Sync.disconnected Nothing js childMsg
+                        |> Quiz.update Sync.disconnected Nothing subsection.effect_model.javascript childMsg
                         |> Return.mapVal (\v -> { subsection | quiz_vector = v })
                         |> Return.mapEvents "quiz" subsection.id
                         |> Return.mapCmd UpdateQuiz
@@ -240,7 +241,7 @@ subUpdate js msg section =
 
                 UpdateSurvey childMsg ->
                     subsection.survey_vector
-                        |> Survey.update Sync.disconnected Nothing js childMsg
+                        |> Survey.update Sync.disconnected Nothing subsection.effect_model.javascript childMsg
                         |> Return.mapVal (\v -> { subsection | survey_vector = v })
                         |> Return.mapEvents "survey" subsection.id
                         |> Return.mapCmd UpdateSurvey
@@ -249,7 +250,7 @@ subUpdate js msg section =
 
                 UpdateTask childMsg ->
                     subsection.task_vector
-                        |> Task.update Nothing js childMsg
+                        |> Task.update Nothing subsection.effect_model.javascript childMsg
                         |> Return.mapVal (\v -> { subsection | task_vector = v })
                         |> Return.mapEvents "task" subsection.id
                         |> subScript

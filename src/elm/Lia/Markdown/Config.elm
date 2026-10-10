@@ -145,7 +145,8 @@ mergeFormulas main sec =
 
 
 {-| Inlines get a viewer for the LiaScript results of scripts (sub-sections),
-their input path is extended by `effect` and `sub`.
+their input path is extended by `effect` and `sub`. Blocks that render their
+inlines with `main` (quizzes, surveys, ...) get the viewer too.
 -}
 setSubViewer : (Int -> Int -> SubSection -> List (Html (Script.Msg Msg))) -> Config Msg -> Config Msg
 setSubViewer function config =
@@ -157,6 +158,7 @@ setSubViewer function config =
             main.input
     in
     { config
-        | view =
+        | main = Inline.setViewer function main
+        , view =
             toView (Inline.setViewer function { main | input = { input | path = ( "effect", 0 ) :: ( "sub", 1 ) :: input.path } })
     }
