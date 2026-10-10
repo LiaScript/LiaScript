@@ -42,9 +42,14 @@ import Service.Event as Event exposing (Event)
 import Service.TTS
 
 
+{-| Footnotes are opened via JavaScript (`onclick` within the inline HTML).
+-}
 port footnote : (String -> msg) -> Sub msg
 
 
+{-| Messages of all interactive blocks of a section, they are routed to the
+vectors of the section.
+-}
 type Msg
     = UpdateEffect Bool (Effect.Msg Msg)
     | UpdateCode Code.Msg
@@ -59,16 +64,29 @@ type Msg
     | NoOp
 
 
+{-| The sync (classroom) state and data that quizzes, surveys and code blocks
+require.
+-}
+type alias Classroom sync =
+    { sync
+        | state : Sync.State
+        , data : Sync.Data
+    }
+
+
+{-| Clicks on footnotes.
+-}
 subscriptions : Section -> Sub Msg
 subscriptions _ =
     footnote FootnoteShow
 
 
+{-| Update the section. Script messages of quizzes, surveys, tasks and
+galleries (scripts within them) are applied to the scripts of the section by
+`updateScript`. `globals` are only used if the section has no own definition.
+-}
 update :
-    { sync
-        | state : Sync.State
-        , data : Sync.Data
-    }
+    Classroom sync
     -> Definition
     -> Msg
     -> Section
@@ -100,7 +118,6 @@ update sync globals msg section =
                     childMsg
                 |> Return.mapVal (\v -> { section | code_model = v })
                 |> Return.mapEvents "code" section.id
-                |> updateScript
 
         UpdateQuiz childMsg ->
             section.quiz_vector
@@ -162,6 +179,8 @@ update sync globals msg section =
             Return.val section
 
 
+{-| The update and handle functions for the sub-sections of scripts.
+-}
 subs :
     Maybe Definition
     ->
@@ -176,6 +195,9 @@ subs globals =
     }
 
 
+{-| Like `update`, but for the LiaScript results of scripts, which have no
+classroom and no own definition.
+-}
 subUpdate :
     Scripts SubSection
     -> Msg
@@ -286,6 +308,8 @@ subUpdate js msg section =
                     Return.val section
 
 
+{-| Apply the script message `sub` of a return to the effect model.
+-}
 updateScript :
     Return { sec | id : Int, effect_model : E.Model SubSection } Msg Msg
     -> Return { sec | id : Int, effect_model : E.Model SubSection } Msg Msg
@@ -311,11 +335,10 @@ updateScript return =
                 |> Return.batchEvents ret.events
 
 
+{-| Show the next effect (or go to the next slide, handled by the caller).
+-}
 nextEffect :
-    { sync
-        | state : Sync.State
-        , data : Sync.Data
-    }
+    Classroom sync
     -> Definition
     -> Bool
     -> Section
@@ -324,11 +347,10 @@ nextEffect sync globals sound =
     update sync globals (UpdateEffect sound Effect.next)
 
 
+{-| Show the previous effect.
+-}
 previousEffect :
-    { sync
-        | state : Sync.State
-        , data : Sync.Data
-    }
+    Classroom sync
     -> Definition
     -> Bool
     -> Section
@@ -337,11 +359,11 @@ previousEffect sync globals sound =
     update sync globals (UpdateEffect sound Effect.previous)
 
 
+{-| Initialize the effects of a section, run all scripts or only the visible
+ones.
+-}
 initEffect :
-    { sync
-        | state : Sync.State
-        , data : Sync.Data
-    }
+    Classroom sync
     -> Definition
     -> Bool
     -> Bool
@@ -351,73 +373,72 @@ initEffect sync globals run_all_javascript sound =
     update sync globals (UpdateEffect sound (Effect.init run_all_javascript))
 
 
+{-| An event from JavaScript for a sub-section, it was encoded with its
+remaining track by the script that owns the sub-section.
+-}
 subHandle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection Msg Msg
 subHandle js json section =
     case
         json
             |> Event.decode
             |> Result.toMaybe
-            |> Maybe.map Event.pop
+            |> Maybe.andThen (Event.pop >> (\( topic, event ) -> Maybe.andThen (toMsg event) topic))
     of
-        Just ( Just "code", event ) ->
-            subUpdate js (UpdateCode (Code.handle event)) section
+        Just msg ->
+            subUpdate js msg section
 
-        Just ( Just "quiz", event ) ->
-            subUpdate js (UpdateQuiz (Quiz.handle event)) section
-
-        Just ( Just "survey", event ) ->
-            subUpdate js (UpdateSurvey (Survey.handle event)) section
-
-        Just ( Just "effect", event ) ->
-            subUpdate js (UpdateEffect True (Effect.handle event)) section
-
-        Just ( Just "task", event ) ->
-            subUpdate js (UpdateTask (Task.handle event)) section
-
-        Just ( Just "table", event ) ->
-            subUpdate js (UpdateTable (Table.handle event)) section
-
-        _ ->
+        Nothing ->
             section
                 |> Return.val
                 |> Return.batchEvent (Service.Console.warn "subHandle Problem")
 
 
+{-| An event from JavaScript, `topic` is the type of block it belongs to.
+-}
 handle :
-    { sync
-        | state : Sync.State
-        , data : Sync.Data
-    }
+    Classroom sync
     -> Definition
     -> String
     -> Event
     -> Section
     -> Return Section Msg Msg
 handle sync globals topic event section =
+    case toMsg event topic of
+        Just msg ->
+            update sync globals msg section
+
+        Nothing ->
+            Return.val section
+
+
+{-| The message for an event of block type `topic`.
+-}
+toMsg : Event -> String -> Maybe Msg
+toMsg event topic =
     case topic of
         "code" ->
-            update sync globals (UpdateCode (Code.handle event)) section
+            Just (UpdateCode (Code.handle event))
 
         "quiz" ->
-            update sync globals (UpdateQuiz (Quiz.handle event)) section
+            Just (UpdateQuiz (Quiz.handle event))
 
         "survey" ->
-            update sync globals (UpdateSurvey (Survey.handle event)) section
+            Just (UpdateSurvey (Survey.handle event))
 
         "effect" ->
-            update sync globals (UpdateEffect True (Effect.handle event)) section
+            Just (UpdateEffect True (Effect.handle event))
 
         "task" ->
-            update sync globals (UpdateTask (Task.handle event)) section
+            Just (UpdateTask (Task.handle event))
 
         "table" ->
-            update sync globals (UpdateTable (Table.handle event)) section
+            Just (UpdateTable (Table.handle event))
 
         "gallery" ->
-            update sync globals (UpdateGallery (Gallery.handle event)) section
+            Just (UpdateGallery (Gallery.handle event))
 
         _ ->
-            Return.val section
+            Nothing
 
 
 {-| Like `handle`, but applies one `topic` (`"quiz"`/`"survey"`) `"load"`
@@ -429,10 +450,7 @@ touched - already-parsed sections already got their data through the
 normal per-section load.
 -}
 handleAll :
-    { sync
-        | state : Sync.State
-        , data : Sync.Data
-    }
+    Classroom sync
     -> Definition
     -> String
     -> List ( Int, JE.Value )
@@ -467,6 +485,8 @@ handleAll sync globals topic entries sections =
             (Return.val sections)
 
 
+{-| Store the updated section `id` and collect its commands and events.
+-}
 mergeInto : Int -> Return Sections Msg Msg -> Return Section Msg Msg -> Return Sections Msg Msg
 mergeInto id acc r =
     { value = Array.set id r.value acc.value
@@ -581,27 +601,20 @@ revealSolutions { sound, runAll } before return =
             return
 
 
+{-| With sound turned on, read the comments of the current effect again
+(`replay`) or stop reading.
+-}
 ttsReplay : Bool -> Bool -> Maybe Section -> Maybe Event
-ttsReplay sound true section =
-    -- replay if possible
-    if sound then
-        if true then
-            section
-                |> Maybe.map
-                    (\s ->
-                        s.effect_model.visible
-                            |> Service.TTS.readFrom
-                            |> Event.pushWithId "settings" s.id
-                    )
+ttsReplay sound replay section =
+    if not sound then
+        Nothing
 
-        else
-            Service.TTS.cancel
-                |> Event.pushWithId "settings"
-                    (section
-                        |> Maybe.map .id
-                        |> Maybe.withDefault -1
-                    )
-                |> Just
+    else if replay then
+        Maybe.map (\s -> Event.pushWithId "settings" s.id (Service.TTS.readFrom s.effect_model.visible)) section
 
     else
-        Nothing
+        section
+            |> Maybe.map .id
+            |> Maybe.withDefault -1
+            |> (\id -> Event.pushWithId "settings" id Service.TTS.cancel)
+            |> Just
