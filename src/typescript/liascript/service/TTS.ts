@@ -14,6 +14,9 @@ var browserVoices: Record<string, SpeechSynthesisVoice> = {}
 
 var firstSpeak = true
 
+// the delayed read of the current slide, only the latest one may start
+var readTimer: ReturnType<typeof setTimeout> | undefined
+
 var elmSend: Lia.Send | null
 
 // Chrome/Safari bug: resume() fires 'end' instead of continuing — re-speak on resume.
@@ -160,9 +163,12 @@ export const Service = {
           return
         }
 
+        // stop the old text now, otherwise it continues until the new one starts
+        cancel()
+
         const timeout = event.message.param.endsWith('-0') ? 2000 : 500
 
-        setTimeout(function () {
+        readTimer = setTimeout(function () {
           read(event)
         }, timeout)
         break
@@ -387,8 +393,6 @@ function getAudioSettings(element: HTMLElement | Element) {
 }
 
 function read(event: Lia.Event) {
-  cancel()
-
   // the class name of the comments, before it gets overwritten by a response
   const id: string = event.message.param
 
@@ -705,6 +709,8 @@ export function inject(key: string) {
 }
 
 function cancel() {
+  // a read that is still waiting would start after switching slides
+  clearTimeout(readTimer)
   Narrator.stop()
   browserTTSSpeakArgs = null
   browserTTSIntentionalPause = false
