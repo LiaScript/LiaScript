@@ -234,10 +234,47 @@ const Service = {
           }
           return
         }
+
+        // KaiOS: the system takes the arrow keys and the browser shortcuts only
+        // scroll the document, which never scrolls in LiaScript. The keypad
+        // acts as a d-pad instead: 4/6 change slides, 2/8 scroll the content.
+        if (isKaiOS && !isEditable(e.target as HTMLElement)) {
+          const main = document.querySelector('main:not([hidden=""])')
+            ?.parentElement
+          switch (e.key) {
+            case '4':
+              sendReply(elmSend, Dir.right)
+              break
+            case '6':
+              sendReply(elmSend, Dir.left)
+              break
+            case '2':
+              if (main) main.scrollTop -= main.clientHeight * 0.8
+              break
+            case '8':
+              if (main) main.scrollTop += main.clientHeight * 0.8
+              break
+            default:
+              return
+          }
+          e.preventDefault()
+        }
       },
       false
     )
   },
+}
+
+const isKaiOS = /KAIOS/i.test(navigator.userAgent)
+
+function isEditable(elem: HTMLElement | null) {
+  return (
+    !!elem &&
+    (elem.isContentEditable ||
+      elem.tagName === 'INPUT' ||
+      elem.tagName === 'TEXTAREA' ||
+      elem.tagName === 'SELECT')
+  )
 }
 
 /**
