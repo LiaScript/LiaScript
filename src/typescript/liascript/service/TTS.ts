@@ -119,7 +119,7 @@ export const Service = {
       window.LIA.playback = function (event: Lia.Event) {
         Service.handle(event)
       }
-    }, 2000)
+    }, 1234)
 
     this.easySpeechSettings = EasySpeech.detect()
 
