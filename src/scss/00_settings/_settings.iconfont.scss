@@ -1,1 +1,5 @@
 @use "../../assets/fonts/icon/_icons.scss";
+// ponytail: no own glyph for word clouds yet, the chat bubble stands for words
+.icon-wordcloud:before {
+  content: icons.$icon-chat-open;
+}

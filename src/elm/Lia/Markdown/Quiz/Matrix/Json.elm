@@ -11,6 +11,8 @@ import Lia.Markdown.Quiz.Matrix.Types exposing (Quiz, State)
 import Lia.Markdown.Quiz.Vector.Json as Vector
 
 
+{-| Encode the quiz definition.
+-}
 encode : Quiz -> ( String, JE.Value )
 encode quiz =
     ( uid
@@ -27,12 +29,14 @@ uid =
     "Matrix"
 
 
+{-| -}
 fromState : State -> JE.Value
 fromState state =
     JE.object <|
         [ ( uid, JE.array Vector.fromState state ) ]
 
 
+{-| -}
 toState : JD.Decoder State
 toState =
     Vector.toState

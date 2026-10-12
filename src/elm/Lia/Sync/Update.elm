@@ -3,12 +3,10 @@ module Lia.Sync.Update exposing
     , SyncMsg(..)
     , decodeEntries
     , handle
-    , isConnected
     , synchronize
     , update
     )
 
-import Array
 import Dict exposing (Dict)
 import Helper.Array as Array
 import Json.Decode as JD
@@ -39,12 +37,12 @@ import Lia.Sync.Types
         , toClassroomMode
         )
 import Lia.Sync.Via as Backend exposing (Backend)
+import List.Extra
 import Random
 import Return exposing (Return)
 import Service.Console as Console
 import Service.Database
 import Service.Event as Event exposing (Event)
-import Service.Share
 import Service.Slide
 import Service.Sync
 import Session exposing (Session)
@@ -74,7 +72,6 @@ type Msg
     | EditMeta Classroom.Entry { title : String, notes : String, name : String }
     | SaveMeta Classroom.Entry
     | TogglePasswordVisibility
-    | CopyOwnerLink
     | GenerateOwnerToken
 
 
@@ -152,30 +149,22 @@ update session model msg =
                     synchronize model param
 
                 ( "error", param ) ->
-                    case ( JD.decodeValue JD.string param, sync.sync.select ) of
-                        ( Ok message, Just ( True, _ ) ) ->
-                            { model
-                                | sync =
-                                    { sync
-                                        | state = Disconnected
-                                        , peers = Dict.empty
-                                        , peersHistory = Dict.empty
-                                        , error = Just message
-                                    }
-                            }
-                                |> Return.val
+                    { model
+                        | sync =
+                            { sync
+                                | state = Disconnected
+                                , peers = Dict.empty
+                                , peersHistory = Dict.empty
+                                , error =
+                                    case ( JD.decodeValue JD.string param, sync.sync.select ) of
+                                        ( Ok message, Just ( True, _ ) ) ->
+                                            Just message
 
-                        _ ->
-                            { model
-                                | sync =
-                                    { sync
-                                        | state = Disconnected
-                                        , peers = Dict.empty
-                                        , peersHistory = Dict.empty
-                                        , error = Just "unknown"
-                                    }
+                                        _ ->
+                                            Just "unknown"
                             }
-                                |> Return.val
+                    }
+                        |> Return.val
 
                 ( "warning", param ) ->
                     -- Advisory only (e.g. the password-mismatch heuristic) -
@@ -281,10 +270,7 @@ update session model msg =
                             }
                                 |> Return.val
                                 |> Return.cmd
-                                    (session
-                                        |> Session.setQuery model.readme
-                                        |> Session.update
-                                    )
+                                    (resetUrl session model.readme)
 
                 ( "disconnect", _ ) ->
                     { model
@@ -294,21 +280,13 @@ update session model msg =
                                 , peers = Dict.empty
                                 , peersHistory = Dict.empty
                                 , error = Nothing
-                                , data =
-                                    { cursor = []
-                                    , survey = Dict.empty
-                                    , quiz = Dict.empty
-                                    , code = Dict.empty
-                                    }
+                                , data = Lia.Sync.Types.disconnected.data
                             }
                         , chat = Chat.init
                     }
                         |> Return.val
                         |> Return.cmd
-                            (session
-                                |> Session.setQuery model.readme
-                                |> Session.update
-                            )
+                            (resetUrl session model.readme)
 
                 ( "classrooms", param ) ->
                     let
@@ -411,10 +389,7 @@ update session model msg =
             }
                 |> Return.val
                 |> Return.cmd
-                    (session
-                        |> Session.setQuery model.readme
-                        |> Session.update
-                    )
+                    (resetUrl session model.readme)
 
         Backend sub ->
             { model | sync = { sync | sync = updateSync sub sync.sync } }
@@ -436,38 +411,6 @@ update session model msg =
             model
                 |> Return.val
                 |> Return.batchEvent Service.Sync.generateOwnerToken
-
-        CopyOwnerLink ->
-            -- Available as soon as a token exists - either freshly minted
-            -- here before ever connecting, or confirmed as owner after the
-            -- fact (`sync.owner`) - not only once actually connected.
-            case ( sync.ownerToken, sync.sync.select ) of
-                ( Just token, Just ( _, backend ) ) ->
-                    let
-                        room =
-                            { backend = Backend.toString True backend
-                            , course = model.readme
-                            , room = sync.room
-                            , mode = fromClassroomMode sync.mode
-                            , ownerTokenHash = sync.ownerTokenHash
-                            , pwSalt = sync.pwSalt
-                            , pwCheck = sync.pwCheck
-                            , ownerToken = Just token
-                            }
-                    in
-                    model
-                        |> Return.val
-                        |> Return.batchEvent
-                            (Service.Share.link
-                                { title = "Classroom owner link"
-                                , text = "Use this link to manage \"" ++ sync.room ++ "\" as its owner."
-                                , url = Session.urlWithQuery (Session.encodeOwnerLink room) session
-                                , image = Nothing
-                                }
-                            )
-
-                _ ->
-                    model |> Return.val
 
         EditMeta entry meta ->
             let
@@ -499,8 +442,7 @@ update session model msg =
             let
                 current =
                     sync.saved
-                        |> List.filter (\e -> e.room == entry.room && e.backend == entry.backend)
-                        |> List.head
+                        |> List.Extra.find (\e -> e.room == entry.room && e.backend == entry.backend)
                         |> Maybe.withDefault entry
             in
             model
@@ -597,7 +539,7 @@ update session model msg =
         Connect ->
             case ( sync.sync.select, sync.state ) of
                 ( Just ( True, backend ), Disconnected ) ->
-                    { model | sync = { sync | state = Pending, sync = closeSelect sync.sync, name = String.trim sync.name } }
+                    { model | sync = { sync | state = Pending, sync = updateSync (Open False) sync.sync, name = String.trim sync.name } }
                         |> Return.val
                         |> Return.batchEvent
                             -- only a join brings along a pwCheck hint to
@@ -658,8 +600,13 @@ updateSync msg sync =
                     sync
 
 
-closeSelect sync =
-    { sync | open = False }
+{-| Reset the URL to the course (leaving the classroom).
+-}
+resetUrl : Session -> String -> Cmd msg
+resetUrl session readme =
+    session
+        |> Session.setQuery readme
+        |> Session.update
 
 
 {-| Build the actual `connect` event from the current sync settings - shared
@@ -684,16 +631,6 @@ connectEvent backend course syncSettings =
         , pwCheck = syncSettings.pwCheck
         , ownerToken = syncSettings.ownerToken
         }
-
-
-isConnected : Settings -> Bool
-isConnected sync =
-    case sync.state of
-        Connected _ ->
-            True
-
-        _ ->
-            False
 
 
 join :
@@ -1078,9 +1015,11 @@ decodeEntry data position value =
         |> Result.mapError (JD.errorToString >> describe)
 
 
+{-| New entries replace old ones, of equal new ones the last wins.
+-}
 dataMerge : Dict Int data -> List ( Int, data ) -> Dict Int data
 dataMerge data new =
-    List.foldl (\( key, value ) store -> Dict.insert key value store) data new
+    Dict.union (Dict.fromList new) data
 
 
 {-| A "quiz"/"survey" sync event only ever updates `model.sync.data` - the

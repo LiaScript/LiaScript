@@ -25,6 +25,7 @@ $slide-margin-left-textbook: 19rem !default;
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   left: 0;
   position: relative;
   transition: settings.$global-transition;
@@ -176,6 +177,7 @@ $slide-margin-left-textbook: 19rem !default;
   &.lia-mode--slides {
     .lia-slide {
       height: calc(100vh - 14.2rem + 7rem);
+      height: calc(100dvh - 14.2rem + 7rem);
     }
 
     @include tools.breakpoint('lg') {
@@ -190,6 +192,7 @@ $slide-margin-left-textbook: 19rem !default;
 
       .lia-slide {
         height: 100vh;
+        height: 100dvh;
         max-width: calc(100% - #{$notes-width-desktop});
       }
     }

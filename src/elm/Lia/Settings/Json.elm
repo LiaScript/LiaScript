@@ -9,6 +9,8 @@ import Json.Encode as JE
 import Lia.Settings.Types exposing (Mode(..), Settings)
 
 
+{-| The settings, which are stored in the local storage.
+-}
 fromModel : Settings -> JE.Value
 fromModel model =
     JE.object
@@ -51,49 +53,33 @@ fromMode mode =
                 "Slides"
 
 
-settings :
-    Settings
-    -> Bool
-    -> Mode
-    -> String
-    -> Bool
-    -> String
-    -> Int
-    -> Bool
-    -> String
-    -> Bool
-    -> Bool
-    -> Bool
-    -> { pitch : String, rate : String }
-    -> Bool
-    -> Settings
-settings model toc mode theme light editor font_size sound lang tooltips preferBrowserTTS hideVideoComments audio fromStorage =
+{-| Overwrite the stored fields of `model`, older stores might miss the optional
+ones.
+-}
+toModel : Settings -> JD.Value -> Result JD.Error Settings
+toModel model =
     let
         tts =
             model.tts
     in
-    { model
-        | table_of_contents = toc
-        , mode = mode
-        , theme = theme
-        , light = light
-        , editor = editor
-        , font_size = font_size
-        , sound = sound
-        , lang = lang
-        , tooltips = tooltips
-        , tts = { tts | preferBrowser = preferBrowserTTS }
-        , hideVideoComments = hideVideoComments
-        , audio = audio
-        , fromStorage = fromStorage
-    }
-
-
-toModel : Settings -> JD.Value -> Result JD.Error Settings
-toModel model =
     JD.decodeValue
         (JD.succeed
-            (\record -> settings model record)
+            (\toc mode theme light editor font_size sound lang tooltips preferBrowserTTS hideVideoComments audio ->
+                { model
+                    | table_of_contents = toc
+                    , mode = mode
+                    , theme = theme
+                    , light = light
+                    , editor = editor
+                    , font_size = font_size
+                    , sound = sound
+                    , lang = lang
+                    , tooltips = tooltips
+                    , tts = { tts | preferBrowser = preferBrowserTTS }
+                    , hideVideoComments = hideVideoComments
+                    , audio = audio
+                }
+            )
             |> JDP.required "table_of_contents" JD.bool
             |> JDP.required "mode" (JD.string |> JD.andThen toMode)
             |> JDP.required "theme" JD.string
@@ -112,7 +98,6 @@ toModel model =
                     |> JDP.required "rate" (JD.float |> JD.map String.fromFloat)
                 )
                 { pitch = "1", rate = "1" }
-            |> JDP.optional "fromStorage" JD.bool False
         )
 
 

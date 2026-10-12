@@ -79,7 +79,7 @@ snapshots =
           , "k"
           )
         , ( "stringify html inner"
-          , ""
+          , " "
           )
         , ( "stringify effect"
           , "ef"
@@ -247,7 +247,7 @@ snapshots =
           , "k"
           )
         , ( "stringify_ html inner"
-          , ""
+          , " "
           )
         , ( "stringify_ effect"
           , "ef"
@@ -415,7 +415,7 @@ snapshots =
           , "k"
           )
         , ( "stringify_ hidden html inner"
-          , ""
+          , " "
           )
         , ( "stringify_ hidden effect"
           , ""
@@ -751,7 +751,7 @@ snapshots =
           , "Ok [IHTML (Node \"kbd\" [] [Chars \"k\" []]) [(\"class\",\"x\"),(\"style\",\"color:red\")]]"
           )
         , ( "roundtrip html inner"
-          , "Err (Index 0 (OneOf [Failure \"Expecting an OBJECT with a field named `Chars`\" <internals>,Failure \"Expecting an OBJECT with a field named `FootnoteMark`\" <internals>,Failure \"Expecting an OBJECT with a field named `Symbol`\" <internals>,Failure \"Expecting an OBJECT with a field named `Verbatim`\" <internals>,Failure \"Expecting an OBJECT with a field named `Bold`\" <internals>,Failure \"Expecting an OBJECT with a field named `Italic`\" <internals>,Failure \"Expecting an OBJECT with a field named `Strike`\" <internals>,Failure \"Expecting an OBJECT with a field named `Superscript`\" <internals>,Failure \"Expecting an OBJECT with a field named `Underline`\" <internals>,Failure \"Expecting an OBJECT with a field named `Ref`\" <internals>,Failure \"Expecting an OBJECT with a field named `Container`\" <internals>,Field \"IHTML\" (Failure \"Expecting an OBJECT with a field named `node`\" <internals>),Failure \"Expecting an OBJECT with a field named `Script`\" <internals>,Failure \"Expecting an OBJECT with a field named `EInline`\" <internals>]))"
+          , "Ok [IHTML (InnerHtml \"<br>\") []]"
           )
         , ( "roundtrip effect"
           , "Ok [EInline { begin = 1, content = [Chars \"e\" [],Bold (Chars \"f\" []) []], end = Nothing, id = 0, playback = False, voice = \"\" } [(\"class\",\"x\"),(\"style\",\"color:red\")]]"

@@ -6,15 +6,25 @@ module Lia.Markdown.Code.Terminal exposing
     , view
     )
 
+{-| An interactive input line below the output of a running program (started
+by the result `"LIA: terminal"`), with a history that is browsed with the up
+and down keys.
+-}
+
 import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import I18n.Translations exposing (Lang(..))
 import Lia.Markdown.Code.Editor as Editor
-import Lia.Markdown.Effect.Script.Types exposing (Msg(..))
 import Lia.Utils exposing (btnIcon)
 
 
+{-| `backup` keeps the unsent input while browsing the `history`,
+`history_value` is the current position in it (`length` = not browsing).
+`enter` blocks the input event the editor sends right after `Enter`,
+`cursorToEnd` moves the cursor to the end of a restored entry and `mode`
+is the editor's syntax highlighting.
+-}
 type alias Terminal =
     { input : String
     , backup : String
@@ -52,6 +62,8 @@ type Msg
     | Cursor Editor.Cursor
 
 
+{-| Returns the input to be sent to the program, if `Enter` was hit.
+-}
 update : Msg -> Terminal -> ( Terminal, Maybe String )
 update msg term =
     let
@@ -74,14 +86,7 @@ update msg term =
             )
 
         History False ->
-            ( if
-                terminal.cursor.position.row
-                    == (terminal.input
-                            |> String.lines
-                            |> List.length
-                            |> (+) -1
-                       )
-              then
+            ( if terminal.cursor.position.row == List.length (String.lines terminal.input) - 1 then
                 restore_input False terminal
 
               else
@@ -119,6 +124,10 @@ update msg term =
 
 view : Terminal -> Html Msg
 view terminal =
+    let
+        lines =
+            String.lines terminal.input
+    in
     Html.div
         [ Attr.class "lia-code-terminal__input"
         ]
@@ -134,22 +143,15 @@ view terminal =
             , Attr.style "min-height" "3.4rem"
             , Editor.readOnly False
             , if terminal.cursorToEnd then
-                let
-                    lines =
-                        terminal.input |> String.lines
-
-                    row =
-                        lines |> List.length
-
-                    column =
-                        case List.reverse lines |> List.head of
-                            Just line ->
-                                String.length line + 1
-
-                            Nothing ->
-                                1
-                in
-                Editor.valueAndCursor terminal.input { row = row, column = column }
+                Editor.valueAndCursor terminal.input
+                    { row = List.length lines
+                    , column =
+                        lines
+                            |> List.reverse
+                            |> List.head
+                            |> Maybe.map (String.length >> (+) 1)
+                            |> Maybe.withDefault 1
+                    }
 
               else
                 Editor.value terminal.input
@@ -163,10 +165,8 @@ view terminal =
             , Editor.maxLines 10
             , Attr.style "min-height" <|
                 "calc( "
-                    ++ (terminal.input |> String.lines |> List.length |> String.fromInt)
+                    ++ String.fromInt (List.length lines)
                     ++ " * var(--global-font-size, 1.5rem) * var(--font-size-multiplier) * 1.3333 + 1.47rem)"
-
-            -- Example of using the new key binding system
             , Editor.keyBindings
                 [ ( "execute", { win = "Enter", mac = "Enter" }, "terminalExecute" )
                 , ( "historyUp", { win = "Up", mac = "Up" }, "terminalHistoryUp" )
@@ -184,29 +184,29 @@ view terminal =
         ]
 
 
+{-| Clear the input and add it to the history, unless it is empty or equal to
+the last entry. Browsing starts again at the end of the history.
+-}
 print_to : Terminal -> Terminal
 print_to terminal =
-    if
-        (terminal.history
-            |> Array.get terminal.history_value
-            |> Maybe.map (\h -> h /= terminal.input)
-            |> Maybe.withDefault True
-        )
-            && (terminal.input /= "")
-    then
-        { terminal
-            | input = ""
-            , history = Array.push terminal.input terminal.history
-            , history_value = Array.length terminal.history + 1
-        }
+    let
+        history =
+            if terminal.input == "" || Array.get (Array.length terminal.history - 1) terminal.history == Just terminal.input then
+                terminal.history
 
-    else
-        { terminal
-            | input = ""
-            , history_value = terminal.history_value + 1
-        }
+            else
+                Array.push terminal.input terminal.history
+    in
+    { terminal
+        | input = ""
+        , history = history
+        , history_value = Array.length history
+    }
 
 
+{-| Show the previous (`up`) or next history entry, past the end the backup
+of the unsent input is restored.
+-}
 restore_input : Bool -> Terminal -> Terminal
 restore_input up terminal =
     let

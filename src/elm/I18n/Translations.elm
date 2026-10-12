@@ -3286,7 +3286,7 @@ commentHide lang =
             "Skjul videokommentarer"
 
         De ->
-            "Videokommentare ausblenden"
+            "Video- & Avatar-Kommentare ausblenden"
 
         El ->
             "Απόκρυψη σχολίων βίντεο"
@@ -3394,7 +3394,7 @@ commentHide lang =
             "隱藏影片評論"
 
         _ ->
-            "Hide video comments"
+            "Hide video & avatar comments"
 
 
 no_translation : Lang -> String
@@ -9336,6 +9336,16 @@ codeCopy lang =
             "copy to clipboard"
 
 
+codeReset : Lang -> String
+codeReset lang =
+    case lang of
+        De ->
+            "Eingabe zurücksetzen"
+
+        _ ->
+            "reset input"
+
+
 quizCheck : Lang -> String
 quizCheck lang =
     case lang of
@@ -13214,6 +13224,16 @@ chartFunnel lang =
 
         _ ->
             "Funnel chart"
+
+
+chartWordcloud : Lang -> String
+chartWordcloud lang =
+    case lang of
+        De ->
+            "Wortwolke"
+
+        _ ->
+            "Word cloud"
 
 
 qrCode : Lang -> String

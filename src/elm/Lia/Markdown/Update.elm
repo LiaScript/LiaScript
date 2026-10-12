@@ -5,6 +5,9 @@ port module Lia.Markdown.Update exposing
     , initEffect
     , nextEffect
     , previousEffect
+    , revealSolutions
+    , solutions
+    , solved
     , subscriptions
     , ttsReplay
     , update
@@ -12,19 +15,24 @@ port module Lia.Markdown.Update exposing
     )
 
 import Array
+import Conditional.List as CList
 import Dict
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
+import Lia.Markdown.Effect.Script.Update as ScriptUpdate
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Gallery.Update as Gallery
+import Lia.Markdown.Quiz.Types as QuizTypes
 import Lia.Markdown.Quiz.Update as Quiz
+import Lia.Markdown.Survey.Types as SurveyTypes
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Markdown.Task.Update as Task
+import Lia.Markdown.Types as Markdown
 import Lia.Section exposing (Section, Sections, SubSection(..))
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
@@ -34,9 +42,14 @@ import Service.Event as Event exposing (Event)
 import Service.TTS
 
 
+{-| Footnotes are opened via JavaScript (`onclick` within the inline HTML).
+-}
 port footnote : (String -> msg) -> Sub msg
 
 
+{-| Messages of all interactive blocks of a section, they are routed to the
+vectors of the section.
+-}
 type Msg
     = UpdateEffect Bool (Effect.Msg Msg)
     | UpdateCode Code.Msg
@@ -51,16 +64,29 @@ type Msg
     | NoOp
 
 
+{-| The sync (classroom) state and data that quizzes, surveys and code blocks
+require.
+-}
+type alias Classroom sync =
+    { sync
+        | state : Sync.State
+        , data : Sync.Data
+    }
+
+
+{-| Clicks on footnotes.
+-}
 subscriptions : Section -> Sub Msg
 subscriptions _ =
     footnote FootnoteShow
 
 
+{-| Update the section. Script messages of quizzes, surveys, tasks and
+galleries (scripts within them) are applied to the scripts of the section by
+`updateScript`. `globals` are only used if the section has no own definition.
+-}
 update :
-    { sync
-        | state : Sync.State
-        , data : Sync.Data
-    }
+    Classroom sync
     -> Definition
     -> Msg
     -> Section
@@ -92,7 +118,6 @@ update sync globals msg section =
                     childMsg
                 |> Return.mapVal (\v -> { section | code_model = v })
                 |> Return.mapEvents "code" section.id
-                |> updateScript
 
         UpdateQuiz childMsg ->
             section.quiz_vector
@@ -113,7 +138,6 @@ update sync globals msg section =
             section.gallery_vector
                 |> Gallery.update childMsg
                 |> Return.mapVal (\v -> { section | gallery_vector = v })
-                |> Return.mapEvents "gallery" section.id
                 |> updateScript
 
         UpdateSurvey childMsg ->
@@ -154,6 +178,8 @@ update sync globals msg section =
             Return.val section
 
 
+{-| The update and handle functions for the sub-sections of scripts.
+-}
 subs :
     Maybe Definition
     ->
@@ -168,12 +194,16 @@ subs globals =
     }
 
 
+{-| Like `update`, but for the LiaScript results of scripts, which have no
+classroom and no own definition. The scripts passed in are the ones of the
+parent, quizzes, surveys, tasks and code blocks refer to their own scripts.
+-}
 subUpdate :
     Scripts SubSection
     -> Msg
     -> SubSection
     -> Return SubSection Msg Msg
-subUpdate js msg section =
+subUpdate _ msg section =
     case section of
         SubSection subsection ->
             case msg of
@@ -191,7 +221,7 @@ subUpdate js msg section =
 
                 UpdateCode childMsg ->
                     subsection.code_model
-                        |> Code.update Array.empty Nothing js childMsg
+                        |> Code.update Array.empty Nothing subsection.effect_model.javascript childMsg
                         |> Return.mapValCmd (\v -> SubSection { subsection | code_model = v }) UpdateCode
                         |> Return.mapEvents "code" subsection.id
 
@@ -199,63 +229,38 @@ subUpdate js msg section =
                     subsection.gallery_vector
                         |> Gallery.update childMsg
                         |> Return.mapVal (\v -> SubSection { subsection | gallery_vector = v })
-                        |> Return.mapEvents "gallery" subsection.id
 
                 UpdateQuiz childMsg ->
-                    let
-                        result =
-                            Quiz.update Sync.disconnected Nothing js childMsg subsection.quiz_vector
-                    in
-                    case result.sub of
-                        Just _ ->
-                            subUpdate js
-                                (UpdateQuiz childMsg)
-                                (SubSection { subsection | quiz_vector = result.value })
-
-                        _ ->
-                            result
-                                |> Return.mapVal (\v -> SubSection { subsection | quiz_vector = v })
-                                |> Return.mapEvents "quiz" subsection.id
-                                |> Return.mapCmd UpdateQuiz
+                    subsection.quiz_vector
+                        |> Quiz.update Sync.disconnected Nothing subsection.effect_model.javascript childMsg
+                        |> Return.mapVal (\v -> { subsection | quiz_vector = v })
+                        |> Return.mapEvents "quiz" subsection.id
+                        |> Return.mapCmd UpdateQuiz
+                        |> subScript
+                        |> Return.mapVal SubSection
 
                 UpdateSurvey childMsg ->
-                    let
-                        result =
-                            Survey.update Sync.disconnected Nothing js childMsg subsection.survey_vector
-                    in
-                    case result.sub of
-                        Just _ ->
-                            subUpdate js
-                                (UpdateSurvey childMsg)
-                                (SubSection { subsection | survey_vector = result.value })
-
-                        _ ->
-                            result
-                                |> Return.mapVal (\v -> SubSection { subsection | survey_vector = v })
-                                |> Return.mapEvents "survey" subsection.id
-                                |> Return.mapCmd UpdateSurvey
+                    subsection.survey_vector
+                        |> Survey.update Sync.disconnected Nothing subsection.effect_model.javascript childMsg
+                        |> Return.mapVal (\v -> { subsection | survey_vector = v })
+                        |> Return.mapEvents "survey" subsection.id
+                        |> Return.mapCmd UpdateSurvey
+                        |> subScript
+                        |> Return.mapVal SubSection
 
                 UpdateTask childMsg ->
-                    let
-                        result =
-                            Task.update Nothing js childMsg subsection.task_vector
-                    in
-                    case result.sub of
-                        Just _ ->
-                            subUpdate js
-                                (UpdateTask childMsg)
-                                (SubSection { subsection | task_vector = result.value })
-
-                        _ ->
-                            result
-                                |> Return.mapVal (\v -> SubSection { subsection | task_vector = v })
-                                |> Return.mapEvents "task" subsection.id
+                    subsection.task_vector
+                        |> Task.update Nothing subsection.effect_model.javascript childMsg
+                        |> Return.mapVal (\v -> { subsection | task_vector = v })
+                        |> Return.mapEvents "task" subsection.id
+                        |> subScript
+                        |> Return.mapVal SubSection
 
                 Script childMsg ->
                     subsection.effect_model
                         |> Effect.updateSub (subs Nothing) childMsg
                         |> Return.mapValCmd (\v -> SubSection { subsection | effect_model = v }) (UpdateEffect True)
-                        |> Return.mapEvents "script" subsection.id
+                        |> Return.mapEvents "effect" subsection.id
 
                 _ ->
                     Return.val section
@@ -266,7 +271,7 @@ subUpdate js msg section =
                     sub.effect_model
                         |> Effect.updateSub (subs Nothing) childMsg
                         |> Return.mapValCmd (\v -> SubSubSection { sub | effect_model = v }) (UpdateEffect True)
-                        |> Return.mapEvents "script" sub.id
+                        |> Return.mapEvents "effect" sub.id
 
                 UpdateEffect sound childMsg ->
                     sub.effect_model
@@ -278,6 +283,19 @@ subUpdate js msg section =
                     Return.val section
 
 
+{-| Like `updateScript`, but the script message belongs to the scripts of the
+sub-section, it must not reach the scripts of the section.
+-}
+subScript :
+    Return { sec | id : Int, effect_model : E.Model SubSection } Msg Msg
+    -> Return { sec | id : Int, effect_model : E.Model SubSection } Msg Msg
+subScript return =
+    updateScript return
+        |> (\r -> { r | sub = Nothing })
+
+
+{-| Apply the script message `sub` of a return to the effect model.
+-}
 updateScript :
     Return { sec | id : Int, effect_model : E.Model SubSection } Msg Msg
     -> Return { sec | id : Int, effect_model : E.Model SubSection } Msg Msg
@@ -303,11 +321,10 @@ updateScript return =
                 |> Return.batchEvents ret.events
 
 
+{-| Show the next effect (or go to the next slide, handled by the caller).
+-}
 nextEffect :
-    { sync
-        | state : Sync.State
-        , data : Sync.Data
-    }
+    Classroom sync
     -> Definition
     -> Bool
     -> Section
@@ -316,11 +333,10 @@ nextEffect sync globals sound =
     update sync globals (UpdateEffect sound Effect.next)
 
 
+{-| Show the previous effect.
+-}
 previousEffect :
-    { sync
-        | state : Sync.State
-        , data : Sync.Data
-    }
+    Classroom sync
     -> Definition
     -> Bool
     -> Section
@@ -329,11 +345,11 @@ previousEffect sync globals sound =
     update sync globals (UpdateEffect sound Effect.previous)
 
 
+{-| Initialize the effects of a section, run all scripts or only the visible
+ones.
+-}
 initEffect :
-    { sync
-        | state : Sync.State
-        , data : Sync.Data
-    }
+    Classroom sync
     -> Definition
     -> Bool
     -> Bool
@@ -343,73 +359,69 @@ initEffect sync globals run_all_javascript sound =
     update sync globals (UpdateEffect sound (Effect.init run_all_javascript))
 
 
+{-| An event from JavaScript for a sub-section, it was encoded with its
+remaining track by the script that owns the sub-section.
+-}
 subHandle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection Msg Msg
 subHandle js json section =
     case
         json
             |> Event.decode
             |> Result.toMaybe
-            |> Maybe.map Event.pop
+            |> Maybe.andThen (Event.pop >> (\( topic, event ) -> Maybe.andThen (toMsg event) topic))
     of
-        Just ( Just "code", event ) ->
-            subUpdate js (UpdateCode (Code.handle event)) section
+        Just msg ->
+            subUpdate js msg section
 
-        Just ( Just "quiz", event ) ->
-            subUpdate js (UpdateQuiz (Quiz.handle event)) section
-
-        Just ( Just "survey", event ) ->
-            subUpdate js (UpdateSurvey (Survey.handle event)) section
-
-        Just ( Just "effect", event ) ->
-            subUpdate js (UpdateEffect True (Effect.handle event)) section
-
-        Just ( Just "task", event ) ->
-            subUpdate js (UpdateTask (Task.handle event)) section
-
-        Just ( Just "table", event ) ->
-            subUpdate js (UpdateTable (Table.handle event)) section
-
-        _ ->
+        Nothing ->
             section
                 |> Return.val
                 |> Return.batchEvent (Service.Console.warn "subHandle Problem")
 
 
+{-| An event from JavaScript, `topic` is the type of block it belongs to.
+-}
 handle :
-    { sync
-        | state : Sync.State
-        , data : Sync.Data
-    }
+    Classroom sync
     -> Definition
     -> String
     -> Event
     -> Section
     -> Return Section Msg Msg
 handle sync globals topic event section =
+    case toMsg event topic of
+        Just msg ->
+            update sync globals msg section
+
+        Nothing ->
+            Return.val section
+
+
+{-| The message for an event of block type `topic`.
+-}
+toMsg : Event -> String -> Maybe Msg
+toMsg event topic =
     case topic of
         "code" ->
-            update sync globals (UpdateCode (Code.handle event)) section
+            Just (UpdateCode (Code.handle event))
 
         "quiz" ->
-            update sync globals (UpdateQuiz (Quiz.handle event)) section
+            Just (UpdateQuiz (Quiz.handle event))
 
         "survey" ->
-            update sync globals (UpdateSurvey (Survey.handle event)) section
+            Just (UpdateSurvey (Survey.handle event))
 
         "effect" ->
-            update sync globals (UpdateEffect True (Effect.handle event)) section
+            Just (UpdateEffect True (Effect.handle event))
 
         "task" ->
-            update sync globals (UpdateTask (Task.handle event)) section
+            Just (UpdateTask (Task.handle event))
 
         "table" ->
-            update sync globals (UpdateTable (Table.handle event)) section
-
-        "gallery" ->
-            update sync globals (UpdateGallery (Gallery.handle event)) section
+            Just (UpdateTable (Table.handle event))
 
         _ ->
-            Return.val section
+            Nothing
 
 
 {-| Like `handle`, but applies one `topic` (`"quiz"`/`"survey"`) `"load"`
@@ -421,10 +433,7 @@ touched - already-parsed sections already got their data through the
 normal per-section load.
 -}
 handleAll :
-    { sync
-        | state : Sync.State
-        , data : Sync.Data
-    }
+    Classroom sync
     -> Definition
     -> String
     -> List ( Int, JE.Value )
@@ -459,6 +468,8 @@ handleAll sync globals topic entries sections =
             (Return.val sections)
 
 
+{-| Store the updated section `id` and collect its commands and events.
+-}
 mergeInto : Int -> Return Sections Msg Msg -> Return Section Msg Msg -> Return Sections Msg Msg
 mergeInto id acc r =
     { value = Array.set id r.value acc.value
@@ -474,27 +485,119 @@ mergeInto id acc r =
     }
 
 
-ttsReplay : Bool -> Bool -> Maybe Section -> Maybe Event
-ttsReplay sound true section =
-    -- replay if possible
-    if sound then
-        if true then
-            section
-                |> Maybe.map
-                    (\s ->
-                        s.effect_model.visible
-                            |> Service.TTS.readFrom
-                            |> Event.pushWithId "settings" s.id
-                    )
+{-| All quizzes and surveys with a solution block, whether they are solved
+(submitted), the class of their comments, and the comments within the solution.
 
-        else
-            Service.TTS.cancel
-                |> Event.pushWithId "settings"
-                    (section
-                        |> Maybe.map .id
-                        |> Maybe.withDefault -1
-                    )
-                |> Just
+ponytail: only top-level blocks and blocks within effects are checked, recurse
+into lists, quotes and HTML if quizzes or surveys are used there.
+-}
+solutions :
+    { s | quiz_vector : QuizTypes.Vector, survey_vector : SurveyTypes.Vector }
+    -> Markdown.Blocks
+    -> List { solved : Bool, class : String, comments : List ( Int, Int ) }
+solutions vectors =
+    let
+        toSolution isSolved name id blocks =
+            [ { solved = Maybe.withDefault False isSolved
+              , class = "lia-tts-" ++ name ++ "-" ++ String.fromInt id
+              , comments =
+                    List.filterMap
+                        (\b ->
+                            case b of
+                                Markdown.Comment id_ ->
+                                    Just id_
+
+                                _ ->
+                                    Nothing
+                        )
+                        blocks
+              }
+            ]
+    in
+    List.concatMap
+        (\block ->
+            case block of
+                Markdown.Quiz _ quiz (Just ( solution, _ )) ->
+                    toSolution
+                        (vectors.quiz_vector |> Array.get quiz.id |> Maybe.map QuizTypes.isSolved)
+                        "quiz"
+                        quiz.id
+                        solution
+
+                Markdown.Survey _ survey (Just ( solution, _ )) ->
+                    toSolution
+                        (vectors.survey_vector |> Array.get survey.id |> Maybe.map .submitted)
+                        "survey"
+                        survey.id
+                        solution
+
+                Markdown.Effect _ effect ->
+                    solutions vectors effect.content
+
+                _ ->
+                    []
+        )
+
+
+{-| Classes of all solutions that are currently visible.
+-}
+solved : Section -> List String
+solved section =
+    solutions section section.body
+        |> List.filter .solved
+        |> List.map .class
+
+
+{-| A solution that got visible (quiz solved or resolved, survey submitted),
+which was not within the list of solved classes before, gets its scripts
+released and executed (only visible ones, unless `runAll`), and only its
+comments are read out loud.
+-}
+revealSolutions : { sound : Bool, runAll : Bool } -> List String -> Return Section msg sub -> Return Section msg sub
+revealSolutions { sound, runAll } before return =
+    solutions return.value return.value.body
+        |> List.filter (\q -> q.solved && not (List.member q.class before))
+        |> List.foldl
+            (\q ret ->
+                let
+                    section =
+                        ret.value
+
+                    effect_model =
+                        section.effect_model
+
+                    ( javascript, scripts ) =
+                        ScriptUpdate.revealSolution runAll effect_model.visible q.class effect_model.javascript
+                in
+                { ret | value = { section | effect_model = { effect_model | javascript = javascript } } }
+                    |> Return.batchEvents
+                        (scripts
+                            -- delayed, so that the solution is rendered before
+                            |> List.map (ScriptUpdate.execute 100 >> Event.pushWithId "effect" section.id)
+                            |> CList.addIf (sound && not (List.isEmpty q.comments))
+                                (q.class
+                                    |> Service.TTS.readClass
+                                    |> Event.pushWithId "settings" section.id
+                                )
+                        )
+            )
+            return
+
+
+{-| With sound turned on, read the comments of the current effect again
+(`replay`) or stop reading.
+-}
+ttsReplay : Bool -> Bool -> Maybe Section -> Maybe Event
+ttsReplay sound replay section =
+    if not sound then
+        Nothing
+
+    else if replay then
+        Maybe.map (\s -> Event.pushWithId "settings" s.id (Service.TTS.readFrom s.effect_model.visible)) section
 
     else
-        Nothing
+        section
+            |> Maybe.map .id
+            |> Maybe.withDefault -1
+            |> (\id -> Event.pushWithId "settings" id Service.TTS.cancel)
+            |> Just

@@ -90,58 +90,50 @@ pluralrules =
     ]
 
 
+{-| Collect the `Intl` options of the `format` attribute (`number`,
+`datetime`, `relativetime`, `list` or `pluralrules`) for `<lia-format>`,
+`locale` defaults to the course language.
+-}
 from : String -> Parameters -> Maybe Intl
 from lang params =
-    Maybe.map ((::) (locale lang params)) <|
-        case params |> Params.get "format" |> Maybe.map String.toLower of
-            Just "number" ->
-                to "number" number params
+    let
+        intl format names =
+            params
+                |> Params.filterNames names
+                |> (::) ( "format", format )
+                |> (::) ( "locale", Params.get "locale" params |> Maybe.withDefault lang )
+                |> Just
+    in
+    case params |> Params.get "format" |> Maybe.map String.toLower of
+        Just "number" ->
+            intl "number" number
 
-            Just "datetime" ->
-                to "datetime" datetime params
+        Just "datetime" ->
+            intl "datetime" datetime
 
-            Just "relativetime" ->
-                to "relativetime" relativetime params
+        Just "relativetime" ->
+            intl "relativetime" relativetime
 
-            Just "list" ->
-                to "list" list params
+        Just "list" ->
+            intl "list" list
 
-            Just "pluralrules" ->
-                to "pluralrules" pluralrules params
+        Just "pluralrules" ->
+            intl "pluralrules" pluralrules
 
-            _ ->
-                Nothing
-
-
-locale : String -> Parameters -> ( String, String )
-locale lang =
-    Params.get "locale"
-        >> Maybe.withDefault lang
-        >> Tuple.pair "locale"
-
-
-to : String -> List String -> Parameters -> Maybe Intl
-to format names =
-    Params.filterNames names
-        >> (::) ( "format", format )
-        >> Just
+        _ ->
+            Nothing
 
 
+{-| Plain text or, with `Intl` options, a `<lia-format>` element that formats
+the value.
+-}
 view : Maybe Intl -> String -> Html msg
-view intl =
+view intl value =
     case intl of
         Nothing ->
-            Html.text
+            Html.text value
 
         Just attr ->
-            node attr
-
-
-node : Parameters -> String -> Html msg
-node attr value =
-    Html.node "lia-format"
-        (attr
-            |> Params.toAttribute
-            |> (::) (Attr.property "value" (JE.string value))
-        )
-        [ Html.text value ]
+            Html.node "lia-format"
+                (Attr.property "value" (JE.string value) :: Params.toAttribute attr)
+                [ Html.text value ]

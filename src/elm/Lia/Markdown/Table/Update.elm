@@ -27,20 +27,21 @@ handle =
 
 update : Msg sub -> Vector -> Return Vector msg sub
 update msg vector =
-    case msg of
-        Sort id col ->
-            sort id vector col
+    Return.val <|
+        case msg of
+            Sort id column ->
+                Array.update id (updateSort column) vector
 
-        Toggle id ->
-            toggle id vector
+            Toggle id ->
+                Array.update id (\state -> { state | diagram = not state.diagram }) vector
 
-        Handle _ ->
-            Return.val vector
-
-        NoOp ->
-            Return.val vector
+            _ ->
+                vector
 
 
+{-| Clicking a column header cycles through ascending, descending and
+unsorted.
+-}
 updateSort : Int -> State -> State
 updateSort column state =
     if state.column /= column then
@@ -51,17 +52,3 @@ updateSort column state =
 
     else
         { state | column = -1 }
-
-
-toggle : Int -> Vector -> Return Vector msg sub
-toggle id vector =
-    vector
-        |> Array.update id (\state -> { state | diagram = not state.diagram })
-        |> Return.val
-
-
-sort : Int -> Vector -> Int -> Return Vector msg sub
-sort id vector col =
-    vector
-        |> Array.update id (updateSort col)
-        |> Return.val

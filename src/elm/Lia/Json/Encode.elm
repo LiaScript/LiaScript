@@ -11,17 +11,28 @@ import Lia.Markdown.Inline.Json.Encode as Inline
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inline(..))
 import Lia.Markdown.Json.Encode as Body
-import Lia.Model exposing (Model)
-import Lia.Section exposing (Section, Sections)
+import Lia.Model exposing (Model, getTitle)
+import Lia.Section exposing (Section)
 
 
+{-| Encode a pre-parsed course, sections only with their title and code, as
+it is stored in the database and read by `Lia.Json.Decode.decode`.
+-}
 encode : Model -> JE.Value
 encode =
-    encodeWith encSection
+    encodeWith (always [])
 
 
-encodeWith : (Section -> JE.Value) -> Model -> JE.Value
-encodeWith sectionEncoder model =
+{-| Like `encode`, but every section also contains its parsed `body`. This is
+used for exporting courses (Worker).
+-}
+encodeFull : Model -> JE.Value
+encodeFull =
+    encodeWith (\sec -> [ ( "body", Body.encode sec.body ) ])
+
+
+encodeWith : (Section -> List ( String, JE.Value )) -> Model -> JE.Value
+encodeWith extra model =
     JE.object
         [ ( "title"
           , model.sections
@@ -30,80 +41,32 @@ encodeWith sectionEncoder model =
                 |> Maybe.withDefault [ Chars model.title [] ]
                 |> Inline.encode
           )
-        , ( "str_title"
-          , model.sections
-                |> get_title
-                |> JE.string
-          )
-        , ( "definition"
-          , model.definition |> Definition.encode
-          )
-        , ( "comment"
-          , model.definition.comment
-                |> stringify
-                |> JE.string
-          )
-        , ( "readme"
-          , model.readme |> JE.string
-          )
-        , ( "url"
-          , model.url |> JE.string
-          )
-        , ( "origin"
-          , model.origin |> JE.string
-          )
+        , ( "str_title", JE.string (getTitle model.sections) )
+        , ( "definition", Definition.encode model.definition )
+        , ( "comment", JE.string (stringify model.definition.comment) )
+        , ( "readme", JE.string model.readme )
+        , ( "url", JE.string model.url )
+        , ( "origin", JE.string model.origin )
         , ( "sections"
-          , model.sections |> JE.array sectionEncoder
+          , JE.array
+                (\sec ->
+                    [ ( "title", Inline.encode sec.title )
+                    , ( "code", JE.string sec.code )
+                    , ( "indentation", JE.int sec.indentation )
+                    ]
+                        ++ extra sec
+                        |> JE.object
+                )
+                model.sections
           )
-        , ( "section_active"
-          , model.section_active |> JE.int
-          )
+        , ( "section_active", JE.int model.section_active )
         , ( "version"
           , model.definition.version
                 |> String.split "."
                 |> List.head
-                |> Maybe.withDefault "0"
-                |> String.toInt
+                |> Maybe.andThen String.toInt
                 |> Maybe.withDefault 0
                 |> JE.int
           )
-        , ( "translation"
-          , model.translation
-                |> getCodeFromLn
-                |> JE.string
-          )
+        , ( "translation", JE.string (getCodeFromLn model.translation) )
         ]
-
-
-get_title : Sections -> String
-get_title sections =
-    sections
-        |> Array.get 0
-        |> Maybe.map .title
-        |> Maybe.map stringify
-        |> Maybe.withDefault "Lia"
-        |> String.trim
-
-
-encSection : Section -> JE.Value
-encSection sec =
-    JE.object
-        [ ( "title", Inline.encode sec.title )
-        , ( "code", JE.string sec.code )
-        , ( "indentation", JE.int sec.indentation )
-        ]
-
-
-encSectionFull : Section -> JE.Value
-encSectionFull sec =
-    JE.object
-        [ ( "title", Inline.encode sec.title )
-        , ( "code", JE.string sec.code )
-        , ( "indentation", JE.int sec.indentation )
-        , ( "body", Body.encode sec.body )
-        ]
-
-
-encodeFull : Model -> JE.Value
-encodeFull =
-    encodeWith encSectionFull

@@ -1,5 +1,6 @@
 module Lia.Markdown.Inline.Stringify exposing
-    ( stringify
+    ( Config
+    , stringify
     , stringify_
     )
 

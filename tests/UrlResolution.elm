@@ -1,4 +1,4 @@
-module UrlResolution exposing (resourceOriginSuite, suite)
+module UrlResolution exposing (platformSuite, resourceOriginSuite, suite)
 
 {-| Relative resource URLs (images, `src`/`href` attributes) are resolved by
 concatenating the course's `origin` with the relative path and then
@@ -9,7 +9,7 @@ that concatenation makes sense before `link` rewrites the whole thing.
 
 import Expect
 import Lia.Markdown.HTML.Attributes exposing (toURL)
-import Lia.Parser.PatReplace exposing (link, resourceOrigin)
+import Lia.Parser.PatReplace exposing (link, repo, resourceOrigin)
 import Test exposing (Test, describe, test)
 
 
@@ -47,7 +47,7 @@ suite =
         ]
 
 
-{-| The browser's address bar ends up holding the *resolved* course URL after
+{-| The browser's address bar ends up holding the _resolved_ course URL after
 every load (LiaScript canonicalizes it there), not the original human-typed
 one - so `resourceOrigin` has to work from that resolved form directly.
 -}
@@ -78,4 +78,32 @@ resourceOriginSuite =
                 in
                 toURL (resourceOrigin resolvedReadme) "?ref=main" "02_img/lf4_ls1_asymmetrische_verschluesselung.svg"
                     |> Expect.equal "https://gitlab.com/api/v4/projects/dannori%2Fwvs-liascript/repository/files/LF04%2F02_img%2Flf4_ls1_asymmetrische_verschluesselung.svg/raw?ref=main"
+        ]
+
+
+{-| Platform URLs that do not occur in the course corpora.
+-}
+platformSuite : Test
+platformSuite =
+    describe "link and repo for rare platform URLs"
+        [ test "repo of a proxied gitlab.com file" <|
+            \_ ->
+                repo "https://api.allorigins.win/raw?url=https://gitlab.com/user/repo/-/raw/main/README.md"
+                    |> Expect.equal (Just "https://gitlab.com/user/repo/-/tree/main/README.md")
+        , test "self-hosted GitLab without a group" <|
+            \_ ->
+                link "gitlab://h.de/repo/-/raw/main/a.md"
+                    |> Expect.equal "https://h.de/api/v4/projects/repo/repository/files/a.md/raw?ref=main"
+        , test "self-hosted GitLab with an empty branch" <|
+            \_ ->
+                link "gitlab://h.de/u/r/-/raw//a.md"
+                    |> Expect.equal "https://h.de/api/v4/projects/u%2Fr/repository/files/README.md/raw?ref="
+        , test "Codeberg URLs that are neither raw nor src are kept" <|
+            \_ ->
+                link "https://codeberg.org/user/repo/xyz/branch/main/a.md"
+                    |> Expect.equal "https://codeberg.org/user/repo/xyz/branch/main/a.md"
+        , test "OneDrive links use URL-safe base64 without padding" <|
+            \_ ->
+                link "https://onedrive.live.com/?=0>z>"
+                    |> Expect.equal "https://api.onedrive.com/v1.0/shares/u!aHR0cHM6Ly9vbmVkcml2ZS5saXZlLmNvbS8_PTA-ej4/root/content"
         ]
