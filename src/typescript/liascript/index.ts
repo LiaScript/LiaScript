@@ -237,6 +237,9 @@ export class LiaScript {
 
     let connector = this.connector
     jsSubscribe((event: Lia.Event) => {
+      // every event Elm sends to JS, read-only, for hosts like the DevServer
+      window.dispatchEvent(new CustomEvent('lia:event', { detail: event }))
+
       if (window.LIA.debug)
         log.info(
           `LIA >>> (${JSON.stringify(event.track)})`,
