@@ -5,6 +5,10 @@ module Lia.Parser.Parser exposing
     , parse_titles
     )
 
+{-| Entry points for parsing a course: the main definitions, the splitting into
+sections and the parsing of a section or a sub-section (used by effects).
+-}
+
 import Combine
     exposing
         ( InputStream
@@ -26,6 +30,9 @@ import Lia.Parser.Preprocessor as Preprocessor
 import Lia.Section as Section exposing (Section, SubSection(..))
 
 
+{-| Parse the main definitions with the `base` URL and `appendix` query, the
+result also contains the code that starts with the first title.
+-}
 parse_definition : String -> String -> String -> Result String ( Definition, String )
 parse_definition base appendix code =
     case
@@ -56,10 +63,8 @@ parse_definition base appendix code =
                         |> Error.Message.parseDefinition True ( code, currentLocation stream |> .line )
 
 
-
---<|formatError ms stream)
-
-
+{-| Get the next section (title and body) and the remaining code.
+-}
 parse_titles : Definition -> String -> Result String ( Section.Base, String )
 parse_titles defines code =
     case Combine.runParser Preprocessor.section (init Nothing Nothing defines) code of
@@ -70,6 +75,8 @@ parse_titles defines code =
             Err (formatError ms stream)
 
 
+{-| Parse the body of a section, with its own definitions if there are any.
+-}
 parse_section :
     (String -> String)
     -> Definition
@@ -77,7 +84,6 @@ parse_section :
     -> Result String Section
 parse_section search_index global sec =
     case
-        -- TODO add random
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
             (init (Just sec.seed) (Just search_index) { global | section = sec.id })
@@ -90,6 +96,9 @@ parse_section search_index global sec =
             formatError ms stream |> Err
 
 
+{-| Parse the code of a sub-section, a single paragraph becomes a
+`SubSubSection` of inline elements.
+-}
 parse_subsection : Maybe Definition -> Int -> String -> Result String SubSection
 parse_subsection globals id code =
     case
@@ -133,6 +142,8 @@ parse_subsection globals id code =
             formatError ms stream |> Err
 
 
+{-| Store the parsed body and all states of the `Context` in the section.
+-}
 return : Section -> Context -> Blocks -> Result String Section
 return sec state es =
     Ok
@@ -157,6 +168,9 @@ return sec state es =
         }
 
 
+{-| An error message with the line, a marker at the column and all expected
+alternatives.
+-}
 formatError : List String -> InputStream -> String
 formatError ms stream =
     let
@@ -169,13 +183,8 @@ formatError ms stream =
         expectationSeparator =
             "\n* "
 
-        --        lineNumberOffset =
-        --            floor (logBase 10 (toFloat location.line)) + 1
-        separatorOffset =
-            String.length separator
-
         padding =
-            location.column + separatorOffset + 2
+            location.column + String.length separator + 2
     in
     "Parse error around line: "
         ++ String.fromInt location.line

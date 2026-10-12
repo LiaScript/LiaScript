@@ -5,8 +5,11 @@ module Lia.Parser.PatReplace exposing
     , resourceOrigin
     )
 
+{-| Turn URLs of known platforms (GitHub, GitLab, DropBox, ...) into URLs that
+can be downloaded directly, and back into the URL of the repository.
+-}
+
 import Const
-import I18n.Translations exposing (Lang(..))
 import Lia.Parser.UrlPattern.Codeberg as Codeberg
 import Lia.Parser.UrlPattern.DropBox as DropBox
 import Lia.Parser.UrlPattern.Generic exposing (root)
@@ -18,21 +21,42 @@ import Lia.Utils
 import Regex
 
 
+{-| Replace an URL with the first matching pattern, `by` gets the URL and the
+first submatch of the pattern. The result is `( True, replaced )` or
+`( False, url )` if no pattern matches.
+
+The patterns are compiled once, if `replace patterns` is stored as a value.
+
+-}
 replace : List { pattern : String, by : String -> String -> String } -> String -> ( Bool, String )
-replace patterns url =
+replace patterns =
+    let
+        compiled =
+            List.map (\p -> ( regex p.pattern, p.by )) patterns
+    in
+    \url -> replaceWith compiled url
+
+
+{-| Apply the first matching pattern.
+-}
+replaceWith : List ( Regex.Regex, String -> String -> String ) -> String -> ( Bool, String )
+replaceWith patterns url =
     case patterns of
         [] ->
             ( False, url )
 
-        t :: ts ->
-            case check t.pattern url of
+        ( pattern, by ) :: rest ->
+            case submatch pattern url of
                 Just str ->
-                    ( True, t.by url str )
+                    ( True, by url str )
 
-                _ ->
-                    replace ts url
+                Nothing ->
+                    replaceWith rest url
 
 
+{-| Turn an URL into one that can be downloaded directly, proxied URLs are
+kept.
+-}
 link : String -> String
 link url =
     if String.startsWith Const.urlProxy url then
@@ -41,32 +65,39 @@ link url =
     else
         url
             |> whiteList
-            |> replace
-                [ { by = GitHub.by
-                  , pattern = GitHub.pattern
-                  }
-                , { by = DropBox.by
-                  , pattern = DropBox.pattern
-                  }
-                , { by = OneDrive.by
-                  , pattern = OneDrive.pattern
-                  }
-                , { by = Codeberg.by
-                  , pattern = root Codeberg.pattern
-                  }
-                , { by = GitLab.by
-                  , pattern = GitLab.pattern
-                  }
-
-                -- Generic GitLab
-                , { by = GitLab.byGeneric
-                  , pattern = GitLab.patternGeneric
-                  }
-                , { by = NextCloud.byGeneric
-                  , pattern = NextCloud.patternGeneric
-                  }
-                ]
+            |> platforms
             |> Tuple.second
+
+
+{-| All known platforms.
+-}
+platforms : String -> ( Bool, String )
+platforms =
+    replace
+        [ { by = GitHub.by
+          , pattern = GitHub.pattern
+          }
+        , { by = DropBox.by
+          , pattern = DropBox.pattern
+          }
+        , { by = OneDrive.by
+          , pattern = OneDrive.pattern
+          }
+        , { by = Codeberg.by
+          , pattern = Codeberg.pattern
+          }
+        , { by = GitLab.by
+          , pattern = GitLab.pattern
+          }
+
+        -- Generic GitLab
+        , { by = GitLab.byGeneric
+          , pattern = GitLab.patternGeneric
+          }
+        , { by = NextCloud.byGeneric
+          , pattern = NextCloud.patternGeneric
+          }
+        ]
 
 
 {-| Compute the directory a resolved course/resource URL lives in, so a
@@ -90,6 +121,9 @@ resourceOrigin url =
                 |> Maybe.withDefault ""
 
 
+{-| URLs of known GitLab instances are turned into `gitlab://` URLs, except
+for API URLs.
+-}
 whiteList : String -> String
 whiteList url =
     let
@@ -111,8 +145,7 @@ whiteList url =
         url
 
 
-{-| **private:** translates the `Const.urlProxy` string into a regular
-expression.
+{-| The `Const.urlProxy` string as a regular expression.
 -}
 urlProxy : String
 urlProxy =
@@ -133,7 +166,7 @@ URL is automatically added by the system, which is ignored.
     repo "Const.proxyURL"+"https://gitlab.com/OvGU-ESS/eLab_v2/lia_script/-/raw/master/README.md"
     = "https://gitlab.com/OvGU-ESS/eLab_v2/lia_script/-/blob/master/README.md"
 
-Works also fro dropbox...
+Works also for dropbox...
 
 -}
 repo : String -> Maybe String
@@ -188,22 +221,22 @@ repo =
            )
 
 
+{-| Compile a pattern, an invalid one never matches.
+-}
 regex : String -> Regex.Regex
 regex =
     Regex.fromString >> Maybe.withDefault Regex.never
 
 
-check : String -> String -> Maybe String
-check pattern url =
-    case
-        url
-            |> Regex.findAtMost 1 (regex pattern)
-            |> List.head
-    of
-        Just match ->
+{-| The first submatch of the first match.
+-}
+submatch : Regex.Regex -> String -> Maybe String
+submatch pattern url =
+    case Regex.findAtMost 1 pattern url of
+        match :: _ ->
             match.submatches
                 |> List.head
                 |> Maybe.withDefault Nothing
 
-        _ ->
+        [] ->
             Nothing

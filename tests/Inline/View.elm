@@ -241,6 +241,12 @@ suite =
         , inlines
             |> List.map (\( name, inline ) -> snapshot ("reduce " ++ name) (wrap (View.reduce config [ chars "a. b", inline ])))
             |> describe "reduce"
+        , test "footnote key is a JS string literal in onclick" <|
+            \_ ->
+                View.view config (FootnoteMark "a\"b\\c" [])
+                    |> HtmlSnapshot.toString
+                    |> String.contains "showFootnote(\"a\\\"b\\\\c\");"
+                    |> Expect.equal True
         , snapshot "reduce all" (wrap (View.reduce config (List.map Tuple.second inlines)))
         , snapshot "viewer" (wrap (View.viewer config (List.map Tuple.second inlines)))
         , inlines

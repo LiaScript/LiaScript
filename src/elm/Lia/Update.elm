@@ -19,7 +19,7 @@ import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, loadResource)
 import Lia.Parser.Parser exposing (parse_section)
 import Lia.Section exposing (Section)
-import Lia.Settings.Types exposing (Mode(..), PlaybackState(..))
+import Lia.Settings.Types exposing (Mode(..), PlaybackState(..), Settings)
 import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Lia.Utils exposing (checkPersistency)
@@ -47,8 +47,6 @@ subscriptions model =
             [ section
                 |> Markdown.subscriptions
                 |> Sub.map UpdateMarkdown
-
-            --, Sub.map UpdateSync Sync.subscriptions
             , media Media
             , SplitPane.subscriptions model.pane |> Sub.map Pane
             ]
@@ -89,7 +87,7 @@ type Msg
     | UpdateMarkdown Markdown.Msg
     | UpdateSync Sync.Msg
     | UpdateChat Chat.Msg
-    | UpdateOverlay (Overlay.Msg Msg)
+    | UpdateOverlay Overlay.Msg
     | Handle Event
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
@@ -109,91 +107,45 @@ type Msg
 port bus.
 -}
 applyLoadAll : Model -> String -> Event -> Return Model Msg Markdown.Msg
-applyLoadAll model topic e_ =
-    e_.message.param
-        |> JD.decodeValue
-            (JD.list
-                (JD.map2 Tuple.pair
-                    (JD.field "id" JD.int)
-                    (JD.field "data" JD.value)
-                )
-            )
-        |> Result.map
-            (\entries ->
-                model.sections
-                    |> Markdown.handleAll model.sync model.definition topic entries
-                    |> Return.mapValCmd (\v -> { model | sections = v }) UpdateMarkdown
-            )
-        |> Result.withDefault (Return.val model)
+applyLoadAll model topic event =
+    case
+        JD.decodeValue
+            (JD.list (JD.map2 Tuple.pair (JD.field "id" JD.int) (JD.field "data" JD.value)))
+            event.message.param
+    of
+        Ok entries ->
+            model.sections
+                |> Markdown.handleAll model.sync model.definition topic entries
+                |> Return.mapValCmd (\sections -> { model | sections = sections }) UpdateMarkdown
+
+        Err _ ->
+            Return.val model
 
 
 update : Session -> Msg -> Model -> Return Model Msg Markdown.Msg
 update session msg model =
     case msg of
         Focus ->
-            let
-                settings =
-                    model.settings
-            in
-            { model
-                | settings =
-                    { settings
-                        | table_of_contents =
-                            if session.screen.width <= Const.globalBreakpoints.sm then
-                                False
-
-                            else
-                                settings.table_of_contents
-                    }
-            }
+            { model | settings = closeTocOnSmallScreens session model.settings }
                 |> Return.val
                 |> Return.batchEvent (initializeSlide model)
 
         Load force idx ->
-            if (-1 < idx) && (idx < Array.length model.sections) then
+            if -1 < idx && idx < Array.length model.sections then
                 let
                     settings =
-                        model.settings
+                        closeTocOnSmallScreens session model.settings
+
+                    loaded =
+                        { model | section_active = idx, settings = { settings | playback = Idle } }
                 in
                 if idx == model.section_active || force then
-                    update session
-                        InitSection
-                        (generate
-                            { model
-                                | section_active = idx
-                                , settings =
-                                    { settings
-                                        | table_of_contents =
-                                            if
-                                                session.screen.width
-                                                    <= Const.globalBreakpoints.sm
-                                            then
-                                                False
-
-                                            else
-                                                settings.table_of_contents
-                                        , playback = Idle
-                                    }
-                            }
-                        )
+                    update session InitSection (generate loaded)
 
                 else
-                    { model
-                        | section_active = idx
-                        , settings =
-                            { settings
-                                | table_of_contents =
-                                    if session.screen.width <= Const.globalBreakpoints.sm then
-                                        False
-
-                                    else
-                                        settings.table_of_contents
-                                , playback = Idle
-                            }
-                    }
+                    loaded
                         |> Return.val
                         |> Return.cmd (Session.navToSlide session idx)
-                --|> Return.sync (Event.initWithId "load" idx JE.null)
 
             else
                 Return.val model
@@ -218,132 +170,10 @@ update session msg model =
                 |> Return.mapEvents "sync" -1
 
         UpdateOverlay childMsg ->
-            let
-                ( overlay, cmd, cmdParent ) =
-                    Overlay.update childMsg model.overlayVideo
-            in
-            { model | overlayVideo = overlay }
-                |> Return.val
-                |> Return.cmd
-                    (case cmdParent of
-                        Just parent ->
-                            Cmd.none
-
-                        Nothing ->
-                            Cmd.map UpdateOverlay cmd
-                    )
+            Return.val { model | overlayVideo = Overlay.update childMsg model.overlayVideo }
 
         Handle event ->
-            case Event.pop event of
-                ( Just "settings", e ) ->
-                    update
-                        session
-                        (e
-                            |> Settings.handle
-                            |> UpdateSettings
-                        )
-                        model
-
-                ( Just "load", _ ) ->
-                    update session InitSection (generate model)
-
-                -- external triggers to move to a specific slide
-                ( Just "goto", _ ) ->
-                    case event.message.cmd of
-                        "goto" ->
-                            case JD.decodeValue JD.int event.message.param of
-                                Ok id ->
-                                    update session (Load True id) model
-
-                                Err _ ->
-                                    Return.val model
-                                        |> Return.batchEvent (Service.Console.warn "message goto with no id")
-
-                        "next" ->
-                            update session NextSection model
-
-                        "prev" ->
-                            update session PrevSection model
-
-                        _ ->
-                            Return.val model
-                                |> Return.batchEvent (Service.Console.warn "message goto unknown")
-
-                ( Just "sync", e ) ->
-                    case Event.popWithId e of
-                        Nothing ->
-                            e
-                                |> Sync.handle session
-                                    (case e.message.cmd of
-                                        "connect" ->
-                                            { model | settings = Settings.closeSync model.settings }
-
-                                        _ ->
-                                            model
-                                    )
-                                |> Return.mapCmd UpdateSync
-                                |> Return.mapEvents "sync" -1
-
-                        Just ( "load", id, _ ) ->
-                            update session (Load True id) model
-
-                        Just ( "quizAll", _, e_ ) ->
-                            applyLoadAll model "quiz" e_
-
-                        Just ( "surveyAll", _, e_ ) ->
-                            applyLoadAll model "survey" e_
-
-                        Just ( topic, id, e_ ) ->
-                            case ( id < 10000, Array.get id model.sections ) of
-                                ( True, Just sec ) ->
-                                    sec
-                                        |> Markdown.handle model.sync model.definition topic e_
-                                        |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
-
-                                ( False, Nothing ) ->
-                                    update session (UpdateChat (Chat.handle e)) model
-
-                                _ ->
-                                    Return.val model
-
-                ( Just "swipe", e ) ->
-                    case
-                        e
-                            |> Event.message
-                            -- TODO
-                            |> Tuple.second
-                            |> JD.decodeValue JD.string
-                    of
-                        Ok "left" ->
-                            update session NextSection model
-
-                        Ok "right" ->
-                            update session PrevSection model
-
-                        _ ->
-                            Return.val model
-
-                ( Just topic, e ) ->
-                    case
-                        -- TODO
-                        event
-                            |> Event.id
-                            |> Maybe.map (\id -> ( id, Array.get id model.sections ))
-                    of
-                        Just ( id, Just sec ) ->
-                            sec
-                                |> Markdown.handle model.sync model.definition topic e
-                                |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
-
-                        Just ( id, Nothing ) ->
-                            update session (UpdateChat (Chat.handle event)) model
-
-                        _ ->
-                            Return.val model
-
-                ( Nothing, _ ) ->
-                    Return.val model
-                        |> Return.batchEvent (Service.Console.warn ("unknown event: " ++ event.service ++ " / " ++ event.message.cmd))
+            handle session event model
 
         Script ( id, sub ) ->
             case Array.get id model.sections of
@@ -352,9 +182,9 @@ update session msg model =
                         |> Return.val
                         |> Return.script sub
                         |> Markdown.updateScript
-                        |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
+                        |> Return.mapValCmd (setSection model id) UpdateMarkdown
 
-                _ ->
+                Nothing ->
                     Return.val model
 
         Media ( url, width, height ) ->
@@ -377,8 +207,7 @@ update session msg model =
                         model
 
         Pane paneMsg ->
-            { model | pane = SplitPane.update paneMsg model.pane }
-                |> Return.val
+            Return.val { model | pane = SplitPane.update paneMsg model.pane }
 
         UpdateChat childMsg ->
             { msg = childMsg
@@ -387,117 +216,117 @@ update session msg model =
             , sync = model.sync
             }
                 |> Chat.update
-                |> Return.mapValCmd
-                    (\chat -> { model | chat = chat })
-                    UpdateChat
+                |> Return.mapValCmd (\chat -> { model | chat = chat }) UpdateChat
 
-        _ ->
-            case ( msg, get_active_section model ) of
-                ( UpdateMarkdown childMsg, Just sec ) ->
+        UpdateMarkdown childMsg ->
+            withActiveSection model
+                (\sec ->
                     sec
                         |> Markdown.update model.sync model.definition childMsg
-                        |> Return.mapValCmd (set_active_section model) UpdateMarkdown
+                        |> Markdown.revealSolutions
+                            { sound = model.settings.sound && model.settings.mode /= Textbook
+                            , runAll = model.settings.mode == Textbook
+                            }
+                            (Markdown.solved sec)
+                        |> Return.mapValCmd (setSection model model.section_active) UpdateMarkdown
+                )
 
-                ( NextSection, Just sec ) ->
-                    if (model.settings.mode == Textbook) || not (Effect.has_next sec.effect_model) then
+        NextSection ->
+            withActiveSection model
+                (\sec ->
+                    if model.settings.mode == Textbook || not (Effect.has_next sec.effect_model) then
                         update session (Load False (model.section_active + 1)) model
 
                     else
                         sec
                             |> Markdown.nextEffect model.sync model.definition model.settings.sound
-                            |> Return.mapValCmd (set_active_section model) UpdateMarkdown
+                            |> Return.mapValCmd (setSection model model.section_active) UpdateMarkdown
+                )
 
-                ( PrevSection, Just sec ) ->
-                    if (model.settings.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
+        PrevSection ->
+            withActiveSection model
+                (\sec ->
+                    if model.settings.mode == Textbook || not (Effect.has_previous sec.effect_model) then
                         update session (Load False (model.section_active - 1)) model
 
                     else
                         sec
                             |> Markdown.previousEffect model.sync model.definition model.settings.sound
-                            |> Return.mapValCmd (set_active_section model) UpdateMarkdown
+                            |> Return.mapValCmd (setSection model model.section_active) UpdateMarkdown
+                )
 
-                ( InitSection, Just sec ) ->
+        InitSection ->
+            withActiveSection model
+                (\sec ->
                     let
-                        return =
-                            case model.settings.mode of
-                                Textbook ->
-                                    Markdown.initEffect model.sync model.definition True False sec
-
-                                _ ->
-                                    Markdown.initEffect model.sync model.definition False model.settings.sound sec
+                        textbook =
+                            model.settings.mode == Textbook
                     in
-                    return
-                        |> Return.mapValCmd (set_active_section { model | to_do = [] }) UpdateMarkdown
+                    sec
+                        |> Markdown.initEffect model.sync model.definition textbook (not textbook && model.settings.sound)
+                        |> Markdown.revealSolutions { sound = False, runAll = textbook } []
+                        |> Return.mapValCmd (setSection { model | to_do = [] } model.section_active) UpdateMarkdown
                         |> Return.batchEvents (initializeSlide model :: model.to_do)
+                )
 
-                ( JumpToFragment id, Just sec ) ->
-                    if (model.settings.mode == Textbook) || sec.effect_model.visible == id then
+        JumpToFragment id ->
+            withActiveSection model
+                (\sec ->
+                    if model.settings.mode == Textbook || sec.effect_model.visible == id then
                         Return.val model
 
                     else
                         let
                             effect =
                                 sec.effect_model
-
-                            return =
-                                Markdown.nextEffect model.sync model.definition model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
                         in
-                        return
-                            |> Return.mapValCmd (set_active_section model) UpdateMarkdown
+                        { sec | effect_model = { effect | visible = id - 1 } }
+                            |> Markdown.nextEffect model.sync model.definition model.settings.sound
+                            |> Return.mapValCmd (setSection model model.section_active) UpdateMarkdown
+                )
 
-                ( UpdateSettings childMsg, sec ) ->
-                    let
-                        mode =
-                            model.settings.mode
-                    in
-                    Settings.update
-                        (Just
-                            { title = model.title
-                            , comment = model.definition.comment
-                            , effectID =
-                                sec
-                                    |> Maybe.map .effect_model
-                                    |> Maybe.map .visible
-                            , logo =
-                                model.definition.logo
-                                    |> (\logo ->
-                                            if String.isEmpty logo then
-                                                Nothing
+        UpdateSettings childMsg ->
+            Settings.update
+                (Just
+                    { title = model.title
+                    , comment = model.definition.comment
+                    , effectID = Maybe.map (.effect_model >> .visible) (get_active_section model)
+                    , logo =
+                        if String.isEmpty model.definition.logo then
+                            Nothing
 
-                                            else
-                                                Just logo
-                                       )
-                            , readme = model.readme
-                            }
-                        )
-                        childMsg
-                        model.settings
-                        |> Return.mapValCmd (\v -> { model | settings = v }) UpdateSettings
-                        |> maybeTextbookChange session mode
+                        else
+                            Just model.definition.logo
+                    , readme = model.readme
+                    }
+                )
+                childMsg
+                model.settings
+                |> Return.mapValCmd (\settings -> { model | settings = settings }) UpdateSettings
+                |> maybeTextbookChange session model.settings.mode
 
-                ( TTSReplay bool, sec ) ->
-                    case Markdown.ttsReplay model.settings.sound bool sec of
-                        Just event ->
-                            Return.val model
-                                -- todo: important, this might be the reason for failures in tts
-                                |> Return.batchEvent event
+        TTSReplay replay ->
+            case Markdown.ttsReplay model.settings.sound replay (get_active_section model) of
+                Just event ->
+                    -- todo: important, this might be the reason for failures in tts
+                    Return.val model
+                        |> Return.batchEvent event
 
-                        Nothing ->
-                            Return.val model
+                Nothing ->
+                    Return.val model
 
-                ( TTSPause, sec ) ->
-                    sendTTSEvent Service.TTS.pause model sec
+        TTSPause ->
+            sendTTSEvent Service.TTS.pause model
 
-                ( TTSResume, sec ) ->
-                    sendTTSEvent Service.TTS.resume model sec
+        TTSResume ->
+            sendTTSEvent Service.TTS.resume model
 
-                ( TTSStartSeeking, _ ) ->
-                    let
-                        settings =
-                            model.settings
-
-                        newPlayback =
-                            case settings.playback of
+        TTSStartSeeking ->
+            { model
+                | settings =
+                    mapPlayback
+                        (\playback ->
+                            case playback of
                                 SpeakingWithProgress p ->
                                     SeekingFromPlaying p
 
@@ -505,52 +334,189 @@ update session msg model =
                                     SeekingFromPaused p
 
                                 _ ->
-                                    settings.playback
-                    in
-                    Return.val { model | settings = { settings | playback = newPlayback } }
+                                    playback
+                        )
+                        model.settings
+            }
+                |> Return.val
 
-                ( TTSSeek seconds, sec ) ->
-                    let
-                        settings =
-                            model.settings
+        TTSSeek seconds ->
+            case get_active_section model of
+                Just _ ->
+                    sendTTSEvent (Service.TTS.seek seconds)
+                        { model
+                            | settings =
+                                mapPlayback
+                                    (\playback ->
+                                        case playback of
+                                            SeekingFromPlaying p ->
+                                                SpeakingWithProgress { p | current = seconds }
 
-                        newPlayback =
-                            case settings.playback of
-                                SeekingFromPlaying p ->
-                                    SpeakingWithProgress { p | current = seconds }
+                                            SeekingFromPaused p ->
+                                                PausedWithProgress { p | current = seconds }
 
-                                SeekingFromPaused p ->
-                                    PausedWithProgress { p | current = seconds }
-
-                                _ ->
-                                    settings.playback
-                    in
-                    case sec of
-                        Just s ->
-                            Return.val { model | settings = { settings | playback = newPlayback } }
-                                |> Return.batchEvent
-                                    (Service.TTS.seek seconds
-                                        |> Event.pushWithId "settings" s.id
+                                            _ ->
+                                                playback
                                     )
+                                    model.settings
+                        }
 
-                        Nothing ->
+                Nothing ->
+                    Return.val model
+
+
+{-| **@private:** Route an external event by the first topic of its track.
+-}
+handle : Session -> Event -> Model -> Return Model Msg Markdown.Msg
+handle session event model =
+    case Event.pop event of
+        ( Just "settings", e ) ->
+            update session (UpdateSettings (Settings.handle e)) model
+
+        ( Just "load", _ ) ->
+            update session InitSection (generate model)
+
+        -- external triggers to move to a specific slide
+        ( Just "goto", _ ) ->
+            case event.message.cmd of
+                "goto" ->
+                    case JD.decodeValue JD.int event.message.param of
+                        Ok id ->
+                            update session (Load True id) model
+
+                        Err _ ->
                             Return.val model
+                                |> Return.batchEvent (Service.Console.warn "message goto with no id")
+
+                "next" ->
+                    update session NextSection model
+
+                "prev" ->
+                    update session PrevSection model
+
+                _ ->
+                    Return.val model
+                        |> Return.batchEvent (Service.Console.warn "message goto unknown")
+
+        ( Just "sync", e ) ->
+            case Event.popWithId e of
+                Nothing ->
+                    e
+                        |> Sync.handle session
+                            (if e.message.cmd == "connect" then
+                                { model | settings = Settings.closeSync model.settings }
+
+                             else
+                                model
+                            )
+                        |> Return.mapCmd UpdateSync
+                        |> Return.mapEvents "sync" -1
+
+                Just ( "load", id, _ ) ->
+                    update session (Load True id) model
+
+                Just ( "quizAll", _, e_ ) ->
+                    applyLoadAll model "quiz" e_
+
+                Just ( "surveyAll", _, e_ ) ->
+                    applyLoadAll model "survey" e_
+
+                Just ( topic, id, e_ ) ->
+                    -- ids from 10000 on belong to chat messages
+                    case ( id < 10000, Array.get id model.sections ) of
+                        ( True, Just sec ) ->
+                            handleSection model id sec topic e_
+
+                        ( False, Nothing ) ->
+                            update session (UpdateChat (Chat.handle e)) model
+
+                        _ ->
+                            Return.val model
+
+        ( Just "swipe", e ) ->
+            case JD.decodeValue JD.string e.message.param of
+                Ok "left" ->
+                    update session NextSection model
+
+                Ok "right" ->
+                    update session PrevSection model
 
                 _ ->
                     Return.val model
 
+        ( Just topic, e ) ->
+            case Event.id event of
+                Just id ->
+                    case Array.get id model.sections of
+                        Just sec ->
+                            handleSection model id sec topic e
 
-sendTTSEvent : Event -> Model -> Maybe Section -> Return Model Msg Markdown.Msg
-sendTTSEvent ttsEvent model sec =
-    case sec of
-        Just s ->
+                        Nothing ->
+                            update session (UpdateChat (Chat.handle event)) model
+
+                Nothing ->
+                    Return.val model
+
+        ( Nothing, _ ) ->
             Return.val model
-                |> Return.batchEvent (ttsEvent |> Event.pushWithId "settings" s.id)
+                |> Return.batchEvent (Service.Console.warn ("unknown event: " ++ event.service ++ " / " ++ event.message.cmd))
+
+
+{-| **@private:** Pass an event to section `id` and reveal its newly solved
+quizzes and surveys.
+-}
+handleSection : Model -> Int -> Section -> String -> Event -> Return Model Msg Markdown.Msg
+handleSection model id sec topic event =
+    sec
+        |> Markdown.handle model.sync model.definition topic event
+        |> Markdown.revealSolutions { sound = False, runAll = model.settings.mode == Textbook } (Markdown.solved sec)
+        |> Return.mapValCmd (setSection model id) UpdateMarkdown
+
+
+{-| **@private:** Apply `fn` to the active section, do nothing if there is none.
+-}
+withActiveSection : Model -> (Section -> Return Model Msg Markdown.Msg) -> Return Model Msg Markdown.Msg
+withActiveSection model fn =
+    case get_active_section model of
+        Just sec ->
+            fn sec
 
         Nothing ->
             Return.val model
 
 
+{-| **@private:** The table of contents covers the whole slide on small screens,
+so it gets closed whenever the slide changes or gets the focus.
+-}
+closeTocOnSmallScreens : Session -> Settings -> Settings
+closeTocOnSmallScreens session settings =
+    if session.screen.width <= Const.globalBreakpoints.sm then
+        { settings | table_of_contents = False }
+
+    else
+        settings
+
+
+mapPlayback : (PlaybackState -> PlaybackState) -> Settings -> Settings
+mapPlayback fn settings =
+    { settings | playback = fn settings.playback }
+
+
+{-| **@private:** Send a TTS event (pause, resume, seek) for the active section.
+-}
+sendTTSEvent : Event -> Model -> Return Model Msg Markdown.Msg
+sendTTSEvent ttsEvent model =
+    case get_active_section model of
+        Just sec ->
+            Return.val model
+                |> Return.batchEvent (Event.pushWithId "settings" sec.id ttsEvent)
+
+        Nothing ->
+            Return.val model
+
+
+{-| **@private:** The browser tab title, `section title · course title`.
+-}
 getTitle : Model -> String
 getTitle model =
     case get_active_section model of
@@ -573,6 +539,8 @@ getTitle model =
             model.title
 
 
+{-| **@private:** Tell JavaScript about the active slide (URL, title, focus).
+-}
 initializeSlide : Model -> Event
 initializeSlide model =
     Service.Slide.initialize model.section_active (getTitle model)
@@ -610,19 +578,19 @@ add_load vector sectionID name logs =
             :: logs
 
 
-{-| **@private:** shortcut for returning the active section in from the model.
+{-| The currently visible section, `Nothing` if the course has no sections.
 -}
 get_active_section : Model -> Maybe Section
 get_active_section model =
     Array.get model.section_active model.sections
 
 
-{-| **@private:** update the currently active section with one, where something
-has changed (`effect_model`, `quiz_vector`, etc.).
+{-| **@private:** Replace section `id` by one, where something has changed
+(`effect_model`, `quiz_vector`, etc.).
 -}
-set_active_section : Model -> Section -> Model
-set_active_section model section =
-    { model | sections = Array.set model.section_active section model.sections }
+setSection : Model -> Int -> Section -> Model
+setSection model id section =
+    { model | sections = Array.set id section model.sections }
 
 
 {-| Initialize the active section if it has not been parsed so far, which means:
@@ -676,7 +644,7 @@ generate model =
                         |> Maybe.withDefault []
                         |> loadResource model.resource
             in
-            set_active_section
+            setSection
                 { model
                     | resource = resource
                     , to_do =
@@ -687,6 +655,7 @@ generate model =
                             |> add_load section.survey_vector model.section_active "survey"
                             |> add_load section.task_vector model.section_active "task"
                 }
+                model.section_active
                 section
 
         Nothing ->

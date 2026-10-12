@@ -1,5 +1,6 @@
 module Lia.Markdown.Parser exposing (run)
 
+import Array
 import Combine
     exposing
         ( Parser
@@ -10,7 +11,6 @@ import Combine
         , ignore
         , keep
         , lazy
-        , lookAhead
         , many
         , many1
         , manyTill
@@ -23,17 +23,16 @@ import Combine
         , putState
         , regex
         , regexWith
+        , regexWithSub
         , runParser
         , sepBy
         , sepBy1
         , skip
-        , string
         , succeed
         , whitespace
         , withState
         )
 import Combine.Char
-import I18n.Translations exposing (Lang(..))
 import Lia.Markdown.Chart.Parser as Chart
 import Lia.Markdown.Code.Parser as Code
 import Lia.Markdown.Effect.Model exposing (set_annotation)
@@ -59,6 +58,9 @@ import Regex
 import SvgBob
 
 
+{-| The blocks of a section, a line that is no block becomes a `Problem`.
+Footnote definitions can appear between all blocks.
+-}
 run : Parser Context Markdown.Blocks
 run =
     footnotes
@@ -68,6 +70,8 @@ run =
         |> ignore footnotes
 
 
+{-| Footnote definitions `[^key]: ...`, they are stored in the context.
+-}
 footnotes : Parser Context ()
 footnotes =
     (Footnote.block ident_blocks |> ignore newlines)
@@ -87,6 +91,9 @@ blocks =
     lazy (\() -> blockParser)
 
 
+{-| A block: macros are expanded first, hidden comments `<!-- --{{1}}-- -->`
+behind it are consumed.
+-}
 blockParser : Parser Context Markdown.Block
 blockParser =
     Context.checkAbort
@@ -101,6 +108,12 @@ blockParser =
             )
 
 
+{-| All block types, the first one that matches wins. Most of them can have
+annotations `<!-- ... -->` in front.
+
+Tables, drawings, headers, quotes, lists, HTML, galleries and paragraphs that
+contain quiz inputs `[[...]]` become gap-text quizzes (`checkQuiz`).
+-}
 elements : Parser Context Markdown.Block
 elements =
     choice
@@ -147,9 +160,10 @@ elements =
         , horizontal_line
         , md_annotations
             |> andThen (\attr -> Survey.parse blocks attr |> map (Markdown.Survey attr))
+            |> andMap (solution "survey" (.survey_vector >> Array.length))
         , md_annotations
             |> andThen (\attr -> Quiz.parse blocks attr |> map (Markdown.Quiz attr))
-            |> andMap solution
+            |> andMap (solution "quiz" (.quiz_vector >> Array.length))
         , md_annotations
             |> map Markdown.Task
             |> andMap (Task.parse blocks)
@@ -181,10 +195,6 @@ elements =
             |> ignore (Input.setGroupPermission False [])
             |> ignore (Input.setPermission True)
             |> checkQuiz
-
-        --|> ignore (Input.setGroupPermission False)
-        --|> ignore (Input.setPermission True)
-        --|> checkQuiz
         , md_annotations
             |> ignore (Input.setPermission True)
             |> map Markdown.Gallery
@@ -199,6 +209,9 @@ elements =
         ]
 
 
+{-| Turn the block into a gap-text quiz, if it contains quiz inputs. The
+permission to define inputs, which the parser of the block has set, is reset.
+-}
 checkQuiz : Parser Context Markdown.Block -> Parser Context Markdown.Block
 checkQuiz =
     map Tuple.pair
@@ -207,6 +220,9 @@ checkQuiz =
         >> andThen toQuiz
 
 
+{-| A trailing script in a paragraph `[[x]] <script>...</script>` is the
+script that checks the quiz.
+-}
 toQuiz : ( Markdown.Block, Bool ) -> Parser Context Markdown.Block
 toQuiz ( md, isQuiz ) =
     if isQuiz then
@@ -256,12 +272,18 @@ toQuiz ( md, isQuiz ) =
         succeed md
 
 
+{-| Wrap the block with the collected inputs into a gap-text quiz.
+-}
+toQuiz_ : Maybe Int -> Parameters -> Markdown.Block -> Parser Context Markdown.Block
 toQuiz_ scriptID attr =
     Quiz.gapText blocks scriptID attr
         >> map (Markdown.Quiz attr)
-        >> andMap solution
+        >> andMap (solution "quiz" (.quiz_vector >> Array.length))
 
 
+{-| A narrator comment `--{{1}}--`, its annotations are stored in the effect
+model.
+-}
 to_comment : ( Parameters, ( Int, Int ) ) -> Parser Context Markdown.Block
 to_comment ( attr, ( id1, id2 ) ) =
     (case attr of
@@ -281,6 +303,10 @@ to_comment ( attr, ( id1, id2 ) ) =
         |> onsuccess (Markdown.Comment ( id1, id2 ))
 
 
+{-| The caption and the body of an ASCII drawing, `len` is the number of
+opening backticks. Up to 8 backticks the language `ascii` or `art` is
+required, more backticks always start a drawing.
+-}
 svgbody : Int -> Parser Context ( Maybe Inlines, String )
 svgbody len =
     let
@@ -318,6 +344,8 @@ svgbody len =
             )
 
 
+{-| An ASCII drawing ```` ```ascii ````.
+-}
 svgbob : Parser Context Parameters -> Parser Context Markdown.Block
 svgbob =
     map Markdown.ASCII
@@ -330,6 +358,9 @@ svgbob =
         >> ignore newline
 
 
+{-| Convert the drawing, verbatim parts `"..."` are parsed as LiaScript with the
+current context.
+-}
 svgbobSub : ( Maybe Inlines, String ) -> Parser Context ( Maybe Inlines, SvgBob.Configuration Markdown.Blocks )
 svgbobSub ( caption, str ) =
     let
@@ -385,6 +416,8 @@ svgbobSub ( caption, str ) =
     withState fn
 
 
+{-| A header within a section, either `## Title` or a setext header.
+-}
 subHeader : Parser Context ( Int, Inlines )
 subHeader =
     or subHeaderType1 subHeaderType2
@@ -472,6 +505,8 @@ firstLine =
     Regex.fromString "^[^\\n]*\\n" |> Maybe.withDefault Regex.never
 
 
+{-| The underline of a setext header, `===` is level 1, `---` level 2.
+-}
 underline : Parser Context Int
 underline =
     or
@@ -479,23 +514,75 @@ underline =
         (regex "-{3,}[ \t]*" |> keep (succeed 2))
 
 
-solution : Parser Context (Maybe ( Markdown.Blocks, Int ))
-solution =
-    let
-        rslt e1 blocks_ e2 =
-            ( blocks_, e2 - e1 )
-    in
+{-| A solution block `*****` below a quiz or survey, which gets visible after the
+quiz has been solved or the survey has been submitted. The name and counter are
+used to mark all comments within the solution with the class
+`lia-tts-{name}-{id}`, so that they can be read out loud at that moment. All
+scripts within the solution are only executed at that moment too.
+-}
+solution : String -> (Context -> Int) -> Parser Context (Maybe ( Markdown.Blocks, Int ))
+solution name count =
     regex "[\t ]*\\*{3,}[\t ]*\n+"
-        |> keep (withState (\s -> succeed s.effect_model.effects))
-        |> map rslt
-        |> andMap
-            (manyTill (blocks |> ignore newlines)
-                (regex "[\t ]*\\*{3,}[\t ]*")
+        |> keep
+            (withState
+                (\s ->
+                    succeed
+                        ( "lia-tts-" ++ name ++ "-" ++ String.fromInt (count s - 1)
+                        , s.effect_model.effects
+                        , Array.length s.effect_model.javascript
+                        )
+                )
             )
-        |> andMap (withState (\s -> succeed s.effect_model.effects))
+        |> andThen
+            (\( class, effects, scripts ) ->
+                manyTill (blocks |> ignore newlines)
+                    (regex "[\t ]*\\*{3,}[\t ]*")
+                    |> andThen
+                        (\blocks_ ->
+                            modifyState (markSolution class scripts blocks_)
+                                |> keep (withState (\s -> succeed ( blocks_, s.effect_model.effects - effects )))
+                        )
+            )
         |> maybe
 
 
+markSolution : String -> Int -> Markdown.Blocks -> Context -> Context
+markSolution class scripts blocks_ state =
+    let
+        e =
+            state.effect_model
+    in
+    { state
+        | effect_model =
+            { e
+                | javascript =
+                    Array.indexedMap
+                        (\id js ->
+                            if id >= scripts && js.solution == Nothing then
+                                { js | solution = Just class }
+
+                            else
+                                js
+                        )
+                        e.javascript
+                , comments =
+                    List.foldl
+                        (\block comments ->
+                            case block of
+                                Markdown.Comment ( id1, id2 ) ->
+                                    set_annotation id1 id2 comments [ ( "class", class ) ]
+
+                                _ ->
+                                    comments
+                        )
+                        e.comments
+                        blocks_
+            }
+    }
+
+
+{-| The indented blocks of a footnote definition.
+-}
 ident_blocks : Parser Context Markdown.Blocks
 ident_blocks =
     blocks
@@ -504,6 +591,8 @@ ident_blocks =
         |> ignore Indent.pop
 
 
+{-| An unordered list `-`, `*` or `+`, the items are indented by 2 spaces.
+-}
 unordered_list : Parser Context (List Markdown.Blocks)
 unordered_list =
     Indent.push "  "
@@ -519,6 +608,9 @@ unordered_list =
             )
 
 
+{-| An ordered list `1.`, the items are indented by 3 spaces, the number is
+kept as the value of the item.
+-}
 ordered_list : Parser Context (List ( String, Markdown.Blocks ))
 ordered_list =
     Indent.push "   "
@@ -537,12 +629,16 @@ ordered_list =
             )
 
 
+{-| A newline, the indentation (if there is any) is consumed in front of it.
+-}
 newlineWithIndentation : Parser Context ()
 newlineWithIndentation =
     Indent.maybeCheck
         |> ignore newline
 
 
+{-| A quote `> ...`, optionally starting with an alert `> [!NOTE]`.
+-}
 quote : Parser Context Parameters -> Parser Context Markdown.Block
 quote =
     map Markdown.Quote
@@ -561,32 +657,37 @@ quote =
         >> ignore Indent.pop
 
 
+{-| The type of an alert `> [!NOTE]` (after `[!`, case insensitive) with an
+optional title in the same line.
+-}
 alert : Parser Context ( Markdown.Alert, Maybe Inlines )
 alert =
-    choice
-        [ "NOTE\\][ \t]*"
-            |> regexWith { caseInsensitive = True, multiline = False }
-            |> keep (succeed (Tuple.pair Markdown.NOTE))
-            |> andMap (maybe line)
-        , "TIP\\][ \t]*"
-            |> regexWith { caseInsensitive = True, multiline = False }
-            |> keep (succeed (Tuple.pair Markdown.TIP))
-            |> andMap (maybe line)
-        , "IMPORTANT\\][ \t]*"
-            |> regexWith { caseInsensitive = True, multiline = False }
-            |> keep (succeed (Tuple.pair Markdown.IMPORTANT))
-            |> andMap (maybe line)
-        , "WARNING\\][ \t]*"
-            |> regexWith { caseInsensitive = True, multiline = False }
-            |> keep (succeed (Tuple.pair Markdown.WARNING))
-            |> andMap (maybe line)
-        , "CAUTION\\][ \t]*"
-            |> regexWith { caseInsensitive = True, multiline = False }
-            |> keep (succeed (Tuple.pair Markdown.CAUTION))
-            |> andMap (maybe line)
-        ]
+    regexWithSub { caseInsensitive = True, multiline = False } "(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\\][ \t]*"
+        |> map (\( _, sub ) -> Tuple.pair (toAlert (sub |> List.head |> Maybe.andThen identity |> Maybe.withDefault "" |> String.toUpper)))
+        |> andMap (maybe line)
 
 
+toAlert : String -> Markdown.Alert
+toAlert name =
+    case name of
+        "NOTE" ->
+            Markdown.NOTE
+
+        "TIP" ->
+            Markdown.TIP
+
+        "IMPORTANT" ->
+            Markdown.IMPORTANT
+
+        "WARNING" ->
+            Markdown.WARNING
+
+        _ ->
+            Markdown.CAUTION
+
+
+{-| A paragraph starting with `–` is a citation.
+-}
 checkForCitation : Parameters -> Inlines -> Markdown.Block
 checkForCitation attr p =
     case p of
@@ -601,23 +702,8 @@ checkForCitation attr p =
             Markdown.Paragraph attr p
 
 
-
---quote : Parser Context Markdown
---quote =
---    map Quote md_annotations
---        |> ignore (indentation_append "> ?")
---        |> andMap
---            (regex "> ?"
---                |> keep
---                    (blocks
---                        |> ignore (maybe indentation)
---                        |> ignore (regex "\\n?")
---                        |> many1
---                    )
---            )
---        |> ignore indentation_pop
-
-
+{-| A horizontal line `---`.
+-}
 horizontal_line : Parser Context Markdown.Block
 horizontal_line =
     md_annotations
@@ -625,6 +711,8 @@ horizontal_line =
         |> map Markdown.HLine
 
 
+{-| Lines of inlines, joined by spaces.
+-}
 paragraph : Parser Context Inlines
 paragraph =
     checkParagraph
@@ -633,32 +721,12 @@ paragraph =
         |> map (List.intersperse [ Chars " " [] ] >> List.concat >> combine)
 
 
+{-| A paragraph line cannot be empty and cannot start another block: a
+solution `***`, a hint `[[?]]`, a list, a code block or a quote.
+-}
 allowedLine : Parser Context ()
 allowedLine =
-    lookAhead
-        (maybe
-            (choice
-                [ regex "[ \t]*\n"
-                , regex "\\*\\*\\*+\n"
-                , string "[[?]]"
-                , string "+ "
-                , string "- "
-                , string "* "
-                , string "```"
-                , string ">"
-                , regex "\\d+\\. "
-                ]
-            )
-            |> andThen
-                (\e ->
-                    case e of
-                        Nothing ->
-                            succeed ()
-
-                        _ ->
-                            fail ""
-                )
-        )
+    notFollowedBy (regexStart "[ \t]*\n|\\*\\*\\*+\n|\\[\\[\\?\\]\\]|[+*-] |```|>|\\d+\\. ")
 
 
 {-| A paragraph cannot start with a marker for Comments `--{{1}}--` or Effects
@@ -673,22 +741,25 @@ to for returning `Paragraph`, `Citation`, or `Comment`.
 -}
 checkParagraph : Parser Context ()
 checkParagraph =
-    lookAhead
-        (maybe
-            (or (regex "[ \t]*--{{\\d+}}--")
-                (regex "[ \t]*{{\\d+}}")
-            )
-            |> andThen
-                (\e ->
-                    if e == Nothing then
-                        succeed ()
-
-                    else
-                        fail ""
-                )
-        )
+    notFollowedBy (regexStart "[ \t]*(?:--{{\\d+}}--|{{\\d+}})")
 
 
+{-| Fails without consuming anything, if the remaining input matches.
+-}
+notFollowedBy : Regex.Regex -> Parser Context ()
+notFollowedBy pattern =
+    peek (Regex.contains pattern) (fail "") (succeed ())
+
+
+{-| A regex that only matches at the beginning of the input.
+-}
+regexStart : String -> Regex.Regex
+regexStart pattern =
+    Regex.fromString ("^(?:" ++ pattern ++ ")") |> Maybe.withDefault Regex.never
+
+
+{-| A line that could not be parsed as a block, it is shown with all errors.
+-}
 problem : Parser Context Markdown.Block
 problem =
     Indent.skip
@@ -698,6 +769,8 @@ problem =
         |> map Markdown.Problem
 
 
+{-| An HTML comment that is not an annotation.
+-}
 htmlComment : Parser Context Markdown.Block
 htmlComment =
     Indent.skip
@@ -727,6 +800,8 @@ md_annotations =
         (succeed [])
 
 
+{-| An annotation attribute, URLs are resolved with the base of the course.
+-}
 md_attribute : Parser Context ( String, String )
 md_attribute =
     withState (\c -> succeed ( c.defines.base, c.defines.appendix ))

@@ -5,8 +5,6 @@ module Lia.Sync.Via exposing
     , badges
     , capacityBadge
     , capacityTag
-    , persistenceBadge
-    , persistenceTag
     , checkbox
     , eq
     , fromString
@@ -14,6 +12,8 @@ module Lia.Sync.Via exposing
     , info
     , infoOn
     , input
+    , persistenceBadge
+    , persistenceTag
     , tagline
     , toString
     , update
@@ -30,15 +30,12 @@ import Lia.Utils as Util
 type Backend
     = Edrys
     | GUN { urls : String, persistent : Bool }
-      --| Jitsi String
-      --| Matrix { baseURL : String, userId : String, accessToken : String }
     | P2PT String
     | IPFS { turnConfig : String }
     | PubNub { pubKey : String, subKey : String }
     | Ably { apiKey : String, persistent : Bool }
     | Nostr { relayUrls : String, persistent : Bool }
       -- Trystero
-      --| NoStr { relayUrls : String, turnConfig : String }
     | MQTT { relayUrls : String, turnConfig : String }
     | Torrent { relayUrls : String, turnConfig : String }
     | WebSocket { url : String }
@@ -49,210 +46,114 @@ type Backend
 
 toString : Bool -> Backend -> String
 toString full via =
-    case via of
-        Edrys ->
-            "Edrys"
+    let
+        ( name, params ) =
+            case via of
+                Edrys ->
+                    ( "Edrys", [] )
 
-        Nostr { relayUrls, persistent } ->
-            "Nostr"
-                ++ (if full then
-                        (if persistent then
-                            "|t"
+                Nostr { relayUrls, persistent } ->
+                    ( "Nostr", [ flag persistent, relayUrls ] )
 
-                         else
-                            "|f"
-                        )
-                            ++ "|"
-                            ++ relayUrls
+                MQTT { relayUrls, turnConfig } ->
+                    ( "MQTT", [ relayUrls, turnConfig ] )
 
-                    else
-                        ""
-                   )
+                Torrent { relayUrls, turnConfig } ->
+                    ( "Torrent", [ relayUrls, turnConfig ] )
 
-        -- NoStr { relayUrls, turnConfig } ->
-        --     "NoStr"
-        --         ++ (if full then
-        --                 "|" ++ relayUrls ++ "|" ++ turnConfig
-        --             else
-        --                 ""
-        --            )
-        MQTT { relayUrls, turnConfig } ->
-            "MQTT"
-                ++ (if full then
-                        "|" ++ relayUrls ++ "|" ++ turnConfig
+                IPFS { turnConfig } ->
+                    ( "IPFS", [ turnConfig ] )
 
-                    else
-                        ""
-                   )
+                GUN { urls, persistent } ->
+                    ( "GUN", [ flag persistent, urls ] )
 
-        Torrent { relayUrls, turnConfig } ->
-            "Torrent"
-                ++ (if full then
-                        "|" ++ relayUrls ++ "|" ++ turnConfig
+                PubNub { pubKey, subKey } ->
+                    ( "PubNub", [ pubKey, subKey ] )
 
-                    else
-                        ""
-                   )
+                Ably { apiKey, persistent } ->
+                    ( "Ably", [ flag persistent, apiKey ] )
 
-        IPFS { turnConfig } ->
-            "IPFS"
-                ++ (if full then
-                        "|" ++ turnConfig
+                P2PT urls ->
+                    ( "P2PT", [ urls ] )
 
-                    else
-                        ""
-                   )
+                WebSocket { url } ->
+                    ( "WebSocket", [ url ] )
 
-        GUN { urls, persistent } ->
-            "GUN"
-                ++ (if full then
-                        (if persistent then
-                            "|t"
+                PeerJS { host, port_, path, iceServers } ->
+                    ( "PeerJS", [ host, port_, path, iceServers ] )
 
-                         else
-                            "|f"
-                        )
-                            ++ "|"
-                            ++ urls
+                SimplePeer { signaling, iceServers, conference } ->
+                    ( "SimplePeer"
+                    , if conference then
+                        [ signaling, iceServers, "t" ]
 
-                    else
-                        ""
-                   )
+                      else
+                        [ signaling, iceServers ]
+                    )
 
-        -- Jitsi domain ->
-        --     "JitSi"
-        --         ++ (if full then
-        --                 "|" ++ domain
-        --             else
-        --                 ""
-        --            )
-        -- Matrix { baseURL, userId, accessToken } ->
-        --     "Matrix"
-        --         ++ (if full then
-        --                 "|" ++ baseURL ++ "|" ++ userId ++ "|" ++ accessToken
-        --             else
-        --                 ""
-        --            )
-        PubNub { pubKey, subKey } ->
-            "PubNub"
-                ++ (if full then
-                        "|" ++ pubKey ++ "|" ++ subKey
+                Local ->
+                    ( "Local", [] )
+    in
+    if full then
+        name ++ String.concat (List.map ((++) "|") params)
 
-                    else
-                        ""
-                   )
+    else
+        name
 
-        Ably { apiKey, persistent } ->
-            "Ably"
-                ++ (if full then
-                        (if persistent then
-                            "|t"
 
-                         else
-                            "|f"
-                        )
-                            ++ "|"
-                            ++ apiKey
+flag : Bool -> String
+flag on =
+    if on then
+        "t"
 
-                    else
-                        ""
-                   )
-
-        P2PT urls ->
-            "P2PT"
-                ++ (if full then
-                        "|" ++ urls
-
-                    else
-                        ""
-                   )
-
-        WebSocket { url } ->
-            "WebSocket"
-                ++ (if full then
-                        "|" ++ url
-
-                    else
-                        ""
-                   )
-
-        PeerJS { host, port_, path, iceServers } ->
-            "PeerJS"
-                ++ (if full then
-                        "|" ++ host ++ "|" ++ port_ ++ "|" ++ path ++ "|" ++ iceServers
-
-                    else
-                        ""
-                   )
-
-        SimplePeer { signaling, iceServers, conference } ->
-            "SimplePeer"
-                ++ (if full then
-                        "|"
-                            ++ signaling
-                            ++ "|"
-                            ++ iceServers
-                            ++ (if conference then
-                                    "|t"
-
-                                else
-                                    ""
-                               )
-
-                    else
-                        ""
-                   )
-
-        Local ->
-            "Local"
+    else
+        "f"
 
 
 icon : Backend -> Html msg
 icon via =
     Util.icon
-        (case via of
+        ((case via of
             Edrys ->
-                "icon-edrys icon-xs"
+                "icon-edrys"
 
             GUN _ ->
-                "icon-gundb icon-xs"
+                "icon-gundb"
 
             Nostr _ ->
-                "icon-nostr icon-xs"
+                "icon-nostr"
 
             MQTT _ ->
-                "icon-mqtt icon-xs"
+                "icon-mqtt"
 
             Torrent _ ->
-                "icon-torrent icon-xs"
+                "icon-torrent"
 
             IPFS _ ->
-                "icon-ipfs icon-xs"
+                "icon-ipfs"
 
-            -- Jitsi _ ->
-            --     "icon-jitsi icon-xs"
-            -- Matrix _ ->
-            --     "icon-matrix icon-xs"
             PubNub _ ->
-                "icon-pubnub icon-xs"
+                "icon-pubnub"
 
             Ably _ ->
-                "icon-ably icon-xs"
+                "icon-ably"
 
             P2PT _ ->
-                "icon-p2pt icon-xs"
+                "icon-p2pt"
 
             WebSocket _ ->
-                "icon-websocket icon-xs"
+                "icon-websocket"
 
             PeerJS _ ->
-                "icon-peerjs icon-xs"
+                "icon-peerjs"
 
             SimplePeer _ ->
-                "icon-webrtc icon-xs"
+                "icon-webrtc"
 
             Local ->
-                "icon-pencil icon-xs"
+                "icon-pencil"
+         )
+            ++ " icon-xs"
         )
         [ Attr.class "lia-sync-icon" ]
 
@@ -427,6 +328,9 @@ since anyone running them can keep what is stored there.
 persistenceInfo : Backend -> Maybe { label : String, hint : String, warn : Bool }
 persistenceInfo via =
     let
+        publicRelays =
+            "Stored on public third-party relays; anyone running a relay can keep the data"
+
         state persistent whoHolds warn =
             Just <|
                 if persistent then
@@ -446,10 +350,10 @@ persistenceInfo via =
             state persistent "Stored on Ably under your account" False
 
         Nostr { persistent } ->
-            state persistent "Stored on public third-party relays; anyone running a relay can keep the data" True
+            state persistent publicRelays True
 
         GUN { persistent } ->
-            state persistent "Stored on public third-party relays; anyone running a relay can keep the data" True
+            state persistent publicRelays True
 
         _ ->
             Nothing
@@ -588,18 +492,6 @@ fromString via =
         [ "gun", "t", urls ] ->
             Just (GUN { urls = urls, persistent = True })
 
-        -- [ "jitsi" ] ->
-        --     Just (Jitsi "")
-        -- [ "jitsi", domain ] ->
-        --     Just (Jitsi domain)
-        -- [ "matrix" ] ->
-        --     Just <| Matrix { baseURL = "", userId = "", accessToken = "" }
-        -- [ "matrix", baseURL ] ->
-        --     Just <| Matrix { baseURL = baseURL, userId = "", accessToken = "" }
-        -- [ "matrix", baseURL, userId ] ->
-        --     Just <| Matrix { baseURL = baseURL, userId = userId, accessToken = "" }
-        -- [ "matrix", baseURL, userId, accessToken ] ->
-        --     Just <| Matrix { baseURL = baseURL, userId = userId, accessToken = accessToken }
         [ "p2pt" ] ->
             Just (P2PT "")
 
@@ -758,7 +650,7 @@ info =
             , Html.text "After a successful connection, you can either share your settings with your audience or the new URL, which contains the entire classroom configuration. "
             , Html.text "A combination of your course-URL and the room name are used to create a unique ID and to prevent collisions with other courses. "
             , Html.text "However, if you want to establish a connection between exported courses (see "
-            , link "LiaScript-Exporter" ""
+            , link "LiaScript-Exporter" "https://github.com/LiaScript/LiaScript-Exporter"
             , Html.text ") on different platforms, such as "
             , link "Moodle" "https://en.wikipedia.org/wiki/Moodle"
             , Html.text ", "
@@ -918,11 +810,11 @@ yjsLink =
     link "Y-js" "https://github.com/yjs/yjs"
 
 
-infoOn : Bool -> Backend -> Html msg
-infoOn supported about =
+infoOn : Backend -> Html msg
+infoOn about =
     Html.p [] <|
-        case ( about, supported ) of
-            ( Edrys, _ ) ->
+        case about of
+            Edrys ->
                 [ link "Edrys" "https://edrys-labs.github.io"
                 , Html.text " is an open, modular remote-teaching platform. The site linked here runs "
                 , link "edrys-Lite" "https://github.com/edrys-labs/edrys-Lite"
@@ -935,12 +827,12 @@ infoOn supported about =
                 , Html.text "."
                 ]
 
-            ( GUN _, _ ) ->
+            GUN _ ->
                 [ link "GunDB" "https://gun.eco"
                 , Html.text " is a small, easy, and fast real-time database for syncing data across various users, talking to relay servers over "
                 , link "WebSocket" "https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"
                 , Html.text ". You can use the default relay servers hosted at "
-                , link Const.gunDB_ServerURL Const.gunDB_ServerURL
+                , Html.code [] [ Html.text Const.gunDB_ServerURL ]
                 , Html.text ", themselves community-hosted volunteer relays, not run by LiaScript — or pick others, or add your own, from the list "
                 , link "here" "https://github.com/amark/gun/wiki/volunteer.dht"
                 , Html.text ". The implementation of this classroom can be found "
@@ -948,7 +840,7 @@ infoOn supported about =
                 , Html.text ". Since these are free, community-run services, we cannot guarantee your messages will be stored forever or that a relay stays online — if you need certainty, host your own GunDB instance and point the URL below at it."
                 ]
 
-            ( IPFS _, _ ) ->
+            IPFS _ ->
                 [ Html.text "Despite the name, this strategy doesn't use the classic "
                 , link "IPFS" "https://ipfs.tech"
                 , Html.text " file-storage network — under the hood it runs on "
@@ -959,7 +851,7 @@ infoOn supported about =
                 , Html.text "It has the least relay redundancy of the decentralized strategies offered here (behind MQTT and BitTorrent), so expect connections to occasionally take longer to establish."
                 ]
 
-            ( Nostr _, _ ) ->
+            Nostr _ ->
                 [ link "Nostr" "https://nostr.com"
                 , Html.text " is a decentralized protocol designed for creating a censorship-resistant global social network — the acronym stands for \"Notes and Other Stuff Transmitted by Relays\". "
                 , Html.text "It operates through a network of clients and relays, where clients are interfaces for users to interact with the network, and relays act as databases storing and transmitting data. "
@@ -968,11 +860,11 @@ infoOn supported about =
                 , Html.text " Nostr: chat, quiz and code updates are published as signed Nostr events and fanned out through every configured relay, rather than the relay only helping two browsers find each other for a direct WebRTC link. "
                 , Html.text "Users are identified by public keys, and all events are signed for verification, giving resilience against censorship and single points of failure since data passes through multiple independent, volunteer-run relays. "
                 , Html.text "You can use the default relay servers hosted at "
-                , link Const.nostrRelayURLs Const.nostrRelayURLs
+                , Html.code [] [ Html.text Const.nostrRelayURLs ]
                 , Html.text " — themselves community-hosted volunteer relays, not run by LiaScript — or pick others, or add your own."
                 ]
 
-            ( MQTT _, _ ) ->
+            MQTT _ ->
                 [ link "MQTT (Message Queuing Telemetry Transport)" "https://mqtt.org"
                 , Html.text " is a lightweight, publish-subscribe messaging protocol designed for machine-to-machine (M2M) communication, particularly in the Internet of Things (IoT) and industrial IoT (IIoT) contexts. "
                 , Html.text "It enables devices to efficiently publish and subscribe to data over the Internet, facilitating communication between embedded devices, sensors, and industrial PLCs. "
@@ -984,7 +876,7 @@ infoOn supported about =
                 , trysteroRelayHint "broker"
                 ]
 
-            ( Torrent _, _ ) ->
+            Torrent _ ->
                 [ link "WebTorrent" "https://webtorrent.io"
                 , Html.text " trackers are the same kind of signaling servers "
                 , link "BitTorrent" "https://en.wikipedia.org/wiki/BitTorrent"
@@ -992,26 +884,7 @@ infoOn supported about =
                 , trysteroRelayHint "tracker"
                 ]
 
-            -- ( Jitsi _, _ ) ->
-            --     [ link "Jitsi" "https://en.wikipedia.org/wiki/Jitsi"
-            --     , Html.text " is a free and open-source multiplatform for video conferencing, voice over IP, and instant messaging. "
-            --     , Html.text "It is probably best known for its public video conferencing server "
-            --     , link "https://meet.jit.si" "https://meet.jit.si"
-            --     , Html.text ", that we use a backend to establish classrooms via data-channels. "
-            --     , Html.text "However, you can use their default service or host a server by your own, then you will have to change the domain setting."
-            --     ]
-            -- ( Matrix _, _ ) ->
-            --     [ link "[Matrix]" "https://matrix.org"
-            --     , Html.text " is an open network/standard/project for secure and decentralized real-time communication. "
-            --     , Html.text " You can find more information about it "
-            --     , link "here on Wikipedia" "https://en.wikipedia.org/wiki/Matrix_(protocol)"
-            --     , Html.text ". Thus, if you have access to the following settings, you can establish a classroom that uses the "
-            --     , link "Matrix-CRDT" "https://github.com/yousefED/matrix-crdt"
-            --     , Html.text " provider for "
-            --     , yjsLink
-            --     , Html.text "."
-            --     ]
-            ( PubNub _, _ ) ->
+            PubNub _ ->
                 [ link "PubNub" "https://www.pubnub.com"
                 , Html.text " is a managed real-time communication platform — no server of your own to run. "
                 , Html.text "LiaScript ships with a shared, free-tier keyset so this works immediately, but its capacity is split across everyone who leaves the fields below empty. "
@@ -1021,14 +894,14 @@ infoOn supported about =
                 , Html.text "."
                 ]
 
-            ( Ably _, _ ) ->
+            Ably _ ->
                 [ link "Ably" "https://ably.com"
                 , Html.text " is a managed real-time messaging platform with a global edge network — no server of your own to run. "
                 , Html.text "LiaScript ships with a shared, free-tier API key so this works immediately, but its capacity (200 concurrent connections, 6M messages/month) is split across everyone who leaves the field below empty. "
                 , Html.text "If you'll use this regularly, create your own free Ably account instead — no credit card required."
                 ]
 
-            ( WebSocket _, _ ) ->
+            WebSocket _ ->
                 [ link "WebSocket" "https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"
                 , Html.text " provides full-duplex communication over a single TCP connection. "
                 , Html.text "This backend only works with a server that speaks the "
@@ -1036,7 +909,7 @@ infoOn supported about =
                 , Html.text " wire protocol — either y-websocket's own reference server or any compatible implementation, self-hosted; there's no public default to fall back to."
                 ]
 
-            ( PeerJS _, _ ) ->
+            PeerJS _ ->
                 [ link "PeerJS" "https://peerjs.com"
                 , Html.text " simplifies WebRTC peer-to-peer data channel connections. "
                 , Html.text "By default it uses the free PeerJS Cloud signaling server — no setup required. "
@@ -1048,7 +921,7 @@ infoOn supported about =
                 , Html.text "."
                 ]
 
-            ( SimplePeer _, _ ) ->
+            SimplePeer _ ->
                 [ link "SimplePeer" "https://github.com/feross/simple-peer"
                 , Html.text " is a minimal WebRTC library for direct peer-to-peer data connections in the browser. "
                 , Html.text "It uses a signaling server only for peer discovery; actual data flows directly between browsers. "
@@ -1063,7 +936,7 @@ infoOn supported about =
                 , Html.text "."
                 ]
 
-            ( P2PT _, _ ) ->
+            P2PT _ ->
                 [ Html.text "The "
                 , link "P2PT" "https://github.com/subins2000/p2pt"
                 , Html.text " project utilizes "
@@ -1077,7 +950,7 @@ infoOn supported about =
                 , Html.text ", separated by commas if you list several — there is no built-in default, so at least one is required."
                 ]
 
-            ( Local, _ ) ->
+            Local ->
                 [ Html.text "This is a purely local classroom — nothing is sent over the network. "
                 , Html.text "Your notes are written to this browser's storage only and never shared with anyone."
                 ]
@@ -1090,7 +963,7 @@ trysteroRelayHint kind =
 
 link : String -> String -> Html msg
 link title url =
-    Html.a [ Attr.href url, Attr.target "blank" ] [ Html.text title ]
+    Html.a [ Attr.href url, Attr.target "_blank" ] [ Html.text title ]
 
 
 view : Bool -> Bool -> Backend -> Html Msg
@@ -1171,46 +1044,6 @@ view locked editable backend =
                         , fieldHint "Waku only finds peers and exchanges the WebRTC handshake — the actual chat and quiz data flows directly between browsers. Add TURN servers here if participants sit behind firewalls/NATs that block a direct WebRTC connection; there's no separate relay URL to configure for this strategy."
                         ]
 
-                -- Jitsi domain ->
-                --     input
-                --         { active = active
-                --         , type_ = "text"
-                --         , msg = InputJitsi
-                --         , value = domain
-                --         , placeholder = "domain.jit.si"
-                --         , label = Html.text "domain"
-                --         , autocomplete = Just "jitsi-domain"
-                --         }
-                -- Matrix { baseURL, userId, accessToken } ->
-                --     Html.div []
-                --         [ input
-                --             { active = active
-                --             , type_ = "text"
-                --             , msg = InputMatrix "url"
-                --             , label = Html.text "base URL"
-                --             , value = baseURL
-                --             , placeholder = "https://matrix.org"
-                --             , autocomplete = Just "matrix-url"
-                --             }
-                --         , input
-                --             { active = active
-                --             , type_ = "text"
-                --             , msg = InputMatrix "user"
-                --             , label = Html.text "user ID"
-                --             , value = userId
-                --             , placeholder = "@USERID:matrix.org"
-                --             , autocomplete = Just "matrix-user"
-                --             }
-                --         , input
-                --             { active = active
-                --             , type_ = "text"
-                --             , msg = InputMatrix "token"
-                --             , label = Html.text "access token"
-                --             , value = accessToken
-                --             , placeholder = "....MDAxM2lkZW50aWZpZXIga2V5CjAwMTBjaWQgZ2Vu...."
-                --             , autocomplete = Just "matrix-token"
-                --             }
-                --         ]
                 PubNub { pubKey, subKey } ->
                     details
                         [ input
@@ -1517,8 +1350,6 @@ type Msg
     | InputPubNub String String
     | InputAbly String
     | CheckboxAbly
-      --| InputMatrix String String
-      --| InputJitsi String
     | InputP2PT String
     | InputWebSocket String
     | InputPeerJS String String
@@ -1538,8 +1369,6 @@ update msg backend =
         ( CheckboxGun, GUN data ) ->
             GUN { data | persistent = not data.persistent }
 
-        -- ( InputJitsi domain, Jitsi _ ) ->
-        --     Jitsi domain
         ( InputPubNub "pub" new, PubNub data ) ->
             PubNub { data | pubKey = new }
 
@@ -1552,12 +1381,6 @@ update msg backend =
         ( CheckboxAbly, Ably data ) ->
             Ably { data | persistent = not data.persistent }
 
-        -- ( InputMatrix "url" new, Matrix data ) ->
-        --     Matrix { data | baseURL = new }
-        -- ( InputMatrix "user" new, Matrix data ) ->
-        --     Matrix { data | userId = new }
-        -- ( InputMatrix "token" new, Matrix data ) ->
-        --     Matrix { data | accessToken = new }
         ( InputP2PT urls, P2PT _ ) ->
             P2PT urls
 
@@ -1610,45 +1433,8 @@ update msg backend =
             backend
 
 
+{-| Same kind of backend, the configurations are not compared.
+-}
 eq : Backend -> Backend -> Bool
 eq a b =
-    case ( a, b ) of
-        ( GUN _, GUN _ ) ->
-            True
-
-        -- ( Matrix _, Matrix _ ) ->
-        --     True
-        ( PubNub _, PubNub _ ) ->
-            True
-
-        ( Ably _, Ably _ ) ->
-            True
-
-        -- ( Jitsi _, Jitsi _ ) ->
-        --     True
-        ( P2PT _, P2PT _ ) ->
-            True
-
-        ( WebSocket _, WebSocket _ ) ->
-            True
-
-        ( PeerJS _, PeerJS _ ) ->
-            True
-
-        ( SimplePeer _, SimplePeer _ ) ->
-            True
-
-        ( Nostr _, Nostr _ ) ->
-            True
-
-        ( MQTT _, MQTT _ ) ->
-            True
-
-        ( Torrent _, Torrent _ ) ->
-            True
-
-        ( IPFS _, IPFS _ ) ->
-            True
-
-        _ ->
-            a == b
+    toString False a == toString False b

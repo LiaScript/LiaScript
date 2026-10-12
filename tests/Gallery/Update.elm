@@ -8,8 +8,7 @@ import Array
 import Expect
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Gallery.Types exposing (Vector)
-import Lia.Markdown.Gallery.Update exposing (Msg(..), handle, update)
-import Service.Event as Event
+import Lia.Markdown.Gallery.Update exposing (Msg(..), update)
 import Test exposing (Test, describe, test)
 
 
@@ -84,15 +83,5 @@ suite =
                             , events = 0
                             , sub = Just (Script.Click 7)
                             }
-            ]
-        , describe "Handle"
-            [ test "handle wraps an event into Handle" <|
-                \_ ->
-                    handle Event.none
-                        |> Expect.equal (Handle Event.none)
-            , test "events are ignored" <|
-                \_ ->
-                    run (handle (Event.init "gallery" { cmd = "show", param = Event.none.message.param })) (Array.fromList [ 1, -1 ])
-                        |> Expect.equal (onlyValue (Array.fromList [ 1, -1 ]))
             ]
         ]

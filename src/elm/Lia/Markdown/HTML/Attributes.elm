@@ -21,7 +21,6 @@ import Combine
         , fail
         , ignore
         , keep
-        , many
         , many1
         , map
         , or
@@ -31,17 +30,19 @@ import Combine
         , whitespace
         )
 import Combine.Num exposing (int)
-import Dict
 import Hex
 import Html exposing (Attribute)
 import Html.Attributes as Attr
 import Lia.Markdown.HTML.NamedCharacterReferences as NamedCharacterReferences
 import Lia.Parser.PatReplace exposing (link)
+import List.Extra
 
 
 {-| Used internally to store HTML parameter as Tuples of `(name, value)`.
 
-**Note:** The name value is automatically stored in lowercase.
+**Note:** Names are stored as written by the author, `viewBox` has to stay
+`viewBox` for SVG. Lookups (`get`, `filterNames`, `isSet`, ...) are
+case-insensitive.
 
 -}
 type alias Parameters =
@@ -49,24 +50,17 @@ type alias Parameters =
 
 
 {-| Search the attribute list for a certain key, the corresponding value will be
-returned, if present.
+returned, if present. Keys are matched case-insensitively, `name` has to be
+passed in lowercase.
 
     get "height" [ ( "width", "100%" ), ( "height", "300px" ) ]
         == Just "300px"
 
 -}
 get : String -> Parameters -> Maybe String
-get name attr =
-    case attr of
-        [] ->
-            Nothing
-
-        ( key, value ) :: xs ->
-            if key == name then
-                Just value
-
-            else
-                get name xs
+get name =
+    List.Extra.find (Tuple.first >> String.toLower >> (==) name)
+        >> Maybe.map Tuple.second
 
 
 {-| Filter a list of Parameters with a list of names, so that only Parameters
@@ -80,12 +74,7 @@ get returned that are within the filter list:
 -}
 filterNames : List String -> Parameters -> Parameters
 filterNames names =
-    List.filter (isMemberOf names)
-
-
-isMemberOf : List String -> ( String, x ) -> Bool
-isMemberOf names ( name, _ ) =
-    List.member name names
+    List.filter (\( name, _ ) -> List.member (String.toLower name) names)
 
 
 {-| Return True or False, if a parameter is set in the parameter list:
@@ -161,8 +150,8 @@ isTrue val =
     val == "" || val == "1" || val == "true"
 
 
-{-| Add the class-name and to the parameter list and translate them into a list
-of attributes...
+{-| Add a class-name to the parameter list and translate them into a list of
+attributes.
 -}
 annotation : String -> Parameters -> List (Attribute msg)
 annotation cls =
@@ -176,6 +165,11 @@ toAttribute =
     List.map (\( key, value ) -> Attr.attribute key value)
 
 
+{-| Serialize Parameters back into HTML, empty values are written as plain names:
+
+    toString [ ( "width", "100%" ), ( "hidden", "" ) ] == "width=\"100%\" hidden"
+
+-}
 toString : Parameters -> String
 toString =
     List.map
@@ -196,43 +190,29 @@ toString =
     "src", "href", "data", "data-src", "formaction", "poster"
 
 are checked if they define a relative or absolute path. If it is a relative
-URL, then the base-URL is automatically added to the front:
+URL, then the base-URL is automatically added to the front, `SRC` is treated
+like `src`:
 
-    base "http://base.url/" ( "src", "pic.jpg" )
+    base "http://base.url/" "" ( "src", "pic.jpg" )
         == ( "src", "http://base.url/pic.jpg" )
 
 -}
 base : String -> String -> ( String, String ) -> ( String, String )
 base url appendix ( key, value ) =
-    ( key
-    , if
-        key
-            == "src"
-            || key
-            == "href"
-            || key
-            == "data"
-            || key
-            == "data-src"
-            || key
-            == "formaction"
-            || key
-            == "poster"
-      then
-        toURL url appendix value
+    if List.member (String.toLower key) [ "src", "href", "data", "data-src", "formaction", "poster" ] then
+        ( key, toURL url appendix value )
 
-      else
-        value
-    )
+    else
+        ( key, value )
 
 
-{-| Used to identify relative paths. If the URL does not start with "http", the
-basis is automatically added:
+{-| Used to identify relative paths. If the URL does not start with an allowed
+protocol or `#`, the basis and the appendix are added:
 
-    toUrl "https://base.url/" "?ref=1" "pic.jpg"
+    toURL "https://base.url/" "?ref=1" "pic.jpg"
         == "https://base.url/pic.jpg?ref=1"
 
-    toUtl "https://base.url/" "" "http://url.de/pic.jpg"
+    toURL "https://base.url/" "" "http://url.de/pic.jpg"
         == "http://url.de/pic.jpg"
 
 -}
@@ -242,94 +222,48 @@ toURL basis appendix url =
         url
 
     else
-        link
-            (basis
-                ++ url
-                ++ appendix
-            )
+        link (basis ++ url ++ appendix)
 
 
-{-| List of allowed supported protocols.
+{-| URLs with these protocols are absolute and never touched.
 -}
 allowedProtocol : String -> Bool
 allowedProtocol url =
-    case
-        url
+    List.member
+        (url
             |> String.split ":"
             |> List.head
             |> Maybe.withDefault ""
             |> String.toLower
-    of
-        "https" ->
-            True
+        )
+        protocols
 
-        "http" ->
-            True
 
-        "data" ->
-            True
-
-        "file" ->
-            True
-
-        "hyper" ->
-            True
-
-        "dat" ->
-            True
-
-        "ipfs" ->
-            True
-
-        "ipns" ->
-            True
-
-        "blob" ->
-            True
-
-        "mailto" ->
-            True
-
-        "tel" ->
-            True
-
-        -- New prot
-        "sms" ->
-            True
-
-        "geo" ->
-            True
-
-        "webcal" ->
-            True
-
-        "sip" ->
-            True
-
-        "sips" ->
-            True
-
-        "ftp" ->
-            True
-
-        "ftps" ->
-            True
-
-        "magnet" ->
-            True
-
-        "bitcoin" ->
-            True
-
-        "matrix" ->
-            True
-
-        -- experimental protocol
-        "agent" ->
-            True
-
-        _ ->
-            False
+protocols : List String
+protocols =
+    [ "https"
+    , "http"
+    , "data"
+    , "file"
+    , "hyper"
+    , "dat"
+    , "ipfs"
+    , "ipns"
+    , "blob"
+    , "mailto"
+    , "tel"
+    , "sms"
+    , "geo"
+    , "webcal"
+    , "sip"
+    , "sips"
+    , "ftp"
+    , "ftps"
+    , "magnet"
+    , "bitcoin"
+    , "matrix"
+    , "agent" -- experimental protocol
+    ]
 
 
 {-| General HTML attribute parser, the base-URL is added in front of relative
@@ -341,12 +275,17 @@ paths, as defined in function `base`:
 -}
 parse : ( String, String ) -> Parser context ( String, String )
 parse ( url, appendix ) =
-    regex "[A-Za-z0-9_\\-:]+"
+    attributeName
         |> map Tuple.pair
         |> ignore whitespace
         |> andMap tagAttributeValue
         |> ignore whitespace
         |> map (base url appendix)
+
+
+attributeName : Parser context String
+attributeName =
+    regex "[A-Za-z0-9_\\-:]+"
 
 
 {-| **@private**: A tag attribute-value can be set with:
@@ -384,19 +323,15 @@ tagAttributeValue =
         (succeed "")
 
 
+{-| **@private**: Everything up to the next quote, taken as is. Character
+references are not decoded, `toString` writes the value back unescaped into
+SVG code. There is no escaping, `\"` ends the value at the backslash, as in
+HTML.
+-}
 tagAttributeQuotedValue : String -> Parser context String
 tagAttributeQuotedValue quote =
     string quote
-        |> keep
-            (choice
-                [ ("([^" ++ quote ++ "]*|\\\\" ++ quote ++ "|\\\\)*")
-                    |> regex
-                    |> map (String.replace ("\\" ++ quote) quote)
-                , characterReference
-                ]
-                |> many
-                |> map String.concat
-            )
+        |> keep (regex ("[^" ++ quote ++ "]*"))
         |> ignore (string quote)
 
 
@@ -427,7 +362,7 @@ namedCharacterReference =
     regex "[a-zA-Z]+"
         |> map
             (\reference ->
-                Dict.get reference NamedCharacterReferences.dict
+                NamedCharacterReferences.get reference
                     |> Maybe.withDefault ("&" ++ reference ++ ";")
             )
 

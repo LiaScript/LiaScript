@@ -1,4 +1,4 @@
-module Parser.Block.QuizScripts exposing (associatedScript_Suite)
+module Parser.Block.QuizScripts exposing (associatedScript_Suite, solutionScript_Suite)
 
 {-| The docs' "Associated Scripts" feature: a `<script>...</script>` block
 directly following a quiz's options (no blank line in between) is consumed by
@@ -127,6 +127,7 @@ associatedScript_Suite =
                             , input = defaultInput
                             , intl = Nothing
                             , worker = False
+                            , solution = Nothing
                             }
                         , Just (Just 0)
                         )
@@ -202,4 +203,22 @@ associatedScript_Suite =
                 firstScript input
                     |> Maybe.map .script
                     |> Expect.equal (Just body)
+        ]
+
+
+{-| Scripts within a `*****` solution block are only executed, when the
+solution gets visible, therefor they are marked with the solution class.
+-}
+solutionScript_Suite : Test
+solutionScript_Suite =
+    describe "scripts within a quiz solution"
+        [ test "are marked with their solution, other scripts are not" <|
+            \_ ->
+                parseWithState "Text <script>1</script>\n\n- [(X)] yes\n- [( )] no\n*****\nSolution <script>2</script>\n*****\n"
+                    |> Tuple.second
+                    |> .effect_model
+                    |> .javascript
+                    |> Array.toList
+                    |> List.map .solution
+                    |> Expect.equal [ Nothing, Just "lia-tts-quiz-0" ]
         ]

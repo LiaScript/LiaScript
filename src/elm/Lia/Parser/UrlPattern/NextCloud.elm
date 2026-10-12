@@ -1,16 +1,19 @@
-module Lia.Parser.UrlPattern.NextCloud exposing (..)
+module Lia.Parser.UrlPattern.NextCloud exposing (byGeneric, patternGeneric)
+
+{-| Shared NextCloud files (`nextcloud://host/s/...`) are downloaded by
+appending `/download`.
+-}
+
+import Lia.Parser.UrlPattern.Generic exposing (withoutQuery)
 
 
+{-| The download URL, `w` is the URL without `nextcloud://`.
+-}
 byGeneric : String -> String -> String
 byGeneric _ w =
     let
         baseUrl =
-            case String.split "?" w of
-                base :: _ ->
-                    base
-
-                [] ->
-                    w
+            withoutQuery w
     in
     if String.endsWith "/download" baseUrl then
         "https://" ++ baseUrl
@@ -19,6 +22,8 @@ byGeneric _ w =
         "https://" ++ baseUrl ++ "/download"
 
 
+{-| Matches `nextcloud://` URLs.
+-}
 patternGeneric : String
 patternGeneric =
     "nextcloud://(.*)"

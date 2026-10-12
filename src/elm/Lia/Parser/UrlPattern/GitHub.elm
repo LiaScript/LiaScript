@@ -1,12 +1,18 @@
-module Lia.Parser.UrlPattern.GitHub exposing (..)
+module Lia.Parser.UrlPattern.GitHub exposing (by, pattern)
+
+{-| GitHub repositories and files are loaded from `raw.githubusercontent.com`.
+-}
 
 import Lia.Parser.UrlPattern.Generic as Generic
 
 
+{-| The raw URL, `w` is the path after `github.com/`. A repository or folder
+links to its `README.md`.
+-}
 by : String -> String -> String
 by _ w =
     "https://raw.githubusercontent.com/"
-        ++ (case w |> String.split "/" of
+        ++ (case String.split "/" w of
                 -- [user, repo]
                 [ _, _ ] ->
                     w ++ "/master/README.md"
@@ -23,6 +29,8 @@ by _ w =
            )
 
 
+{-| Matches GitHub URLs.
+-}
 pattern : String
 pattern =
     Generic.root "github\\.com/(.*)"
