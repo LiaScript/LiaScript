@@ -3,7 +3,6 @@ module Lia.Markdown.Quiz.Vector.Parser exposing
     , checkButton
     , either
     , group
-    , groupBy
     , parse
     , radioButton
     )
@@ -109,7 +108,7 @@ whole group is visually offset under a preceding question) that never made it
 onto the stack anywhere. The two failure modes this specifically guards
 against: (1) an absolute column on its own double-counts already-active
 indentation (an option one level inside a list would require the list's own
-width twice); (2) a *marker-width-only* measurement (ignoring the current
+width twice); (2) a _marker-width-only_ measurement (ignoring the current
 absolute column entirely) works for constructs reached through
 `Lia.Markdown.Parser.blocks`'s own dispatch, which already strips ambient
 indentation before this parser ever runs - but breaks for `Quiz.Parser.hints`,
@@ -189,20 +188,22 @@ separator =
         |> ignore Indent.check
 
 
+{-| **private:** An empty line within the current indentation.
+-}
 newlineWithIndentation : Parser Context ()
 newlineWithIndentation =
     Indent.maybeCheck
         |> ignore newline
 
 
-{-| Parse an ASCII like radio-button "(X|x)" | "[ ]". The result is either
+{-| Parse an ASCII like radio-button "(X|x)" | "( )". The result is either
 `True` or `False`, if the button is checked or not.
 
-    parse checkButton "(X)" == Ok True
+    parse radioButton "(X)" == Ok True
 
-    parse checkButton "(x)" == Ok True
+    parse radioButton "(x)" == Ok True
 
-    parse checkButton "( )" == Ok False
+    parse radioButton "( )" == Ok False
 
 -}
 radioButton : Parser Context Bool
@@ -224,52 +225,31 @@ checkButton =
     either "\\[[xX]\\]" "[ ]"
 
 
-{-| This parser can be used for some kind of enumerations that start with a
-certain pattern (i.e. `[X]` or `[ ]`), which is then followed by a `Inlines`:
-
-    parse
-        (groupBy (string "- [")
-            (string "]")
-            (or
-                (string "X" |> onsuccess True)
-                (string " " |> onsuccess False)
-            )
-        )
-        """- [ ] task not checked
-        - [X] task checked
-        """
-    == Ok [(False, [...]), (True, [...])]
-
--}
-groupBy : Parser Context x -> Parser Context y -> Parser Context a -> Parser Context (List ( a, Inlines ))
-groupBy begin end parser =
-    maybe Indent.check
-        |> ignore spaces
-        |> ignore begin
-        |> keep parser
-        |> map Tuple.pair
-        |> ignore end
-        |> ignore spaces
-        |> andMap line
-        |> ignore newline
-        |> many1
-
-
 {-| This defines the basic Quiz-group, that are identified by starting brackets
-that are followed by some Markdown inline elements. The provided
-parser-parameter is used to parse the part within the starting brackets.
+that are followed by some Markdown inline elements, one entry per line. The
+provided parser-parameter is used to parse the part within the starting
+brackets.
 
     parse (group checkButton)
         """[[X]] is __checked__
         [[ ]] **not checked**
         """
-    == Ok [(True, [...]), (False, [...])]
+    == Ok ( [ True, False ], [ [...], [...] ] )
 
 -}
 group : Parser Context a -> Parser Context ( List a, List Inlines )
-group =
-    groupBy (regex "(?:(\\-|\\+|\\*)[ \t]?)?\\[") (string "]")
-        >> map List.unzip
+group parser =
+    maybe Indent.check
+        |> ignore spaces
+        |> ignore (regex "(?:(\\-|\\+|\\*)[ \t]?)?\\[")
+        |> keep parser
+        |> map Tuple.pair
+        |> ignore (string "]")
+        |> ignore spaces
+        |> andMap line
+        |> ignore newline
+        |> many1
+        |> map List.unzip
 
 
 {-| This parser requires two patterns that in either `True` or `False`. The

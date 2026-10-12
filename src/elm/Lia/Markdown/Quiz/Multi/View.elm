@@ -1,15 +1,16 @@
 module Lia.Markdown.Quiz.Multi.View exposing (view)
 
 import Array exposing (Array)
-import I18n.Translations exposing (Lang(..))
 import Json.Encode as JE
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 import Lia.Markdown.Quiz.Multi.Types exposing (Quiz, State)
-import List.Extra
 
 
+{-| Store the states of the inputs within the inline config, so that the inputs
+are rendered as part of the inline elements of the first element. The options
+of every input get their part of the random order of the whole gap-text.
+-}
 view :
     { config : Config sub
     , id : Int
@@ -40,10 +41,9 @@ view { config, id, active, partiallyCorrect, quiz, state, randomize } =
                                 (\opt ( start, array ) ->
                                     ( start + List.length opt
                                     , Array.push
-                                        (List.Extra.splitAt start list
-                                            |> Tuple.second
-                                            |> List.Extra.splitAt (List.length opt)
-                                            |> Tuple.first
+                                        (list
+                                            |> List.drop start
+                                            |> List.take (List.length opt)
                                         )
                                         array
                                     )
@@ -64,6 +64,9 @@ view { config, id, active, partiallyCorrect, quiz, state, randomize } =
     )
 
 
+{-| **private:** JavaScript that sends an input event of the input `id2` back
+to `Quiz.Update`.
+-}
 onInput : List ( String, Int ) -> String -> Int -> String -> String
 onInput path cmd id2 param =
     "window.LIA.send({reply: true, track: "

@@ -3,14 +3,12 @@ module Const exposing
     , globalBreakpoints
     , gunDB_ServerURL
     , icon
-    , jitsi_Domain
     , nostrRelayURLs
     , tooltipBreakpoint
     , urlLiascript
     , urlLiascriptCourse
     , urlProxy
     , vscode
-    , webTorrent_TrackerURLs
     )
 
 
@@ -109,18 +107,6 @@ Otherwise it will be rejected for CORS and CORB reasons.
 vscode : String
 vscode =
     "vscode-coi=3"
-
-
-{-| Default Jitsi domain
--}
-jitsi_Domain : String
-jitsi_Domain =
-    "meet.jit.si"
-
-
-webTorrent_TrackerURLs : String
-webTorrent_TrackerURLs =
-    "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, wss://tracker.files.fm:7073/announce, wss://tracker.openwebtorrent.com:443/announce"
 
 
 {-| Default public Nostr relays used within the Sync module

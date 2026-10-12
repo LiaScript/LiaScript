@@ -1,5 +1,6 @@
 module Lia.Markdown.View exposing
     ( addTranslation
+    , hideUnsolvedComments
     , view
     , viewContent
     , viewHidden
@@ -28,6 +29,7 @@ import Lia.Markdown.Gallery.View as Gallery
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
+import Lia.Markdown.Inline.Config as InlineConfig
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types as Inline exposing (Inlines, htmlBlock, mediaBlock)
 import Lia.Markdown.Inline.View as Inline
@@ -38,7 +40,7 @@ import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Task.View as Task
 import Lia.Markdown.Types exposing (Alert(..), Block(..), Blocks)
-import Lia.Markdown.Update exposing (Msg(..))
+import Lia.Markdown.Update exposing (Msg(..), solutions)
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (icon, modal, shuffle)
@@ -46,6 +48,10 @@ import Lia.Voice as Voice
 import SvgBob
 
 
+{-| Render a section, a `hidden` section that is not `persistent` only renders
+an empty `main`. If the section could not be parsed, only its title and the
+error are shown.
+-}
 view : Bool -> Bool -> Config Msg -> Html Msg
 view hidden persistent config =
     case config.section.error of
@@ -68,56 +74,77 @@ view hidden persistent config =
                 ]
 
 
+{-| Render the LiaScript result `sub` of script `id`, with its own vectors but
+the effects of the section.
+-}
 subView : Config Msg -> Int -> Int -> SubSection -> List (Html (Script.Msg Msg))
 subView config slide id sub =
+    let
+        section =
+            config.section
+
+        effects =
+            config.section.effect_model
+
+        main =
+            config.main
+    in
     List.map (Html.map (Script.Sub id)) <|
         case sub of
             SubSection x ->
                 let
-                    section =
-                        config.section
-
-                    effects =
-                        config.section.effect_model
-
-                    main =
-                        config.main
-
                     input =
                         main.input
                 in
                 List.map
                     (view_block
-                        { config
-                            | main = { main | scripts = x.effect_model.javascript, input = { input | path = ( "effect", slide ) :: ( "sub", id ) :: input.path } }
-                            , section =
-                                { section
-                                    | table_vector = x.table_vector
-                                    , quiz_vector = x.quiz_vector
-                                    , survey_vector = x.survey_vector
-                                    , code_model = x.code_model
-                                    , task_vector = x.task_vector
-                                    , gallery_vector = x.gallery_vector
-                                    , effect_model =
-                                        { effects
-                                            | comments = x.effect_model.comments
-                                            , javascript = x.effect_model.javascript
-                                        }
-                                }
-                        }
+                        (withSubViewer
+                            { config
+                                | main = { main | scripts = x.effect_model.javascript, input = { input | path = ( "effect", slide ) :: ( "sub", id ) :: input.path } }
+                                , section =
+                                    { section
+                                        | table_vector = x.table_vector
+                                        , quiz_vector = x.quiz_vector
+                                        , survey_vector = x.survey_vector
+                                        , code_model = x.code_model
+                                        , task_vector = x.task_vector
+                                        , gallery_vector = x.gallery_vector
+                                        , effect_model =
+                                            { effects
+                                                | comments = x.effect_model.comments
+                                                , javascript = x.effect_model.javascript
+                                            }
+                                    }
+                            }
+                        )
                     )
                     x.body
 
             SubSubSection x ->
-                let
-                    main =
-                        config.main
-                in
-                x.body
-                    |> Inline.viewer { main | scripts = x.effect_model.javascript }
-                    |> List.map (Html.map Script)
+                { config
+                    | main = { main | scripts = x.effect_model.javascript }
+                    , section = { section | effect_model = { effects | javascript = x.effect_model.javascript } }
+                }
+                    |> withSubViewer
+                    |> .view
+                    |> (|>) x.body
 
 
+{-| Inlines (and their scripts) of a sub-section use its own scripts, results of
+these scripts are sub-sections again.
+-}
+withSubViewer : Config Msg -> Config Msg
+withSubViewer config =
+    let
+        main =
+            InlineConfig.setViewer (subView config) config.main
+    in
+    { config | main = main, view = Inline.viewer main >> List.map (Html.map Script) }
+
+
+{-| The title, the opened footnote, all blocks, and at the end either all
+footnotes (textbook mode) or the comments for the narrator (presentation mode).
+-}
 view_body : Bool -> ( Config Msg, Maybe String, Footnotes.Model ) -> Blocks -> Html Msg
 view_body hidden ( config, footnote2show, footnotes ) =
     fold config []
@@ -152,6 +179,8 @@ view_body hidden ( config, footnote2show, footnotes ) =
         >> viewMain hidden
 
 
+{-| Only the blocks of a section (used by the chat).
+-}
 viewContent : Config Msg -> List (Html Msg)
 viewContent config =
     let
@@ -169,40 +198,53 @@ quizLabel config quiz =
     "lia-quiz-" ++ String.fromInt config.section.id ++ "-" ++ String.fromInt quiz.id
 
 
+{-| Render blocks, a paragraph or HTML block in front of a quiz becomes its
+label.
+-}
 fold : Config Msg -> List (Html Msg) -> Blocks -> List (Html Msg)
 fold config output blocks =
     case blocks of
         [] ->
             List.reverse output
 
-        (Paragraph a e) :: (Quiz attr quiz solution) :: bs ->
+        b :: (Quiz attr quiz solution) :: bs ->
             let
                 id =
                     quizLabel config quiz
             in
-            fold config
-                (viewQuiz config (Just id) attr quiz solution
-                    :: view_block config (Paragraph (( "id", id ) :: a) e)
-                    :: output
-                )
-                bs
+            case withId id b of
+                Just label ->
+                    fold config
+                        (viewQuiz config (Just id) attr quiz solution
+                            :: view_block config label
+                            :: output
+                        )
+                        bs
 
-        (HTML a e) :: (Quiz attr quiz solution) :: bs ->
-            let
-                id =
-                    quizLabel config quiz
-            in
-            fold config
-                (viewQuiz config (Just id) attr quiz solution
-                    :: view_block config (HTML (( "id", id ) :: a) e)
-                    :: output
-                )
-                bs
+                Nothing ->
+                    fold config (view_block config b :: output) (Quiz attr quiz solution :: bs)
 
         b :: bs ->
             fold config (view_block config b :: output) bs
 
 
+withId : String -> Block -> Maybe Block
+withId id block =
+    case block of
+        Paragraph a e ->
+            Just (Paragraph (( "id", id ) :: a) e)
+
+        HTML a e ->
+            Just (HTML (( "id", id ) :: a) e)
+
+        _ ->
+            Nothing
+
+
+{-| Attributes of a comment for the narrator: its voice and language, whether
+it may be translated by the browser, and its recorded audio files (only used if
+the course is not translated).
+-}
 addTranslation :
     { hidden : Bool
     , translations : Maybe { old : String, new : String, name : Maybe String }
@@ -253,43 +295,10 @@ addTranslation { hidden, translations, id, narrator, audio } =
             else
                 "yes"
     in
+    -- getVoiceFor only fails without a language name of the translation
     case translations |> Maybe.andThen (Voice.getVoiceFor narrator) of
         Nothing ->
-            case translations of
-                Nothing ->
-                    []
-
-                Just { new, name } ->
-                    case name of
-                        Nothing ->
-                            []
-
-                        Just language_name ->
-                            [ ( "class", translateClass )
-                            , ( "class", "lia-tts-" ++ String.fromInt id )
-                            , ( "data-voice", language_name )
-                            , ( "data-lang", new )
-                            , ( "translate", translateAttr )
-
-                            -- consumed by the TTS service to decide whether
-                            -- a video's own audio should keep playing
-                            -- (untranslated) or be muted and overlaid with
-                            -- synthesized speech (translated)
-                            , ( "data-translated", "yes" )
-                            ]
-                                |> CList.addIf hidden ( "aria-hidden", "true" )
-                                |> CList.addIf
-                                    (checkTranslation translations
-                                        && (audio
-                                                |> Array.isEmpty
-                                                |> not
-                                           )
-                                    )
-                                    ( "data-file"
-                                    , audio
-                                        |> Array.toList
-                                        |> String.join ","
-                                    )
+            []
 
         Just { translated, lang, name } ->
             [ ( "class", translateClass )
@@ -297,6 +306,10 @@ addTranslation { hidden, translations, id, narrator, audio } =
             , ( "data-voice", name )
             , ( "data-lang", lang )
             , ( "translate", translateAttr )
+
+            -- consumed by the TTS service to decide whether a video's own
+            -- audio should keep playing (untranslated) or be muted and
+            -- overlaid with synthesized speech (translated)
             , ( "data-translated"
               , if translated then
                     "yes"
@@ -307,29 +320,14 @@ addTranslation { hidden, translations, id, narrator, audio } =
             ]
                 |> CList.addIf hidden ( "aria-hidden", "true" )
                 |> CList.addIf
-                    (checkTranslation translations
-                        && (audio
-                                |> Array.isEmpty
-                                |> not
-                           )
+                    ((Maybe.map (\t -> t.old == t.new) translations == Just True)
+                        && not (Array.isEmpty audio)
                     )
-                    ( "data-file"
-                    , audio
-                        |> Array.toList
-                        |> String.join ","
-                    )
+                    ( "data-file", audio |> Array.toList |> String.join "," )
 
 
-checkTranslation : Maybe { x | old : String, new : String } -> Bool
-checkTranslation translations =
-    case translations of
-        Just lang ->
-            lang.old == lang.new
-
-        Nothing ->
-            False
-
-
+{-| The `main` element of a section, hidden sections are not announced.
+-}
 viewMain : Bool -> List (Html msg) -> Html msg
 viewMain hidden =
     Html.main_ <|
@@ -344,9 +342,11 @@ viewMain hidden =
             ]
 
 
+{-| The footnote `key` as a modal.
+-}
 view_footnote : (Block -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
 view_footnote viewer key footnotes =
-    case Maybe.andThen (Footnotes.getNote footnotes) key of
+    case Maybe.andThen (\k -> Dict.get k footnotes) key of
         Just notes ->
             [ notes
                 |> List.map viewer
@@ -367,6 +367,8 @@ view_footnote viewer key footnotes =
             Html.text ""
 
 
+{-| The title of the section.
+-}
 view_header : Config Msg -> Html Msg
 view_header config =
     [ header config
@@ -378,44 +380,27 @@ view_header config =
         |> Html.header [ A11y_Key.tabbable False ]
 
 
+{-| A header of level `main + sub`, where `main` is the level of the section
+title and `sub` the level of a header within the section (0 for the title).
+Levels above 6 become `h6`, the class (`h1` to `h5`) only depends on `sub`.
+-}
 header : Config Msg -> Int -> Int -> Parameters -> Inlines -> Html Msg
 header config main sub attr =
+    let
+        level =
+            if main + sub >= 1 && main + sub <= 5 then
+                main + sub
+
+            else
+                6
+    in
     config.view
-        >> (case main + sub of
-                1 ->
-                    Html.h1 (headerStyle sub attr)
-
-                2 ->
-                    Html.h2 (headerStyle sub attr)
-
-                3 ->
-                    Html.h3 (headerStyle sub attr)
-
-                4 ->
-                    Html.h4 (headerStyle sub attr)
-
-                5 ->
-                    Html.h5 (headerStyle sub attr)
-
-                _ ->
-                    Html.h6 (headerStyle sub attr)
-           )
+        >> Html.node ("h" ++ String.fromInt level)
+            (annotation ("h" ++ String.fromInt (min 5 (sub + 1))) attr)
 
 
-headerStyle : Int -> Parameters -> List (Attribute msg)
-headerStyle i =
-    annotation
-        ("h"
-            ++ (String.fromInt <|
-                    if (i + 1) > 5 then
-                        5
-
-                    else
-                        i + 1
-               )
-        )
-
-
+{-| Render a single block.
+-}
 view_block : Config Msg -> Block -> Html Msg
 view_block config block =
     case block of
@@ -475,12 +460,12 @@ view_block config block =
 
         BulletList attr list ->
             list
-                |> view_bulletList config
+                |> List.map (viewBlocks config >> Html.li [])
                 |> Html.ul (annotation "lia-list--unordered" attr)
 
         OrderedList attr list ->
             list
-                |> view_list config
+                |> List.map (\( value, blocks ) -> Html.li [ Attr.value value ] (viewBlocks config blocks))
                 |> Html.ol (annotation "lia-list--ordered" attr)
 
         Table attr table ->
@@ -490,7 +475,7 @@ view_block config block =
             viewQuote config attr alert quote
 
         HTML attr node ->
-            viewHTMLBlock config attr node
+            HTML.view Html.div (view_block config) attr node
 
         Code code ->
             { lang = config.main.lang
@@ -516,8 +501,26 @@ view_block config block =
         Quiz attr quiz solution ->
             viewQuiz config Nothing attr quiz solution
 
-        Survey attr survey ->
+        Survey attr survey solution ->
             Surveys.view config.main attr survey config.section.survey_vector (surveyVectorOptions config survey.survey)
+                |> Tuple.mapSecond
+                    (\html ->
+                        case solution of
+                            Just ( blocks, _ ) ->
+                                if
+                                    config.section.survey_vector
+                                        |> Array.get survey.id
+                                        |> Maybe.map .submitted
+                                        |> Maybe.withDefault False
+                                then
+                                    Html.div [] [ html, viewSolution config "survey" survey.id blocks ]
+
+                                else
+                                    html
+
+                            Nothing ->
+                                html
+                    )
                 |> scriptView config.view
 
         Comment ( id1, id2 ) ->
@@ -604,7 +607,7 @@ viewHidden =
     viewMain True []
 
 
-viewBlocks : Config Msg -> List Block -> List (Html Msg)
+viewBlocks : Config Msg -> Blocks -> List (Html Msg)
 viewBlocks config =
     List.map (view_block config)
 
@@ -623,14 +626,6 @@ quizVectorOptions config type_ =
             []
 
 
-{-| Pre-render a Quiz's hints (`[[?]] ...`) via `viewBlocks` - see
-`Quiz.Parser.hints`.
--}
-quizHints : Config Msg -> Quiz.Quiz Block -> List (List (Html Msg))
-quizHints config quiz =
-    quiz.hints |> List.map (viewBlocks config)
-
-
 {-| Pre-render a Survey-Vector's option content (used only for `Vector`) via
 `viewBlocks` - see `Survey.Parser.vector`.
 -}
@@ -644,11 +639,21 @@ surveyVectorOptions config type_ =
             []
 
 
-viewHTMLBlock : Config Msg -> Parameters -> Node Block -> Html Msg
-viewHTMLBlock config attr node =
-    HTML.view Html.div (view_block config) attr node
+{-| The solution of quiz or survey `id` (`name`), which is shown after it
+has been solved or submitted.
+-}
+viewSolution : Config Msg -> String -> Int -> Blocks -> Html Msg
+viewSolution config name id =
+    viewBlocks config
+        >> Html.div
+            [ Attr.class "lia-quiz__solution"
+            , Attr.id ("lia-" ++ name ++ "-solution-" ++ String.fromInt id)
+            ]
 
 
+{-| Blocks with a script (quizzes, surveys and tasks with `@input`) get the
+result of the script below.
+-}
 scriptView : (Inlines -> List (Html Msg)) -> ( Maybe Int, Html Msg ) -> Html Msg
 scriptView viewer content =
     case content of
@@ -664,60 +669,32 @@ scriptView viewer content =
                 ]
 
 
+{-| A quote with a citation as its last paragraph, or an alert
+(`> [!NOTE] optional title`).
+-}
 viewQuote : Config Msg -> Parameters -> Maybe ( Alert, Maybe Inlines ) -> Blocks -> Html Msg
 viewQuote config attr alert elements =
     let
         alert_class =
-            "lia-quote"
-                ++ (case alert of
-                        Nothing ->
-                            ""
+            case alert of
+                Just ( type_, _ ) ->
+                    "lia-quote lia-quote__alert-" ++ String.toLower (alertName type_)
 
-                        Just ( NOTE, _ ) ->
-                            " lia-quote__alert-note"
-
-                        Just ( TIP, _ ) ->
-                            " lia-quote__alert-tip"
-
-                        Just ( IMPORTANT, _ ) ->
-                            " lia-quote__alert-important"
-
-                        Just ( WARNING, _ ) ->
-                            " lia-quote__alert-warning"
-
-                        Just ( CAUTION, _ ) ->
-                            " lia-quote__alert-caution"
-                   )
-
-        toTitle name =
-            Just
-                [ icon ("icon-alert-" ++ String.toLower name) [ Attr.class "lia-quote__alert-icon" ]
-                , Html.text name
-                ]
+                Nothing ->
+                    "lia-quote"
 
         alert_title =
             case alert of
-                Just ( NOTE, Nothing ) ->
-                    toTitle "Note"
-
-                Just ( TIP, Nothing ) ->
-                    toTitle "Tip"
-
-                Just ( IMPORTANT, Nothing ) ->
-                    toTitle "Important"
-
-                Just ( WARNING, Nothing ) ->
-                    toTitle "Warning"
-
-                Just ( CAUTION, Nothing ) ->
-                    toTitle "Caution"
+                Just ( type_, Nothing ) ->
+                    Just
+                        [ icon ("icon-alert-" ++ String.toLower (alertName type_)) [ Attr.class "lia-quote__alert-icon" ]
+                        , Html.text (alertName type_)
+                        ]
 
                 Just ( _, Just title ) ->
-                    title
-                        |> config.view
-                        |> Just
+                    Just (config.view title)
 
-                _ ->
+                Nothing ->
                     Nothing
     in
     case elements of
@@ -745,6 +722,27 @@ viewQuote config attr alert elements =
                 |> Html.blockquote (annotation alert_class attr)
 
 
+alertName : Alert -> String
+alertName alert =
+    case alert of
+        NOTE ->
+            "Note"
+
+        TIP ->
+            "Tip"
+
+        IMPORTANT ->
+            "Important"
+
+        WARNING ->
+            "Warning"
+
+        CAUTION ->
+            "Caution"
+
+
+{-| An ASCII drawing, with an optional caption.
+-}
 view_ascii : Config Msg -> Parameters -> ( Maybe Inlines, SvgBob.Configuration Blocks ) -> Html Msg
 view_ascii config attr ( caption, image ) =
     (if List.isEmpty image.foreign then
@@ -757,11 +755,15 @@ view_ascii config attr ( caption, image ) =
         |> svgFigure config caption
 
 
+{-| A drawing without embedded Markdown.
+-}
 drawAscii : Bool -> Parameters -> SvgBob.Configuration Blocks -> Html msg
 drawAscii =
     drawAscii_ (\_ -> Html.text "")
 
 
+{-| Draw the svgbob image, `foreign` renders the embedded Markdown.
+-}
 drawAscii_ : (Blocks -> Html msg) -> Bool -> Parameters -> SvgBob.Configuration Blocks -> Html msg
 drawAscii_ foreign light attr =
     SvgBob.setColorsIn
@@ -780,6 +782,9 @@ drawAscii_ foreign light attr =
         >> SvgBob.drawElements (toAttribute attr) foreign
 
 
+{-| Embedded Markdown within a drawing, a single paragraph is rendered as inlines.
+-}
+svgElement : Config Msg -> Blocks -> Html Msg
 svgElement config list =
     Html.div [] <|
         case list of
@@ -790,6 +795,7 @@ svgElement config list =
                 List.map (view_block config) list
 
 
+svgFigure : Config Msg -> Maybe Inlines -> Html Msg -> Html Msg
 svgFigure config caption svg =
     Html.figure [ Attr.class "lia-figure" ]
         [ Html.div
@@ -806,6 +812,48 @@ svgFigure config caption svg =
         ]
 
 
+{-| Comments within the solution of a quiz or survey are only shown and read out
+loud (slides mode), after the quiz has been solved or the survey submitted.
+-}
+hideUnsolvedComments :
+    { section | body : Blocks, quiz_vector : Quiz.Vector, survey_vector : Survey.Vector, effect_model : Comments.Model a }
+    -> Comments.Model a
+hideUnsolvedComments section =
+    let
+        effect_model =
+            section.effect_model
+    in
+    case
+        solutions section section.body
+            |> List.filter (.solved >> not)
+            |> List.concatMap .comments
+    of
+        [] ->
+            effect_model
+
+        hidden ->
+            { effect_model
+                | comments =
+                    effect_model.comments
+                        |> Dict.map
+                            (\id1 element ->
+                                { element
+                                    | content =
+                                        element.content
+                                            |> Array.toIndexedList
+                                            |> List.filter (\( id2, _ ) -> not (List.member ( id1, id2 ) hidden))
+                                            |> List.map Tuple.second
+                                            |> Array.fromList
+                                }
+                            )
+                        |> Dict.filter (\_ element -> not (Array.isEmpty element.content))
+            }
+
+
+{-| A quiz, gap texts and selections within blocks (`Quizzes.maybeConfig`)
+render their blocks with the quiz state, drag & drop quizzes also get the
+draggable items below.
+-}
 viewQuiz : Config Msg -> Maybe String -> Parameters -> Quiz.Quiz Block -> Maybe ( Blocks, Int ) -> Html Msg
 viewQuiz config labeledBy attr quiz solution =
     case Quizzes.maybeConfig config.main quiz config.section.quiz_vector of
@@ -832,56 +880,30 @@ viewQuiz config labeledBy attr quiz solution =
             quizControl config labeledBy attr quiz solution
 
 
+{-| The quiz with its controls, hints, the solution (once it is visible) and the
+script output.
+-}
+quizControl : Config Msg -> Maybe String -> Parameters -> Quiz.Quiz Block -> Maybe ( Blocks, Int ) -> Html Msg
 quizControl config labeledBy attr quiz solution =
-    let
-        renderedOptions =
-            quizVectorOptions config quiz.quiz
+    Quizzes.view config.main
+        labeledBy
+        quiz
+        config.section.quiz_vector
+        (quizVectorOptions config quiz.quiz)
+        (List.map (viewBlocks config) quiz.hints)
+        |> Tuple.mapSecond
+            (\list ->
+                (case solution of
+                    Just ( answer, _ ) ->
+                        if Quizzes.showSolution quiz config.section.quiz_vector then
+                            list ++ [ viewSolution config "quiz" quiz.id answer ]
 
-        renderedHints =
-            quizHints config quiz
+                        else
+                            list
 
-        quizView =
-            Quizzes.view config.main labeledBy quiz config.section.quiz_vector renderedOptions renderedHints
-    in
-    scriptView config.view <|
-        case solution of
-            Nothing ->
-                quizView
-                    |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
-
-            Just ( answer, hidden_effects ) ->
-                if Quizzes.showSolution quiz config.section.quiz_vector then
-                    quizView
-                        |> Tuple.mapSecond
-                            (\list ->
-                                List.append list
-                                    [ answer
-                                        |> List.map (view_block config)
-                                        |> Html.div [ Attr.class "lia-quiz__solution" ]
-                                    ]
-                            )
-                        |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
-
-                else
-                    quizView
-                        |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
-
-
-view_list : Config Msg -> List ( String, Blocks ) -> List (Html Msg)
-view_list config =
-    let
-        viewer ( value, sub_list ) =
-            Html.li [ Attr.value value ]
-                (List.map (view_block config) sub_list)
-    in
-    List.map viewer
-
-
-view_bulletList : Config Msg -> List Blocks -> List (Html Msg)
-view_bulletList config =
-    let
-        viewer =
-            List.map (view_block config)
-                >> Html.li []
-    in
-    List.map viewer
+                    Nothing ->
+                        list
+                )
+                    |> Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
+            )
+        |> scriptView config.view

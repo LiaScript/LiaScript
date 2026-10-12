@@ -19,12 +19,16 @@ import Service.Event as Event exposing (Event)
 import Service.Sync
 
 
+{-| The answer of a peer: the number of trials, or `Nothing` if resolved.
+-}
 type alias Sync =
     { trial : Maybe Int
     , state : State
     }
 
 
+{-| Only answered quizzes are shared.
+-}
 sync : { quiz | trial : Int, solved : Solution, state : State } -> Maybe Sync
 sync quiz =
     case quiz.solved of
@@ -38,6 +42,8 @@ sync quiz =
             Nothing
 
 
+{-| The event that shares the answer of quiz `id`, `Event.none` if open.
+-}
 event : Int -> { quiz | trial : Int, solved : Solution, state : State } -> Event
 event id =
     sync
@@ -90,6 +96,7 @@ lockAnswered ownId answered sectionID vector =
             vector
 
 
+{-| -}
 encoder : Sync -> JE.Value
 encoder s =
     JE.object
@@ -98,6 +105,7 @@ encoder s =
         ]
 
 
+{-| -}
 decoder : JD.Decoder Sync
 decoder =
     JD.map2 Sync

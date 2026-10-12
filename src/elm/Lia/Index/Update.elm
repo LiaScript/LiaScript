@@ -3,83 +3,58 @@ module Lia.Index.Update exposing
     , update
     )
 
+{-| Searching the sections of a course, the search pattern is a list of words,
+separated by spaces. A section is visible, if its code or title contain all of
+them (ignoring the case).
+-}
+
 import Array
 import Lia.Index.Model exposing (Model)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Section exposing (Section, Sections)
+import Lia.Section exposing (Sections)
 import Lia.Utils exposing (focus)
 
 
+{-| -}
 type Msg
     = ScanIndex String
     | DeleteSearch
     | NoOp
 
 
+{-| Store the pattern and mark the matching sections as `visible`. Deleting
+the search moves the focus back into the search field.
+-}
 update : Msg -> Model -> Sections -> ( Model, Sections, Cmd Msg )
 update msg model sections =
     case msg of
         ScanIndex pattern ->
-            ( pattern
-            , scan sections pattern
-            , Cmd.none
-            )
+            ( pattern, scan pattern sections, Cmd.none )
 
         DeleteSearch ->
-            ( ""
-            , scan sections ""
-            , focus NoOp "lia-input-search"
-            )
+            ( "", scan "" sections, focus NoOp "lia-input-search" )
 
         NoOp ->
             ( model, sections, Cmd.none )
 
 
-scan : Sections -> String -> Sections
-scan sections pattern =
-    let
-        check =
-            if pattern == "" then
-                make_visible
-
-            else
-                pattern
-                    |> String.toLower
-                    |> search
-    in
-    Array.map check sections
-
-
-search : String -> Section -> Section
-search pattern section =
-    { section
-        | visible =
-            section.title
-                |> stringify
-                |> (++) section.code
-                |> String.toLower
-                |> search_
-                    (pattern
-                        |> String.split " "
-                        |> List.filter ((/=) "")
-                    )
-    }
-
-
-search_ : List String -> String -> Bool
-search_ pattern text =
-    case pattern of
+scan : String -> Sections -> Sections
+scan pattern =
+    case
+        pattern
+            |> String.toLower
+            |> String.split " "
+            |> List.filter ((/=) "")
+    of
         [] ->
-            True
+            Array.map (\section -> { section | visible = True })
 
-        p :: ps ->
-            if not <| String.contains p text then
-                False
-
-            else
-                search_ ps text
-
-
-make_visible : Section -> Section
-make_visible section =
-    { section | visible = True }
+        words ->
+            Array.map
+                (\section ->
+                    let
+                        text =
+                            String.toLower (section.code ++ stringify section.title)
+                    in
+                    { section | visible = List.all (\word -> String.contains word text) words }
+                )

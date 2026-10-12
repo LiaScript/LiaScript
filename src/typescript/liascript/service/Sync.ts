@@ -53,27 +53,16 @@ const Service = {
 
   supported: [
     // remove these strings if you want to enable or disable certain sync support
-<<<<<<< HEAD
+    //'ably',
     //'edrys',
     //'gun',
     //'jitsi',
     //'matrix',
     //'ipfs',
+    //'local',
     //'mqtt',
     //'nostr',
     //'pubnub',
-=======
-    'ably',
-    'edrys',
-    'gun',
-    //'jitsi',
-    //'matrix',
-    'ipfs',
-    'local',
-    'mqtt',
-    'nostr',
-    'pubnub',
->>>>>>> development
     // hasRTCPeerConnection() ? 'p2pt' : '',
     //hasRTCPeerConnection() ? 'peerjs' : '',
     //hasRTCPeerConnection() ? 'simplepeer' : '',
@@ -210,9 +199,6 @@ const Service = {
             }
             */
 
-<<<<<<< HEAD
-            case 'jitsi':
-=======
             case 'nostr':
               if (!Nostr) {
                 import('../../sync/Nostr/index').then((e) => {
@@ -232,7 +218,6 @@ const Service = {
               break
 
             // case 'jitsi':
->>>>>>> development
             //   if (!Jitsi) {
             //     import('../../sync/Jitsi/index').then((e) => {
             //       Jitsi = e

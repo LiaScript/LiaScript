@@ -19,15 +19,10 @@ import Combine
     exposing
         ( Parser
         , andMap
-        , andThen
-        , fail
-        , ignore
         , keep
-        , lookAhead
         , map
-        , maybe
         , modifyState
-        , string
+        , primitive
         , succeed
         , withLine
         , withState
@@ -45,6 +40,7 @@ import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
 import Lia.Markdown.Types as Markdown
+import Lia.Parser.Helper exposing (startsWith)
 import Lia.Section exposing (SubSection)
 import PseudoRandom as Random
 
@@ -57,6 +53,8 @@ control:
     off this stack, to check the currently defined indentation.
   - `indentation_skip`: defines if the indentation should be skipped within the
     next step
+  - `abort`: a stack of strings that end the current inline parsing (e.g. the
+    closing tag of an HTML element)
   - `****_vector`: any kind of state to preserve for the applied sub-modules.
     Normally new states are pushed on this stack/array and their position (id) is
     later used to identify the required element from within the views.
@@ -65,10 +63,12 @@ control:
     example `<script>` are used within a effect or to deal with nested effects.
   - `defines`: is a set of macros and other definitions, that are normally
     defined within the head of every LiaScript document
-  - `footnotes`
-  - `defines_updated`:
+  - `footnotes`: the footnotes of the section
+  - `defines_updated`: set if the section has its own definitions
+  - `input`: collects inline quizzes (blocks) within a paragraph or a group
   - `search_index`: a function, that translates a string title into a section
     number
+  - `seed`: the state of the pseudo random number generator, see `getSeed`
 
 > Context is commonly used per section, since sections are pre-parsed at first
 > and afterwards only the current section is parsed, in order to speed up
@@ -77,10 +77,7 @@ control:
 -}
 type alias Context =
     { indentation : List String
-    , abort :
-        { stack : List String
-        , isTrue : Bool
-        }
+    , abort : List String
     , indentation_skip : Bool
     , task_vector : Task.Vector
     , code_model : Code.Model
@@ -112,10 +109,7 @@ definitions.
 init : Dict String String -> Maybe Int -> Maybe (String -> String) -> Int -> Definition -> Context
 init backup seed search_index editor_line global =
     { indentation = []
-    , abort =
-        { stack = []
-        , isTrue = False
-        }
+    , abort = []
     , indentation_skip = False
     , task_vector = Array.empty
     , code_model = Code.init
@@ -148,6 +142,9 @@ searchIndex =
     withState (.search_index >> succeed)
 
 
+{-| Get the current line within the editor, the `editor_line` offset of the
+parsed code plus the current line of the parser.
+-}
 getLine : Parser Context Int
 getLine =
     withState (.editor_line >> succeed)
@@ -155,6 +152,8 @@ getLine =
         |> andMap (withLine succeed)
 
 
+{-| Get the next pseudo random number, used to shuffle quizzes and surveys.
+-}
 getSeed : Parser Context Int
 getSeed =
     modifyState
@@ -170,55 +169,38 @@ getSeed =
         |> keep (withState (.seed >> succeed))
 
 
+{-| Push a string that ends the current inline parsing.
+-}
 addAbort : String -> Parser Context ()
 addAbort name =
-    modifyState
-        (\s ->
-            { s
-                | abort =
-                    { stack = name :: s.abort.stack
-                    , isTrue = False
-                    }
-            }
-        )
+    modifyState (\s -> { s | abort = name :: s.abort })
 
 
+{-| Remove the last pushed abort string.
+-}
 popAbort : Parser Context ()
 popAbort =
-    modifyState
-        (\s ->
-            { s
-                | abort =
-                    { stack = List.drop 1 s.abort.stack
-                    , isTrue = False
-                    }
-            }
-        )
-        |> ignore (succeed ())
+    modifyState (\s -> { s | abort = List.drop 1 s.abort })
 
 
+{-| Fail if the input starts with the last pushed abort string, otherwise
+succeed without consuming input.
+
+This runs before every inline element, therefore it is a single `primitive`.
+
+-}
 checkAbort : Parser Context ()
 checkAbort =
-    withState
-        (\context ->
-            case context.abort.stack of
-                [] ->
-                    succeed ()
-
+    primitive
+        (\state stream ->
+            case state.abort of
                 name :: _ ->
-                    if context.abort.isTrue then
-                        fail "abort"
+                    if startsWith name stream.input then
+                        ( state, stream, Err [ "abort" ] )
 
                     else
-                        lookAhead (maybe (string name))
-                            |> andThen
-                                (\found ->
-                                    case found of
-                                        Nothing ->
-                                            succeed ()
+                        ( state, stream, Ok () )
 
-                                        Just _ ->
-                                            modifyState (\s -> { s | abort = { stack = s.abort.stack, isTrue = True } })
-                                                |> keep (fail "abort")
-                                )
+                [] ->
+                    ( state, stream, Ok () )
         )

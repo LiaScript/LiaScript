@@ -5,13 +5,9 @@ module Lia.Section exposing
     , SubSection(..)
     , init
     , sync
-    , syncDecoder
-    , syncEncode
-    , syncInit
     )
 
 import Array exposing (Array)
-import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Sync as Code_
@@ -27,7 +23,7 @@ import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
 import Lia.Markdown.Types as Markdown
-import Lia.Sync.Container as Container exposing (Container)
+import Lia.Sync.Container as Container
 
 
 {-| This is the main record to contain all section related information.
@@ -40,7 +36,11 @@ import Lia.Sync.Container as Container exposing (Container)
   - `body`: the parsed LiaScript-Markdown elements
   - `parsed`: has the `code` already been parsed to `body`
   - `error`: if there has a parsing error occurred
-  - `definition`:
+  - `definition`: the settings of an optional comment right after the title,
+    which are merged with the main definition
+  - `persistent`: keep the section rendered while it is hidden, overrides the
+    `persistent` setting of the main definition
+  - `seed`: for the randomization of quizzes and surveys
 
 **subModules:** All self-contained LiaScript elements, that provide some kind
 of interactivity. Vectors are arrays, which are used for identification. Every
@@ -48,11 +48,12 @@ element has a counterpart in body (Markdown-Types), that is used for displaying,
 but it refers to state-changes via an id, which points to an element in these
 arrays.
 
-  - `code_vector`
+  - `code_model`
   - `task_vector`
   - `quiz_vector`
   - `survey_vector`
   - `table_vector`
+  - `gallery_vector`
   - `effect_model`: these are a bit more complicated and cover stuff like ...
     1.  animations
     2.  text2speech output
@@ -87,13 +88,6 @@ type alias Section =
     , editor_line : Int
     , persistent : Maybe Bool
     , seed : Int
-    }
-
-
-type alias Sync =
-    { quiz : Container Quiz_.Sync
-    , survey : Container Survey_.Sync
-    , code : Array Code_.Sync
     }
 
 
@@ -180,33 +174,14 @@ init seed id base =
     }
 
 
-syncInit : String -> Section -> Sync
-syncInit id section =
-    { quiz = Container.init id Quiz_.sync section.quiz_vector
-    , survey = Container.init id Survey_.sync section.survey_vector
-
-    -- Code is one global text with updates, not single files to be updated separately
-    , code = Array.map Code_.sync section.code_model.evaluate
-    }
-
-
-syncEncode : Sync -> JE.Value
-syncEncode s =
-    JE.object
-        [ ( "q", Container.encode Quiz_.encoder s.quiz )
-        , ( "s", Container.encode Survey_.encoder s.survey )
-        , ( "c", JE.array Code_.encoder s.code )
-        ]
-
-
-syncDecoder : JD.Decoder Sync
-syncDecoder =
-    JD.map3 Sync
-        (JD.field "q" (Container.decoder Quiz_.decoder))
-        (JD.field "s" (Container.decoder Survey_.decoder))
-        (JD.field "c" (JD.array Code_.decoder))
-
-
+{-| Encode the state of all quizzes, surveys and code projects of a section,
+which is shared within a classroom (`id` is the own peer id). Code is one
+global text with updates, not single files to be updated separately.
+-}
 sync : String -> Section -> JE.Value
-sync id =
-    syncInit id >> syncEncode
+sync id section =
+    JE.object
+        [ ( "q", Container.init id Quiz_.sync section.quiz_vector |> Container.encode Quiz_.encoder )
+        , ( "s", Container.init id Survey_.sync section.survey_vector |> Container.encode Survey_.encoder )
+        , ( "c", JE.array (Code_.sync >> Code_.encoder) section.code_model.evaluate )
+        ]

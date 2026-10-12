@@ -4,21 +4,27 @@ module Lia.Markdown.Table.Types exposing
     , State
     , Table
     , Vector
-    , isEmpty
+    , className
     , isNumber
     , toCell
     , toMatrix
     )
 
 import Array exposing (Array)
-import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
-import Lia.Markdown.Inline.Stringify exposing (stringify_)
+import Lia.Markdown.Inline.Stringify as Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Quiz.Multi.Types as Input
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
 
 
+{-| A parsed table:
+
+  - `class`: the diagram it can be shown as, `None` for plain tables
+  - `head`: the header row, empty for simple tables without format line
+  - `format`: alignment classes from the format line (`:--`, `--:`, ...)
+  - `id`: index of the table's `State` within the section's `Vector`
+
+-}
 type alias Table =
     { class : Class
     , sortable : Bool
@@ -43,12 +49,67 @@ type Class
     | Graph
     | Map
     | Funnel
+    | WordCloud
 
 
+{-| The name of a diagram type, as used for `data-type`, the JSON export and
+the toggle button icons (`icon-<name>`).
+-}
+className : Class -> String
+className class =
+    case class of
+        None ->
+            "none"
+
+        LinePlot ->
+            "lineplot"
+
+        ScatterPlot ->
+            "scatterplot"
+
+        BarChart ->
+            "barchart"
+
+        PieChart ->
+            "piechart"
+
+        HeatMap ->
+            "heatmap"
+
+        Radar ->
+            "radar"
+
+        Parallel ->
+            "parallel"
+
+        Sankey ->
+            "sankey"
+
+        BoxPlot ->
+            "boxplot"
+
+        Graph ->
+            "graph"
+
+        Map ->
+            "map"
+
+        Funnel ->
+            "funnel"
+
+        WordCloud ->
+            "wordcloud"
+
+
+{-| The view states of all tables within a section, indexed by `Table.id`.
+-}
 type alias Vector =
     Array State
 
 
+{-| `column` is the sorted column (-1 for unsorted), `dir` is `True` for
+ascending order, `diagram` is toggled by the table/diagram button.
+-}
 type alias State =
     { column : Int
     , dir : Bool
@@ -56,74 +117,54 @@ type alias State =
     }
 
 
+{-| A cell with its plain text and the number its text starts with.
+-}
 type alias Cell =
-    { id : String
-    , attr : Parameters
+    { attr : Parameters
     , inlines : Inlines
     , string : String
     , float : Maybe Float
     }
 
 
-toMatrix :
-    { config
-        | scripts : Scripts a
-        , visible : Maybe Int
-        , input :
-            { x
-                | state : Input.State
-                , options : Array (List Inlines)
-            }
-    }
-    -> Matrix ( Parameters, Inlines )
-    -> Matrix Cell
+toMatrix : Stringify.Config config input a -> Matrix ( Parameters, Inlines ) -> Matrix Cell
 toMatrix config =
-    Matrix.indexedMap (toCell config)
+    Matrix.map (toCell config)
 
 
-toCell :
-    { config
-        | scripts : Scripts a
-        , visible : Maybe Int
-        , input :
-            { x
-                | state : Input.State
-                , options : Array (List Inlines)
-            }
-    }
-    -> Int
-    -> Int
-    -> ( Parameters, Inlines )
-    -> Cell
-toCell config x y ( attr, data ) =
+toCell : Stringify.Config config input a -> ( Parameters, Inlines ) -> Cell
+toCell config ( attr, inlines ) =
     let
-        str =
-            data
+        string =
+            inlines
                 |> stringify_ config
                 |> String.trim
     in
-    str
-        |> float
-        |> Cell (cellID x y) attr data str
+    { attr = attr
+    , inlines = inlines
+    , string = string
+    , float =
+        -- "12.5 kg" is a number with a unit, "5. April" an ordinal and
+        -- "44 % mittlerer Abschluss" text
+        case String.words string of
+            [ number ] ->
+                toFloat number
+
+            [ number, _ ] ->
+                toFloat number
+
+            _ ->
+                Nothing
+    }
 
 
-cellID : Int -> Int -> String
-cellID x y =
-    String.fromInt x ++ "," ++ String.fromInt y
-
-
-float : String -> Maybe Float
-float =
-    String.split " " >> List.head >> Maybe.andThen String.toFloat
-
-
-isEmpty : String -> Maybe String
-isEmpty str =
-    if str == "" then
+toFloat : String -> Maybe Float
+toFloat number =
+    if String.endsWith "." number then
         Nothing
 
     else
-        Just str
+        String.toFloat number
 
 
 isNumber : Cell -> Bool

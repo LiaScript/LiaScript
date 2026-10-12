@@ -4,9 +4,16 @@ module Lia.Voice exposing
     , getVoiceFor
     )
 
+{-| The ResponsiveVoice narrators (`US English Male`, `Deutsch Female`, ...),
+their languages, and which narrator to use for a translated course.
+-}
+
 import List.Extra
 
 
+{-| A narrator and the language it speaks, `translated` is true if it
+replaces the narrator of the course, because the course got translated.
+-}
 type alias Voice =
     { translated : Bool
     , lang : String
@@ -14,6 +21,9 @@ type alias Voice =
     }
 
 
+{-| The voices of one language, `default` is used for languages that only have
+a voice without gender.
+-}
 type alias ResponsiveVoice =
     { lang : String
     , female : Maybe String
@@ -88,73 +98,68 @@ voices =
     ]
 
 
+{-| `toVoice name lang hasFemale hasMale`
+-}
 toVoice : String -> String -> Bool -> Bool -> ResponsiveVoice
 toVoice name lang female male =
-    ResponsiveVoice lang
-        (if female then
-            Just <| name ++ " Female"
-
-         else
-            Nothing
-        )
-        (if male then
-            Just <| name ++ " Male"
-
-         else
-            Nothing
-        )
-        (if not male && not female then
-            Just name
-
-         else
-            Nothing
-        )
+    { lang = lang
+    , female = maybeIf female (name ++ " Female")
+    , male = maybeIf male (name ++ " Male")
+    , default = maybeIf (not male && not female) name
+    }
 
 
-startsWith : String -> Maybe String -> Bool
-startsWith voice =
-    Maybe.map (String.startsWith voice) >> Maybe.withDefault False
+maybeIf : Bool -> a -> Maybe a
+maybeIf condition value =
+    if condition then
+        Just value
+
+    else
+        Nothing
 
 
+{-| The language of the first narrator, whose male or female name starts with
+`voice` (voices without gender are not found):
+
+    getLang "Deutsch Female" == Just "de"
+
+    getLang "Deutsch" == Just "de"
+
+-}
 getLang : String -> Maybe String
 getLang voice =
     voices
-        |> List.Extra.find (\v -> startsWith voice v.male || startsWith voice v.female)
+        |> List.Extra.find
+            (\v ->
+                [ v.male, v.female ]
+                    |> List.filterMap identity
+                    |> List.any (String.startsWith voice)
+            )
         |> Maybe.map .lang
 
 
+{-| The voice of the first entry of language `lang`, with the requested gender
+(male if unknown) or else the other one.
+-}
 getVoiceFromLang : String -> Maybe Bool -> Maybe String
 getVoiceFromLang lang male =
     voices
         |> List.Extra.find (\v -> v.lang == lang)
-        |> Maybe.andThen (getVoice male)
+        |> Maybe.andThen
+            (\v ->
+                (if male == Just False then
+                    [ v.female, v.male, v.default ]
+
+                 else
+                    [ v.male, v.female, v.default ]
+                )
+                    |> List.filterMap identity
+                    |> List.head
+            )
 
 
-getVoice : Maybe Bool -> ResponsiveVoice -> Maybe String
-getVoice male voice =
-    case ( male, voice.male, voice.female ) of
-        ( Just True, Just maleVoice, _ ) ->
-            Just maleVoice
-
-        ( Just True, Nothing, Just femaleVoice ) ->
-            Just femaleVoice
-
-        ( Just False, _, Just femaleVoice ) ->
-            Just femaleVoice
-
-        ( Just False, Just maleVoice, Nothing ) ->
-            Just maleVoice
-
-        ( Nothing, Just maleVoice, _ ) ->
-            Just maleVoice
-
-        ( Nothing, _, Just femaleVoice ) ->
-            Just femaleVoice
-
-        _ ->
-            voice.default
-
-
+{-| The gender of a voice is its last word, `Male` or `Female`.
+-}
 isMale : String -> Maybe Bool
 isMale voice =
     case voice |> String.split " " |> List.reverse of
@@ -168,7 +173,11 @@ isMale voice =
             Nothing
 
 
-{-|
+{-| The narrator for the comments of a course, that was written in language
+`old` and is now shown in `new` (`name` is the name of the new language). If
+the narrator speaks the old language, it gets replaced by a voice of the new
+language with the same gender, or by the name of the new language if there is
+no such voice:
 
     getVoiceFor "Russian Female" { old = "en", new = "en", name = Nothing }
     --> Just { translated = False, lang = "ru", name = "Russian Female" }
@@ -189,61 +198,33 @@ getVoiceFor voice lang =
         -- Nothing has changed: the audio (recorded or synthesized) still
         -- matches the document's own language, so it must not be
         -- overridden/muted in favor of a synthesized translation
-        Just
-            { translated = False
-            , lang =
-                voice
-                    |> getLang
-                    |> Maybe.withDefault lang.old
-            , name = voice
-            }
+        Just { translated = False, lang = getLang voice |> Maybe.withDefault lang.old, name = voice }
 
     else if getLang voice == Just lang.old then
         -- the old voice needs to be translated too
-        let
-            newVoice =
-                voice
-                    |> isMale
-                    |> getVoiceFromLang lang.new
-        in
-        case ( newVoice, lang.name ) of
+        case ( getVoiceFromLang lang.new (isMale voice), lang.name ) of
             ( Just newName, _ ) ->
-                Just
-                    { translated = True
-                    , lang = lang.new
-                    , name = newName
-                    }
+                Just { translated = True, lang = lang.new, name = newName }
 
             ( Nothing, Just langName ) ->
-                let
-                    gender =
-                        case isMale voice of
-                            Just True ->
-                                " Male"
-
-                            Just False ->
-                                " Female"
-
-                            Nothing ->
-                                ""
-                in
                 Just
                     { translated = True
                     , lang = lang.new
-                    , name = langName ++ gender
+                    , name =
+                        case isMale voice of
+                            Just True ->
+                                langName ++ " Male"
+
+                            Just False ->
+                                langName ++ " Female"
+
+                            Nothing ->
+                                langName
                     }
 
-            _ ->
+            ( Nothing, Nothing ) ->
                 Nothing
-        --|> Maybe.withDefault (Voice True lang.new lang.name)
 
     else
-        -- the voice
-        Just
-            { translated = False
-            , lang =
-                voice
-                    |> getLang
-                    |> Maybe.withDefault lang.new
-            , name = voice
-            }
+        -- the narrator speaks another language than the course
+        Just { translated = False, lang = getLang voice |> Maybe.withDefault lang.new, name = voice }

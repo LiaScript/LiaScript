@@ -35,7 +35,7 @@ import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition, add_macros)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Update as Markdown
-import Lia.Model exposing (loadResource)
+import Lia.Model exposing (getTitle, loadResource)
 import Lia.Parser.Parser as Parser
 import Lia.Parser.PatReplace exposing (resourceOrigin)
 import Lia.Section as Section exposing (Section, Sections)
@@ -44,7 +44,6 @@ import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
 import Lia.Utils exposing (checkFalse, checkPersistency, urlQuery)
 import Lia.View
-import List.Extra
 import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
@@ -99,6 +98,9 @@ load_slide session force =
     Load force >> Lia.Update.update session
 
 
+{-| Used by the "skip navigation" link: close the table of contents on small
+screens and move the focus to the current slide.
+-}
 skip_to_main_content : Session -> Model -> Return Model Msg Markdown.Msg
 skip_to_main_content session =
     Lia.Update.update session Focus
@@ -113,28 +115,18 @@ load_first_slide : Session -> Model -> Return Model Msg Markdown.Msg
 load_first_slide session model =
     let
         search_index =
-            model.sections
-                |> Array.map (.title >> stringify >> String.trim)
-                |> Array.toList
-                |> List.indexedMap generateIndex
-                |> searchIndex
-
-        slide =
-            model.anchor
-                |> Maybe.andThen (getSectionNumberFrom search_index)
-                |> Maybe.withDefault model.section_active
+            searchIndex model.sections
     in
     load_slide
         session
         False
-        (if slide >= pages model then
-            pages model - 1
-
-         else
-            slide
+        (model.anchor
+            |> Maybe.andThen (getSectionNumberFrom search_index)
+            |> Maybe.withDefault model.section_active
+            |> min (pages model - 1)
         )
         { model
-            | title = get_title model.sections
+            | title = getTitle model.sections
             , search_index = search_index
             , to_do =
                 Service.Database.index_store model
@@ -170,26 +162,25 @@ number is determined by the order of the document (matching the section title):
 -}
 getSectionNumberFrom : (String -> String) -> String -> Maybe Int
 getSectionNumberFrom index fragment =
-    let
-        slide =
-            case fragment |> String.toInt of
-                Just number ->
-                    number - 1
+    (case String.toInt fragment of
+        Just number ->
+            Just number
 
-                Nothing ->
-                    "#"
-                        ++ fragment
-                        |> index
-                        |> String.dropLeft 1
-                        |> String.toInt
-                        |> Maybe.map ((+) -1)
-                        |> Maybe.withDefault -1
-    in
-    if slide < 0 then
-        Nothing
+        Nothing ->
+            ("#" ++ fragment)
+                |> index
+                |> String.dropLeft 1
+                |> String.toInt
+    )
+        |> Maybe.map (\number -> number - 1)
+        |> Maybe.andThen
+            (\slide ->
+                if slide < 0 then
+                    Nothing
 
-    else
-        Just slide
+                else
+                    Just slide
+            )
 
 
 {-| Parse the main definitions of Markdown document and add it to todos...
@@ -239,25 +230,6 @@ add_todos definition model =
                 |> List.reverse
                 |> List.append model.to_do
     }
-
-
-{-| **@private**: Process a title-string, so that it can be easily compared with
-relative links. Incorporates string lowercase, replacement of " " by "-", etc.
-
-    generateIndex 1 "The Main  Title" == ( "#the-main-title", "#2" )
-
--}
-generateIndex : Int -> String -> ( String, String )
-generateIndex id title =
-    ( title
-        |> String.toLower
-        |> String.replace "-" " "
-        |> String.split " "
-        |> List.filter (String.isEmpty >> not)
-        |> String.join "-"
-        |> (++) "#"
-    , "#" ++ String.fromInt (id + 1)
-    )
 
 
 {-| Initialize a LiaScript Model with the code of a course. The header of this
@@ -331,54 +303,29 @@ persisted/cached.
 -}
 applyDefinitionSettings : String -> Definition -> Settings -> Settings
 applyDefinitionSettings readme definition settings =
+    let
+        -- a feature can only be switched off by the macro `key: false`
+        unlessDisabled key value =
+            if Maybe.map checkFalse (Dict.get key definition.macro) == Just False then
+                Nothing
+
+            else
+                value
+    in
     { settings
-        | light =
-            definition.lightMode
-                |> Maybe.withDefault settings.light
-        , mode =
-            definition.mode
-                |> Maybe.withDefault settings.mode
+        | light = Maybe.withDefault settings.light definition.lightMode
+        , mode = Maybe.withDefault settings.mode definition.mode
         , customTheme = Dict.get "custom" definition.macro
-        , translateWithGoogle =
-            case
-                definition.macro
-                    |> Dict.get "translateWithGoogle"
-                    |> Maybe.map checkFalse
-            of
-                Just False ->
-                    Nothing
-
-                _ ->
-                    settings.translateWithGoogle
-        , hasShareApi =
-            case
-                definition.macro
-                    |> Dict.get "sharing"
-                    |> Maybe.map checkFalse
-            of
-                Just False ->
-                    Nothing
-
-                _ ->
-                    settings.hasShareApi
-        , sync =
-            case
-                definition.macro
-                    |> Dict.get "classroom"
-                    |> Maybe.map checkFalse
-            of
-                Just False ->
-                    Nothing
-
-                _ ->
-                    settings.sync
+        , translateWithGoogle = unlessDisabled "translateWithGoogle" settings.translateWithGoogle
+        , hasShareApi = unlessDisabled "sharing" settings.hasShareApi
+        , sync = unlessDisabled "classroom" settings.sync
         , edit =
             case Dict.get "edit" definition.macro of
                 Just "true" ->
-                    openInLiveEditor readme
+                    Just ("https://liascript.github.io/LiveEditor/?/show/file/" ++ readme)
 
                 Just "on" ->
-                    openInLiveEditor readme
+                    Just ("https://liascript.github.io/LiveEditor/?/show/file/" ++ readme)
 
                 Just "false" ->
                     Nothing
@@ -386,17 +333,9 @@ applyDefinitionSettings readme definition settings =
                 Just "off" ->
                     Nothing
 
-                Just url ->
-                    Just url
-
-                _ ->
-                    Nothing
+                url ->
+                    url
     }
-
-
-openInLiveEditor : String -> Maybe String
-openInLiveEditor url =
-    Just ("https://liascript.github.io/LiveEditor/?/show/file/" ++ url)
 
 
 {-| Successively parse section after section. Every time this function is
@@ -413,16 +352,7 @@ parse_section : Model -> ( String, Int ) -> ( Model, Maybe ( String, Int ) )
 parse_section model ( code, line ) =
     case Parser.parse_titles line model.backup model.definition code of
         Ok ( sec, rest ) ->
-            ( let
-                seed =
-                    model.seed
-              in
-              { model
-                | sections =
-                    Array.push
-                        (Section.init seed (pages model) sec)
-                        model.sections
-              }
+            ( { model | sections = Array.push (Section.init model.seed (pages model) sec) model.sections }
             , if rest |> Tuple.first |> String.isEmpty then
                 Nothing
 
@@ -434,47 +364,50 @@ parse_section model ( code, line ) =
             ( { model | error = Just msg }, Nothing )
 
 
-{-| Get a stringified version of the first title:
+{-| **@private:** Map relative links to section titles `#the-main-title` onto
+section numbers `#2`, other strings are returned unchanged. Links are percent
+decoded and compared in lowercase, titles become lowercase slugs, where spaces
+and hyphens are merged into one hyphen. If titles are equal, the first section
+wins.
 
-    `# **Main Title**` -> "Main Title"
+    searchIndex sections "#The-Main%20%20Title" == "#2"
 
 -}
-get_title : Sections -> String
-get_title =
-    Array.get 0
-        >> Maybe.map (.title >> stringify >> String.trim)
-        >> Maybe.withDefault "Lia"
-
-
-{-| **@private:** Used by the index-title search to identify the section number
-that matches the relative Markdown link.
--}
-filterIndex : String -> ( String, String ) -> Bool
-filterIndex str ( key, _ ) =
-    str == key
-
-
-{-| **@private:** Search the index on titles for matching relative links.
--}
-searchIndex : List ( String, String ) -> String -> String
-searchIndex index str =
+searchIndex : Sections -> String -> String
+searchIndex sections =
     let
-        fn =
-            str
-                |> Url.percentDecode
-                |> Maybe.withDefault str
-                |> String.toLower
-                |> filterIndex
+        index =
+            sections
+                |> Array.toIndexedList
+                |> List.foldr
+                    (\( id, sec ) ->
+                        Dict.insert
+                            (sec.title
+                                |> stringify
+                                |> String.trim
+                                |> String.toLower
+                                |> String.replace "-" " "
+                                |> String.split " "
+                                |> List.filter (String.isEmpty >> not)
+                                |> String.join "-"
+                                |> (++) "#"
+                            )
+                            ("#" ++ String.fromInt (id + 1))
+                    )
+                    Dict.empty
     in
-    case List.Extra.find fn index of
-        Just ( _, key ) ->
-            key
+    \str ->
+        index
+            |> Dict.get
+                (str
+                    |> Url.percentDecode
+                    |> Maybe.withDefault str
+                    |> String.toLower
+                )
+            |> Maybe.withDefault str
 
-        Nothing ->
-            str
 
-
-{-| Alias for model initialization defined by `Lia.Model.int`
+{-| Alias for model initialization defined by `Lia.Model.init`
 -}
 init :
     { seed : Int

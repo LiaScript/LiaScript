@@ -1,20 +1,27 @@
 module Lia.Parser.UrlPattern.OneDrive exposing (by, pattern)
 
+{-| OneDrive files are loaded via the share API.
+-}
+
 import Base64
 import Lia.Parser.UrlPattern.Generic as Generic
 
 
+{-| The share API URL, `w` is the path after `onedrive.live.com/`.
+-}
 by : String -> String -> String
 by _ w =
     createOneDriveLink ("https://onedrive.live.com/" ++ w)
 
 
+{-| Matches OneDrive URLs.
+-}
 pattern : String
 pattern =
     Generic.root "onedrive\\.live\\.com/(.*)"
 
 
-{-| **private:** creates a OneDrive link from a given URL
+{-| Create a OneDrive share link from a given URL
 
 this is based on the following script:
 

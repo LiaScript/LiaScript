@@ -10,19 +10,8 @@ module Lia.Markdown.Quiz.View exposing
     )
 
 {-| This module defines the basic frame for all subsequent and specialized
-quizzes. It adds a common checkButton, hintButton, and resolveButton and shows
-hints.
-TODO:
-
-  - Add translations for web accessability also:
-    1.  check: check the solution of the current quiz
-    2.  reveal: reveal the solution of the quiz
-    3.  show hint: show an hint
-    4.  state:
-          - open: the quiz has not been touched yet
-          - resolved: resolved quiz
-          - solved: solved quiz
-
+quizzes. It adds a common check button, hint button, and solution button,
+shows hints and feedback and, within a classroom, the results of all peers.
 -}
 
 import Accessibility.Aria as A11y_Aria
@@ -81,6 +70,8 @@ import Lia.Utils
 import List.Extra
 
 
+{-| Size and class of all classroom diagrams, also used by surveys.
+-}
 syncAttributes : List ( String, String )
 syncAttributes =
     [ ( "style", "height: 150px; width: 100%" ), ( "class", "lia-quiz__sync" ) ]
@@ -106,6 +97,10 @@ view config labeledBy quiz vector renderedOptions renderedHints =
             ( Nothing, [] )
 
 
+{-| A gap-text quiz (`Multi_Type`) is rendered as its block, with the inputs
+being part of the inline elements. This returns the config, which contains the
+input states, together with that block and the random order of the options.
+-}
 maybeConfig : Config Main.Msg -> Quiz Markdown.Block -> Vector -> Maybe ( Config Main.Msg, Markdown.Block, Maybe (List Int) )
 maybeConfig config quiz vector =
     case ( Array.get quiz.id vector, quiz.quiz ) of
@@ -136,6 +131,8 @@ maybeConfig config quiz vector =
             Nothing
 
 
+{-| **private:** A colored icon, optionally followed by a text.
+-}
 iconWithColor : String -> String -> Maybe String -> Html msg
 iconWithColor icon color text =
     Html.span []
@@ -155,21 +152,31 @@ iconWithColor icon color text =
         ]
 
 
+{-| **private:** Compact cells for the classroom tables.
+-}
 tablePadding : Html.Attribute msg
 tablePadding =
     Attr.style "padding" "0px 5px !important"
 
 
+{-| **private:** A header cell of the classroom tables.
+-}
 tableHeaderCell : List (Html.Attribute msg) -> String -> Html msg
 tableHeaderCell attrs text =
     Html.th (Attr.class "lia-table__header" :: tablePadding :: attrs) [ Html.text text ]
 
 
+{-| **private:** The columns every classroom table starts with.
+-}
 fixedHeaderCells : List (Html.Attribute msg) -> List (Html msg)
 fixedHeaderCells attrs =
     [ "User", "Online", "State" ] |> List.map (tableHeaderCell attrs)
 
 
+{-| The owner's details table of all peers in a classroom, appended to `quiz`:
+one row per peer with its name, online state, answered state and the cells of
+`visualize` (one per `headers` entry). Other peers see `quiz` only.
+-}
 viewTableSync :
     Sync.Settings
     -> List String
@@ -227,6 +234,10 @@ viewMatrixTableSync syncSettings groups =
         ]
 
 
+{-| **private:** `viewTableSync` with any header rows, `columnCount` is the
+number of cells `visualize` returns, used for the empty cells of peers that
+have not answered yet.
+-}
 viewTableSyncWith :
     Sync.Settings
     -> Int
@@ -319,8 +330,11 @@ viewTableSyncWith syncSettings columnCount headerRows visualize data quiz =
         quiz
 
 
-syncDiagram : Config sub -> Sync.Settings -> Int -> Dict String (Maybe Int) -> Html msg
-syncDiagram config sync length data =
+{-| **private:** Bar chart of the trials needed by all peers, resolved quizzes
+are gray, the owner also sees the peers that have not answered yet.
+-}
+syncDiagram : Config sub -> Sync.Settings -> Dict String (Maybe Int) -> Html msg
+syncDiagram config sync data =
     let
         owner =
             Sync.isRoot sync
@@ -331,7 +345,7 @@ syncDiagram config sync length data =
                     Dict.size (Sync.roster sync data)
 
                 else
-                    length
+                    Dict.size data
 
         chartData =
             data
@@ -342,53 +356,13 @@ syncDiagram config sync length data =
                         let
                             absolute =
                                 1 + List.length list
-
-                            relative =
-                                percentage total absolute
                         in
                         case i of
                             Just i_ ->
-                                ( JE.string ("Trial " ++ String.fromInt i_)
-                                , JE.object
-                                    [ ( "value", JE.float relative )
-                                    , ( "label"
-                                      , JE.object
-                                            [ ( "show", JE.bool True )
-                                            , ( "formatter"
-                                              , String.fromInt absolute
-                                                    ++ " ("
-                                                    ++ String.fromFloat relative
-                                                    ++ "%)"
-                                                    |> JE.string
-                                              )
-                                            ]
-                                      )
-                                    ]
-                                )
+                                bar ("Trial " ++ String.fromInt i_) Nothing absolute (percentage total absolute) []
 
                             Nothing ->
-                                ( JE.string "Resolved"
-                                , JE.object
-                                    [ ( "value"
-                                      , JE.float relative
-                                      )
-                                    , ( "itemStyle"
-                                      , JE.object [ ( "color", JE.string "#888" ) ]
-                                      )
-                                    , ( "label"
-                                      , JE.object
-                                            [ ( "show", JE.bool True )
-                                            , ( "formatter"
-                                              , String.fromInt absolute
-                                                    ++ " ("
-                                                    ++ String.fromFloat relative
-                                                    ++ "%)"
-                                                    |> JE.string
-                                              )
-                                            ]
-                                      )
-                                    ]
-                                )
+                                bar "Resolved" (Just "#888") absolute (percentage total absolute) []
                     )
                 |> CList.addIf owner (openState sync data)
     in
@@ -404,9 +378,7 @@ syncDiagram config sync length data =
         , ( "xAxis"
           , JE.object
                 [ ( "type", JE.string "category" )
-                , ( "data"
-                  , JE.list Tuple.first chartData
-                  )
+                , ( "data", JE.list Tuple.first chartData )
                 ]
           )
         , ( "yAxis"
@@ -417,9 +389,7 @@ syncDiagram config sync length data =
           )
         , ( "series"
           , [ [ ( "type", JE.string "bar" )
-              , ( "data"
-                , JE.list Tuple.second chartData
-                )
+              , ( "data", JE.list Tuple.second chartData )
               ]
             ]
                 |> JE.list JE.object
@@ -433,107 +403,120 @@ syncDiagram config sync length data =
             Nothing
 
 
+{-| **private:** A labeled bar of the classroom diagrams, the label shows the
+absolute and the relative value. `label` adds further label settings in
+front.
+-}
+bar : String -> Maybe String -> Int -> Float -> List ( String, JE.Value ) -> ( JE.Value, JE.Value )
+bar name color absolute relative label =
+    ( JE.string name
+    , [ ( "value", JE.float relative ) ]
+        ++ (case color of
+                Just c ->
+                    [ ( "itemStyle", JE.object [ ( "color", JE.string c ) ] ) ]
+
+                Nothing ->
+                    []
+           )
+        ++ [ ( "label"
+             , JE.object
+                (label
+                    ++ [ ( "show", JE.bool True )
+                       , ( "formatter"
+                         , String.fromInt absolute
+                            ++ " ("
+                            ++ String.fromFloat relative
+                            ++ "%)"
+                            |> JE.string
+                         )
+                       ]
+                )
+             )
+           ]
+        |> JE.object
+    )
+
+
+{-| The "Open" bar of the classroom diagrams, all peers of the roster that have
+not answered (are not part of `data`). Also used by surveys.
+-}
 openState : Sync.Settings -> Dict String x -> ( JE.Value, JE.Value )
 openState sync data =
     let
-        absolute =
+        total =
             Sync.roster sync data
                 |> Dict.size
 
         open =
-            data
-                |> Dict.values
-                |> List.length
-
-        relative =
-            percentage (toFloat absolute) (absolute - open)
+            total - Dict.size data
     in
-    ( JE.string "Open"
-    , JE.object
-        [ ( "value"
-          , JE.float relative
-          )
-        , ( "itemStyle"
-          , JE.object [ ( "color", JE.string "#FDBA74" ) ]
-          )
-        , ( "label"
-          , [ ( "show", JE.bool True )
-            , ( "formatter"
-              , String.fromInt (absolute - open)
-                    ++ " ("
-                    ++ String.fromFloat relative
-                    ++ "%)"
-                    |> JE.string
-              )
-            ]
-                |> CList.appendIf (absolute - open == 0)
-                    [ ( "distance", JE.int 6 )
-                    , ( "position", JE.string "top" )
-                    ]
-                |> JE.object
-          )
-        ]
-    )
+    bar "Open"
+        (Just "#FDBA74")
+        open
+        (percentage (toFloat total) open)
+        (if open == 0 then
+            -- keep the label of an empty bar above the axis
+            [ ( "distance", JE.int 6 ), ( "position", JE.string "top" ) ]
+
+         else
+            []
+        )
 
 
+{-| **private:** Within a classroom add the diagram and the details table of
+the peers' results to the `quiz` view. Peers only see the diagram, after
+somebody has answered.
+-}
 viewSync : Config sub -> Maybe (Dict String Sync) -> Maybe Float -> List (Html msg) -> List (Html msg)
 viewSync config syncData score quiz =
-    let
-        visualize id data =
-            case Dict.get id data |> Maybe.map .trial of
-                Just (Just trial) ->
-                    [ iconWithColor "✓" "#5470c6" Nothing
-                    , Html.text <| String.fromInt trial
-                    , score
-                        |> Maybe.map String.fromFloat
-                        |> Maybe.withDefault "1.0"
-                        |> Html.text
-                    ]
+    case config.sync of
+        Just sync ->
+            let
+                data =
+                    Maybe.withDefault Dict.empty syncData
 
-                Just Nothing ->
-                    [ iconWithColor "✗" "#888" Nothing
-                    , Html.text ""
-                    , Html.text "0.0"
-                    ]
+                visualize id =
+                    Dict.get id >> Maybe.map .trial >> visualizeTrial score
+            in
+            (if Dict.isEmpty data && not (Sync.isRoot sync) then
+                quiz
 
-                Nothing ->
-                    []
-
-        trials =
-            Dict.map (\_ v -> v.trial)
-    in
-    case ( syncData, syncData |> Maybe.map Dict.size, config.sync ) of
-        ( Just data, Just 0, Just sync ) ->
-            if Sync.isRoot sync then
-                syncDiagram config sync 0 (trials data)
-                    |> List.singleton
-                    |> List.append quiz
-                    |> viewTableSync sync [ "Answered", "Trial", "Score" ] visualize data
-
-            else
-                viewTableSync sync [ "Answered", "Trial", "Score" ] visualize data quiz
-
-        ( Nothing, Nothing, Just sync ) ->
-            if Sync.isRoot sync then
-                syncDiagram config sync 0 Dict.empty
-                    |> List.singleton
-                    |> List.append quiz
-                    |> viewTableSync sync [ "Answered", "Trial", "Score" ] visualize Dict.empty
-
-            else
-                viewTableSync sync [ "Answered", "Trial", "Score" ] visualize Dict.empty quiz
-
-        ( Just data, Just length, Just sync ) ->
-            syncDiagram config sync length (trials data)
-                |> List.singleton
-                |> List.append quiz
+             else
+                quiz ++ [ syncDiagram config sync (Dict.map (\_ v -> v.trial) data) ]
+            )
                 |> viewTableSync sync [ "Answered", "Trial", "Score" ] visualize data
 
-        _ ->
+        Nothing ->
             quiz
 
 
-{-| Determine the quiz class based on the current state
+{-| **private:** The table cells of a peer's answer: solved after n trials or
+resolved, or nothing if not answered.
+-}
+visualizeTrial : Maybe Float -> Maybe (Maybe Int) -> List (Html msg)
+visualizeTrial score answer =
+    case answer of
+        Just (Just trial) ->
+            [ iconWithColor "✓" "#5470c6" Nothing
+            , Html.text <| String.fromInt trial
+            , score
+                |> Maybe.map String.fromFloat
+                |> Maybe.withDefault "1.0"
+                |> Html.text
+            ]
+
+        Just Nothing ->
+            [ iconWithColor "✗" "#888" Nothing
+            , Html.text ""
+            , Html.text "0.0"
+            ]
+
+        Nothing ->
+            []
+
+
+{-| The classes of a quiz container: its type and its solution state, e.g.
+`lia-quiz lia-quiz-select open`.
 -}
 class : Int -> Vector -> String
 class id =
@@ -606,15 +589,13 @@ viewState config elem quiz renderedOptions =
             ( [], [] )
 
 
-{-| **private:** Return the current quiz as List of elements that contains:
+{-| **private:** Return the current quiz as list of elements that contains:
 
-1.  maybe an error message (that originates from the external application of
-    JavaScript)
-2.  the body of the quiz itself, which might be of type `Block`, `Vector`, or
+1.  the body of the quiz itself, which might be of type `Block`, `Vector`, or
     `Matrix`
-3.  the main check-button
-4.  a button that reveals the solution 5 a hint section, that contains a hint
-    button and a list of already revealed hints
+2.  the controls: the check button, the solution button and the hint button
+3.  the feedback, including error messages of a checking script
+4.  the list of already revealed hints
 
 -}
 viewQuiz :
@@ -652,50 +633,34 @@ viewQuiz config labeledBy state quiz renderedHints ( attr, body ) =
             , title = Translations.quizHint config.lang
             }
         ]
-    , viewFeedback config state
-    , viewHints state.hint renderedHints
+    , viewFeedback config quiz.id state
+    , viewHints quiz.id state.hint renderedHints
     ]
 
 
-
-{- case e.sync of
-   Nothing ->
-       Html.text ""
-   Just { solved, resolved } ->
-       Html.text
-           ("solved: "
-               ++ String.fromInt
-                   (solved
-                       + (if e.solved == Solution.Solved then
-                           1
-                          else
-                           0
-                         )
-                   )
-               ++ ", resolved: "
-               ++ String.fromInt
-                   (resolved
-                       + (if e.solved == Solution.ReSolved then
-                           1
-                          else
-                           0
-                         )
-                   )
-           )
+{-| **private:** The feedback after a check, custom texts (`data-text-solved`,
+`data-text-failed`, `data-text-resolved`) replace the default ones. Error
+messages of a checking script have precedence.
 -}
-
-
-viewFeedback : Config Main.Msg -> Element -> Html Main.Msg
-viewFeedback config state =
+viewFeedback : Config Main.Msg -> Int -> Element -> Html Main.Msg
+viewFeedback config id state =
+    let
+        feedback color =
+            Html.div
+                [ Attr.class ("lia-quiz__feedback " ++ color)
+                , Attr.id ("lia-quiz-feedback-" ++ String.fromInt id)
+                , A11y_Live.polite
+                ]
+    in
     if state.error_msg /= "" then
-        Html.div [ Attr.class "lia-quiz__feedback text-error", A11y_Live.polite ]
+        feedback "text-error"
             [ Html.text state.error_msg
             ]
 
     else
         case state.solved of
             Solution.Solved ->
-                Html.div [ Attr.class "lia-quiz__feedback text-success", A11y_Live.polite ]
+                feedback "text-success"
                     -- TODO: maybe lable success, failure, ... locale independend
                     [ showCustomFeedback
                         config
@@ -704,7 +669,7 @@ viewFeedback config state =
                     ]
 
             Solution.ReSolved ->
-                Html.div [ Attr.class "lia-quiz__feedback text-disabled", A11y_Live.polite ]
+                feedback "text-disabled"
                     [ showCustomFeedback
                         config
                         state.opt.text_resolved
@@ -716,7 +681,7 @@ viewFeedback config state =
                     Html.text ""
 
                 else
-                    Html.div [ Attr.class "lia-quiz__feedback text-error", A11y_Live.polite ]
+                    feedback "text-error"
                         [ showCustomFeedback
                             config
                             state.opt.text_failed
@@ -724,6 +689,9 @@ viewFeedback config state =
                         ]
 
 
+{-| **private:** Show the `custom` feedback text, if defined, otherwise the
+translated default.
+-}
 showCustomFeedback : Config Main.Msg -> Maybe Inlines -> (Lang -> String) -> Html Main.Msg
 showCustomFeedback config custom default =
     custom
@@ -794,8 +762,8 @@ shown within a list and an additional button will be displayed to reveal more
 hints, if there are still hints not shown to the user and if the quiz has not
 been solved yet.
 -}
-viewHints : Int -> List (List (Html Main.Msg)) -> Html Main.Msg
-viewHints counter hints =
+viewHints : Int -> Int -> List (List (Html Main.Msg)) -> Html Main.Msg
+viewHints id counter hints =
     if List.isEmpty hints then
         Html.text ""
 
@@ -805,6 +773,7 @@ viewHints counter hints =
             |> List.map (Html.li [])
             |> Html.ul
                 [ Attr.class "lia-list--unordered lia-quiz__hints"
+                , Attr.id ("lia-quiz-hints-" ++ String.fromInt id)
                 , A11y_Live.polite
                 ]
 
@@ -832,10 +801,8 @@ viewHintButton { id, show, active, title } =
         Html.text ""
 
 
-{-| Check the state of quiz:
-Open -> False
-Solved -> True
-Resolved -> True
+{-| Show the solution block (`*********`) of a quiz only if it has been solved
+or resolved.
 -}
 showSolution : Quiz x -> Vector -> Bool
 showSolution quiz =

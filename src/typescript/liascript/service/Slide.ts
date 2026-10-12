@@ -163,11 +163,37 @@ export function scrollIntoView(
           // `behavior: 'smooth'` is ignored on Safari < 15.4 and IE, falling
           // back to an instant scroll. Add `scroll-behavior: smooth` on the
           // <main> container via CSS to cover those browsers.
-          elem.scrollIntoView({ behavior: 'smooth', block })
+          scrollTo(elem, block)
         })
       })
     }
   }, delay)
 }
+
+function scrollTo(elem: HTMLElement, block?: ScrollLogicalPosition) {
+  try {
+    elem.scrollIntoView({ behavior: 'smooth', block })
+  } catch (e) {
+    // Gecko < 58 (KaiOS) knows neither 'nearest' nor 'center' and throws,
+    // align to the bottom then, but only if it is not visible already
+    if (!isInViewport(elem)) elem.scrollIntoView(false)
+  }
+}
+
+// Opening a `<details>` at the bottom of the screen would hide its new content,
+// so it is moved into view. Clicks only, `<details open>` on load stays put.
+document.addEventListener('click', (event) => {
+  const details = (event.target as HTMLElement)?.closest?.('summary')
+    ?.parentElement
+
+  // no `instanceof HTMLDetailsElement`, it is missing on KaiOS (Gecko 48)
+  if (details?.tagName === 'DETAILS') {
+    // the element toggles after the click handlers have run
+    setTimeout(() => {
+      if ((details as HTMLDetailsElement).open)
+        scrollTo(details, 'nearest')
+    }, 0)
+  }
+})
 
 export default Service
