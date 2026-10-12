@@ -87,7 +87,7 @@ type Msg
     | UpdateMarkdown Markdown.Msg
     | UpdateSync Sync.Msg
     | UpdateChat Chat.Msg
-    | UpdateOverlay (Overlay.Msg Msg)
+    | UpdateOverlay Overlay.Msg
     | Handle Event
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
@@ -170,20 +170,7 @@ update session msg model =
                 |> Return.mapEvents "sync" -1
 
         UpdateOverlay childMsg ->
-            let
-                ( overlay, cmd, cmdParent ) =
-                    Overlay.update childMsg model.overlayVideo
-            in
-            { model | overlayVideo = overlay }
-                |> Return.val
-                |> Return.cmd
-                    (case cmdParent of
-                        Just _ ->
-                            Cmd.none
-
-                        Nothing ->
-                            Cmd.map UpdateOverlay cmd
-                    )
+            Return.val { model | overlayVideo = Overlay.update childMsg model.overlayVideo }
 
         Handle event ->
             handle session event model

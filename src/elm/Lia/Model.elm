@@ -179,7 +179,7 @@ init { seed, hasShareApi, openTOC, isFullscreen, settings, backends, url, readme
     , sync = Sync.init backends.support
     , persistent = False
     , seed = seed
-    , pane = SplitPane.init SplitPane.Horizontal
+    , pane = SplitPane.init
     , chat = Chat.init
     , overlayVideo = Overlay.init
     }

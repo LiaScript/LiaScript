@@ -36,7 +36,7 @@ init =
     , initialized = False
     , modal = Nothing
     , error = Nothing
-    , masonry = Masonry.empty (Just "example-id")
+    , masonry = Masonry.empty
     }
 
 

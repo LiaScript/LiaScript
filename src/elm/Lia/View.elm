@@ -218,7 +218,7 @@ viewPanes screen model =
                 _ ->
                     SplitPane.OnlyFirst
             )
-            viewConfig
+            Pane
             (model.sections
                 |> Array.toIndexedList
                 |> List.map (showSection model screen)
@@ -238,14 +238,6 @@ viewPanes screen model =
             )
             model.pane
         ]
-
-
-viewConfig : SplitPane.ViewConfig Msg
-viewConfig =
-    SplitPane.createViewConfig
-        { toMsg = Pane
-        , customSplitter = Nothing
-        }
 
 
 initConfig : Screen -> Model -> Section -> Config sub
