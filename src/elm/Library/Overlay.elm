@@ -322,7 +322,7 @@ view attr model inside =
                     :: style "overflow" "hidden"
                     :: style "touch-action" "none"
                     :: attribute "role" "region"
-                    :: attribute "aria-label" "Video playback controls"
+                    :: attribute "aria-label" ("Video playback controls - Current mode: " ++ modeName model.mode)
                     :: attribute "aria-live" "polite"
                     :: pointer model
                     ++ [ onBlur LostFocus ]
@@ -422,25 +422,25 @@ pointer model =
 description : Model -> String
 description model =
     let
-        keys mode =
-            mode
-                ++ ". Use arrow keys to "
-                ++ String.toLower mode
+        keys action =
+            ". Use arrow keys to "
+                ++ action
                 ++ " the video overlay. Press Enter to switch modes. Double-click on center to make overlay follow mouse movement. Double-click on resize handle to make overlay resize with mouse. "
     in
     "Current mode: "
+        ++ modeName model.mode
         ++ (case model.mode of
                 Move ->
-                    keys "Move"
+                    keys "move"
 
                 Resize ->
-                    keys "Resize"
+                    keys "resize"
 
                 FollowMouse _ ->
-                    "Follow Mouse Movement. Overlay is following mouse movement. Double-click or press ESC to release. "
+                    ". Overlay is following mouse movement. Double-click or press ESC to release. "
 
                 FollowResize _ ->
-                    "Follow Mouse Resize. Overlay is following mouse for resizing. Double-click or press ESC to release. "
+                    ". Overlay is following mouse for resizing. Double-click or press ESC to release. "
            )
         ++ "Current position: x: "
         ++ String.fromInt model.position.x
@@ -450,6 +450,22 @@ description model =
         ++ String.fromInt model.size.width
         ++ ", height: "
         ++ String.fromInt model.size.height
+
+
+modeName : Mode -> String
+modeName mode =
+    case mode of
+        Move ->
+            "Move"
+
+        Resize ->
+            "Resize"
+
+        FollowMouse _ ->
+            "Follow Mouse Movement"
+
+        FollowResize _ ->
+            "Follow Mouse Resize"
 
 
 isFollowMove : Mode -> Bool

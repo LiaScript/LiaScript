@@ -54,7 +54,7 @@ suite =
                     |> (\m -> Overlay.view [] m (Html.text ""))
                     |> Query.fromHtml
                     |> Query.find [ Sel.attribute (Attr.attribute "role" "region") ]
-                    |> Query.has [ Sel.style "right" "40px", Sel.style "top" "130px", Sel.style "border" "5px solid #ff5722" ]
+                    |> Query.has [ Sel.style "right" "40px", Sel.style "top" "130px", Sel.style "border" "5px solid #ff5722", Sel.attribute (Attr.attribute "aria-label" "Video playback controls - Current mode: Follow Mouse Movement") ]
         ]
 
 
