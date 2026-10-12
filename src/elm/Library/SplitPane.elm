@@ -120,7 +120,7 @@ view visible toMsg firstView secondView (State state) =
                 "flex"
 
             else
-                "blocknone"
+                "block"
         , style "flexDirection" "row"
         , style "justifyContent" "center"
         , style "alignItems" "center"
