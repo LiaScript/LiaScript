@@ -43,29 +43,9 @@ suite =
                         , Query.index 2 >> Query.has [ Sel.text "50", Sel.id "elm-masonry-item-4-c", Sel.class "elm-masonry-item-height-unknown" ]
                         ]
         , test "SplitPane: dragging by 25 of 100 pixels" <|
-            \_ ->
-                let
-                    splitter state =
-                        SplitPane.view SplitPane.Both identity (Html.text "a") (Html.text "b") state
-                            |> Query.fromHtml
-                            |> Query.children []
-                            |> Query.index 1
-
-                    fire name x state =
-                        Event.simulate (Event.custom name (JE.object [ ( "touches", JE.list JE.object [ [ ( "clientX", JE.int x ), ( "clientY", JE.int 0 ) ] ] ), parent ])) (splitter state)
-                            |> Event.toResult
-                            |> Result.map (\msg -> SplitPane.update msg state)
-                            |> Result.withDefault state
-                in
-                SplitPane.init
-                    |> fire "touchstart" 0
-                    |> fire "touchmove" 75
-                    |> fire "touchend" 0
-                    |> fire "touchmove" 100
-                    |> SplitPane.view SplitPane.Both identity (Html.text "a") (Html.text "b")
-                    |> Query.fromHtml
-                    |> Query.find [ Sel.class "pane-first-view" ]
-                    |> Query.has [ Sel.style "flex" "0.75" ]
+            \_ -> drag JE.int 0 75 100
+        , test "SplitPane: fractional coordinates" <|
+            \_ -> drag JE.float 0.4 75.4 100.4
         , test "Overlay: drag, arrow keys and follow mode" <|
             \_ ->
                 Overlay.init
@@ -76,6 +56,32 @@ suite =
                     |> Query.find [ Sel.attribute (Attr.attribute "role" "region") ]
                     |> Query.has [ Sel.style "right" "40px", Sel.style "top" "130px", Sel.style "border" "5px solid #ff5722" ]
         ]
+
+
+drag : (a -> JE.Value) -> a -> a -> a -> Expect.Expectation
+drag encode start to after =
+    let
+        splitter state =
+            SplitPane.view SplitPane.Both identity (Html.text "a") (Html.text "b") state
+                |> Query.fromHtml
+                |> Query.children []
+                |> Query.index 1
+
+        fire name x state =
+            Event.simulate (Event.custom name (JE.object [ ( "touches", JE.list JE.object [ [ ( "clientX", encode x ), ( "clientY", JE.int 0 ) ] ] ), parent ])) (splitter state)
+                |> Event.toResult
+                |> Result.map (\msg -> SplitPane.update msg state)
+                |> Result.withDefault state
+    in
+    SplitPane.init
+        |> fire "touchstart" start
+        |> fire "touchmove" to
+        |> fire "touchend" start
+        |> fire "touchmove" after
+        |> SplitPane.view SplitPane.Both identity (Html.text "a") (Html.text "b")
+        |> Query.fromHtml
+        |> Query.find [ Sel.class "pane-first-view" ]
+        |> Query.has [ Sel.style "flex" "0.75" ]
 
 
 parent : ( String, JE.Value )

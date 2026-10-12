@@ -222,12 +222,12 @@ events have no top level `clientX`, they start in the middle).
 click : JD.Decoder Msg
 click =
     JD.map2 (\x width -> SplitterClick { x = x, width = width })
-        (JD.maybe (JD.field "clientX" JD.int))
+        (JD.maybe (JD.field "clientX" number))
         parentWidth
 
 
 {-| **@private:** The x-coordinate of the first touch, or of the mouse, each
-only if x and y are integers, otherwise 0.
+only if x and y are numbers, otherwise 0.
 -}
 clientX : JD.Decoder Int
 clientX =
@@ -238,11 +238,19 @@ clientX =
         ]
 
 
-{-| **@private:** The value of field `x`, if field `y` is an integer too.
+{-| **@private:** The value of field `x`, if field `y` is a number too.
 -}
 pair : String -> String -> JD.Decoder Int
 pair x y =
-    JD.map2 always (JD.field x JD.int) (JD.field y JD.int)
+    JD.map2 always (JD.field x number) (JD.field y number)
+
+
+{-| **@private:** Event coordinates can be fractional (zoom, touch on HiDPI
+screens), an integer decoder would drop the whole event.
+-}
+number : JD.Decoder Int
+number =
+    JD.map round JD.float
 
 
 {-| **@private:** The width of the container, which also has to report its height.
