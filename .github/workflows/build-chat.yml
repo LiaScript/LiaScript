@@ -1,0 +1,51 @@
+name: Deploy LiaScript-Chat
+
+on:
+  push:
+    branches:
+      - chat
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          ref: chat
+      - name: Set ELM_HOME
+        run: echo "ELM_HOME=${GITHUB_WORKSPACE}/.elm" >> $GITHUB_ENV
+      - name: Install Node.js dependencies
+        run: '[[ -f package-lock.json || -f npm-shrinkwrap.json ]] && npm ci --allow-git=all || true'
+      # downloads the Elm packages, which are patched in the next step
+      - name: Pre-Build
+        run: npx elm make src/elm/Chat.elm --output=/dev/null
+      - name: Apply Patches
+        run: |
+          cd patches
+          make
+          cd ..
+          rm -rf elm-stuff .parcel-cache
+      - name: Build
+        run: npm run build
+
+      - name: Configure npm
+        run: |
+          npm config set //registry.npmjs.org/:_authToken ${NODE_AUTH_TOKEN}
+          npm config list
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_KEY }}
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_KEY }}
