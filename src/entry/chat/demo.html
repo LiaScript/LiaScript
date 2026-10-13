@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>lia-chat demo</title>
+    <meta charset="utf-8" />
+    <script type="module" src="./element.ts"></script>
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        font-family: sans-serif;
+      }
+      nav {
+        padding: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      lia-chat {
+        flex: 1;
+      }
+      #log {
+        height: 6rem;
+        overflow: auto;
+        font: 12px monospace;
+        background: #eee;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <button id="quiz">Quiz + Survey</button>
+      <button id="runner">CodeRunner (import in message)</button>
+      <button id="code">Code only</button>
+      <button id="define">define() macro</button>
+      <button id="macro">use macro</button>
+      <button id="sliders">sliders + echarts</button>
+      <button id="export">export</button>
+      <button id="load">clear + load</button>
+    </nav>
+    <lia-chat app="index.html"></lia-chat>
+    <pre id="log"></pre>
+
+    <script type="module">
+      const chat = document.querySelector('lia-chat')
+      const log = (...x) =>
+        (document.getElementById('log').textContent =
+          x.map(e => JSON.stringify(e)).join(' ') +
+          '\n' +
+          document.getElementById('log').textContent)
+      let saved = null
+
+      // a tiny robot as data-url, the DevServer uses its own pixel robots
+      const bot =
+        'data:image/svg+xml,' +
+        encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><rect width="12" height="12" rx="2" fill="#0f172a"/><rect x="3" y="4" width="2" height="2" fill="#7dd3fc"/><rect x="7" y="4" width="2" height="2" fill="#7dd3fc"/><rect x="4" y="8" width="4" height="1" fill="#7dd3fc"/></svg>'
+        )
+      const ai = { user: 'Assistant', icon: bot }
+      const me = () => ({ user: 'You', self: true, time: Date.now() })
+
+      chat.addEventListener('store', e => log('store', e.detail))
+      chat.addEventListener('agent', e => log('agent', e.detail))
+
+      const on = (id, fn) =>
+        document.getElementById(id).addEventListener('click', fn)
+
+      on('quiz', () =>
+        chat.add({
+          ...ai,
+          time: Date.now(),
+          message: `Which one is **LiaScript**?
+
+- [( )] Word
+- [(X)] Markdown
+
+How do you like it?
+
+- [(a)] great
+- [(b)] ok
+
+[agent link](agent:/explain?topic=quiz)`,
+        })
+      )
+
+      on('runner', () =>
+        chat.add({
+          ...ai,
+          time: Date.now(),
+          message: `<!--
+import: https://raw.githubusercontent.com/LiaScript/CodeRunner/master/README.md
+-->
+
+\`\`\`python
+print("Hello from the chat")
+\`\`\`
+@LIA.eval(\`["main.py"]\`, \`none\`, \`python3 main.py\`)`,
+        })
+      )
+
+      on('code', () =>
+        chat.add({
+          ...me(),
+          message: `\`\`\`python
+for i in range(3): print(i)
+\`\`\`
+@LIA.eval(\`["main.py"]\`, \`none\`, \`python3 main.py\`)`,
+        })
+      )
+
+      on('define', () =>
+        chat.define({
+          header:
+            '@hello: <b style="color:red">Hello @0</b>\n@style\n#lia-chat-messages { background: #fafaf0 }\n@end',
+        })
+      )
+
+      on('macro', () => chat.add({ ...ai, message: '@hello(world)' }))
+
+      // three sliders publish their values (output), the last script reads
+      // them (@input(`name`)) and renders the chart as its own output, outputs
+      // are scoped to the message, element ids (getElementById) are not
+      // (closing script tags are escaped within this page)
+      on('sliders', () =>
+        chat.add({
+          ...ai,
+          time: Date.now(),
+          message: `**Amplitude**
+<script input="range" value="2" default="2" min="0" max="5" step="0.1" output="amp">@input<\/script>
+
+**Frequency**
+<script input="range" value="1" default="1" min="0.2" max="4" step="0.1" output="freq">@input<\/script>
+
+**Phase**
+<script input="range" value="0" default="0" min="0" max="6.28" step="0.01" output="phase">@input<\/script>
+
+<script>
+const a = @input(\`amp\`), f = @input(\`freq\`), p = @input(\`phase\`)
+const data = []
+for (let x = 0; x <= 10; x += 0.05) data.push([x, a * Math.sin(f * x + p)])
+
+const option = {
+  animation: false,
+  title: { text: "y = " + a + " · sin(" + f + " · x + " + p + ")", textStyle: { fontSize: 13 } },
+  xAxis: { type: 'value' },
+  yAxis: { type: 'value', min: -5, max: 5 },
+  series: [{ type: 'line', showSymbol: false, smooth: true, data }]
+}
+"HTML: <lia-chart style='display: block; height: 300px; width: 80vw' option='" + JSON.stringify(option) + "'></lia-chart>"
+<\/script>`,
+        })
+      )
+
+      on('export', async () => log('export', (saved = await chat.export())))
+
+      on('load', () => {
+        chat.clear()
+        if (saved) setTimeout(() => chat.load(saved), 500)
+      })
+    </script>
+  </body>
+</html>

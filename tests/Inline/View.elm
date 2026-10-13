@@ -241,6 +241,13 @@ suite =
         , inlines
             |> List.map (\( name, inline ) -> snapshot ("reduce " ++ name) (wrap (View.reduce config [ chars "a. b", inline ])))
             |> describe "reduce"
+        , test "aria-label of the author belongs to the formula" <|
+            \_ ->
+                View.view config (Formula "false" "x" [ ( "aria-label", "y" ), ( "class", "c" ) ])
+                    |> HtmlSnapshot.toString
+                    |> String.split "<lia-formula"
+                    |> List.map (String.contains "aria-label=\"y\"")
+                    |> Expect.equal [ False, True ]
         , test "footnote key is a JS string literal in onclick" <|
             \_ ->
                 View.view config (FootnoteMark "a\"b\\c" [])
