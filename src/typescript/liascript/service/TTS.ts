@@ -298,6 +298,10 @@ function innerText(node, lang = 'en') {
   } else if (node.tagName === 'INPUT') {
     // Text inputs are read by their value, checkboxes and radios would be "on"
     return node.type === 'checkbox' || node.type === 'radio' ? '' : node.value
+  } else if (node.tagName === 'LIA-FORMULA' && node.speech) {
+    // the formula is rendered in a shadow root, it is read in the language of
+    // the voice, which might differ from the course
+    return ' ' + node.speech(lang) + ' '
   }
 
   const display = window.getComputedStyle(node).display
@@ -409,7 +413,10 @@ function read(event: Lia.Event) {
     let text = ''
 
     for (let i = 0; i < element.length; i++) {
-      text += (element[i] as HTMLElement).innerText || element[i].textContent
+      // the comment of a foreign narrator is display: none, its children not
+      element[i].childNodes.forEach((n: Node) => {
+        text += innerText(n, lang)
+      })
 
       let audioUrl = element[i].getAttribute('data-file') || null
 
