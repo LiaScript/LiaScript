@@ -1,6 +1,6 @@
 {
   "name": "@liascript/chat",
-  "version": "0.1.0--2.2.0",
+  "version": "0.1.1--2.2.1",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An embeddable chat that renders every message as LiaScript Markdown (quizzes, surveys, executable code, templates).",
@@ -114,6 +114,7 @@
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
     "sass": "^1.99.0",
+    "speech-rule-engine": "^5.0.0-rc.4",
     "svgo": "^3.3.2",
     "tsc": "^2.0.4",
     "typescript": "^5.9.3",

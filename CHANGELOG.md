@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 13/10/2026
+
+- feat: standalone LiaScript chat for embedding (`<lia-chat>`, API via `postMessage`: add, define, clear, load, export), messages are rendered as LiaScript sections with a shared header (import, script, macros, `@onload`, `@style`), states of code, quizzes, surveys and tasks can be exported and loaded; `build:chat`/`watch:chat`, see `docs/CHAT.md`
+- feat: formulas are read out loud in English and German in the language of the voice, like people read maths ("e hoch i pi", "d y nach d x", "H 2 O"), with decimal marks, fractions, roots, units, matrices, cases and mhchem
+- fix: formulas were missing in narrator comments and got a stray period in playback blocks, an `aria-label` of the author reaches the formula, also in presentation comments, which lost the course macros
+- fix: Google Translate – the translated text flickered back to the original on every click or while reading out loud (patched Elm VirtualDom redrew untouched translated nodes)
+- fix: link tooltips only preview http(s) links
+- test: formula speech, run with `node --test tests/formula-a11y/`
+
+
 ## [2.2.0] - 12/10/2026
 
 - feat: narrator hook `window.LIA.narrator` for templates; `lia-narrator` events on `window` report start, stop, pause, resume, word boundaries, progress and media changes of the narrator comments, with the source (`tts`, `audio`, `video`), the comment elements, voice, language and the playing media element; `LIA.narrator.state` holds the current state
