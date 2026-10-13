@@ -1,6 +1,6 @@
 {
   "name": "@liascript/chat",
-  "version": "0.1.1--2.2.1",
+  "version": "0.1.1--2.2.2",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An embeddable chat that renders every message as LiaScript Markdown (quizzes, surveys, executable code, templates).",

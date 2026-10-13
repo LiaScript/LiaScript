@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.2] - 13/10/2026
+
+- fix: chat – answering a quiz, survey or code block scrolled up to the one of an older message (the ids repeat in every message, the reveal now takes the one next to the click)
+
+
 ## [2.2.1] - 13/10/2026
 
 - feat: standalone LiaScript chat for embedding (`<lia-chat>`, API via `postMessage`: add, define, clear, load, export), messages are rendered as LiaScript sections with a shared header (import, script, macros, `@onload`, `@style`), states of code, quizzes, surveys and tasks can be exported and loaded; `build:chat`/`watch:chat`, see `docs/CHAT.md`
