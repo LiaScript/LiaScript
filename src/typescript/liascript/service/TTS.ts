@@ -4,6 +4,7 @@ import LANGUAGE_FALLBACKS, {
   LEGACY_LANGUAGE_MAP,
 } from './helper/language-fallbacks'
 import { detectGender } from './helper/voice-gender'
+import * as Narrator from './Narrator'
 
 // @ts-ignore
 import EasySpeech from 'easy-speech/dist/EasySpeech'
@@ -22,6 +23,9 @@ var useBrowserTTS: null | boolean = null
 var browserVoices: Record<string, SpeechSynthesisVoice> = {}
 
 var firstSpeak = true
+
+// the delayed read of the current slide, only the latest one may start
+var readTimer: ReturnType<typeof setTimeout> | undefined
 
 var elmSend: Lia.Send | null
 
@@ -146,6 +150,15 @@ export const Service = {
   init: function (elmSend_: Lia.Send) {
     elmSend = elmSend_
 
+    Narrator.init((tag: string | null) =>
+      sendReply({
+        reply: true,
+        track: [[SETTINGS, 0]],
+        service: 'tts',
+        message: { cmd: 'avatar', param: tag },
+      })
+    )
+
     setTimeout(function () {
       firstSpeak = false
       if (window.responsiveVoice) {
@@ -155,7 +168,7 @@ export const Service = {
       window.LIA.playback = function (event: Lia.Event) {
         Service.handle(event)
       }
-    }, 2000)
+    }, 1234)
 
     // Native: the Capacitor TTS plugin is the provider, reported as browserTTS.
     // EasySpeech detection doesn't see it, so flag support directly.
@@ -207,9 +220,12 @@ export const Service = {
           return
         }
 
+        // stop the old text now, otherwise it continues until the new one starts
+        cancel()
+
         const timeout = event.message.param.endsWith('-0') ? 2000 : 500
 
-        setTimeout(function () {
+        readTimer = setTimeout(function () {
           read(event)
         }, timeout)
         break
@@ -341,41 +357,99 @@ function playback(event: Lia.Event) {
   const options = getAudioSettings(text)
 
   if (typeof text !== 'string') {
-    text = innerText(text)
+    text = innerText(text, lang)
   }
 
+  Narrator.begin(event, { source: 'tts', text, voice, lang })
   speak(text, voice, lang, options, event)
 }
 
-function innerText(node) {
+function innerText(node, lang = 'en') {
   if (node.nodeType === Node.TEXT_NODE) {
-    // If the child node is a text node, append its text content
     return node.textContent
-  } else if (node.tagName === 'INPUT') {
-    // If the child node is an input element, append its value
-    return node.value
-  } else if (
-    node.classList.contains('lia-effect__circle') ||
-    node.classList.contains('lia-quiz-multi')
-  ) {
+  } else if (node.nodeType !== Node.ELEMENT_NODE || node.tagName === 'BUTTON') {
     return ''
+  } else if (node.tagName === 'INPUT') {
+    // Text inputs are read by their value, checkboxes and radios would be "on"
+    return node.type === 'checkbox' || node.type === 'radio' ? '' : node.value
+  } else if (node.tagName === 'LIA-FORMULA' && node.speech) {
+    // the formula is rendered in a shadow root, it is read in the language of
+    // the voice, which might differ from the course
+    return ' ' + node.speech(lang) + ' '
+  }
+
+  const display = window.getComputedStyle(node).display
+
+  if (display === 'none' || node.classList.contains('lia-effect__circle')) {
+    return ''
+  }
+
+  const read = (n: Node) => innerText(n, lang)
+  const all = (selector: string) =>
+    Array.from(node.querySelectorAll(selector)) as HTMLElement[]
+
+  // Quizzes, surveys and tasks are read as lists: "green, blue or red",
+  // checkboxes as "milk and bread", the buttons at the end "check or resolve"
+  if (
+    node.classList.contains('lia-quiz__answers') &&
+    node.querySelector(':scope > .lia-label')
+  ) {
+    return list(
+      all(':scope > .lia-label').map(read),
+      node.querySelector('input[type=checkbox]')
+        ? 'conjunction'
+        : 'disjunction',
+      lang
+    )
   } else if (node.classList.contains('lia-dropdown')) {
-    node = node.childNodes[0]
+    return list(all('.lia-dropdown__option').map(read), 'disjunction', lang)
+  } else if (node.classList.contains('lia-survey-matrix')) {
+    const columns = list(all('th').map(read), 'disjunction', lang)
+    return all('tr')
+      .map(row => trim(read(row)) + ': ' + columns)
+      .join('')
+  } else if (node.classList.contains('lia-quiz__control')) {
+    return list(
+      all('button').map(b => b.innerText.trim() || b.title),
+      'disjunction',
+      lang
+    )
   }
 
   let text = ''
+  node.childNodes.forEach((n: Node) => {
+    text += read(n)
+  })
 
-  try {
-    if (window.getComputedStyle(node).display !== 'none') {
-      node.childNodes.forEach((n: Node) => {
-        text += innerText(n)
-      })
-    }
-  } catch (e: any) {
-    console.warn('TTS: could not read innerText -->', e.message)
+  // Block elements (paragraphs, options, list items, table cells) get a
+  // pause, otherwise "vier" and "fünf" would be read as "vierfünf"
+  if (!display.startsWith('inline') && text.trim()) {
+    text = text.trimEnd()
+    text += /[.!?:;,]$/.test(text) ? ' ' : '. '
   }
 
   return text
+}
+
+function trim(text: string) {
+  return text.trim().replace(/[.,;:]$/, '')
+}
+
+function list(
+  items: string[],
+  type: 'conjunction' | 'disjunction',
+  lang: string
+) {
+  items = items.map(trim).filter(item => item)
+
+  if (items.length === 0) return ''
+
+  try {
+    return new (Intl as any).ListFormat(lang, { type }).format(items) + '. '
+  } catch (e) {
+    // Intl.ListFormat is not available on older browsers (KaiOS)
+    return items.join(', ') + '. '
+  }
 }
 
 function getAudioSettings(element: HTMLElement | Element) {
@@ -422,7 +496,8 @@ function probeDuration(controller: CommentMediaController): Promise<number> {
 }
 
 function read(event: Lia.Event) {
-  cancel()
+  // the class name of the comments, before it gets overwritten by a response
+  const id: string = event.message.param
 
   let element = document.getElementsByClassName(event.message.param)
 
@@ -437,7 +512,10 @@ function read(event: Lia.Event) {
     let text = ''
 
     for (let i = 0; i < element.length; i++) {
-      text += (element[i] as HTMLElement).innerText || element[i].textContent
+      // the comment of a foreign narrator is display: none, its children not
+      element[i].childNodes.forEach((n: Node) => {
+        text += innerText(n, lang)
+      })
 
       let audioUrl = element[i].getAttribute('data-file') || null
 
@@ -456,7 +534,18 @@ function read(event: Lia.Event) {
       : []
     commentControllers = controllers
 
+    const narrator = {
+      id,
+      elements: Array.from(element) as HTMLElement[],
+      text,
+      voice,
+      lang,
+      translated: translation,
+    }
+
     if (controllers.length > 0 && player) {
+      Narrator.begin(event, { ...narrator, source: 'video' })
+
       let currentIndex = 0
       let isEnding = false
       let ttsFinished = !translation
@@ -564,6 +653,8 @@ function read(event: Lia.Event) {
 
         activeMedia.media = null
         activeMedia.controller = controller
+        // embeds have no media element, the narrator then has no media to follow
+        Narrator.setMedia(controller.mediaElement)
         activeMedia.event = event
         startProgressInterval(event)
 
@@ -583,6 +674,8 @@ function read(event: Lia.Event) {
         })
       }
     } else if (hasAudioURLs) {
+      Narrator.begin(event, { ...narrator, source: 'audio' })
+
       const audioUrls: HTMLMediaElement[] = Array.from(
         document.getElementsByClassName(AUDIO) as HTMLCollectionOf<HTMLMediaElement>
       )
@@ -646,6 +739,7 @@ function read(event: Lia.Event) {
         audio.preservesPitch = true
         audio.playbackRate = options.rate
         activeMedia.media = audio
+        Narrator.setMedia(audio)
         activeMedia.event = event
 
         const sendInitialProgress = () => {
@@ -672,6 +766,7 @@ function read(event: Lia.Event) {
       startProgressInterval(event)
       playNextAudio()
     } else if (text !== '' && element[0] !== undefined) {
+      Narrator.begin(event, { ...narrator, source: 'tts' })
       speak(text, voice, lang, options, event)
     }
   }
@@ -781,6 +876,9 @@ function resumeTTSEngine(): boolean {
 }
 
 function cancel() {
+  // a read that is still waiting would start after switching slides
+  clearTimeout(readTimer)
+  Narrator.stop()
   browserTTSSpeakArgs = null
   browserTTSIntentionalPause = false
   clearMediaState()
@@ -928,6 +1026,9 @@ function easySpeak(
       browserTTSIntentionalPause = false
       handlers.onError(e)
     },
+    boundary: (e: SpeechSynthesisEvent) => {
+      Narrator.boundary(e.charIndex, e.charLength)
+    },
     pitch: options.pitch,
     rate: options.rate,
   })
@@ -968,6 +1069,7 @@ function sendResponse(
 ) {
   event.message.cmd = cmd
   event.message.param = param
+  Narrator.response(event, cmd, param)
   sendReply(event)
 }
 

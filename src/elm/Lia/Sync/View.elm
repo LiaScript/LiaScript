@@ -7,7 +7,6 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Index.View.Popup as Popup
-import Lia.Settings.Update exposing (Msg(..))
 import Lia.Sync.Classroom as Classroom
 import Lia.Sync.Types as Sync exposing (ClassroomMode(..), State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
@@ -19,12 +18,7 @@ view : Sync.Settings -> Html Msg
 view settings =
     let
         open =
-            case settings.state of
-                Sync.Disconnected ->
-                    True
-
-                _ ->
-                    False
+            settings.state == Sync.Disconnected
     in
     Html.div
         [ Attr.class "lia-classroom" ]
@@ -313,7 +307,7 @@ view settings =
                             (List.filterMap identity [ Backend.capacityBadge via, Backend.persistenceBadge via ]
                                 ++ (via |> Backend.badges |> List.map Backend.badge)
                             )
-                        , Backend.infoOn support via
+                        , Backend.infoOn via
                         , if settings.fromUrl then
                             Html.text ""
 
@@ -550,36 +544,40 @@ deleteBtn entry =
         [ Attr.class "lia-classroom__card-ghost lia-classroom__card-ghost--danger" ]
 
 
+{-| The backend dropdown, it can neither be opened (click, Enter, Space) nor
+show its options, if the backend must not be changed (connected or locked).
+-}
 select : String -> Bool -> Sync -> Html Msg
 select label editable sync =
+    let
+        isOpen =
+            editable && sync.open
+
+        toggle =
+            Open (not sync.open)
+    in
     Html.map Backend <|
         Html.label []
             [ Html.span [ Attr.class "lia-label" ] [ Html.text label ]
             , Html.br [] []
             , Html.div
-                [ Attr.class "lia-dropdown"
-                , if editable then
-                    not sync.open
-                        |> Open
-                        |> Event.onClick
+                (Attr.class "lia-dropdown"
+                    :: (if editable then
+                            [ Event.onClick toggle
+                            , A11y_Key.onKeyDown [ A11y_Key.enter toggle, A11y_Key.space toggle ]
+                            ]
 
-                  else
-                    Attr.disabled True
-                , A11y_Key.onKeyDown
-                    [ not sync.open
-                        |> Open
-                        |> A11y_Key.enter
-                    , not sync.open
-                        |> Open
-                        |> A11y_Key.space
-                    ]
-                ]
+                        else
+                            [ Attr.disabled True ]
+                       )
+                )
                 [ Html.div
                     [ Attr.class "lia-dropdown__selected"
                     , A11y_Aria.hidden False
                     , A11y_Role.button
                     , Attr.tabindex 0
-                    , A11y_Aria.expanded sync.open
+                    , A11y_Aria.expanded isOpen
+                    , A11y_Aria.disabled (not editable)
                     ]
                     [ case sync.select of
                         Nothing ->
@@ -590,7 +588,7 @@ select label editable sync =
                     , Html.i
                         [ Attr.class <|
                             "icon"
-                                ++ (if sync.open then
+                                ++ (if isOpen then
                                         " icon-chevron-up"
 
                                     else
@@ -601,7 +599,7 @@ select label editable sync =
                         []
                     ]
                 , sync.support
-                    |> (if sync.open then
+                    |> (if isOpen then
                             List.map (Just >> option)
                                 >> (::) (option Nothing)
 
@@ -612,7 +610,7 @@ select label editable sync =
                         [ Attr.class "lia-dropdown__options"
                         , Attr.tabindex -1
                         , Attr.class <|
-                            if sync.open then
+                            if isOpen then
                                 "is-visible"
 
                             else

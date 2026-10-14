@@ -13,7 +13,7 @@ import Json.Encode as JE
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Settings.Json as Json
-import Lia.Settings.Types exposing (Action(..), Audio(..), Mode(..), PlaybackState(..), Settings)
+import Lia.Settings.Types exposing (Action(..), Audio(..), Mode(..), PlaybackState(..), Settings, TTS)
 import Lia.Utils exposing (focus, scheduleFocus)
 import Return exposing (Return)
 import Service.Database
@@ -25,6 +25,7 @@ import Service.TTS
 import Service.Translate
 
 
+{-| -}
 type Msg
     = Toggle Toggle
     | ChangeTheme String
@@ -39,6 +40,7 @@ type Msg
     | Change Audio
 
 
+{-| -}
 type Toggle
     = TableOfContents
     | Sound
@@ -55,6 +57,9 @@ type Toggle
     | Fullscreen
 
 
+{-| `main` is the context of a course (title, comment, logo, ...), it is
+`Nothing` on the course index.
+-}
 update :
     Maybe { title : String, comment : Inlines, effectID : Maybe Int, logo : Maybe String, readme : String }
     -> Msg
@@ -67,8 +72,7 @@ update main msg model =
                 ( Nothing, _, ( "init", settings ) ) ->
                     let
                         newSettings =
-                            settings
-                                |> load { model | initialized = True }
+                            load model settings
                     in
                     newSettings
                         |> no_log Nothing
@@ -119,34 +123,29 @@ update main msg model =
                                                 { model | playback = SpeakingWithProgress { current = current, total = total } }
 
                                     Service.TTS.BrowserTTS support ->
-                                        let
-                                            tts =
-                                                model.tts
-                                        in
-                                        { model | tts = { tts | isBrowserSupported = support } }
+                                        mapTTS (\tts -> { tts | isBrowserSupported = support }) model
 
                                     Service.TTS.ResponsiveVoiceTTS support ->
-                                        let
-                                            tts =
-                                                model.tts
-                                        in
-                                        { model | tts = { tts | isResponsiveVoiceSupported = support } }
+                                        mapTTS (\tts -> { tts | isResponsiveVoiceSupported = support }) model
+
+                                    Service.TTS.Avatar avatar ->
+                                        mapTTS (\tts -> { tts | avatar = avatar }) model
 
                                     _ ->
                                         model
 
                         _ ->
-                            log Nothing model
+                            log model
 
         Toggle TableOfContents ->
-            log Nothing
+            log
                 { model
                     | table_of_contents = not model.table_of_contents
                     , action = Nothing
                 }
 
         Toggle SupportMenu ->
-            log Nothing
+            log
                 { model
                     | support_menu = not model.support_menu
                     , action = Nothing
@@ -154,7 +153,7 @@ update main msg model =
 
         Toggle Sound ->
             { model | sound = not model.sound }
-                |> log Nothing
+                |> log
                 |> Return.batchEvent
                     (Event.push "settings" <|
                         if model.sound then
@@ -168,14 +167,14 @@ update main msg model =
                     )
 
         Toggle Light ->
-            log Nothing { model | light = not model.light }
+            log { model | light = not model.light }
 
         Toggle Fullscreen ->
             no_log Nothing { model | fullscreen = not model.fullscreen }
                 |> Return.batchEvent Service.Slide.fullscreen
 
         Toggle Tooltips ->
-            log Nothing { model | tooltips = not model.tooltips }
+            log { model | tooltips = not model.tooltips }
 
         Toggle Sync ->
             no_log Nothing { model | sync = Maybe.map not model.sync }
@@ -217,7 +216,7 @@ update main msg model =
             no_log Nothing { model | showQRCode = not model.showQRCode }
 
         Toggle VideoComments ->
-            log Nothing { model | hideVideoComments = not model.hideVideoComments }
+            log { model | hideVideoComments = not model.hideVideoComments }
 
         Toggle Chat ->
             let
@@ -279,31 +278,30 @@ update main msg model =
             case mode of
                 Textbook ->
                     { model | sound = False, mode = Textbook }
-                        |> log Nothing
+                        |> log
                         |> Return.batchEvent Service.TTS.cancel
 
                 _ ->
-                    log Nothing { model | mode = mode }
+                    log { model | mode = mode }
 
         ChangeTheme theme ->
-            log Nothing
-                { model | theme = theme }
+            log { model | theme = theme }
 
         ChangeEditor theme ->
-            log Nothing { model | editor = theme }
+            log { model | editor = theme }
 
         ChangeFontSize size ->
-            log Nothing { model | font_size = size }
+            log { model | font_size = size }
 
         ChangeLang lang ->
-            log Nothing { model | lang = lang }
+            log { model | lang = lang }
 
         Change audio_setting ->
             let
                 audio =
                     model.audio
             in
-            log Nothing
+            log
                 { model
                     | audio =
                         case audio_setting of
@@ -335,16 +333,10 @@ update main msg model =
                     )
 
         Toggle PreferBrowserTTS ->
-            let
-                tts =
-                    model.tts
-
-                newPreference =
-                    not tts.preferBrowser
-            in
-            { model | tts = { tts | preferBrowser = newPreference } }
-                |> log Nothing
-                |> Return.batchEvent (Service.TTS.preferBrowser newPreference)
+            model
+                |> mapTTS (\tts -> { tts | preferBrowser = not tts.preferBrowser })
+                |> log
+                |> Return.batchEvent (Service.TTS.preferBrowser (not model.tts.preferBrowser))
 
         Toggle TranslateWithGoogle ->
             { model
@@ -366,6 +358,8 @@ update main msg model =
             Return.val model
 
 
+{-| Close the classroom dialog (if classrooms are not disabled).
+-}
 closeSync : Settings -> Settings
 closeSync model =
     { model
@@ -379,6 +373,7 @@ closeSync model =
     }
 
 
+{-| -}
 handle : Event -> Msg
 handle =
     Handle
@@ -390,19 +385,28 @@ load model =
         >> Result.withDefault model
 
 
+{-| -}
 toggle_sound : Msg
 toggle_sound =
     Toggle Sound
 
 
-log : Maybe String -> Settings -> Return Settings Msg sub
-log elementID settings =
+mapTTS : (TTS -> TTS) -> Settings -> Settings
+mapTTS fn settings =
+    { settings | tts = fn settings.tts }
+
+
+{-| Store the changed settings.
+-}
+log : Settings -> Return Settings Msg sub
+log settings =
     settings
         |> Return.val
-        |> Return.cmd (maybeFocus elementID)
         |> Return.batchEvent (customizeEvent settings)
 
 
+{-| Store the settings (and the custom theme, if it is selected).
+-}
 customizeEvent : Settings -> Event
 customizeEvent settings =
     settings
@@ -416,6 +420,8 @@ customizeEvent settings =
             )
 
 
+{-| Change without storing, the focus moves to `elementID`.
+-}
 no_log : Maybe String -> Settings -> Return Settings Msg sub
 no_log elementID =
     Return.val >> Return.cmd (maybeFocus elementID)
@@ -426,6 +432,8 @@ maybeFocus =
     Maybe.map (focus Ignore) >> Maybe.withDefault Cmd.none
 
 
+{-| Mark new chat messages, if the chat is closed.
+-}
 updatedChatMessages : Settings -> Settings
 updatedChatMessages settings =
     if settings.chat.show then

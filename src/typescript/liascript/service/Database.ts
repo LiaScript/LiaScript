@@ -371,7 +371,7 @@ const Service = {
  * @param def
  * @returns a function that modifies a certain sub-entry within the database
  */
-function transaction(def: {
+export function transaction(def: {
   cmd: string
   id: number
   data: any

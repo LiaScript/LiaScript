@@ -6,6 +6,7 @@
   margin-top: settings.$global-top-offset;
   display: flex;
   flex-direction: column;
+  height: calc(100vh - settings.$global-top-offset);
   height: calc(100dvh - settings.$global-top-offset);
   position: relative;
   width: 100%;
@@ -37,6 +38,18 @@
 
     @include tools.breakpoint('md') {
       margin-block-start: calc(#{components.$header-height-desktop});
+    }
+
+    // inner scroller around the sections (Lia.View.viewPanes)
+    & & {
+      display: flex;
+      justify-content: center;
+      // no stretch, otherwise main gets the scroller's height and its
+      // bottom padding/margin is lost
+      align-items: flex-start;
+      margin-block-start: 0;
+      overflow-y: auto;
+      width: 100%;
     }
   }
 

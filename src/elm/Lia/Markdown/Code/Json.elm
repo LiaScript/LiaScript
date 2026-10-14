@@ -6,6 +6,11 @@ module Lia.Markdown.Code.Json exposing
     , toVector
     )
 
+{-| Storage format of the executable projects of a section. Only files,
+versions, repository and log are stored, the rest belongs to the course or
+the session.
+-}
+
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
@@ -14,20 +19,19 @@ import Lia.Markdown.Code.Types exposing (File, Model, Project, Repo, Vector, Ver
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 
 
+{-| Replace the executable projects by the stored ones, the evaluation
+script stays the one of the course. Superfluous projects on either side
+are dropped.
+-}
 merge : Model -> Vector -> Model
 merge old new =
     { old
         | evaluate =
-            new
-                |> Array.toList
-                |> List.map2 copy (Array.toList old.evaluate)
+            List.map2 (\o n -> { n | evaluation = o.evaluation })
+                (Array.toList old.evaluate)
+                (Array.toList new)
                 |> Array.fromList
     }
-
-
-copy : Project -> Project -> Project
-copy old new =
-    { new | evaluation = old.evaluation }
 
 
 fromVector : Vector -> JE.Value
@@ -35,6 +39,9 @@ fromVector =
     JE.array fromProject
 
 
+{-| Decode stored projects, `attrs` are the annotations of the course's
+projects. `null` means nothing was stored yet.
+-}
 toVector : JD.Value -> List (List Parameters) -> Result JD.Error (Maybe Vector)
 toVector json attrs =
     json
@@ -59,15 +66,9 @@ fromProject p =
         ]
 
 
-project :
-    Array File
-    -> Array Version
-    -> Int
-    -> Log.Log
-    -> Repo
-    -> (List Parameters -> Project)
+project : Array File -> Array Version -> Int -> Log.Log -> Repo -> List Parameters -> Project
 project files version active log repository =
-    Project files -1 version active repository "" log Nothing False Nothing False Log.empty
+    Project files version active repository "" log Nothing False Nothing False Log.empty
 
 
 toProject : JD.Decoder (List Parameters -> Project)

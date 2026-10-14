@@ -1,31 +1,24 @@
 module Library.Overlay exposing
-    ( Model
-    , Msg(..)
-    , init
-    , update
+    ( Model, init
+    , Msg, update
     , view
     )
 
-import Html
-    exposing
-        ( Attribute
-        , Html
-        , div
-        , text
-        )
-import Html.Attributes
-    exposing
-        ( attribute
-        , style
-        , tabindex
-        , title
-        )
-import Html.Events
-    exposing
-        ( on
-        , onBlur
-        , preventDefaultOn
-        )
+{-| A round overlay (used for video comments) that can be moved and resized
+with mouse, touch or arrow keys. A double-click on the center or on the resize
+handle makes it follow the mouse until the next double-click or ESC.
+
+Positions are measured from the right edge, so `x` grows to the left.
+
+@docs Model, init
+@docs Msg, update
+@docs view
+
+-}
+
+import Html exposing (Attribute, Html, div, text)
+import Html.Attributes exposing (attribute, style, tabindex, title)
+import Html.Events exposing (on, onBlur, preventDefaultOn)
 import Json.Decode as Decode exposing (Decoder)
 
 
@@ -36,8 +29,8 @@ import Json.Decode as Decode exposing (Decoder)
 type Mode
     = Move
     | Resize
-    | FollowMouse Position -- For movement follow
-    | FollowResize Position -- Added new mode for resize following
+    | FollowMouse Position -- offset between pointer and position
+    | FollowResize Position -- offset between pointer and size
 
 
 type alias Position =
@@ -52,36 +45,33 @@ type alias Size =
     }
 
 
-type alias Drag =
+{-| Where a drag or resize started, `from` is the position or size at that time.
+-}
+type alias Drag a =
     { start : Position
-    , current : Position
+    , from : a
     }
 
 
+{-| -}
 type alias Model =
     { position : Position
-    , initialPosition : Position
     , size : Size
-    , initialSize : Size
-    , drag : Maybe Drag
-    , resize : Maybe Drag
+    , drag : Maybe (Drag Position)
+    , resize : Maybe (Drag Size)
     , mode : Mode
-    , followOffset : Maybe Position -- For move follow
-    , resizeOffset : Maybe Position -- Added for resize follow
     }
 
 
+{-| 200x200 pixels, 20 pixels from the right and 100 from the top.
+-}
 init : Model
 init =
     { position = Position 20 100
-    , initialPosition = Position 20 100
     , size = Size 200 200
-    , initialSize = Size 200 200
     , drag = Nothing
     , resize = Nothing
     , mode = Move
-    , followOffset = Nothing
-    , resizeOffset = Nothing
     }
 
 
@@ -89,24 +79,24 @@ init =
 -- UPDATE
 
 
-type Msg parentMsg
+{-| -}
+type Msg
     = DragStart Position
     | DragAt Position
     | DragEnd
     | ResizeStart Position
     | ResizeAt Position
     | ResizeEnd
-    | Foreign parentMsg
     | ArrowMove Direction
     | ArrowResize Direction
     | ToggleMode
     | Ignore
-    | DoubleClick Position -- For movement follow
-    | DoubleClickResize Position -- Added for resize follow
-    | MouseMoveFollow Position -- For movement follow
-    | MouseResizeFollow Position -- Added for resize follow
-    | ExitFollowMode -- Exit any follow mode
-    | LostFocus -- When overlay loses focus
+    | DoubleClick Position
+    | DoubleClickResize Position
+    | MouseMoveFollow Position
+    | MouseResizeFollow Position
+    | ExitFollowMode
+    | LostFocus
 
 
 type Direction
@@ -116,193 +106,106 @@ type Direction
     | Right
 
 
-update : Msg parentMsg -> Model -> ( Model, Cmd (Msg parentMsg), Maybe parentMsg )
+{-| -}
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         DragStart pos ->
-            ( { model
-                | drag = Just { start = pos, current = pos }
-                , initialPosition = model.position
-                , mode = Move -- Ensure we're in Move mode when dragging
-              }
-            , Cmd.none
-            , Nothing
-            )
+            { model | drag = Just (Drag pos model.position), mode = Move }
 
         DragAt pos ->
-            ( { model
-                | position = draggedPosition model pos
-                , drag = Maybe.map (\{ start } -> { start = start, current = pos }) model.drag
-              }
-            , Cmd.none
-            , Nothing
-            )
+            case model.drag of
+                Just { start, from } ->
+                    { model | position = Position (from.x + start.x - pos.x) (from.y + pos.y - start.y) }
+
+                Nothing ->
+                    model
 
         DragEnd ->
-            ( { model | drag = Nothing }
-            , Cmd.none
-            , Nothing
-            )
+            { model | drag = Nothing }
 
         ResizeStart pos ->
-            ( { model
-                | resize = Just { start = pos, current = pos }
-                , initialSize = model.size
-                , mode = Resize -- Ensure we're in Resize mode when resizing
-              }
-            , Cmd.none
-            , Nothing
-            )
+            { model | resize = Just (Drag pos model.size), mode = Resize }
 
         ResizeAt pos ->
-            ( { model
-                | size = resizedSize model pos
-                , resize = Maybe.map (\{ start } -> { start = start, current = pos }) model.resize
-              }
-            , Cmd.none
-            , Nothing
-            )
+            case model.resize of
+                Just { start, from } ->
+                    { model | size = Size (max 100 (from.width + pos.x - start.x)) (max 100 (from.height + pos.y - start.y)) }
+
+                Nothing ->
+                    model
 
         ResizeEnd ->
-            ( { model | resize = Nothing }
-            , Cmd.none
-            , Nothing
-            )
+            { model | resize = Nothing }
 
         ArrowMove direction ->
-            let
-                newPosition =
-                    movePosition model.position direction
-            in
-            ( { model | position = newPosition }, Cmd.none, Nothing )
+            { model | position = movePosition model.position direction }
 
         ArrowResize direction ->
-            let
-                newSize =
-                    resizeWithArrows model.size direction
-            in
-            ( { model | size = newSize }, Cmd.none, Nothing )
+            { model | size = resizeWithArrows model.size direction }
 
         ToggleMode ->
-            ( { model | mode = toggleMode model.mode }, Cmd.none, Nothing )
+            { model | mode = toggleMode model.mode }
 
         DoubleClick pos ->
-            ( case model.mode of
+            case model.mode of
                 FollowMouse _ ->
-                    { model
-                        | mode = Move
-                        , followOffset = Nothing
-                    }
+                    { model | mode = Move }
 
                 _ ->
-                    { model
-                        | mode = FollowMouse pos
-                        , followOffset =
-                            Just
-                                (Position
-                                    (pos.x + model.position.x)
-                                    (pos.y - model.position.y)
-                                )
-                    }
-            , Cmd.none
-            , Nothing
-            )
+                    { model | mode = FollowMouse (Position (pos.x + model.position.x) (pos.y - model.position.y)) }
 
         DoubleClickResize pos ->
-            ( case model.mode of
+            case model.mode of
                 FollowResize _ ->
-                    { model
-                        | mode = Resize
-                        , resizeOffset = Nothing
-                    }
+                    { model | mode = Resize }
 
                 _ ->
-                    { model
-                        | mode = FollowResize pos
-                        , resizeOffset =
-                            Just
-                                (Position
-                                    (pos.x - model.size.width)
-                                    (pos.y - model.size.height)
-                                )
-                    }
-            , Cmd.none
-            , Nothing
-            )
+                    { model | mode = FollowResize (Position (pos.x - model.size.width) (pos.y - model.size.height)) }
 
         MouseMoveFollow pos ->
             case model.mode of
-                FollowMouse _ ->
-                    let
-                        newPosition =
-                            case model.followOffset of
-                                Just offset ->
-                                    Position
-                                        (offset.x - pos.x)
-                                        (pos.y - offset.y)
-
-                                Nothing ->
-                                    model.position
-                    in
-                    ( { model | position = newPosition }, Cmd.none, Nothing )
+                FollowMouse offset ->
+                    { model | position = Position (offset.x - pos.x) (pos.y - offset.y) }
 
                 _ ->
-                    ( model, Cmd.none, Nothing )
+                    model
 
         MouseResizeFollow pos ->
             case model.mode of
-                FollowResize _ ->
-                    let
-                        newSize =
-                            case model.resizeOffset of
-                                Just offset ->
-                                    Size
-                                        (Basics.max 100 (pos.x - offset.x))
-                                        (Basics.max 100 (pos.y - offset.y))
-
-                                Nothing ->
-                                    model.size
-                    in
-                    ( { model | size = newSize }, Cmd.none, Nothing )
+                FollowResize offset ->
+                    { model | size = Size (max 100 (pos.x - offset.x)) (max 100 (pos.y - offset.y)) }
 
                 _ ->
-                    ( model, Cmd.none, Nothing )
+                    model
 
         ExitFollowMode ->
-            ( case model.mode of
-                FollowMouse _ ->
-                    { model | mode = Move, followOffset = Nothing }
-
-                FollowResize _ ->
-                    { model | mode = Resize, resizeOffset = Nothing }
-
-                _ ->
-                    model
-            , Cmd.none
-            , Nothing
-            )
+            release model
 
         LostFocus ->
-            ( case model.mode of
-                FollowMouse _ ->
-                    { model | mode = Move, followOffset = Nothing }
-
-                FollowResize _ ->
-                    { model | mode = Resize, resizeOffset = Nothing }
-
-                _ ->
-                    model
-            , Cmd.none
-            , Nothing
-            )
-
-        Foreign parentMsg ->
-            ( model, Cmd.none, Just parentMsg )
+            release model
 
         Ignore ->
-            ( model, Cmd.none, Nothing )
+            model
 
 
+{-| **@private:** Leave a follow mode.
+-}
+release : Model -> Model
+release model =
+    case model.mode of
+        FollowMouse _ ->
+            { model | mode = Move }
+
+        FollowResize _ ->
+            { model | mode = Resize }
+
+        _ ->
+            model
+
+
+{-| **@private:** Arrow keys move by 10 pixels (left increases `x`).
+-}
 movePosition : Position -> Direction -> Position
 movePosition pos direction =
     case direction of
@@ -319,6 +222,8 @@ movePosition pos direction =
             { pos | x = pos.x + 10 }
 
 
+{-| **@private:** Arrow keys resize by 10 pixels, but not below 100.
+-}
 resizeWithArrows : Size -> Direction -> Size
 resizeWithArrows size direction =
     case direction of
@@ -335,6 +240,9 @@ resizeWithArrows size direction =
             { size | width = size.width + 10 }
 
 
+{-| **@private:** Switch between moving and resizing, a follow mode falls back
+to the mode it follows.
+-}
 toggleMode : Mode -> Mode
 toggleMode mode =
     case mode of
@@ -351,110 +259,226 @@ toggleMode mode =
             Resize
 
 
-draggedPosition : Model -> Position -> Position
-draggedPosition model pos =
-    case model.drag of
-        Just { start } ->
-            Position
-                (model.initialPosition.x + (start.x - pos.x))
-                (model.initialPosition.y + (pos.y - start.y))
-
-        Nothing ->
-            model.position
-
-
-resizedSize : Model -> Position -> Size
-resizedSize model pos =
-    case model.resize of
-        Just { start } ->
-            Size
-                (Basics.max 100 (model.initialSize.width + pos.x - start.x))
-                (Basics.max 100 (model.initialSize.height + pos.y - start.y))
-
-        Nothing ->
-            model.size
-
-
 
 -- VIEW
 
 
-backgroundDiv : Model -> Html (Msg parentMsg)
-backgroundDiv model =
-    if model.drag /= Nothing || model.resize /= Nothing || isAnyFollowMode model.mode then
-        div
-            [ style "position" "fixed"
-            , style "top" "0"
-            , style "left" "0"
-            , style "width" "100vw"
-            , style "height" "100vh"
-            , style "z-index" "40"
-            , style "background" "transparent"
-            , tabindex 0
-            , onMouseMove
-                (\pos ->
-                    if model.drag /= Nothing then
-                        DragAt pos
-
-                    else if model.resize /= Nothing then
-                        ResizeAt pos
-
-                    else if isFollowMove model.mode then
-                        MouseMoveFollow pos
-
-                    else if isFollowResize model.mode then
-                        MouseResizeFollow pos
-
-                    else
-                        DragAt pos
+{-| Render the overlay with `inside` as its content (its events are ignored),
+`attr` are added to the overlay itself. With `allowNativeClicks` the center of
+the drag area lets clicks through to the content (e.g. an iframe's own play
+button), the overlay can then only be dragged from its outer ring.
+-}
+view : Bool -> List (Attribute Msg) -> Model -> Html a -> Html Msg
+view allowNativeClicks attr model inside =
+    let
+        following =
+            model.mode /= Move && model.mode /= Resize
+    in
+    div []
+        [ if model.drag /= Nothing || model.resize /= Nothing || following then
+            -- catches the pointer outside of the overlay while dragging
+            div
+                (style "position" "fixed"
+                    :: style "top" "0"
+                    :: style "left" "0"
+                    :: style "width" "100vw"
+                    :: style "height" "100vh"
+                    :: style "z-index" "40"
+                    :: style "background" "transparent"
+                    :: tabindex 0
+                    :: pointer model
                 )
-            , onMouseUp
-                (if model.drag /= Nothing then
-                    DragEnd
+                []
 
-                 else if model.resize /= Nothing then
-                    ResizeEnd
+          else
+            text ""
+        , div
+            (List.append
+                (style "position" "absolute"
+                    :: style "z-index" "150"
+                    :: style "background" "#000"
+                    :: onKeyDown model.mode
+                    :: attribute "tabindex" "0"
+                    :: style "right" (px model.position.x)
+                    :: style "top" (px model.position.y)
+                    :: style "width" (px model.size.width)
+                    :: style "height" (px model.size.height)
+                    :: style "border"
+                        ("5px solid "
+                            ++ (case model.mode of
+                                    FollowMouse _ ->
+                                        "#ff5722"
 
-                 else
-                    DragEnd
+                                    FollowResize _ ->
+                                        "#4CAF50"
+
+                                    _ ->
+                                        "#d3d3d3"
+                               )
+                        )
+                    :: style "border-radius" "50%"
+                    :: style "display" "flex"
+                    :: style "flex-direction" "column"
+                    :: style "justify-content" "center"
+                    :: style "align-items" "center"
+                    :: style "overflow" "hidden"
+                    :: style "touch-action" "none"
+                    :: attribute "role" "region"
+                    :: attribute "aria-label" ("Video playback controls - Current mode: " ++ modeName model.mode)
+                    :: attribute "aria-live" "polite"
+                    :: pointer model
+                    ++ [ onBlur LostFocus ]
                 )
-            , onTouchMove
-                (\pos ->
-                    if model.drag /= Nothing then
-                        DragAt pos
+                attr
+            )
+            [ Html.map (always Ignore) inside
+            , div
+                ([ style "position" "absolute"
+                 , style "width" "100%"
+                 , style "padding" "10px"
+                 , style "height" "100%"
+                 , style "cursor" (iif (isFollowMove model.mode) "grabbing" "move")
+                 , style "color" "#fff"
+                 , style "text-align" "center"
+                 , style "top" "0px"
+                 , style "right" "0px"
+                 , onPointer "mousedown" DragStart
+                 , onTouch "touchstart" DragStart
+                 , onPointer "dblclick" DoubleClick
+                 , attribute "aria-label" "Drag to move video overlay. Double-click to make it follow mouse."
+                 , attribute "tabindex" "0"
+                 , title (iif (isFollowMove model.mode) "double-click to release" "drag or double-click video comment")
+                 ]
+                    ++ (if allowNativeClicks then
+                            -- Cut a hole in the drag-catcher's hit-test area so
+                            -- clicks reach the iframe's native play button, while
+                            -- the outer ring stays draggable (from the border).
+                            [ style "clip-path" "polygon(0% 0%, 0% 100%, 15% 100%, 15% 15%, 85% 15%, 85% 85%, 15% 85%, 15% 100%, 100% 100%, 100% 0%)" ]
 
-                    else if model.resize /= Nothing then
-                        ResizeAt pos
-
-                    else if isFollowMove model.mode then
-                        MouseMoveFollow pos
-
-                    else if isFollowResize model.mode then
-                        MouseResizeFollow pos
-
-                    else
-                        DragAt pos
+                        else
+                            []
+                       )
                 )
-            , onTouchEnd
-                (if model.drag /= Nothing then
-                    DragEnd
-
-                 else if model.resize /= Nothing then
-                    ResizeEnd
-
-                 else
-                    DragEnd
-                )
+                []
+            , div
+                [ style "width" "8%"
+                , style "height" "8%"
+                , style "background" (iif (isFollowResize model.mode) "#4CAF50" "#d3d3d3")
+                , style "position" "absolute"
+                , style "right" "10%"
+                , style "bottom" "10%"
+                , style "cursor" (iif (isFollowResize model.mode) "grabbing" "se-resize")
+                , style "border-radius" "50%"
+                , onPointer "mousedown" ResizeStart
+                , onTouch "touchstart" ResizeStart
+                , onPointer "dblclick" DoubleClickResize
+                , attribute "aria-label" "Resize video overlay. Double-click to make it follow mouse for resizing."
+                , title (iif (isFollowResize model.mode) "double-click to stop resize following" "resize or double-click to follow resize")
+                ]
+                []
+            , div
+                [ style "position" "absolute"
+                , style "left" "-9999px"
+                , style "top" "auto"
+                , style "width" "1px"
+                , style "height" "1px"
+                , style "overflow" "hidden"
+                ]
+                [ text (description model) ]
             ]
-            []
-
-    else
-        text ""
+        ]
 
 
-isAnyFollowMode : Mode -> Bool
-isAnyFollowMode mode =
-    isFollowMove mode || isFollowResize mode
+{-| **@private:** Moving and releasing the pointer drags, resizes or follows,
+depending on what is going on.
+-}
+pointer : Model -> List (Attribute Msg)
+pointer model =
+    let
+        moveMsg pos =
+            if model.drag /= Nothing then
+                DragAt pos
+
+            else if model.resize /= Nothing then
+                ResizeAt pos
+
+            else
+                case model.mode of
+                    FollowMouse _ ->
+                        MouseMoveFollow pos
+
+                    FollowResize _ ->
+                        MouseResizeFollow pos
+
+                    _ ->
+                        Ignore
+
+        endMsg =
+            if model.drag /= Nothing then
+                DragEnd
+
+            else if model.resize /= Nothing then
+                ResizeEnd
+
+            else
+                Ignore
+    in
+    [ onPointer "mousemove" moveMsg
+    , on "mouseup" (Decode.succeed endMsg)
+    , onTouch "touchmove" moveMsg
+    , on "touchend" (Decode.succeed endMsg)
+    ]
+
+
+{-| **@private:** The screen reader text.
+-}
+description : Model -> String
+description model =
+    let
+        keys action =
+            ". Use arrow keys to "
+                ++ action
+                ++ " the video overlay. Press Enter to switch modes. Double-click on center to make overlay follow mouse movement. Double-click on resize handle to make overlay resize with mouse. "
+    in
+    "Current mode: "
+        ++ modeName model.mode
+        ++ (case model.mode of
+                Move ->
+                    keys "move"
+
+                Resize ->
+                    keys "resize"
+
+                FollowMouse _ ->
+                    ". Overlay is following mouse movement. Double-click or press ESC to release. "
+
+                FollowResize _ ->
+                    ". Overlay is following mouse for resizing. Double-click or press ESC to release. "
+           )
+        ++ "Current position: x: "
+        ++ String.fromInt model.position.x
+        ++ ", y: "
+        ++ String.fromInt model.position.y
+        ++ ". Current size: width: "
+        ++ String.fromInt model.size.width
+        ++ ", height: "
+        ++ String.fromInt model.size.height
+
+
+modeName : Mode -> String
+modeName mode =
+    case mode of
+        Move ->
+            "Move"
+
+        Resize ->
+            "Resize"
+
+        FollowMouse _ ->
+            "Follow Mouse Movement"
+
+        FollowResize _ ->
+            "Follow Mouse Resize"
 
 
 isFollowMove : Mode -> Bool
@@ -477,233 +501,13 @@ isFollowResize mode =
             False
 
 
-getBorderColor : Mode -> String
-getBorderColor mode =
-    case mode of
-        FollowMouse _ ->
-            "#ff5722"
+iif : Bool -> a -> a -> a
+iif condition a b =
+    if condition then
+        a
 
-        -- Orange border for follow move mode
-        FollowResize _ ->
-            "#4CAF50"
-
-        -- Green border for follow resize mode
-        Resize ->
-            "#d3d3d3"
-
-        -- Gray border for resize mode
-        Move ->
-            "#d3d3d3"
-
-
-
--- Gray border for move mode
--- The main overlay div
-
-
-overlayDiv : Bool -> List (Attribute (Msg parentMsg)) -> Model -> Html parentMsg -> Html (Msg parentMsg)
-overlayDiv allowNativeClicks attr model inside =
-    div
-        (List.append
-            [ style "position" "absolute"
-            , style "z-index" "150"
-            , style "background" "#000"
-            , onKeyDownPreventDefault model.mode
-            , attribute "tabindex" "0"
-            , attribute "aria-label" ("Video playback controls - Current mode: " ++ modeToString model.mode)
-            , style "right" (px model.position.x)
-            , style "top" (px model.position.y)
-            , style "width" (px model.size.width)
-            , style "height" (px model.size.height)
-            , style "border" ("5px solid " ++ getBorderColor model.mode)
-            , style "border-radius" "50%"
-            , style "display" "flex"
-            , style "flex-direction" "column"
-            , style "justify-content" "center"
-            , style "align-items" "center"
-            , style "overflow" "hidden"
-            , style "touch-action" "none"
-            , attribute "role" "region"
-            , attribute "aria-label" "Video playback controls"
-            , attribute "aria-live" "polite"
-            , onMouseMove
-                (\pos ->
-                    if model.drag /= Nothing then
-                        DragAt pos
-
-                    else if model.resize /= Nothing then
-                        ResizeAt pos
-
-                    else if isFollowMove model.mode then
-                        MouseMoveFollow pos
-
-                    else if isFollowResize model.mode then
-                        MouseResizeFollow pos
-
-                    else
-                        Ignore
-                )
-            , onMouseUp
-                (if model.drag /= Nothing then
-                    DragEnd
-
-                 else if model.resize /= Nothing then
-                    ResizeEnd
-
-                 else
-                    Ignore
-                )
-            , onTouchMove
-                (\pos ->
-                    if model.drag /= Nothing then
-                        DragAt pos
-
-                    else if model.resize /= Nothing then
-                        ResizeAt pos
-
-                    else if isFollowMove model.mode then
-                        MouseMoveFollow pos
-
-                    else if isFollowResize model.mode then
-                        MouseResizeFollow pos
-
-                    else
-                        Ignore
-                )
-            , onTouchEnd
-                (if model.drag /= Nothing then
-                    DragEnd
-
-                 else if model.resize /= Nothing then
-                    ResizeEnd
-
-                 else
-                    Ignore
-                )
-            , onBlur LostFocus
-            ]
-            attr
-        )
-        [ Html.map Foreign inside
-        , div
-            ([ style "position" "absolute"
-             , style "width" "100%"
-             , style "padding" "10px"
-             , style "height" "100%"
-             , style "cursor"
-                (if isFollowMove model.mode then
-                    "grabbing"
-
-                 else
-                    "move"
-                )
-             , style "color" "#fff"
-             , style "text-align" "center"
-             , style "top" "0px"
-             , style "right" "0px"
-             , onMouseDown DragStart
-             , onTouchStart DragStart
-             , onDoubleClick (\pos -> DoubleClick pos)
-             , attribute "aria-label" "Drag to move video overlay. Double-click to make it follow mouse."
-             , attribute "tabindex" "0"
-             , title
-                (if isFollowMove model.mode then
-                    "double-click to release"
-
-                 else
-                    "drag or double-click video comment"
-                )
-             ]
-                ++ (if allowNativeClicks then
-                        -- Cut a hole in the drag-catcher's hit-test area so
-                        -- clicks reach the iframe's native play button, while
-                        -- the outer ring stays draggable (from the border).
-                        [ style "clip-path" "polygon(0% 0%, 0% 100%, 15% 100%, 15% 15%, 85% 15%, 85% 85%, 15% 85%, 15% 100%, 100% 100%, 100% 0%)" ]
-
-                    else
-                        []
-                   )
-            )
-            []
-        , div
-            [ style "width" "8%"
-            , style "height" "8%"
-            , style "background"
-                (if isFollowResize model.mode then
-                    "#4CAF50"
-                    -- Green handle for follow resize mode
-
-                 else
-                    "#d3d3d3"
-                 -- Default gray handle
-                )
-            , style "position" "absolute"
-            , style "right" "10%"
-            , style "bottom" "10%"
-            , style "cursor"
-                (if isFollowResize model.mode then
-                    "grabbing"
-
-                 else
-                    "se-resize"
-                )
-            , style "border-radius" "50%"
-            , onMouseDown ResizeStart
-            , onTouchStart ResizeStart
-            , onDoubleClick (\pos -> DoubleClickResize pos)
-            , attribute "aria-label" "Resize video overlay. Double-click to make it follow mouse for resizing."
-            , title
-                (if isFollowResize model.mode then
-                    "double-click to stop resize following"
-
-                 else
-                    "resize or double-click to follow resize"
-                )
-            ]
-            []
-        , div
-            [ style "position" "absolute"
-            , style "left" "-9999px"
-            , style "top" "auto"
-            , style "width" "1px"
-            , style "height" "1px"
-            , style "overflow" "hidden"
-            ]
-            [ text
-                ("Current mode: "
-                    ++ modeToString model.mode
-                    ++ ". "
-                    ++ (if isFollowMove model.mode then
-                            "Overlay is following mouse movement. Double-click or press ESC to release. "
-
-                        else if isFollowResize model.mode then
-                            "Overlay is following mouse for resizing. Double-click or press ESC to release. "
-
-                        else
-                            "Use arrow keys to "
-                                ++ (if model.mode == Move then
-                                        "move"
-
-                                    else
-                                        "resize"
-                                   )
-                                ++ " the video overlay. Press Enter to switch modes. Double-click on center to make overlay follow mouse movement. Double-click on resize handle to make overlay resize with mouse. "
-                       )
-                    ++ "Current position: "
-                    ++ positionToString model.position
-                    ++ ". Current size: "
-                    ++ sizeToString model.size
-                )
-            ]
-        ]
-
-
-view : Bool -> List (Attribute (Msg parentMsg)) -> Model -> Html parentMsg -> Html (Msg parentMsg)
-view allowNativeClicks attr model inside =
-    div []
-        [ backgroundDiv model
-        , overlayDiv allowNativeClicks attr model inside
-        ]
+    else
+        b
 
 
 px : Int -> String
@@ -711,130 +515,72 @@ px n =
     String.fromInt n ++ "px"
 
 
-onMouseDown : (Position -> msg) -> Attribute msg
-onMouseDown toMsg =
-    on "mousedown" (Decode.map toMsg positionDecoder)
+{-| **@private:** A mouse event with its rounded page coordinates.
+-}
+onPointer : String -> (Position -> Msg) -> Attribute Msg
+onPointer event toMsg =
+    on event (Decode.map toMsg position)
 
 
-onMouseMove : (Position -> msg) -> Attribute msg
-onMouseMove toMsg =
-    on "mousemove" (Decode.map toMsg positionDecoder)
+{-| **@private:** A touch event with the page coordinates of the first touch,
+the default (scrolling) is prevented.
+-}
+onTouch : String -> (Position -> Msg) -> Attribute Msg
+onTouch event toMsg =
+    preventDefaultOn event (Decode.map (\pos -> ( toMsg pos, True )) (Decode.at [ "touches", "0" ] position))
 
 
-onMouseUp : msg -> Attribute msg
-onMouseUp msg =
-    on "mouseup" (Decode.succeed msg)
-
-
-onTouchStart : (Position -> msg) -> Attribute msg
-onTouchStart toMsg =
-    preventDefaultOn "touchstart" (Decode.map alwaysPreventDefault (Decode.map toMsg touchPositionDecoder))
-
-
-onTouchMove : (Position -> msg) -> Attribute msg
-onTouchMove toMsg =
-    preventDefaultOn "touchmove" (Decode.map alwaysPreventDefault (Decode.map toMsg touchPositionDecoder))
-
-
-onTouchEnd : msg -> Attribute msg
-onTouchEnd msg =
-    on "touchend" (Decode.succeed msg)
-
-
-onDoubleClick : (Position -> msg) -> Attribute msg
-onDoubleClick toMsg =
-    on "dblclick" (Decode.map toMsg positionDecoder)
-
-
-positionDecoder : Decoder Position
-positionDecoder =
+position : Decoder Position
+position =
     Decode.map2 Position
-        (Decode.field "pageX" Decode.float |> Decode.map Basics.round)
-        (Decode.field "pageY" Decode.float |> Decode.map Basics.round)
+        (Decode.field "pageX" Decode.float |> Decode.map round)
+        (Decode.field "pageY" Decode.float |> Decode.map round)
 
 
-touchPositionDecoder : Decoder Position
-touchPositionDecoder =
-    Decode.at [ "touches", "0" ] positionDecoder
+{-| **@private:** Enter toggles move/resize, ESC leaves a follow mode, arrow
+keys move or resize (left/right swapped, since `x` is measured from the right).
+-}
+onKeyDown : Mode -> Attribute Msg
+onKeyDown mode =
+    let
+        handled msg =
+            { message = msg, preventDefault = True, stopPropagation = True }
 
+        arrow direction =
+            handled <|
+                case mode of
+                    Move ->
+                        ArrowMove direction
 
-alwaysPreventDefault : msg -> ( msg, Bool )
-alwaysPreventDefault msg =
-    ( msg, True )
+                    Resize ->
+                        ArrowResize direction
 
+                    _ ->
+                        Ignore
+    in
+    Html.Events.custom "keydown" <|
+        Decode.map
+            (\keyCode ->
+                case keyCode of
+                    13 ->
+                        handled ToggleMode
 
-onKeyDownPreventDefault : Mode -> Attribute (Msg parentMsg)
-onKeyDownPreventDefault mode =
-    Html.Events.custom "keydown" (keyDecoder mode)
+                    27 ->
+                        handled ExitFollowMode
 
+                    37 ->
+                        arrow Right
 
-keyDecoder : Mode -> Decode.Decoder { message : Msg parentMsg, preventDefault : Bool, stopPropagation : Bool }
-keyDecoder mode =
-    Decode.map
-        (\keyCode ->
-            case keyCode of
-                13 ->
-                    { message = ToggleMode, preventDefault = True, stopPropagation = True }
+                    38 ->
+                        arrow Up
 
-                27 ->
-                    -- ESC key to exit any follow mode
-                    { message = ExitFollowMode, preventDefault = True, stopPropagation = True }
+                    39 ->
+                        arrow Left
 
-                37 ->
-                    { message = arrowMsg mode Right, preventDefault = True, stopPropagation = True }
+                    40 ->
+                        arrow Down
 
-                38 ->
-                    { message = arrowMsg mode Up, preventDefault = True, stopPropagation = True }
-
-                39 ->
-                    { message = arrowMsg mode Left, preventDefault = True, stopPropagation = True }
-
-                40 ->
-                    { message = arrowMsg mode Down, preventDefault = True, stopPropagation = True }
-
-                _ ->
-                    { message = Ignore, preventDefault = False, stopPropagation = False }
-        )
-        Html.Events.keyCode
-
-
-arrowMsg : Mode -> Direction -> Msg parentMsg
-arrowMsg mode direction =
-    case mode of
-        Move ->
-            ArrowMove direction
-
-        Resize ->
-            ArrowResize direction
-
-        FollowMouse _ ->
-            Ignore
-
-        FollowResize _ ->
-            Ignore
-
-
-modeToString : Mode -> String
-modeToString mode =
-    case mode of
-        Move ->
-            "Move"
-
-        Resize ->
-            "Resize"
-
-        FollowMouse _ ->
-            "Follow Mouse Movement"
-
-        FollowResize _ ->
-            "Follow Mouse Resize"
-
-
-positionToString : Position -> String
-positionToString pos =
-    "x: " ++ String.fromInt pos.x ++ ", y: " ++ String.fromInt pos.y
-
-
-sizeToString : Size -> String
-sizeToString size =
-    "width: " ++ String.fromInt size.width ++ ", height: " ++ String.fromInt size.height
+                    _ ->
+                        { message = Ignore, preventDefault = False, stopPropagation = False }
+            )
+            Html.Events.keyCode

@@ -5,6 +5,9 @@ module Lia.Markdown.Code.Sync exposing
     , sync
     )
 
+{-| What a project shares in a classroom: the code of its files.
+-}
+
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
@@ -15,6 +18,8 @@ type alias Sync =
     Array String
 
 
+{-| The original code of the course (version 0), the common starting point.
+-}
 sync : Code.Project -> Sync
 sync project =
     project

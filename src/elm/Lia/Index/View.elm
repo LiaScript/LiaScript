@@ -12,17 +12,21 @@ import Conditional.List as CList
 import Conditional.String as CString
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, stopPropagationOn)
 import Html.Lazy
 import I18n.Translations as Translations exposing (Lang, baseSearch)
+import Json.Decode as JD
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Section exposing (Section, Sections)
-import Lia.Utils exposing (blockKeydown, btn, icon)
+import Lia.Utils exposing (btn, icon)
 
 
+{-| The search field, a button to clear it and, for screen readers, the number
+of matching sections.
+-}
 search : Lang -> Bool -> Array { x | visible : Bool } -> Model -> List (Html Msg)
 search lang active results model =
     [ Html.input
@@ -31,11 +35,10 @@ search lang active results model =
         , Attr.class "lia-input"
         , Attr.placeholder (baseSearch lang)
         , onInput ScanIndex
-        , blockKeydown (ScanIndex model)
+        , onKeyDown
         , Attr.id "lia-input-search"
         , A11y_Key.tabbable active
         , A11y_Aria.hidden (not active)
-        , A11y_Key.onKeyDown [ A11y_Key.enter (ScanIndex "") ]
         ]
         []
     , Html.span
@@ -62,40 +65,52 @@ search lang active results model =
         Html.text ""
 
       else
-        let
-            counts =
-                Array.foldl
-                    (\s c ->
-                        if s.visible then
-                            c + 1
-
-                        else
-                            c
-                    )
-                    0
-                    results
-        in
         Html.span [ A11y_Live.liveAssertive, Attr.class "hidden-visually" ]
             [ Html.text <|
-                case counts of
+                case results |> Array.filter .visible |> Array.length of
                     0 ->
                         Translations.baseNoResult lang
 
                     1 ->
                         Translations.baseOneResult lang
 
-                    _ ->
+                    counts ->
                         String.fromInt counts ++ " " ++ Translations.baseResults lang
             ]
     ]
 
 
+{-| No key within the search field may reach the global slide navigation
+(arrow keys move the cursor), Enter clears the search.
+-}
+onKeyDown : Html.Attribute Msg
+onKeyDown =
+    JD.map2
+        (\keyCode shiftKey ->
+            ( if keyCode == 13 && not shiftKey then
+                ScanIndex ""
+
+              else
+                NoOp
+            , True
+            )
+        )
+        (JD.field "keyCode" JD.int)
+        (JD.field "shiftKey" JD.bool)
+        |> stopPropagationOn "keydown"
+
+
+{-| The links to all sections, the current one is marked, sections that do not
+match the search are hidden.
+-}
 content : Lang -> Bool -> Int -> (( Int, Script.Msg sub ) -> msg) -> Sections -> List (Html msg)
 content lang active sectionId msg =
     Array.toList
         >> List.map (\section -> Html.Lazy.lazy5 item lang active (sectionId == section.id) msg section)
 
 
+{-| The home button at the bottom of the table of contents.
+-}
 bottom : Lang -> Bool -> msg -> Html msg
 bottom lang active msg =
     btn
@@ -105,7 +120,6 @@ bottom lang active msg =
         }
         [ Attr.class "lia-btn--transparent"
         , Attr.id "lia-btn-home"
-        , A11y_Aria.hidden (not active)
         ]
         [ icon "icon-grid" []
         , Html.span [ Attr.class "lia-btn__text" ] [ Html.text (Translations.home lang) ]

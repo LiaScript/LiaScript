@@ -124,6 +124,9 @@ class PreviewLink extends HTMLElement {
 }
 
 function load(url: string): Promise<HTMLElement | null> {
+  // e.g. agent: or mailto: links have nothing to preview
+  if (!/^https?:/i.test(url)) return Promise.resolve(null)
+
   // ponytail: failures stay cached as null, a reload retries
   if (!cards.has(url)) {
     cards.set(

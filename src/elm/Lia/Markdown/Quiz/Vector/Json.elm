@@ -9,6 +9,8 @@ import Json.Encode as JE
 import Lia.Markdown.Quiz.Vector.Types exposing (Quiz, State(..))
 
 
+{-| Encode the quiz definition, the options are encoded by `encoder`.
+-}
 encode : (body -> JE.Value) -> Quiz body -> ( String, JE.Value )
 encode encoder quiz =
     ( case quiz.solution of
@@ -24,6 +26,7 @@ encode encoder quiz =
     )
 
 
+{-| -}
 fromState : State -> JE.Value
 fromState state =
     JE.object <|
@@ -35,6 +38,7 @@ fromState state =
                 [ ( "MultipleChoice", JE.list JE.bool list ) ]
 
 
+{-| -}
 toState : JD.Decoder State
 toState =
     JD.oneOf

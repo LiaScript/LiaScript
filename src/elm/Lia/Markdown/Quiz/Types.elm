@@ -15,6 +15,11 @@ module Lia.Markdown.Quiz.Types exposing
     , toState
     )
 
+{-| A quiz is split into its definition (`Quiz`, part of the parsed Markdown)
+and its current state (`Element`), which is stored per section in a `Vector`.
+The `id` of a quiz is its index within this vector.
+-}
+
 import Array exposing (Array)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types as Block
@@ -24,14 +29,33 @@ import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
 import Lia.Markdown.Quiz.Vector.Types as Vector
 
 
+{-| The states of all quizzes of a section.
+-}
 type alias Vector =
     Array Element
 
 
+{-| Hints (`[[?]]`), every hint is a list of blocks.
+-}
 type alias Hints x =
     List (List x)
 
 
+{-| The state of a quiz:
+
+  - `solved`: open, solved or resolved
+  - `state`: the current input of the user
+  - `trial`: the number of checks
+  - `hint`: the number of revealed hints
+  - `error_msg`: an error of the checking script
+  - `scriptID`: the script that checks the quiz, instead of comparing it
+    with the solution
+  - `opt`: the options defined by the course
+  - `partiallySolved`: which parts are correct, only with
+    `data-show-partial-solution`
+  - `deactivated`: a checking script is running, no further input
+
+-}
 type alias Element =
     { solved : Solution
     , state : State
@@ -45,6 +69,20 @@ type alias Element =
     }
 
 
+{-| Options defined by the `data-*` attributes of a quiz:
+
+  - `randomize`: the order of the options (`data-randomize`)
+  - `maxTrials`: resolve the quiz after this many failed trials
+    (`data-max-trials`)
+  - `score`: shown in the classroom (`data-score`)
+  - `showResolveAt` and `showHintsAt`: number of trials before the solution and
+    the hint button appear (`data-solution-button`, `data-hint-button`)
+  - `showPartialSolution`: mark the correct parts after a check
+    (`data-show-partial-solution`)
+  - `text_solved`, `text_failed`, `text_resolved`: custom feedback texts
+    (`data-text-solved`, ...)
+
+-}
 type alias Options =
     { randomize : Maybe (List Int)
     , maxTrials : Maybe Int
@@ -58,6 +96,16 @@ type alias Options =
     }
 
 
+{-| The current input of a quiz, per type:
+
+  - `Generic_State`: no input, checked by a script or solved by the solution
+    button (`[[!]]`)
+  - `Block_State`: text input, selection, or drop
+  - `Multi_State`: a gap-text with multiple inputs
+  - `Vector_State`: single or multiple choice
+  - `Matrix_State`: a matrix of single or multiple choice rows
+
+-}
 type State
     = Generic_State
     | Block_State Block.State
@@ -66,6 +114,8 @@ type State
     | Matrix_State Matrix.State
 
 
+{-| The definition of a quiz, including its solution.
+-}
 type Type x
     = Generic_Type
     | Block_Type (Block.Quiz Inlines)
@@ -74,6 +124,9 @@ type Type x
     | Matrix_Type Matrix.Quiz
 
 
+{-| A quiz as part of the Markdown, `id` refers to its `Element` in the
+`Vector`.
+-}
 type alias Quiz x =
     { quiz : Type x
     , id : Int
@@ -81,60 +134,36 @@ type alias Quiz x =
     }
 
 
+{-| The empty input of a quiz.
+-}
 initState : Type x -> State
-initState quiz =
-    case quiz of
-        Generic_Type ->
-            Generic_State
-
-        Block_Type q ->
-            q.solution
-                |> Block.initState
-                |> Block_State
-
-        Multi_Type q ->
-            q.solution
-                |> Multi.initState
-                |> Multi_State
-
-        Vector_Type q ->
-            q.solution
-                |> Vector.initState
-                |> Vector_State
-
-        Matrix_Type q ->
-            q.solution
-                |> Matrix.initState
-                |> Matrix_State
+initState =
+    toState >> reset
 
 
+{-| Clear the input.
+-}
 reset : State -> State
 reset state =
     case state of
+        Generic_State ->
+            Generic_State
+
         Block_State s ->
-            s
-                |> Block.initState
-                |> Block_State
+            Block_State (Block.initState s)
 
         Multi_State s ->
-            s
-                |> Multi.initState
-                |> Multi_State
+            Multi_State (Multi.initState s)
 
         Vector_State s ->
-            s
-                |> Vector.initState
-                |> Vector_State
+            Vector_State (Vector.initState s)
 
         Matrix_State s ->
-            s
-                |> Matrix.initState
-                |> Matrix_State
-
-        _ ->
-            state
+            Matrix_State (Matrix.initState s)
 
 
+{-| The solution of a quiz as input.
+-}
 toState : Type x -> State
 toState quiz =
     case quiz of
@@ -154,31 +183,39 @@ toState quiz =
             Matrix_State q.solution
 
 
+{-| Compare the input with the solution of a quiz. A generic quiz can only be
+solved by a script.
+-}
 comp : Type x -> State -> Solution
 comp quiz state =
-    if
-        case ( quiz, state ) of
-            ( Block_Type q, Block_State s ) ->
-                Block.comp Nothing q s
+    let
+        correct =
+            case ( quiz, state ) of
+                ( Block_Type q, Block_State s ) ->
+                    Block.comp Nothing q s
 
-            ( Multi_Type q, Multi_State s ) ->
-                Multi.comp q s
+                ( Multi_Type q, Multi_State s ) ->
+                    Multi.comp q s
 
-            ( Vector_Type q, Vector_State s ) ->
-                Vector.comp q s
+                ( Vector_Type q, Vector_State s ) ->
+                    Vector.comp q s
 
-            ( Matrix_Type q, Matrix_State s ) ->
-                Matrix.comp q s
+                ( Matrix_Type q, Matrix_State s ) ->
+                    Matrix.comp q s
 
-            _ ->
-                False
-    then
+                _ ->
+                    False
+    in
+    if correct then
         Solution.Solved
 
     else
         Solution.Open
 
 
+{-| Which parts of a gap-text or matrix quiz are correct, if `perform` is set
+(`data-show-partial-solution`). Empty for other types.
+-}
 comp2 : Bool -> Type x -> State -> Array Bool
 comp2 perform quiz state =
     if perform then
@@ -204,6 +241,8 @@ isSolved e =
     e.solved /= Solution.Open
 
 
+{-| The type of a quiz as class name, e.g. `single-choice`.
+-}
 getClass : State -> String
 getClass state =
     case state of

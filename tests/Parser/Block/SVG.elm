@@ -72,7 +72,7 @@ foreignObject_Suite =
                                 ]
                             )
                         ]
-        , test "two foreignObjects with plain SVG markup around them - collected in reverse source order" <|
+        , test "two foreignObjects with plain SVG markup around them - kept in source order" <|
             \_ ->
                 {- <svg viewBox="0 0 200 100">
                    <foreignObject x="0" y="0" width="100" height="50">
@@ -93,11 +93,11 @@ foreignObject_Suite =
                         [ HTML []
                             (SvgNode [ ( "viewBox", "0 0 200 100" ) ]
                                 "\n\n<circle r=\"1\"/>\n"
-                                [ ( [ ( "x", "100" ), ( "y", "50" ), ( "width", "100" ), ( "height", "50" ) ]
-                                  , [ Paragraph [] [ chars "second" ] ]
-                                  )
-                                , ( [ ( "x", "0" ), ( "y", "0" ), ( "width", "100" ), ( "height", "50" ) ]
+                                [ ( [ ( "x", "0" ), ( "y", "0" ), ( "width", "100" ), ( "height", "50" ) ]
                                   , [ Paragraph [] [ chars "first" ] ]
+                                  )
+                                , ( [ ( "x", "100" ), ( "y", "50" ), ( "width", "100" ), ( "height", "50" ) ]
+                                  , [ Paragraph [] [ chars "second" ] ]
                                   )
                                 ]
                             )

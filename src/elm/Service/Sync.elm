@@ -83,15 +83,6 @@ connect param =
                               )
                             ]
 
-                    -- Via.Jitsi domain ->
-                    --     domain
-                    --         |> JE.string
-                    -- Via.Matrix { baseURL, userId, accessToken } ->
-                    --     JE.object
-                    --         [ ( "baseURL", JE.string baseURL )
-                    --         , ( "userId", JE.string userId )
-                    --         , ( "accessToken", JE.string accessToken )
-                    --         ]
                     Via.PubNub { pubKey, subKey } ->
                         JE.object
                             [ ( "publishKey", JE.string pubKey )

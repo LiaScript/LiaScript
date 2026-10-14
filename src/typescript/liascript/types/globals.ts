@@ -122,6 +122,14 @@ declare global {
       injectResposivevoice: (key: string) => void
 
       /**
+       * Narrator hook for templates: register a custom element as narrator
+       * avatar and observe the `lia-narrator` events on `window`, which
+       * report the start, stop, pause, word boundaries, etc. of the
+       * narrator comments (see `service/Narrator.ts`).
+       */
+      narrator: import('../service/Narrator').API
+
+      /**
        * Steal the focus and highlight the header on the main section.
        * This can be switched of within editors. By default it is `true`.
        */
