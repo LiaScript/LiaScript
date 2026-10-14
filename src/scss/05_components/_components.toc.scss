@@ -223,7 +223,8 @@
   }
 
   &__bottom {
-    margin: 0 3rem 0;
+    // pushed to the bottom, also with only a few sections
+    margin: auto 3rem 0;
     padding-top: 1rem;
     position: relative;
 
