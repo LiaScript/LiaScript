@@ -3,6 +3,22 @@ import ace from 'ace-builds/src-min-noconflict/ace'
 import "ace-builds/src-noconflict/ext-rtl";
 import * as EDITOR from './editor-modes'
 
+// ACE bug: without ResizeObserver (KaiOS, Gecko 48) the font polling loop
+// reschedules itself without storing the new timer, so destroy() cannot stop
+// it and keeps every editor alive and measuring every 500ms.
+const FontMetrics = ace.require('ace/layer/font_metrics').FontMetrics
+const aceEvent = ace.require('ace/lib/event')
+const preventParentScroll = ace.require('ace/lib/scroll').preventParentScroll
+FontMetrics.prototype.$pollSizeChanges = function () {
+  if (this.$pollSizeChangesTimer || this.$observer)
+    return this.$pollSizeChangesTimer
+  const poll = () => {
+    this.checkForSizeChanges()
+    this.$pollSizeChangesTimer = aceEvent.onIdle(poll, 500)
+  }
+  return (this.$pollSizeChangesTimer = aceEvent.onIdle(poll, 500))
+}
+
 import * as AceCollabExt from '@convergencelabs/ace-collab-ext'
 import '@convergencelabs/ace-collab-ext/dist/css/ace-collab-ext.min.css'
 
@@ -437,7 +453,21 @@ customElements.define(
     }
 
     disconnectedCallback() {
-      // todo
+      const editor = this._editor
+      if (!editor) return
+
+      // ACE never removes these module-level listeners, the ShadyDOM polyfill
+      // (KaiOS) stores every target on the function and keeps the editor alive
+      editor.$mouseHandler?.$tooltip
+        ?.getElement()
+        .removeEventListener('wheel', preventParentScroll)
+      for (const bar of [editor.renderer.scrollBarV, editor.renderer.scrollBarH])
+        bar?.element.removeEventListener('mousedown', aceEvent.preventDefault)
+
+      // frees the worker, timers and listeners, a reconnect creates a new
+      // editor from model.value
+      editor.destroy()
+      this._editor = undefined
     }
 
     setOption(option: string, value: any) {

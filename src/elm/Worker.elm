@@ -6,6 +6,7 @@ import Http
 import Json.Encode as JE
 import Lia.Definition.Json.Encode as Def
 import Lia.Json.Encode as Lia
+import Lia.Json.Meta as Meta
 import Lia.Markdown.Quiz.Json as Quiz
 import Lia.Markdown.Survey.Json as Survey
 import Lia.Markdown.Task.Json as Task
@@ -208,37 +209,55 @@ respond model =
                 |> output
 
         "fulljson" ->
-            let
-                lia =
-                    parseSection 0 model.lia
-            in
-            [ ( "lia"
-              , Lia.encode lia
-              )
-            , ( "quiz"
-              , lia.sections
-                    |> Array.map .quiz_vector
-                    |> JE.array Quiz.fromVector
-              )
-            , ( "survey"
-              , lia.sections
-                    |> Array.map .survey_vector
-                    |> JE.array Survey.fromVector
-              )
-            , ( "task"
-              , lia.sections
-                    |> Array.map .task_vector
-                    |> JE.array Task.fromVector
-              )
-            ]
-                |> JE.object
-                |> JE.encode 2
-                |> Tuple.pair True
-                |> output
+            fulljson False model
+
+        "fulljson-meta" ->
+            fulljson True model
 
         _ ->
             error "unknown cmd" model.cmd
     )
+
+
+{-| The course with the initial state of all quizzes, surveys and tasks, and
+with `meta` their plain text description (see `Lia.Json.Meta`).
+-}
+fulljson : Bool -> Model -> Cmd Msg
+fulljson withMeta model =
+    let
+        lia =
+            parseSection 0 model.lia
+    in
+    ([ ( "lia"
+       , Lia.encode lia
+       )
+     , ( "quiz"
+       , lia.sections
+            |> Array.map .quiz_vector
+            |> JE.array Quiz.fromVector
+       )
+     , ( "survey"
+       , lia.sections
+            |> Array.map .survey_vector
+            |> JE.array Survey.fromVector
+       )
+     , ( "task"
+       , lia.sections
+            |> Array.map .task_vector
+            |> JE.array Task.fromVector
+       )
+     ]
+        ++ (if withMeta then
+                [ ( "meta", Meta.encode lia ) ]
+
+            else
+                []
+           )
+    )
+        |> JE.object
+        |> JE.encode 2
+        |> Tuple.pair True
+        |> output
 
 
 parseSection : Int -> Lia.Script.Model -> Lia.Script.Model

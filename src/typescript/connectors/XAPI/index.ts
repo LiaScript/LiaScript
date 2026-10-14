@@ -5,6 +5,11 @@ import { Settings } from '../Base/settings'
 import * as Utils from '../utils'
 import * as Statement from './statement'
 import * as LRS from './lrs'
+import * as Code from './code'
+import * as Restore from './restore'
+import * as Report from '../SCORMSuspend/report'
+import * as State from '../SCORMSuspend/state'
+import type { LiaMeta } from '../SCORMSuspend/meta'
 
 /**
  * xAPI Connector for LiaScript
@@ -20,14 +25,22 @@ export class Connector extends Base.Connector {
   private registration: string
   private active: boolean
   private debug: boolean
-  private totalScore: number
-  private maxScore: number
   private visitedSlides: Set<number>
   private lastVisitedSlide: number
   private totalSlides: number
   private quizStates: Record<number, Record<number, any>>
   private surveyStates: Record<number, Record<number, any>>
   private taskStates: Record<number, Record<number, any>>
+  /** code projects per slide: restored from the LRS … */
+  private codeStates: Record<number, any[]>
+  /** … and as Elm knows them, changed or not */
+  private codeProjects: Record<number, any[] | null>
+  /** the course description the exporter wrote (`config_.meta`), if any */
+  private meta: LiaMeta | null = null
+  /** key of language maps */
+  private lang = 'en-US'
+  /** every quiz, survey, task and code project the meta describes */
+  private items = new Map<string, Report.Item>()
   private startTime: number
   private lastActivityTime: number
   private accumulatedTime: number // Time from previous sessions in milliseconds
@@ -35,6 +48,8 @@ export class Connector extends Base.Connector {
   private progressThreshold: number = 0
   private masteryScore: number = 0
   private stateRestored: Promise<void>
+  /** the terminated or suspended statement of this page was sent */
+  private unloadSent = false
 
   /**
    * Create a new xAPI connector
@@ -59,19 +74,20 @@ export class Connector extends Base.Connector {
 
     this.active = false
     this.debug = config.debug || false
-    this.totalScore = 0
-    this.maxScore = 0
     this.visitedSlides = new Set()
     this.lastVisitedSlide = 0
     this.totalSlides = 0
     this.quizStates = {}
     this.surveyStates = {}
     this.taskStates = {}
+    this.codeStates = {}
+    this.codeProjects = {}
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
     this.accumulatedTime = 0 // No previous session time yet
     this.completionSent = false
-    this.registration = config.registration || this.generateUUID()
+    this.registration =
+      config.registration || this.storedRegistration(config.courseId, config.actor)
 
     // Default actor if none provided
     this.actor = config.actor || {
@@ -144,6 +160,24 @@ export class Connector extends Base.Connector {
           }
         })
 
+        // Readable statements need the course description; without it (an
+        // older package) they stay generic
+        if (windowAny.config_.meta?.version === 1) {
+          this.meta = windowAny.config_.meta
+          this.lang = Report.language(this.meta)
+          Report.catalogue(
+            {
+              quiz: windowAny.config_.quiz || [],
+              survey: windowAny.config_.survey || [],
+              task: windowAny.config_.task || [],
+            },
+            this.meta,
+            Infinity
+          ).forEach((item) =>
+            this.items.set(`${item.table}:${item.slide}:${item.index}`, item)
+          )
+        }
+
         if (this.debug) {
           console.log('Initialized structures from config:', {
             quizzes: Object.keys(this.quizStates).length,
@@ -180,8 +214,10 @@ export class Connector extends Base.Connector {
           )
         }
 
-        // Set up window unload event to send terminated statement
+        // Send a terminated or suspended statement when the page is left;
+        // pagehide also fires where beforeunload does not (mobile, bfcache)
         window.addEventListener('beforeunload', this.handleUnload.bind(this))
+        window.addEventListener('pagehide', this.handleUnload.bind(this))
 
         // Restore state from LRS immediately (async)
         // Store the promise so load() can wait for restoration to complete
@@ -205,6 +241,52 @@ export class Connector extends Base.Connector {
   }
 
   /**
+   * The registration of a launch that did not get one from the LMS.
+   *
+   * State is restored from the statements of the current registration, so a
+   * fresh one per page load would never find the learner's earlier answers.
+   * It is kept per course and learner in localStorage instead.
+   */
+  private storedRegistration(courseId?: string, actor?: any): string {
+    const who = actor?.mbox || actor?.account?.name || actor?.name || 'anonymous'
+    const key = `lia-xapi-registration:${courseId || location.pathname}:${who}`
+
+    try {
+      const known = localStorage.getItem(key)
+      if (known) return known
+
+      const fresh = this.generateUUID()
+      localStorage.setItem(key, fresh)
+      return fresh
+    } catch (e) {
+      return this.generateUUID()
+    }
+  }
+
+  /**
+   * The readable description of an element and its state, if the course
+   * description knows the element
+   */
+  private describe(
+    table: Report.Table,
+    slide: number,
+    index: number,
+    state: any
+  ): Report.Interaction | undefined {
+    const item = this.items.get(`${table}:${slide}:${index}`)
+    return item ? Report.interaction(item, state, this.lang) : undefined
+  }
+
+  /** The states of a slide as an array, as LiaScript uses them */
+  private list(states: Record<number, Record<number, any>>, id: number) {
+    const array: any[] = []
+    for (const index in states[id] || {}) {
+      array[parseInt(index)] = states[id][index]
+    }
+    return array
+  }
+
+  /**
    * Generate a UUID v4
    */
   private generateUUID(): string {
@@ -222,7 +304,7 @@ export class Connector extends Base.Connector {
    * Handle window unload event to send terminated or suspended statement
    */
   private handleUnload() {
-    if (!this.active || !this.lrs) return
+    if (!this.active || !this.lrs || this.unloadSent) return
 
     const duration = Statement.formatDuration(this.getTotalDuration())
 
@@ -254,22 +336,10 @@ export class Connector extends Base.Connector {
       )
     }
 
-    // Use sendBeacon for more reliable delivery during page unload
-    if (navigator.sendBeacon && this.lrs.endpoint) {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'X-Experience-API-Version': '1.0.3',
-      }
-
-      if (this.lrs.auth) {
-        headers['Authorization'] = this.lrs.auth
-      }
-
-      navigator.sendBeacon(this.lrs.endpoint, JSON.stringify([statement]))
-    } else {
-      // Fallback to synchronous XHR
-      this.lrs.sendStatement(statement)
-    }
+    // a keepalive request outlives the page and, unlike sendBeacon, carries
+    // the credentials
+    this.unloadSent = true
+    this.lrs.sendOnUnload(statement)
   }
 
   /**
@@ -454,6 +524,9 @@ export class Connector extends Base.Connector {
         }
       }
 
+      // Code: every slide from its newest code statement
+      this.codeStates = Code.restore(response.statements, this.meta?.slides)
+
       // Now process the latest quiz statements only
       for (const key in latestQuizStatements) {
         const stmt = latestQuizStatements[key]
@@ -471,43 +544,11 @@ export class Connector extends Base.Connector {
           this.quizStates[slideId] = {}
         }
 
-        // Reconstruct quiz state from statement
-        const result = stmt.result || {}
-        const extensions = result.extensions || {}
-
-        const trial =
-          extensions['http://liascript.github.io/extensions/trial'] || 0
-
-        // Determine solved status:
-        // solved: 1 = correctly solved (got the right answer)
-        // solved: -1 = resolved (clicked resolve button to show solution)
-        // solved: 0 = still trying (has attempts but not resolved)
-        let solved = 0
-        if (result.success === true) {
-          solved = 1 // Successfully answered correctly
-        } else if (result.success === false) {
-          // Check if resolved (completion=true) vs still trying
-          if (result.completion === true) {
-            solved = -1 // Resolved (showed solution)
-          } else {
-            solved = 0 // Still trying (failed attempts)
-          }
-        }
-
-        const quizState: any = {
-          solved,
-          state:
-            extensions['http://liascript.github.io/extensions/state'] || [],
-          trial,
-          hint: extensions['http://liascript.github.io/extensions/hint'] || 0,
-          error_msg: '',
-          score: result.score?.raw || 0,
-        }
-
-        // Add response/input if available
-        if (result.response) {
-          quizState.input = result.response
-        }
+        // Reconstruct quiz state from statement, in the shape of the course's
+        const quizState = Restore.quizState(
+          stmt,
+          this.quizStates[slideId][quizIndex]
+        )
 
         // Update the quiz state (replacing null or existing state)
         this.quizStates[slideId][quizIndex] = quizState
@@ -517,16 +558,6 @@ export class Connector extends Base.Connector {
             `Restored quiz state: slide ${slideId}, quiz ${quizIndex}`,
             quizState
           )
-        }
-
-        // Update scores
-        if (result.score?.raw !== undefined) {
-          if (result.success) {
-            this.totalScore += result.score.raw
-          }
-          if (result.score.max !== undefined) {
-            this.maxScore += result.score.max
-          }
         }
       }
 
@@ -621,8 +652,7 @@ export class Connector extends Base.Connector {
           quizStates: Object.keys(this.quizStates).length,
           surveyStates: Object.keys(this.surveyStates).length,
           taskStates: Object.keys(this.taskStates).length,
-          totalScore: this.totalScore,
-          maxScore: this.maxScore,
+          codeStates: Object.keys(this.codeStates).length,
           completionSent: this.completionSent,
           accumulatedTime: this.accumulatedTime,
         })
@@ -879,6 +909,11 @@ export class Connector extends Base.Connector {
   async open(uidDB: string, versionDB: number, slide: number) {
     if (!this.active || !this.lrs) return
 
+    // Where the learner left off, read before this visit's first slide
+    // replaces it
+    await this.stateRestored
+    const resumeAt = this.lastVisitedSlide
+
     // Reset tracking state
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
@@ -926,6 +961,11 @@ export class Connector extends Base.Connector {
       this.slide(slide)
     }
 
+    // Return to the last visited slide, as the SCORM connectors do
+    if (resumeAt && resumeAt !== slide) {
+      setTimeout(() => (window as any)['LIA'].goto(resumeAt), 500)
+    }
+
     // Check if course was already completed (from restored state)
     // This handles the case where user returns to an already-finished course
     if (!this.completionSent) {
@@ -947,10 +987,12 @@ export class Connector extends Base.Connector {
     this.visitedSlides.add(id)
     this.lastVisitedSlide = id
 
-    // Get slide title if available
+    // Get slide title if available: `3. Lists and Tasks`
     let slideTitle = `Slide ${id}`
     const windowAny = window as any
-    if (
+    if (this.meta?.slides[id]?.title) {
+      slideTitle = `${id + 1}. ${this.meta.slides[id].title}`
+    } else if (
       windowAny.LIA &&
       windowAny.LIA.course &&
       windowAny.LIA.course.slides[id]
@@ -969,7 +1011,8 @@ export class Connector extends Base.Connector {
       id,
       slideTitle,
       this.registration,
-      duration
+      duration,
+      this.lang
     )
 
     this.lrs
@@ -999,6 +1042,13 @@ export class Connector extends Base.Connector {
     await this.stateRestored
 
     const { table, id } = record
+
+    if (table === 'code') {
+      // null lets LiaScript store its initial projects
+      this.codeProjects[id] =
+        this.codeStates[id] ?? this.codeProjects[id] ?? null
+      return this.codeProjects[id]
+    }
 
     if (table === 'quiz' && this.quizStates[id]) {
       // Convert object to array format expected by LiaScript
@@ -1082,6 +1132,12 @@ export class Connector extends Base.Connector {
     this.lastActivityTime = Date.now()
     const { table, id, data } = record
 
+    // LiaScript stores the initial projects of a slide: nothing changed yet
+    if (table === 'code') {
+      this.codeProjects[id] = JSON.parse(JSON.stringify(data))
+      return
+    }
+
     // Handle quizzes
     if (table === 'quiz') {
       if (!this.quizStates[id]) {
@@ -1092,15 +1148,17 @@ export class Connector extends Base.Connector {
       data.forEach((quiz: any, i: number) => {
         if (!quiz) return
 
+        const previous = this.quizStates[id][i]
         this.quizStates[id][i] = quiz
 
-        console.warn('Storing quiz:', id, i, quiz)
-
-        // Update scores
-        if (quiz.score !== undefined) {
-          if (quiz.solved === 1) this.totalScore += quiz.score
-          this.maxScore += quiz.score
+        // Every change on a slide stores all of its quizzes; only one the
+        // learner has worked on, and only when it changed, is an answer
+        const attempted = quiz.trial > 0 || quiz.solved !== 0
+        if (!attempted || State.same(previous, quiz)) {
+          return
         }
+
+        if (this.debug) console.log('Storing quiz:', id, i, quiz)
 
         // Extract quiz type from state object
         const quizType =
@@ -1116,12 +1174,16 @@ export class Connector extends Base.Connector {
           id,
           i,
           quizType,
-          quiz.input || quiz.answer || '',
+          // the learner's input, as LiaScript keeps it
+          quiz.state ?? '',
           quiz.solved === 1 ? true : quiz.solved === -1 ? false : null,
-          quiz.score || 1,
+          quiz.solved === 1 ? quiz.score || 1 : 0,
           quiz.score || 1,
           quiz,
-          this.registration
+          this.registration,
+          undefined,
+          false,
+          this.describe('quiz', id, i, quiz)
         )
 
         this.lrs
@@ -1144,11 +1206,20 @@ export class Connector extends Base.Connector {
         this.surveyStates[id] = {}
       }
 
-      // Process each survey on the slide
-      data.forEach((survey: any, i: number) => {
-        if (!survey) return
+      // Every change on a slide stores all of its surveys; only one that
+      // changed and is submitted is an answer
+      const submitted = State.changes(
+        'survey',
+        this.list(this.surveyStates, id),
+        data
+      ).filter((change) => change.urgent)
 
-        this.surveyStates[id][i] = survey
+      data.forEach((survey: any, i: number) => {
+        if (survey) this.surveyStates[id][i] = survey
+      })
+
+      submitted.forEach(({ index: i }) => {
+        const survey = data[i]
 
         // Send answered statement for survey
         const statement = Statement.generateAnsweredStatement(
@@ -1158,14 +1229,15 @@ export class Connector extends Base.Connector {
           id,
           i,
           'Survey',
-          JSON.stringify(survey.state),
+          survey.state,
           survey.submitted,
           0, // Surveys don't have scores
           0,
           survey,
           this.registration,
           i, // Use surveyIndex instead of quizIndex
-          true // isSurvey flag
+          true, // isSurvey flag
+          this.describe('survey', id, i, survey)
         )
 
         this.lrs
@@ -1187,11 +1259,20 @@ export class Connector extends Base.Connector {
         this.taskStates[id] = {}
       }
 
-      // Process each task on the slide
-      data.forEach((task: any, i: number) => {
-        if (!task) return
+      // Only the task lists that changed
+      const changed = State.changes(
+        'task',
+        this.list(this.taskStates, id),
+        data
+      )
 
-        this.taskStates[id][i] = task
+      data.forEach((task: any, i: number) => {
+        if (task) this.taskStates[id][i] = task
+      })
+
+      changed.forEach(({ index: i }) => {
+        const task = data[i]
+        if (!task) return
 
         // Send interacted statement for task
         const statement = Statement.generateTaskStatement(
@@ -1201,7 +1282,8 @@ export class Connector extends Base.Connector {
           id,
           i,
           task,
-          this.registration
+          this.registration,
+          this.describe('task', id, i, task)
         )
 
         this.lrs
@@ -1217,13 +1299,49 @@ export class Connector extends Base.Connector {
   }
 
   /**
-   * Update data
+   * LiaScript's changes to code projects: runs, version switches, views.
+   * A project whose code changed is sent with the code of the whole slide.
    * @param record Record to update
    * @param fn Update function
    */
   update(record: Base.Record, fn: (a: any) => any) {
-    super.update(record, fn)
-    this.store(record)
+    const { table, id } = record
+    if (table !== 'code' || !this.active || !this.lrs) return
+
+    const before = this.codeProjects[id]
+    if (!before) return
+
+    let after: any[]
+    try {
+      after = fn(JSON.parse(JSON.stringify(before)))
+    } catch (e) {
+      console.warn('xAPI: code update failed', e)
+      return
+    }
+
+    this.lastActivityTime = Date.now()
+    this.codeProjects[id] = after
+    this.codeStates[id] = after
+
+    for (const i of Code.changed(before, after)) {
+      const statement = Statement.generateCodeStatement(
+        this.actor,
+        this.courseId,
+        this.courseTitle,
+        id,
+        i,
+        after,
+        this.registration,
+        this.describe('code', id, i, after[i])
+      )
+
+      this.lrs
+        .sendStatement(statement)
+        .then(() => {
+          if (this.debug) console.log(`Sent code: slide ${id}, project ${i}`)
+        })
+        .catch((err) => console.error('Failed to send code statement:', err))
+    }
   }
 
   /**
@@ -1233,13 +1351,13 @@ export class Connector extends Base.Connector {
    */
   reset(uidDB?: string, versionDB?: number) {
     // Reset state
-    this.totalScore = 0
-    this.maxScore = 0
     this.visitedSlides.clear()
     this.lastVisitedSlide = 0
     this.quizStates = {}
     this.surveyStates = {}
     this.taskStates = {}
+    this.codeStates = {}
+    this.codeProjects = {}
     this.startTime = Date.now()
     this.lastActivityTime = this.startTime
     this.accumulatedTime = 0

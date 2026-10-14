@@ -1,4 +1,11 @@
-module Library.Group exposing (blur, id)
+module Library.Group exposing (id, blur)
+
+{-| Elements that belong together (like a dropdown and its button) share a
+group id, `blur` only fires when the focus leaves the whole group.
+
+@docs id, blur
+
+-}
 
 import Html exposing (Attribute)
 import Html.Attributes as Attr
@@ -6,29 +13,30 @@ import Html.Events as Event
 import Json.Decode as JD
 
 
-blur : (String -> msg) -> Attribute msg
-blur msg =
-    Event.on "blur" (decodeGroupIdChanged msg)
-
-
+{-| Put an element into the group `groupId`.
+-}
 id : String -> Attribute msg
 id groupId =
     Attr.attribute "data-group-id" groupId
 
 
-decodeGroupIdChanged : (String -> msg) -> JD.Decoder msg
-decodeGroupIdChanged msg =
-    JD.map2
-        (\a b ->
-            if Just a /= b then
-                Just a
-
-            else
-                Nothing
-        )
+{-| Send the group id of the blurred element, unless the focus moves to an
+element of the same group.
+-}
+blur : (String -> msg) -> Attribute msg
+blur msg =
+    JD.map2 Tuple.pair
         (JD.at [ "target", "dataset", "groupId" ] JD.string)
-        (JD.at [ "relatedTarget" ] closestGroupId)
-        |> JD.andThen (maybeGroupId msg)
+        (JD.field "relatedTarget" closestGroupId)
+        |> JD.andThen
+            (\( group, next ) ->
+                if Just group == next then
+                    JD.fail "no change"
+
+                else
+                    JD.succeed (msg group)
+            )
+        |> Event.on "blur"
 
 
 {-| Walks up from a node (e.g. `relatedTarget`) to find the nearest
@@ -44,13 +52,3 @@ closestGroupId =
         , JD.field "parentElement" (JD.lazy (\_ -> closestGroupId))
         , JD.succeed Nothing
         ]
-
-
-maybeGroupId : (String -> msg) -> Maybe String -> JD.Decoder msg
-maybeGroupId msg change =
-    case change of
-        Just a ->
-            JD.succeed (msg a)
-
-        Nothing ->
-            JD.fail "no change"

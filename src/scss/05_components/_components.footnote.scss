@@ -1,0 +1,27 @@
+// footnote definitions at the end of a section, see Lia.Markdown.Footnote.View
+.lia-footnotes {
+  font-size: 0.8em;
+  border-block-start: 2px solid currentColor;
+
+  // KaiOS (Gecko 48) has no grid, the bodies are not aligned there
+  > div {
+    display: flex;
+  }
+
+  @supports (display: grid) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+
+    > div {
+      display: contents;
+    }
+  }
+
+  dt {
+    padding-inline-end: 10px;
+  }
+
+  dd {
+    margin: 0;
+  }
+}

@@ -9,6 +9,8 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 
 
+{-| Used by the JSON export of a course, tagged by the constructor name.
+-}
 encode : (x -> JE.Value) -> Node x -> ( String, JE.Value )
 encode encoder node =
     case node of
@@ -52,6 +54,8 @@ encode encoder node =
             )
 
 
+{-| Parameters as `( "a", [[key, value], ...] )`, or `null` if empty.
+-}
 encParameters : Parameters -> ( String, JE.Value )
 encParameters annotation =
     ( "a"
@@ -65,6 +69,8 @@ encParameters annotation =
     )
 
 
+{-| Add `encParameters` to a JSON object only if there are any.
+-}
 maybeEncParameters : Parameters -> List ( String, JE.Value ) -> List ( String, JE.Value )
 maybeEncParameters a =
     if List.isEmpty a then

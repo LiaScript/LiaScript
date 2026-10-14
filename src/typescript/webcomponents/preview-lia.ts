@@ -35,7 +35,11 @@ export function fetch(
           },
         })
 
-        lia.ports.output.subscribe(function (event: [boolean, any]) {
+        const handler = function (event: [boolean, any]) {
+          // one answer per app, otherwise the app and the waiting element
+          // stay alive forever
+          lia.ports.output.unsubscribe(handler)
+
           let [ok, json] = event
 
           if (ok) {
@@ -60,8 +64,9 @@ export function fetch(
             console.warn('preview-lia', json)
             onError()
           }
-        })
+        }
 
+        lia.ports.output.subscribe(handler)
         lia.ports.input.send(http.responseText)
       } catch (e) {
         console.warn('fetching', e)

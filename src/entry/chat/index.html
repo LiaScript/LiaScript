@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>LiaScript Chat</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <script defer type="module" src="./index.ts"></script>
+
+    <link rel="stylesheet" href="../../scss/main.scss" />
+    <link
+      rel="stylesheet"
+      href="../../../node_modules/katex/dist/katex.min.css"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        background: rgb(var(--color-background));
+        color: rgb(var(--color-text));
+      }
+      #lia-chat-messages {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6em;
+        padding: 0.75em;
+      }
+      .lia-chat__msg {
+        align-self: flex-start;
+        box-sizing: border-box;
+        max-width: 92%;
+        min-width: 10em;
+        padding: 0.6em 0.9em 0.4em;
+        border-radius: 10px;
+        overflow-wrap: anywhere;
+        background: rgba(var(--color-text), 0.06);
+      }
+      .lia-chat__msg--self {
+        align-self: flex-end;
+        background: rgba(var(--color-highlight), 0.18);
+      }
+      /* code editors and charts need a width, they do not grow with content */
+      .lia-chat__msg:has(.lia-code, lia-chart) {
+        width: 92%;
+      }
+      /* space for the effect markers */
+      .lia-chat__msg--effects {
+        padding-left: 3em;
+      }
+      .lia-chat__msg > div:first-child > :first-child {
+        margin-top: 0;
+      }
+      .lia-chat__msg > div:first-child > :last-child {
+        margin-bottom: 0;
+      }
+      .lia-chat__foot {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.35em;
+        margin-top: 0.35em;
+        font-size: 0.8em;
+        opacity: 0.75;
+        white-space: nowrap;
+      }
+      .lia-chat__icon {
+        width: 16px;
+        height: 16px;
+        image-rendering: pixelated;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="lia-chat"></div>
+  </body>
+</html>

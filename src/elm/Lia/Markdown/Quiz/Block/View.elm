@@ -19,6 +19,9 @@ import Lia.Utils exposing (blockKeydown, deactivate, icon, onEnter, shuffle)
 import List.Extra
 
 
+{-| Render a text input, a dropdown or a drop zone with its options. Options
+can be dragged into the drop zone or clicked (or entered) one after the other.
+-}
 view :
     Config sub
     -> Maybe (List Int)
@@ -63,17 +66,34 @@ view config randomize solution quiz state =
         Drop highlight active value ->
             let
                 solved =
-                    case solution of
-                        ( Solution.Open, _ ) ->
-                            False
-
-                        _ ->
-                            True
+                    not (Solution.isOpen solution)
 
                 id =
                     value
                         |> List.head
                         |> Maybe.withDefault -1
+
+                unlessSolved msg =
+                    if solved then
+                        None
+
+                    else
+                        msg
+
+                -- a filled drop zone can be cleared by click or key
+                removable =
+                    not solved && not (List.isEmpty value)
+
+                draggable i =
+                    [ Attr.draggable <|
+                        if solved then
+                            "false"
+
+                        else
+                            "true"
+                    , Html.Events.on "dragend" (JD.succeed (unlessSolved (DropData i)))
+                    , Html.Events.on "dragstart" (JD.succeed (unlessSolved DropStart))
+                    ]
             in
             [ Html.div
                 [ Attr.style "width" "100%"
@@ -81,21 +101,21 @@ view config randomize solution quiz state =
                 , Attr.style "margin" "0.25rem"
                 , Attr.style "position" "relative"
                 , Html.Events.onClick
-                    (if solved || List.isEmpty value then
-                        None
+                    (if removable then
+                        DropTarget
 
                      else
-                        DropTarget
+                        None
                     )
                 , A11y_Role.button
                 , A11y_Key.onKeyDown
-                    (if solved || List.isEmpty value then
-                        []
-
-                     else
+                    (if removable then
                         [ A11y_Key.enter DropTarget
                         , A11y_Key.space DropTarget
                         ]
+
+                     else
+                        []
                     )
                 , Attr.tabindex <|
                     if List.isEmpty value then
@@ -118,41 +138,19 @@ view config randomize solution quiz state =
                         (viewer config
                             >> List.map (Html.map Script)
                             >> Html.div
-                                [ Attr.style "border" "3px dotted #888"
-                                , Attr.style "padding" "1rem"
-                                , Attr.style "cursor" "pointer"
-                                , Attr.style "background-color" "#88888822"
-                                , Attr.style "border-radius" "4px"
-                                , Attr.style "display" "flex"
-                                , Attr.style "justify-content" "center"
-                                , Attr.style "display" "flex"
-                                , Attr.draggable <|
-                                    if solved then
-                                        "false"
-
-                                    else
-                                        "true"
-                                , Html.Events.on "dragend"
-                                    (JD.succeed
-                                        (if solved then
-                                            None
-
-                                         else
-                                            DropData id
-                                        )
-                                    )
-                                , Html.Events.on "dragstart"
-                                    (JD.succeed
-                                        (if solved then
-                                            None
-
-                                         else
-                                            DropStart
-                                        )
-                                    )
-                                , A11y_Role.button
-                                , Attr.tabindex 0
-                                ]
+                                ([ Attr.style "border" "3px dotted #888"
+                                 , Attr.style "padding" "1rem"
+                                 , Attr.style "cursor" "pointer"
+                                 , Attr.style "background-color" "#88888822"
+                                 , Attr.style "border-radius" "4px"
+                                 , Attr.style "display" "flex"
+                                 , Attr.style "justify-content" "center"
+                                 ]
+                                    ++ draggable id
+                                    ++ [ A11y_Role.button
+                                       , Attr.tabindex 0
+                                       ]
+                                )
                         )
                     |> Maybe.withDefault
                         (dropHere
@@ -164,32 +162,15 @@ view config randomize solution quiz state =
                             ]
                         )
                 , Html.div
-                    [ Html.Events.on "dragenter"
-                        (JD.succeed
-                            (if solved then
-                                None
-
-                             else
-                                DropEnter True
-                            )
-                        )
-                    , Html.Events.on "dragleave"
-                        (JD.succeed
-                            (if solved then
-                                None
-
-                             else
-                                DropEnter False
-                            )
-                        )
+                    -- shown while dragging, it covers the content, so that its children do not fire dragenter and dragleave
+                    [ Html.Events.on "dragenter" (JD.succeed (unlessSolved (DropEnter True)))
+                    , Html.Events.on "dragleave" (JD.succeed (unlessSolved (DropEnter False)))
                     , Attr.style "height" "100%"
                     , Attr.style "width" "100%"
                     , Attr.style "position" "absolute"
                     , Attr.style "top" "0"
                     , Attr.style "left" "0"
                     , Attr.style "z-index" "10"
-
-                    --, Attr.style "background-color" "rgba(100, 0, 0, 0.1)"
                     , Attr.style "display"
                         (if active then
                             "block"
@@ -202,63 +183,37 @@ view config randomize solution quiz state =
                 ]
             , quiz.options
                 |> List.indexedMap
-                    (\i a ->
+                    (\i option_ ->
                         if i == id then
                             Nothing
 
                         else
-                            viewer config a
+                            viewer config option_
                                 |> List.map (Html.map Script)
                                 |> Html.span
-                                    [ Attr.style "border" "3px dotted #888"
-                                    , Attr.style "margin" "0.25rem"
-                                    , Attr.style "padding" "1rem"
-                                    , Attr.style "cursor" "pointer"
-                                    , Attr.style "background-color" "#88888822"
-                                    , Attr.style "border-radius" "4px"
-                                    , Attr.draggable <|
-                                        if solved then
-                                            "false"
+                                    ([ Attr.style "border" "3px dotted #888"
+                                     , Attr.style "margin" "0.25rem"
+                                     , Attr.style "padding" "1rem"
+                                     , Attr.style "cursor" "pointer"
+                                     , Attr.style "background-color" "#88888822"
+                                     , Attr.style "border-radius" "4px"
+                                     ]
+                                        ++ draggable i
+                                        ++ [ Html.Events.onClick (unlessSolved (DropSource i))
+                                           , A11y_Key.onKeyDown
+                                                (if solved then
+                                                    []
 
-                                        else
-                                            "true"
-                                    , Html.Events.on "dragend"
-                                        (JD.succeed
-                                            (if solved then
-                                                None
-
-                                             else
-                                                DropData i
-                                            )
-                                        )
-                                    , Html.Events.on "dragstart"
-                                        (JD.succeed <|
-                                            if solved then
-                                                None
-
-                                            else
-                                                DropStart
-                                        )
-                                    , Html.Events.onClick
-                                        (if solved then
-                                            None
-
-                                         else
-                                            DropSource i
-                                        )
-                                    , A11y_Key.onKeyDown
-                                        (if solved then
-                                            []
-
-                                         else
-                                            [ A11y_Key.enter (DropSource i)
-                                            , A11y_Key.space (DropSource i)
-                                            ]
-                                        )
-                                    , Attr.style "display" "inline-flex"
-                                    , A11y_Role.button
-                                    , Attr.tabindex 0
-                                    ]
+                                                 else
+                                                    [ A11y_Key.enter (DropSource i)
+                                                    , A11y_Key.space (DropSource i)
+                                                    ]
+                                                )
+                                           , Attr.style "display" "inline-flex"
+                                           , A11y_Role.button
+                                           , Attr.tabindex 0
+                                           ]
+                                    )
                                 |> Just
                     )
                 |> List.filterMap identity
@@ -295,6 +250,8 @@ text solution state =
         []
 
 
+{-| **private:** A dropdown, `i` is the selected option.
+-}
 select : Config sub -> Maybe (List Int) -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
 select config randomize solution open options i =
     let
@@ -388,17 +345,16 @@ option config open active id =
             ]
 
 
+{-| **private:** The selected option, or a request to select one.
+-}
 get_option : Config sub -> Int -> List Inlines -> Html (Msg sub)
 get_option config id list =
-    case ( id, list ) of
-        ( 0, x :: _ ) ->
+    case List.Extra.getAt id list of
+        Just x ->
             x
                 |> viewer config
                 |> Html.span []
                 |> Html.map Script
 
-        ( i, _ :: xs ) ->
-            get_option config (i - 1) xs
-
-        ( _, [] ) ->
+        Nothing ->
             Html.span [] [ Html.text <| Translations.quizSelection config.lang ]

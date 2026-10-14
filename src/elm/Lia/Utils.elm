@@ -61,6 +61,8 @@ toEscapeString str =
         |> String.replace "${" "\\${"
 
 
+{-| Pass the key code of every key down and stop its propagation.
+-}
 onKeyDown : (Int -> msg) -> Html.Attribute msg
 onKeyDown tagger =
     Event.stopPropagationOn "keydown"
@@ -73,48 +75,33 @@ scale the left and right arrow keys should be used in slide-navigation, but
 locally it must be suppressed in text inputs, search fields, etc.
 -}
 blockKeydown : msg -> Html.Attribute msg
-blockKeydown =
-    stopPropagationOn "keydown"
+blockKeydown msg =
+    Event.stopPropagationOn "keydown" (JD.succeed ( msg, True ))
 
 
-stopPropagationOn : String -> msg -> Html.Attribute msg
-stopPropagationOn name msg =
-    Event.stopPropagationOn name (JD.succeed ( msg, True ))
-
-
-{-| Get the ith element of a list:
+{-| Get the ith element of a list, a negative index returns the first one:
 
     get 2 [ 1, 2, 3, 4, 5 ] == Just 3
 
 -}
 get : Int -> List x -> Maybe x
-get i list =
-    case list of
-        [] ->
-            Nothing
-
-        r :: rs ->
-            if i <= 0 then
-                Just r
-
-            else
-                get (i - 1) rs
+get i =
+    List.drop i >> List.head
 
 
-isEnter : msg -> Int -> JD.Decoder msg
-isEnter msg code =
-    if code == 13 then
-        JD.succeed msg
-
-    else
-        JD.fail "not ENTER"
-
-
-{-| Release a message if the user hits enter.
+{-| Release a message if the user releases the Enter key.
 -}
 onEnter : msg -> Html.Attribute msg
 onEnter msg =
-    JD.andThen (isEnter msg) Event.keyCode
+    Event.keyCode
+        |> JD.andThen
+            (\code ->
+                if code == 13 then
+                    JD.succeed msg
+
+                else
+                    JD.fail "not ENTER"
+            )
         |> Event.on "keyup"
 
 
@@ -180,11 +167,15 @@ icon class attributes =
         []
 
 
+{-| Move the focus to the element with the given id.
+-}
 focus : msg -> String -> Cmd msg
 focus msg =
     Dom.focus >> Task.attempt (always msg)
 
 
+{-| Move the focus after a delay in milliseconds (default 500).
+-}
 scheduleFocus : Maybe Float -> msg -> String -> Cmd msg
 scheduleFocus delay msg elementID =
     Process.sleep (Maybe.withDefault 500 delay)
@@ -244,11 +235,13 @@ deactivate true attr =
         attr
 
 
+{-| -}
 array_getLast : Array a -> Maybe a
 array_getLast array =
     Array.get (Array.length array - 1) array
 
 
+{-| -}
 array_setLast : a -> Array a -> Array a
 array_setLast a array =
     Array.set (Array.length array - 1) a array
@@ -277,22 +270,19 @@ string2Color : Int -> String -> String
 string2Color maxValue url =
     url
         |> String.toList
-        |> List.map Char.toCode
-        |> List.Extra.greedyGroupsOf 3
+        -- the character codes are summed up alternately in r, g, and b
+        |> List.indexedMap (\i char -> ( modBy 3 i, Char.toCode char ))
         |> List.foldl
-            (\rgb ( r, g, b ) ->
-                case rgb of
-                    [ r_, g_, b_ ] ->
-                        ( r + r_, g + g_, b + b_ )
+            (\( channel, code ) ( r, g, b ) ->
+                case channel of
+                    0 ->
+                        ( r + code, g, b )
 
-                    [ r_, g_ ] ->
-                        ( r_ + r, g_ + g, b )
-
-                    [ r_ ] ->
-                        ( r_ + r, g, b )
+                    1 ->
+                        ( r, g + code, b )
 
                     _ ->
-                        ( r, g, b )
+                        ( r, g, b + code )
             )
             ( 11111, 99, 12 )
         |> (\( r, g, b ) ->
@@ -438,23 +428,16 @@ percentage total i =
     toFloat (round ((10000.0 * toFloat i) / total)) / 100.0
 
 
+{-| Is a macro value not switched off? `0`, `false`, `off` and `disable` (or
+words starting with them, ignoring the case) switch it off.
+-}
 checkFalse : String -> Bool
 checkFalse string =
-    case string |> String.trim |> String.toLower |> String.toList of
-        [ '0' ] ->
-            False
-
-        'f' :: 'a' :: 'l' :: 's' :: 'e' :: _ ->
-            False
-
-        'o' :: 'f' :: 'f' :: _ ->
-            False
-
-        'd' :: 'i' :: 's' :: 'a' :: 'b' :: 'l' :: 'e' :: _ ->
-            False
-
-        _ ->
-            True
+    let
+        value =
+            string |> String.trim |> String.toLower
+    in
+    not (value == "0" || List.any (\prefix -> String.startsWith prefix value) [ "false", "off", "disable" ])
 
 
 {-| Will check any dict for the persistent macro.
@@ -484,6 +467,8 @@ urlBasePath =
             )
 
 
+{-| The part after the last `?`, if there is one.
+-}
 urlQuery : String -> Maybe String
 urlQuery =
     String.split "?"
@@ -491,6 +476,9 @@ urlQuery =
         >> Maybe.andThen List.Extra.last
 
 
+{-| Reorder the rows by sorting them along a random order (rows without an
+order are dropped).
+-}
 shuffle : Maybe (List Int) -> List x -> List x
 shuffle randomize rows =
     case randomize of
@@ -504,6 +492,10 @@ shuffle randomize rows =
                 |> List.map Tuple.second
 
 
+{-| A course URL as it is passed in the query: percent decoded if it starts
+with `http` but contains no `://`. Parameters that the VS Code Simple Browser
+appends are cut off, `Nothing` if there is nothing else.
+-}
 urlDecodeIfEncoded : String -> Maybe String
 urlDecodeIfEncoded input =
     let
@@ -547,8 +539,7 @@ cleanupVscodeSimpleBrowserUrl url =
                 firstIndex =
                     needles
                         |> List.filterMap (\n -> String.indexes n s |> List.head)
-                        |> List.sort
-                        |> List.head
+                        |> List.minimum
             in
             case firstIndex of
                 Nothing ->
@@ -590,42 +581,10 @@ formatDate ms =
             n |> String.fromInt |> String.padLeft 2 '0'
 
         month =
-            case Time.toMonth Time.utc posix of
-                Time.Jan ->
-                    1
-
-                Time.Feb ->
-                    2
-
-                Time.Mar ->
-                    3
-
-                Time.Apr ->
-                    4
-
-                Time.May ->
-                    5
-
-                Time.Jun ->
-                    6
-
-                Time.Jul ->
-                    7
-
-                Time.Aug ->
-                    8
-
-                Time.Sep ->
-                    9
-
-                Time.Oct ->
-                    10
-
-                Time.Nov ->
-                    11
-
-                Time.Dec ->
-                    12
+            [ Time.Jan, Time.Feb, Time.Mar, Time.Apr, Time.May, Time.Jun, Time.Jul, Time.Aug, Time.Sep, Time.Oct, Time.Nov, Time.Dec ]
+                |> List.Extra.elemIndex (Time.toMonth Time.utc posix)
+                |> Maybe.withDefault 0
+                |> (+) 1
     in
     pad (Time.toDay Time.utc posix)
         ++ "."

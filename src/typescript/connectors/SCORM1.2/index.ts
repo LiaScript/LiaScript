@@ -222,12 +222,12 @@ Have fun ;-)`
         total += count
 
         switch (this.db.quiz[i][j].solved) {
-          case 1: {
+          case 1:
             solved += count
-          }
-          case -1: {
+            break
+          case -1:
             finished += count
-          }
+            break
         }
       }
     }
@@ -260,11 +260,13 @@ Have fun ;-)`
     )
 
     if (masteryScore == null) {
-      // If there are surveys but no quizzes, mark as passed when all surveys are submitted
-      if (total === 0 && surveyCount > 0 && allSurveysCompleted) {
+      // No mastery score (the LMS passes none, e.g. Moodle for a 0 in the
+      // manifest): completed once every quiz and survey is done. A SCO may not
+      // set "not attempted" itself: Moodle and ILIAS reject it (error 405).
+      if (finished + solved === total && allSurveysCompleted) {
         this.write('cmi.core.lesson_status', 'completed')
       } else {
-        this.write('cmi.core.lesson_status', 'not attempted')
+        this.write('cmi.core.lesson_status', 'incomplete')
       }
     } else {
       // Consider both quizzes and surveys for course completion

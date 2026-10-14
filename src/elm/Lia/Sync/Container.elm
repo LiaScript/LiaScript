@@ -66,15 +66,7 @@ Parameters:
 -}
 init : String -> (x -> Maybe sync) -> Array x -> Container sync
 init id map =
-    Array.map
-        (\x ->
-            case map x of
-                Just sync ->
-                    Dict.fromList [ ( id, sync ) ]
-
-                Nothing ->
-                    Dict.empty
-        )
+    Array.map (map >> Maybe.map (Dict.singleton id) >> Maybe.withDefault Dict.empty)
         >> Container
 
 

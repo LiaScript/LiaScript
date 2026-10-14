@@ -1,5 +1,5 @@
 import katex from 'katex'
-import renderA11yString from './render-a11y-strings'
+import renderA11yString from './a11y/index.ts'
 import 'katex/contrib/mhchem/mhchem.js'
 
 var katexStyles: null | string = null
@@ -34,7 +34,8 @@ customElements.define(
       shadowRoot.appendChild(this.span)
       this.appendChild(this.label)
 
-      this.formula_ = this.getAttribute('formula') || ''
+      // Elm sets the formula as a property, before the element is connected
+      this.formula_ = this.getAttribute('formula') || this.formula_
 
       const macros = this.getAttribute('macros')
 
@@ -96,19 +97,42 @@ customElements.define(
       return false
     }
 
+    // somehow the renderer cannot use internal and external macros,
+    // which will result in an un-catchable error.
+    // if there is no internal macro definition, then the external macros are added
+    courseMacros(): { [keys: string]: string } | undefined {
+      const match = this.formula_.match(
+        /\\(gdef)|(xdef)|(global\\def)(global\\edef)|(global\\let)|(global\\futurelet)\\/g
+      )
+      if (match === null && Object.keys(this.macros_).length > 0) {
+        return this.macros_
+      }
+    }
+
+    // The text to read out, the TTS asks for it in the language of its voice
+    speech(lang: string = document.documentElement.lang): string {
+      const label = this.getAttribute('aria-label')
+      if (label !== null) return label
+
+      try {
+        return renderA11yString(
+          this.formula_,
+          // a copy, \gdef in the formula would change the course macros
+          { displayMode: this.displayMode(), macros: { ...this.courseMacros() } },
+          lang
+        )
+      } catch (e) {
+        console.warn(
+          'formula: render a11y ->',
+          e instanceof Error ? e.message : String(e)
+        )
+        return this.formula_
+      }
+    }
+
     render() {
       if (this.formula_ && this.span) {
-        let macros: { [keys: string]: string } | undefined = undefined
-
-        // somehow the renderer cannot use internal and external macros,
-        // which will result in an un-catchable error.
-        // if there is no internal macro definition, then the external macros are added
-        const match = this.formula_.match(
-          /\\(gdef)|(xdef)|(global\\def)(global\\edef)|(global\\let)|(global\\futurelet)\\/g
-        )
-        if (match === null && Object.keys(this.macros_).length > 0) {
-          macros = this.macros_
-        }
+        const macros = this.courseMacros()
 
         try {
           katex.render(this.formula_, this.span, {
@@ -125,23 +149,10 @@ customElements.define(
 
         this.span.setAttribute('role', 'math')
 
-        if (this.getAttribute('aria-label') === null) {
-          let label = this.formula_
-
-          try {
-            label = renderA11yString(label, {
-              displayMode: this.displayMode(),
-            })
-          } catch (e) {
-            console.warn(
-              'formula: render a11y ->',
-              e instanceof Error ? e.message : String(e)
-            )
-          }
-
-          this.span.setAttribute('aria-label', label)
-          this.label.innerHTML = label
-        }
+        // the generated description or the aria-label of the author
+        const label = this.speech()
+        this.span.setAttribute('aria-label', label)
+        this.label.textContent = label
       }
     }
 

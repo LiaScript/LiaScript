@@ -17,6 +17,7 @@ module Lia.Markdown.Chart.View exposing
     , viewPoints
     , viewRadarChart
     , viewSankey
+    , viewWordCloud
     )
 
 import Char exposing (toLower)
@@ -29,6 +30,7 @@ import I18n.Translations exposing (getCodeFromLn)
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Data, Diagram(..), Orientation(..), Settings, invertDiagram)
 import Lia.Markdown.HTML.Attributes exposing (annotation)
+import Lia.Utils exposing (string2Color)
 import List.Statistics as Stat
 import Maybe
 
@@ -93,9 +95,14 @@ viewPieChart settings width =
     encodePieChart width >> eCharts settings Nothing
 
 
-viewFunnel : Settings -> Int -> Data (List ( String, Float )) -> Html msg
-viewFunnel settings _ =
+viewFunnel : Settings -> Data (List ( String, Float )) -> Html msg
+viewFunnel settings =
     encodeFunnel >> eCharts settings Nothing
+
+
+viewWordCloud : Settings -> Int -> Data (List ( String, Float )) -> Html msg
+viewWordCloud settings width =
+    encodeWordCloud width >> eCharts settings Nothing
 
 
 viewHeatMap : Settings -> List String -> Data (List ( Int, Int, Maybe Float )) -> Html msg
@@ -126,39 +133,13 @@ eCharts { lang, attr, light } json option =
         []
 
 
-minMax : List Float -> Maybe ( Float, Float )
-minMax list =
-    case list of
-        [] ->
-            Nothing
-
-        l :: ls ->
-            ls
-                |> List.foldl
-                    (\value ( min, max ) ->
-                        ( if value < min then
-                            value
-
-                          else
-                            min
-                        , if value > max then
-                            value
-
-                          else
-                            max
-                        )
-                    )
-                    ( l, l )
-                |> Just
-
-
 encodeGraph : Data ( String, String, Float ) -> JE.Value
 encodeGraph { labels, category, data } =
     let
         ( min, max ) =
             data
                 |> List.map (\( _, _, v ) -> v)
-                |> minMax
+                |> Stat.minmax
                 |> Maybe.withDefault ( 0, 0 )
 
         lineWidth v =
@@ -190,8 +171,6 @@ encodeGraph { labels, category, data } =
         , ( "symbolSize", JE.float 40 )
         , ( "roam", JE.bool True )
         , ( "animation", JE.bool True )
-
-        --, ( "animationDurationUpdate", JE.int 30000 )
         , ( "edgeSymbol"
           , JE.list JE.string <|
                 if directed then
@@ -215,10 +194,6 @@ encodeGraph { labels, category, data } =
                         JE.object
                             [ ( "id", JE.string node )
                             , ( "name", JE.string node )
-
-                            --, ( "fixed", JE.bool True )
-                            --, ( "x", JE.int 100 )
-                            --, ( "y", JE.int 100 )
                             ]
                     )
           )
@@ -410,8 +385,6 @@ encodeBoxPlot { labels, category, data } =
         , restore = False
         }
     , grid
-
-    --  , brush
     , ( "tooltip", JE.object [] )
     , ( "series"
       , [ [ ( "type", JE.string "boxplot" )
@@ -508,8 +481,6 @@ encodeBarChart { labels, category, data, orientation } =
         , magicType = True
         , restore = False
         }
-
-    --  , brush
     , ( "tooltip", JE.object [] )
     , ( "series", bars )
     ]
@@ -614,8 +585,6 @@ encodeParallel { labels, category, data, orientation } =
               )
             ]
       )
-
-    --  , brush
     , ( "tooltip", JE.object [] )
     ]
         |> add (encodeTitle Nothing) labels.main
@@ -628,7 +597,7 @@ encodeMapChart json data =
         ( min, max ) =
             data.data
                 |> List.filterMap Tuple.second
-                |> minMax
+                |> Stat.minmax
                 |> Maybe.withDefault ( 0, 0 )
                 |> Tuple.mapBoth String.fromFloat String.fromFloat
     in
@@ -855,7 +824,7 @@ encodeHeatMap yLabels { labels, category, data } =
             data
                 |> List.concat
                 |> List.filterMap (\( _, _, v ) -> v)
-                |> minMax
+                |> Stat.minmax
                 |> Maybe.withDefault ( 0, 0 )
     in
     [ toolbox (Just "7%")
@@ -871,15 +840,11 @@ encodeHeatMap yLabels { labels, category, data } =
             if labels.main == Nothing then
                 [ ( "height", JE.string "82%" )
                 , ( "top", JE.string "0%" )
-
-                --, ( "right", JE.string "0%" )
                 ]
 
             else
                 [ ( "height", JE.string "74%" )
                 , ( "top", JE.string "7%" )
-
-                --, ( "right", JE.string "0%" )
                 ]
       )
     , xAxis labels.xLimits "category" labels.x category
@@ -889,8 +854,6 @@ encodeHeatMap yLabels { labels, category, data } =
             [ ( "min", JE.float min )
             , ( "max", JE.float max )
             , ( "calculable", JE.bool True )
-
-            --, ( "width", JE.string "300px" )
             , ( "itemHeight", JE.string "150px" )
             , ( "right", JE.string "7%" )
             , ( "bottom", JE.string "9" )
@@ -934,279 +897,83 @@ encodeHeatMap yLabels { labels, category, data } =
 
 
 encodePieChart : Int -> Data (List ( String, Float )) -> JE.Value
-encodePieChart width { labels, category, data } =
-    if List.isSingleton data then
-        let
-            pieces =
-                data
-                    |> List.head
-                    |> Maybe.withDefault []
-                    |> JE.list
-                        (\( name_, value_ ) ->
-                            JE.object
-                                [ ( "name", JE.string name_ )
-                                , ( "value", JE.float value_ )
-                                ]
-                        )
+encodePieChart width chart =
+    case chart.data of
+        [ pieces ] ->
+            encodeSingle chart
+                [ ( "type", JE.string "pie" )
+                , ( "radius"
+                  , JE.string <|
+                        if hasTitle chart then
+                            "65%"
 
-            head =
-                if labels.main /= Nothing || category /= [] then
-                    [ ( "title"
-                      , JE.object
-                            [ ( "text"
-                              , labels.main |> Maybe.withDefault "" |> JE.string
-                              )
-                            , ( "subtext", category |> List.head |> Maybe.withDefault "" |> JE.string )
-                            , ( "left", JE.string "center" )
-                            ]
-                      )
-                    ]
-
-                else
-                    []
-        in
-        [ ( "series"
-          , [ [ ( "type", JE.string "pie" )
-              , ( "name"
-                , category
-                    |> List.head
-                    |> Maybe.withDefault ""
-                    |> JE.string
-                )
-
-              --, ( "roseType", JE.string "radius" )
-              , ( "radius"
-                , JE.string <|
-                    if labels.main /= Nothing || category /= [] then
-                        "65%"
-
-                    else
-                        "75%"
-                )
-              , ( "center", JE.string "50%" )
-              , ( "selectedMode", JE.string "single" )
-              , ( "data", pieces )
-              ]
-            ]
-                |> JE.list JE.object
-          )
-        , toolbox Nothing
-            { saveAsImage = True
-            , dataView = True
-            , dataZoom = False
-            , magicType = False
-            , restore = False
-            }
-
-        --, ( "legend"
-        --  , JE.object
-        --        [ ( "data"
-        --          , data
-        --                |> List.map Tuple.first
-        --                |> JE.list JE.string
-        --          )
-        --, ( "right", JE.int 0 )
-        --        , ( "top", JE.int 28 )
-        --        ]
-        --  )
-        --  , brush
-        , ( "tooltip"
-          , JE.object
-                [ ( "trigger", JE.string "item" )
-                , ( "formatter"
-                  , JE.string "{b} : {c} ({d}%)"
-                    -- "{a}<br/>{b} : {c} ({d}%)"
+                        else
+                            "75%"
                   )
+                , ( "center", JE.string "50%" )
                 ]
-          )
-        ]
-            |> List.append head
-            |> JE.object
+                pieces
 
-    else
-        encodePieCharts width labels.main category data
+        _ ->
+            let
+                step =
+                    stepWidth chart.data
+
+                radius =
+                    toFloat width
+                        / (6.1 * toFloat (List.length chart.data))
+                        |> min 70
+                        |> percent
+            in
+            encodeMultiple chart
+                (\i ->
+                    [ ( "type", JE.string "pie" )
+                    , ( "radius", JE.string radius )
+                    , ( "center", JE.list JE.string [ percent (toFloat (2 * i) * step + step), "50%" ] )
+                    ]
+                )
 
 
 encodeFunnel : Data (List ( String, Float )) -> JE.Value
-encodeFunnel { labels, category, data, orientation } =
-    if List.isSingleton data then
-        let
-            pieces =
-                data
-                    |> List.head
-                    |> Maybe.withDefault []
-                    |> JE.list
-                        (\( name_, value_ ) ->
-                            JE.object
-                                [ ( "name", JE.string name_ )
-                                , ( "value", JE.float value_ )
-                                ]
-                        )
+encodeFunnel chart =
+    case chart.data of
+        [ pieces ] ->
+            encodeSingle chart
+                ([ ( "type", JE.string "funnel" )
+                 , ( "sort", JE.string "none" )
+                 ]
+                    |> CList.addIf (chart.orientation == Just Horizontal) ( "orient", JE.string "horizontal" )
+                )
+                pieces
 
-            head =
-                if labels.main /= Nothing || category /= [] then
-                    [ ( "title"
-                      , JE.object
-                            [ ( "text"
-                              , labels.main |> Maybe.withDefault "" |> JE.string
-                              )
-                            , ( "subtext", category |> List.head |> Maybe.withDefault "" |> JE.string )
-                            , ( "left", JE.string "center" )
-                            ]
-                      )
+        _ ->
+            let
+                step =
+                    stepWidth chart.data
+            in
+            encodeMultiple chart
+                (\i ->
+                    [ ( "type", JE.string "funnel" )
+                    , ( "width", JE.string (percent (100 / toFloat (List.length chart.data))) )
+                    , ( "sort", JE.string "none" )
+                    , ( "left", JE.string (percent (toFloat (2 * i) * step)) )
                     ]
-
-                else
-                    []
-        in
-        [ ( "series"
-          , [ [ ( "type", JE.string "funnel" )
-              , ( "name"
-                , category
-                    |> List.head
-                    |> Maybe.withDefault ""
-                    |> JE.string
                 )
 
-              --, ( "roseType", JE.string "radius" )
-              , ( "radius"
-                , JE.string <|
-                    if labels.main /= Nothing || category /= [] then
-                        "65%"
 
-                    else
-                        "75%"
-                )
-              , ( "center", JE.string "50%" )
-              , ( "selectedMode", JE.string "single" )
-              , ( "data", pieces )
-              , ( "sort", JE.string "none" )
-              ]
-                |> CList.addIf (orientation == Just Horizontal) ( "orient", JE.string "horizontal" )
+{-| A single pie or funnel, the first category is used as subtitle.
+-}
+encodeSingle : Data (List ( String, Float )) -> List ( String, JE.Value ) -> List ( String, Float ) -> JE.Value
+encodeSingle chart specific pieces =
+    [ ( "series"
+      , JE.list JE.object
+            [ specific
+                ++ [ ( "name", JE.string (subtitle chart) )
+                   , ( "selectedMode", JE.string "single" )
+                   , ( "data", JE.list encodePiece pieces )
+                   ]
             ]
-                |> JE.list JE.object
-          )
-        , toolbox Nothing
-            { saveAsImage = True
-            , dataView = True
-            , dataZoom = False
-            , magicType = False
-            , restore = False
-            }
-
-        --, ( "legend"
-        --  , JE.object
-        --        [ ( "data"
-        --          , data
-        --                |> List.map Tuple.first
-        --                |> JE.list JE.string
-        --          )
-        --, ( "right", JE.int 0 )
-        --        , ( "top", JE.int 28 )
-        --        ]
-        --  )
-        --  , brush
-        , ( "tooltip"
-          , JE.object
-                [ ( "trigger", JE.string "item" )
-                , ( "formatter"
-                  , JE.string "{b} : {c} ({d}%)"
-                    -- "{a}<br/>{b} : {c} ({d}%)"
-                  )
-                ]
-          )
-        ]
-            |> List.append head
-            |> JE.object
-
-    else
-        encodeFunnels labels.main category data
-
-
-encodeFunnels : Maybe String -> List String -> List (List ( String, Float )) -> JE.Value
-encodeFunnels title subtitle data =
-    let
-        relWidth =
-            ((100 / (toFloat <| List.length data))
-                |> String.fromFloat
-            )
-                ++ "%"
-
-        step =
-            100 / toFloat (2 * List.length data)
-
-        categories =
-            data
-                |> List.head
-                |> Maybe.map (List.map Tuple.first)
-                |> Maybe.withDefault []
-
-        pieces =
-            data
-                |> List.indexedMap
-                    (\i x ->
-                        [ ( "type", JE.string "funnel" )
-                        , ( "width", JE.string relWidth )
-                        , ( "sort", JE.string "none" )
-                        , ( "left"
-                          , String.fromFloat (toFloat (2 * i) * step)
-                                ++ "%"
-                                |> JE.string
-                          )
-                        , ( "label"
-                          , JE.object
-                                [ ( "normal"
-                                  , JE.object
-                                        [ ( "formatter", JE.string "{c}" )
-                                        , ( "position", JE.string "inside" )
-                                        ]
-                                  )
-                                ]
-                          )
-                        , ( "selectedMode", JE.string "single" )
-                        , ( "data"
-                          , x
-                                |> JE.list
-                                    (\( name_, value_ ) ->
-                                        JE.object
-                                            [ ( "name", JE.string name_ )
-                                            , ( "value", JE.float value_ )
-                                            ]
-                                    )
-                          )
-                        ]
-                    )
-
-        head =
-            if title /= Nothing || subtitle /= [] then
-                [ ( "title"
-                  , subtitle
-                        |> List.indexedMap
-                            (\i sub ->
-                                [ ( "subtext", JE.string sub )
-                                , ( "bottom", JE.int 40 )
-                                , ( "textAlign", JE.string "center" )
-                                , ( "left"
-                                  , String.fromFloat (toFloat (2 * i) * step + step)
-                                        ++ "%"
-                                        |> JE.string
-                                  )
-                                ]
-                            )
-                        |> (::)
-                            [ ( "text"
-                              , title |> Maybe.withDefault "" |> JE.string
-                              )
-                            , ( "left", JE.string "center" )
-                            ]
-                        |> JE.list JE.object
-                  )
-                ]
-
-            else
-                []
-    in
-    [ ( "series", JE.list JE.object pieces )
+      )
     , toolbox Nothing
         { saveAsImage = True
         , dataView = True
@@ -1214,77 +981,24 @@ encodeFunnels title subtitle data =
         , magicType = False
         , restore = False
         }
-
-    --, ( "legend"
-    --  , JE.object
-    --        [ ( "data"
-    --          , data
-    --                |> List.map Tuple.first
-    --                |> JE.list JE.string
-    --          )
-    --, ( "right", JE.int 0 )
-    --        , ( "top", JE.int 28 )
-    --        ]
-    --  )
-    --  , brush
-    , encodeLegend [ ( "top", JE.string "30px" ) ] categories
-    , ( "tooltip"
-      , JE.object
-            [ ( "trigger", JE.string "item" )
-            , ( "formatter"
-              , JE.string "{b} : {c} ({d}%)"
-                -- "{a}<br/>{b} : {c} ({d}%)"
-              )
-            ]
-      )
+    , itemTooltip
     ]
-        |> List.append head
+        |> CList.addIf (hasTitle chart) (titles chart)
         |> JE.object
 
 
-encodePieCharts : Int -> Maybe String -> List String -> List (List ( String, Float )) -> JE.Value
-encodePieCharts width title subtitle data =
-    let
-        relWidth =
-            (toFloat width
-                / (6.1 * toFloat (List.length data))
-                |> (\w ->
-                        if w > 70 then
-                            70
-
-                        else
-                            w
-                   )
-                |> String.fromFloat
-            )
-                ++ "%"
-
-        step =
-            100 / toFloat (2 * List.length data)
-
-        categories =
-            data
-                |> List.head
-                |> Maybe.map (List.map Tuple.first)
-                |> Maybe.withDefault []
-
-        pieces =
-            data
-                |> List.indexedMap
-                    (\i x ->
-                        [ ( "type", JE.string "pie" )
-                        , ( "radius"
-                          , JE.string relWidth
-                          )
-                        , ( "center"
-                          , [ String.fromFloat (toFloat (2 * i) * step + step)
-                                ++ "%"
-                            , "50%"
-                            ]
-                                |> JE.list JE.string
-                          )
-                        , ( "label"
-                          , JE.object
+{-| Multiple pies or funnels side by side, one per category, `specific` returns
+the type and position of the i-th diagram.
+-}
+encodeMultiple : Data (List ( String, Float )) -> (Int -> List ( String, JE.Value )) -> JE.Value
+encodeMultiple chart specific =
+    [ ( "series"
+      , chart.data
+            |> List.indexedMap
+                (\i pieces ->
+                    specific i
+                        ++ [ ( "label"
+                             , JE.object
                                 [ ( "normal"
                                   , JE.object
                                         [ ( "formatter", JE.string "{c}" )
@@ -1292,78 +1006,187 @@ encodePieCharts width title subtitle data =
                                         ]
                                   )
                                 ]
-                          )
-                        , ( "selectedMode", JE.string "single" )
-                        , ( "data"
-                          , x
-                                |> JE.list
-                                    (\( name_, value_ ) ->
-                                        JE.object
-                                            [ ( "name", JE.string name_ )
-                                            , ( "value", JE.float value_ )
-                                            ]
-                                    )
-                          )
-                        ]
-                    )
+                             )
+                           , ( "selectedMode", JE.string "single" )
+                           , ( "data", JE.list encodePiece pieces )
+                           ]
+                )
+            |> JE.list JE.object
+      )
+    , toolbox Nothing
+        { saveAsImage = True
+        , dataView = True
+        , dataZoom = False
+        , magicType = False
+        , restore = False
+        }
+    , chart.data
+        |> List.head
+        |> Maybe.map (List.map Tuple.first)
+        |> Maybe.withDefault []
+        |> encodeLegend [ ( "top", JE.string "30px" ) ]
+    , itemTooltip
+    ]
+        |> CList.addIf (hasTitle chart) (titles chart)
+        |> JE.object
 
-        head =
-            if title /= Nothing || subtitle /= [] then
-                [ ( "title"
-                  , subtitle
-                        |> List.indexedMap
-                            (\i sub ->
-                                [ ( "subtext", JE.string sub )
-                                , ( "bottom", JE.int 40 )
-                                , ( "textAlign", JE.string "center" )
-                                , ( "left"
-                                  , String.fromFloat (toFloat (2 * i) * step + step)
-                                        ++ "%"
-                                        |> JE.string
-                                  )
-                                ]
-                            )
-                        |> (::)
-                            [ ( "text"
-                              , title |> Maybe.withDefault "" |> JE.string
-                              )
-                            , ( "left", JE.string "center" )
-                            ]
-                        |> JE.list JE.object
-                  )
+
+{-| The main title, a single diagram shows its category as subtitle, multiple
+diagrams side by side get theirs below.
+-}
+titles : Data (List x) -> ( String, JE.Value )
+titles chart =
+    let
+        main =
+            ( "text", chart.labels.main |> Maybe.withDefault "" |> JE.string )
+    in
+    ( "title"
+    , case chart.data of
+        [ _ ] ->
+            JE.object
+                [ main
+                , ( "subtext", JE.string (subtitle chart) )
+                , ( "left", JE.string "center" )
                 ]
 
-            else
-                []
-    in
-    [ ( "series", JE.list JE.object pieces )
-    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False, restore = False }
+        _ ->
+            chart.category
+                |> List.indexedMap
+                    (\i sub ->
+                        [ ( "subtext", JE.string sub )
+                        , ( "bottom", JE.int 40 )
+                        , ( "textAlign", JE.string "center" )
+                        , ( "left", JE.string (percent (toFloat (2 * i + 1) * stepWidth chart.data)) )
+                        ]
+                    )
+                |> (::) [ main, ( "left", JE.string "center" ) ]
+                |> JE.list JE.object
+    )
 
-    --, ( "legend"
-    --  , JE.object
-    --        [ ( "data"
-    --          , data
-    --                |> List.map Tuple.first
-    --                |> JE.list JE.string
-    --          )
-    --, ( "right", JE.int 0 )
-    --        , ( "top", JE.int 28 )
-    --        ]
-    --  )
-    --  , brush
-    , encodeLegend [ ( "top", JE.string "30px" ) ] categories
+
+{-| Word clouds side by side, like pies. All clouds share one font scale, so
+equal values have equal sizes, and every word keeps its color.
+-}
+encodeWordCloud : Int -> Data (List ( String, Float )) -> JE.Value
+encodeWordCloud width chart =
+    let
+        step =
+            stepWidth chart.data
+
+        values =
+            List.concatMap (List.map Tuple.second) chart.data
+
+        ( low, high ) =
+            values |> Stat.minmax |> Maybe.withDefault ( 0, 0 )
+
+        largest =
+            toFloat width / toFloat (5 * List.length chart.data) |> clamp 16 50
+
+        fontSize value =
+            if high == low then
+                largest
+
+            else
+                12 + (value - low) / (high - low) * (largest - 12)
+
+        sizeRange words =
+            List.map Tuple.second words
+                |> Stat.minmax
+                |> Maybe.map (\( min, max ) -> [ fontSize min, fontSize max ])
+                |> Maybe.withDefault [ largest, largest ]
+    in
+    [ ( "series"
+      , chart.data
+            |> List.indexedMap
+                (\i words ->
+                    [ ( "type", JE.string "wordCloud" )
+                    , ( "left", JE.string (percent (toFloat (2 * i) * step)) )
+                    , ( "width", JE.string (percent (2 * step)) )
+                    , ( "top"
+                      , JE.string <|
+                            if hasTitle chart then
+                                "15%"
+
+                            else
+                                "5%"
+                      )
+                    , ( "height", JE.string "70%" )
+                    , ( "sizeRange", JE.list JE.float (sizeRange words) )
+                    , ( "gridSize", JE.int 5 )
+                    , ( "shrinkToFit", JE.bool True )
+                    , ( "layoutAnimation", JE.bool True )
+                    , ( "emphasis", JE.object [ ( "focus", JE.string "self" ) ] )
+                    , ( "data"
+                      , words
+                            |> JE.list
+                                (\( name, value ) ->
+                                    JE.object
+                                        [ ( "name", JE.string name )
+                                        , ( "value", JE.float value )
+                                        , ( "textStyle", JE.object [ ( "color", JE.string (string2Color 160 name) ) ] )
+                                        ]
+                                )
+                      )
+                    ]
+                )
+            |> JE.list JE.object
+      )
+    , toolbox Nothing
+        { saveAsImage = True
+        , dataView = True
+        , dataZoom = False
+        , magicType = False
+        , restore = False
+        }
     , ( "tooltip"
       , JE.object
             [ ( "trigger", JE.string "item" )
-            , ( "formatter"
-              , JE.string "{b} : {c} ({d}%)"
-                -- "{a}<br/>{b} : {c} ({d}%)"
-              )
+            , ( "formatter", JE.string "{b} : {c}" )
             ]
       )
     ]
-        |> List.append head
+        |> CList.addIf (hasTitle chart) (titles chart)
         |> JE.object
+
+
+hasTitle : Data x -> Bool
+hasTitle { labels, category } =
+    labels.main /= Nothing || category /= []
+
+
+subtitle : Data x -> String
+subtitle =
+    .category >> List.head >> Maybe.withDefault ""
+
+
+{-| Half the width of one of n diagrams side by side, in percent.
+-}
+stepWidth : List x -> Float
+stepWidth data =
+    100 / toFloat (2 * List.length data)
+
+
+percent : Float -> String
+percent value =
+    String.fromFloat value ++ "%"
+
+
+encodePiece : ( String, Float ) -> JE.Value
+encodePiece ( name, value ) =
+    JE.object
+        [ ( "name", JE.string name )
+        , ( "value", JE.float value )
+        ]
+
+
+itemTooltip : ( String, JE.Value )
+itemTooltip =
+    ( "tooltip"
+    , JE.object
+        [ ( "trigger", JE.string "item" )
+        , ( "formatter", JE.string "{b} : {c} ({d}%)" )
+        ]
+    )
 
 
 label : ( String, JE.Value )
@@ -1396,7 +1219,7 @@ encode withColor chart =
                                 Dots points _ ->
                                     points
                     )
-                |> minMax
+                |> Stat.minmax
                 |> Maybe.withDefault ( 0, 0 )
                 |> Tuple.mapBoth String.fromFloat String.fromFloat
     in
@@ -1438,8 +1261,6 @@ encode withColor chart =
         , ( "legend"
           , JE.object
                 [ ( "data", JE.list JE.string chart.legend )
-
-                --, ( "right", JE.int 0 )
                 , ( "top", JE.int 28 )
                 ]
           )
@@ -1450,8 +1271,6 @@ encode withColor chart =
             , magicType = True
             , restore = False
             }
-
-        --  , brush
         , ( "tooltip", JE.object [] )
         , ( "series"
           , chart.diagrams
@@ -1465,25 +1284,6 @@ encode withColor chart =
                 |> JE.list (series withColor)
           )
         ]
-
-
-
--- brush : ( String, JE.Value )
--- brush =
---     ( "brush"
---     , JE.object
---         [ ( "toolbox"
---           , JE.list JE.string
---                 [ "rect"
---                 , "polygon"
---                 , "lineX"
---                 , "lineY"
---                 , "keep"
---                 , "clear"
---                 ]
---           )
---         ]
---     )
 
 
 toolbox :
@@ -1540,52 +1340,31 @@ feature config =
 
 series : Bool -> ( Char, Diagram ) -> JE.Value
 series withColor ( char, diagram ) =
-    JE.object <|
-        List.append
-            (CList.addIf withColor
-                (color char)
-                [ symbol char
-                , symbolSize char
-                , label
-                ]
-            )
-        <|
+    let
+        ( points, name, specific ) =
             case diagram of
-                Lines list label_ ->
-                    label_
-                        |> name
-                        |> List.append
-                            [ ( "data"
-                              , list |> JE.list (\point -> JE.list JE.float [ point.x, point.y ])
-                              )
-                            , ( "type", JE.string "line" )
-                            , ( "barGap", JE.int 0 )
-                            , style withColor char
-                            , smooth withColor char
-                            ]
+                Lines list name_ ->
+                    ( list
+                    , name_
+                    , [ ( "type", JE.string "line" )
+                      , style withColor char
+                      , smooth withColor char
+                      ]
+                    )
 
-                Dots list label_ ->
-                    label_
-                        |> name
-                        |> List.append
-                            [ ( "data"
-                              , list
-                                    |> List.map (\point -> [ point.x, point.y ])
-                                    |> JE.list (JE.list JE.float)
-                              )
-                            , ( "barGap", JE.int 0 )
-                            , ( "type", JE.string "scatter" )
-                            ]
-
-
-name : Maybe String -> List ( String, JE.Value )
-name label_ =
-    case label_ of
-        Nothing ->
-            []
-
-        Just str ->
-            [ ( "name", JE.string str ) ]
+                Dots list name_ ->
+                    ( list, name_, [ ( "type", JE.string "scatter" ) ] )
+    in
+    [ symbol char
+    , symbolSize char
+    , label
+    , ( "data", JE.list (\point -> JE.list JE.float [ point.x, point.y ]) points )
+    , ( "barGap", JE.int 0 )
+    ]
+        ++ specific
+        |> CList.addIf withColor (color char)
+        |> add (JE.string >> Tuple.pair "name") name
+        |> JE.object
 
 
 style : Bool -> Char -> ( String, JE.Value )

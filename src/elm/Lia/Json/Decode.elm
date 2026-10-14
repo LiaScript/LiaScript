@@ -18,67 +18,67 @@ import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 
 
-{-| Decode the entire structure of a pre-parsed LiaScript course. The additional
-screen `width` is only used to render the course with an opened or closed table
-of contents.
+{-| Decode a pre-parsed LiaScript course, as stored by `Lia.Json.Encode.encode`.
+The `seed`, the split `pane` and the classroom settings (`sync`) are taken over
+from the running app, everything else that is not stored gets its default
+value. The sections still have to be parsed when they are visited.
 -}
 decode : Int -> SplitPane.State -> Sync.Settings -> JD.Value -> Result JD.Error Model
 decode seed pane sync =
-    toModel seed pane sync
+    JD.field "readme" JD.string
+        |> JD.andThen (toModel seed pane sync)
         |> JD.decodeValue
 
 
-andMap : String -> JD.Decoder a -> JD.Decoder (a -> value) -> JD.Decoder value
-andMap key dec =
-    JD.map2 (|>) (JD.field key dec)
-
-
-toModel : Int -> SplitPane.State -> Sync.Settings -> JD.Decoder Model
-toModel seed pane sync =
-    JD.field "readme" JD.string
-        |> JD.andThen
-            (\readme ->
-                JD.succeed Model
-                    |> andMap "url" JD.string
-                    |> andMap "readme" (JD.string |> JD.map repo)
-                    |> JD.map2 (|>) (JD.succeed readme)
-                    |> andMap "origin" JD.string
-                    |> andMap "str_title" JD.string
-                    |> JD.map2 (|>) (JD.succeed (Settings.init (Just False) False Settings.Slides))
-                    |> JD.map2 (|>) (JD.succeed Nothing)
-                    |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap (Section.init seed)))
-                    |> andMap "section_active" JD.int
-                    |> JD.map2 (|>) (JD.succeed Nothing)
-                    |> andMap "definition"
-                        (Definition.decode
-                            (case readme |> urlQuery of
-                                Just query ->
-                                    "?" ++ query
-
-                                Nothing ->
-                                    ""
-                            )
-                        )
-                    |> JD.map2 (|>) (JD.succeed Index.init)
-                    |> JD.map2 (|>) (JD.succeed [])
-                    |> JD.map2 (|>) (JD.succeed [])
-                    |> andMap "translation"
-                        (JD.string
-                            |> JD.map (Translations.getLnFromCode >> Maybe.withDefault Translations.En)
-                        )
-                    |> andMap "translation" JD.string
-                    |> JD.map2 (|>) (JD.succeed Nothing)
-                    |> andMap "translation" JD.string
-                    |> JD.map2 (|>) (JD.succeed identity)
-                    |> JD.map2 (|>) (JD.succeed Dict.empty)
-                    |> JD.map2 (|>) (JD.succeed Nothing)
-                    |> JD.map2 (|>) (JD.succeed sync)
-                    |> JD.map2 (|>) (JD.succeed False)
-                    |> JD.map2 (|>) (JD.succeed seed)
-                    |> JD.map2 (|>) (JD.succeed pane)
-                    |> JD.map2 (|>) (JD.succeed Chat.init)
-                    |> JD.map2 (|>) (JD.succeed Overlay.init)
-            )
+toModel : Int -> SplitPane.State -> Sync.Settings -> String -> JD.Decoder Model
+toModel seed pane sync readme =
+    JD.map7
+        (\url origin title sections section_active definition language ->
+            { url = url
+            , repositoryUrl = repo readme
+            , readme = readme
+            , origin = origin
+            , title = title
+            , settings = Settings.init (Just False) False Settings.Slides
+            , error = Nothing
+            , sections = sections
+            , section_active = section_active
+            , anchor = Nothing
+            , definition = definition
+            , index_model = Index.init
+            , resource = []
+            , to_do = []
+            , translation =
+                language
+                    |> Translations.getLnFromCode
+                    |> Maybe.withDefault Translations.En
+            , langCode = language
+            , langName = Nothing
+            , langCodeOriginal = language
+            , search_index = identity
+            , media = Dict.empty
+            , modal = Nothing
+            , sync = sync
+            , persistent = False
+            , seed = seed
+            , pane = pane
+            , chat = Chat.init
+            , overlayVideo = Overlay.init
+            }
+        )
+        (JD.field "url" JD.string)
+        (JD.field "origin" JD.string)
+        (JD.field "str_title" JD.string)
+        (JD.field "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap (Section.init seed))))
+        (JD.field "section_active" JD.int)
+        (readme
+            |> urlQuery
+            |> Maybe.map ((++) "?")
+            |> Maybe.withDefault ""
+            |> Definition.decode
+            |> JD.field "definition"
+        )
+        (JD.field "translation" JD.string)
 
 
 toSectionBase : JD.Decoder Section.Base

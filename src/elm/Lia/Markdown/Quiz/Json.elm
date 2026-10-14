@@ -17,6 +17,8 @@ import Lia.Markdown.Quiz.Types exposing (Element, Quiz, State(..), Type(..), Vec
 import Lia.Markdown.Quiz.Vector.Json as Vector
 
 
+{-| Encode the quiz definition, as part of the exported Markdown.
+-}
 encode : (x -> JE.Value) -> Quiz x -> JE.Value
 encode encoder quiz =
     JE.object
@@ -40,11 +42,16 @@ encode encoder quiz =
         ]
 
 
+{-| Encode the states of all quizzes of a section, to be stored.
+-}
 fromVector : Vector -> JE.Value
 fromVector =
     JE.array fromElement
 
 
+{-| **private:** Only the user's state and the score are stored, the options
+are defined by the course.
+-}
 fromElement : Element -> JE.Value
 fromElement element =
     [ ( "solved"
@@ -73,6 +80,7 @@ fromElement element =
         |> JE.object
 
 
+{-| -}
 fromState : State -> JE.Value
 fromState state =
     case state of
@@ -92,6 +100,9 @@ fromState state =
             Matrix.fromState s
 
 
+{-| Decode a stored vector, it has to be merged with the parsed one (see
+`Quiz.Update`), since the options and scripts are missing.
+-}
 toVector : JD.Value -> Result JD.Error Vector
 toVector =
     JD.decodeValue (JD.array toElement)
@@ -103,13 +114,13 @@ toElement =
         solved_decoder i =
             case i of
                 0 ->
-                    JD.succeed Solution.Open
+                    Solution.Open
 
                 1 ->
-                    JD.succeed Solution.Solved
+                    Solution.Solved
 
                 _ ->
-                    JD.succeed Solution.ReSolved
+                    Solution.ReSolved
 
         set solved state trial hint error_msg =
             Element
@@ -133,13 +144,14 @@ toElement =
                 True
     in
     JD.map5 set
-        (JD.field "solved" JD.int |> JD.andThen solved_decoder)
+        (JD.field "solved" JD.int |> JD.map solved_decoder)
         (JD.field "state" toState)
         (JD.field "trial" JD.int)
         (JD.field "hint" JD.int)
         (JD.field "error_msg" JD.string)
 
 
+{-| -}
 toState : JD.Decoder State
 toState =
     JD.oneOf

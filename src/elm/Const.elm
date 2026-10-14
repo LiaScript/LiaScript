@@ -3,13 +3,11 @@ module Const exposing
     , globalBreakpoints
     , gunDB_ServerURL
     , icon
-    , jitsi_Domain
     , nostrRelayURLs
     , tooltipBreakpoint
     , urlLiascript
     , urlLiascriptCourse
     , urlProxy
-    , webTorrent_TrackerURLs
     )
 
 
@@ -98,18 +96,6 @@ urlLiascriptCourse =
 gunDB_ServerURL : String
 gunDB_ServerURL =
     "https://gun.rig.airfaas.com/gun, https://relay.peer.ooo/gun"
-
-
-{-| Default Jitsi domain
--}
-jitsi_Domain : String
-jitsi_Domain =
-    "meet.jit.si"
-
-
-webTorrent_TrackerURLs : String
-webTorrent_TrackerURLs =
-    "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, wss://tracker.files.fm:7073/announce, wss://tracker.openwebtorrent.com:443/announce"
 
 
 {-| Default public Nostr relays used within the Sync module

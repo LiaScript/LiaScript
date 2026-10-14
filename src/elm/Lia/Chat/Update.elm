@@ -8,6 +8,7 @@ import Dict
 import Lia.Chat.Model exposing (Model)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Update as Markdown
+import Lia.Section exposing (Section)
 import Lia.Sync.Types as Sync
 import Return exposing (Return)
 import Service.Event as Event exposing (Event)
@@ -21,6 +22,8 @@ type Msg
     | Handle Event
 
 
+{-| -}
+handle : Event -> Msg
 handle =
     Handle
 
@@ -36,10 +39,10 @@ update { msg, definition, model, sync } =
     case msg of
         UpdateMarkdown id childMsg ->
             case Dict.get id model.messages of
-                Just section ->
-                    section.section
+                Just message ->
+                    message.section
                         |> Markdown.update sync definition childMsg
-                        |> Return.mapValCmd (\sec -> { model | messages = Dict.insert id { section = sec, peer = section.peer, verified = section.verified } model.messages }) (UpdateMarkdown id)
+                        |> Return.mapValCmd (setSection id message model) (UpdateMarkdown id)
 
                 Nothing ->
                     model |> Return.val
@@ -52,10 +55,10 @@ update { msg, definition, model, sync } =
                             String.fromInt id
                     in
                     case Dict.get id_ model.messages of
-                        Just section ->
-                            section.section
+                        Just message ->
+                            message.section
                                 |> Markdown.handle sync definition topic e
-                                |> Return.mapValCmd (\sec -> { model | messages = Dict.insert id_ { section = sec, peer = section.peer, verified = section.verified } model.messages }) (UpdateMarkdown id_)
+                                |> Return.mapValCmd (setSection id_ message model) (UpdateMarkdown id_)
 
                         _ ->
                             Return.val model
@@ -76,3 +79,10 @@ update { msg, definition, model, sync } =
                 { model | input = "" }
                     |> Return.val
                     |> Return.batchEvent (Sync.chat model.input)
+
+
+{-| Replace the section of chat message `id`, sender and verification stay.
+-}
+setSection : String -> { message | peer : String, verified : Bool } -> Model -> Section -> Model
+setSection id message model section =
+    { model | messages = Dict.insert id { section = section, peer = message.peer, verified = message.verified } model.messages }

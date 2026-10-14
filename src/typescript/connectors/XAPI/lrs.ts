@@ -149,34 +149,109 @@ export class LRSConnection {
   }
 
   /**
-   * Get statements from the LRS
+   * Get statements from the LRS. An LRS returns them in pages of its own
+   * size (lrsql: 50) and links the next one in `more`; pages are read and
+   * joined up to `max` statements, newest first.
    * @param query Query parameters for filtering statements
-   * @returns Promise resolving to the statements
+   * @param max The most statements to read (default: 10000)
+   * @returns Promise resolving to the statements, null if none could be read
    */
-  async getStatements(query: Record<string, any> = {}): Promise<any> {
-    try {
-      // Build a URLSearchParams with proper serialization
-      const params = new URLSearchParams()
+  async getStatements(
+    query: Record<string, any> = {},
+    max: number = 10000
+  ): Promise<any> {
+    // Build a URLSearchParams with proper serialization
+    const params = new URLSearchParams()
 
-      // Properly handle each parameter
-      for (const [key, value] of Object.entries(query)) {
-        if (value === null || value === undefined) {
-          continue // Skip null or undefined values
-        }
-
-        if (typeof value === 'object') {
-          // Stringify objects properly for query parameters
-          params.append(key, JSON.stringify(value))
-        } else {
-          params.append(key, String(value))
-        }
+    // Properly handle each parameter
+    for (const [key, value] of Object.entries(query)) {
+      if (value === null || value === undefined) {
+        continue // Skip null or undefined values
       }
 
-      // Build URL with endpoint + statements + query params
-      const url = `${this.endpoint}statements${
-        params.toString() ? `?${params.toString()}` : ''
-      }`
+      if (typeof value === 'object') {
+        // Stringify objects properly for query parameters
+        params.append(key, JSON.stringify(value))
+      } else {
+        params.append(key, String(value))
+      }
+    }
 
+    // Build URL with endpoint + statements + query params
+    let url = `${this.endpoint}statements${
+      params.toString() ? `?${params.toString()}` : ''
+    }`
+
+    let result: any = null
+
+    // a bound for an LRS that returns pages of a single statement
+    for (let page = 0; page < 1000 && url; page++) {
+      if (result && result.statements.length >= max) {
+        console.warn(
+          `xAPI: read the newest ${result.statements.length} statements, older ones are not restored`
+        )
+        break
+      }
+
+      const data = await this.getPage(url)
+      if (!data) break
+
+      if (!result) {
+        result = { ...data, statements: [...(data.statements || [])] }
+      } else {
+        result.statements.push(...(data.statements || []))
+        result.more = data.more
+      }
+
+      // `more` is relative to the LRS: an absolute path, or relative to the
+      // endpoint
+      url = data.more ? this.resolve(data.more) : ''
+    }
+
+    return result
+  }
+
+  /**
+   * A URL relative to the endpoint, which itself may be relative to the
+   * page (`/xapi/`); '' if it cannot be resolved
+   */
+  private resolve(url: string): string {
+    try {
+      const base = new URL(this.endpoint, (globalThis as any).location?.href)
+      return new URL(url, base).toString()
+    } catch (e) {
+      console.warn('xAPI: cannot resolve', url, 'against', this.endpoint)
+      return ''
+    }
+  }
+
+  /**
+   * Send a statement while the page is closed. Unlike sendBeacon, a keepalive
+   * request carries the credentials, and the request outlives the page.
+   * @param statement The xAPI statement to send
+   */
+  sendOnUnload(statement: any) {
+    try {
+      fetch(this.endpoint + 'statements', {
+        method: 'POST',
+        keepalive: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Experience-API-Version': this.version,
+          Authorization: this.auth,
+        },
+        body: JSON.stringify(this.ensureStringReferences(statement)),
+      }).catch((error) =>
+        console.error('Error sending statement to LRS:', error)
+      )
+    } catch (error) {
+      console.error('Error sending statement to LRS:', error)
+    }
+  }
+
+  /** One page of statements, or null */
+  private async getPage(url: string): Promise<any> {
+    try {
       if (this.debug) {
         console.log('Getting statements from LRS:', url)
       }

@@ -1,5 +1,31 @@
 module Lia.Markdown.Survey.Parser exposing (parse)
 
+{-| Parse the different survey types:
+
+    [[___ ___]]                       -- Text with 2 lines
+
+    [[ option 1 | option 2 ]]         -- Select
+
+    [->[ option 1 | option 2 ]]       -- DragAndDrop
+
+    [(id1)] option 1                  -- Vector (radio buttons)
+    [(id2)] option 2
+
+    [[id1]] option 1                  -- Vector (checkboxes)
+    [[id2]] option 2
+
+    [(id1)(id2)]                      -- Matrix (radio buttons)
+    [ ] row 1
+    [ ] row 2
+
+    [[id1][id2]]                      -- Matrix (checkboxes)
+    [ ] row 1
+
+Every type can be followed by a `<script>`, which checks the answer, and every
+line can start with a list marker (`-`, `+`, `*`).
+
+-}
+
 import Array
 import Combine
     exposing
@@ -34,73 +60,107 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Parser as Block
 import Lia.Markdown.Quiz.Block.Types as BlockTypes
 import Lia.Markdown.Quiz.Parser exposing (maybeJS)
-import Lia.Markdown.Survey.Types exposing (Options, State(..), Survey, Type(..), analysisType)
+import Lia.Markdown.Survey.Types
+    exposing
+        ( Options
+        , State(..)
+        , Survey
+        , Type(..)
+        , analysisType
+        )
 import Lia.Markdown.Types as Markdown
-import Lia.Parser.Context exposing (Context)
+import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
 import PseudoRandom
 
 
+{-| Parse a survey with the `attr` of its preceding HTML comment and push its
+initial state to the `survey_vector`. `blocks` is the parser for the nested
+Markdown of `Vector` options.
+
+The order matters, a matrix header looks like a single vector option.
+
+-}
 parse : Parser Context Markdown.Block -> Parameters -> Parser Context (Survey Markdown.Block)
 parse blocks attr =
-    survey blocks |> andThen (modify_State attr)
-
-
-survey : Parser Context Markdown.Block -> Parser Context (Survey Markdown.Block)
-survey blocks =
     choice
-        [ text_lines |> map Text
-        , Block.parse parse_inlines |> andThen toSelect
-        , vector blocks parens |> map (toVector False)
-        , vector blocks brackets |> map (toVector True)
-        , header "(" ")" |> map (toMatrix False) |> andMap questions
-        , header "[" "]" |> map (toMatrix True) |> andMap questions
+        [ textSurvey
+        , selectSurvey
+        , vector blocks radioMarker |> map (toVector False)
+        , vector blocks checkboxMarker |> map (toVector True)
+        , radioMatrix
+        , checkboxMatrix
         ]
         |> map Survey
         |> andMap (withState (.survey_vector >> Array.length >> succeed))
+        |> andThen (addState attr)
 
 
-toVector : Bool -> List ( String, List body ) -> Type body
-toVector bool definition =
-    definition
-        |> List.map Tuple.first
-        |> analysisType
-        |> Vector bool definition
-
-
-toMatrix : Bool -> List Inlines -> (List Inlines -> Type body)
-toMatrix bool ids =
-    ids
-        |> List.map stringify
-        |> Matrix bool ids
-
-
-text_lines : Parser Context Int
-text_lines =
+{-| **private:** The parsers that do not depend on `blocks` are defined once,
+since `regex` compiles its expression when the parser is created.
+-}
+textSurvey : Parser Context (Type body)
+textSurvey =
     maybe Indent.check
         |> ignore spaces
         |> ignore (string "[")
         |> keep (many1 (regex "_{3,}[\t ]*"))
         |> ignore (string "]")
         |> pattern
-        |> map List.length
+        |> map (List.length >> Text)
         |> ignore newline
 
 
-toSelect : BlockTypes.Quiz Inlines -> Parser Context (Type body)
-toSelect quiz =
-    case quiz.solution of
-        BlockTypes.Select _ [] ->
-            succeed <| Select quiz.options
+{-| **private:** A select or drag-and-drop quiz without a solution.
+-}
+selectSurvey : Parser Context (Type body)
+selectSurvey =
+    Block.parse parse_inlines
+        |> andThen
+            (\quiz ->
+                case quiz.solution of
+                    BlockTypes.Select _ [] ->
+                        succeed (Select quiz.options)
 
-        BlockTypes.Drop _ _ [] ->
-            succeed <| DragAndDrop quiz.options
+                    BlockTypes.Drop _ _ [] ->
+                        succeed (DragAndDrop quiz.options)
 
-        _ ->
-            fail ""
+                    _ ->
+                        fail ""
+            )
 
 
+radioMatrix : Parser Context (Type body)
+radioMatrix =
+    matrix False "(" ")"
+
+
+checkboxMatrix : Parser Context (Type body)
+checkboxMatrix =
+    matrix True "[" "]"
+
+
+radioMarker : Parser Context String
+radioMarker =
+    marker (parens id_str)
+
+
+checkboxMarker : Parser Context String
+checkboxMarker =
+    marker (brackets id_str)
+
+
+toVector : Bool -> List ( String, List body ) -> Type body
+toVector checkbox definition =
+    definition
+        |> List.map Tuple.first
+        |> analysisType
+        |> Vector checkbox definition
+
+
+{-| **private:** Wrap `p` into `[...]`, with an optional list marker in front.
+-}
 pattern : Parser Context a -> Parser Context a
 pattern p =
     maybe Indent.check
@@ -109,10 +169,12 @@ pattern p =
         |> ignore (regex "\\][\t ]*")
 
 
+{-| **private:** The id of an option, `X`, `x`, `!` and `?` are reserved for
+quizzes.
+-}
 id_str : Parser s String
 id_str =
-    "\\S[^)\\]]*"
-        |> regex
+    regex "\\S[^)\\]]*"
         |> andThen
             (\s ->
                 if s == "X" || s == "x" || s == "!" || s == "?" then
@@ -123,79 +185,60 @@ id_str =
             )
 
 
-{-| Parse a Survey-Vector's options: each option's content is no longer limited
-to a single line of inline text, it may contain full Markdown-block content
-(multiple paragraphs, code blocks, nested lists, ...), indented by 4 spaces
-relative to the option's marker - exactly like Task-list items and
-Quiz-Vector options.
+{-| **private:** Parse the options of a `Vector`: each option's content is not
+limited to a single line, it may contain Markdown blocks (paragraphs, code,
+lists, ...), indented relative to the option's marker, exactly like task-list
+items and quiz-vector options.
 -}
-vector : Parser Context Markdown.Block -> (Parser Context String -> Parser Context a) -> Parser Context (List ( a, Markdown.Blocks ))
-vector blocks p =
-    item blocks (p id_str)
+vector : Parser Context Markdown.Block -> Parser Context String -> Parser Context (List ( String, Markdown.Blocks ))
+vector blocks marker_ =
+    item blocks marker_
         |> sepBy1 separator
 
 
-{-| **@private:** Parse a single entry: its marker (optional `-`/`+`/`*` prefix,
-`p`-content within brackets), followed by its (possibly multi-block) content,
-indented relative to the marker.
+{-| **private:** Parse a single option: its marker, followed by its (possibly
+multi-block) content.
 
-The required continuation indent is measured _dynamically_, as the exact
-physical column right after this entry's marker, minus however much of that
-is already accounted for by the currently-active `Indent` stack (e.g. an
-enclosing list's/blockquote's own pushed level) - so nested content must line
-up directly under the marker's own text, exactly like a Task-list item, while
-never double-counting an ancestor's contribution and never under-counting a
-shared leading whitespace this entry's group happens to carry (e.g. when the
-whole group is visually offset under a preceding question) that never made it
-onto the stack anywhere. The two failure modes this specifically guards
-against: (1) an absolute column on its own double-counts already-active
-indentation (an option one level inside a list would require the list's own
-width twice); (2) a _marker-width-only_ measurement (ignoring the current
-absolute column entirely) works for constructs reached through
-`Lia.Markdown.Parser.blocks`'s own dispatch, which already strips ambient
-indentation before this parser ever runs - but breaks for the (structurally
-identical) `Quiz.Parser.hints` case over in `Vector.Parser`, which calls its
-own `item` directly, with no such stripping step in between, silently baking
-a still-unconsumed ancestor prefix into what should have been just the
-marker's own width.
+The continuation indent is the column right after the marker, minus the
+indentation that is already on the `Indent` stack. Thus, nested content must
+line up under the marker's own text, an enclosing list or blockquote is not
+counted twice and leading whitespace of the whole group (that never made it
+onto the stack) is not ignored. The same measurement is used by
+`Quiz.Vector.Parser`, whose hints call their own `item` without the stripping
+of `Lia.Markdown.Parser.blocks`.
 
 -}
 item : Parser Context Markdown.Block -> Parser Context a -> Parser Context ( a, Markdown.Blocks )
-item blocks p =
-    regex "[ \t]*"
-        |> keep
-            (marker p
-                |> andThen
-                    (\result ->
-                        withColumn
-                            (\after ->
-                                withState
-                                    (\state ->
-                                        let
-                                            active =
-                                                state.indentation
-                                                    |> String.concat
-                                                    |> String.length
-                                        in
-                                        Indent.push (String.repeat (after - active) " ")
-                                            |> ignore emptyMarkerLine
-                                            |> keep (sepBy1 (many newlineWithIndentation) blocks)
-                                            |> map (Tuple.pair result)
-                                            |> ignore Indent.pop
-                                    )
+item blocks marker_ =
+    spaces
+        |> keep marker_
+        |> andThen
+            (\result ->
+                withColumn
+                    (\after ->
+                        withState
+                            (\state ->
+                                let
+                                    active =
+                                        state.indentation
+                                            |> String.concat
+                                            |> String.length
+                                in
+                                Indent.push (String.repeat (after - active) " ")
+                                    |> ignore emptyMarkerLine
+                                    |> keep (sepBy1 (many newlineWithIndentation) blocks)
+                                    |> map (Tuple.pair result)
+                                    |> ignore Indent.pop
                             )
                     )
             )
 
 
-{-| **@private:** If the marker's own line has no further content (nothing but
-optional trailing whitespace before the newline), the "skip the indentation
-check for same-line content" privilege armed by `Indent.push` must not
-silently extend across a following blank line to whatever block happens to
-come next, regardless of its actual indentation - force a real indentation
-check for the option's first content block in that case, by consuming the
-still-armed skip via a no-op `Indent.check` right here, while we still know
-we're at the end of the marker's line.
+{-| **private:** `Indent.push` skips the indentation check for content on the
+marker's own line. If that line is empty, the skip must not extend across the
+following newline to the next block, regardless of its indentation. A no-op
+`Indent.check` consumes the skip in that case, so the option's first block
+gets a real indentation check.
 -}
 emptyMarkerLine : Parser Context ()
 emptyMarkerLine =
@@ -211,7 +254,7 @@ emptyMarkerLine =
             )
 
 
-{-| **@private:** Parse the `[...]`/`- [...]` marker of a single entry.
+{-| **private:** The `[(...)]` or `- [[...]]` marker of a single option.
 -}
 marker : Parser Context a -> Parser Context a
 marker p =
@@ -232,18 +275,23 @@ newlineWithIndentation =
         |> ignore newline
 
 
-header : String -> String -> Parser Context (List Inlines)
-header begin end =
+{-| **private:** A matrix header with one `(id)` or `[id]` per column (`begin`
+and `end`), followed by one `[ ]` row per statement.
+-}
+matrix : Bool -> String -> String -> Parser Context (Type body)
+matrix checkbox begin end =
     spaces
         |> keep (string begin)
         |> keep (manyTill inlines (string end |> ignore spaces))
         |> many1
         |> pattern
         |> ignore newline
+        |> map (\ids -> Matrix checkbox ids (List.map stringify ids))
+        |> andMap rows
 
 
-questions : Parser Context (List Inlines)
-questions =
+rows : Parser Context (List Inlines)
+rows =
     maybe Indent.check
         |> ignore (regex "[\t ]*\\-?[\t ]*\\[[\t ]+\\]")
         |> keep line
@@ -251,116 +299,102 @@ questions =
         |> many1
 
 
-modify_State : Parameters -> Survey body -> Parser Context (Survey body)
-modify_State attr survey_ =
-    let
-        state =
-            let
-                extractor fn v =
-                    v
-                        |> List.map fn
-                        |> Dict.fromList
-            in
-            case survey_.survey of
-                Text _ ->
-                    Text_State ""
+{-| **private:** Push the initial state of the survey to the `survey_vector`,
+together with a script that directly follows the survey. A randomized survey
+takes the next seed, so that every one gets its own order.
+-}
+addState : Parameters -> Survey body -> Parser Context (Survey body)
+addState attr survey =
+    (if Attributes.isSet "data-randomize" attr then
+        map Just Context.getSeed
 
-                Select _ ->
-                    Select_State False -1
-
-                DragAndDrop _ ->
-                    DragAndDrop_State False False -1
-
-                Vector bool vars _ ->
-                    vars
-                        |> extractor (\( v, _ ) -> ( v, False ))
-                        |> Vector_State bool
-
-                Matrix bool _ vars qs ->
-                    vars
-                        |> extractor (\v -> ( v, False ))
-                        |> Array.repeat (List.length qs)
-                        |> Matrix_State bool
-    in
-    succeed survey_
-        |> ignore
-            (maybeJS
-                |> map (add_state state survey_.survey attr)
-                |> andThen modifyState
+     else
+        succeed Nothing
+    )
+        |> map Tuple.pair
+        |> andMap maybeJS
+        |> map
+            (\( seed, scriptID ) context ->
+                { context
+                    | survey_vector =
+                        Array.push
+                            { submitted = False
+                            , state = initState survey.survey
+                            , errorMsg = Nothing
+                            , scriptID = scriptID
+                            , opt = getOptions seed survey.survey attr
+                            }
+                            context.survey_vector
+                }
             )
+        |> andThen modifyState
+        |> keep (succeed survey)
 
 
-getOptions : Context -> Type x -> Parameters -> Options
-getOptions state survey_ attr =
-    { randomize =
-        if Attributes.isSet "data-randomize" attr then
-            randomize survey_ state.seed
+initState : Type body -> State
+initState survey =
+    let
+        unchecked =
+            List.map (\id -> ( id, False )) >> Dict.fromList
+    in
+    case survey of
+        Text _ ->
+            Text_State ""
 
-        else
-            Nothing
+        Select _ ->
+            Select_State False -1
+
+        DragAndDrop _ ->
+            DragAndDrop_State False False -1
+
+        Vector checkbox options _ ->
+            options
+                |> List.map Tuple.first
+                |> unchecked
+                |> Vector_State checkbox
+
+        Matrix checkbox _ ids questions ->
+            ids
+                |> unchecked
+                |> Array.repeat (List.length questions)
+                |> Matrix_State checkbox
+
+
+getOptions : Maybe Int -> Type body -> Parameters -> Options
+getOptions seed survey attr =
+    let
+        isSet =
+            List.any (\name -> Attributes.isSet name attr)
+    in
+    { randomize = Maybe.andThen (randomize survey) seed
     , score =
         attr
             |> Attributes.get "data-score"
             |> Maybe.andThen String.toFloat
     , updates_allowed =
-        Attributes.isSet "data-updates-allowed" attr
-            || Attributes.isSet "data-updates" attr
-            || Attributes.isSet "data-update" attr
+        isSet [ "data-updates-allowed", "data-updates", "data-update" ]
     , incompleteness_allowed =
-        Attributes.isSet "data-incompleteness-allowed" attr
-            || Attributes.isSet "data-incompleteness" attr
-            || Attributes.isSet "data-incomplete" attr
+        isSet [ "data-incompleteness-allowed", "data-incompleteness", "data-incomplete" ]
     }
 
 
-randomize :
-    Type x
-    -> Int
-    -> Maybe (List Int)
-randomize typeOf seed =
-    case typeOf of
-        Vector _ vec _ ->
-            Just
-                (PseudoRandom.integerSequence
-                    (List.length vec)
-                    seed
-                )
+{-| **private:** A random order of the options or rows (`data-randomize`).
+-}
+randomize : Type body -> Int -> Maybe (List Int)
+randomize survey seed =
+    Maybe.map (\n -> PseudoRandom.integerSequence n seed) <|
+        case survey of
+            Text _ ->
+                Nothing
 
-        Matrix _ _ _ vec ->
-            Just
-                (PseudoRandom.integerSequence
-                    (List.length vec)
-                    seed
-                )
+            Select options ->
+                Just (List.length options)
 
-        DragAndDrop vec ->
-            Just
-                (PseudoRandom.integerSequence
-                    (List.length vec)
-                    seed
-                )
+            DragAndDrop options ->
+                Just (List.length options)
 
-        Select vec ->
-            Just
-                (PseudoRandom.integerSequence
-                    (List.length vec)
-                    seed
-                )
+            Vector _ options _ ->
+                Just (List.length options)
 
-        _ ->
-            Nothing
-
-
-add_state : State -> Type x -> Parameters -> Maybe Int -> Context -> Context
-add_state state survey_ attr id c =
-    { c
-        | survey_vector =
-            Array.push
-                { submitted = False
-                , state = state
-                , errorMsg = Nothing
-                , scriptID = id
-                , opt = getOptions c survey_ attr
-                }
-                c.survey_vector
-    }
+            Matrix _ _ _ questions ->
+                Just (List.length questions)

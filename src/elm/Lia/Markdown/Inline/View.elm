@@ -83,17 +83,15 @@ view config element =
         Ref e attr ->
             reference config e attr
 
-        Formula mode_ e [] ->
-            formula
-                [ config.formulas
-                    |> JE.dict identity JE.string
-                    |> Attr.property "macros"
-                ]
-                mode_
-                e
-
         Formula mode_ e attr ->
-            view config (Container [ Formula mode_ e [] ] attr)
+            -- an aria-label of the author is read out instead of the generated
+            -- description, all other attributes belong to a surrounding span
+            case List.partition (Tuple.first >> (==) "aria-label") attr of
+                ( label, [] ) ->
+                    viewFormula config label mode_ e
+
+                ( label, rest ) ->
+                    view config (Container [ Formula mode_ e label ] rest)
 
         Symbol e [] ->
             Html.text e
@@ -124,6 +122,22 @@ view config element =
 
         Quiz input attr ->
             viewQuiz config input attr
+
+
+{-| **@private:** A formula with the macros of the course and the `aria-label`
+of the author, which is read out instead of the generated description.
+-}
+viewFormula : Config sub -> Parameters -> String -> String -> Html msg
+viewFormula config label mode_ e =
+    formula
+        ((config.formulas
+            |> JE.dict identity JE.string
+            |> Attr.property "macros"
+         )
+            :: toAttribute label
+        )
+        mode_
+        e
 
 
 {-| **@private:** A `lia-formula` web component, `mode_` is `"true"` for
@@ -554,10 +568,18 @@ toText : Config sub -> Inline -> Html (Msg sub)
 toText config element =
     case element of
         Chars e _ ->
-            e
-                |> String.split ". "
-                |> List.map (\s -> Html.p [] [ Html.text (s ++ ".") ])
-                |> Html.div []
+            -- Google translates long paragraphs only sentence by sentence. The
+            -- last piece stays inline, it might continue with a formula, etc.
+            case e |> String.split ". " |> List.reverse of
+                last :: sentences ->
+                    sentences
+                        |> List.foldl
+                            (\s html -> Html.p [] [ Html.text (s ++ ".") ] :: html)
+                            [ Html.text last ]
+                        |> Html.span []
+
+                [] ->
+                    Html.text ""
 
         Verbatim e attr ->
             Html.span
@@ -567,8 +589,8 @@ toText config element =
                 )
                 [ Html.text e ]
 
-        Formula mode_ e _ ->
-            formula [] mode_ e
+        Formula mode_ e attr ->
+            viewFormula config (List.filter (Tuple.first >> (==) "aria-label") attr) mode_ e
 
         Symbol e _ ->
             Html.text e
