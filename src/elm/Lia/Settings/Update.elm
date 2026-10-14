@@ -84,7 +84,16 @@ update main msg model =
                             no_log Nothing <|
                                 case Service.TTS.decode event of
                                     Service.TTS.Start ->
-                                        { model | playback = Speaking }
+                                        { model
+                                            | playback =
+                                                -- a resume keeps the progress bar
+                                                case model.playback of
+                                                    PausedWithProgress p ->
+                                                        SpeakingWithProgress p
+
+                                                    _ ->
+                                                        Speaking
+                                        }
 
                                     Service.TTS.Stop ->
                                         { model | playback = Idle }

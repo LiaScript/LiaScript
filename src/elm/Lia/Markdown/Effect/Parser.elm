@@ -51,8 +51,9 @@ import Combine
 import Combine.Char exposing (anyChar)
 import Combine.Num exposing (int)
 import Dict
-import Lia.Markdown.Effect.Model exposing (Content, Element)
+import Lia.Markdown.Effect.Model exposing (Content, Element, EmbedVideo)
 import Lia.Markdown.Effect.Types as Effect exposing (Effect)
+import Lia.Markdown.Inline.Multimedia exposing (providerOf)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Types as Markdown
@@ -271,10 +272,13 @@ media : Bool -> Inlines -> Bool -> Content
 media start par visible =
     case par of
         (Ref (Audio _ ( False, audio ) _) _) :: rest ->
-            Content visible [] rest (Array.fromList [ audio ]) Array.empty
+            Content visible [] rest (Array.fromList [ audio ]) Array.empty Array.empty
 
         (Ref (Movie _ ( False, video ) _) _) :: rest ->
-            Content visible [] rest Array.empty (Array.fromList [ video ])
+            Content visible [] rest Array.empty (Array.fromList [ video ]) Array.empty
+
+        (Ref (Movie _ ( True, url ) _) _) :: rest ->
+            Content visible [] rest Array.empty Array.empty (Array.fromList [ EmbedVideo url (providerOf url) ])
 
         _ ->
             if start then
@@ -282,4 +286,4 @@ media start par visible =
                     |> (\c -> { c | content = List.reverse c.content })
 
             else
-                Content visible [] par Array.empty Array.empty
+                Content visible [] par Array.empty Array.empty Array.empty

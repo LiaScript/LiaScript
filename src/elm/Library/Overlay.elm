@@ -264,10 +264,12 @@ toggleMode mode =
 
 
 {-| Render the overlay with `inside` as its content (its events are ignored),
-`attr` are added to the overlay itself.
+`attr` are added to the overlay itself. With `nativeClicks` the center of the
+overlay is not draggable, such that clicks reach the content (e.g. the play
+button of an embedded video), it can still be dragged at its ring.
 -}
-view : List (Attribute Msg) -> Model -> Html a -> Html Msg
-view attr model inside =
+view : Bool -> List (Attribute Msg) -> Model -> Html a -> Html Msg
+view nativeClicks attr model inside =
     let
         following =
             model.mode /= Move && model.mode /= Resize
@@ -331,21 +333,29 @@ view attr model inside =
             )
             [ Html.map (always Ignore) inside
             , div
-                [ style "position" "absolute"
-                , style "width" "100%"
-                , style "padding" "10px"
-                , style "height" "100%"
-                , style "cursor" (iif (isFollowMove model.mode) "grabbing" "move")
-                , style "color" "#fff"
-                , style "text-align" "center"
-                , style "top" "0px"
-                , style "right" "0px"
-                , onPointer "mousedown" DragStart
-                , onTouch "touchstart" DragStart
-                , onPointer "dblclick" DoubleClick
-                , attribute "aria-label" "Drag to move video overlay. Double-click to make it follow mouse."
-                , title (iif (isFollowMove model.mode) "double-click to release" "drag or double-click video comment")
-                ]
+                ((if nativeClicks then
+                    -- a hole in the center, only the ring stays draggable
+                    [ style "clip-path" "polygon(0% 0%, 0% 100%, 15% 100%, 15% 15%, 85% 15%, 85% 85%, 15% 85%, 15% 100%, 100% 100%, 100% 0%)" ]
+
+                  else
+                    []
+                 )
+                    ++ [ style "position" "absolute"
+                       , style "width" "100%"
+                       , style "padding" "10px"
+                       , style "height" "100%"
+                       , style "cursor" (iif (isFollowMove model.mode) "grabbing" "move")
+                       , style "color" "#fff"
+                       , style "text-align" "center"
+                       , style "top" "0px"
+                       , style "right" "0px"
+                       , onPointer "mousedown" DragStart
+                       , onTouch "touchstart" DragStart
+                       , onPointer "dblclick" DoubleClick
+                       , attribute "aria-label" "Drag to move video overlay. Double-click to make it follow mouse."
+                       , title (iif (isFollowMove model.mode) "double-click to release" "drag or double-click video comment")
+                       ]
+                )
                 []
             , div
                 [ style "width" "8%"

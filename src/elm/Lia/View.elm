@@ -143,6 +143,7 @@ viewSlide modalIsActive screen model =
                     , settings = model.settings
                     , slide = model.section_active
                     , effects = section.effect_model
+                    , translated = model.langCodeOriginal /= model.langCode
                     }
                 ]
             , slideA11y
@@ -274,8 +275,8 @@ showSection model screen ( id, section ) =
 {-| **@private:** used to display the text2speech output settings and spoken
 comments in text, depending on the currently applied rendering mode.
 -}
-slideBottom : { lang : Lang, tiny : Bool, settings : Settings, slide : Int, effects : Effect.Model SubSection } -> Html Msg
-slideBottom { lang, tiny, settings, slide, effects } =
+slideBottom : { lang : Lang, tiny : Bool, settings : Settings, slide : Int, effects : Effect.Model SubSection, translated : Bool } -> Html Msg
+slideBottom { lang, tiny, settings, slide, effects, translated } =
     Html.footer
         [ Attr.class "lia-slide__footer" ]
         [ slideNavigation lang settings.mode slide effects
@@ -288,8 +289,24 @@ slideBottom { lang, tiny, settings, slide, effects } =
                     sound =
                         settings.sound && Effect.hasComments effects
 
+                    -- translations are spoken by TTS, the recordings are muted
                     recordings =
-                        Effect.getAudioRecordings effects ++ Effect.getVideoRecordings effects
+                        if translated then
+                            []
+
+                        else
+                            Effect.getAudioRecordings effects ++ Effect.getVideoRecordings effects
+
+                    embeds =
+                        if translated then
+                            []
+
+                        else
+                            Effect.getEmbedVideoRecordings effects
+
+                    -- only YouTube and Vimeo report their progress and can be paused
+                    controllable =
+                        List.all (\embed -> embed.provider == "youtube" || embed.provider == "vimeo") embeds
                 in
                 Html.div
                     [ Attr.class "lia-responsive-voice"
@@ -303,16 +320,21 @@ slideBottom { lang, tiny, settings, slide, effects } =
                         [ Html.div
                             [ Attr.class "lia-responsive-voice__playgroup" ]
                             [ btnReplay lang sound settings
-                            , btnPause sound settings
+                            , if controllable then
+                                btnPause sound settings
+
+                              else
+                                Html.text ""
                             ]
                         , Html.div [ Attr.class "lia-responsive-voice__center" ]
-                            [ audioProgressSlider sound (not (List.isEmpty recordings)) settings
+                            [ audioProgressSlider sound (not (List.isEmpty recordings) || (controllable && not (List.isEmpty embeds))) settings
                             , responsiveVoice
                                 { lang = lang
                                 , tiny = tiny
                                 , show = sound
                                 , tts = settings.tts
                                 , audio = recordings
+                                , embedded = not (List.isEmpty embeds)
                                 }
                             ]
                         , btnStop lang settings
@@ -673,8 +695,8 @@ slideNavigation lang mode slide effect =
         ]
 
 
-responsiveVoice : { lang : Lang, tiny : Bool, show : Bool, tts : TTS, audio : List String } -> Html msg
-responsiveVoice { lang, tiny, show, tts, audio } =
+responsiveVoice : { lang : Lang, tiny : Bool, show : Bool, tts : TTS, audio : List String, embedded : Bool } -> Html msg
+responsiveVoice { lang, tiny, show, tts, audio, embedded } =
     Html.small
         [ Attr.class "lia-responsive-voice__info notranslate"
         , Attr.attribute "translate" "no"
@@ -691,7 +713,7 @@ responsiveVoice { lang, tiny, show, tts, audio } =
             else
                 "80%"
         ]
-        (appendAudioFragments audio <|
+        (appendAudioFragments audio embedded <|
             if tts.isBrowserSupported && (tts.preferBrowser || not tts.isResponsiveVoiceSupported) then
                 [ Html.text (Trans.ttsUsingBrowser lang) ]
 
@@ -703,10 +725,16 @@ responsiveVoice { lang, tiny, show, tts, audio } =
         )
 
 
-appendAudioFragments : List String -> List (Html msg) -> List (Html msg)
-appendAudioFragments audio info =
+{-| Recordings replace the TTS, so its info is hidden, also for embedded videos.
+-}
+appendAudioFragments : List String -> Bool -> List (Html msg) -> List (Html msg)
+appendAudioFragments audio embedded info =
     if List.isEmpty audio then
-        info
+        if embedded then
+            [ Html.span [ Attr.style "visibility" "hidden" ] info ]
+
+        else
+            info
 
     else
         Html.span [ Attr.style "visibility" "hidden" ] info
@@ -719,29 +747,37 @@ registered a narrator avatar (`window.LIA.narrator.registerAvatar`), the
 custom element of that avatar is shown instead, together with the narrator
 and the `data-*` annotations of the current comments as attributes. Videos
 always take precedence over the avatar.
+
+Embedded videos (YouTube, Vimeo, ...) are only placeholders, the player
+adapters in TTS.ts (`comment-media`) inject and control the iframes.
 -}
 viewVideoComment : { active : Bool, hide : Bool, avatar : Maybe String } -> Overlay.Model -> Effect.Model SubSection -> Html Msg
 viewVideoComment comments overlay effects =
     let
-        urls =
+        ( urls, embeds ) =
             if comments.active then
-                Effect.getVideoRecordings effects
+                ( Effect.getVideoRecordings effects, Effect.getEmbedVideoRecordings effects )
 
             else
-                []
+                ( [], [] )
 
         videos =
             String.join "," urls
 
         avatar =
-            if comments.active && List.isEmpty urls then
+            if comments.active && List.isEmpty urls && List.isEmpty embeds then
                 Maybe.map2 Tuple.pair comments.avatar (Effect.current_narrator effects)
 
             else
                 Nothing
 
         hide =
-            String.isEmpty videos && avatar == Nothing
+            String.isEmpty videos && List.isEmpty embeds && avatar == Nothing
+
+        -- TeacherTube and TU-Freiberg have no autoplay API, users have to
+        -- click their play buttons
+        nativeClicks =
+            List.any (\embed -> embed.provider == "teachertube" || embed.provider == "tu-freiberg") embeds
     in
     case avatar of
         Just ( tag, ( narrator, attr ) ) ->
@@ -761,22 +797,22 @@ viewVideoComment comments overlay effects =
                     :: toAttribute attr
                 )
                 []
-                |> viewCommentOverlay comments hide overlay
+                |> viewCommentOverlay comments hide False overlay
 
         Nothing ->
-            viewVideos hide urls
+            (viewVideos hide urls ++ List.map viewEmbed embeds)
                 |> Html.div
                     [ Attr.id "lia-tts-videos"
                     , Attr.style "width" "100%"
                     , Attr.style "height" "100%"
                     , Attr.attribute "data-urls" videos
                     ]
-                |> viewCommentOverlay comments hide overlay
+                |> viewCommentOverlay comments hide nativeClicks overlay
 
 
-viewCommentOverlay : { comments | active : Bool, hide : Bool } -> Bool -> Overlay.Model -> Html Msg -> Html Msg
-viewCommentOverlay comments hide overlay =
-    Overlay.view
+viewCommentOverlay : { comments | active : Bool, hide : Bool } -> Bool -> Bool -> Overlay.Model -> Html Msg -> Html Msg
+viewCommentOverlay comments hide nativeClicks overlay =
+    Overlay.view nativeClicks
         (if hide || not comments.active || comments.hide then
             [ Attr.style "display" "none" ]
 
@@ -816,6 +852,20 @@ viewVideos hide urls =
                     ]
                     []
             )
+
+
+viewEmbed : Effect.EmbedVideo -> Html Msg
+viewEmbed embed =
+    Html.div
+        [ Attr.class "lia-tts-embed"
+        , Attr.style "width" "100%"
+        , Attr.style "height" "100%"
+        , Attr.style "display" "none"
+        , Attr.style "position" "absolute"
+        , Attr.attribute "data-embed-provider" embed.provider
+        , Attr.attribute "data-embed-url" embed.url
+        ]
+        []
 
 
 audioRecordings : String -> Html msg

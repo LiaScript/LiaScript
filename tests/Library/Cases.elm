@@ -51,7 +51,7 @@ suite =
                 Overlay.init
                     |> overlay [ ( 1, Event.custom "mousedown" (page 100 100) ), ( 0, Event.custom "mousemove" (page 90 130) ), ( 0, Event.custom "mouseup" (page 0 0) ) ]
                     |> overlay [ ( 2, Event.custom "keydown" (JE.object [ ( "keyCode", JE.int 37 ) ]) ), ( 1, Event.custom "dblclick" (page 0 0) ) ]
-                    |> (\m -> Overlay.view [] m (Html.text ""))
+                    |> (\m -> Overlay.view False [] m (Html.text ""))
                     |> Query.fromHtml
                     |> Query.find [ Sel.attribute (Attr.attribute "role" "region") ]
                     |> Query.has [ Sel.style "right" "40px", Sel.style "top" "130px", Sel.style "border" "5px solid #ff5722", Sel.attribute (Attr.attribute "aria-label" "Video playback controls - Current mode: Follow Mouse Movement") ]
@@ -109,7 +109,7 @@ overlay : List ( Int, ( String, JE.Value ) ) -> Overlay.Model -> Overlay.Model
 overlay events model =
     List.foldl
         (\( target, event ) m ->
-            Overlay.view [] m (Html.text "")
+            Overlay.view False [] m (Html.text "")
                 |> Query.fromHtml
                 |> (case target of
                         0 ->
