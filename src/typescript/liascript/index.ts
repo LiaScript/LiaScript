@@ -28,6 +28,7 @@ import Swipe from './service/Swipe'
 import { enableDragDropTouch } from '@dragdroptouch/drag-drop-touch'
 import Sync from './service/Sync'
 import * as TTS from './service/TTS'
+import * as Narrator from './service/Narrator'
 import Translate from './service/Translate'
 import Zip from './service/Zip'
 import Torrent from './service/Torrent'
@@ -39,6 +40,7 @@ import * as GLOBALS from './init'
 // TODO: CHECK window.LIA.defaultCourse functionality
 GLOBALS.initGlobals()
 window.LIA.injectResposivevoice = TTS.inject
+window.LIA.narrator = Narrator.api
 
 if (typeof queueMicrotask !== 'function') {
   window.queueMicrotask = function (callback) {

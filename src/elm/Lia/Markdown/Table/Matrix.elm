@@ -1,17 +1,16 @@
 module Lia.Markdown.Table.Matrix exposing
     ( Matrix
     , Row
-    , all
-    , any
     , column
-    , head
-    , indexedMap
     , map
-    , some
     , split
     , tail
     , transpose
     )
+
+{-| Tables as lists of rows. Rows can have different lengths, `column` and
+`transpose` only keep the columns that exist in every row.
+-}
 
 import Lia.Utils as Util
 
@@ -29,19 +28,15 @@ map fn =
     List.map (List.map fn)
 
 
-indexedMap : (Int -> Int -> a -> b) -> Matrix a -> Matrix b
-indexedMap fn =
-    List.indexedMap (\i row -> List.indexedMap (\j e -> fn i j e) row)
-
-
+{-| The i-th column, `Nothing` if the matrix is empty or a row is too short.
+-}
 column : Int -> Matrix cell -> Maybe (Row cell)
-column i =
-    transpose >> Util.get i
+column i matrix =
+    if List.isEmpty matrix then
+        Nothing
 
-
-head : Matrix cell -> Row cell
-head =
-    List.head >> Maybe.withDefault []
+    else
+        List.foldr (Util.get i >> Maybe.map2 (::)) (Just []) matrix
 
 
 tail : Matrix cell -> Matrix cell
@@ -49,6 +44,8 @@ tail =
     List.tail >> Maybe.withDefault []
 
 
+{-| The first row and the remaining rows.
+-}
 split : Matrix cell -> ( Row cell, Matrix cell )
 split matrix =
     case matrix of
@@ -61,13 +58,8 @@ split matrix =
 
 transpose : Matrix cell -> Matrix cell
 transpose matrix =
-    List.foldl
-        (\input output ->
-            List.map2
-                (\i o -> List.append o [ i ])
-                input
-                output
-        )
+    List.foldr
+        (List.map2 (::))
         (List.repeat
             (matrix
                 |> List.head
@@ -77,31 +69,3 @@ transpose matrix =
             []
         )
         matrix
-
-
-all : (cell -> Bool) -> Matrix cell -> Bool
-all fn =
-    List.all (List.all fn)
-
-
-any : (cell -> Bool) -> Matrix cell -> Bool
-any fn =
-    List.any (List.any fn)
-
-
-some : Float -> (cell -> Bool) -> Matrix cell -> Bool
-some percent fn =
-    map fn
-        >> List.concat
-        >> List.foldl
-            (\cell ( true, false ) ->
-                if cell then
-                    ( true + 1, false )
-
-                else
-                    ( true, false + 1 )
-            )
-            ( 0, 0 )
-        >> (\( true, false ) ->
-                (true / (true + false)) >= percent
-           )

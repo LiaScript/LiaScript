@@ -27,9 +27,7 @@ toSentence =
         -- turn them into positive words
         >> List.filterMap (\id -> Array.get id positiveWords)
         -- get only the 4 first ids
-        >> List.Extra.splitAt 4
-        >> Tuple.first
-        --
+        >> List.take 4
         >> String.concat
 
 

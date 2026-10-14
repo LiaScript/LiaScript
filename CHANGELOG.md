@@ -4,6 +4,57 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.2] - 13/10/2026
+
+- fix: chat – answering a quiz, survey or code block scrolled up to the one of an older message (the ids repeat in every message, the reveal now takes the one next to the click)
+
+
+## [2.2.1] - 13/10/2026
+
+- feat: standalone LiaScript chat for embedding (`<lia-chat>`, API via `postMessage`: add, define, clear, load, export), messages are rendered as LiaScript sections with a shared header (import, script, macros, `@onload`, `@style`), states of code, quizzes, surveys and tasks can be exported and loaded; `build:chat`/`watch:chat`, see `docs/CHAT.md`
+- feat: formulas are read out loud in English and German in the language of the voice, like people read maths ("e hoch i pi", "d y nach d x", "H 2 O"), with decimal marks, fractions, roots, units, matrices, cases and mhchem
+- fix: formulas were missing in narrator comments and got a stray period in playback blocks, an `aria-label` of the author reaches the formula, also in presentation comments, which lost the course macros
+- fix: Google Translate – the translated text flickered back to the original on every click or while reading out loud (patched Elm VirtualDom redrew untouched translated nodes)
+- fix: link tooltips only preview http(s) links
+- test: formula speech, run with `node --test tests/formula-a11y/`
+
+
+## [2.2.0] - 12/10/2026
+
+- feat: narrator hook `window.LIA.narrator` for templates; `lia-narrator` events on `window` report start, stop, pause, resume, word boundaries, progress and media changes of the narrator comments, with the source (`tts`, `audio`, `video`), the comment elements, voice, language and the playing media element; `LIA.narrator.state` holds the current state
+- feat: narrator avatars, `LIA.narrator.registerAvatar('my-avatar')` registers a custom element that is shown in the draggable overlay of the video comments for every animation step with comments but without a video; it gets `data-voice`, `data-step` and all `data-*` annotations of the comments (e.g. `<!-- data-speaker="anna" -->` in front of `--{{1}}--`) as attributes; videos always take precedence
+- feat: word clouds for tables via `data-type="wordcloud"`, one cloud per row with a shared font scale, works with `data-transpose` and effects
+- feat: surveys accept a `*****` solution block like quizzes, shown and read out loud once the survey has been submitted
+- feat: inline `<script>` tags can use `send.register`/`send.dispatch` like code blocks, a listening script updates its result without being executed again
+- feat: LiaScript results (`LIASCRIPT:`) within LiaScript results at any depth, their scripts, quizzes, surveys and code blocks use the scripts of the result
+- feat: KaiOS keypad navigation – 4/6 change slides, 2/8 scroll, `*` toggles the table of contents, `#` goes home
+- improve: table diagrams are guessed by their numeric columns (truth tables ignored, dates as line plots, adjacency matrices as heat maps), the guess now matches an explicit `data-type` in 192 of 225 course tables (before 37)
+- improve: comments in quiz solutions are hidden and read out loud only once the quiz is solved, scripts in solution blocks run once the solution gets visible
+- improve: text-to-speech reads quizzes, surveys and tasks as natural lists ("blue or red") instead of "on" for every checkbox, faster first speech, pending reads are cancelled when switching slides quickly
+- improve: feedback, solutions and hints of quizzes and surveys are scrolled into view, opened details are revealed
+- improve: header and footer stay visible on mobile (dynamic viewport height)
+- improve: footnotes are rendered as a description list instead of a layout table, visible border in dark mode
+- improve: attribute names of code blocks match case-insensitively (e.g. `data-tabSize`)
+- improve: performance – tables stringify cells only for sorting, lazy table diagrams, linear transpose, faster definition header parsing, named character references no longer built on start
+- fix: memory leaks of code editors and course previews (KaiOS: 906 → 455 MB after two laps through the docs)
+- fix: exponential backtracking in `<script>` bodies with unclosed strings (froze the course), scripts split at `</` in regular expressions, comments or nested template strings
+- fix: exponential HTML parsing of unclosed tags (e.g. C# generics `List<T>`)
+- fix: macros – `@10` was replaced as `@1` followed by `0`, unknown `@name` in a parameter stopped the expansion, `@@` debug boxes are shown unparsed
+- fix: code blocks – fences within a line, local editor after leaving the classroom, editable highlighted blocks changed the executable project with the same index, terminal history after Enter
+- fix: surveys – restored matrices swapped checkboxes and radio buttons, options lost on restore, scripts of only the last element run after restore, own seed for every randomized survey
+- fix: quizzes – matrix headers with `+`/`*`, selections became text inputs on KaiOS, bracketed script results counted as solved, inline drop quizzes could not be restored
+- fix: script reset button executed the script twice and had no accessible name
+- fix: arrow keys in the search field of the table of contents switched slides
+- fix: classroom backend dropdown could be opened via keyboard while connected, relay lists and links in the classroom dialog
+- fix: SVG `foreignObject`s rendered in reverse order, relative URLs in upper case attributes, footnote keys with quotes or backslashes
+- fix: tables – `aria-sort`, empty `data-xlim`/`data-ylim`, case of `data-orientation`
+- fix: bottom padding/margin of slide content, split pane on fractional pointer coordinates and after showing both panes
+- fix: aria-label of the narrator overlay announces the current mode, unique id for the chat toggler, share icon labelled as share
+- fix: text-to-speech failed, if there was no element `#lia-tts-videos`
+- test: characterization tests for all refactored modules (Effect, Script, Macro, Quiz, Survey, Code, Definition, Parser, Markdown, Index, Voice, Utils, Settings, Sync, Library)
+- chore: elm-svgbob 5.0.8 with new ASCII art methods and fixes
+
+
 ## [2.1.2] - 07/10/2026
 
 - fix: text-to-speech picked voices of the wrong gender, e.g. Piper voices via speech-dispatcher in Firefox; gender is now detected for Apple, Microsoft, Google/ChromeOS, Android, espeak-ng, Piper and RHVoice voices, and a voice of the wrong gender ranks below one of unknown gender

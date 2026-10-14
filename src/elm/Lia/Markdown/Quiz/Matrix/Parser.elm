@@ -25,6 +25,16 @@ import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
 
 
+{-| A matrix quiz starts with a header of column titles in brackets or
+parentheses, followed by rows of radio buttons or check boxes:
+
+    [ [ a ] b [ c ] ]
+
+    [ X () () ] row 1
+
+    [ () X () ] row 2
+
+-}
 parse : Parser Context Quiz
 parse =
     header
@@ -43,12 +53,14 @@ header : Parser Context (List Inlines)
 header =
     maybe Indent.check
         |> ignore spaces
-        |> ignore (regex "(?:(\\-|\\+\\*)[\t ]*)?\\[")
+        |> ignore (regex "(?:(\\-|\\+|\\*)[\t ]*)?\\[")
         |> keep (many1 options)
         |> ignore (string "]")
         |> ignore newline
 
 
+{-| **private:** A column title.
+-}
 options : Parser Context Inlines
 options =
     or inParenthesis inBrackets
@@ -66,25 +78,19 @@ inBrackets =
         |> keep (manyTill inlines (regex "[ \t]*\\][ \t]*"))
 
 
-single : Parser Context State
-single =
-    spaces
-        |> keep radioButton
-        |> ignore spaces
-        |> many1
-        |> map SingleChoice
-
-
-multiple : Parser Context State
-multiple =
-    spaces
-        |> keep checkButton
-        |> ignore spaces
-        |> many1
-        |> map MultipleChoice
-
-
+{-| **private:** Every row is either a single or a multiple choice, followed
+by its text.
+-}
 rows : Parser Context ( List State, List Inlines )
 rows =
-    or single multiple
+    or (choices radioButton SingleChoice) (choices checkButton MultipleChoice)
         |> group
+
+
+choices : Parser Context Bool -> (List Bool -> State) -> Parser Context State
+choices button state =
+    spaces
+        |> keep button
+        |> ignore spaces
+        |> many1
+        |> map state

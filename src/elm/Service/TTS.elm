@@ -6,6 +6,7 @@ module Service.TTS exposing
     , pause
     , playback
     , preferBrowser
+    , readClass
     , readFrom
     , resume
     , seek
@@ -25,6 +26,7 @@ type Msg
     | Error String
     | BrowserTTS Bool
     | ResponsiveVoiceTTS Bool
+    | Avatar (Maybe String)
 
 
 {-| Simple abort of any talking without sending a response
@@ -53,10 +55,14 @@ have to be added to the HTML element as attributes:
 -}
 readFrom : Int -> Event
 readFrom id =
-    "lia-tts-"
-        ++ String.fromInt id
-        |> JE.string
-        |> event "read"
+    readClass ("lia-tts-" ++ String.fromInt id)
+
+
+{-| Read the content of all HTML elements with the passed class.
+-}
+readClass : String -> Event
+readClass =
+    JE.string >> event "read"
 
 
 {-| Used for inline playback, the text and the voice can be passed as
@@ -151,6 +157,14 @@ decode e =
 
                         Err _ ->
                             ResponsiveVoiceTTS False
+
+                -- an external template registered a custom element as the
+                -- narrator avatar via `window.LIA.narrator.registerAvatar`
+                "avatar" ->
+                    e.message.param
+                        |> JD.decodeValue (JD.nullable JD.string)
+                        |> Result.withDefault Nothing
+                        |> Avatar
 
                 unknown ->
                     Error <| "unknown cmd => " ++ unknown

@@ -49,6 +49,7 @@ import Lia.Markdown.HTML.Parser as HTML
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.Inline.Multimedia as Multimedia
 import Lia.Markdown.Inline.Parser.Formula exposing (formula)
+import Lia.Markdown.Inline.Parser.Script as Script
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), combine)
 import Lia.Markdown.Macro.Parser as Macro
@@ -145,7 +146,7 @@ annotations =
 javascript : Parser s String
 javascript =
     regexWith { caseInsensitive = True, multiline = False } "<script>"
-        |> keep scriptBody
+        |> keep Script.body
 
 
 {-| **@private:** Parse a `<script key="value" ...>...</script>` and return
@@ -157,7 +158,7 @@ javascriptWithAttributes =
         |> keep (many (whitespace |> keep attribute))
         |> ignore (string ">")
         |> map Tuple.pair
-        |> andMap scriptBody
+        |> andMap Script.body
 
 
 {-| Parse a script and push it into the `effect_model` of the context, the
@@ -706,29 +707,3 @@ code =
     inlineCode |> map Verbatim
 
 
-{-| **@private:** Everything until `</script>`, strings, template strings, and
-comments are consumed at once, so that they can contain a `</script>`.
-
-TODO: update also for multiline-comments and escapes in strings
-
--}
-scriptBody : Parser s String
-scriptBody =
-    regexWith { caseInsensitive = True, multiline = False } "</script>"
-        |> manyTill
-            ([ regex "[^@\"'`</]+" --" this is only a comment for syntax-highlighting ...
-             , regex "\\s+"
-             , string "@'"
-             , string "@"
-             , regex "'([^'\\\\\n]*|\\\\'|\\\\)*('|\n)"
-             , regex "\"([^\"\\\\\n]*|\\\\\"|\\\\)*(\"|\n)"
-             , regex "`([^`\\\\]*|\n|\\\\`|(\\\\)+)*`"
-             , string "`"
-             , regex "<(?!/)"
-             , regex "/\\*[\\s\\S]*?\\*/"
-             , regex "//[^<\n]*"
-             , string "/"
-             ]
-                |> choice
-            )
-        |> map String.concat

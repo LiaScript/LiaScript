@@ -51,6 +51,12 @@
   transition: opacity 0.3s ease-out;
 }
 
+// the last frame of a previous video comment (cf. storeBackgroundVideo in
+// TTS.ts) must not cover a narrator avatar, that is shown instead
+#tts-video-preview:has(~ #lia-tts-avatar) {
+  display: none !important;
+}
+
 @keyframes fade-out {
   from {
     opacity: 1;

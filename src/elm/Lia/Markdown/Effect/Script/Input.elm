@@ -69,12 +69,7 @@ from params =
         alwaysActive =
             Attr.isSet "input-always-active" params
     in
-    { active =
-        if alwaysActive then
-            True
-
-        else
-            Attr.isSet "input-active" params
+    { active = alwaysActive || Attr.isSet "input-active" params
     , alwaysActive = alwaysActive
     , value = val
     , default = val
@@ -278,14 +273,7 @@ options =
 
 active : Bool -> Input -> Input
 active bool i =
-    { i
-        | active =
-            if i.alwaysActive then
-                True
-
-            else
-                bool
-    }
+    { i | active = i.alwaysActive || bool }
 
 
 getValue : Input -> Maybe String
