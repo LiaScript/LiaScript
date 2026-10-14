@@ -124,7 +124,7 @@ visit section question block found =
         Quiz _ quiz _ ->
             { found | quiz = Dict.insert quiz.id (quizMeta section question quiz) found.quiz }
 
-        Survey _ survey ->
+        Survey _ survey _ ->
             { found | survey = Dict.insert survey.id (surveyMeta question survey) found.survey }
 
         Task _ task ->
