@@ -891,6 +891,20 @@ function cancel() {
   responsiveVoiceSpeakArgs = null
 }
 
+// Emojis would be read aloud as "smiling face", ©, ® and ™ are kept. Built at
+// runtime, a \p{…} literal is a syntax error on old browsers (Gecko < 78),
+// there emojis are still read aloud.
+const EMOJI: RegExp | null = (() => {
+  try {
+    return new RegExp(
+      '(?![\\u00A9\\u00AE\\u2122])\\p{Extended_Pictographic}|\\p{Emoji_Modifier}|\\p{Regional_Indicator}|[\\u200D\\uFE0F\\u20E3]',
+      'gu'
+    )
+  } catch (e) {
+    return null
+  }
+})()
+
 function speak(
   text: string,
   voice: string,
@@ -908,6 +922,9 @@ function speak(
     }
   }
 ) {
+  // replaced by spaces of the same length, boundary offsets stay valid
+  if (EMOJI) text = text.replace(EMOJI, m => ' '.repeat(m.length))
+
   const customHandlers = event.handlers || {
     onStart: () => sendResponse(event, 'start'),
     onStop: () => sendResponse(event, 'stop'),
