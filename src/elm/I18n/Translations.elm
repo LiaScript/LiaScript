@@ -2445,6 +2445,36 @@ baseToc lang =
             "Table of Contents"
 
 
+baseSlide : Lang -> String
+baseSlide lang =
+    case lang of
+        De ->
+            "Folie"
+
+        _ ->
+            "Slide"
+
+
+baseStep : Lang -> String
+baseStep lang =
+    case lang of
+        De ->
+            "Schritt"
+
+        _ ->
+            "Step"
+
+
+baseSlideNavigation : Lang -> String
+baseSlideNavigation lang =
+    case lang of
+        De ->
+            "Folien-Navigation"
+
+        _ ->
+            "Slide navigation"
+
+
 baseShow : Lang -> String
 baseShow lang =
     case lang of

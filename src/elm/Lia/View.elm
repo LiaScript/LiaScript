@@ -85,6 +85,7 @@ viewIndex modalIsActive hasIndex model =
                 else
                     "lia-toc--closed"
             , A11y_Landmark.navigation
+            , A11y_Aria.label (Trans.baseToc model.translation)
             ]
         )
         [ Settings.btnIndex
@@ -674,21 +675,27 @@ slideTopBar screen model def progress =
 
 slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
-    Html.div [ Attr.class "lia-pagination" ]
+    Html.nav [ Attr.class "lia-pagination", A11y_Aria.label (Trans.baseSlideNavigation lang) ]
         [ Html.div [ Attr.class "lia-pagination__content" ]
             [ navButton (Trans.baseNext lang) "lia-btn-next" "icon-arrow-right" NextSection
             , Html.span
                 [ Attr.class "lia-pagination__current" ]
-                [ Html.text (String.fromInt (slide + 1))
-                , Html.span [ Attr.class "font-400" ]
-                    [ Html.text <|
-                        case mode of
-                            Textbook ->
-                                ""
+                [ hiddenText (Trans.baseSlide lang ++ " ")
+                , Html.text (String.fromInt (slide + 1))
+                , Html.span [ Attr.class "font-400" ] <|
+                    case mode of
+                        Textbook ->
+                            []
 
-                            _ ->
-                                state effect
-                    ]
+                        _ ->
+                            case state effect of
+                                "" ->
+                                    []
+
+                                steps ->
+                                    [ hiddenText (", " ++ Trans.baseStep lang ++ " ")
+                                    , Html.text steps
+                                    ]
                 ]
             , navButton (Trans.basePrev lang) "lia-btn-prev" "icon-arrow-left" PrevSection
             ]
@@ -978,3 +985,10 @@ showModal model =
 
         _ ->
             Html.text ""
+
+
+{-| **@private:** Text, that is only read by screen readers.
+-}
+hiddenText : String -> Html msg
+hiddenText =
+    Html.text >> List.singleton >> Html.span [ Attr.class "hidden-visually" ]

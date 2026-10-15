@@ -34,6 +34,7 @@ search lang active results model =
         , Attr.value model
         , Attr.class "lia-input"
         , Attr.placeholder (baseSearch lang)
+        , A11y_Aria.label (baseSearch lang)
         , onInput ScanIndex
         , onKeyDown
         , Attr.id "lia-input-search"
@@ -154,5 +155,5 @@ itemLink active isCurrent section =
         |> (++) "#"
         |> Attr.href
     ]
-        |> CList.appendIf isCurrent [ Attr.id "focusedToc", Attr.class "lia-active" ]
+        |> CList.appendIf isCurrent [ Attr.id "focusedToc", Attr.class "lia-active", Attr.attribute "aria-current" "page" ]
         |> Html.a
