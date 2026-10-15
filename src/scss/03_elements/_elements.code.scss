@@ -22,10 +22,7 @@
         from rgb(var(--color-highlight)) calc(r * 2.2) calc(g * 2.2)
           calc(b * 2.2)
       );
-      color: rgb(
-        from rgb(var(--color-highlight)) calc(r * 2.5) calc(g * 2.5)
-          calc(b * 2.5)
-      );
+      color: var(--color-accent);
     }
   }
 

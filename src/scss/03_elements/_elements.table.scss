@@ -50,8 +50,13 @@
             td:first-child:before {
               background-color: rgb(var(--lia-grey-lighter));
 
+              // opaque, the cell below already has the stripe
               @at-root html.lia-variant-dark & {
-                background-color: rgba(var(--lia-grey), 0.15);
+                background: linear-gradient(
+                    rgba(var(--lia-grey), 0.15),
+                    rgba(var(--lia-grey), 0.15)
+                  )
+                  rgb(var(--color-background));
               }
             }
 
@@ -83,8 +88,13 @@
             th:last-child:before {
               background-color: rgb(var(--lia-grey-lighter));
 
+              // opaque, the cell below already has the stripe
               @at-root html.lia-variant-dark & {
-                background-color: rgba(var(--lia-grey), 0.15);
+                background: linear-gradient(
+                    rgba(var(--lia-grey), 0.15),
+                    rgba(var(--lia-grey), 0.15)
+                  )
+                  rgb(var(--color-background));
               }
             }
 

@@ -151,18 +151,17 @@
       color: inherit;
 
       &.lia-active {
-        color: rgb(var(--color-highlight));
+        color: var(--color-accent);
 
         &:before {
           bottom: 0.5rem;
           content: '';
-          background-color: rgb(var(--color-highlight));
           position: absolute;
           left: 0;
           top: 0px;
           bottom: 0px;
           width: 5px;
-          background-color: rgb(var(--color-highlight));
+          background-color: var(--color-accent);
 
           [dir='rtl'] & {
             left: auto;

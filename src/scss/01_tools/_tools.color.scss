@@ -52,3 +52,13 @@
     );
   }
 }
+
+// the dark mode accent lifted towards white, for the lighter anthracite surfaces
+@mixin dark-accent-on-anthracite {
+  @supports (color: rgb(from red r g b)) {
+    --color-accent: rgb(
+      from rgb(var(--color-highlight)) calc(min(255, r * 2.5) * 0.6 + 102)
+        calc(min(255, g * 2.5) * 0.6 + 102) calc(min(255, b * 2.5) * 0.6 + 102)
+    );
+  }
+}
