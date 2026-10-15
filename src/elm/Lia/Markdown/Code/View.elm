@@ -18,6 +18,8 @@ import I18n.Translations as Translations
     exposing
         ( Lang
         , baseStop
+        , codeBlock
+        , codeEditor
         , codeExecute
         , codeFirst
         , codeLast
@@ -198,7 +200,8 @@ viewFile config fileID file attr =
 
         editor =
             viewEditor
-                { isExecutable = isExecutable
+                { lang = config.lang
+                , isExecutable = isExecutable
                 , theme = config.theme
                 , attr = attr
                 , isRunning = config.isRunning
@@ -337,7 +340,8 @@ with `data-readonly`, highlighted ones unless `data-readonly="false"`.
 At most 16 lines are shown unless the file is in fullscreen.
 -}
 viewEditor :
-    { isExecutable : Bool
+    { lang : Lang
+    , isExecutable : Bool
     , theme : String
     , attr : Parameters
     , isRunning : Bool
@@ -349,7 +353,7 @@ viewEditor :
     , cursors : List Sync.Cursor
     }
     -> List (Html Msg)
-viewEditor { isExecutable, theme, attr, isRunning, code, fileID, file, errors, sync, cursors } =
+viewEditor { lang, isExecutable, theme, attr, isRunning, code, fileID, file, errors, sync, cursors } =
     let
         id =
             idOf code
@@ -385,6 +389,22 @@ viewEditor { isExecutable, theme, attr, isRunning, code, fileID, file, errors, s
     in
     [ Editor.editor
         ([ Editor.value content
+         , Editor.label
+            ((if readOnly then
+                codeBlock lang
+
+              else
+                codeEditor lang
+             )
+                ++ ", "
+                ++ file.lang
+                ++ (if String.isEmpty file.name then
+                        ""
+
+                    else
+                        ": " ++ file.name
+                   )
+            )
          , Editor.setCursors cursors
          , Editor.mode file.lang
          , Editor.theme (string "data-theme" theme)

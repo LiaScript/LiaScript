@@ -7791,6 +7791,26 @@ ttsPreferBrowser lang =
             "Prefer browser TTS"
 
 
+ttsPosition : Lang -> String
+ttsPosition lang =
+    case lang of
+        De ->
+            "Wiedergabeposition"
+
+        _ ->
+            "Playback position"
+
+
+ttsOf : Lang -> String
+ttsOf lang =
+    case lang of
+        De ->
+            "von"
+
+        _ ->
+            "of"
+
+
 ttsUsingBrowser : Lang -> String
 ttsUsingBrowser lang =
     case lang of
@@ -9394,6 +9414,26 @@ codeCopy lang =
 
         _ ->
             "copy to clipboard"
+
+
+codeEditor : Lang -> String
+codeEditor lang =
+    case lang of
+        De ->
+            "Code-Editor"
+
+        _ ->
+            "Code editor"
+
+
+codeBlock : Lang -> String
+codeBlock lang =
+    case lang of
+        De ->
+            "Codeblock"
+
+        _ ->
+            "Code block"
 
 
 codeReset : Lang -> String
@@ -14150,3 +14190,23 @@ chatSend lang =
 
         _ ->
             "Send message"
+
+
+chatMessage : Lang -> String
+chatMessage lang =
+    case lang of
+        De ->
+            "Chat-Nachricht"
+
+        _ ->
+            "Chat message"
+
+
+chatUnverified : Lang -> String
+chatUnverified lang =
+    case lang of
+        De ->
+            "Unbestätigter Absender"
+
+        _ ->
+            "Unverified sender"

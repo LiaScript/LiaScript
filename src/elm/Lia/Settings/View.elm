@@ -727,7 +727,7 @@ viewEditorTheme grouping lang tabbable theme =
                   , ( "xcode", "XCode" )
                   ]
                     |> List.map op
-                    |> Html.optgroup [ Attr.attribute "label" (Trans.cBright lang), A11y_Aria.hidden True ]
+                    |> Html.optgroup [ Attr.attribute "label" (Trans.cBright lang) ]
                 , [ ( "ambiance", "Ambiance" )
                   , ( "chaos", "Chaos" )
                   , ( "cloud9_night", "Cloud9 Night" )
@@ -758,7 +758,7 @@ viewEditorTheme grouping lang tabbable theme =
                   , ( "vibrant_ink", "Vibrant Ink" )
                   ]
                     |> List.map op
-                    |> Html.optgroup [ Attr.attribute "label" (Trans.cDark lang), A11y_Aria.hidden True ]
+                    |> Html.optgroup [ Attr.attribute "label" (Trans.cDark lang) ]
                 ]
             ]
         ]

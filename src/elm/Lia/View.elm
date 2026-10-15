@@ -328,7 +328,7 @@ slideBottom { lang, tiny, settings, slide, effects, translated } =
                                 Html.text ""
                             ]
                         , Html.div [ Attr.class "lia-responsive-voice__center" ]
-                            [ audioProgressSlider sound (not (List.isEmpty recordings) || (controllable && not (List.isEmpty embeds))) settings
+                            [ audioProgressSlider lang sound (not (List.isEmpty recordings) || (controllable && not (List.isEmpty embeds))) settings
                             , responsiveVoice
                                 { lang = lang
                                 , tiny = tiny
@@ -425,8 +425,8 @@ btnPause soundEnabled settings =
         ]
 
 
-audioProgressSlider : Bool -> Bool -> Settings -> Html Msg
-audioProgressSlider soundEnabled hasRecordings settings =
+audioProgressSlider : Lang -> Bool -> Bool -> Settings -> Html Msg
+audioProgressSlider lang soundEnabled hasRecordings settings =
     let
         ( progress, isSeeking ) =
             case settings.playback of
@@ -470,6 +470,8 @@ audioProgressSlider soundEnabled hasRecordings settings =
              , Attr.max (String.fromFloat total)
              , Attr.step "0.1"
              , Attr.class "lia-tts-progress__slider"
+             , A11y_Aria.label (Trans.ttsPosition lang)
+             , Attr.attribute "aria-valuetext" (minutes current ++ " " ++ Trans.ttsOf lang ++ " " ++ minutes total)
              , on "mousedown" (JD.succeed TTSStartSeeking)
              , on "touchstart" (JD.succeed TTSStartSeeking)
              , on "change"
@@ -992,3 +994,14 @@ showModal model =
 hiddenText : String -> Html msg
 hiddenText =
     Html.text >> List.singleton >> Html.span [ Attr.class "hidden-visually" ]
+
+
+{-| **@private:** Seconds as "m:ss".
+-}
+minutes : Float -> String
+minutes seconds =
+    let
+        s =
+            round seconds
+    in
+    String.fromInt (s // 60) ++ ":" ++ String.padLeft 2 '0' (String.fromInt (modBy 60 s))

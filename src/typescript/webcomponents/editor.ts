@@ -372,10 +372,11 @@ customElements.define(
       // keyboard accessibility enabled it prefixes this label instead
       this._editor.setOption(
         'textInputAriaLabel',
-        (this.model.readOnly ? 'Code-block' : 'Code-editor') +
-          ' in ' +
-          this.model.mode +
-          ' mode'
+        this.getAttribute('data-label') ||
+          (this.model.readOnly ? 'Code-block' : 'Code-editor') +
+            ' in ' +
+            this.model.mode +
+            ' mode'
       )
 
       if (!this.model.readOnly) {
