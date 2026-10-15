@@ -263,7 +263,7 @@ viewSubmitButton config submitted id updatesAllowed =
     Html.div [ Attr.class "lia-quiz__control" ]
         [ btn
             { msg = Maybe.map Main.UpdateSurvey msg
-            , tabbable = not submitted || updatesAllowed
+            , tabbable = True
             , title = title config.lang
             }
             [ Attr.class "lia-btn--outline lia-quiz__check" ]

@@ -33,7 +33,7 @@ $responsive-voice-hight: 5rem;
       align-items: center;
       justify-content: center;
 
-      &:not(:disabled) {
+      &:not(:disabled):not([aria-disabled='true']) {
         border-color: rgb(var(--color-highlight));
       }
     }
@@ -57,7 +57,7 @@ $responsive-voice-hight: 5rem;
       }
     }
 
-    & > *:first-child:not(:disabled) + * {
+    & > *:first-child:not(:disabled):not([aria-disabled='true']) + * {
       border-inline-start-color: rgb(var(--color-highlight));
     }
   }

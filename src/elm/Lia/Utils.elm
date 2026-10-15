@@ -140,7 +140,12 @@ btn { title, tabbable, msg } =
         [ Attr.class "lia-btn"
         , msg
             |> Maybe.map Event.onClick
-            |> Maybe.withDefault (Attr.disabled True)
+            -- not `disabled`, which would drop the focus, if it was the
+            -- focused button that got deactivated
+            |> Maybe.withDefault (A11y_Aria.disabled True)
+        , msg
+            |> Maybe.map (always (Attr.class ""))
+            |> Maybe.withDefault (Attr.class "lia-btn--disabled is-disabled")
         , A11y_Key.tabbable tabbable
         , A11y_Aria.hidden (not tabbable)
         , if String.isEmpty title then

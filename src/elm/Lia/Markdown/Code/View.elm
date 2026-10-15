@@ -488,7 +488,7 @@ viewControl { lang, id, version_active, version_count, running, terminal, sync }
         version title icon disabled msg =
             btnIcon
                 { title = title lang
-                , tabbable = not (disabled || shared)
+                , tabbable = True
                 , msg =
                     if disabled || shared then
                         Nothing
@@ -512,7 +512,7 @@ viewControl { lang, id, version_active, version_count, running, terminal, sync }
                     btnIcon
                         { title = codeRunning lang
                         , msg = Nothing
-                        , tabbable = False
+                        , tabbable = True
                         , icon = "icon-refresh rotating"
                         }
                         [ Attr.class "is-disabled lia-btn--transparent" ]
@@ -548,7 +548,7 @@ viewControl { lang, id, version_active, version_count, running, terminal, sync }
 
                             else
                                 "switch to collaborative editor"
-                        , tabbable = not running
+                        , tabbable = True
                         , msg =
                             if running then
                                 Nothing

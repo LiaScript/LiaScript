@@ -720,7 +720,7 @@ viewSolutionButton { config, hidden, solution, msg, deactivated } =
 
             else
                 Nothing
-        , tabbable = not hidden && solution == Solution.Open
+        , tabbable = not hidden
         , icon = "icon-resolve"
         }
         [ Attr.classList
@@ -744,7 +744,7 @@ viewMainButton config trials isDeactivated solution quizId typeOf =
 
             else
                 Nothing
-        , tabbable = solution == Solution.Open
+        , tabbable = True
         }
         [ Attr.class "lia-btn--outline lia-quiz__check", A11y_Aria.label (quizLabelCheck config.lang) ]
         [ Html.text (quizCheck config.lang)
