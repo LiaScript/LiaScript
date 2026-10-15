@@ -806,12 +806,26 @@ alt config =
     Just >> stringFrom config >> Maybe.map Attr.alt
 
 
-{-| **@private:** Add the optional `title` and `alt` attributes.
+{-| **@private:** An iframe is named by its `title`, which is the title of the
+media or otherwise its alt text.
 -}
-titleAndAlt : Config sub -> Inlines -> Maybe Inlines -> List (Attribute msg) -> List (Attribute msg)
-titleAndAlt config alt_ title_ =
+iframeTitle : Config sub -> Inlines -> Maybe Inlines -> List (Attribute msg) -> List (Attribute msg)
+iframeTitle config alt_ title_ =
+    case stringFrom config title_ of
+        Just str ->
+            (::) (Attr.title str)
+
+        Nothing ->
+            CList.addWhen (stringFrom config (Just alt_) |> Maybe.map Attr.title)
+
+
+{-| **@private:** Audio and video elements have no `alt` attribute, the alt text
+names them via `aria-label`, the title is shown as tooltip.
+-}
+mediaLabel : Config sub -> Inlines -> Maybe Inlines -> List (Attribute msg) -> List (Attribute msg)
+mediaLabel config alt_ title_ =
     CList.addWhen (title config title_)
-        >> CList.addWhen (alt config alt_)
+        >> CList.addWhen (stringFrom config (Just alt_) |> Maybe.map A11y_Aria.label)
 
 
 {-| **@private:** An image, a click opens the zoomed image, if it has no
@@ -824,7 +838,8 @@ img config attr alt_ url_ title_ width =
             :: onError "img" url_
             :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
             :: (if List.isEmpty attr && config.image_zoom then
-                    [ Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") ]
+                    Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")")
+                        :: zoomByKeyboard (stringFrom config (Just alt_))
 
                 else
                     toAttribute attr
@@ -834,6 +849,23 @@ img config attr alt_ url_ title_ width =
             |> addLazyLoading config.visible
         )
         []
+
+
+{-| **@private:** Images with an alt text can be zoomed with the keyboard too,
+decorative images (`alt=""`) are not focusable.
+-}
+zoomByKeyboard : Maybe String -> List (Attribute msg)
+zoomByKeyboard alt_ =
+    case alt_ of
+        Just _ ->
+            [ Attr.tabindex 0
+            , A11y_Role.button
+            , Attr.attribute "aria-haspopup" "dialog"
+            , Attr.attribute "onkeydown" "if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"
+            ]
+
+        Nothing ->
+            []
 
 
 {-| **@private:** Only in textbook mode (`visible == Nothing`) media is loaded
@@ -921,14 +953,14 @@ reference config ref attr =
                                 :: allow
                                 :: Attr.style "width" "100%"
                                 :: annotation "lia-audio" attr
-                                |> titleAndAlt config alt_ title_
+                                |> iframeTitle config alt_ title_
                                 |> addLazyLoading config.visible
                             )
                             []
 
                       else
                         audio
-                            (toAttribute attr |> titleAndAlt config alt_ title_)
+                            (toAttribute attr |> mediaLabel config alt_ title_)
                             { url = url_
                             , controls = True
                             , preload = "none"
@@ -946,7 +978,7 @@ reference config ref attr =
                                 :: Attr.attribute "allowfullscreen" ""
                                 :: allow
                                 :: toAttribute attr
-                                |> titleAndAlt config alt_ title_
+                                |> iframeTitle config alt_ title_
                                 |> addLazyLoading config.visible
                             )
                             (viewer config alt_)
@@ -967,7 +999,7 @@ reference config ref attr =
                                     (Attr.controls True
                                         :: Attr.attribute "preload" "none"
                                         :: toAttribute attr
-                                        |> titleAndAlt config alt_ title_
+                                        |> mediaLabel config alt_ title_
                                     )
                                     [ Html.source [ Attr.src url_, onError "video" url_ ] [] ]
                               )
@@ -978,7 +1010,7 @@ reference config ref attr =
             Html.figure [ Attr.class "lia-figure", Attr.style "height" "auto", Attr.style "width" "100%" ]
                 [ Html.div [ Attr.class "lia-figure__media" ]
                     [ printLink config alt_ title_ url
-                    , oembed config.oEmbed attr url
+                    , oembed config.oEmbed attr (stringFrom config (Just alt_)) url
                     , Html.figcaption [ Attr.class "lia-figure__caption" ] <|
                         case title_ of
                             Just sub ->
@@ -988,7 +1020,7 @@ reference config ref attr =
                                 [ Html.a
                                     [ Attr.class "lia-link"
                                     , Attr.href url
-                                    , Attr.target "blank_"
+                                    , Attr.target "_blank"
                                     ]
                                     [ Html.text url ]
                                 ]
@@ -1085,12 +1117,17 @@ printLink config alt_ title_ url_ =
 
 {-| **@private:** The `lia-embed` web component, which loads oEmbed content.
 -}
-oembed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool } -> Parameters -> String -> Html msg
-oembed option attr url =
+oembed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool } -> Parameters -> Maybe String -> String -> Html msg
+oembed option attr alt_ url =
     Html.node "lia-embed"
         [ url
             |> JE.string
             |> Attr.property "url"
+
+        -- names the embedded iframe or image
+        , alt_
+            |> Maybe.map (JE.string >> Attr.property "alt")
+            |> Maybe.withDefault (Attr.class "")
         , option
             |> Maybe.map
                 (\o ->
