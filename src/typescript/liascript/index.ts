@@ -14,6 +14,7 @@ import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only.js'
 import { Connector } from '../connectors/Base/index'
 
 import '../webcomponents/tooltip/index'
+import '../webcomponents/modal'
 
 // Services
 import Console from './service/Console'

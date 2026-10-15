@@ -187,7 +187,8 @@ scheduleFocus delay msg elementID =
 -}
 modal : Bool -> msg -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
 modal activeBorder msgClose controls content =
-    Html.div
+    -- the custom element moves the focus in and out, see webcomponents/modal.ts
+    Html.node "lia-modal"
         [ Attr.class "lia-modal"
         , A11y_Aria.modal True
         , A11y_Role.dialog
@@ -203,7 +204,6 @@ modal activeBorder msgClose controls content =
                     }
                     [ Attr.class "lia-btn--transparent"
                     , Attr.id "lia-modal__close"
-                    , A11y_Key.onKeyDown [ A11y_Key.escape msgClose ]
                     ]
                 ]
             , content
