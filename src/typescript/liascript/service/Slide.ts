@@ -59,7 +59,7 @@ const Service = {
           if (elem && elem.scrollTo) {
             elem.scrollTo({
               top: elem.scrollHeight,
-              behavior: 'smooth',
+              behavior: scrollBehavior(),
             })
           }
         }, event.message.param.delay)
@@ -184,9 +184,20 @@ function nearest(elems: HTMLElement[]): HTMLElement | null {
   return elems[0] ?? null
 }
 
+// no smooth scrolling, if the user reduces motion in the system settings
+function scrollBehavior(): ScrollBehavior {
+  try {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 'auto'
+      : 'smooth'
+  } catch (e) {
+    return 'smooth'
+  }
+}
+
 function scrollTo(elem: HTMLElement, block?: ScrollLogicalPosition) {
   try {
-    elem.scrollIntoView({ behavior: 'smooth', block })
+    elem.scrollIntoView({ behavior: scrollBehavior(), block })
   } catch (e) {
     // Gecko < 58 (KaiOS) knows neither 'nearest' nor 'center' and throws,
     // align to the bottom then, but only if it is not visible already
