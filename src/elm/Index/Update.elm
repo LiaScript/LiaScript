@@ -10,6 +10,7 @@ import Browser.Navigation as Nav
 import Dict
 import Index.Model exposing (Action(..), Course, Modal, Model, Release)
 import Index.Version as Version
+import Index.View.Popup as Popup
 import Json.Decode as JD
 import Lia.Definition.Json.Decode as Definition
 import Lia.Markdown.Inline.Json.Decode as Inline
@@ -93,7 +94,7 @@ update msg settings model =
                             (mapPopup Popup_Delete courseID)
                             model.masonry
                   }
-                , Lia.Utils.focus None "lia-popup"
+                , Lia.Utils.focus None Popup.cancelID
                 , []
                 )
 
@@ -134,7 +135,7 @@ update msg settings model =
                             (mapPopup Popup_Reset courseID)
                             model.masonry
                   }
-                , Lia.Utils.focus None "lia-popup"
+                , Lia.Utils.focus None Popup.cancelID
                 , []
                 )
 
