@@ -2475,6 +2475,26 @@ baseSlideNavigation lang =
             "Slide navigation"
 
 
+baseFootnote : Lang -> String
+baseFootnote lang =
+    case lang of
+        De ->
+            "Fußnote"
+
+        _ ->
+            "Footnote"
+
+
+baseFootnotes : Lang -> String
+baseFootnotes lang =
+    case lang of
+        De ->
+            "Fußnoten"
+
+        _ ->
+            "Footnotes"
+
+
 baseShow : Lang -> String
 baseShow lang =
     case lang of

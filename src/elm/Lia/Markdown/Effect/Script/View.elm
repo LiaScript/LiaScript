@@ -2,6 +2,7 @@ module Lia.Markdown.Effect.Script.View exposing (view)
 
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
+import Accessibility.Role as A11y_Role
 import Array
 import Conditional.List as CList
 import Html exposing (Html)
@@ -106,6 +107,7 @@ script config withStyling attr id node result =
                 (case node.input.type_ of
                     Just (Input.Button_ _) ->
                         [ Event.onClick (Click id)
+                        , A11y_Role.button
                         , [ A11y_Key.enter (Click id)
                           , A11y_Key.space (Click id)
                           ]
@@ -198,7 +200,7 @@ input config attr id node result =
                     ++ [ Attr.class "lia-checkbox"
                        , Attr.checked (node.input.value == "true")
                        , Attr.type_ "checkbox"
-                       , Attr.id "lia-focus"
+                       , Attr.id (focusID id)
                        , Event.onCheck
                             (\b ->
                                 Value id node.input.updateOnChange <|
@@ -252,25 +254,42 @@ input config attr id node result =
 {-| A labeled checkbox or radio button for every option.
 -}
 options : String -> (Int -> Bool -> String -> Msg sub) -> (String -> Bool) -> Bool -> Int -> List String -> Html (Msg sub)
-options type_ msg checked updateOnChange id =
-    List.map
-        (\o ->
-            Html.label [ Attr.class "lia-label mr-1" ]
-                [ Html.input
-                    (onActivate False id
-                        ++ [ Attr.value o
-                           , Attr.type_ type_
-                           , Event.onCheck (always (msg id updateOnChange o))
-                           , Attr.checked (checked o)
-                           , Attr.autofocus True
-                           , Attr.class ("lia-" ++ type_)
-                           ]
-                    )
-                    []
-                , Html.text o
-                ]
-        )
-        >> Html.span [ Attr.class "flex items-center" ]
+options type_ msg checked updateOnChange id list =
+    let
+        -- only one option gets the focus, the checked or the first one
+        focused =
+            list
+                |> List.filter checked
+                |> List.head
+                |> Maybe.withDefault (List.head list |> Maybe.withDefault "")
+    in
+    list
+        |> List.map
+            (\o ->
+                Html.label [ Attr.class "lia-label mr-1" ]
+                    [ Html.input
+                        (onActivate False id
+                            ++ [ Attr.value o
+                               , Attr.type_ type_
+                               , Event.onCheck (always (msg id updateOnChange o))
+                               , Attr.checked (checked o)
+                               , Attr.class ("lia-" ++ type_)
+                               ]
+                            |> CList.addIf (o == focused) (Attr.autofocus True)
+                            |> CList.addIf (o == focused) (Attr.id (focusID id))
+                        )
+                        []
+                    , Html.text o
+                    ]
+            )
+        |> Html.span [ Attr.class "flex items-center" ]
+
+
+{-| The id of an active input, that gets the focus.
+-}
+focusID : Int -> String
+focusID id =
+    "lia-focus-" ++ String.fromInt id
 
 
 attributes : Bool -> Int -> String -> Parameters -> List (Html.Attribute (Msg sub))
@@ -279,7 +298,7 @@ attributes updateOnChange id value =
         >> List.append
             [ Event.onInput (Value id updateOnChange)
             , Attr.value value
-            , Attr.id "lia-focus"
+            , Attr.id (focusID id)
             , blockKeydown NoOp
             ]
         >> List.append (onActivate False id)
@@ -319,7 +338,7 @@ base type_ updateOnChange id attr value =
                             "lia-input"
                     )
                , Attr.value value
-               , Attr.id "lia-focus"
+               , Attr.id (focusID id)
                , blockKeydown NoOp
                , A11y_Key.onKeyUp
                     [ A11y_Key.enter (Activate False id)

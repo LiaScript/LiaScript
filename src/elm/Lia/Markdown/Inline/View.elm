@@ -102,7 +102,7 @@ view config element =
         FootnoteMark e attr ->
             attr
                 |> toAttribute
-                |> Footnote.inline e
+                |> Footnote.inline config.lang e
 
         Container list attr ->
             list

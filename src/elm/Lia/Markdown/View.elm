@@ -152,7 +152,7 @@ view_body hidden ( config, footnote2show, footnotes ) =
         >> (\s ->
                 List.append s <|
                     if config.main.visible == Nothing then
-                        [ Footnote.block (view_block config) footnotes ]
+                        [ Footnote.block config.main.lang (view_block config) footnotes ]
 
                     else if config.mode == Presentation then
                         config.section.effect_model.comments

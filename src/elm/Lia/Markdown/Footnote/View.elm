@@ -8,6 +8,7 @@ import Accessibility.Aria as A11y_Aria
 import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
+import I18n.Translations as Trans exposing (Lang)
 import Json.Encode as JE
 import Lia.Markdown.Footnote.Model exposing (Model)
 import Lia.Markdown.Types as Markdown
@@ -17,8 +18,8 @@ import Lia.Markdown.Types as Markdown
 therefore a click opens the footnote via `window.LIA.showFootnote` and the
 `footnote` port.
 -}
-inline : String -> List (Html.Attribute msg) -> Html msg
-inline key attr =
+inline : Lang -> String -> List (Html.Attribute msg) -> Html msg
+inline lang key attr =
     Html.sup []
         [ Html.button
             (attr
@@ -26,23 +27,27 @@ inline key attr =
                    , Attr.class "lia-btn lia-btn--transparent text-highlight"
                    , Attr.attribute "onclick" ("window.LIA.showFootnote(" ++ JE.encode 0 (JE.string key) ++ ");")
                    , Attr.id (byKey key)
+
+                   -- the text of the footnote, if the list is shown
                    , A11y_Aria.describedBy [ by key ]
                    ]
             )
-            [ braces key ]
+            [ Html.span [ Attr.class "hidden-visually" ] [ Html.text (Trans.baseFootnote lang ++ " ") ]
+            , braces key
+            ]
         ]
 
 
 {-| All footnotes of a section as a definition list at its end, nothing if
 there are none (styles in `_components.footnote.scss`).
 -}
-block : (Markdown.Block -> Html msg) -> Model -> Html msg
-block fn model =
+block : Lang -> (Markdown.Block -> Html msg) -> Model -> Html msg
+block lang fn model =
     if Dict.isEmpty model then
         Html.text ""
 
     else
-        Html.footer [ Attr.attribute "role" "doc-endnotes" ]
+        Html.section [ A11y_Aria.label (Trans.baseFootnotes lang) ]
             [ model
                 |> Dict.toList
                 |> List.map (definition fn)
@@ -53,8 +58,8 @@ block fn model =
 definition : (Markdown.Block -> Html msg) -> ( String, Markdown.Blocks ) -> Html msg
 definition fn ( key, body ) =
     Html.div []
-        [ Html.dt [ Attr.id (by key) ] [ braces key ]
-        , Html.dd [] (List.map fn body)
+        [ Html.dt [] [ braces key ]
+        , Html.dd [ Attr.id (by key) ] (List.map fn body)
         ]
 
 
@@ -63,7 +68,7 @@ braces key =
     Html.text ("[" ++ key ++ "]")
 
 
-{-| Id of the footnote definition in the table.
+{-| Id of the text of a footnote in the list, which describes its mark.
 -}
 by : String -> String
 by =
