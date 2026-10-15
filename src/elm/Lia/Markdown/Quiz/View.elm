@@ -574,6 +574,7 @@ viewState config elem quiz renderedOptions =
         ( Matrix_State s, Matrix_Type q ) ->
             ( []
             , [ { config = config
+                , base = "lia-quiz-" ++ String.fromInt config.slide ++ "-" ++ String.fromInt quiz.id
                 , shuffle = shuffle elem.opt.randomize
                 , open = elem.solved == Solution.Open
                 , class = Solution.toClass ( elem.solved, elem.trial )

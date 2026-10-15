@@ -164,9 +164,9 @@ view config labeledBy attr survey model renderedOptions =
 
         Matrix checkbox header vars questions ->
             questions
-                |> List.indexedMap (viewRow config checkbox (isCheckedRow state) (MatrixUpdate id) submitted vars)
+                |> List.indexedMap (viewRow config base checkbox (isCheckedRow state) (MatrixUpdate id) submitted vars)
                 |> shuffle opt.randomize
-                |> viewMatrix config header
+                |> viewMatrix config base header
                 |> Html.map Main.UpdateSurvey
                 |> frame "matrix"
                 |> viewMatrixSync config questions vars syncData
@@ -529,29 +529,63 @@ viewOption base checkbox checked msg submitted i ( var, body ) =
         ]
 
 
-viewMatrix : Config sub -> List Inlines -> List (Html (Msg sub)) -> Html (Msg sub)
-viewMatrix config header rows =
+{-| Every input is labeled by its row and column header (`base`-row-i and
+`base`-col-j).
+-}
+viewMatrix : Config sub -> String -> List Inlines -> List (Html (Msg sub)) -> Html (Msg sub)
+viewMatrix config base header rows =
     Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-last-col-sticky" ]
         [ Html.table [ Attr.class "lia-table lia-survey-matrix is-alternating" ]
             [ header
-                |> List.map (inlines config >> Html.th [ Attr.class "lia-table__head lia-survey-matrix__head" ])
-                |> Html.thead [ Attr.class "lia-table__head lia-survey-matrix__head", A11y_Role.columnHeader ]
-            , Html.tbody [ Attr.class "lia-table__body lia-survey-matrix__body", A11y_Role.rowHeader ] rows
+                |> List.indexedMap
+                    (\column ->
+                        inlines config
+                            >> Html.th
+                                [ Attr.class "lia-table__head lia-survey-matrix__head"
+                                , Attr.scope "col"
+                                , Attr.id (base ++ "-col-" ++ String.fromInt column)
+                                ]
+                    )
+                |> Html.tr []
+                |> List.singleton
+                |> Html.thead [ Attr.class "lia-table__head lia-survey-matrix__head" ]
+            , Html.tbody [ Attr.class "lia-table__body lia-survey-matrix__body" ] rows
             ]
         ]
 
 
-{-| One checkbox or radio button per variable and the statement of the row.
+{-| One checkbox or radio button per variable and the statement of the row,
+radio buttons of one row form a group.
 -}
-viewRow : Config sub -> Bool -> (Int -> String -> Bool) -> (Int -> String -> Msg sub) -> Bool -> List String -> Int -> Inlines -> Html (Msg sub)
-viewRow config checkbox checked msg submitted vars row statement =
+viewRow : Config sub -> String -> Bool -> (Int -> String -> Bool) -> (Int -> String -> Msg sub) -> Bool -> List String -> Int -> Inlines -> Html (Msg sub)
+viewRow config base checkbox checked msg submitted vars row statement =
+    let
+        rowID =
+            base ++ "-row-" ++ String.fromInt row
+    in
     vars
-        |> List.map
-            (\var ->
+        |> List.indexedMap
+            (\column var ->
                 Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
-                    [ input checkbox (msg row var) (checked row var) submitted [] ]
+                    [ input checkbox
+                        (msg row var)
+                        (checked row var)
+                        submitted
+                        [ Attr.name rowID
+                        , A11y_Aria.labelledBy (rowID ++ " " ++ base ++ "-col-" ++ String.fromInt column)
+                        ]
+                    ]
             )
-        |> (\cells -> cells ++ [ Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ] [ Html.span [] (inlines config statement) ] ])
+        |> (\cells ->
+                cells
+                    ++ [ Html.th
+                            [ Attr.class "lia-table__data lia-survey-matrix__data"
+                            , Attr.scope "row"
+                            , Attr.id rowID
+                            ]
+                            [ Html.span [] (inlines config statement) ]
+                       ]
+           )
         |> Html.tr [ Attr.class "lia-table__row lia-survey-matrix__row" ]
 
 
