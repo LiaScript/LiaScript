@@ -276,19 +276,19 @@ const isKaiOS = /KAIOS/i.test(navigator.userAgent)
 
 // arrow keys belong to the focused control or the browser, not to the slides
 const ARROW_WIDGETS =
-  'input:not([type=checkbox]):not([type=button]):not([type=submit]):not([type=reset]),' +
-  'textarea,select,[contenteditable=""],[contenteditable=true],' +
   '[role=slider],[role=spinbutton],[role=radiogroup],[role=radio],[role=listbox],' +
   '[role=combobox],[role=tablist],[role=grid],[role=tree],[role=separator]'
 
 function arrowsInUse(e: KeyboardEvent) {
+  const target = e.target as HTMLInputElement
   return (
     e.defaultPrevented ||
     e.altKey ||
     e.ctrlKey ||
     e.metaKey ||
     e.shiftKey ||
-    !!(e.target as HTMLElement)?.closest?.(ARROW_WIDGETS)
+    (isEditable(target) && !/^(checkbox|button|submit|reset)$/.test(target.type)) ||
+    !!target?.closest?.(ARROW_WIDGETS)
   )
 }
 

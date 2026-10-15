@@ -46,8 +46,7 @@ import Lia.Settings.Update exposing (Msg(..), Toggle(..))
 import Lia.Sync.Types as Sync
 import Lia.Utils
     exposing
-        ( blockKeydown
-        , btn
+        ( btn
         , btnIcon
         , deactivate
         , icon
@@ -222,7 +221,6 @@ viewTheme grouping lang tabbable theme hasCustom =
                         , Attr.title name
                         , A11y_Key.tabbable tabbable
                         , A11y_Aria.hidden (not tabbable)
-                        , blockKeydown Ignore
                         ]
                     )
                     []
@@ -449,7 +447,6 @@ slider name title message grouping tabbable { maximum, minimum, step, value } =
                  , Attr.attribute "aria-valuetext" (value ++ "× speed")
                  , onInput (message >> Change)
                  , Attr.style "flex-grow" "1"
-                 , blockKeydown Ignore
                  ]
                     ++ (if tabbable then
                             []

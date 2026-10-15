@@ -26,7 +26,7 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (dropHere, viewer)
+import Lia.Markdown.Inline.View exposing (dropHere, dropZoneLabel, viewer)
 import Lia.Markdown.Quiz.View exposing (openState, syncAttributes, viewMatrixTableSync, viewTableSync)
 import Lia.Markdown.Survey.Sync as Sync exposing (Sync)
 import Lia.Markdown.Survey.Types
@@ -50,10 +50,11 @@ import Lia.Markdown.Update as Main
 import Lia.Sync.Types as Sync_
 import Lia.Utils
     exposing
-        ( blockKeydown
-        , btn
+        ( btn
+        , combobox
         , dropdownList
         , icon
+        , labeledOption
         , shuffle
         , string2Color
         )
@@ -308,7 +309,6 @@ viewText config labeledBy lines id submitted str =
     else
         Html.textarea
             (Attr.class "lia-input lia-quiz__input"
-                :: blockKeydown (TextUpdate id str)
                 :: Attr.rows lines
                 :: attr
             )
@@ -328,20 +328,14 @@ viewSelect config randomize options id submitted ( open, value ) =
         [ Html.div
             [ Attr.class "lia-dropdown" ]
             [ Html.span
-                [ Attr.class "lia-dropdown__selected"
-                , Attr.tabindex 0
-                , A11y_Role.comboBox
-                , A11y_Aria.expanded open
-                , A11y_Aria.hasListBoxPopUp
-                , A11y_Aria.controls [ listID ]
-                , A11y_Aria.label (Translations.quizSelection config.lang)
-                , A11y_Aria.disabled submitted
-                , if submitted then
-                    Attr.class "is-disabled"
+                (combobox listID open submitted (A11y_Aria.label (Translations.quizSelection config.lang))
+                    ++ [ if submitted then
+                            Attr.class "is-disabled"
 
-                  else
-                    onClick <| SelectUpdate id Choose
-                ]
+                         else
+                            onClick <| SelectUpdate id Choose
+                       ]
+                )
                 [ Html.span []
                     [ options
                         |> List.Extra.getAt value
@@ -429,16 +423,7 @@ viewDrop config randomize options id submitted ( highlight, active, value ) =
             , Attr.style "position" "relative"
             , onClick (unlessSubmitted Target)
             , A11y_Role.button
-            , A11y_Aria.label
-                (Translations.quizDropZone config.lang
-                    ++ (case List.Extra.getAt value options of
-                            Just card ->
-                                ": " ++ stringify card
-
-                            Nothing ->
-                                ", " ++ Translations.quizEmpty config.lang
-                       )
-                )
+            , dropZoneLabel config.lang "" (Maybe.map stringify (List.Extra.getAt value options))
             , onKeys Target
 
             -- only a filled drop zone does something, Enter clears it
@@ -540,24 +525,16 @@ viewDrop config randomize options id submitted ( highlight, active, value ) =
         ]
 
 
-{-| A checkbox or radio button with the pre-rendered `body` of the option. The
-body is not a `label`, since it might contain images or scripts, which must not
-toggle the input, it names the input via `aria-labelledby` instead.
+{-| A checkbox or radio button with the pre-rendered `body` of the option.
 -}
 viewOption : String -> Bool -> (String -> Bool) -> (String -> Msg Main.Msg) -> Bool -> Int -> ( String, List (Html Main.Msg) ) -> Html Main.Msg
 viewOption base checkbox checked msg submitted i ( var, body ) =
-    let
-        bodyID =
-            base ++ "-option-" ++ String.fromInt i
-    in
-    Html.div [ Attr.class "lia-label lia-label--top" ]
-        [ input checkbox (msg var) (checked var) submitted
-            [ Attr.name base
-            , A11y_Aria.labelledBy bodyID
-            ]
-            |> Html.map Main.UpdateSurvey
-        , Html.div [ Attr.id bodyID, Attr.style "width" "100%" ] body
-        ]
+    labeledOption (base ++ "-option-" ++ String.fromInt i)
+        (\label ->
+            input checkbox (msg var) (checked var) submitted [ Attr.name base, label ]
+                |> Html.map Main.UpdateSurvey
+        )
+        body
 
 
 {-| Every input is labeled by its row and column header (`base`-row-i and

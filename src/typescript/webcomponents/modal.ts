@@ -2,7 +2,7 @@
 // into the dialog when it opens, keep Tab inside of it and return the focus to
 // the element that opened it when it closes.
 
-const FOCUSABLE =
+export const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),' +
   'textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 

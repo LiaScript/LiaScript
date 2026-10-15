@@ -35,7 +35,7 @@ import Lia.Markdown.Table.Types
         )
 import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Utils exposing (blockKeydown, btn, btnIcon, get, icon)
+import Lia.Utils exposing (btn, btnIcon, get, icon)
 import Set
 
 
@@ -83,7 +83,7 @@ viewLazyDiagram lang width light scripts visible =
 viewDiagram : Stringify.Config config input a -> Lang -> Int -> Bool -> Parameters -> Table -> State -> Html Msg
 viewDiagram main lang width light attr table state =
     Html.div
-        [ blockKeydown (UpdateTable Sub.NoOp) ]
+        []
         [ toggleBtn table.id ( "table", "Table" )
         , table.head
             :: sort main state identity table.body

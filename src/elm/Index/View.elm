@@ -12,7 +12,7 @@ import Index.View.Card exposing (card)
 import Index.View.Modal as Modal
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.View as Settings
-import Lia.Utils exposing (blockKeydown, btn, deactivate)
+import Lia.Utils exposing (btn, deactivate)
 import Library.Masonry as Masonry
 import Session exposing (Session)
 
@@ -103,7 +103,6 @@ searchBar url =
             , Attr.value url
             , Attr.placeholder "course-url"
             , Attr.class "lia-input border-grey-light max-w-50 mr-1 mb-1"
-            , blockKeydown NoOp
             ]
             []
         , let

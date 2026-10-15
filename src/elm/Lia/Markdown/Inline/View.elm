@@ -1,6 +1,7 @@
 module Lia.Markdown.Inline.View exposing
     ( audio
     , dropHere
+    , dropZoneLabel
     , onError
     , reduce
     , view
@@ -35,7 +36,7 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (blockKeydown, dropdownList, noTranslate, shuffle)
+import Lia.Utils exposing (combobox, dropdownList, noTranslate, shuffle)
 import List.Extra
 import QRCode
 
@@ -221,7 +222,6 @@ viewText config id width text attributes =
 
            else
             Attr.disabled True
-         , blockKeydown Msg.NoOp
          , A11y_Aria.label (Translations.quizGap config.lang ++ " " ++ String.fromInt (id + 1))
          , Attr.class <|
             if config.input.active then
@@ -250,11 +250,7 @@ viewSelect config id open selected attributes highlight =
 
         listID =
             "lia-select-"
-                ++ String.fromInt config.slide
-                ++ (config.input.path
-                        |> List.map (\( name, i ) -> "-" ++ name ++ "-" ++ String.fromInt i)
-                        |> String.concat
-                   )
+                ++ inputPrefix config
                 ++ "-"
                 ++ String.fromInt id
 
@@ -282,18 +278,12 @@ viewSelect config id open selected attributes highlight =
             )
         )
         [ Html.span
-            [ Attr.class "lia-dropdown__selected"
-            , Attr.tabindex 0
-            , A11y_Role.comboBox
-            , A11y_Aria.expanded open
-            , A11y_Aria.hasListBoxPopUp
-            , A11y_Aria.controls [ listID ]
-            , A11y_Aria.label (Translations.quizSelection config.lang ++ " " ++ String.fromInt (id + 1))
-            , A11y_Aria.disabled (not config.input.active)
-            , Attr.style "font-weight" "inherit"
-            , Attr.style "text-decoration" "inherit"
-            , Attr.style "font-style" "inherit"
-            ]
+            (combobox listID open (not config.input.active) (A11y_Aria.label (Translations.quizSelection config.lang ++ " " ++ String.fromInt (id + 1)))
+                ++ [ Attr.style "font-weight" "inherit"
+                   , Attr.style "text-decoration" "inherit"
+                   , Attr.style "font-style" "inherit"
+                   ]
+            )
             [ case List.Extra.getAt selected options of
                 Just option ->
                     Html.span [] (viewer config option)
@@ -377,18 +367,7 @@ viewDropTarget config id highlighted active state partiallyCorrect attr =
                , Attr.attribute "ondragleave" ("setTimeout(()=>" ++ config.input.on "dragenter" id "false" ++ ", 100)")
                , Attr.tabindex 0
                , A11y_Role.button
-               , A11y_Aria.label
-                    (Translations.quizDropZone config.lang
-                        ++ " "
-                        ++ String.fromInt (id + 1)
-                        ++ (case option of
-                                Just inlines ->
-                                    ": " ++ stringify_ config inlines
-
-                                Nothing ->
-                                    ", " ++ Translations.quizEmpty config.lang
-                           )
-                    )
+               , dropZoneLabel config.lang (" " ++ String.fromInt (id + 1)) (Maybe.map (stringify_ config) option)
                , A11y_Aria.describedBy [ dragHintID config ]
 
                -- selected by Enter or click, the next card is placed here
@@ -538,12 +517,17 @@ viewDragHint config =
 -}
 dragHintID : Config sub -> String
 dragHintID config =
-    "lia-drag-hint-"
-        ++ String.fromInt config.slide
-        ++ (config.input.path
-                |> List.map (\( name, i ) -> "-" ++ name ++ "-" ++ String.fromInt i)
-                |> String.concat
-           )
+    "lia-drag-hint-" ++ inputPrefix config
+
+
+{-| **@private:** Identifies the inputs of a quiz within the page.
+-}
+inputPrefix : Config sub -> String
+inputPrefix config =
+    config.input.path
+        |> List.map (\( name, i ) -> "-" ++ name ++ "-" ++ String.fromInt i)
+        |> String.concat
+        |> (++) (String.fromInt config.slide)
 
 
 {-| **@private:** Option `i` of the drop input `id`.
@@ -575,6 +559,23 @@ viewDragOption config active id i option =
                     , keyDownEvent (on "dragsource")
                     ]
             )
+
+
+{-| The name of a drop zone and its card, `number` is empty if there is only
+one drop zone.
+-}
+dropZoneLabel : Lang -> String -> Maybe String -> Attribute msg
+dropZoneLabel lang number card =
+    A11y_Aria.label <|
+        Translations.quizDropZone lang
+            ++ number
+            ++ (case card of
+                    Just text ->
+                        ": " ++ text
+
+                    Nothing ->
+                        ", " ++ Translations.quizEmpty lang
+               )
 
 
 {-| An empty drop target.

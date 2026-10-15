@@ -10,6 +10,7 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Task.Types exposing (Task, Vector)
 import Lia.Markdown.Task.Update exposing (Msg(..))
 import Lia.Markdown.Update as Markdown
+import Lia.Utils exposing (labeledOption)
 
 
 {-| Render the current Task list, based on its states with the `Vector`. The
@@ -43,24 +44,17 @@ view base labeledBy vector attr task rendered =
             ( Nothing, Html.text "" )
 
 
-{-| The item body is not a `label`, since it might contain images or scripts,
-which must not toggle the checkbox, it names the checkbox via `aria-labelledby`.
--}
 row : String -> Int -> List (Html Markdown.Msg) -> ( Int, Bool ) -> Html Markdown.Msg
 row base x body ( y, checked ) =
-    let
-        bodyID =
-            base ++ "-item-" ++ String.fromInt y
-    in
-    [ Html.input
-        [ Attr.type_ "checkbox"
-        , Attr.checked checked
-        , Attr.class "lia-checkbox"
-        , A11y_Aria.labelledBy bodyID
-        , Markdown.UpdateTask (Toggle x y)
-            |> onClick
-        ]
-        []
-    , Html.div [ Attr.id bodyID, Attr.style "width" "100%" ] body
-    ]
-        |> Html.div [ Attr.class "lia-label lia-label--top" ]
+    labeledOption (base ++ "-item-" ++ String.fromInt y)
+        (\label ->
+            Html.input
+                [ Attr.type_ "checkbox"
+                , Attr.checked checked
+                , Attr.class "lia-checkbox"
+                , label
+                , onClick (Markdown.UpdateTask (Toggle x y))
+                ]
+                []
+        )
+        body

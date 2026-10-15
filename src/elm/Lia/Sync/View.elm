@@ -11,7 +11,7 @@ import Lia.Sync.Classroom as Classroom
 import Lia.Sync.Types as Sync exposing (ClassroomMode(..), State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
 import Lia.Sync.Via as Backend exposing (Backend)
-import Lia.Utils exposing (btn, btnIcon, dropdownList, formatDate, icon)
+import Lia.Utils exposing (btn, btnIcon, combobox, dropdownList, formatDate, icon)
 
 
 view : Sync.Settings -> Html Msg
@@ -575,15 +575,7 @@ select label editable sync =
                        )
                 )
                 [ Html.div
-                    [ Attr.class "lia-dropdown__selected"
-                    , Attr.tabindex 0
-                    , A11y_Role.comboBox
-                    , A11y_Aria.expanded isOpen
-                    , A11y_Aria.hasListBoxPopUp
-                    , A11y_Aria.controls [ listID ]
-                    , A11y_Aria.labelledBy "lia-sync-backend-label"
-                    , A11y_Aria.disabled (not editable)
-                    ]
+                    (combobox listID isOpen (not editable) (A11y_Aria.labelledBy "lia-sync-backend-label"))
                     [ case sync.select of
                         Nothing ->
                             Html.text "Choose a backend…"

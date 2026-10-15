@@ -193,12 +193,6 @@ suite =
                         |> Query.fromHtml
                         |> HE.simulate (keydown 37 "ArrowLeft")
                         |> Expect.all [ HE.expect "37", HE.expectStopPropagation ]
-            , test "blockKeydown stops propagation" <|
-                \_ ->
-                    Html.input [ Utils.blockKeydown "x" ] []
-                        |> Query.fromHtml
-                        |> HE.simulate (keydown 37 "ArrowLeft")
-                        |> Expect.all [ HE.expect "x", HE.expectStopPropagation ]
             ]
         ]
 

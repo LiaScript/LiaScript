@@ -1,7 +1,6 @@
 module Lia.Utils exposing
     ( array_getLast
     , array_setLast
-    , blockKeydown
     , btn
     , btnIcon
     , checkFalse
@@ -11,7 +10,9 @@ module Lia.Utils exposing
     , formatDate
     , get
     , icon
+    , labeledOption
     , identicon
+    , combobox
     , dropdownList
     , modal
     , noTranslate
@@ -68,26 +69,6 @@ onKeyDown : (Int -> msg) -> Html.Attribute msg
 onKeyDown tagger =
     Event.stopPropagationOn "keydown"
         (JD.map (\x -> ( x, True )) (JD.map tagger Event.keyCode))
-
-
-{-| Avoid event bubbling. Especially key-press left or right should be handled
-by some elements itself and not result in a section-switch. Thus, on global
-scale the left and right arrow keys should be used in slide-navigation, but
-locally it must be suppressed in text inputs, search fields, etc.
--}
-blockKeydown : msg -> Html.Attribute msg
-blockKeydown msg =
-    JD.oneOf [ JD.field "key" JD.string, JD.succeed "" ]
-        |> JD.andThen
-            (\key ->
-                -- Escape has to reach the surrounding menus and modals
-                if key == "Escape" then
-                    JD.fail "propagate"
-
-                else
-                    JD.succeed ( msg, True )
-            )
-        |> Event.stopPropagationOn "keydown"
 
 
 {-| Get the ith element of a list, a negative index returns the first one:
@@ -615,6 +596,34 @@ formatDate ms =
         ++ pad (Time.toHour Time.utc posix)
         ++ ":"
         ++ pad (Time.toMinute Time.utc posix)
+
+
+{-| An option of a quiz, survey or task list: the `input` is named by the
+content with the `id` via `aria-labelledby`. The content is no `label`, since
+it might contain images or scripts, which must not toggle the input.
+-}
+labeledOption : String -> (Attribute a -> Html msg) -> List (Html msg) -> Html msg
+labeledOption id input body =
+    Html.div [ Attr.class "lia-label lia-label--top" ]
+        [ input (A11y_Aria.labelledBy id)
+        , Html.div [ Attr.id id, Attr.style "width" "100%" ] body
+        ]
+
+
+{-| The focusable element of a dropdown (select-only combobox), named by
+`label`, the keyboard is handled by `typescript/liascript/combobox.ts`.
+-}
+combobox : String -> Bool -> Bool -> Attribute msg -> List (Attribute msg)
+combobox listID open disabled label =
+    [ Attr.class "lia-dropdown__selected"
+    , Attr.tabindex 0
+    , A11y_Role.comboBox
+    , A11y_Aria.expanded open
+    , A11y_Aria.hasListBoxPopUp
+    , A11y_Aria.controls [ listID ]
+    , label
+    , A11y_Aria.disabled disabled
+    ]
 
 
 {-| The list of a dropdown, it is removed from the accessibility tree while it

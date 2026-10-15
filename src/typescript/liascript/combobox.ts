@@ -4,6 +4,8 @@
 // thus it works for Elm-handlers as well as for the string-handlers of inline
 // quizzes. The focus remains on the combobox.
 
+import { FOCUSABLE } from '../webcomponents/modal'
+
 const ACTIVE = 'is-active'
 
 function getOptions(combobox: HTMLElement): HTMLElement[] {
@@ -45,20 +47,10 @@ function setActive(combobox: HTMLElement, options: HTMLElement[], index: number)
   }
 }
 
-function indexOf(options: HTMLElement[], predicate: (o: HTMLElement) => boolean) {
-  for (let i = 0; i < options.length; i++) {
-    if (predicate(options[i])) return i
-  }
-  return -1
-}
-
 // Elm renders the opened list with the next animation frame
 function afterRender(fn: () => void) {
   setTimeout(fn, 50)
 }
-
-const FOCUSABLE =
-  'a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])'
 
 // A choice might replace the whole form, e.g. the classroom backend, then the
 // focus moves to the new combobox or to the first element of the dialog
@@ -100,33 +92,19 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
   const open = combobox.getAttribute('aria-expanded') === 'true'
   const options = getOptions(combobox)
 
-  let index = indexOf(options, (o) => o.classList.contains(ACTIVE))
-  if (index < 0) {
-    index = indexOf(options, (o) => o.getAttribute('aria-selected') === 'true')
-  }
+  const selected = (o: HTMLElement) => o.getAttribute('aria-selected') === 'true'
+
+  let index = options.findIndex((o) => o.classList.contains(ACTIVE))
+  if (index < 0) index = options.findIndex(selected)
 
   if (!open) {
-    switch (event.key) {
-      case 'ArrowDown':
-      case 'ArrowUp':
-      case 'Home':
-      case 'End':
-      case 'Enter':
-      case ' ':
-        combobox.click()
-        afterRender(() => {
-          const options = getOptions(combobox)
-          const selected = indexOf(
-            options,
-            (o) => o.getAttribute('aria-selected') === 'true'
-          )
-          setActive(combobox, options, selected < 0 ? 0 : selected)
-        })
-        break
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End', 'Enter', ' '].includes(event.key)) return
 
-      default:
-        return
-    }
+    combobox.click()
+    afterRender(() => {
+      const options = getOptions(combobox)
+      setActive(combobox, options, Math.max(options.findIndex(selected), 0))
+    })
   } else {
     switch (event.key) {
       case 'ArrowDown':

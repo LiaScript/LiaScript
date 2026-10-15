@@ -17,7 +17,7 @@ import Lia.Markdown.Effect.Script.Types exposing (Modifiable(..), Msg(..), Scrip
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Section exposing (SubSection)
-import Lia.Utils exposing (blockKeydown, icon, modal)
+import Lia.Utils exposing (icon, modal)
 import List.Extra
 
 
@@ -299,7 +299,6 @@ attributes updateOnChange id value =
             [ Event.onInput (Value id updateOnChange)
             , Attr.value value
             , Attr.id (focusID id)
-            , blockKeydown NoOp
             ]
         >> List.append (onActivate False id)
 
@@ -339,7 +338,6 @@ base type_ updateOnChange id attr value =
                     )
                , Attr.value value
                , Attr.id (focusID id)
-               , blockKeydown NoOp
                , A11y_Key.onKeyUp
                     [ A11y_Key.enter (Activate False id)
                     , A11y_Key.escape (Reset id)

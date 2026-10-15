@@ -186,13 +186,7 @@ function nearest(elems: HTMLElement[]): HTMLElement | null {
 
 // no smooth scrolling, if the user reduces motion in the system settings
 function scrollBehavior(): ScrollBehavior {
-  try {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      ? 'auto'
-      : 'smooth'
-  } catch (e) {
-    return 'smooth'
-  }
+  return matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
 }
 
 function scrollTo(elem: HTMLElement, block?: ScrollLogicalPosition) {

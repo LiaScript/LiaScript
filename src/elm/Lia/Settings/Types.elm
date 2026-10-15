@@ -87,12 +87,7 @@ action.
 -}
 toggleID : Action -> String
 toggleID action =
-    case action of
-        ShowModes ->
-            "lia-mode-menu-button"
-
-        _ ->
-            "lia-btn-" ++ actionName action
+    "lia-btn-" ++ actionName action
 
 
 {-| The id of the submenu of an action, referenced by `aria-controls`.

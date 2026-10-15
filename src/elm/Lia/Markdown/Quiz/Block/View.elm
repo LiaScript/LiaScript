@@ -12,11 +12,11 @@ import Lia.Markdown.Inline.Stringify as Stringify
 import Json.Decode as JD
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (dropHere, viewer)
+import Lia.Markdown.Inline.View exposing (dropHere, dropZoneLabel, viewer)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Utils exposing (blockKeydown, deactivate, dropdownList, icon, onEnter, shuffle)
+import Lia.Utils exposing (combobox, deactivate, dropdownList, icon, onEnter, shuffle)
 import List.Extra
 
 
@@ -110,16 +110,7 @@ view base config randomize solution quiz state =
                         None
                     )
                 , A11y_Role.button
-                , A11y_Aria.label
-                    (Translations.quizDropZone config.lang
-                        ++ (case List.Extra.getAt id quiz.options of
-                                Just card ->
-                                    ": " ++ Stringify.stringify card
-
-                                Nothing ->
-                                    ", " ++ Translations.quizEmpty config.lang
-                           )
-                    )
+                , dropZoneLabel config.lang "" (Maybe.map Stringify.stringify (List.Extra.getAt id quiz.options))
                 , A11y_Key.onKeyDown
                     (if removable then
                         [ A11y_Key.enter DropTarget
@@ -255,7 +246,6 @@ text solution state =
         , Attr.value state
         , Attr.disabled (not <| Solution.isOpen solution)
         , onInput Input
-        , blockKeydown (Input state)
         , onEnter Submit
         , A11y_Aria.label "quiz answer"
         ]
@@ -285,15 +275,7 @@ select base config randomize solution open options i =
             Attr.class "is-disabled"
         ]
         [ Html.span
-            [ Attr.class "lia-dropdown__selected"
-            , Attr.tabindex 0
-            , A11y_Role.comboBox
-            , A11y_Aria.expanded open
-            , A11y_Aria.hasListBoxPopUp
-            , A11y_Aria.controls [ listID ]
-            , A11y_Aria.label (Translations.quizSelection config.lang)
-            , A11y_Aria.disabled (not active)
-            ]
+            (combobox listID open (not active) (A11y_Aria.label (Translations.quizSelection config.lang)))
             [ get_option config i options
             , Html.i
                 [ Attr.class <|
