@@ -206,7 +206,7 @@ const Service = {
       'keydown',
       (e) => {
         if (
-          e.key === 'ArrowRight' ||
+          (e.key === 'ArrowRight' && !arrowsInUse(e)) ||
           (e.altKey && e.shiftKey && (e.key === 'N' || e.key === 'n'))
         ) {
           sendReply(elmSend, Dir.left)
@@ -214,7 +214,7 @@ const Service = {
         }
 
         if (
-          e.key === 'ArrowLeft' ||
+          (e.key === 'ArrowLeft' && !arrowsInUse(e)) ||
           (e.altKey && e.shiftKey && (e.key === 'P' || e.key === 'p'))
         ) {
           sendReply(elmSend, Dir.right)
@@ -273,6 +273,24 @@ const Service = {
 }
 
 const isKaiOS = /KAIOS/i.test(navigator.userAgent)
+
+// arrow keys belong to the focused control or the browser, not to the slides
+const ARROW_WIDGETS =
+  'input:not([type=checkbox]):not([type=button]):not([type=submit]):not([type=reset]),' +
+  'textarea,select,[contenteditable=""],[contenteditable=true],' +
+  '[role=slider],[role=spinbutton],[role=radiogroup],[role=radio],[role=listbox],' +
+  '[role=combobox],[role=tablist],[role=grid],[role=tree],[role=separator]'
+
+function arrowsInUse(e: KeyboardEvent) {
+  return (
+    e.defaultPrevented ||
+    e.altKey ||
+    e.ctrlKey ||
+    e.metaKey ||
+    e.shiftKey ||
+    !!(e.target as HTMLElement)?.closest?.(ARROW_WIDGETS)
+  )
+}
 
 function isEditable(elem: HTMLElement | null) {
   return (
