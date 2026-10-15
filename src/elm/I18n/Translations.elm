@@ -2445,66 +2445,6 @@ baseToc lang =
             "Table of Contents"
 
 
-baseSlide : Lang -> String
-baseSlide lang =
-    case lang of
-        De ->
-            "Folie"
-
-        _ ->
-            "Slide"
-
-
-baseStep : Lang -> String
-baseStep lang =
-    case lang of
-        De ->
-            "Schritt"
-
-        _ ->
-            "Step"
-
-
-baseSlideNavigation : Lang -> String
-baseSlideNavigation lang =
-    case lang of
-        De ->
-            "Folien-Navigation"
-
-        _ ->
-            "Slide navigation"
-
-
-baseFootnote : Lang -> String
-baseFootnote lang =
-    case lang of
-        De ->
-            "Fußnote"
-
-        _ ->
-            "Footnote"
-
-
-baseFootnotes : Lang -> String
-baseFootnotes lang =
-    case lang of
-        De ->
-            "Fußnoten"
-
-        _ ->
-            "Footnotes"
-
-
-baseResize : Lang -> String
-baseResize lang =
-    case lang of
-        De ->
-            "Größe der Bereiche ändern"
-
-        _ ->
-            "Resize panes"
-
-
 baseShow : Lang -> String
 baseShow lang =
     case lang of
@@ -7528,16 +7468,6 @@ confTooltip lang =
             "Tooltips"
 
 
-confDecals : Lang -> String
-confDecals lang =
-    case lang of
-        De ->
-            "Muster in Diagrammen"
-
-        _ ->
-            "Patterns in charts"
-
-
 confEdit : Lang -> String
 confEdit lang =
     case lang of
@@ -7799,26 +7729,6 @@ ttsPreferBrowser lang =
 
         _ ->
             "Prefer browser TTS"
-
-
-ttsPosition : Lang -> String
-ttsPosition lang =
-    case lang of
-        De ->
-            "Wiedergabeposition"
-
-        _ ->
-            "Playback position"
-
-
-ttsOf : Lang -> String
-ttsOf lang =
-    case lang of
-        De ->
-            "von"
-
-        _ ->
-            "of"
 
 
 ttsUsingBrowser : Lang -> String
@@ -9426,36 +9336,6 @@ codeCopy lang =
             "copy to clipboard"
 
 
-codeEditor : Lang -> String
-codeEditor lang =
-    case lang of
-        De ->
-            "Code-Editor"
-
-        _ ->
-            "Code editor"
-
-
-codeBlock : Lang -> String
-codeBlock lang =
-    case lang of
-        De ->
-            "Codeblock"
-
-        _ ->
-            "Code block"
-
-
-codeReset : Lang -> String
-codeReset lang =
-    case lang of
-        De ->
-            "Eingabe zurücksetzen"
-
-        _ ->
-            "reset input"
-
-
 quizCheck : Lang -> String
 quizCheck lang =
     case lang of
@@ -9998,46 +9878,6 @@ quizSelection lang =
 
         _ ->
             "selection"
-
-
-quizGap : Lang -> String
-quizGap lang =
-    case lang of
-        De ->
-            "Lücke"
-
-        _ ->
-            "Gap"
-
-
-quizDropZone : Lang -> String
-quizDropZone lang =
-    case lang of
-        De ->
-            "Ablagefeld"
-
-        _ ->
-            "Drop zone"
-
-
-quizEmpty : Lang -> String
-quizEmpty lang =
-    case lang of
-        De ->
-            "leer"
-
-        _ ->
-            "empty"
-
-
-quizDragHint : Lang -> String
-quizDragHint lang =
-    case lang of
-        De ->
-            "Mit Enter ein Ablagefeld wählen, dann mit Enter eine Karte darauf ablegen"
-
-        _ ->
-            "Press Enter on a drop zone to select it, then Enter on a card to place it there"
 
 
 quizLabelCheck : Lang -> String
@@ -11168,7 +11008,7 @@ surveyErrorMatrix lang =
             "Errenkada guztiei erantzun behar zaie bidali aurretik."
 
         Fa ->
-            "پیش از ارسال باید به همهٔ ردیف\u{200C}ها پاسخ داده شود."
+            "پیش از ارسال باید به همهٔ ردیف‌ها پاسخ داده شود."
 
         Fi ->
             "Jokaiseen riviin on vastattava ennen lähettämistä."
@@ -11440,7 +11280,7 @@ surveyUpdate lang =
             "Eguneratu"
 
         Fa ->
-            "به\u{200C}روزرسانی"
+            "به‌روزرسانی"
 
         Fi ->
             "Päivitä"
@@ -12127,16 +11967,6 @@ chartBar lang =
 
         _ ->
             "Bar chart"
-
-
-chartDefault : Lang -> String
-chartDefault lang =
-    case lang of
-        De ->
-            "Diagramm"
-
-        _ ->
-            "Chart"
 
 
 chartLine : Lang -> String
@@ -12836,7 +12666,7 @@ chartParallel lang =
             "متوازي"
 
         Bn ->
-            "প্যারালেল কো\u{0991}র্ডিনেট ম্যাপ"
+            "প্যারালেল কো঑র্ডিনেট ম্যাপ"
 
         Ca ->
             "Gràfic de coordenades paral·leles"
@@ -13384,16 +13214,6 @@ chartFunnel lang =
 
         _ ->
             "Funnel chart"
-
-
-chartWordcloud : Lang -> String
-chartWordcloud lang =
-    case lang of
-        De ->
-            "Wortwolke"
-
-        _ ->
-            "Word cloud"
 
 
 qrCode : Lang -> String
@@ -13980,7 +13800,7 @@ chatNew lang =
             "Irakurri gabeko txat-mezuak dituzu"
 
         Fa ->
-            "شما پیام\u{200C}های چت خوانده نشده دارید"
+            "شما پیام‌های چت خوانده نشده دارید"
 
         Fi ->
             "Sinulla on lukemattomia keskusteluviestejä"
@@ -14212,6 +14032,186 @@ chatSend lang =
             "Send message"
 
 
+baseSlide : Lang -> String
+baseSlide lang =
+    case lang of
+        De ->
+            "Folie"
+
+        _ ->
+            "Slide"
+
+
+baseStep : Lang -> String
+baseStep lang =
+    case lang of
+        De ->
+            "Schritt"
+
+        _ ->
+            "Step"
+
+
+baseSlideNavigation : Lang -> String
+baseSlideNavigation lang =
+    case lang of
+        De ->
+            "Folien-Navigation"
+
+        _ ->
+            "Slide navigation"
+
+
+baseFootnote : Lang -> String
+baseFootnote lang =
+    case lang of
+        De ->
+            "Fußnote"
+
+        _ ->
+            "Footnote"
+
+
+baseFootnotes : Lang -> String
+baseFootnotes lang =
+    case lang of
+        De ->
+            "Fußnoten"
+
+        _ ->
+            "Footnotes"
+
+
+baseResize : Lang -> String
+baseResize lang =
+    case lang of
+        De ->
+            "Größe der Bereiche ändern"
+
+        _ ->
+            "Resize panes"
+
+
+confDecals : Lang -> String
+confDecals lang =
+    case lang of
+        De ->
+            "Muster in Diagrammen"
+
+        _ ->
+            "Patterns in charts"
+
+
+ttsPosition : Lang -> String
+ttsPosition lang =
+    case lang of
+        De ->
+            "Wiedergabeposition"
+
+        _ ->
+            "Playback position"
+
+
+ttsOf : Lang -> String
+ttsOf lang =
+    case lang of
+        De ->
+            "von"
+
+        _ ->
+            "of"
+
+
+codeEditor : Lang -> String
+codeEditor lang =
+    case lang of
+        De ->
+            "Code-Editor"
+
+        _ ->
+            "Code editor"
+
+
+codeBlock : Lang -> String
+codeBlock lang =
+    case lang of
+        De ->
+            "Codeblock"
+
+        _ ->
+            "Code block"
+
+
+codeReset : Lang -> String
+codeReset lang =
+    case lang of
+        De ->
+            "Eingabe zurücksetzen"
+
+        _ ->
+            "reset input"
+
+
+quizGap : Lang -> String
+quizGap lang =
+    case lang of
+        De ->
+            "Lücke"
+
+        _ ->
+            "Gap"
+
+
+quizDropZone : Lang -> String
+quizDropZone lang =
+    case lang of
+        De ->
+            "Ablagefeld"
+
+        _ ->
+            "Drop zone"
+
+
+quizEmpty : Lang -> String
+quizEmpty lang =
+    case lang of
+        De ->
+            "leer"
+
+        _ ->
+            "empty"
+
+
+quizDragHint : Lang -> String
+quizDragHint lang =
+    case lang of
+        De ->
+            "Mit Enter ein Ablagefeld wählen, dann mit Enter eine Karte darauf ablegen"
+
+        _ ->
+            "Press Enter on a drop zone to select it, then Enter on a card to place it there"
+
+
+chartDefault : Lang -> String
+chartDefault lang =
+    case lang of
+        De ->
+            "Diagramm"
+
+        _ ->
+            "Chart"
+
+
+chartWordcloud : Lang -> String
+chartWordcloud lang =
+    case lang of
+        De ->
+            "Wortwolke"
+
+        _ ->
+            "Word cloud"
+
+
 chatMessage : Lang -> String
 chatMessage lang =
     case lang of
@@ -14230,3 +14230,4 @@ chatUnverified lang =
 
         _ ->
             "Unverified sender"
+
