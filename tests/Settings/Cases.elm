@@ -78,7 +78,7 @@ suite =
                         checked tts_ =
                             view (View.menuSettings 1200 En True { base | tts = tts_ })
                                 |> Query.findAll [ Selector.class "lia-checkbox" ]
-                                |> Query.index 2
+                                |> Query.index 3
                                 |> Query.has [ Selector.checked True ]
                     in
                     Expect.all
@@ -167,18 +167,12 @@ suite =
                         |> Query.fromHtml
                         |> HE.simulate HE.click
                         |> HE.expect (Toggle TableOfContents)
-            , test "a mode button switches the mode, also with Enter" <|
+            , test "a mode button switches the mode, Enter is the native click of the button" <|
                 \_ ->
-                    let
-                        button =
-                            view (View.menuMode En True base)
-                                |> Query.find [ Selector.id "lia-mode-slides" ]
-                    in
-                    Expect.all
-                        [ \_ -> button |> HE.simulate HE.click |> HE.expect (SwitchMode Slides)
-                        , \_ -> button |> HE.simulate (keydown 13) |> HE.expect (SwitchMode Slides)
-                        ]
-                        ()
+                    view (View.menuMode En True base)
+                        |> Query.find [ Selector.id "lia-mode-slides" ]
+                        |> HE.simulate HE.click
+                        |> HE.expect (SwitchMode Slides)
             , test "the menu button opens its group, Escape closes it" <|
                 \_ ->
                     let
@@ -188,7 +182,13 @@ suite =
                     in
                     Expect.all
                         [ \_ -> button |> HE.simulate HE.click |> HE.expect (Toggle (Action ShowModes))
-                        , \_ -> button |> HE.simulate (keydown 27) |> HE.expect (Toggle (Action Close))
+
+                        -- toggling the open group closes it and focuses its button
+                        , \_ ->
+                            view (View.menuMode En True { base | action = Just ShowModes })
+                                |> Query.find [ Selector.id "lia-mode-menu-button" ]
+                                |> HE.simulate (keydown 27)
+                                |> HE.expect (Toggle (Action ShowModes))
                         , \_ -> button |> HE.simulate (HE.custom "blur" (JE.object [ ( "target", JE.object [ ( "dataset", JE.object [ ( "groupId", JE.string "mode" ) ] ) ] ), ( "relatedTarget", JE.null ) ])) |> HE.expect (FocusLoss (Just ShowModes))
                         ]
                         ()
@@ -202,7 +202,11 @@ suite =
                     Expect.all
                         [ \_ -> button |> HE.simulate HE.click |> HE.expect (Toggle (Action ShowTranslations))
                         , \_ -> button |> HE.simulate (keydown 40) |> HE.expect (Toggle (Action ShowTranslations))
-                        , \_ -> button |> HE.simulate (keydown 27) |> HE.expect (Toggle (Action Close))
+                        , \_ ->
+                            view (View.menuTranslations "de" (Definition.default "" "") En True { base | action = Just ShowTranslations })
+                                |> Query.find [ Selector.tag "button" ]
+                                |> HE.simulate (keydown 27)
+                                |> HE.expect (Toggle (Action ShowTranslations))
                         ]
                         ()
             , test "settings controls" <|
@@ -220,8 +224,9 @@ suite =
                         , \_ -> menu |> Query.find [ Selector.tag "select" ] |> HE.simulate (HE.input "monokai") |> HE.expect (ChangeEditor "monokai")
                         , \_ -> menu |> Query.find [ Selector.class "lia-fontscale__lvl-2" ] |> HE.simulate HE.click |> HE.expect (ChangeFontSize 2)
                         , \_ -> menu |> Query.findAll [ Selector.class "lia-checkbox" ] |> Query.index 0 |> HE.simulate HE.click |> HE.expect (Toggle Tooltips)
-                        , \_ -> menu |> Query.findAll [ Selector.class "lia-checkbox" ] |> Query.index 1 |> HE.simulate HE.click |> HE.expect (Toggle VideoComments)
-                        , \_ -> menu |> Query.findAll [ Selector.class "lia-checkbox" ] |> Query.index 2 |> HE.simulate HE.click |> HE.expect (Toggle PreferBrowserTTS)
+                        , \_ -> menu |> Query.findAll [ Selector.class "lia-checkbox" ] |> Query.index 1 |> HE.simulate HE.click |> HE.expect (Toggle Decals)
+                        , \_ -> menu |> Query.findAll [ Selector.class "lia-checkbox" ] |> Query.index 2 |> HE.simulate HE.click |> HE.expect (Toggle VideoComments)
+                        , \_ -> menu |> Query.findAll [ Selector.class "lia-checkbox" ] |> Query.index 3 |> HE.simulate HE.click |> HE.expect (Toggle PreferBrowserTTS)
                         , \_ -> menu |> Query.findAll [ Selector.attribute (Html.Attributes.type_ "range") ] |> Query.index 0 |> HE.simulate (HE.input "1.25") |> HE.expect (Change (Rate "1.25"))
                         , \_ -> menu |> Query.findAll [ Selector.attribute (Html.Attributes.type_ "range") ] |> Query.index 1 |> HE.simulate (HE.input "0.5") |> HE.expect (Change (Pitch "0.5"))
                         , \_ -> menu |> Query.findAll [ Selector.attribute (Html.Attributes.type_ "range") ] |> Query.index 1 |> HE.simulate (keydown 37) |> Expect.all [ HE.expect Ignore, HE.expectStopPropagation ]

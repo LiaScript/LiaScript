@@ -62,7 +62,7 @@ drag : (a -> JE.Value) -> a -> a -> a -> Expect.Expectation
 drag encode start to after =
     let
         splitter state =
-            SplitPane.view SplitPane.Both identity (Html.text "a") (Html.text "b") state
+            SplitPane.view "resize" SplitPane.Both identity (Html.text "a") (Html.text "b") state
                 |> Query.fromHtml
                 |> Query.children []
                 |> Query.index 1
@@ -78,7 +78,7 @@ drag encode start to after =
         |> fire "touchmove" to
         |> fire "touchend" start
         |> fire "touchmove" after
-        |> SplitPane.view SplitPane.Both identity (Html.text "a") (Html.text "b")
+        |> SplitPane.view "resize" SplitPane.Both identity (Html.text "a") (Html.text "b")
         |> Query.fromHtml
         |> Query.find [ Sel.class "pane-first-view" ]
         |> Query.has [ Sel.style "flex" "0.75" ]

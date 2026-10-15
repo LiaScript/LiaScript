@@ -81,14 +81,15 @@ view =
                     |> Query.findAll [ Selector.class "lia-code-control__version", Selector.tag "div" ]
                     |> Query.first
                     |> Expect.all
-                        [ Query.findAll [ Selector.tag "button", Selector.attribute (Attr.disabled True) ] >> Query.count (Expect.equal 4)
-                        , Query.findAll [ Selector.tag "button", Selector.attribute (Key.tabbable False) ] >> Query.count (Expect.equal 4)
+                        -- deactivated buttons stay focusable, see Lia.Utils.btn
+                        [ Query.findAll [ Selector.tag "button", Selector.attribute (Attr.attribute "aria-disabled" "true") ] >> Query.count (Expect.equal 4)
+                        , Query.findAll [ Selector.tag "button", Selector.attribute (Key.tabbable True) ] >> Query.count (Expect.equal 4)
                         ]
         , test "the version controls are disabled while running" <|
             \_ ->
                 render course Array.empty [ Update (Evaluate 0) 0 "b", Eval 0, result True "x", First 0, Eval 0 ]
                     |> Query.find [ Selector.attribute (Attr.title (Translations.codeNext En)) ]
-                    |> Query.has [ Selector.attribute (Attr.disabled True) ]
+                    |> Query.has [ Selector.attribute (Attr.attribute "aria-disabled" "true") ]
         , test "the collaborative editor sends its changes to the classroom" <|
             \_ ->
                 render course shared [ ToggleSync 0 ]
