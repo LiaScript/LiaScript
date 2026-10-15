@@ -77,7 +77,7 @@ locally it must be suppressed in text inputs, search fields, etc.
 -}
 blockKeydown : msg -> Html.Attribute msg
 blockKeydown msg =
-    JD.field "key" JD.string
+    JD.oneOf [ JD.field "key" JD.string, JD.succeed "" ]
         |> JD.andThen
             (\key ->
                 -- Escape has to reach the surrounding menus and modals
@@ -148,23 +148,27 @@ btn :
     -> Html msg
 btn { title, tabbable, msg } =
     List.append
-        [ Attr.class "lia-btn"
-        , msg
-            |> Maybe.map Event.onClick
-            -- not `disabled`, which would drop the focus, if it was the
-            -- focused button that got deactivated
-            |> Maybe.withDefault (A11y_Aria.disabled True)
-        , msg
-            |> Maybe.map (always (Attr.class ""))
-            |> Maybe.withDefault (Attr.class "lia-btn--disabled is-disabled")
-        , A11y_Key.tabbable tabbable
-        , A11y_Aria.hidden (not tabbable)
-        , if String.isEmpty title then
-            Attr.class ""
+        (Attr.class "lia-btn"
+            :: (case msg of
+                    Just onClick ->
+                        [ Event.onClick onClick ]
 
-          else
-            Attr.title title
-        ]
+                    Nothing ->
+                        -- not `disabled`, which would drop the focus, if it
+                        -- was the focused button that got deactivated
+                        [ A11y_Aria.disabled True
+                        , Attr.class "lia-btn--disabled is-disabled"
+                        ]
+               )
+            ++ [ A11y_Key.tabbable tabbable
+               , A11y_Aria.hidden (not tabbable)
+               , if String.isEmpty title then
+                    Attr.class ""
+
+                 else
+                    Attr.title title
+               ]
+        )
         >> Html.button
 
 
