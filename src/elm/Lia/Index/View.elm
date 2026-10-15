@@ -6,7 +6,7 @@ module Lia.Index.View exposing
 
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
-import Accessibility.Live as A11y_Live
+import Accessibility.Role as A11y_Role
 import Array exposing (Array)
 import Conditional.List as CList
 import Conditional.String as CString
@@ -61,12 +61,14 @@ search lang active results model =
                 [ Attr.class "lia-btn__icon icon icon-close" ]
                 []
             ]
-    , if String.isEmpty model then
-        Html.text ""
+    -- the status region exists also without a search, otherwise the first
+    -- result is not announced
+    , Html.span [ A11y_Role.status, Attr.class "hidden-visually" ]
+        [ Html.text <|
+            if String.isEmpty model then
+                ""
 
-      else
-        Html.span [ A11y_Live.liveAssertive, Attr.class "hidden-visually" ]
-            [ Html.text <|
+            else
                 case results |> Array.filter .visible |> Array.length of
                     0 ->
                         Translations.baseNoResult lang
@@ -76,7 +78,7 @@ search lang active results model =
 
                     counts ->
                         String.fromInt counts ++ " " ++ Translations.baseResults lang
-            ]
+        ]
     ]
 
 

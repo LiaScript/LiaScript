@@ -22,6 +22,7 @@ import Conditional.List as CList
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
+import Html.Keyed as Keyed
 import I18n.Translations as Translations
     exposing
         ( Lang
@@ -622,7 +623,6 @@ viewQuiz config labeledBy state quiz renderedHints ( attr, body ) =
                 else
                     attr
                )
-            |> CList.addIf (state.solved == Solution.ReSolved) A11y_Live.polite
         )
         body
     , Html.div [ Attr.class "lia-quiz__control" ]
@@ -654,18 +654,15 @@ viewFeedback : Config Main.Msg -> Int -> Element -> Html Main.Msg
 viewFeedback config id state =
     let
         feedback color =
-            Html.div
-                [ Attr.class ("lia-quiz__feedback " ++ color)
-                , Attr.id ("lia-quiz-feedback-" ++ String.fromInt id)
-                , A11y_Live.polite
-                ]
+            Html.div [ Attr.class ("lia-quiz__feedback " ++ color) ]
+                >> Just
     in
-    if state.error_msg /= "" then
+    (if state.error_msg /= "" then
         feedback "text-error"
             [ Html.text state.error_msg
             ]
 
-    else
+     else
         case state.solved of
             Solution.Solved ->
                 feedback "text-success"
@@ -686,7 +683,7 @@ viewFeedback config id state =
 
             Solution.Open ->
                 if state.trial == 0 then
-                    Html.text ""
+                    Nothing
 
                 else
                     feedback "text-error"
@@ -695,6 +692,16 @@ viewFeedback config id state =
                             state.opt.text_failed
                             quizAnswerError
                         ]
+    )
+        -- the status region exists from the beginning, otherwise the first
+        -- feedback is not announced, every trial replaces its content, thus
+        -- also a repeated message gets announced again
+        |> Maybe.map (Tuple.pair (String.fromInt state.trial) >> List.singleton)
+        |> Maybe.withDefault []
+        |> Keyed.node "div"
+            [ Attr.id ("lia-quiz-feedback-" ++ String.fromInt id)
+            , A11y_Role.status
+            ]
 
 
 {-| **private:** Show the `custom` feedback text, if defined, otherwise the

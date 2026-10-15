@@ -451,10 +451,8 @@ viewLog code height log =
     else
         Log.view log
             |> Keyed.node "lia-terminal"
+                -- the surrounding lia-code-terminal is the log
                 [ Attr.class "lia-code-terminal__output"
-                , A11y_Role.log
-                , A11y_Live.polite
-                , A11y_Live.atomic False
                 , onChangeHeight (Resize code)
                 , height
                     |> Maybe.map (JE.string >> Attr.property "height")

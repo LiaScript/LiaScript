@@ -108,6 +108,10 @@ inline config attr e body =
 
         label =
             Html.label [] (inline_playback config e :: body)
+
+        -- new animation steps are only announced in presentation and slides
+        announce =
+            config.visible /= Nothing
     in
     case class e of
         Animation ->
@@ -115,26 +119,34 @@ inline config attr e body =
             circle "lia-effect__circle lia-effect__circle--inline" e.begin
                 :: Html.text " "
                 :: body
-                |> hiddenSpan hide (speaking && config.visible == Nothing) attr
+                |> hiddenSpan announce hide (speaking && config.visible == Nothing) attr
 
         PlayBack ->
-            hiddenSpan False speaking attr [ label ]
+            hiddenSpan announce False speaking attr [ label ]
 
         PlayBackAnimation ->
-            hiddenSpan hide speaking attr [ circle "lia-effect__circle lia-effect__circle--inline" e.begin, label ]
+            hiddenSpan announce hide speaking attr [ circle "lia-effect__circle lia-effect__circle--inline" e.begin, label ]
 
 
-hiddenSpan : Bool -> Bool -> Parameters -> List (Html msg) -> Html msg
-hiddenSpan hide speaking attr =
+hiddenSpan : Bool -> Bool -> Bool -> Parameters -> List (Html msg) -> Html msg
+hiddenSpan announce hide speaking attr =
+    let
+        alert =
+            if announce then
+                (::) A11y_Live.polite >> (::) A11y_Role.alert
+
+            else
+                identity
+    in
     Html.span
         (if hide then
             annotation "lia-effect--inline hide" attr
 
          else if speaking then
-            A11y_Live.polite :: A11y_Role.alert :: annotation "lia-effect--inline lia-effect--speaking" attr
+            alert (annotation "lia-effect--inline lia-effect--speaking" attr)
 
          else
-            A11y_Live.polite :: A11y_Role.alert :: annotation "lia-effect--inline" attr
+            alert (annotation "lia-effect--inline" attr)
         )
 
 

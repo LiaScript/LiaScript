@@ -5,7 +5,6 @@ module Lia.Markdown.Table.View exposing (view)
 -}
 
 import Accessibility.Aria as A11y_Aria
-import Accessibility.Live as A11y_Live
 import Array
 import Const
 import Dict
@@ -84,9 +83,7 @@ viewLazyDiagram lang width light scripts visible =
 viewDiagram : Stringify.Config config input a -> Lang -> Int -> Bool -> Parameters -> Table -> State -> Html Msg
 viewDiagram main lang width light attr table state =
     Html.div
-        [ blockKeydown (UpdateTable Sub.NoOp)
-        , A11y_Live.polite
-        ]
+        [ blockKeydown (UpdateTable Sub.NoOp) ]
         [ toggleBtn table.id ( "table", "Table" )
         , table.head
             :: sort main state identity table.body
@@ -564,7 +561,6 @@ viewTable sticky attr body =
             , ( "has-thead-sticky", True )
             , ( "has-first-col-sticky", sticky )
             ]
-        , A11y_Live.polite
         ]
         [ Html.table (Param.annotation "lia-table" attr) body
         ]

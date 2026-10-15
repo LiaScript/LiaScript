@@ -1,7 +1,6 @@
 module Lia.Chat.View exposing (view)
 
 import Accessibility.Aria as A11y
-import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -45,8 +44,10 @@ view lang lightMode config peers model =
                 [ Attr.style "height" "100%"
                 , Attr.style "overflow" "auto"
                 , Attr.id "lia-chat-messages"
-                , A11y_Live.livePolite
-                , A11y_Live.atomic True
+
+                -- only new messages are read out
+                , A11y_Role.log
+                , A11y.label "Chat"
                 ]
         , Html.div
             [ Attr.style "padding" "0.5rem"

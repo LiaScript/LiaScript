@@ -8,7 +8,6 @@ module Lia.Markdown.View exposing
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
-import Accessibility.Live as A11y_Live
 import Array exposing (Array)
 import Conditional.List as CList
 import Dict
@@ -377,9 +376,9 @@ viewMain hidden =
             ]
 
         else
+            -- no live region, the focus moves to the heading of a new section
             [ Attr.class "lia-slide__content"
             , A11y_Landmark.main_
-            , A11y_Live.polite
             ]
 
 
