@@ -5,6 +5,7 @@ module Lia.Markdown.Inline.View exposing
     , reduce
     , view
     , viewMedia
+    , viewDragHint
     , viewQuizDrops
     , view_inf
     , viewer
@@ -192,8 +193,8 @@ viewQuiz config ( width, id ) attr =
                     |> Maybe.withDefault (dropHere [])
                 ]
 
-        Just (Drop highlighted _ state) ->
-            viewDropTarget config id highlighted state partiallyCorrect attr
+        Just (Drop highlighted active state) ->
+            viewDropTarget config id highlighted active state partiallyCorrect (highlight [] ++ toAttribute attr)
 
         _ ->
             Html.text "todo"
@@ -221,7 +222,7 @@ viewText config id width text attributes =
            else
             Attr.disabled True
          , blockKeydown Msg.NoOp
-         , A11y_Aria.label "quiz answer"
+         , A11y_Aria.label (Translations.quizGap config.lang ++ " " ++ String.fromInt (id + 1))
          , Attr.class <|
             if config.input.active then
                 ""
@@ -345,8 +346,8 @@ viewOption config listID selected id i option =
 {-| **@private:** A drop target, `state` is `[ input, option ]` of the
 dropped option, which can be dragged away again.
 -}
-viewDropTarget : Config sub -> Int -> Bool -> List Int -> Maybe Bool -> Parameters -> Html (Msg sub)
-viewDropTarget config id highlighted state partiallyCorrect attr =
+viewDropTarget : Config sub -> Int -> Bool -> Bool -> List Int -> Maybe Bool -> List (Attribute (Msg sub)) -> Html (Msg sub)
+viewDropTarget config id highlighted active state partiallyCorrect attr =
     let
         option =
             case state of
@@ -359,7 +360,7 @@ viewDropTarget config id highlighted state partiallyCorrect attr =
                     Nothing
     in
     Html.span
-        (toAttribute attr
+        (attr
             ++ dropStyle
                 ((if highlighted then
                     "5px"
@@ -376,6 +377,22 @@ viewDropTarget config id highlighted state partiallyCorrect attr =
                , Attr.attribute "ondragleave" ("setTimeout(()=>" ++ config.input.on "dragenter" id "false" ++ ", 100)")
                , Attr.tabindex 0
                , A11y_Role.button
+               , A11y_Aria.label
+                    (Translations.quizDropZone config.lang
+                        ++ " "
+                        ++ String.fromInt (id + 1)
+                        ++ (case option of
+                                Just inlines ->
+                                    ": " ++ stringify_ config inlines
+
+                                Nothing ->
+                                    ", " ++ Translations.quizEmpty config.lang
+                           )
+                    )
+               , A11y_Aria.describedBy [ dragHintID config ]
+
+               -- selected by Enter or click, the next card is placed here
+               , A11y_Aria.pressed (Just active)
                , Attr.attribute "onclick" (config.input.on "dragtarget" id "null")
                , keyDownEvent (config.input.on "dragtarget" id "null")
                ]
@@ -400,7 +417,7 @@ viewDropTarget config id highlighted state partiallyCorrect attr =
                     (viewer config inlines)
 
             Nothing ->
-                dropHere []
+                dropHere [ A11y_Aria.hidden True ]
         ]
 
 
@@ -492,6 +509,43 @@ viewQuizDrops config =
         |> List.concat
 
 
+{-| How to use drag & drop with the keyboard, it describes the cards and drop
+zones of a quiz and is only rendered if it has drop inputs.
+-}
+viewDragHint : Config sub -> Html msg
+viewDragHint config =
+    if
+        config.input.state
+            |> Array.toList
+            |> List.any
+                (\state ->
+                    case state of
+                        Drop _ _ _ ->
+                            True
+
+                        _ ->
+                            False
+                )
+    then
+        Html.span [ Attr.id (dragHintID config), Attr.class "hidden-visually" ]
+            [ Html.text (Translations.quizDragHint config.lang) ]
+
+    else
+        Html.text ""
+
+
+{-| **@private:** The id of the keyboard hint of the drop inputs of a quiz.
+-}
+dragHintID : Config sub -> String
+dragHintID config =
+    "lia-drag-hint-"
+        ++ String.fromInt config.slide
+        ++ (config.input.path
+                |> List.map (\( name, i ) -> "-" ++ name ++ "-" ++ String.fromInt i)
+                |> String.concat
+           )
+
+
 {-| **@private:** Option `i` of the drop input `id`.
 -}
 viewDragOption : Config sub -> Bool -> Int -> Int -> Inlines -> Html (Msg sub)
@@ -510,13 +564,7 @@ viewDragOption config active id i option =
              , Attr.style "display" "inline-block"
              , A11y_Role.button
              , Attr.tabindex 0
-             , Attr.attribute "aria-grabbed"
-                (if active then
-                    "true"
-
-                 else
-                    "false"
-                )
+             , A11y_Aria.describedBy [ dragHintID config ]
              ]
                 |> CList.appendIf config.input.active
                     [ Attr.style "cursor" "pointer"

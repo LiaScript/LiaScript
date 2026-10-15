@@ -918,6 +918,7 @@ viewQuiz config labeledBy attr quiz solution =
                         , Attr.style "align-items" "flex-start"
                         ]
                     |> Html.map Script
+                , Inline.viewDragHint mainConfig.main
                 , quizControl config labeledBy attr quiz solution
                 ]
 

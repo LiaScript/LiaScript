@@ -9950,6 +9950,46 @@ quizSelection lang =
             "selection"
 
 
+quizGap : Lang -> String
+quizGap lang =
+    case lang of
+        De ->
+            "Lücke"
+
+        _ ->
+            "Gap"
+
+
+quizDropZone : Lang -> String
+quizDropZone lang =
+    case lang of
+        De ->
+            "Ablagefeld"
+
+        _ ->
+            "Drop zone"
+
+
+quizEmpty : Lang -> String
+quizEmpty lang =
+    case lang of
+        De ->
+            "leer"
+
+        _ ->
+            "empty"
+
+
+quizDragHint : Lang -> String
+quizDragHint lang =
+    case lang of
+        De ->
+            "Mit Enter ein Ablagefeld wählen, dann mit Enter eine Karte darauf ablegen"
+
+        _ ->
+            "Press Enter on a drop zone to select it, then Enter on a card to place it there"
+
+
 quizLabelCheck : Lang -> String
 quizLabelCheck lang =
     case lang of
