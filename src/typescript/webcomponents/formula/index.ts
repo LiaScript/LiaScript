@@ -153,6 +153,15 @@ customElements.define(
         const label = this.speech()
         this.span.setAttribute('aria-label', label)
         this.label.textContent = label
+
+        // descriptions are generated in English and German only, others fall
+        // back to English, which must not be read with another pronunciation
+        const lang = (document.documentElement.lang || 'en').slice(0, 2)
+        if (this.getAttribute('aria-label') === null && lang !== 'en' && lang !== 'de') {
+          this.span.setAttribute('lang', 'en')
+        } else {
+          this.span.removeAttribute('lang')
+        }
       }
     }
 

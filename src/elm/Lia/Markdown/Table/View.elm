@@ -562,7 +562,15 @@ viewTable sticky attr body =
             , ( "has-first-col-sticky", sticky )
             ]
         ]
-        [ Html.table (Param.annotation "lia-table" attr) body
+        [ Html.table (Param.annotation "lia-table" attr)
+            (case Param.get "data-title" attr of
+                -- names the table for screen readers, it is not shown
+                Just title ->
+                    Html.caption [ Attr.class "hidden-visually" ] [ Html.text title ] :: body
+
+                Nothing ->
+                    body
+            )
         ]
 
 
@@ -623,6 +631,8 @@ viewFormatted config state table =
             (\column ( format, ( attr, inlines ) ) ->
                 Html.th
                     (Attr.class "lia-table__header"
+                        :: Attr.scope "col"
+                        -- only the sorted column is marked
                         :: (if state.column == column then
                                 if state.dir then
                                     A11y_Aria.sortAscending
@@ -631,7 +641,7 @@ viewFormatted config state table =
                                     A11y_Aria.sortDescending
 
                             else
-                                A11y_Aria.sortNone
+                                Attr.class ""
                            )
                         :: Attr.class format
                         :: Param.toAttribute attr
@@ -702,6 +712,21 @@ header config state table format column ( attr, inlines ) =
             }
             [ Attr.class "lia-btn--transparent lia-table__sort"
             , Attr.classList [ ( "active", active ) ]
+
+            -- the buttons of all columns would have the same name otherwise
+            , A11y_Aria.label
+                ((if not active then
+                    sortAsc config.main.lang
+
+                  else if state.dir then
+                    sortDesc config.main.lang
+
+                  else
+                    sortNot config.main.lang
+                 )
+                    ++ ": "
+                    ++ Stringify.stringify inlines
+                )
             ]
 
       else

@@ -147,14 +147,15 @@ const TEMPLATE = `<style>
 }
 
 .card__subtitle {
-  color: #aeaeae;
+  color: #707070;
   margin: 0.5rem 0 1rem;
 }
 
 .card__version {
   display: inline-block;
   padding: 0.5rem;
-  background-color: #399193;
+  /* darker than the brand color #399193 for a text contrast of 4.5:1 */
+  background-color: #2f7d7f;
   color: white;
   position: absolute;
   font-size: x-small;
@@ -168,7 +169,7 @@ const TEMPLATE = `<style>
 }
 
 .card__contact {
-  color: #399193;
+  color: #2f7d7f;
   text-decoration: none;
   font-size: small;
 }
@@ -259,23 +260,26 @@ class PreviewLia extends HTMLElement {
       'https://LiaScript.github.io/course/?' + this.source_url
 
     let tagLine = ''
-    if (meta.tags && meta.tags.length > 0) {
-      tagLine = `<h3 class="card__subtitle">${meta.tags.join(' | ')}</h3>`
+    const tags = (meta.tags || []).filter((tag: string) => tag && tag.trim())
+    if (tags.length > 0) {
+      tagLine = `<h3 class="card__subtitle">${tags.join(' | ')}</h3>`
     }
 
     if (meta.logo) {
-      meta.logo_alt = meta.logo_alt ? `alt="${meta.logo_alt}"` : ''
+      // without a description the logo is decorative
+      meta.logo_alt = `alt="${meta.logo_alt || ''}"`
       meta.logo = `<div class="card__media">
               <img src="${meta.logo}" ${meta.logo_alt} class="card__image">
             </div>`
     }
 
+    // no mailto links, the whole card is already a link
     if (meta.author && meta.email) {
-      meta.author = `<a class="card__contact" href="mailto:${meta.email}">${meta.author} ✉️</a>`
+      meta.author = `<span class="card__contact">${meta.author} ✉️</span>`
     } else if (meta.author) {
       meta.author = `<span class="card__contact">${meta.author}</span>`
     } else if (meta.email) {
-      meta.author = `<a class="card__contact" href="mailto:${meta.email}">${meta.email} ✉️</a>`
+      meta.author = `<span class="card__contact">${meta.email} ✉️</span>`
     } else {
       meta.author = ''
     }

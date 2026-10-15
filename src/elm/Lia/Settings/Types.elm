@@ -47,6 +47,7 @@ type alias Settings =
     , translateWithGoogle : Maybe Bool
     , customTheme : Maybe String
     , tooltips : Bool
+    , decals : Bool
     , hideVideoComments : Bool
     , sync : Maybe Bool
     , showQRCode : Bool
@@ -154,6 +155,7 @@ init hasShareApi isFullscreen mode =
     , translateWithGoogle = Just False
     , customTheme = Nothing
     , tooltips = False
+    , decals = False
     , hideVideoComments = False
     , sync = Just False
     , showQRCode = False

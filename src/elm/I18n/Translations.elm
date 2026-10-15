@@ -7468,6 +7468,16 @@ confTooltip lang =
             "Tooltips"
 
 
+confDecals : Lang -> String
+confDecals lang =
+    case lang of
+        De ->
+            "Muster in Diagrammen"
+
+        _ ->
+            "Patterns in charts"
+
+
 confEdit : Lang -> String
 confEdit lang =
     case lang of

@@ -52,6 +52,7 @@ type Toggle
     | Chat
     | TranslateWithGoogle
     | Tooltips
+    | Decals
     | PreferBrowserTTS
     | VideoComments
     | Fullscreen
@@ -176,6 +177,9 @@ update main msg model =
 
         Toggle Tooltips ->
             log { model | tooltips = not model.tooltips }
+
+        Toggle Decals ->
+            log { model | decals = not model.decals }
 
         Toggle Sync ->
             no_log Nothing { model | sync = Maybe.map not model.sync }

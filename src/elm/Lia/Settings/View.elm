@@ -108,6 +108,8 @@ viewSettings lang tabbable width settings =
     , divider
     , viewTooltips grouping lang tabbable width settings.tooltips
     , divider
+    , viewDecals grouping lang tabbable settings.decals
+    , divider
     , viewVideoComment grouping lang tabbable settings.hideVideoComments
     , divider
     , viewTTSSettings grouping lang tabbable settings.audio settings.tts
@@ -309,6 +311,28 @@ viewTooltips grouping lang tabbable width enabled =
 
     else
         Html.text ""
+
+
+{-| Patterns in charts, that distinguish the series not only by their color.
+-}
+viewDecals : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Bool -> Html Msg
+viewDecals grouping lang tabbable enabled =
+    Html.label
+        [ Attr.class "lia-label"
+        , A11y_Aria.hidden (not tabbable)
+        ]
+        [ Html.input
+            (grouping
+                [ Attr.class "lia-checkbox"
+                , Attr.type_ "checkbox"
+                , Attr.checked enabled
+                , onClick (Toggle Decals)
+                , A11y_Key.tabbable tabbable
+                ]
+            )
+            []
+        , Html.text (Trans.confDecals lang)
+        ]
 
 
 viewVideoComment : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Bool -> Html Msg
