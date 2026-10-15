@@ -38,7 +38,9 @@ import Lia.Settings.Types
         , Settings
         , TTS
         , fromGroup
+        , submenuID
         , toGroup
+        , toggleID
         )
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
 import Lia.Sync.Types as Sync
@@ -250,11 +252,9 @@ viewMode grouping lang tabbable activeMode { mode, id, icon } =
             [ Attr.id id
             , Attr.class "lia-btn lia-btn--transparent "
             , onClick (SwitchMode mode)
-            , A11y_Key.onKeyDown [ A11y_Key.enter (SwitchMode mode) ]
             , A11y_Key.tabbable tabbable
             , A11y_Aria.hidden (not tabbable)
-            , A11y_Role.radio
-            , A11y_Aria.checked <| Just (mode == activeMode)
+            , A11y_Aria.pressed <| Just (mode == activeMode)
             ]
         )
         [ Html.i [ A11y_Aria.hidden True, Attr.class <| "lia-btn__icon icon " ++ icon ] []
@@ -461,7 +461,8 @@ fontButton grouping lang tabbable size i title =
 
                 else
                     ""
-            , A11y_Aria.checked (Just (size == i))
+            , A11y_Aria.pressed (Just (size == i))
+            , A11y_Aria.label title
             ]
         )
         [ Html.span (noTranslate []) [ Html.text (Trans.baseAbc lang) ] ]
@@ -592,23 +593,34 @@ viewTranslations lang tabbable =
             )
 
 
-submenu : (List (Attribute Msg) -> List (Attribute Msg)) -> Bool -> List (Html Msg) -> Html Msg
-submenu grouping isActive =
+{-| The panel of a toolbar button (disclosure pattern), Escape closes it and
+returns the focus to its button.
+-}
+submenu : Action -> (List (Attribute Msg) -> List (Attribute Msg)) -> Bool -> List (Html Msg) -> Html Msg
+submenu forAction grouping isActive =
     [ Attr.class "lia-support-menu__submenu flow"
-    , Attr.class <|
-        if isActive then
-            "active"
+    , Attr.id (submenuID forAction)
+    , if isActive then
+        Attr.class "active"
 
-        else
-            ""
-
-    -- , A11y_Aria.checked (Just isActive)
-    , A11y_Role.radioGroup
-    , A11y_Aria.labeledBy "lia-mode-menu-button"
-    , A11y_Aria.label "select a presentation mode"
+      else
+        Attr.class ""
+    , closeOnEscape forAction isActive
     ]
         |> grouping
         |> Html.div
+
+
+{-| Escape closes an open submenu by toggling it, which moves the focus back to
+its button, see `Lia.Settings.Update`.
+-}
+closeOnEscape : Action -> Bool -> Attribute Msg
+closeOnEscape forAction isOpen =
+    if isOpen then
+        A11y_Key.onKeyDown [ A11y_Key.escape (doAction forAction) ]
+
+    else
+        Attr.class ""
 
 
 {-| Lazy, because encoding the QR matrix is expensive and the share menu is part
@@ -755,7 +767,6 @@ btnIndex lang open =
         [ Attr.id "lia-btn-toc"
         , Attr.class "lia-btn lia-btn--transparent"
         , A11y_Aria.controls [ "lia-toc" ]
-        , A11y_Aria.hasMenuPopUp
         , A11y_Aria.expanded open
         ]
 
@@ -776,7 +787,6 @@ btnSupport lang open =
         [ Attr.class "lia-btn lia-btn--transparent"
         , A11y_Aria.controls [ "lia-support-menu" ]
         , Attr.id "lia-btn-support"
-        , A11y_Aria.hasMenuPopUp
         , A11y_Aria.expanded open
         ]
 
@@ -806,7 +816,6 @@ btnChat { id, lang, tabbable, hide, chat } =
             }
             [ Attr.id id
             , Attr.class "lia-btn lia-btn--transparent"
-            , A11y_Aria.hasMenuPopUp
             , A11y_Aria.expanded chat.show
             , Attr.style "margin-inline-end" "1rem"
             , Attr.class <|
@@ -836,11 +845,11 @@ menuMode lang tabbable settings =
                 |> Maybe.map .icon
                 |> Maybe.withDefault ""
         , title = Trans.modeMode lang ++ ": " ++ modeToString settings.mode lang
-        , attributes = [ Attr.id "lia-mode-menu-button" ]
+        , attributes = []
         }
     , modes
         |> List.map (viewMode grouping lang tabbable settings.mode)
-        |> submenu grouping (settings.action == Just ShowModes)
+        |> submenu ShowModes grouping (settings.action == Just ShowModes)
     ]
 
 
@@ -860,7 +869,7 @@ menuSettings width lang tabbable settings =
         , attributes = []
         }
     , viewSettings lang tabbable width settings
-        |> submenu grouping (settings.action == Just ShowSettings)
+        |> submenu ShowSettings grouping (settings.action == Just ShowSettings)
     ]
 
 
@@ -893,7 +902,8 @@ menuTranslations languageCode defintion lang tabbable settings =
                 |> translateWithGoogle lang tabbable
                 |> List.append
            )
-        |> submenu (group ShowTranslations)
+        |> submenu ShowTranslations
+            (group ShowTranslations)
             (settings.action == Just ShowTranslations)
     ]
 
@@ -1005,7 +1015,7 @@ menuShare url sync lang tabbable settings =
         else
             Html.text ""
       ]
-        |> submenu grouping (settings.action == Just ShowShare)
+        |> submenu ShowShare grouping (settings.action == Just ShowShare)
     ]
 
 
@@ -1060,7 +1070,7 @@ menuInformation repositoryURL definition lang tabbable settings =
         , attributes = []
         }
     , viewInformation grouping lang tabbable repositoryURL definition
-        |> submenu grouping (settings.action == Just ShowInformation)
+        |> submenu ShowInformation grouping (settings.action == Just ShowInformation)
     ]
 
 
@@ -1074,9 +1084,10 @@ actionBtn :
     }
     -> Html Msg
 actionBtn conf =
-    [ A11y_Aria.hasMenuPopUp
+    [ Attr.id (toggleID conf.action)
     , A11y_Aria.expanded conf.open
-    , A11y_Key.onKeyDown [ A11y_Key.escape (doAction Close) ]
+    , A11y_Aria.controls [ submenuID conf.action ]
+    , closeOnEscape conf.action conf.open
     , Attr.class "lia-btn--transparent hide-md-down"
     ]
         |> List.append conf.attributes
@@ -1092,13 +1103,17 @@ actionBtn conf =
 action : Action -> Bool -> (List (Html.Attribute Msg) -> List (Html.Attribute Msg))
 action msg open =
     [ onClick (doAction msg)
+    , Attr.id (toggleID msg)
     , A11y_Key.onKeyDown
-        [ A11y_Key.escape (doAction Close)
-        , A11y_Key.down (doAction msg)
-        ]
+        (if open then
+            [ A11y_Key.escape (doAction msg) ]
+
+         else
+            [ A11y_Key.down (doAction msg) ]
+        )
     , Attr.class "lia-btn lia-btn--transparent hide-md-down"
-    , A11y_Aria.hasMenuPopUp
     , A11y_Aria.expanded open
+    , A11y_Aria.controls [ submenuID msg ]
     ]
         |> group msg
         |> List.append
@@ -1129,10 +1144,7 @@ menu2 =
 menuItem : String -> (Lang -> Bool -> Settings -> List (Html Msg)) -> Lang -> Bool -> Settings -> Html Msg
 menuItem class fn lang tabbable settings =
     Html.li
-        [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class
-        , A11y_Role.menuItem
-        , A11y_Aria.hasMenuPopUp
-        ]
+        [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class ]
         (fn lang tabbable settings)
 
 
@@ -1205,10 +1217,7 @@ header { online, active, lang, screen, settings, logo, progress, buttons } =
                        )
                     |> List.map (\fn -> fn lang tabbable settings)
                     |> Html.ul
-                        [ Attr.class "nav lia-support-menu__nav flow"
-                        , A11y_Role.menuBar
-                        , A11y_Key.tabbable False
-                        ]
+                        [ Attr.class "nav lia-support-menu__nav flow" ]
                 ]
             ]
         ]

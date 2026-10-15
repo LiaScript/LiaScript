@@ -76,7 +76,17 @@ locally it must be suppressed in text inputs, search fields, etc.
 -}
 blockKeydown : msg -> Html.Attribute msg
 blockKeydown msg =
-    Event.stopPropagationOn "keydown" (JD.succeed ( msg, True ))
+    JD.field "key" JD.string
+        |> JD.andThen
+            (\key ->
+                -- Escape has to reach the surrounding menus and modals
+                if key == "Escape" then
+                    JD.fail "propagate"
+
+                else
+                    JD.succeed ( msg, True )
+            )
+        |> Event.stopPropagationOn "keydown"
 
 
 {-| Get the ith element of a list, a negative index returns the first one:

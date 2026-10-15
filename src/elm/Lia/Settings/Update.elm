@@ -13,7 +13,7 @@ import Json.Encode as JE
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Settings.Json as Json
-import Lia.Settings.Types exposing (Action(..), Audio(..), Mode(..), PlaybackState(..), Settings, TTS)
+import Lia.Settings.Types exposing (Action(..), Audio(..), Mode(..), PlaybackState(..), Settings, TTS, toggleID)
 import Lia.Utils exposing (focus, scheduleFocus)
 import Return exposing (Return)
 import Service.Database
@@ -239,29 +239,34 @@ update main msg model =
 
         Toggle (Action action) ->
             no_log
-                (case action of
-                    ShowModes ->
-                        Just "lia-mode-textbook"
+                (if model.action == Just action then
+                    -- closing returns the focus to its button
+                    Just (toggleID action)
 
-                    ShowSettings ->
-                        Just "lia-btn-light-mode"
+                 else
+                    case action of
+                        ShowModes ->
+                            Just "lia-mode-textbook"
 
-                    ShowShare ->
-                        Just "lia-button-qr-code"
+                        ShowSettings ->
+                            Just "lia-btn-light-mode"
 
-                    ShowTranslations ->
-                        case model.translateWithGoogle of
-                            Just False ->
-                                Just "lia-checkbox-google_translate"
+                        ShowShare ->
+                            Just "lia-button-qr-code"
 
-                            Just True ->
-                                Just "google-te-combo"
+                        ShowTranslations ->
+                            case model.translateWithGoogle of
+                                Just False ->
+                                    Just "lia-checkbox-google_translate"
 
-                            _ ->
-                                Nothing
+                                Just True ->
+                                    Just "google-te-combo"
 
-                    _ ->
-                        Nothing
+                                _ ->
+                                    Nothing
+
+                        _ ->
+                            Nothing
                 )
                 { model
                     | action =

@@ -7,7 +7,9 @@ module Lia.Settings.Types exposing
     , TTS
     , fromGroup
     , init
+    , submenuID
     , toGroup
+    , toggleID
     )
 
 {-| The user settings of LiaScript and the state of the menus and the TTS
@@ -77,6 +79,48 @@ type Action
     | ShowModes
     | ShowShare
     | Close
+
+
+{-| The id of the toolbar button, which opens and closes the submenu of an
+action.
+-}
+toggleID : Action -> String
+toggleID action =
+    case action of
+        ShowModes ->
+            "lia-mode-menu-button"
+
+        _ ->
+            "lia-btn-" ++ actionName action
+
+
+{-| The id of the submenu of an action, referenced by `aria-controls`.
+-}
+submenuID : Action -> String
+submenuID action =
+    "lia-submenu-" ++ actionName action
+
+
+actionName : Action -> String
+actionName action =
+    case action of
+        ShowInformation ->
+            "information"
+
+        ShowTranslations ->
+            "translations"
+
+        ShowSettings ->
+            "settings"
+
+        ShowModes ->
+            "modes"
+
+        ShowShare ->
+            "share"
+
+        Close ->
+            "close"
 
 
 {-| -}
