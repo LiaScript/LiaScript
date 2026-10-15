@@ -70,7 +70,7 @@ view lang lightMode config peers model =
                 , Attr.style "z-index" "100"
                 , Attr.style "color" "#888"
                 , Attr.class "lia-btn--transparent"
-                , A11y.keyShortcuts [ "Ctrl-Enter", "Command-Enter" ]
+                , A11y.keyShortcuts [ "Control+Enter", "Meta+Enter" ]
                 ]
             , Editor.editor
                 [ Editor.onChange Input

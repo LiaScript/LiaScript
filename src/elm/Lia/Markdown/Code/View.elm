@@ -17,6 +17,7 @@ import Html.Keyed as Keyed
 import I18n.Translations as Translations
     exposing
         ( Lang
+        , baseStop
         , codeExecute
         , codeFirst
         , codeLast
@@ -25,6 +26,7 @@ import I18n.Translations as Translations
         , codeNext
         , codePrev
         , codeRunning
+        , infoVersion
         )
 import Json.Decode as JD
 import Json.Encode as JE
@@ -217,18 +219,37 @@ viewFile config fileID file attr =
 
             else
                 codeMaximize config.lang
+
+        contentID =
+            "lia-code-" ++ String.fromInt (idOf config.code) ++ "-" ++ String.fromInt fileID
+
+        minMax =
+            if file.visible && isExecutable then
+                btnIcon
+                    { title = toggleTitle file.fullscreen
+                    , msg = Just <| FlipFullscreen config.code fileID
+                    , icon =
+                        if file.fullscreen then
+                            "icon-chevron-up"
+
+                        else
+                            "icon-chevron-down"
+                    , tabbable = True
+                    }
+                    [ Attr.class "lia-code__min-max lia-btn--transparent" ]
+
+            else
+                Html.text ""
     in
     if file.name == "" then
         Html.div (noTranslate [ Attr.class "lia-code__input" ])
-            [ editor, copy False ]
+            (editor ++ [ copy False ])
 
     else
         Html.div (noTranslate [ Attr.class "lia-accordion" ])
             [ Html.div (Attr.class "lia-accordion__item" :: Params.toAttribute attr)
-                [ Html.label
-                    [ Attr.class "lia-accordion__header"
-                    , A11y_Aria.label (file.name ++ " " ++ toggleTitle file.visible)
-                    ]
+                [ Html.div
+                    [ Attr.class "lia-accordion__header" ]
                     [ btnIcon
                         { title = toggleTitle file.visible
                         , msg = Just <| FlipView config.code fileID
@@ -240,7 +261,11 @@ viewFile config fileID file attr =
                                 "icon-minus"
                         , tabbable = True
                         }
-                        [ Attr.class "lia-accordion__toggle" ]
+                        [ Attr.class "lia-accordion__toggle"
+                        , A11y_Aria.expanded file.visible
+                        , A11y_Aria.controls [ contentID ]
+                        , A11y_Aria.label (toggleTitle file.visible ++ ": " ++ file.name)
+                        ]
                     , Html.h3 [ Attr.class "lia-accordion__headline h4" ] [ Html.text file.name ]
                     , copy True
                     ]
@@ -249,6 +274,7 @@ viewFile config fileID file attr =
                         [ ( "lia-accordion__content", True )
                         , ( "active", file.visible )
                         ]
+                    , Attr.id contentID
                     ]
                     [ Html.div
                         [ Attr.class "lia-code__input"
@@ -258,24 +284,7 @@ viewFile config fileID file attr =
                           else
                             Attr.attribute "inert" "true"
                         ]
-                        [ if file.visible && isExecutable then
-                            btnIcon
-                                { title = toggleTitle file.fullscreen
-                                , msg = Just <| FlipFullscreen config.code fileID
-                                , icon =
-                                    if file.fullscreen then
-                                        "icon-chevron-up"
-
-                                    else
-                                        "icon-chevron-down"
-                                , tabbable = True
-                                }
-                                [ Attr.class "lia-code__min-max lia-btn--transparent" ]
-
-                          else
-                            Html.text ""
-                        , editor
-                        ]
+                        (minMax :: editor)
                     ]
                 ]
             ]
@@ -339,7 +348,7 @@ viewEditor :
     , sync : Maybe String
     , cursors : List Sync.Cursor
     }
-    -> Html Msg
+    -> List (Html Msg)
 viewEditor { isExecutable, theme, attr, isRunning, code, fileID, file, errors, sync, cursors } =
     let
         id =
@@ -374,7 +383,7 @@ viewEditor { isExecutable, theme, attr, isRunning, code, fileID, file, errors, s
             Params.get name attr
                 |> Maybe.withDefault default
     in
-    Editor.editor
+    [ Editor.editor
         ([ Editor.value content
          , Editor.setCursors cursors
          , Editor.mode file.lang
@@ -424,6 +433,14 @@ viewEditor { isExecutable, theme, attr, isRunning, code, fileID, file, errors, s
             |> CList.appendIf isExecutable [ Editor.onCtrlEnter (Eval id) ]
         )
         []
+    , if readOnly then
+        -- Ace hides its content from screen readers, which would skip the
+        -- code in browse mode, thus it is repeated invisibly
+        Html.pre [ Attr.class "hidden-visually" ] [ Html.code [] [ Html.text content ] ]
+
+      else
+        Html.text ""
+    ]
 
 
 {-| Reserve the height of `lines` lines, so the page does not jump while the
@@ -517,7 +534,7 @@ viewControl { lang, id, version_active, version_count, running, terminal, sync }
 
                 ( True, True ) ->
                     btnIcon
-                        { title = codeRunning lang
+                        { title = baseStop lang
                         , msg = Just <| Stop id
                         , tabbable = True
                         , icon = "icon-stop-circle"
@@ -532,7 +549,7 @@ viewControl { lang, id, version_active, version_count, running, terminal, sync }
                         , icon = "icon-compile-circle"
                         }
                         [ Attr.class "lia-btn--transparent"
-                        , A11y_Aria.keyShortcuts [ "Ctrl-Enter", "Command-Enter" ]
+                        , A11y_Aria.keyShortcuts [ "Control+Enter", "Meta+Enter" ]
                         ]
             , case sync of
                 Nothing ->
@@ -574,7 +591,9 @@ viewControl { lang, id, version_active, version_count, running, terminal, sync }
             , version codePrev "icon-chevron-left" isFirst (Load id (version_active - 1))
             , Html.span
                 [ Attr.class "lia-label" ]
-                [ Html.text (String.fromInt version_active) ]
+                [ Html.span [ Attr.class "hidden-visually" ] [ Html.text (String.trimRight (infoVersion lang) ++ " ") ]
+                , Html.text (String.fromInt version_active)
+                ]
             , version codeNext "icon-chevron-right" isLast (Load id (version_active + 1))
             , version codeLast "icon-end-right" isLast (Last id)
             ]
