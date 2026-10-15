@@ -161,6 +161,7 @@ view_body hidden ( config, footnote2show, footnotes ) =
                                 (\( id, voice, text ) ->
                                     Html.span
                                         ({ hidden = True
+                                         , ariaHidden = True
                                          , translations = config.main.translations
                                          , id = id
                                          , narrator = voice
@@ -287,13 +288,14 @@ the course is not translated).
 -}
 addTranslation :
     { hidden : Bool
+    , ariaHidden : Bool
     , translations : Maybe { old : String, new : String, name : Maybe String }
     , id : Int
     , narrator : String
     , audio : Array String
     }
     -> List ( String, String )
-addTranslation { hidden, translations, id, narrator, audio } =
+addTranslation { hidden, ariaHidden, translations, id, narrator, audio } =
     let
         -- Google's automatic page translation should pick up every
         -- comment that is spoken in the document's own language. Only a
@@ -358,7 +360,7 @@ addTranslation { hidden, translations, id, narrator, audio } =
                     "no"
               )
             ]
-                |> CList.addIf hidden ( "aria-hidden", "true" )
+                |> CList.addIf ariaHidden ( "aria-hidden", "true" )
                 |> CList.addIf
                     ((Maybe.map (\t -> t.old == t.new) translations == Just True)
                         && not (Array.isEmpty audio)
@@ -563,6 +565,10 @@ view_block config block =
                         |> Inline.reduce config.main
                         |> Html.div
                             ({ hidden = True
+
+                             -- with the sound off, screen readers read the
+                             -- comments instead of the narrator
+                             , ariaHidden = config.sound
                              , translations = config.main.translations
                              , id = id1
                              , narrator = narrator

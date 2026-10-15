@@ -2495,6 +2495,16 @@ baseFootnotes lang =
             "Footnotes"
 
 
+baseResize : Lang -> String
+baseResize lang =
+    case lang of
+        De ->
+            "Größe der Bereiche ändern"
+
+        _ ->
+            "Resize panes"
+
+
 baseShow : Lang -> String
 baseShow lang =
     case lang of

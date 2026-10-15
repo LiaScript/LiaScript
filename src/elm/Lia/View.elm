@@ -204,7 +204,7 @@ viewPanes screen model =
     Html.div
         [ Attr.class "lia-slide__container"
         ]
-        [ SplitPane.view
+        [ SplitPane.view (Trans.baseResize model.translation)
             (case
                 ( model.settings.chat.show
                 , Sync_.isConnected model.sync.state
@@ -556,6 +556,7 @@ slideA11y { lang, light, tooltips, translations, mode, formulas, media, effect, 
                                                     )
                                                 |> Html.p
                                                     ({ hidden = False
+                                                     , ariaHidden = False
                                                      , translations = Just translations
                                                      , id = counter
                                                      , narrator = narrator

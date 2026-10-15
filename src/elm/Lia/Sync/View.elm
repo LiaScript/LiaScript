@@ -25,7 +25,7 @@ view settings =
         [ Html.h1
             [ Attr.style "text-align" "center"
             , Attr.id "lia-modal-focus"
-            , Attr.tabindex 0
+            , Attr.tabindex -1
             ]
             [ Html.text "Classroom"
             , Html.img
@@ -349,7 +349,7 @@ viewError message =
 
         Just msg ->
             Html.div
-                [ Attr.style "margin-block-start" "2rem", Attr.style "font-weight" "bold" ]
+                [ Attr.style "margin-block-start" "2rem", Attr.style "font-weight" "bold", A11y_Role.alert ]
                 [ Html.text <| "Error: " ++ msg ]
 
 
@@ -460,6 +460,7 @@ savedCard deletePopup entry =
                     [ Attr.class "lia-classroom__card-title"
                     , Attr.value meta.title
                     , Attr.placeholder entry.room
+                    , A11y_Aria.label "Classroom title"
                     , Event.onInput (\title -> EditMeta entry { meta | title = title })
                     , Event.onBlur (SaveMeta entry)
                     ]
@@ -479,6 +480,7 @@ savedCard deletePopup entry =
                 [ Attr.class "lia-classroom__card-notes"
                 , Attr.rows 1
                 , Attr.placeholder "Add a comment…"
+                , A11y_Aria.label "Comment"
                 , Attr.value meta.notes
                 , Event.onInput (\notes -> EditMeta entry { meta | notes = notes })
                 , Event.onBlur (SaveMeta entry)

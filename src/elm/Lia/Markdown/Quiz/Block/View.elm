@@ -8,6 +8,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import I18n.Translations as Translations
+import Lia.Markdown.Inline.Stringify as Stringify
 import Json.Decode as JD
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -109,6 +110,16 @@ view base config randomize solution quiz state =
                         None
                     )
                 , A11y_Role.button
+                , A11y_Aria.label
+                    (Translations.quizDropZone config.lang
+                        ++ (case List.Extra.getAt id quiz.options of
+                                Just card ->
+                                    ": " ++ Stringify.stringify card
+
+                                Nothing ->
+                                    ", " ++ Translations.quizEmpty config.lang
+                           )
+                    )
                 , A11y_Key.onKeyDown
                     (if removable then
                         [ A11y_Key.enter DropTarget
@@ -118,8 +129,10 @@ view base config randomize solution quiz state =
                      else
                         []
                     )
+
+                -- only a filled drop zone does something, Enter clears it
                 , Attr.tabindex <|
-                    if List.isEmpty value then
+                    if removable then
                         0
 
                     else
@@ -148,14 +161,12 @@ view base config randomize solution quiz state =
                                  , Attr.style "justify-content" "center"
                                  ]
                                     ++ draggable id
-                                    ++ [ A11y_Role.button
-                                       , Attr.tabindex 0
-                                       ]
                                 )
                         )
                     |> Maybe.withDefault
                         (dropHere
-                            [ Attr.style "height" "4rem"
+                            [ A11y_Aria.hidden True
+                            , Attr.style "height" "4rem"
                             , Attr.style "display" "flex"
                             , Attr.style "font-size" "4rem" -- fallback
                             , Attr.style "font-size" "min(10vw, 4rem)" -- scales with viewport

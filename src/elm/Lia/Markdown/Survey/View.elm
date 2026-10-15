@@ -429,9 +429,21 @@ viewDrop config randomize options id submitted ( highlight, active, value ) =
             , Attr.style "position" "relative"
             , onClick (unlessSubmitted Target)
             , A11y_Role.button
+            , A11y_Aria.label
+                (Translations.quizDropZone config.lang
+                    ++ (case List.Extra.getAt value options of
+                            Just card ->
+                                ": " ++ stringify card
+
+                            Nothing ->
+                                ", " ++ Translations.quizEmpty config.lang
+                       )
+                )
             , onKeys Target
+
+            -- only a filled drop zone does something, Enter clears it
             , Attr.tabindex <|
-                if submitted then
+                if submitted || List.Extra.getAt value options == Nothing then
                     -1
 
                 else
@@ -451,21 +463,20 @@ viewDrop config randomize options id submitted ( highlight, active, value ) =
                         [ Attr.style "border" "3px dotted #888"
                         , Attr.style "padding" "1rem"
                         , Attr.style "cursor" "pointer"
-                        , Attr.style "background-color" "#f9f9f9"
+                        , Attr.style "background-color" "#88888822"
                         , Attr.style "border-radius" "4px"
                         , Attr.style "display" "flex"
                         , Attr.style "justify-content" "center"
                         , draggable
                         , on "dragend" (Drop value)
                         , on "dragstart" Start
-                        , A11y_Role.button
-                        , Attr.tabindex 0
                         ]
                         (inlines config option)
 
                 Nothing ->
                     dropHere
-                        [ Attr.style "height" "4rem"
+                        [ A11y_Aria.hidden True
+                        , Attr.style "height" "4rem"
                         , Attr.style "display" "flex"
                         , Attr.style "font-size" "4rem" -- fallback
                         , Attr.style "font-size" "min(10vw, 4rem)" -- scales with viewport
@@ -504,7 +515,7 @@ viewDrop config randomize options id submitted ( highlight, active, value ) =
                                 , Attr.style "margin" "0.25rem"
                                 , Attr.style "padding" "1rem"
                                 , Attr.style "cursor" "pointer"
-                                , Attr.style "background-color" "#f9f9f9"
+                                , Attr.style "background-color" "#88888822"
                                 , Attr.style "border-radius" "4px"
                                 , draggable
                                 , on "dragend" (Drop i)
