@@ -132,7 +132,7 @@ script config withStyling attr id node result =
                     _ ->
                         False
                 )
-                (Attr.style "color" "#dc0000")
+                (Attr.class "text-error")
             |> CList.appendIf
                 (case node.input.type_ of
                     Nothing ->

@@ -102,7 +102,7 @@ searchBar url =
             , onInput Input
             , Attr.value url
             , Attr.placeholder "course-url"
-            , Attr.class "lia-input border-grey-light max-w-50 mr-1 mb-1"
+            , Attr.class "lia-input border-highlight max-w-50 mr-1 mb-1"
             ]
             []
         , let

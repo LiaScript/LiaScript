@@ -91,6 +91,11 @@ export function addBase(base: string, url: string) {
 }
 
 const TEMPLATE = `<style>
+/* the plain link until the card is loaded, readable in light and dark mode */
+a {
+  color: var(--color-accent);
+}
+
 .card {
   border: 5px solid #399193;
   position: relative;

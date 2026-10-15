@@ -51,6 +51,7 @@
   }
 
   &-terminal {
+    --color-failure: 255, 0, 0; // text-error on black
     background-color: rgb(var(--lia-black));
     display: flex;
     flex-direction: column;
@@ -105,11 +106,32 @@
   &__input {
     border: 1px solid rgb(var(--color-highlight));
     position: relative;
+
+    // buttons and focus rings on top of the editor follow its light or dark theme
+    --focus-ring-color: rgb(var(--lia-anthracite));
+    --editor-icon: rgb(var(--color-highlight));
+
+    &:has(.ace_dark) {
+      --focus-ring-color: rgb(var(--lia-white));
+      --editor-icon: rgb(var(--lia-white));
+    }
+
+    .ace_keyboard-focus:focus {
+      box-shadow: inset 0 0 0 var(--focus-ring-width) var(--focus-ring-color);
+    }
+  }
+
+  // not brightened like other transparent buttons in dark mode, see --editor-icon
+  &__copy,
+  &__min-max {
+    @at-root html.lia-variant-dark & {
+      filter: none;
+    }
   }
 
   &__min-max {
     bottom: 0;
-    color: rgb(var(--color-highlight));
+    color: var(--editor-icon);
     font-size: 2rem;
     position: absolute;
     right: 2rem;
@@ -123,11 +145,10 @@
     right: 1.5rem;
     z-index: 90;
     padding: 0rem 0.25rem;
-    color: rgb(var(--color-highlight), 0.4);
+    color: var(--editor-icon);
 
     &:hover {
       top: 0;
-      color: rgb(var(--color-highlight));
       font-size: 2.2rem;
 
       // background-color: rgb(var(--color-background), 0.5) !important;
@@ -140,11 +161,10 @@
     right: 1.5rem;
     z-index: 90;
     padding: 0rem 0.25rem;
-    color: rgb(var(--color-background), 0.4);
+    color: rgb(var(--lia-white));
 
     &:hover {
       top: 0;
-      color: white;
       font-size: 2.2rem;
       //background-color: rgb(var(--color-highlight-dark), 0.5) !important;
     }

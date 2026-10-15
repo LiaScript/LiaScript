@@ -1,5 +1,5 @@
 .lia-dropdown {
-  border: 1px solid rgb(var(--color-highlight));
+  border: 1px solid var(--color-accent);
   display: inline-block;
   cursor: pointer;
   overflow: hidden;
@@ -58,10 +58,10 @@
   }
 
   &.is-failure {
-    border-color: rgb(var(--lia-red));
+    border-color: rgb(var(--color-failure));
   }
 
   &.is-success {
-    border-color: rgb(var(--lia-success));
+    border-color: rgb(var(--color-success));
   }
 }

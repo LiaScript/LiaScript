@@ -51,7 +51,7 @@
               background-color: rgb(var(--lia-grey-lighter));
 
               @at-root html.lia-variant-dark & {
-                background-color: rgba(var(--lia-grey), 0.3);
+                background-color: rgba(var(--lia-grey), 0.15);
               }
             }
 
@@ -84,7 +84,7 @@
               background-color: rgb(var(--lia-grey-lighter));
 
               @at-root html.lia-variant-dark & {
-                background-color: rgba(var(--lia-grey), 0.3);
+                background-color: rgba(var(--lia-grey), 0.15);
               }
             }
 
@@ -308,7 +308,7 @@
         background-color: rgba(var(--lia-grey-lighter));
 
         @at-root html.lia-variant-dark & {
-          background-color: rgba(var(--lia-grey), 0.3);
+          background-color: rgba(var(--lia-grey), 0.15);
         }
       }
 
