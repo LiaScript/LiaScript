@@ -4,6 +4,7 @@ module Lia.Markdown.Survey.View exposing (view)
 diagrams and tables.
 -}
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
 import Array
@@ -64,11 +65,15 @@ import List.Extra
 `viewBlocks`), one `List (Html Main.Msg)` per option - exactly as with
 Task-list items and Quiz-Vector options.
 -}
-view : Config Main.Msg -> Parameters -> Survey Markdown.Block -> Vector -> List ( String, List (Html Main.Msg) ) -> ( Maybe Int, Html Main.Msg )
-view config attr survey model renderedOptions =
+view : Config Main.Msg -> Maybe String -> Parameters -> Survey Markdown.Block -> Vector -> List ( String, List (Html Main.Msg) ) -> ( Maybe Int, Html Main.Msg )
+view config labeledBy attr survey model renderedOptions =
     let
         id =
             survey.id
+
+        -- name of the inputs and prefix of the option ids
+        base =
+            "lia-survey-" ++ String.fromInt config.slide ++ "-" ++ String.fromInt id
 
         element =
             Array.get id model
@@ -102,7 +107,7 @@ view config attr survey model renderedOptions =
                 _ ->
                     ""
             )
-                |> viewText config lines id submitted
+                |> viewText config labeledBy lines id submitted
                 |> Html.map Main.UpdateSurvey
                 |> frame "text"
                 |> viewTextSync config lines syncData
@@ -135,15 +140,25 @@ view config attr survey model renderedOptions =
 
         Vector checkbox questions analysis ->
             renderedOptions
-                |> List.map (viewOption checkbox (isChecked state) (VectorUpdate id) submitted)
+                |> List.indexedMap (viewOption base checkbox (isChecked state) (VectorUpdate id) submitted)
                 |> shuffle opt.randomize
-                |> Html.div [ Attr.class "lia-quiz__answers" ]
+                |> Html.div
+                    [ Attr.class "lia-quiz__answers"
+                    , if checkbox then
+                        A11y_Role.group
+
+                      else
+                        A11y_Role.radioGroup
+                    , labeledBy
+                        |> Maybe.map A11y_Aria.labelledBy
+                        |> Maybe.withDefault (Attr.class "")
+                    ]
                 |> frame
                     (if checkbox then
-                        "single-choice"
+                        "multiple-choice"
 
                      else
-                        "multiple-choice"
+                        "single-choice"
                     )
                 |> viewVectorSync config analysis (List.map Tuple.first questions) syncData
 
@@ -273,11 +288,14 @@ viewSubmitButton config submitted id updatesAllowed =
 
 {-| A single line input or, for more `lines`, a textarea.
 -}
-viewText : Config sub -> Int -> Int -> Bool -> String -> Html (Msg sub)
-viewText config lines id submitted str =
+viewText : Config sub -> Maybe String -> Int -> Int -> Bool -> String -> Html (Msg sub)
+viewText config labeledBy lines id submitted str =
     let
         attr =
             [ onInput <| TextUpdate id
+            , labeledBy
+                |> Maybe.map A11y_Aria.labelledBy
+                |> Maybe.withDefault (A11y_Aria.label (surveyText config.lang))
             , Attr.placeholder (surveyText config.lang)
             , Attr.value str
             , Attr.disabled submitted
@@ -491,14 +509,23 @@ viewDrop config randomize options id submitted ( highlight, active, value ) =
         ]
 
 
-{-| A checkbox or radio button with the pre-rendered `body` of the option.
+{-| A checkbox or radio button with the pre-rendered `body` of the option. The
+body is not a `label`, since it might contain images or scripts, which must not
+toggle the input, it names the input via `aria-labelledby` instead.
 -}
-viewOption : Bool -> (String -> Bool) -> (String -> Msg Main.Msg) -> Bool -> ( String, List (Html Main.Msg) ) -> Html Main.Msg
-viewOption checkbox checked msg submitted ( var, body ) =
-    Html.label [ Attr.class "lia-label lia-label--top" ]
+viewOption : String -> Bool -> (String -> Bool) -> (String -> Msg Main.Msg) -> Bool -> Int -> ( String, List (Html Main.Msg) ) -> Html Main.Msg
+viewOption base checkbox checked msg submitted i ( var, body ) =
+    let
+        bodyID =
+            base ++ "-option-" ++ String.fromInt i
+    in
+    Html.div [ Attr.class "lia-label lia-label--top" ]
         [ input checkbox (msg var) (checked var) submitted
+            [ Attr.name base
+            , A11y_Aria.labelledBy bodyID
+            ]
             |> Html.map Main.UpdateSurvey
-        , Html.div [ Attr.style "width" "100%" ] body
+        , Html.div [ Attr.id bodyID, Attr.style "width" "100%" ] body
         ]
 
 
@@ -522,34 +549,36 @@ viewRow config checkbox checked msg submitted vars row statement =
         |> List.map
             (\var ->
                 Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
-                    [ input checkbox (msg row var) (checked row var) submitted ]
+                    [ input checkbox (msg row var) (checked row var) submitted [] ]
             )
         |> (\cells -> cells ++ [ Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ] [ Html.span [] (inlines config statement) ] ])
         |> Html.tr [ Attr.class "lia-table__row lia-survey-matrix__row" ]
 
 
-input : Bool -> Msg sub -> Bool -> Bool -> Html (Msg sub)
-input checkbox msg checked submitted =
+input : Bool -> Msg sub -> Bool -> Bool -> List (Html.Attribute (Msg sub)) -> Html (Msg sub)
+input checkbox msg checked submitted attr =
     Html.input
-        [ Attr.class <|
-            if checkbox then
-                "lia-checkbox"
+        (List.append attr
+            [ Attr.class <|
+                if checkbox then
+                    "lia-checkbox"
 
-            else
-                "lia-radio"
-        , Attr.type_ <|
-            if checkbox then
-                "checkbox"
+                else
+                    "lia-radio"
+            , Attr.type_ <|
+                if checkbox then
+                    "checkbox"
 
-            else
-                "radio"
-        , if submitted then
-            Attr.disabled True
+                else
+                    "radio"
+            , if submitted then
+                Attr.disabled True
 
-          else
-            onClick msg
-        , Attr.checked checked
-        ]
+              else
+                onClick msg
+            , Attr.checked checked
+            ]
+        )
         []
 
 

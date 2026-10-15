@@ -562,6 +562,7 @@ viewState config elem quiz renderedOptions =
 
         ( Vector_State s, Vector_Type q ) ->
             Vector.view
+                ("lia-quiz-" ++ String.fromInt config.slide ++ "-" ++ String.fromInt quiz.id)
                 (elem.solved == Solution.Open)
                 (Solution.toClass ( elem.solved, elem.trial ) Nothing)
                 quiz.id
@@ -613,7 +614,13 @@ viewQuiz config labeledBy state quiz renderedHints ( attr, body ) =
                     |> Maybe.map A11y_Aria.labelledBy
                     |> Maybe.withDefault (Attr.class "")
                )
-            :: attr
+            -- aria-labelledby is ignored on elements without a role
+            :: (if List.isEmpty attr then
+                    [ A11y_Role.group ]
+
+                else
+                    attr
+               )
             |> CList.addIf (state.solved == Solution.ReSolved) A11y_Live.polite
         )
         body

@@ -1,5 +1,6 @@
 module Lia.Markdown.Quiz.Vector.View exposing (view)
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Role as A11y_Role
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
@@ -19,17 +20,17 @@ Returns the attributes for the surrounding container (its role) and the
 options.
 
 -}
-view : Bool -> String -> Int -> Quiz body -> State -> List (List (Html Main.Msg)) -> ( List (Attribute Main.Msg), List (Html Main.Msg) )
-view open class quizId quiz state rendered =
+view : String -> Bool -> String -> Int -> Quiz body -> State -> List (List (Html Main.Msg)) -> ( List (Attribute Main.Msg), List (Html Main.Msg) )
+view base open class quizId quiz state rendered =
     case ( quiz.solution, state ) of
         ( SingleChoice _, SingleChoice list ) ->
             ( [ A11y_Role.radioGroup ]
-            , List.map2 (option "lia-radio" "radio" A11y_Role.radio open class quizId) list (List.indexedMap Tuple.pair rendered)
+            , List.map2 (option base "lia-radio" "radio" open class quizId) list (List.indexedMap Tuple.pair rendered)
             )
 
         ( MultipleChoice _, MultipleChoice list ) ->
-            ( [ A11y_Role.list ]
-            , List.map2 (option "lia-checkbox" "checkbox" A11y_Role.checkBox open class quizId) list (List.indexedMap Tuple.pair rendered)
+            ( [ A11y_Role.group ]
+            , List.map2 (option base "lia-checkbox" "checkbox" open class quizId) list (List.indexedMap Tuple.pair rendered)
             )
 
         _ ->
@@ -37,17 +38,25 @@ view open class quizId quiz state rendered =
 
 
 {-| **private:** A radio button or check box with its content `body`, only
-clickable if the quiz is `open`.
+clickable if the quiz is `open`. The body is not a `label`, since it might
+contain images or scripts, which must not toggle the input, it names the input
+via `aria-labelledby` instead. All inputs of a quiz share the name `base`,
+thus radio buttons form a group, which can be navigated with arrow keys.
 -}
-option : String -> String -> Attribute Main.Msg -> Bool -> String -> Int -> Bool -> ( Int, List (Html Main.Msg) ) -> Html Main.Msg
-option inputClass inputType role open colorClass quizId checked ( id, body ) =
-    Html.label [ Attr.class "lia-label lia-label--top", A11y_Role.listItem ]
+option : String -> String -> String -> Bool -> String -> Int -> Bool -> ( Int, List (Html Main.Msg) ) -> Html Main.Msg
+option base inputClass inputType open colorClass quizId checked ( id, body ) =
+    let
+        bodyID =
+            base ++ "-option-" ++ String.fromInt id
+    in
+    Html.div [ Attr.class "lia-label lia-label--top" ]
         [ Html.input
             [ Attr.class inputClass
             , Attr.class colorClass
             , Attr.type_ inputType
+            , Attr.name base
             , Attr.checked checked
-            , role
+            , A11y_Aria.labelledBy bodyID
             , if open then
                 onClick (Main.UpdateQuiz (QuizUpdate.Vector_Update quizId (VectorUpdate.Toggle id)))
 
@@ -55,5 +64,5 @@ option inputClass inputType role open colorClass quizId checked ( id, body ) =
                 Attr.disabled True
             ]
             []
-        , Html.div [ Attr.style "width" "100%" ] body
+        , Html.div [ Attr.id bodyID, Attr.style "width" "100%" ] body
         ]

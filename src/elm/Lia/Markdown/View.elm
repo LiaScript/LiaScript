@@ -190,16 +190,31 @@ viewContent config =
     fold config_ [] config_.section.body
 
 
-{-| Id of the block in front of a quiz, which labels the quiz (aria-labelledby),
-it only has to be unique within the page.
+{-| Id of the block in front of a quiz, survey or task list, which labels it
+(aria-labelledby), it only has to be unique within the page.
 -}
-quizLabel : Config Msg -> Quiz.Quiz Block -> String
-quizLabel config quiz =
-    "lia-quiz-" ++ String.fromInt config.section.id ++ "-" ++ String.fromInt quiz.id
+labelID : Config Msg -> Block -> Maybe String
+labelID config block =
+    let
+        prefix name id =
+            Just ("lia-" ++ name ++ "-" ++ String.fromInt config.section.id ++ "-" ++ String.fromInt id)
+    in
+    case block of
+        Quiz _ quiz _ ->
+            prefix "quiz" quiz.id
+
+        Survey _ survey _ ->
+            prefix "survey" survey.id
+
+        Task _ task ->
+            prefix "task" task.id
+
+        _ ->
+            Nothing
 
 
-{-| Render blocks, a paragraph or HTML block in front of a quiz becomes its
-label.
+{-| Render blocks, a paragraph or HTML block in front of a quiz, survey or task
+list becomes its label.
 -}
 fold : Config Msg -> List (Html Msg) -> Blocks -> List (Html Msg)
 fold config output blocks =
@@ -207,25 +222,51 @@ fold config output blocks =
         [] ->
             List.reverse output
 
-        b :: (Quiz attr quiz solution) :: bs ->
-            let
-                id =
-                    quizLabel config quiz
-            in
-            case withId id b of
-                Just label ->
+        b :: next :: bs ->
+            case
+                labelID config next
+                    |> Maybe.andThen (\id -> withId id b |> Maybe.map (Tuple.pair id))
+            of
+                Just ( id, label ) ->
                     fold config
-                        (viewQuiz config (Just id) attr quiz solution
+                        (viewLabeled config (Just id) next
                             :: view_block config label
                             :: output
                         )
                         bs
 
                 Nothing ->
-                    fold config (view_block config b :: output) (Quiz attr quiz solution :: bs)
+                    fold config (view_block config b :: output) (next :: bs)
 
         b :: bs ->
             fold config (view_block config b :: output) bs
+
+
+{-| Render a quiz, survey or task list, which is labeled by the block with the
+id `labeledBy`.
+-}
+viewLabeled : Config Msg -> Maybe String -> Block -> Html Msg
+viewLabeled config labeledBy block =
+    case block of
+        Quiz attr quiz solution ->
+            viewQuiz config labeledBy attr quiz solution
+
+        Survey attr survey solution ->
+            viewSurvey config labeledBy attr survey solution
+
+        Task attr task ->
+            task.items
+                |> List.map (viewBlocks config)
+                |> Task.view
+                    ("lia-task-" ++ String.fromInt config.section.id ++ "-" ++ String.fromInt task.id)
+                    labeledBy
+                    config.section.task_vector
+                    attr
+                    task
+                |> scriptView config.view
+
+        _ ->
+            view_block config block
 
 
 withId : String -> Block -> Maybe Block
@@ -498,30 +539,11 @@ view_block config block =
                 |> Codes.view
                 |> Html.map UpdateCode
 
-        Quiz attr quiz solution ->
-            viewQuiz config Nothing attr quiz solution
+        Quiz _ _ _ ->
+            viewLabeled config Nothing block
 
-        Survey attr survey solution ->
-            Surveys.view config.main attr survey config.section.survey_vector (surveyVectorOptions config survey.survey)
-                |> Tuple.mapSecond
-                    (\html ->
-                        case solution of
-                            Just ( blocks, _ ) ->
-                                if
-                                    config.section.survey_vector
-                                        |> Array.get survey.id
-                                        |> Maybe.map .submitted
-                                        |> Maybe.withDefault False
-                                then
-                                    Html.div [] [ html, viewSolution config "survey" survey.id blocks ]
-
-                                else
-                                    html
-
-                            Nothing ->
-                                html
-                    )
-                |> scriptView config.view
+        Survey _ _ _ ->
+            viewLabeled config Nothing block
 
         Comment ( id1, id2 ) ->
             case
@@ -569,11 +591,8 @@ view_block config block =
         ASCII attr bob ->
             view_ascii config attr bob
 
-        Task attr task ->
-            task.items
-                |> List.map (viewBlocks config)
-                |> Task.view config.section.task_vector attr task
-                |> scriptView config.view
+        Task _ _ ->
+            viewLabeled config Nothing block
 
         Gallery attr media ->
             Gallery.view config.main config.section.gallery_vector attr media
@@ -609,7 +628,7 @@ viewHidden =
 
 viewBlocks : Config Msg -> Blocks -> List (Html Msg)
 viewBlocks config =
-    List.map (view_block config)
+    fold config []
 
 
 {-| Pre-render a Quiz-Vector's option content (used only for `Vector_Type`) via
@@ -624,6 +643,33 @@ quizVectorOptions config type_ =
 
         _ ->
             []
+
+
+{-| Render a survey, which is labeled by the block with the id `labeledBy`, and
+its solution, if it has been submitted.
+-}
+viewSurvey : Config Msg -> Maybe String -> Parameters -> Survey.Survey Block -> Maybe ( Blocks, Int ) -> Html Msg
+viewSurvey config labeledBy attr survey solution =
+    Surveys.view config.main labeledBy attr survey config.section.survey_vector (surveyVectorOptions config survey.survey)
+        |> Tuple.mapSecond
+            (\html ->
+                case solution of
+                    Just ( blocks, _ ) ->
+                        if
+                            config.section.survey_vector
+                                |> Array.get survey.id
+                                |> Maybe.map .submitted
+                                |> Maybe.withDefault False
+                        then
+                            Html.div [] [ html, viewSolution config "survey" survey.id blocks ]
+
+                        else
+                            html
+
+                    Nothing ->
+                        html
+            )
+        |> scriptView config.view
 
 
 {-| Pre-render a Survey-Vector's option content (used only for `Vector`) via
@@ -717,7 +763,7 @@ viewQuote config attr alert elements =
 
         _ ->
             elements
-                |> List.map (view_block config)
+                |> fold config []
                 |> CList.addWhen (alert_title |> Maybe.map (Html.p []))
                 |> Html.blockquote (annotation alert_class attr)
 
