@@ -12,6 +12,7 @@ module Lia.Utils exposing
     , get
     , icon
     , identicon
+    , dropdownList
     , modal
     , noTranslate
     , onEnter
@@ -610,3 +611,18 @@ formatDate ms =
         ++ pad (Time.toHour Time.utc posix)
         ++ ":"
         ++ pad (Time.toMinute Time.utc posix)
+
+
+{-| The list of a dropdown, it is removed from the accessibility tree while it
+is closed, otherwise the options would be read as the value of the combobox.
+-}
+dropdownList : String -> Bool -> List (Attribute msg) -> List (Attribute msg)
+dropdownList listID open attributes =
+    Attr.id listID
+        :: A11y_Role.listBox
+        :: (if open then
+                attributes
+
+            else
+                A11y_Aria.hidden True :: Attr.attribute "inert" "" :: attributes
+           )

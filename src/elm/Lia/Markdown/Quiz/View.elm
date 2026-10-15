@@ -541,7 +541,7 @@ viewState config elem quiz renderedOptions =
         ( Block_State s, Block_Type q ) ->
             ( []
             , s
-                |> Block.view config elem.opt.randomize ( elem.solved, elem.trial ) q
+                |> Block.view ("lia-quiz-" ++ String.fromInt config.slide ++ "-" ++ String.fromInt quiz.id) config elem.opt.randomize ( elem.solved, elem.trial ) q
                 |> List.map
                     (Html.map
                         (\msg ->

@@ -52,6 +52,7 @@ import Lia.Utils
     exposing
         ( blockKeydown
         , btn
+        , dropdownList
         , icon
         , shuffle
         , string2Color
@@ -314,15 +315,29 @@ viewText config labeledBy lines id submitted str =
             []
 
 
+{-| A select-only combobox, the keyboard is handled by
+`typescript/liascript/combobox.ts`, which clicks the existing elements.
+-}
 viewSelect : Config sub -> Maybe (List Int) -> List Inlines -> Int -> Bool -> ( Bool, Int ) -> Html (Msg sub)
 viewSelect config randomize options id submitted ( open, value ) =
+    let
+        listID =
+            "lia-survey-" ++ String.fromInt config.slide ++ "-" ++ String.fromInt id ++ "-select"
+    in
     Html.div [ Attr.class "lia-quiz__answers" ]
         [ Html.div
             [ Attr.class "lia-dropdown" ]
             [ Html.span
                 [ Attr.class "lia-dropdown__selected"
+                , Attr.tabindex 0
+                , A11y_Role.comboBox
+                , A11y_Aria.expanded open
+                , A11y_Aria.hasListBoxPopUp
+                , A11y_Aria.controls [ listID ]
+                , A11y_Aria.label (Translations.quizSelection config.lang)
+                , A11y_Aria.disabled submitted
                 , if submitted then
-                    Attr.disabled True
+                    Attr.class "is-disabled"
 
                   else
                     onClick <| SelectUpdate id Choose
@@ -347,21 +362,26 @@ viewSelect config randomize options id submitted ( open, value ) =
                     (\i option ->
                         Html.div
                             [ Attr.class "lia-dropdown__option"
+                            , Attr.id (listID ++ "-" ++ String.fromInt i)
+                            , A11y_Role.option
+                            , A11y_Aria.selected (i == value)
                             , onClick (SelectUpdate id (Update i))
                             ]
                             (inlines config option)
                     )
                 |> shuffle randomize
                 |> Html.div
-                    [ Attr.class "lia-dropdown__options"
-                    , Attr.tabindex -1
-                    , Attr.class <|
-                        if open then
-                            "is-visible"
+                    (dropdownList listID
+                        open
+                        [ Attr.class "lia-dropdown__options"
+                        , Attr.class <|
+                            if open then
+                                "is-visible"
 
-                        else
-                            "is-hidden"
-                    ]
+                            else
+                                "is-hidden"
+                        ]
+                    )
             ]
         ]
 

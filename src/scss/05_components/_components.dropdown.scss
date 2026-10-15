@@ -46,6 +46,13 @@
     }
   }
 
+  // the active option while navigating with the keyboard, see combobox.ts
+  [role='option'].is-active {
+    background-color: rgba(var(--color-highlight), 0.1);
+    outline: 2px solid rgb(var(--color-highlight));
+    outline-offset: -2px;
+  }
+
   &.is-disabled {
     border-color: rgb(var(--lia-grey));
   }

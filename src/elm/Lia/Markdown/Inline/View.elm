@@ -34,7 +34,7 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (blockKeydown, noTranslate, shuffle)
+import Lia.Utils exposing (blockKeydown, dropdownList, noTranslate, shuffle)
 import List.Extra
 import QRCode
 
@@ -236,6 +236,8 @@ viewText config id width text attributes =
 
 
 {-| **@private:** A dropdown, `selected` is the index of the selected option.
+It is a select-only combobox, the keyboard is handled by
+`typescript/liascript/combobox.ts`, which clicks the existing elements.
 -}
 viewSelect : Config sub -> Int -> Bool -> Int -> List (Attribute (Msg sub)) -> (List (Attribute (Msg sub)) -> List (Attribute (Msg sub))) -> Html (Msg sub)
 viewSelect config id open selected attributes highlight =
@@ -245,23 +247,28 @@ viewSelect config id open selected attributes highlight =
                 |> Array.get id
                 |> Maybe.withDefault []
 
+        listID =
+            "lia-select-"
+                ++ String.fromInt config.slide
+                ++ (config.input.path
+                        |> List.map (\( name, i ) -> "-" ++ name ++ "-" ++ String.fromInt i)
+                        |> String.concat
+                   )
+                ++ "-"
+                ++ String.fromInt id
+
         action =
             if config.input.active then
-                [ Attr.attribute "onClick" (config.input.on "toggle" id "true")
-                , keyDownEvent (config.input.on "toggle" id "true")
-                ]
+                [ Attr.attribute "onClick" (config.input.on "toggle" id "true") ]
 
             else
-                [ Attr.disabled True
-                , Attr.class "is-disabled"
-                ]
+                [ Attr.class "is-disabled" ]
     in
     Html.span
         (highlight
             (action
                 ++ [ Attr.class "lia-dropdown"
                    , Attr.style "padding" "0 0.5rem"
-                   , Attr.tabindex 0
                    , Attr.style "vertical-align"
                         (if open then
                             "text-top"
@@ -275,9 +282,13 @@ viewSelect config id open selected attributes highlight =
         )
         [ Html.span
             [ Attr.class "lia-dropdown__selected"
-            , A11y_Aria.hidden False
-            , A11y_Role.button
+            , Attr.tabindex 0
+            , A11y_Role.comboBox
             , A11y_Aria.expanded open
+            , A11y_Aria.hasListBoxPopUp
+            , A11y_Aria.controls [ listID ]
+            , A11y_Aria.label (Translations.quizSelection config.lang ++ " " ++ String.fromInt (id + 1))
+            , A11y_Aria.disabled (not config.input.active)
             , Attr.style "font-weight" "inherit"
             , Attr.style "text-decoration" "inherit"
             , Attr.style "font-style" "inherit"
@@ -295,41 +306,38 @@ viewSelect config id open selected attributes highlight =
 
                     else
                         "icon icon-chevron-down"
-                , A11y_Role.button
+                , A11y_Aria.hidden True
                 ]
                 []
             ]
         , options
-            |> List.indexedMap (viewOption config open id)
+            |> List.indexedMap (viewOption config listID selected id)
             |> shuffle (Maybe.andThen (Array.get id) config.input.randomize)
             |> Html.div
-                [ Attr.class "lia-dropdown__options"
-                , Attr.tabindex -1
-                , Attr.class <|
-                    if open then
-                        "is-visible"
+                (dropdownList listID
+                    open
+                    [ Attr.class "lia-dropdown__options"
+                    , Attr.class <|
+                        if open then
+                            "is-visible"
 
-                    else
-                        "is-hidden"
-                ]
+                        else
+                            "is-hidden"
+                    ]
+                )
         ]
 
 
 {-| **@private:** An option `i` of the dropdown with `id`.
 -}
-viewOption : Config sub -> Bool -> Int -> Int -> Inlines -> Html (Msg sub)
-viewOption config open id i option =
+viewOption : Config sub -> String -> Int -> Int -> Int -> Inlines -> Html (Msg sub)
+viewOption config listID selected id i option =
     Html.div
         [ Attr.class "lia-dropdown__option"
+        , Attr.id (listID ++ "-" ++ String.fromInt i)
         , Attr.attribute "onclick" (config.input.on "choose" id (String.fromInt i))
-        , A11y_Role.listItem
-        , Attr.tabindex <|
-            if open then
-                0
-
-            else
-                -1
-        , keyDownEvent (config.input.on "choose" id (String.fromInt i))
+        , A11y_Role.option
+        , A11y_Aria.selected (i == selected)
         ]
         [ Html.div [] (viewer config option) ]
 
