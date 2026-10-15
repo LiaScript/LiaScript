@@ -488,8 +488,10 @@ viewLog code height log =
     else
         Log.view log
             |> Keyed.node "lia-terminal"
-                -- the surrounding lia-code-terminal is the log
+                -- the surrounding lia-code-terminal is the log, the output
+                -- scrolls and can therefore be focused
                 [ Attr.class "lia-code-terminal__output"
+                , Attr.tabindex 0
                 , onChangeHeight (Resize code)
                 , height
                     |> Maybe.map (JE.string >> Attr.property "height")

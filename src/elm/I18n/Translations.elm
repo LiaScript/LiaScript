@@ -12129,6 +12129,16 @@ chartBar lang =
             "Bar chart"
 
 
+chartDefault : Lang -> String
+chartDefault lang =
+    case lang of
+        De ->
+            "Diagramm"
+
+        _ ->
+            "Chart"
+
+
 chartLine : Lang -> String
 chartLine lang =
     case lang of
