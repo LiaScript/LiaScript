@@ -108,7 +108,7 @@ closed =
                 </div>
                 
             </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-label="Enlarge" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -120,7 +120,7 @@ closed =
                 </div>
                 
             </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-label="Enlarge" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -135,7 +135,7 @@ first =
     <lia-modal class="lia-modal" aria-modal="true" role="dialog">
         <div class="lia-modal__inner">
             <div class="lia-modal__close">
-                <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="close modal">
+                <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="Close dialog">
                     <i class="icon icon-close lia-btn__icon" aria-hidden="true">
                     </i>
                 </button>
@@ -170,7 +170,7 @@ first =
                 </div>
                 
             </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-label="Enlarge" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -182,7 +182,7 @@ first =
                 </div>
                 
             </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-label="Enlarge" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -197,7 +197,7 @@ last =
     <lia-modal class="lia-modal" aria-modal="true" role="dialog">
         <div class="lia-modal__inner">
             <div class="lia-modal__close">
-                <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="close modal">
+                <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="Close dialog">
                     <i class="icon icon-close lia-btn__icon" aria-hidden="true">
                     </i>
                 </button>
@@ -232,7 +232,7 @@ last =
                 </div>
                 
             </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-label="Enlarge" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -244,7 +244,7 @@ last =
                 </div>
                 
             </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-label="Enlarge" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -265,7 +265,7 @@ outOfRange =
                 </div>
                 
             </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-label="Enlarge" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -277,7 +277,7 @@ outOfRange =
                 </div>
                 
             </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-label="Enlarge" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -298,7 +298,7 @@ annotated =
                 </div>
                 
             </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-label="Enlarge" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -310,7 +310,7 @@ annotated =
                 </div>
                 
             </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-label="Enlarge" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -325,7 +325,7 @@ embedOpen =
     <lia-modal class="lia-modal" aria-modal="true" role="dialog">
         <div class="lia-modal__inner">
             <div class="lia-modal__close">
-                <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="close modal">
+                <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="Close dialog">
                     <i class="icon icon-close lia-btn__icon" aria-hidden="true">
                     </i>
                 </button>
@@ -368,7 +368,7 @@ embedOpen =
                 </div>
                 
             </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-label="Enlarge" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -388,7 +388,7 @@ embedOpen =
                     </figcaption>
                 </div>
             </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-label="Enlarge" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>

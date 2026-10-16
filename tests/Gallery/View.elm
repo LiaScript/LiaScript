@@ -120,7 +120,7 @@ suite =
                         |> clickArea 1
                         |> Query.has
                             [ attribute (Attr.attribute "role" "button")
-                            , attribute (Attr.attribute "aria-label" "zoom media")
+                            , attribute (Attr.attribute "aria-label" "Enlarge")
                             , attribute (Attr.tabindex 0)
                             ]
             , test "the click area contains the zoom icon" <|

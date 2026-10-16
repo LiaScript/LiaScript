@@ -36,6 +36,7 @@ import Array exposing (Array)
 import Browser.Dom as Dom
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
+import I18n.Translations exposing (Lang, baseCloseDialog)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
@@ -186,8 +187,8 @@ scheduleFocus delay msg elementID =
 
 {-| Create custom modals, which overlay the entire view.
 -}
-modal : Bool -> msg -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
-modal activeBorder msgClose controls content =
+modal : Lang -> Bool -> msg -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
+modal lang activeBorder msgClose controls content =
     -- the custom element moves the focus in and out, see webcomponents/modal.ts
     Html.node "lia-modal"
         [ Attr.class "lia-modal"
@@ -201,7 +202,7 @@ modal activeBorder msgClose controls content =
                     { icon = "icon-close"
                     , msg = Just msgClose
                     , tabbable = True
-                    , title = "close modal"
+                    , title = baseCloseDialog lang
                     }
                     [ Attr.class "lia-btn--transparent"
                     , Attr.id "lia-modal__close"

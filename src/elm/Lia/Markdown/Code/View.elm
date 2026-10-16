@@ -150,7 +150,7 @@ view { lang, theme, model, code, sync, cursors } =
 
                                         Just term ->
                                             term
-                                                |> Terminal.view
+                                                |> Terminal.view lang
                                                 |> Html.map (UpdateTerminal id)
                                     ]
                                ]

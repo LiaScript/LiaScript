@@ -34,7 +34,7 @@ view :
 view base config randomize solution quiz state =
     case state of
         Text str ->
-            [ text solution str
+            [ text config.lang solution str
             , case solution of
                 ( Solution.Solved, _ ) ->
                     icon "icon-check text-success"
@@ -230,8 +230,8 @@ view base config randomize solution quiz state =
             ]
 
 
-text : Solution.State -> String -> Html (Msg sub)
-text solution state =
+text : Translations.Lang -> Solution.State -> String -> Html (Msg sub)
+text lang solution state =
     Html.input
         [ Attr.type_ "input"
         , Attr.class "lia-input lia-quiz__input"
@@ -246,7 +246,7 @@ text solution state =
         , Attr.disabled (not <| Solution.isOpen solution)
         , onInput Input
         , onEnter Submit
-        , A11y_Aria.label "quiz answer"
+        , A11y_Aria.label (Translations.quizInput lang)
         ]
         []
 

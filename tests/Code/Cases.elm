@@ -126,7 +126,7 @@ view =
                 Terminal.init "sh"
                     |> Terminal.update (Terminal.Input "a\nb")
                     |> Tuple.first
-                    |> Terminal.view
+                    |> Terminal.view En
                     |> Query.fromHtml
                     |> Query.find [ Selector.tag "lia-editor" ]
                     |> Query.has [ Selector.style "min-height" "calc( 2 * var(--global-font-size, 1.5rem) * var(--font-size-multiplier) * 1.3333 + 1.47rem)" ]

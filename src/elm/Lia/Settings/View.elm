@@ -396,8 +396,8 @@ viewTTSSettings grouping lang tabbable audio tts =
             [ Attr.style "display" "flex"
             , Attr.style "flex-direction" "column"
             ]
-            [ slider "Rate" (Trans.commentRate lang) Rate grouping tabbable { value = audio.rate, maximum = "1.5", minimum = "0.5", step = "0.25" }
-            , slider "Pitch" (Trans.commentPitch lang) Pitch grouping tabbable { value = audio.pitch, maximum = "2.0", minimum = "0.0", step = "0.25" }
+            [ slider "Rate" (Trans.commentRateLabel lang) (Trans.commentRate lang) Rate grouping tabbable { value = audio.rate, maximum = "1.5", minimum = "0.5", step = "0.25" }
+            , slider "Pitch" (Trans.commentPitchLabel lang) (Trans.commentPitch lang) Pitch grouping tabbable { value = audio.pitch, maximum = "2.0", minimum = "0.0", step = "0.25" }
             ]
         ]
 
@@ -405,12 +405,13 @@ viewTTSSettings grouping lang tabbable audio tts =
 slider :
     String
     -> String
+    -> String
     -> (String -> Audio)
     -> (List (Attribute Msg) -> List (Attribute Msg))
     -> Bool
     -> { maximum : String, minimum : String, step : String, value : String }
     -> Html Msg
-slider name title message grouping tabbable { maximum, minimum, step, value } =
+slider name label title message grouping tabbable { maximum, minimum, step, value } =
     let
         outputId =
             "slider-value-"
@@ -431,10 +432,12 @@ slider name title message grouping tabbable { maximum, minimum, step, value } =
         ]
         [ Html.span
             [ Attr.class "lia-label"
-            , Attr.style "width" "50px"
+            , Attr.style "min-width" "50px"
+            , Attr.style "white-space" "nowrap"
+            , Attr.style "flex-shrink" "0"
             , Attr.style "margin-inline-end" "10px"
             ]
-            [ Html.text name ]
+            [ Html.text label ]
         , Html.input
             (grouping
                 ([ Attr.type_ "range"
@@ -445,7 +448,7 @@ slider name title message grouping tabbable { maximum, minimum, step, value } =
                  , A11y_Aria.hidden (not tabbable)
                  , Attr.attribute "aria-label" title
                  , Attr.attribute "aria-describedby" outputId
-                 , Attr.attribute "aria-valuetext" (value ++ "× speed")
+                 , Attr.attribute "aria-valuetext" (value ++ "×")
                  , onInput (message >> Change)
                  , Attr.style "flex-grow" "1"
                  ]
@@ -670,7 +673,7 @@ qrCode lang tabbable marginBig grouped url =
                 ]
                 >> List.singleton
                 >> btn
-                    { title = "enlarge qr-code"
+                    { title = Trans.qrEnlarge lang
                     , tabbable = tabbable
                     , msg = Just (Toggle QRCode)
                     }

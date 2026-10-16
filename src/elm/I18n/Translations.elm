@@ -2472,6 +2472,414 @@ baseToc lang =
             "Table of Contents"
 
 
+baseSkipNav : Lang -> String
+baseSkipNav lang =
+    case lang of
+        Am ->
+            "ዳሰሳን ዝለል"
+
+        Ar ->
+            "تخطي التنقل"
+
+        Bg ->
+            "Пропусни навигацията"
+
+        Bn ->
+            "নেভিগেশন এড়িয়ে যান"
+
+        Ca ->
+            "Salta la navegació"
+
+        Cs ->
+            "Přeskočit navigaci"
+
+        Da ->
+            "Spring navigation over"
+
+        De ->
+            "Navigation überspringen"
+
+        El ->
+            "Παράλειψη πλοήγησης"
+
+        Es ->
+            "Saltar navegación"
+
+        Et ->
+            "Jäta navigeerimine vahele"
+
+        Eu ->
+            "Saltatu nabigazioa"
+
+        Fa ->
+            "رد شدن از پیمایش"
+
+        Fi ->
+            "Ohita navigointi"
+
+        Fr ->
+            "Passer la navigation"
+
+        Ga ->
+            "Léim thar an nascleanúint"
+
+        Hi ->
+            "नेविगेशन छोड़ें"
+
+        Hr ->
+            "Preskoči navigaciju"
+
+        Hu ->
+            "Navigáció átugrása"
+
+        Hy ->
+            "Բաց թողնել նավիգացիան"
+
+        It ->
+            "Salta la navigazione"
+
+        Ja ->
+            "ナビゲーションをスキップ"
+
+        Ka ->
+            "ნავიგაციის გამოტოვება"
+
+        Ko ->
+            "탐색 건너뛰기"
+
+        Lt ->
+            "Praleisti naršymą"
+
+        Lv ->
+            "Izlaist navigāciju"
+
+        Nb ->
+            "Hopp over navigasjonen"
+
+        Nl ->
+            "Navigatie overslaan"
+
+        Pa ->
+            "ਨੈਵੀਗੇਸ਼ਨ ਛੱਡੋ"
+
+        Pl ->
+            "Pomiń nawigację"
+
+        Pt ->
+            "Pular navegação"
+
+        Ro ->
+            "Sari peste navigare"
+
+        Ru ->
+            "Пропустить навигацию"
+
+        Sk ->
+            "Preskočiť navigáciu"
+
+        Sl ->
+            "Preskoči navigacijo"
+
+        Sq ->
+            "Kapërce navigimin"
+
+        Sv ->
+            "Hoppa över navigeringen"
+
+        Sw ->
+            "Ruka urambazaji"
+
+        Tr ->
+            "Gezintiyi atla"
+
+        Tw ->
+            "跳過導覽"
+
+        Uk ->
+            "Пропустити навігацію"
+
+        Ur ->
+            "نیویگیشن چھوڑیں"
+
+        Zh ->
+            "跳过导航"
+
+        _ ->
+            "Skip navigation"
+
+
+baseCloseDialog : Lang -> String
+baseCloseDialog lang =
+    case lang of
+        Am ->
+            "የንግግር ሳጥን ዝጋ"
+
+        Ar ->
+            "إغلاق مربع الحوار"
+
+        Bg ->
+            "Затвори диалога"
+
+        Bn ->
+            "ডায়ালগ বন্ধ করুন"
+
+        Ca ->
+            "Tanca el diàleg"
+
+        Cs ->
+            "Zavřít dialog"
+
+        Da ->
+            "Luk dialogboks"
+
+        De ->
+            "Dialog schließen"
+
+        El ->
+            "Κλείσιμο διαλόγου"
+
+        Es ->
+            "Cerrar diálogo"
+
+        Et ->
+            "Sulge dialoog"
+
+        Eu ->
+            "Itxi elkarrizketa-koadroa"
+
+        Fa ->
+            "بستن کادر محاوره"
+
+        Fi ->
+            "Sulje valintaikkuna"
+
+        Fr ->
+            "Fermer la boîte de dialogue"
+
+        Ga ->
+            "Dún an bosca dialóige"
+
+        Hi ->
+            "डायलॉग बंद करें"
+
+        Hr ->
+            "Zatvori dijalog"
+
+        Hu ->
+            "Párbeszédablak bezárása"
+
+        Hy ->
+            "Փակել երկխոսության պատուհանը"
+
+        It ->
+            "Chiudi la finestra di dialogo"
+
+        Ja ->
+            "ダイアログを閉じる"
+
+        Ka ->
+            "დიალოგის დახურვა"
+
+        Ko ->
+            "대화 상자 닫기"
+
+        Lt ->
+            "Užverti dialogo langą"
+
+        Lv ->
+            "Aizvērt dialoglodziņu"
+
+        Nb ->
+            "Lukk dialogen"
+
+        Nl ->
+            "Dialoogvenster sluiten"
+
+        Pa ->
+            "ਡਾਇਲਾਗ ਬੰਦ ਕਰੋ"
+
+        Pl ->
+            "Zamknij okno dialogowe"
+
+        Pt ->
+            "Fechar diálogo"
+
+        Ro ->
+            "Închide dialogul"
+
+        Ru ->
+            "Закрыть диалог"
+
+        Sk ->
+            "Zavrieť dialóg"
+
+        Sl ->
+            "Zapri pogovorno okno"
+
+        Sq ->
+            "Mbyll dialogun"
+
+        Sv ->
+            "Stäng dialogrutan"
+
+        Sw ->
+            "Funga kidirisha"
+
+        Tr ->
+            "İletişim kutusunu kapat"
+
+        Tw ->
+            "關閉對話方塊"
+
+        Uk ->
+            "Закрити діалог"
+
+        Ur ->
+            "ڈائیلاگ بند کریں"
+
+        Zh ->
+            "关闭对话框"
+
+        _ ->
+            "Close dialog"
+
+
+baseZoom : Lang -> String
+baseZoom lang =
+    case lang of
+        Am ->
+            "አስፋ"
+
+        Ar ->
+            "تكبير"
+
+        Bg ->
+            "Увеличи"
+
+        Bn ->
+            "বড় করুন"
+
+        Ca ->
+            "Amplia"
+
+        Cs ->
+            "Zvětšit"
+
+        Da ->
+            "Forstør"
+
+        De ->
+            "Vergrößern"
+
+        El ->
+            "Μεγέθυνση"
+
+        Es ->
+            "Ampliar"
+
+        Et ->
+            "Suurenda"
+
+        Eu ->
+            "Handitu"
+
+        Fa ->
+            "بزرگ‌نمایی"
+
+        Fi ->
+            "Suurenna"
+
+        Fr ->
+            "Agrandir"
+
+        Ga ->
+            "Méadaigh"
+
+        Hi ->
+            "बड़ा करें"
+
+        Hr ->
+            "Povećaj"
+
+        Hu ->
+            "Nagyítás"
+
+        Hy ->
+            "Մեծացնել"
+
+        It ->
+            "Ingrandisci"
+
+        Ja ->
+            "拡大"
+
+        Ka ->
+            "გადიდება"
+
+        Ko ->
+            "확대"
+
+        Lt ->
+            "Padidinti"
+
+        Lv ->
+            "Palielināt"
+
+        Nb ->
+            "Forstørr"
+
+        Nl ->
+            "Vergroten"
+
+        Pa ->
+            "ਵੱਡਾ ਕਰੋ"
+
+        Pl ->
+            "Powiększ"
+
+        Pt ->
+            "Ampliar"
+
+        Ro ->
+            "Mărește"
+
+        Ru ->
+            "Увеличить"
+
+        Sk ->
+            "Zväčšiť"
+
+        Sl ->
+            "Povečaj"
+
+        Sq ->
+            "Zmadho"
+
+        Sv ->
+            "Förstora"
+
+        Sw ->
+            "Kuza"
+
+        Tr ->
+            "Büyüt"
+
+        Tw ->
+            "放大"
+
+        Uk ->
+            "Збільшити"
+
+        Ur ->
+            "بڑا کریں"
+
+        Zh ->
+            "放大"
+
+        _ ->
+            "Enlarge"
+
+
 baseSlide : Lang -> String
 baseSlide lang =
     case lang of
@@ -3968,6 +4376,142 @@ commentRate lang =
             "Adjust playback speed"
 
 
+commentRateLabel : Lang -> String
+commentRateLabel lang =
+    case lang of
+        Am ->
+            "ፍጥነት"
+
+        Ar ->
+            "السرعة"
+
+        Bg ->
+            "Скорост"
+
+        Bn ->
+            "গতি"
+
+        Ca ->
+            "Velocitat"
+
+        Cs ->
+            "Rychlost"
+
+        Da ->
+            "Tempo"
+
+        De ->
+            "Tempo"
+
+        El ->
+            "Ταχύτητα"
+
+        Es ->
+            "Velocidad"
+
+        Et ->
+            "Kiirus"
+
+        Eu ->
+            "Abiadura"
+
+        Fa ->
+            "سرعت"
+
+        Fi ->
+            "Nopeus"
+
+        Fr ->
+            "Vitesse"
+
+        Ga ->
+            "Luas"
+
+        Hi ->
+            "गति"
+
+        Hr ->
+            "Brzina"
+
+        Hu ->
+            "Tempó"
+
+        Hy ->
+            "Արագություն"
+
+        It ->
+            "Velocità"
+
+        Ja ->
+            "速度"
+
+        Ka ->
+            "სიჩქარე"
+
+        Ko ->
+            "속도"
+
+        Lt ->
+            "Greitis"
+
+        Lv ->
+            "Ātrums"
+
+        Nb ->
+            "Tempo"
+
+        Nl ->
+            "Tempo"
+
+        Pa ->
+            "ਗਤੀ"
+
+        Pl ->
+            "Tempo"
+
+        Pt ->
+            "Ritmo"
+
+        Ro ->
+            "Viteză"
+
+        Ru ->
+            "Скорость"
+
+        Sk ->
+            "Rýchlosť"
+
+        Sl ->
+            "Hitrost"
+
+        Sq ->
+            "Ritmi"
+
+        Sv ->
+            "Tempo"
+
+        Sw ->
+            "Kasi"
+
+        Tr ->
+            "Hız"
+
+        Tw ->
+            "速度"
+
+        Uk ->
+            "Темп"
+
+        Ur ->
+            "رفتار"
+
+        Zh ->
+            "速度"
+
+        _ ->
+            "Speed"
+
+
 commentPitch : Lang -> String
 commentPitch lang =
     case lang of
@@ -4102,6 +4646,142 @@ commentPitch lang =
 
         _ ->
             "Adjust pitch"
+
+
+commentPitchLabel : Lang -> String
+commentPitchLabel lang =
+    case lang of
+        Am ->
+            "ከፍታ"
+
+        Ar ->
+            "الطبقة"
+
+        Bg ->
+            "Тон"
+
+        Bn ->
+            "স্বর"
+
+        Ca ->
+            "To"
+
+        Cs ->
+            "Výška"
+
+        Da ->
+            "Tonehøjde"
+
+        De ->
+            "Tonhöhe"
+
+        El ->
+            "Τόνος"
+
+        Es ->
+            "Tono"
+
+        Et ->
+            "Kõrgus"
+
+        Eu ->
+            "Tonua"
+
+        Fa ->
+            "زیر و بمی"
+
+        Fi ->
+            "Korkeus"
+
+        Fr ->
+            "Hauteur"
+
+        Ga ->
+            "Tuinairde"
+
+        Hi ->
+            "पिच"
+
+        Hr ->
+            "Visina"
+
+        Hu ->
+            "Magasság"
+
+        Hy ->
+            "Տոն"
+
+        It ->
+            "Tono"
+
+        Ja ->
+            "音程"
+
+        Ka ->
+            "ტონი"
+
+        Ko ->
+            "음높이"
+
+        Lt ->
+            "Aukštis"
+
+        Lv ->
+            "Augstums"
+
+        Nb ->
+            "Tone"
+
+        Nl ->
+            "Toon"
+
+        Pa ->
+            "ਸੁਰ"
+
+        Pl ->
+            "Wysokość"
+
+        Pt ->
+            "Tom"
+
+        Ro ->
+            "Ton"
+
+        Ru ->
+            "Тон"
+
+        Sk ->
+            "Výška"
+
+        Sl ->
+            "Višina"
+
+        Sq ->
+            "Toni"
+
+        Sv ->
+            "Tonhöjd"
+
+        Sw ->
+            "Kiwango"
+
+        Tr ->
+            "Perde"
+
+        Tw ->
+            "音高"
+
+        Uk ->
+            "Тон"
+
+        Ur ->
+            "پچ"
+
+        Zh ->
+            "音高"
+
+        _ ->
+            "Pitch"
 
 
 commentHide : Lang -> String
@@ -8864,6 +9544,278 @@ ttsOf lang =
             "of"
 
 
+ttsPause : Lang -> String
+ttsPause lang =
+    case lang of
+        Am ->
+            "ለአፍታ አቁም"
+
+        Ar ->
+            "إيقاف مؤقت"
+
+        Bg ->
+            "Пауза"
+
+        Bn ->
+            "বিরতি"
+
+        Ca ->
+            "Pausa"
+
+        Cs ->
+            "Pozastavit"
+
+        Da ->
+            "Pause"
+
+        De ->
+            "Pausieren"
+
+        El ->
+            "Παύση"
+
+        Es ->
+            "Pausar"
+
+        Et ->
+            "Paus"
+
+        Eu ->
+            "Pausatu"
+
+        Fa ->
+            "مکث"
+
+        Fi ->
+            "Tauko"
+
+        Fr ->
+            "Pause"
+
+        Ga ->
+            "Sos"
+
+        Hi ->
+            "विराम"
+
+        Hr ->
+            "Pauziraj"
+
+        Hu ->
+            "Szünet"
+
+        Hy ->
+            "Դադար"
+
+        It ->
+            "Pausa"
+
+        Ja ->
+            "一時停止"
+
+        Ka ->
+            "პაუზა"
+
+        Ko ->
+            "일시 정지"
+
+        Lt ->
+            "Pristabdyti"
+
+        Lv ->
+            "Pauzēt"
+
+        Nb ->
+            "Pause"
+
+        Nl ->
+            "Pauzeren"
+
+        Pa ->
+            "ਵਿਰਾਮ"
+
+        Pl ->
+            "Wstrzymaj"
+
+        Pt ->
+            "Pausar"
+
+        Ro ->
+            "Întrerupe"
+
+        Ru ->
+            "Пауза"
+
+        Sk ->
+            "Pozastaviť"
+
+        Sl ->
+            "Začasno ustavi"
+
+        Sq ->
+            "Pauzë"
+
+        Sv ->
+            "Pausa"
+
+        Sw ->
+            "Sitisha"
+
+        Tr ->
+            "Duraklat"
+
+        Tw ->
+            "暫停"
+
+        Uk ->
+            "Пауза"
+
+        Ur ->
+            "توقف"
+
+        Zh ->
+            "暂停"
+
+        _ ->
+            "Pause"
+
+
+ttsResume : Lang -> String
+ttsResume lang =
+    case lang of
+        Am ->
+            "ቀጥል"
+
+        Ar ->
+            "استئناف"
+
+        Bg ->
+            "Продължи"
+
+        Bn ->
+            "চালিয়ে যান"
+
+        Ca ->
+            "Reprèn"
+
+        Cs ->
+            "Pokračovat"
+
+        Da ->
+            "Genoptag"
+
+        De ->
+            "Fortsetzen"
+
+        El ->
+            "Συνέχεια"
+
+        Es ->
+            "Reanudar"
+
+        Et ->
+            "Jätka"
+
+        Eu ->
+            "Jarraitu"
+
+        Fa ->
+            "ادامه"
+
+        Fi ->
+            "Jatka"
+
+        Fr ->
+            "Reprendre"
+
+        Ga ->
+            "Atosaigh"
+
+        Hi ->
+            "फिर से शुरू करें"
+
+        Hr ->
+            "Nastavi"
+
+        Hu ->
+            "Folytatás"
+
+        Hy ->
+            "Շարունակել"
+
+        It ->
+            "Riprendi"
+
+        Ja ->
+            "再開"
+
+        Ka ->
+            "გაგრძელება"
+
+        Ko ->
+            "재개"
+
+        Lt ->
+            "Tęsti"
+
+        Lv ->
+            "Turpināt"
+
+        Nb ->
+            "Fortsett"
+
+        Nl ->
+            "Hervatten"
+
+        Pa ->
+            "ਜਾਰੀ ਰੱਖੋ"
+
+        Pl ->
+            "Wznów"
+
+        Pt ->
+            "Retomar"
+
+        Ro ->
+            "Reia"
+
+        Ru ->
+            "Продолжить"
+
+        Sk ->
+            "Pokračovať"
+
+        Sl ->
+            "Nadaljuj"
+
+        Sq ->
+            "Vazhdo"
+
+        Sv ->
+            "Fortsätt"
+
+        Sw ->
+            "Endelea"
+
+        Tr ->
+            "Devam et"
+
+        Tw ->
+            "繼續"
+
+        Uk ->
+            "Продовжити"
+
+        Ur ->
+            "جاری رکھیں"
+
+        Zh ->
+            "继续"
+
+        _ ->
+            "Resume"
+
+
 ttsPreferBrowser : Lang -> String
 ttsPreferBrowser lang =
     case lang of
@@ -10768,6 +11720,142 @@ codeTerminal lang =
             "terminal"
 
 
+codeSendTerminal : Lang -> String
+codeSendTerminal lang =
+    case lang of
+        Am ->
+            "ወደ ተርሚናል ላክ"
+
+        Ar ->
+            "إرسال إلى الطرفية"
+
+        Bg ->
+            "Изпрати към терминала"
+
+        Bn ->
+            "টার্মিনালে পাঠান"
+
+        Ca ->
+            "Envia al terminal"
+
+        Cs ->
+            "Odeslat do terminálu"
+
+        Da ->
+            "Send til terminal"
+
+        De ->
+            "An das Terminal senden"
+
+        El ->
+            "Αποστολή στο τερματικό"
+
+        Es ->
+            "Enviar al terminal"
+
+        Et ->
+            "Saada terminali"
+
+        Eu ->
+            "Bidali terminalera"
+
+        Fa ->
+            "ارسال به پایانه"
+
+        Fi ->
+            "Lähetä päätteeseen"
+
+        Fr ->
+            "Envoyer au terminal"
+
+        Ga ->
+            "Seol chuig an teirminéal"
+
+        Hi ->
+            "टर्मिनल पर भेजें"
+
+        Hr ->
+            "Pošalji u terminal"
+
+        Hu ->
+            "Küldés a terminálba"
+
+        Hy ->
+            "Ուղարկել տերմինալ"
+
+        It ->
+            "Invia al terminale"
+
+        Ja ->
+            "ターミナルに送信"
+
+        Ka ->
+            "ტერმინალში გაგზავნა"
+
+        Ko ->
+            "터미널로 보내기"
+
+        Lt ->
+            "Siųsti į terminalą"
+
+        Lv ->
+            "Sūtīt uz termināli"
+
+        Nb ->
+            "Send til terminalen"
+
+        Nl ->
+            "Naar terminal sturen"
+
+        Pa ->
+            "ਟਰਮੀਨਲ ਨੂੰ ਭੇਜੋ"
+
+        Pl ->
+            "Wyślij do terminala"
+
+        Pt ->
+            "Enviar ao terminal"
+
+        Ro ->
+            "Trimite la terminal"
+
+        Ru ->
+            "Отправить в терминал"
+
+        Sk ->
+            "Odoslať do terminálu"
+
+        Sl ->
+            "Pošlji v terminal"
+
+        Sq ->
+            "Dërgo në terminal"
+
+        Sv ->
+            "Skicka till terminalen"
+
+        Sw ->
+            "Tuma kwenye terminal"
+
+        Tr ->
+            "Terminale gönder"
+
+        Tw ->
+            "傳送至終端機"
+
+        Uk ->
+            "Надіслати в термінал"
+
+        Ur ->
+            "ٹرمینل کو بھیجیں"
+
+        Zh ->
+            "发送到终端"
+
+        _ ->
+            "Send to terminal"
+
+
 codeCopy : Lang -> String
 codeCopy lang =
     case lang of
@@ -11582,6 +12670,142 @@ quizSelection lang =
 
         _ ->
             "selection"
+
+
+quizInput : Lang -> String
+quizInput lang =
+    case lang of
+        Am ->
+            "መልስ"
+
+        Ar ->
+            "الإجابة"
+
+        Bg ->
+            "Отговор"
+
+        Bn ->
+            "উত্তর"
+
+        Ca ->
+            "Resposta"
+
+        Cs ->
+            "Odpověď"
+
+        Da ->
+            "Svar"
+
+        De ->
+            "Antwort"
+
+        El ->
+            "Απάντηση"
+
+        Es ->
+            "Respuesta"
+
+        Et ->
+            "Vastus"
+
+        Eu ->
+            "Erantzuna"
+
+        Fa ->
+            "پاسخ"
+
+        Fi ->
+            "Vastaus"
+
+        Fr ->
+            "Réponse"
+
+        Ga ->
+            "Freagra"
+
+        Hi ->
+            "उत्तर"
+
+        Hr ->
+            "Odgovor"
+
+        Hu ->
+            "Válasz"
+
+        Hy ->
+            "Պատասխան"
+
+        It ->
+            "Risposta"
+
+        Ja ->
+            "回答"
+
+        Ka ->
+            "პასუხი"
+
+        Ko ->
+            "답"
+
+        Lt ->
+            "Atsakymas"
+
+        Lv ->
+            "Atbilde"
+
+        Nb ->
+            "Svar"
+
+        Nl ->
+            "Antwoord"
+
+        Pa ->
+            "ਜਵਾਬ"
+
+        Pl ->
+            "Odpowiedź"
+
+        Pt ->
+            "Resposta"
+
+        Ro ->
+            "Răspuns"
+
+        Ru ->
+            "Ответ"
+
+        Sk ->
+            "Odpoveď"
+
+        Sl ->
+            "Odgovor"
+
+        Sq ->
+            "Përgjigjja"
+
+        Sv ->
+            "Svar"
+
+        Sw ->
+            "Jibu"
+
+        Tr ->
+            "Yanıt"
+
+        Tw ->
+            "答案"
+
+        Uk ->
+            "Відповідь"
+
+        Ur ->
+            "جواب"
+
+        Zh ->
+            "答案"
+
+        _ ->
+            "Answer"
 
 
 quizGap : Lang -> String
@@ -14168,6 +15392,142 @@ chartDefault lang =
             "Chart"
 
 
+chartTable : Lang -> String
+chartTable lang =
+    case lang of
+        Am ->
+            "ሰንጠረዥ"
+
+        Ar ->
+            "جدول"
+
+        Bg ->
+            "Таблица"
+
+        Bn ->
+            "টেবিল"
+
+        Ca ->
+            "Taula"
+
+        Cs ->
+            "Tabulka"
+
+        Da ->
+            "Tabel"
+
+        De ->
+            "Tabelle"
+
+        El ->
+            "Πίνακας"
+
+        Es ->
+            "Tabla"
+
+        Et ->
+            "Tabel"
+
+        Eu ->
+            "Taula"
+
+        Fa ->
+            "جدول"
+
+        Fi ->
+            "Taulukko"
+
+        Fr ->
+            "Tableau"
+
+        Ga ->
+            "Tábla"
+
+        Hi ->
+            "तालिका"
+
+        Hr ->
+            "Tablica"
+
+        Hu ->
+            "Táblázat"
+
+        Hy ->
+            "Աղյուսակ"
+
+        It ->
+            "Tabella"
+
+        Ja ->
+            "表"
+
+        Ka ->
+            "ცხრილი"
+
+        Ko ->
+            "표"
+
+        Lt ->
+            "Lentelė"
+
+        Lv ->
+            "Tabula"
+
+        Nb ->
+            "Tabell"
+
+        Nl ->
+            "Tabel"
+
+        Pa ->
+            "ਸਾਰਣੀ"
+
+        Pl ->
+            "Tabela"
+
+        Pt ->
+            "Tabela"
+
+        Ro ->
+            "Tabel"
+
+        Ru ->
+            "Таблица"
+
+        Sk ->
+            "Tabuľka"
+
+        Sl ->
+            "Tabela"
+
+        Sq ->
+            "Tabela"
+
+        Sv ->
+            "Tabell"
+
+        Sw ->
+            "Jedwali"
+
+        Tr ->
+            "Tablo"
+
+        Tw ->
+            "表格"
+
+        Uk ->
+            "Таблиця"
+
+        Ur ->
+            "جدول"
+
+        Zh ->
+            "表格"
+
+        _ ->
+            "Table"
+
+
 chartPie : Lang -> String
 chartPie lang =
     case lang of
@@ -16206,6 +17566,142 @@ qrCode lang =
 
         _ ->
             "QR code for website"
+
+
+qrEnlarge : Lang -> String
+qrEnlarge lang =
+    case lang of
+        Am ->
+            "QR ኮድ አስፋ"
+
+        Ar ->
+            "تكبير رمز الاستجابة السريعة"
+
+        Bg ->
+            "Увеличи QR кода"
+
+        Bn ->
+            "QR কোড বড় করুন"
+
+        Ca ->
+            "Amplia el codi QR"
+
+        Cs ->
+            "Zvětšit QR kód"
+
+        Da ->
+            "Forstør QR-kode"
+
+        De ->
+            "QR-Code vergrößern"
+
+        El ->
+            "Μεγέθυνση κωδικού QR"
+
+        Es ->
+            "Ampliar código QR"
+
+        Et ->
+            "Suurenda QR-koodi"
+
+        Eu ->
+            "Handitu QR kodea"
+
+        Fa ->
+            "بزرگ‌نمایی کد QR"
+
+        Fi ->
+            "Suurenna QR-koodi"
+
+        Fr ->
+            "Agrandir le code QR"
+
+        Ga ->
+            "Méadaigh an cód QR"
+
+        Hi ->
+            "क्यूआर कोड बड़ा करें"
+
+        Hr ->
+            "Povećaj QR kod"
+
+        Hu ->
+            "QR-kód nagyítása"
+
+        Hy ->
+            "Մեծացնել QR կոդը"
+
+        It ->
+            "Ingrandisci il codice QR"
+
+        Ja ->
+            "QR コードを拡大"
+
+        Ka ->
+            "QR კოდის გადიდება"
+
+        Ko ->
+            "QR 코드 확대"
+
+        Lt ->
+            "Padidinti QR kodą"
+
+        Lv ->
+            "Palielināt QR kodu"
+
+        Nb ->
+            "Forstørr QR-koden"
+
+        Nl ->
+            "QR-code vergroten"
+
+        Pa ->
+            "QR ਕੋਡ ਵੱਡਾ ਕਰੋ"
+
+        Pl ->
+            "Powiększ kod QR"
+
+        Pt ->
+            "Ampliar código QR"
+
+        Ro ->
+            "Mărește codul QR"
+
+        Ru ->
+            "Увеличить QR-код"
+
+        Sk ->
+            "Zväčšiť QR kód"
+
+        Sl ->
+            "Povečaj kodo QR"
+
+        Sq ->
+            "Zmadho kodin QR"
+
+        Sv ->
+            "Förstora QR-koden"
+
+        Sw ->
+            "Kuza msimbo wa QR"
+
+        Tr ->
+            "QR kodunu büyüt"
+
+        Tw ->
+            "放大 QR 碼"
+
+        Uk ->
+            "Збільшити QR-код"
+
+        Ur ->
+            "QR کوڈ بڑا کریں"
+
+        Zh ->
+            "放大二维码"
+
+        _ ->
+            "Enlarge QR code"
 
 
 qrErr : Lang -> String

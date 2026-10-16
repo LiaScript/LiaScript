@@ -84,7 +84,7 @@ viewDiagram : Stringify.Config config input a -> Lang -> Int -> Bool -> Paramete
 viewDiagram main lang width light attr table state =
     Html.div
         []
-        [ toggleBtn table.id ( "table", "Table" )
+        [ toggleBtn table.id ( "table", Translations.chartTable lang )
         , table.head
             :: sort main state identity table.body
             |> toMatrix main
@@ -581,14 +581,7 @@ toggleBtn id ( name, title ) =
         , msg = Just <| UpdateTable <| Sub.Toggle id
         , tabbable = True
         }
-        [ Attr.class "lia-btn--outline lia-plot__switch mb-1"
-        , A11y_Aria.label <|
-            if name == "table" then
-                "switch to table representation"
-
-            else
-                "switch to visualization in mode " ++ title
-        ]
+        [ Attr.class "lia-btn--outline lia-plot__switch mb-1" ]
         [ icon ("icon-" ++ name) []
         , Html.span [ Attr.class "lia-btn__text" ]
             [ Html.text title

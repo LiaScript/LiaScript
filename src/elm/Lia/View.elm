@@ -63,7 +63,7 @@ view screen hasIndex model =
                     |> Attr.href
                 ]
             )
-            [ Html.text "skip navigation" ]
+            [ Html.text (Trans.baseSkipNav model.translation) ]
             :: viewIndex modalIsActive hasIndex model
             :: viewSlide modalIsActive screen model
         )
@@ -322,7 +322,7 @@ slideBottom { lang, tiny, settings, slide, effects, translated } =
                             [ Attr.class "lia-responsive-voice__playgroup" ]
                             [ btnReplay lang sound settings
                             , if controllable then
-                                btnPause sound settings
+                                btnPause lang sound settings
 
                               else
                                 Html.text ""
@@ -376,8 +376,8 @@ btnReplay lang soundEnabled settings =
         ]
 
 
-btnPause : Bool -> Settings -> Html Msg
-btnPause soundEnabled settings =
+btnPause : Lang -> Bool -> Settings -> Html Msg
+btnPause lang soundEnabled settings =
     let
         isPaused =
             case settings.playback of
@@ -399,10 +399,10 @@ btnPause soundEnabled settings =
     Lia.Utils.btnIcon
         { title =
             if isPaused then
-                "Resume"
+                Trans.ttsResume lang
 
             else
-                "Pause"
+                Trans.ttsPause lang
         , tabbable = enabled
         , msg =
             if not enabled then
@@ -941,10 +941,10 @@ showModal model =
                 |> Sync.view
                 |> Html.map UpdateSync
                 |> List.singleton
-                |> modal False (syncCloseMsg model.sync) Nothing
+                |> modal model.translation False (syncCloseMsg model.sync) Nothing
 
         ( _, Just url, _ ) ->
-            modal True
+            modal model.translation True
                 (Media ( "", Nothing, Nothing ))
                 Nothing
                 [ Html.figure
@@ -970,7 +970,7 @@ showModal model =
                 ]
 
         ( _, _, True ) ->
-            modal True
+            modal model.translation True
                 (UpdateSettings (Settings_.Toggle Settings_.QRCode))
                 Nothing
                 [ Html.div

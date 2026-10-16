@@ -147,7 +147,7 @@ footnotes (textbook mode) or the comments for the narrator (presentation mode).
 view_body : Bool -> ( Config Msg, Maybe String, Footnotes.Model ) -> Blocks -> Html Msg
 view_body hidden ( config, footnote2show, footnotes ) =
     fold config []
-        >> (::) (view_footnote (view_block config) footnote2show footnotes)
+        >> (::) (view_footnote config.main.lang (view_block config) footnote2show footnotes)
         >> (::) (view_header config)
         >> (\s ->
                 List.append s <|
@@ -386,8 +386,8 @@ viewMain hidden =
 
 {-| The footnote `key` as a modal.
 -}
-view_footnote : (Block -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
-view_footnote viewer key footnotes =
+view_footnote : Lang -> (Block -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
+view_footnote lang viewer key footnotes =
     case Maybe.andThen (\k -> Dict.get k footnotes) key of
         Just notes ->
             [ notes
@@ -403,7 +403,7 @@ view_footnote viewer key footnotes =
                     , Attr.style "max-width" "90%"
                     ]
             ]
-                |> modal True FootnoteHide Nothing
+                |> modal lang True FootnoteHide Nothing
 
         Nothing ->
             Html.text ""

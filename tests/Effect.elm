@@ -88,7 +88,7 @@ suite =
                     |> (\e -> View.block (config (Just 0)) Model.init [] e [])
                     |> Query.fromHtml
                     |> Expect.all
-                        [ Query.has [ Selector.attribute (Attr.title "Stop") ]
+                        [ Query.has [ Selector.attribute (Attr.title "stop") ]
                         , Query.has [ Selector.attribute (Attr.title "Resume") ]
                         ]
         ]

@@ -34,7 +34,7 @@ view config id attr =
                 Just result ->
                     if node.edit then
                         Html.span [ Attr.class "flex items-center" ]
-                            [ editor config.theme
+                            [ editor config.lang config.theme
                                 node.highlighting
                                 id
                                 (case node.modify of
@@ -401,8 +401,8 @@ onEdit id =
 {-| Modal code editor, with a `Partially` modifiable script only the part
 between the first two appearances of `subPattern` can be edited.
 -}
-editor : Maybe String -> String -> Int -> Maybe String -> String -> Html (Msg sub)
-editor theme mode id subPattern code =
+editor : Lang -> Maybe String -> String -> Int -> Maybe String -> String -> Html (Msg sub)
+editor lang theme mode id subPattern code =
     let
         ( msg, value ) =
             case subPattern of
@@ -415,7 +415,7 @@ editor theme mode id subPattern code =
                 _ ->
                     ( EditCode id, code )
     in
-    modal True
+    modal lang True
         (Edit False id)
         Nothing
         [ Editor.editor

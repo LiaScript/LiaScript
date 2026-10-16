@@ -16,6 +16,7 @@ import Accessibility.Role as A11y_Role
 import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
+import I18n.Translations as Translations
 import Json.Encode as JE
 import Lia.Markdown.Effect.Model exposing (Model)
 import Lia.Markdown.Effect.Types exposing (Class(..), Effect, class, isIn)
@@ -171,10 +172,10 @@ block_playback config e =
             , onclick (playOrStop config e isActive)
             ]
             (if isActive then
-                "Stop"
+                Translations.baseStop config.lang
 
              else
-                "Play"
+                Translations.basePlay config.lang
             )
             (if isActive then
                 "icon-stop"
@@ -195,10 +196,10 @@ block_playback config e =
                 )
             ]
             (if isPaused then
-                "Resume"
+                Translations.ttsResume config.lang
 
              else
-                "Pause"
+                Translations.ttsPause config.lang
             )
             (if isPaused then
                 "icon-play"
@@ -223,10 +224,10 @@ inline_playback config e =
         , onPlayback config e "this.labels[0]" (playOrStop config e isActive)
         ]
         (if isActive then
-            "Stop"
+            Translations.baseStop config.lang
 
          else
-            "Play"
+            Translations.basePlay config.lang
         )
         (if isActive then
             "icon-stop-circle"
