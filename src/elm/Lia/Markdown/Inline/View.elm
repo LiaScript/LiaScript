@@ -1131,7 +1131,9 @@ audio attr settings =
         ]
 
 
-{-| **@private:** Add the current language to YouTube videos.
+{-| **@private:** Add the current language to YouTube videos. `hl` is only the
+language of the player, if the course has been translated (e.g. by Google),
+the captions are switched on in the new language.
 -}
 addTranslation : Config sub -> String -> String
 addTranslation config url_ =
@@ -1143,9 +1145,16 @@ addTranslation config url_ =
                 else
                     "?hl="
                )
-            ++ (config.translations
-                    |> Maybe.map .new
-                    |> Maybe.withDefault (Translations.getCodeFromLn config.lang)
+            ++ (case config.translations of
+                    Just { old, new } ->
+                        if old /= new then
+                            new ++ "&cc_load_policy=1&cc_lang_pref=" ++ new
+
+                        else
+                            new
+
+                    Nothing ->
+                        Translations.getCodeFromLn config.lang
                )
 
     else
