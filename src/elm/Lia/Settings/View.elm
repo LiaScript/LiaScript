@@ -669,7 +669,9 @@ qrCode lang tabbable marginBig grouped url =
 
                     else
                         "0.4rem"
-                , Attr.alt (Trans.qrCode lang ++ ": " ++ url)
+
+                -- the button is named by its action, the graphic adds nothing
+                , A11y_Aria.hidden True
                 ]
                 >> List.singleton
                 >> btn
