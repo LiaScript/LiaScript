@@ -98,8 +98,7 @@ view base config randomize solution quiz state =
                     ]
             in
             [ Html.div
-                [ Attr.style "width" "100%"
-                , Attr.style "padding" "0.5rem"
+                [ Attr.style "padding" "0.5rem"
                 , Attr.style "margin" "0.25rem"
                 , Attr.style "position" "relative"
                 , Html.Events.onClick
