@@ -10,6 +10,7 @@ is shown, in presentation and slides mode only the effects of the current
 animation step.
 -}
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
@@ -284,9 +285,11 @@ onPlayback config e text event =
         |> Attr.attribute "onclick"
 
 
+{-| The number only shows the step, a screen reader reads the content.
+-}
 circle : String -> Int -> Html msg
 circle className i =
-    Html.span [ Attr.class className ] [ Html.text ("\u{200A}" ++ String.fromInt i ++ "\u{200A}") ]
+    Html.span [ Attr.class className, A11y_Aria.hidden True ] [ Html.text ("\u{200A}" ++ String.fromInt i ++ "\u{200A}") ]
 
 
 {-| The animation progress `" (visible/effects)"`, empty without effects.
