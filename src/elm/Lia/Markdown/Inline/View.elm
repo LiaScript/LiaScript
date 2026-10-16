@@ -404,7 +404,8 @@ viewDropTarget config id highlighted active state partiallyCorrect attr =
 -}
 dropStyle : String -> String -> List (Attribute msg)
 dropStyle border radius =
-    [ Attr.style "padding" "1rem"
+    [ Attr.class "lia-drop"
+    , Attr.style "padding" "1rem"
     , Attr.style "margin" "0.25rem"
     , Attr.style "position" "relative"
     , Attr.style "border" border
@@ -423,10 +424,10 @@ borderColor partiallyCorrect =
             "#888"
 
         Just True ->
-            "green"
+            "rgb(var(--color-success))"
 
         Just False ->
-            "red"
+            "rgb(var(--color-failure))"
 
 
 {-| **@private:** `[i,j]`

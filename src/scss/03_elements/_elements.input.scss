@@ -445,3 +445,45 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
     }
   }
 }
+
+/* --------------------------------------------------
+   Do not rely on color alone (setting decals): the border
+   of a correct input is solid, of a wrong one dashed
+   -------------------------------------------------- */
+
+html.lia-decals {
+  .lia-input,
+  .lia-dropdown,
+  .lia-checkbox:not(:checked),
+  .lia-radio:not(:checked) {
+    &.is-success {
+      border-style: solid;
+      border-width: 2px;
+    }
+
+    &.is-failure {
+      border-style: dashed;
+      border-width: 2px;
+    }
+  }
+
+  // the fill of a checked box covers its border, thus a ring around it
+  .lia-checkbox:checked,
+  .lia-radio:checked {
+    &.is-failure {
+      outline: 2px dashed rgb(var(--color-failure));
+      outline-offset: 2px;
+    }
+  }
+
+  // drop zones are dotted by an inline style, dotted means "drop here"
+  .lia-drop {
+    &.is-success {
+      border-style: solid !important;
+    }
+
+    &.is-failure {
+      border-style: dashed !important;
+    }
+  }
+}

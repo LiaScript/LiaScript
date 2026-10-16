@@ -14096,10 +14096,10 @@ confDecals : Lang -> String
 confDecals lang =
     case lang of
         De ->
-            "Muster in Diagrammen"
+            "Nicht nur Farben verwenden"
 
         _ ->
-            "Patterns in charts"
+            "Do not rely on color alone"
 
 
 ttsPosition : Lang -> String

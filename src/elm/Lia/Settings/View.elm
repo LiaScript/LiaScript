@@ -311,7 +311,8 @@ viewTooltips grouping lang tabbable width enabled =
         Html.text ""
 
 
-{-| Patterns in charts, that distinguish the series not only by their color.
+{-| Do not rely on color alone (class `lia-decals` of the html): patterns in
+charts, and borders of quiz inputs, solid if correct, dashed if wrong.
 -}
 viewDecals : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Bool -> Html Msg
 viewDecals grouping lang tabbable enabled =
