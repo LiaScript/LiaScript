@@ -270,23 +270,23 @@ class PreviewLia extends HTMLElement {
       tagLine = `<h3 class="card__subtitle">${tags.join(' | ')}</h3>`
     }
 
+    // meta is cached in backup and rendered again on every visit, do not modify it
+    let logo = ''
     if (meta.logo) {
       // without a description the logo is decorative
-      meta.logo_alt = `alt="${meta.logo_alt || ''}"`
-      meta.logo = `<div class="card__media">
-              <img src="${meta.logo}" ${meta.logo_alt} class="card__image">
+      logo = `<div class="card__media">
+              <img src="${meta.logo}" alt="${meta.logo_alt || ''}" class="card__image">
             </div>`
     }
 
     // no mailto links, the whole card is already a link
+    let author = ''
     if (meta.author && meta.email) {
-      meta.author = `<span class="card__contact">${meta.author} ✉️</span>`
+      author = `<span class="card__contact">${meta.author} ✉️</span>`
     } else if (meta.author) {
-      meta.author = `<span class="card__contact">${meta.author}</span>`
+      author = `<span class="card__contact">${meta.author}</span>`
     } else if (meta.email) {
-      meta.author = `<span class="card__contact">${meta.email} ✉️</span>`
-    } else {
-      meta.author = ''
+      author = `<span class="card__contact">${meta.email} ✉️</span>`
     }
 
     a.href = link
@@ -295,7 +295,7 @@ class PreviewLia extends HTMLElement {
     a.style.display = 'block'
     a.innerHTML = `<article class="card">
             <div class="card__version">V ${meta.version}</div>
-            ${meta.logo || ''}
+            ${logo}
             <div class="card__content">
               <img src="${
                 meta.icon
@@ -308,7 +308,7 @@ class PreviewLia extends HTMLElement {
                 <p class="card__copy">${meta.description}</p>
               </div>
               <footer>
-                ${meta.author}
+                ${author}
               </footer>
             </div>
             
