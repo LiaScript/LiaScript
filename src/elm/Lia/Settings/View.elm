@@ -1004,7 +1004,8 @@ menuShare url sync lang tabbable settings =
                 , attributes = []
                 }
     , Html.i
-        [ Attr.class "icon icon-social hide-md-up"
+        [ A11y_Aria.hidden True
+        , Attr.class "icon icon-social hide-md-up"
         , lang
             |> Trans.confShare
             |> Attr.title
@@ -1025,7 +1026,7 @@ menuShare url sync lang tabbable settings =
                 [ Attr.style "width" "100%"
                 , Attr.style "justify-content" "center"
                 ]
-                [ Html.label [] [ Html.text <| Trans.confShareVia lang ] ]
+                [ Html.span [] [ Html.text <| Trans.confShareVia lang ] ]
 
         else
             Html.text ""
@@ -1081,7 +1082,8 @@ menuInformation repositoryURL definition lang tabbable settings =
     in
     [ Html.i
         (grouping
-            [ Attr.class "icon icon-info hide-md-up"
+            [ A11y_Aria.hidden True
+            , Attr.class "icon icon-info hide-md-up"
             , lang
                 |> Trans.confInformation
                 |> Attr.title

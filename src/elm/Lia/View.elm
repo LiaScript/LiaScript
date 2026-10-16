@@ -371,9 +371,7 @@ btnReplay lang soundEnabled settings =
             else
                 "icon-play"
         }
-        [ Attr.id "lia-btn-sound"
-        , Attr.class "lia-btn--transparent lia-responsive-voice__play "
-        ]
+        [ Attr.class "lia-btn--transparent lia-responsive-voice__play " ]
 
 
 btnPause : Lang -> Bool -> Settings -> Html Msg

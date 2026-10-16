@@ -17,7 +17,7 @@ Positions are measured from the right edge, so `x` grows to the left.
 -}
 
 import Html exposing (Attribute, Html, div, text)
-import Html.Attributes exposing (attribute, style, tabindex, title)
+import Html.Attributes exposing (attribute, style, title)
 import Html.Events exposing (on, onBlur, preventDefaultOn)
 import Json.Decode as Decode exposing (Decoder)
 
@@ -285,7 +285,6 @@ view nativeClicks attr model inside =
                     :: style "height" "100vh"
                     :: style "z-index" "40"
                     :: style "background" "transparent"
-                    :: tabindex 0
                     :: pointer model
                 )
                 []
@@ -352,7 +351,8 @@ view nativeClicks attr model inside =
                        , onPointer "mousedown" DragStart
                        , onTouch "touchstart" DragStart
                        , onPointer "dblclick" DoubleClick
-                       , attribute "aria-label" "Drag to move video overlay. Double-click to make it follow mouse."
+                       , -- mouse only, the keyboard controls the overlay itself
+                         attribute "aria-hidden" "true"
                        , title (iif (isFollowMove model.mode) "double-click to release" "drag or double-click video comment")
                        ]
                 )
@@ -369,7 +369,7 @@ view nativeClicks attr model inside =
                 , onPointer "mousedown" ResizeStart
                 , onTouch "touchstart" ResizeStart
                 , onPointer "dblclick" DoubleClickResize
-                , attribute "aria-label" "Resize video overlay. Double-click to make it follow mouse for resizing."
+                , attribute "aria-hidden" "true"
                 , title (iif (isFollowResize model.mode) "double-click to stop resize following" "resize or double-click to follow resize")
                 ]
                 []

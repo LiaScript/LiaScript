@@ -1287,5 +1287,5 @@ qrCode : Lang -> String -> Html msg
 qrCode lang url =
     url
         |> QRCode.fromString
-        |> Result.map (QRCode.toSvg [ A11y_Aria.label <| Translations.qrCode lang ++ ": " ++ url ])
+        |> Result.map (QRCode.toSvg [ A11y_Role.img, A11y_Aria.label <| Translations.qrCode lang ++ ": " ++ url ])
         |> Result.withDefault (Html.text (Translations.qrErr lang))
