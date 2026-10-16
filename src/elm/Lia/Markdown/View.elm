@@ -659,17 +659,22 @@ viewSurvey config labeledBy attr survey solution =
         |> Tuple.mapSecond
             (\html ->
                 case solution of
+                    -- the wrapper exists from the beginning, otherwise the
+                    -- survey gets rebuilt on submit and loses the focus
                     Just ( blocks, _ ) ->
-                        if
-                            config.section.survey_vector
-                                |> Array.get survey.id
-                                |> Maybe.map .submitted
-                                |> Maybe.withDefault False
-                        then
-                            Html.div [] [ html, viewSolution config "survey" survey.id blocks ]
+                        Html.div []
+                            [ html
+                            , if
+                                config.section.survey_vector
+                                    |> Array.get survey.id
+                                    |> Maybe.map .submitted
+                                    |> Maybe.withDefault False
+                              then
+                                viewSolution config "survey" survey.id blocks
 
-                        else
-                            html
+                              else
+                                Html.text ""
+                            ]
 
                     Nothing ->
                         html
