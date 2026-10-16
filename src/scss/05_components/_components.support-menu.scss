@@ -179,6 +179,11 @@
       }
     }
 
+    // the edit entry is a link: menu colour instead of the link colour
+    > a.lia-btn {
+      color: inherit;
+    }
+
     // safari fix of container width
     &--info .lia-support-menu__submenu {
       width: -webkit-max-content;
@@ -196,7 +201,19 @@
       > .icon {
         margin-block-end: 0;
       }
+
+      // same icon size as the buttons (the label is hidden here)
+      > a.lia-btn > .icon {
+        font-size: 2rem;
+      }
     }
+  }
+
+  // language code (EN, DE, ...): capitals as tall as the icons next to it
+  &__lang {
+    font-size: 1.3em;
+    line-height: 1;
+    vertical-align: middle;
   }
 
   &__submenu {

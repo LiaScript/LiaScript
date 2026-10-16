@@ -913,7 +913,7 @@ menuTranslations languageCode defintion lang tabbable settings =
             ]
         )
         [ Html.span
-            [ Attr.class "notranslate"
+            [ Attr.class "notranslate lia-support-menu__lang"
             , Attr.attribute "translate" "no"
             ]
             [ languageCode
