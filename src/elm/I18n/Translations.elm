@@ -465,7 +465,7 @@ home lang =
             "ہوم"
 
         Zh ->
-            "首頁"
+            "首页"
 
         _ ->
             "Home"
@@ -601,7 +601,7 @@ baseNext lang =
             "اگلا"
 
         Zh ->
-            "繼續"
+            "下一个"
 
         _ ->
             "next"
@@ -737,7 +737,7 @@ basePrev lang =
             "پچھلا"
 
         Zh ->
-            "返回"
+            "上一个"
 
         _ ->
             "previous"
@@ -1786,7 +1786,7 @@ baseSearch lang =
             "تلاش"
 
         Zh ->
-            "搜尋"
+            "搜索"
 
         _ ->
             "Search"
@@ -1922,7 +1922,7 @@ baseDelete lang =
             "تلاش صاف کریں"
 
         Zh ->
-            "删除搜寻"
+            "清除搜索"
 
         _ ->
             "clear search"
@@ -2466,7 +2466,7 @@ baseToc lang =
             "فہرست مشمولات"
 
         Zh ->
-            "目錄"
+            "目录"
 
         _ ->
             "Table of Contents"
@@ -2602,7 +2602,7 @@ baseSlide lang =
             "سلائیڈ"
 
         Zh ->
-            "幻燈片"
+            "幻灯片"
 
         _ ->
             "Slide"
@@ -2738,7 +2738,7 @@ baseStep lang =
             "مرحلہ"
 
         Zh ->
-            "步驟"
+            "步骤"
 
         _ ->
             "Step"
@@ -2874,7 +2874,7 @@ baseSlideNavigation lang =
             "سلائیڈ نیویگیشن"
 
         Zh ->
-            "幻燈片導航"
+            "幻灯片导航"
 
         _ ->
             "Slide navigation"
@@ -3010,7 +3010,7 @@ baseFootnote lang =
             "حاشیہ"
 
         Zh ->
-            "腳註"
+            "脚注"
 
         _ ->
             "Footnote"
@@ -3146,7 +3146,7 @@ baseFootnotes lang =
             "حواشی"
 
         Zh ->
-            "腳註"
+            "脚注"
 
         _ ->
             "Footnotes"
@@ -3282,7 +3282,7 @@ baseResize lang =
             "پینلز کا سائز تبدیل کریں"
 
         Zh ->
-            "調整窗格大小"
+            "调整窗格大小"
 
         _ ->
             "Resize panes"
@@ -3418,7 +3418,7 @@ baseShow lang =
             "دکھائیں"
 
         Zh ->
-            "顯示"
+            "显示"
 
         _ ->
             "show"
@@ -3554,7 +3554,7 @@ baseHide lang =
             "چھپائیں"
 
         Zh ->
-            "隱藏"
+            "隐藏"
 
         _ ->
             "hide"
@@ -3690,7 +3690,7 @@ baseEditor lang =
             "ایڈیٹر اسٹائل"
 
         Zh ->
-            "编辑风格"
+            "编辑器样式"
 
         _ ->
             "Editor-Style"
@@ -3826,7 +3826,7 @@ baseLang lang =
             "اردو"
 
         Zh ->
-            "中文"
+            "简体中文"
 
         _ ->
             "English"
@@ -4234,7 +4234,7 @@ commentHide lang =
             "ویڈیو اور اوتار تبصرے چھپائیں"
 
         Zh ->
-            "隱藏影片評論"
+            "隐藏视频和虚拟形象讲解"
 
         _ ->
             "Hide video & avatar comments"
@@ -4370,7 +4370,7 @@ no_translation lang =
             "ابھی تک کوئی ترجمہ نہیں"
 
         Zh ->
-            "尚未翻譯"
+            "尚未翻译"
 
         _ ->
             "no translation yet"
@@ -4506,7 +4506,7 @@ translateWithGoogle lang =
             "گوگل کے ساتھ ترجمہ کریں (تجرباتی)"
 
         Zh ->
-            "与Google进行翻译（实验性）"
+            "使用 Google 翻译（实验性）"
 
         _ ->
             "Translate with Google (experimental)"
@@ -4642,7 +4642,7 @@ cColor lang =
             "رنگ"
 
         Zh ->
-            "顏色"
+            "颜色"
 
         _ ->
             "Color"
@@ -4914,7 +4914,7 @@ cDark lang =
             "تاریک موڈ"
 
         Zh ->
-            "暗模式"
+            "深色模式"
 
         _ ->
             "Dark-Mode"
@@ -5050,7 +5050,7 @@ cBright lang =
             "روشن موڈ"
 
         Zh ->
-            "亮模式"
+            "浅色模式"
 
         _ ->
             "Light-Mode"
@@ -5186,7 +5186,7 @@ cDefault lang =
             "پہلے سے طے شدہ"
 
         Zh ->
-            "預設"
+            "默认"
 
         _ ->
             "Default"
@@ -5322,7 +5322,7 @@ cBlue lang =
             "نیلا"
 
         Zh ->
-            "藍色"
+            "蓝色"
 
         _ ->
             "Blue"
@@ -5458,7 +5458,7 @@ cRed lang =
             "سرخ"
 
         Zh ->
-            "红色的"
+            "红色"
 
         _ ->
             "Red"
@@ -5594,7 +5594,7 @@ cYellow lang =
             "پیلا"
 
         Zh ->
-            "黄色的"
+            "黄色"
 
         _ ->
             "Yellow"
@@ -5730,7 +5730,7 @@ cTurquoise lang =
             "فیروزی"
 
         Zh ->
-            "绿松石"
+            "绿松石色"
 
         _ ->
             "Turquoise"
@@ -5866,7 +5866,7 @@ fullscreenEnter lang =
             "پوری سکرین"
 
         Zh ->
-            "進入全屏模式"
+            "进入全屏模式"
 
         _ ->
             "Enter Fullscreen"
@@ -6138,7 +6138,7 @@ modeMode lang =
             "پریزنٹیشن موڈ"
 
         Zh ->
-            "简报模式"
+            "演示模式"
 
         _ ->
             "Presentation mode"
@@ -6274,7 +6274,7 @@ modeTextbook lang =
             "ٹیکسٹ بک"
 
         Zh ->
-            "教科書"
+            "教科书"
 
         _ ->
             "Textbook"
@@ -6410,7 +6410,7 @@ modePresentation lang =
             "پریزنٹیشن"
 
         Zh ->
-            "報告"
+            "演示"
 
         _ ->
             "Presentation"
@@ -6546,7 +6546,7 @@ modeSlides lang =
             "سلائیڈز"
 
         Zh ->
-            "幻燈片"
+            "幻灯片"
 
         _ ->
             "Slides"
@@ -6682,7 +6682,7 @@ soundOn lang =
             "آواز آن"
 
         Zh ->
-            "聲音開啟"
+            "声音开启"
 
         _ ->
             "Sound on"
@@ -6818,7 +6818,7 @@ soundOff lang =
             "آواز بند"
 
         Zh ->
-            "聲音關閉"
+            "声音关闭"
 
         _ ->
             "Sound off"
@@ -6954,7 +6954,7 @@ infoAuthor lang =
             "مصنف: "
 
         Zh ->
-            "作者: "
+            "作者："
 
         _ ->
             "Author: "
@@ -7090,7 +7090,7 @@ infoAuthors lang =
             "مصنفین: "
 
         Zh ->
-            "作者: "
+            "作者："
 
         _ ->
             "Authors: "
@@ -7226,7 +7226,7 @@ infoDate lang =
             "تاریخ: "
 
         Zh ->
-            "日期: "
+            "日期："
 
         _ ->
             "Date: "
@@ -7362,7 +7362,7 @@ infoEmail lang =
             "ای میل: "
 
         Zh ->
-            "電郵: "
+            "电子邮件："
 
         _ ->
             "Email: "
@@ -7498,7 +7498,7 @@ infoVersion lang =
             "ورژن: "
 
         Zh ->
-            "版本: "
+            "版本："
 
         _ ->
             "Version: "
@@ -7634,7 +7634,7 @@ confInformation lang =
             "معلومات"
 
         Zh ->
-            "關於"
+            "信息"
 
         _ ->
             "Information"
@@ -7770,7 +7770,7 @@ confSettings lang =
             "ترتیبات"
 
         Zh ->
-            "設定"
+            "设置"
 
         _ ->
             "Settings"
@@ -8042,7 +8042,7 @@ confShareVia lang =
             "... کے ذریعے شیئر کریں"
 
         Zh ->
-            "通过...分享"
+            "通过……分享"
 
         _ ->
             "share via ..."
@@ -8178,7 +8178,7 @@ confTranslations lang =
             "ترجمے"
 
         Zh ->
-            "翻譯"
+            "翻译"
 
         _ ->
             "Translations"
@@ -8450,7 +8450,7 @@ confDecals lang =
             "صرف رنگوں پر انحصار نہ کریں"
 
         Zh ->
-            "不僅依賴顏色"
+            "不仅依靠颜色区分"
 
         _ ->
             "Do not rely on color alone"
@@ -8586,7 +8586,7 @@ confEdit lang =
             "ایڈیٹر کھولیں"
 
         Zh ->
-            "打開編輯器"
+            "打开编辑器"
 
         _ ->
             "Open editor"
@@ -8994,7 +8994,7 @@ ttsPreferBrowser lang =
             "براؤزر TTS کو ترجیح دیں"
 
         Zh ->
-            "首选浏览器 TTS"
+            "优先使用浏览器的文本转语音"
 
         _ ->
             "Prefer browser TTS"
@@ -9402,7 +9402,7 @@ codeEditor lang =
             "کوڈ ایڈیٹر"
 
         Zh ->
-            "代碼編輯器"
+            "代码编辑器"
 
         _ ->
             "Code editor"
@@ -9538,7 +9538,7 @@ codeBlock lang =
             "کوڈ بلاک"
 
         Zh ->
-            "代碼塊"
+            "代码块"
 
         _ ->
             "Code block"
@@ -9674,7 +9674,7 @@ codeExecute lang =
             "چلائیں"
 
         Zh ->
-            "開始執行"
+            "运行"
 
         _ ->
             "Execute"
@@ -9810,7 +9810,7 @@ codeRunning lang =
             "چل رہا ہے"
 
         Zh ->
-            "執行中"
+            "正在运行"
 
         _ ->
             "is running"
@@ -9946,7 +9946,7 @@ codePrev lang =
             "پچھلا ورژن"
 
         Zh ->
-            "上一版"
+            "上一版本"
 
         _ ->
             "previous version"
@@ -10082,7 +10082,7 @@ codeNext lang =
             "اگلا ورژن"
 
         Zh ->
-            "下一版"
+            "下一版本"
 
         _ ->
             "next version"
@@ -10218,7 +10218,7 @@ codeFirst lang =
             "پہلا ورژن"
 
         Zh ->
-            "最初版"
+            "第一个版本"
 
         _ ->
             "first version"
@@ -10354,7 +10354,7 @@ codeLast lang =
             "آخری ورژن"
 
         Zh ->
-            "最終版"
+            "最后一个版本"
 
         _ ->
             "last version"
@@ -10490,7 +10490,7 @@ codeMinimize lang =
             "منظر کو چھوٹا کریں"
 
         Zh ->
-            "極小視窗"
+            "最小化视图"
 
         _ ->
             "minimize view"
@@ -10626,7 +10626,7 @@ codeMaximize lang =
             "منظر کو بڑا کریں"
 
         Zh ->
-            "極大視窗"
+            "最大化视图"
 
         _ ->
             "maximize view"
@@ -11034,7 +11034,7 @@ codeReset lang =
             "ان پٹ ری سیٹ کریں"
 
         Zh ->
-            "重置輸入"
+            "重置输入"
 
         _ ->
             "reset input"
@@ -11170,7 +11170,7 @@ quizCheck lang =
             "چیک کریں"
 
         Zh ->
-            "選取"
+            "检查"
 
         _ ->
             "Check"
@@ -11306,7 +11306,7 @@ quizSolution lang =
             "حل دکھائیں"
 
         Zh ->
-            "顯示解答"
+            "显示解答"
 
         _ ->
             "show solution"
@@ -11442,7 +11442,7 @@ quizHint lang =
             "اشارہ دکھائیں"
 
         Zh ->
-            "暗示"
+            "显示提示"
 
         _ ->
             "show hint"
@@ -11850,7 +11850,7 @@ quizDropZone lang =
             "ڈراپ زون"
 
         Zh ->
-            "放置區"
+            "放置区"
 
         _ ->
             "Drop zone"
@@ -12122,7 +12122,7 @@ quizDragHint lang =
             "منتخب کرنے کے لیے کسی ڈراپ زون پر Enter دبائیں، پھر کسی کارڈ پر Enter دبا کر اسے وہاں رکھیں"
 
         Zh ->
-            "在放置區上按 Enter 選中它，再在卡片上按 Enter 將其放到那裡"
+            "在放置区上按 Enter 键将其选中，然后在卡片上按 Enter 键将卡片放到那里"
 
         _ ->
             "Press Enter on a drop zone to select it, then Enter on a card to place it there"
@@ -12258,7 +12258,7 @@ quizLabelCheck lang =
             "جواب چیک کریں۔ جواب کو درست یا غلط کے طور پر نشان زد کیا جائے گا۔"
 
         Zh ->
-            "检查答案。答案被标记为正确或不正确。"
+            "检查答案。答案将被标记为正确或错误。"
 
         _ ->
             "Check the answer. The response will be marked as correct or incorrect."
@@ -12394,7 +12394,7 @@ quizLabelSolution lang =
             "حل دکھائیں۔ کوئز کو حل شدہ کے طور پر نشان زد کیا جائے گا۔"
 
         Zh ->
-            "显示解决方案。测验被标记为已解决。"
+            "显示解答。测验将被标记为已解答。"
 
         _ ->
             "Show the solution. The quiz will be marked as resolved."
@@ -12530,7 +12530,7 @@ quizAnswerSuccess lang =
             "مبارک ہو، یہ درست جواب تھا"
 
         Zh ->
-            "恭喜，那是正确的答案"
+            "恭喜，这是正确答案"
 
         _ ->
             "Congratulations, that was the right answer"
@@ -12666,7 +12666,7 @@ quizAnswerError lang =
             "صحیح جواب ابھی تک نہیں دیا گیا"
 
         Zh ->
-            "正确的答案尚未给出"
+            "尚未给出正确答案"
 
         _ ->
             "The correct answer has not yet been given"
@@ -12802,7 +12802,7 @@ quizAnswerResolved lang =
             "حل شدہ جواب"
 
         Zh ->
-            "解决的答案"
+            "已显示解答"
 
         _ ->
             "Resolved answer"
@@ -12938,7 +12938,7 @@ surveySubmit lang =
             "جمع کریں"
 
         Zh ->
-            "遞交"
+            "提交"
 
         _ ->
             "Submit"
@@ -13482,7 +13482,7 @@ surveyText lang =
             "کچھ متن درج کریں..."
 
         Zh ->
-            "輸入文字..."
+            "请输入文本……"
 
         _ ->
             "Enter some text..."
@@ -14162,7 +14162,7 @@ chartDefault lang =
             "چارٹ"
 
         Zh ->
-            "圖表"
+            "图表"
 
         _ ->
             "Chart"
@@ -14978,7 +14978,7 @@ chartBoxplot lang =
             "باکس پلاٹ"
 
         Zh ->
-            "箱型图"
+            "箱线图"
 
         _ ->
             "Boxplot"
@@ -16066,7 +16066,7 @@ chartWordcloud lang =
             "ورڈ کلاؤڈ"
 
         Zh ->
-            "詞雲"
+            "词云"
 
         _ ->
             "Word cloud"
@@ -16610,7 +16610,7 @@ chatUnverified lang =
             "غیر تصدیق شدہ بھیجنے والا"
 
         Zh ->
-            "未驗證的發送者"
+            "未验证的发送者"
 
         _ ->
             "Unverified sender"
@@ -17018,7 +17018,7 @@ chatNew lang =
             "آپ کے پاس ان پڑھے چیٹ پیغامات ہیں"
 
         Zh ->
-            "你有未读的聊天消息"
+            "您有未读的聊天消息"
 
         _ ->
             "You have unread chat messages"
