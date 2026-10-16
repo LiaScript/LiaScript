@@ -1145,7 +1145,7 @@ addTranslation config url_ =
                )
             ++ (config.translations
                     |> Maybe.map .new
-                    |> Maybe.withDefault (Translations.baseLang config.lang)
+                    |> Maybe.withDefault (Translations.getCodeFromLn config.lang)
                )
 
     else
