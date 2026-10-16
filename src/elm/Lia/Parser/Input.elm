@@ -78,7 +78,8 @@ add ( length, block ) =
     withState
         (\state ->
             succeed
-                ( String.fromFloat (toFloat (length + 2) * 0.4) ++ "em"
+                -- one spare character, plus padding (2 × 0.5rem) and border (≤ 2px)
+                ( "calc(" ++ String.fromInt (length + 1) ++ "ch + 1rem + 4px)"
                 , if state.input.isEnabled || state.input.grouping then
                     Array.length state.input.blocks.options
 

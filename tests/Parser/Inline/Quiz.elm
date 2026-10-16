@@ -17,14 +17,14 @@ blank_Suite =
         [ test "a single blank registers as the first option" <|
             \_ ->
                 parseWithInputEnabled "[[cat]]"
-                    |> Expect.equal [ Quiz ( "2em", 0 ) [] ]
+                    |> Expect.equal [ Quiz ( "calc(4ch + 1rem + 4px)", 0 ) [] ]
         , test "a second blank on the same line registers as the next option" <|
             \_ ->
                 parseWithInputEnabled "[[cat]] [[dog]]"
                     |> Expect.equal
-                        [ Quiz ( "2em", 0 ) []
+                        [ Quiz ( "calc(4ch + 1rem + 4px)", 0 ) []
                         , chars " "
-                        , Quiz ( "2em", 1 ) []
+                        , Quiz ( "calc(4ch + 1rem + 4px)", 1 ) []
                         ]
         ]
 
@@ -35,7 +35,7 @@ drop_Suite =
         [ test "a single drop target registers as the first option" <|
             \_ ->
                 parseWithInputEnabled "[->[cat]]"
-                    |> Expect.equal [ Quiz ( "2em", 0 ) [] ]
+                    |> Expect.equal [ Quiz ( "calc(4ch + 1rem + 4px)", 0 ) [] ]
         ]
 
 
@@ -47,7 +47,7 @@ blankWidth_fuzz_Suite =
                 parseWithInputEnabled ("[[" ++ content ++ "]]")
                     |> Expect.equal
                         [ Quiz
-                            ( String.fromFloat (toFloat (String.length content + 2) * 0.4) ++ "em", 0 )
+                            ( "calc(" ++ String.fromInt (String.length content + String.length (String.filter Char.isUpper content) // 2 + 1) ++ "ch + 1rem + 4px)", 0 )
                             []
                         ]
         ]

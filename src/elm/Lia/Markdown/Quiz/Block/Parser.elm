@@ -45,7 +45,8 @@ pattern parse_inlines =
         (brackets "[->[" (splitDrop parse_inlines))
 
 
-{-| **private:** Pass the content between `begin` and `]]` to `fn`.
+{-| **private:** Pass the content between `begin` and `]]` to `fn`. The length
+counts capitals as 1.5 characters, since they are wider than the average (`ch`).
 -}
 brackets : String -> (String -> Context -> Parser Context (Quiz opt)) -> Parser Context ( Int, Quiz opt )
 brackets begin fn =
@@ -54,7 +55,7 @@ brackets begin fn =
         |> andThen
             (\s ->
                 withState (fn s)
-                    |> map (Tuple.pair (String.length s))
+                    |> map (Tuple.pair (String.length s + String.length (String.filter Char.isUpper s) // 2))
             )
 
 
