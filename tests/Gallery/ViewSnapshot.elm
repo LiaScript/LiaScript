@@ -132,36 +132,38 @@ closed =
 first : String
 first =
     """<div>
-    <lia-modal class="lia-modal" aria-modal="true" role="dialog">
-        <div class="lia-modal__inner">
-            <div class="lia-modal__close">
-                <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="Close dialog">
-                    <i class="icon icon-close lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
+    <div>
+        <lia-modal class="lia-modal" aria-modal="true" role="dialog">
+            <div class="lia-modal__inner">
+                <div class="lia-modal__close">
+                    <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="Close dialog">
+                        <i class="icon icon-close lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                </div>
+                <div class="lia-modal__content">
+                    <figure class="lia-figure">
+                        <div class="lia-figure__media  lia-figure__zoom" style="background-image:url('http://example.com/0.png');" data-media-image="image" onmousemove="window.LIA.img.zoom(event)">
+                            <img alt="alt0" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" src="http://example.com/0.png">
+                        </div>
+                        
+                    </figure>
+                </div>
+                <div class="lia-modal__controls">
+                    <button class="lia-btn lia-modal__ctrl-next lia-btn--transparent" aria-hidden="false" tabIndex="0" title="next">
+                        <i class="icon icon-arrow-right lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                    <button class="lia-btn lia-btn--disabled is-disabled lia-modal__ctrl-prev lia-btn--transparent" aria-disabled="true" aria-hidden="false" tabIndex="0" title="previous">
+                        <i class="icon icon-arrow-left lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                </div>
             </div>
-            <div class="lia-modal__content">
-                <figure class="lia-figure">
-                    <div class="lia-figure__media  lia-figure__zoom" style="background-image:url('http://example.com/0.png');" data-media-image="image" onmousemove="window.LIA.img.zoom(event)">
-                        <img alt="alt0" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" src="http://example.com/0.png">
-                    </div>
-                    
-                </figure>
+            <div class="lia-modal__outer">
             </div>
-            <div class="lia-modal__controls">
-                <button class="lia-btn lia-modal__ctrl-next lia-btn--transparent" aria-hidden="false" tabIndex="0" title="next">
-                    <i class="icon icon-arrow-right lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
-                <button class="lia-btn lia-btn--disabled is-disabled lia-modal__ctrl-prev lia-btn--transparent" aria-disabled="true" aria-hidden="false" tabIndex="0" title="previous">
-                    <i class="icon icon-arrow-left lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
-            </div>
-        </div>
-        <div class="lia-modal__outer">
-        </div>
-    </lia-modal>
+        </lia-modal>
+    </div>
     <div class="lia-gallery">
         <div class="lia-lightbox">
             <figure class="lia-figure">
@@ -194,36 +196,38 @@ first =
 last : String
 last =
     """<div>
-    <lia-modal class="lia-modal" aria-modal="true" role="dialog">
-        <div class="lia-modal__inner">
-            <div class="lia-modal__close">
-                <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="Close dialog">
-                    <i class="icon icon-close lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
+    <div>
+        <lia-modal class="lia-modal" aria-modal="true" role="dialog">
+            <div class="lia-modal__inner">
+                <div class="lia-modal__close">
+                    <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="Close dialog">
+                        <i class="icon icon-close lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                </div>
+                <div class="lia-modal__content">
+                    <figure class="lia-figure">
+                        <div class="lia-figure__media  lia-figure__zoom" style="background-image:url('http://example.com/1.png');" data-media-image="image" onmousemove="window.LIA.img.zoom(event)">
+                            <img alt="alt1" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" src="http://example.com/1.png">
+                        </div>
+                        
+                    </figure>
+                </div>
+                <div class="lia-modal__controls">
+                    <button class="lia-btn lia-btn--disabled is-disabled lia-modal__ctrl-next lia-btn--transparent" aria-disabled="true" aria-hidden="false" tabIndex="0" title="next">
+                        <i class="icon icon-arrow-right lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                    <button class="lia-btn lia-modal__ctrl-prev lia-btn--transparent" aria-hidden="false" tabIndex="0" title="previous">
+                        <i class="icon icon-arrow-left lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                </div>
             </div>
-            <div class="lia-modal__content">
-                <figure class="lia-figure">
-                    <div class="lia-figure__media  lia-figure__zoom" style="background-image:url('http://example.com/1.png');" data-media-image="image" onmousemove="window.LIA.img.zoom(event)">
-                        <img alt="alt1" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" src="http://example.com/1.png">
-                    </div>
-                    
-                </figure>
+            <div class="lia-modal__outer">
             </div>
-            <div class="lia-modal__controls">
-                <button class="lia-btn lia-btn--disabled is-disabled lia-modal__ctrl-next lia-btn--transparent" aria-disabled="true" aria-hidden="false" tabIndex="0" title="next">
-                    <i class="icon icon-arrow-right lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
-                <button class="lia-btn lia-modal__ctrl-prev lia-btn--transparent" aria-hidden="false" tabIndex="0" title="previous">
-                    <i class="icon icon-arrow-left lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
-            </div>
-        </div>
-        <div class="lia-modal__outer">
-        </div>
-    </lia-modal>
+        </lia-modal>
+    </div>
     <div class="lia-gallery">
         <div class="lia-lightbox">
             <figure class="lia-figure">
@@ -322,44 +326,46 @@ annotated =
 embedOpen : String
 embedOpen =
     """<div>
-    <lia-modal class="lia-modal" aria-modal="true" role="dialog">
-        <div class="lia-modal__inner">
-            <div class="lia-modal__close">
-                <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="Close dialog">
-                    <i class="icon icon-close lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
-            </div>
-            <div class="lia-modal__content">
-                <figure class="lia-figure" style="height:auto;width:100%;">
-                    <div class="lia-figure__media">
-                        <a class="lia-link lia-print-only" href="https://www.youtube.com/watch?v=abc">
-                            video
-                        </a>
-                        <lia-embed style="display:inline-block;height:auto;max-height:100%;width:100%;" alt="video" data-attributes="{}" scale="0.76" url="https://www.youtube.com/watch?v=abc">
-                        </lia-embed>
-                        <figcaption class="lia-figure__caption">
-                            <a class="lia-link" href="https://www.youtube.com/watch?v=abc" target="_blank">
-                                https://www.youtube.com/watch?v=abc
+    <div>
+        <lia-modal class="lia-modal" aria-modal="true" role="dialog">
+            <div class="lia-modal__inner">
+                <div class="lia-modal__close">
+                    <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="Close dialog">
+                        <i class="icon icon-close lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                </div>
+                <div class="lia-modal__content">
+                    <figure class="lia-figure" style="height:auto;width:100%;">
+                        <div class="lia-figure__media">
+                            <a class="lia-link lia-print-only" href="https://www.youtube.com/watch?v=abc">
+                                video
                             </a>
-                        </figcaption>
-                    </div>
-                </figure>
+                            <lia-embed style="display:inline-block;height:auto;max-height:100%;width:100%;" alt="video" data-attributes="{}" scale="0.76" url="https://www.youtube.com/watch?v=abc">
+                            </lia-embed>
+                            <figcaption class="lia-figure__caption">
+                                <a class="lia-link" href="https://www.youtube.com/watch?v=abc" target="_blank">
+                                    https://www.youtube.com/watch?v=abc
+                                </a>
+                            </figcaption>
+                        </div>
+                    </figure>
+                </div>
+                <div class="lia-modal__controls">
+                    <button class="lia-btn lia-btn--disabled is-disabled lia-modal__ctrl-next lia-btn--transparent" aria-disabled="true" aria-hidden="false" tabIndex="0" title="next">
+                        <i class="icon icon-arrow-right lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                    <button class="lia-btn lia-modal__ctrl-prev lia-btn--transparent" aria-hidden="false" tabIndex="0" title="previous">
+                        <i class="icon icon-arrow-left lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                </div>
             </div>
-            <div class="lia-modal__controls">
-                <button class="lia-btn lia-btn--disabled is-disabled lia-modal__ctrl-next lia-btn--transparent" aria-disabled="true" aria-hidden="false" tabIndex="0" title="next">
-                    <i class="icon icon-arrow-right lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
-                <button class="lia-btn lia-modal__ctrl-prev lia-btn--transparent" aria-hidden="false" tabIndex="0" title="previous">
-                    <i class="icon icon-arrow-left lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
+            <div class="lia-modal__outer">
             </div>
-        </div>
-        <div class="lia-modal__outer">
-        </div>
-    </lia-modal>
+        </lia-modal>
+    </div>
     <div class="lia-gallery">
         <div class="lia-lightbox">
             <figure class="lia-figure">

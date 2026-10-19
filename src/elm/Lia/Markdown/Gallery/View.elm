@@ -8,6 +8,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import I18n.Translations as Translations exposing (Lang)
+import Json.Decode as JD
 import Lia.Markdown.Gallery.Types exposing (Gallery, Vector)
 import Lia.Markdown.Gallery.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
@@ -73,6 +74,46 @@ viewOverlay config id mediaID size =
         >> Html.map Script
         >> List.singleton
         >> modal config.lang True (Close id) (viewControls config.lang id mediaID size)
+        >> List.singleton
+        >> Html.div [ Event.on "keydown" (arrows id mediaID size) ]
+
+
+{-| The arrow keys switch to the next or previous media, in the direction of
+the text (`dir` of the document). Within media, inputs and iframes the keys
+belong to the element, e.g. seeking a video.
+-}
+arrows : Int -> Int -> Int -> JD.Decoder (Msg sub)
+arrows id mediaID size =
+    JD.map3
+        (\key tag dir ->
+            let
+                next =
+                    if dir == "rtl" then
+                        "ArrowLeft"
+
+                    else
+                        "ArrowRight"
+
+                target =
+                    if key == next then
+                        mediaID + 1
+
+                    else if key == "ArrowLeft" || key == "ArrowRight" then
+                        mediaID - 1
+
+                    else
+                        -1
+            in
+            if target < 0 || target >= size || List.member tag [ "VIDEO", "AUDIO", "INPUT", "TEXTAREA", "SELECT", "IFRAME" ] then
+                JD.fail "not a switch"
+
+            else
+                JD.succeed (Show id target)
+        )
+        (JD.field "key" JD.string)
+        (JD.at [ "target", "tagName" ] JD.string)
+        (JD.at [ "target", "ownerDocument", "documentElement", "dir" ] JD.string)
+        |> JD.andThen identity
 
 
 viewControls : Lang -> Int -> Int -> Int -> Maybe (List (Html (Msg sub)))
