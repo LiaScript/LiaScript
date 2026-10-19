@@ -778,7 +778,6 @@ viewMedia config inline =
                             :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
                             :: toAttribute attr
                             |> CList.addIf (width == Nothing) (load url_)
-                            |> CList.addWhen (title config title_)
                         )
                         []
                     ]
@@ -870,12 +869,11 @@ iframeTitle config alt_ title_ =
 
 
 {-| **@private:** Audio and video elements have no `alt` attribute, the alt text
-names them via `aria-label`, the title is shown as tooltip.
+names them via `aria-label`. The title is the caption of their figure.
 -}
-mediaLabel : Config sub -> Inlines -> Maybe Inlines -> List (Attribute msg) -> List (Attribute msg)
-mediaLabel config alt_ title_ =
-    CList.addWhen (title config title_)
-        >> CList.addWhen (stringFrom config (Just alt_) |> Maybe.map A11y_Aria.label)
+mediaLabel : Config sub -> Inlines -> List (Attribute msg) -> List (Attribute msg)
+mediaLabel config alt_ =
+    CList.addWhen (stringFrom config (Just alt_) |> Maybe.map A11y_Aria.label)
 
 
 {-| **@private:** An image, a click opens the zoomed image, if it has no
@@ -895,7 +893,6 @@ img config attr alt_ url_ title_ width =
                     toAttribute attr
                )
             |> CList.addIf (width == Nothing) (load url_)
-            |> CList.addWhen (title config title_)
             |> addLazyLoading config.visible
         )
         []
@@ -1010,7 +1007,7 @@ reference config ref attr =
 
                       else
                         audio
-                            (toAttribute attr |> mediaLabel config alt_ title_)
+                            (toAttribute attr |> mediaLabel config alt_)
                             { url = url_
                             , controls = True
                             , preload = "none"
@@ -1049,7 +1046,7 @@ reference config ref attr =
                                     (Attr.controls True
                                         :: Attr.attribute "preload" "none"
                                         :: toAttribute attr
-                                        |> mediaLabel config alt_ title_
+                                        |> mediaLabel config alt_
                                     )
                                     [ Html.source [ Attr.src url_, onError "video" url_ ] [] ]
                               )
@@ -1095,7 +1092,6 @@ reference config ref attr =
                         :: Attr.style "display" "inline-block"
                         :: Attr.style "background-color" "white"
                         :: annotation "lia-link" attr
-                        |> CList.addWhen (title config title_)
                     )
                 |> figure config title_ (Just 300) "image"
 
