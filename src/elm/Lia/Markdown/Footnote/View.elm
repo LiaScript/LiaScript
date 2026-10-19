@@ -1,6 +1,5 @@
 module Lia.Markdown.Footnote.View exposing
     ( block
-    , byKey
     , inline
     )
 
@@ -26,7 +25,6 @@ inline lang key attr =
                 ++ [ Attr.style "padding" "2px"
                    , Attr.class "lia-btn lia-btn--transparent text-highlight"
                    , Attr.attribute "onclick" ("window.LIA.showFootnote(" ++ JE.encode 0 (JE.string key) ++ ");")
-                   , Attr.id (byKey key)
 
                    -- the text of the footnote, if the list is shown
                    , A11y_Aria.describedBy [ by key ]
@@ -73,10 +71,3 @@ braces key =
 by : String -> String
 by =
     (++) "footnote-"
-
-
-{-| Id of the footnote mark, the focus returns here when the modal is closed.
--}
-byKey : String -> String
-byKey =
-    (++) "footnote-key-"
