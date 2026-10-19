@@ -19,6 +19,22 @@ enum Dir {
 }
 
 /**
+ * **Helper:** Is `el` or one of its parents up to `surface` horizontally
+ * scrollable?
+ */
+function scrollsX(el: Element | null, surface: HTMLElement): boolean {
+  for (; el && el !== surface; el = el.parentElement) {
+    if (
+      el.scrollWidth > el.clientWidth &&
+      /auto|scroll/.test(getComputedStyle(el).overflowX)
+    ) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
  * **Helper:** Simple Swipe detection function.
  *
  * @param el - HTML to look for touch events
@@ -77,10 +93,14 @@ function detect(el: HTMLElement, callback: (_: Dir) => void) {
       swipeDir = Dir.none
       startX = touchObj.pageX
       startY = touchObj.pageY
-      // a touch on a draggable element is a (polyfilled) drag & drop, never a swipe
-      startTime = (e.target as Element)?.closest?.('[draggable="true"]')
-        ? 0
-        : new Date().getTime() // record time when finger first makes contact with surface
+      // a touch on a draggable element is a (polyfilled) drag & drop and one
+      // within a horizontally scrolling element (gallery, wide table) scrolls
+      // it, never a swipe
+      const target = e.target as Element
+      startTime =
+        target?.closest?.('[draggable="true"]') || scrollsX(target, touchSurface)
+          ? 0
+          : new Date().getTime() // record time when finger first makes contact with surface
       // e.preventDefault()
     },
     { passive: true }
