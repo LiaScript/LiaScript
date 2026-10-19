@@ -116,7 +116,7 @@ update sync globals msg section =
                     (Just section.id)
                     section.effect_model.javascript
                     childMsg
-                |> Return.mapVal (\v -> { section | code_model = v })
+                |> Return.mapValCmd (\v -> { section | code_model = v }) UpdateCode
                 |> Return.mapEvents "code" section.id
 
         UpdateQuiz childMsg ->

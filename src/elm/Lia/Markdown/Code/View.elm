@@ -56,6 +56,18 @@ view :
     }
     -> Html Msg
 view { lang, theme, model, code, sync, cursors } =
+    let
+        copied =
+            model.copied
+                |> Maybe.andThen
+                    (\( project, fileID ) ->
+                        if project == code then
+                            Just fileID
+
+                        else
+                            Nothing
+                    )
+    in
     case code of
         Highlight id ->
             Array.get id model.highlight
@@ -69,6 +81,7 @@ view { lang, theme, model, code, sync, cursors } =
                             , errors = always JE.null
                             , sync = Nothing
                             , cursors = []
+                            , copied = copied
                             }
                             project
                             |> CList.attachIf (not <| Log.isEmpty project.log)
@@ -109,6 +122,7 @@ view { lang, theme, model, code, sync, cursors } =
                                 else
                                     Nothing
                             , cursors = cursors
+                            , copied = copied
                             }
                             project
                             ++ [ viewControl
@@ -178,6 +192,7 @@ type alias Config =
     , errors : Int -> JE.Value
     , sync : Maybe Sync
     , cursors : List Sync.Cursor
+    , copied : Maybe Int
     }
 
 
@@ -214,7 +229,7 @@ viewFile config fileID file attr =
                 }
 
         copy inverted =
-            copyToClipboard config.lang inverted (Params.isSet "data-rtl" attr) config.code fileID
+            copyToClipboard config.lang inverted (Params.isSet "data-rtl" attr) (config.copied == Just fileID) config.code fileID
 
         toggleTitle visible =
             if visible then
@@ -246,14 +261,14 @@ viewFile config fileID file attr =
     in
     if file.name == "" then
         Html.div (noTranslate [ Attr.class "lia-code__input" ])
-            (editor ++ [ copy False ])
+            (editor ++ copy False)
 
     else
         Html.div (noTranslate [ Attr.class "lia-accordion" ])
             [ Html.div (Attr.class "lia-accordion__item" :: Params.toAttribute attr)
                 [ Html.div
                     [ Attr.class "lia-accordion__header" ]
-                    [ btnIcon
+                    ([ btnIcon
                         { title = toggleTitle file.visible
                         , msg = Just <| FlipView config.code fileID
                         , icon =
@@ -269,9 +284,10 @@ viewFile config fileID file attr =
                         , A11y_Aria.controls [ contentID ]
                         , A11y_Aria.label (toggleTitle file.visible ++ ": " ++ file.name)
                         ]
-                    , Html.h3 [ Attr.class "lia-accordion__headline h4" ] [ Html.text file.name ]
-                    , copy True
-                    ]
+                     , Html.h3 [ Attr.class "lia-accordion__headline h4" ] [ Html.text file.name ]
+                     ]
+                        ++ copy True
+                    )
                 , Html.div
                     [ Attr.classList
                         [ ( "lia-accordion__content", True )
@@ -313,12 +329,20 @@ idOf code =
             id
 
 
-copyToClipboard : Lang -> Bool -> Bool -> Code -> Int -> Html Msg
-copyToClipboard lang inverted rtl code fileID =
-    btnIcon
+{-| The copy button and its status, which confirms a copy for a moment. The
+status exists from the beginning, otherwise the message is not announced.
+-}
+copyToClipboard : Lang -> Bool -> Bool -> Bool -> Code -> Int -> List (Html Msg)
+copyToClipboard lang inverted rtl copied code fileID =
+    [ btnIcon
         { title = Translations.codeCopy lang
         , msg = Just <| CopyToClipboard code fileID
-        , icon = "icon-copy"
+        , icon =
+            if copied then
+                "icon-check"
+
+            else
+                "icon-copy"
         , tabbable = True
         }
         (CList.appendIf rtl
@@ -332,6 +356,14 @@ copyToClipboard lang inverted rtl code fileID =
                 ]
             ]
         )
+    , Html.span [ A11y_Role.status, Attr.class "hidden-visually" ]
+        [ if copied then
+            Html.text (Translations.codeCopied lang)
+
+          else
+            Html.text ""
+        ]
+    ]
 
 
 {-| The editor of a file, `sync` is the shared classroom code that replaces

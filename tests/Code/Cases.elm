@@ -461,7 +461,7 @@ shared =
     Array.fromList [ Array.fromList [ "shared" ] ]
 
 
-update : List Msg -> Msg -> Return Model msg sub
+update : List Msg -> Msg -> Return Model Msg sub
 update msgs msg =
     Update.update Array.empty (Just 0) Array.empty msg (run msgs)
 

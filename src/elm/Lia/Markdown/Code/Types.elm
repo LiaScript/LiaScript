@@ -50,9 +50,13 @@ type alias Repo =
     Dict Hash String
 
 
+{-| `copied` is the file that was copied to the clipboard last, the copy
+button confirms it for a moment.
+-}
 type alias Model =
     { evaluate : Vector
     , highlight : Vector
+    , copied : Maybe ( Code, Int )
     }
 
 
@@ -114,7 +118,7 @@ type Code
 -}
 init : Model
 init =
-    Model Array.empty Array.empty
+    Model Array.empty Array.empty Nothing
 
 
 {-| Create a project from its parsed listings (each with its visibility).

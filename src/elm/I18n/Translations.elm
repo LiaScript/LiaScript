@@ -11992,6 +11992,142 @@ codeCopy lang =
             "copy to clipboard"
 
 
+codeCopied : Lang -> String
+codeCopied lang =
+    case lang of
+        Am ->
+            "ወደ ቅንጥብ ሰሌዳ ተቀድቷል"
+
+        Ar ->
+            "تم النسخ إلى الحافظة"
+
+        Bg ->
+            "Копирано в клипборда"
+
+        Bn ->
+            "ক্লিপবোর্ডে কপি করা হয়েছে"
+
+        Ca ->
+            "copiat al porta-retalls"
+
+        Cs ->
+            "zkopírováno do schránky"
+
+        Da ->
+            "kopieret til udklipsholder"
+
+        De ->
+            "in die Zwischenablage kopiert"
+
+        El ->
+            "αντιγράφηκε στο πρόχειρο"
+
+        Es ->
+            "copiado al portapapeles"
+
+        Et ->
+            "kopeeritud lõikelauale"
+
+        Eu ->
+            "arbelean kopiatuta"
+
+        Fa ->
+            "در کلیپ بورد کپی شد"
+
+        Fi ->
+            "kopioitu leikepöydälle"
+
+        Fr ->
+            "Copié dans le presse-papiers"
+
+        Ga ->
+            "cóipeáilte chuig an ngearrthaisce"
+
+        Hi ->
+            "क्लिपबोर्ड पर कॉपी हो गया"
+
+        Hr ->
+            "kopirano u međuspremnik"
+
+        Hu ->
+            "vágólapra másolva"
+
+        Hy ->
+            "Պատճենվել է սեղմատախտակին"
+
+        It ->
+            "copiato negli appunti"
+
+        Ja ->
+            "クリップボードにコピーしました"
+
+        Ka ->
+            "ბუფერში დაკოპირდა"
+
+        Ko ->
+            "클립보드에 복사됨"
+
+        Lt ->
+            "nukopijuota į iškarpinę"
+
+        Lv ->
+            "nokopēts starpliktuvē"
+
+        Nb ->
+            "kopiert til utklippstavlen"
+
+        Nl ->
+            "gekopieerd naar klembord"
+
+        Pa ->
+            "ਕਲਿੱਪਬੋਰਡ 'ਤੇ ਕਾਪੀ ਹੋ ਗਿਆ"
+
+        Pl ->
+            "skopiowano do schowka"
+
+        Pt ->
+            "copiado para a área de transferência"
+
+        Ro ->
+            "copiat în clipboard"
+
+        Ru ->
+            "скопировано в буфер обмена"
+
+        Sk ->
+            "skopírované do schránky"
+
+        Sl ->
+            "kopirano v odložišče"
+
+        Sq ->
+            "u kopjua në kujtesën e përkohshme"
+
+        Sv ->
+            "kopierat till urklipp"
+
+        Sw ->
+            "imenakiliwa kwenye ubao wa kunakili"
+
+        Tr ->
+            "panoya kopyalandı"
+
+        Tw ->
+            "已複製到剪貼簿"
+
+        Uk ->
+            "скопійовано в буфер обміну"
+
+        Ur ->
+            "کلپ بورڈ پر کاپی ہو گیا"
+
+        Zh ->
+            "已复制到剪贴板"
+
+        _ ->
+            "copied to clipboard"
+
+
 codeReset : Lang -> String
 codeReset lang =
     case lang of
