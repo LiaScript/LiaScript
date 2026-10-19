@@ -14,7 +14,7 @@ import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Intl as Intl
 import Lia.Markdown.Effect.Script.Types exposing (Modifiable(..), Msg(..), Script, Stdout(..))
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, filterNames, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Section exposing (SubSection)
 import Lia.Utils exposing (icon, modal)
@@ -211,6 +211,7 @@ input config attr id node result =
                                         "false"
                             )
                        ]
+                    ++ toAttribute attr
                 )
                 []
             ]
@@ -225,12 +226,12 @@ input config attr id node result =
                         |> Maybe.withDefault []
             in
             list
-                |> options "checkbox" Checkbox (\o -> List.member o checked) node.input.updateOnChange id
+                |> options "checkbox" Checkbox (\o -> List.member o checked) node.input.updateOnChange id attr
                 |> withResult
 
         Just (Input.Radio_ list) ->
             list
-                |> options "radio" Radio ((==) node.input.value) node.input.updateOnChange id
+                |> options "radio" Radio ((==) node.input.value) node.input.updateOnChange id attr
                 |> withResult
 
         Just (Input.Select_ list) ->
@@ -251,10 +252,11 @@ input config attr id node result =
             script config True attr id node result
 
 
-{-| A labeled checkbox or radio button for every option.
+{-| A labeled checkbox or radio button for every option, the group is named
+by the `aria-label` or `aria-labelledby` of the script.
 -}
-options : String -> (Int -> Bool -> String -> Msg sub) -> (String -> Bool) -> Bool -> Int -> List String -> Html (Msg sub)
-options type_ msg checked updateOnChange id list =
+options : String -> (Int -> Bool -> String -> Msg sub) -> (String -> Bool) -> Bool -> Int -> Parameters -> List String -> Html (Msg sub)
+options type_ msg checked updateOnChange id attr list =
     let
         -- only one option gets the focus, the checked or the first one
         focused =
@@ -282,7 +284,16 @@ options type_ msg checked updateOnChange id list =
                     , Html.text o
                     ]
             )
-        |> Html.span [ Attr.class "flex items-center" ]
+        |> Html.span
+            (Attr.class "flex items-center"
+                :: (if type_ == "radio" then
+                        A11y_Role.radioGroup
+
+                    else
+                        A11y_Role.group
+                   )
+                :: toAttribute (filterNames [ "aria-label", "aria-labelledby" ] attr)
+            )
 
 
 {-| The id of an active input, that gets the focus.
@@ -309,11 +320,12 @@ Space trigger the native click of a button.
 reset : Lang -> Int -> Html (Msg sub)
 reset lang id =
     Html.button
-        [ Attr.class "lia-script__refresh icon icon-refresh"
+        [ Attr.class "lia-script__refresh"
         , Attr.title (codeReset lang)
         , Event.onClick (Reset id)
         ]
-        []
+        -- as content the glyph would replace the title as name
+        [ icon "icon-refresh" [] ]
 
 
 {-| A plain `<input>` of the given type, Enter executes the script, Escape
