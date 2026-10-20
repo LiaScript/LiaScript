@@ -155,8 +155,8 @@ body comment =
         |> Html.p [ Attr.class "lia-card__body" ]
 
 
-popup : Action -> Maybe Action -> Msg -> Html Msg
-popup action open msg =
+popup : Action -> Maybe Action -> String -> Msg -> Html Msg
+popup action open courseID msg =
     case ( action, open ) of
         ( Popup_Delete, Just Popup_Delete ) ->
             Popup.view
@@ -168,6 +168,7 @@ popup action open msg =
                     , text = "Delete"
                     }
                 , escape = PopupClose
+                , abort = PopupAbort (Popup.triggerID "delete" courseID)
                 }
 
         ( Popup_Reset, Just Popup_Reset ) ->
@@ -181,6 +182,7 @@ popup action open msg =
                     , text = "Reset"
                     }
                 , escape = PopupClose
+                , abort = PopupAbort (Popup.triggerID "reset" courseID)
                 }
 
         _ ->
@@ -194,22 +196,26 @@ controls hasShareAPI title definition course =
         , A11y_Role.group
         , A11y_Aria.label "Course actions"
         ]
-        [ popup Popup_Delete course.popup (Delete True course.id)
-        , popup Popup_Reset course.popup (Reset True course.id course.active)
+        [ popup Popup_Delete course.popup course.id (Delete True course.id)
+        , popup Popup_Reset course.popup course.id (Reset True course.id course.active)
         , btnIcon
             { msg = Just <| Delete False course.id
             , title = "Delete this course"
             , tabbable = True
             , icon = "icon-trash"
             }
-            [ Attr.class "lia-btn--tag lia-btn--transparent text-red-dark border-red-dark px-1" ]
+            [ Attr.class "lia-btn--tag lia-btn--transparent text-red-dark border-red-dark px-1"
+            , Attr.id (Popup.triggerID "delete" course.id)
+            ]
         , btnIcon
             { msg = Just <| Reset False course.id course.active
             , title = "Reset all stored states (quizzes, tasks, surveys, codes)"
             , tabbable = True
             , icon = "icon-refresh"
             }
-            [ Attr.class "lia-btn--tag lia-btn--transparent text-yellow-dark border-yellow-dark px-1" ]
+            [ Attr.class "lia-btn--tag lia-btn--transparent text-yellow-dark border-yellow-dark px-1"
+            , Attr.id (Popup.triggerID "reset" course.id)
+            ]
         , if hasShareAPI then
             btnIcon
                 { msg =

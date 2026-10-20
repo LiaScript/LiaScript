@@ -23,10 +23,20 @@ cancelID =
     "lia-popup-cancel"
 
 
-{-| A custom message type for the popup.
+{-| Id of the button that opens the popup `kind` of a course, the focus
+returns there when the popup is aborted.
 -}
-view : { escape : msg, text : String, action : { msg : msg, text : String } } -> Html msg
-view { escape, text, action } =
+triggerID : String -> String -> String
+triggerID kind courseID =
+    groupID ++ "-" ++ kind ++ "-" ++ courseID
+
+
+{-| A custom message type for the popup. `abort` (Escape or the abort button)
+returns the focus to the opener, `escape` only closes the popup when the
+focus leaves it.
+-}
+view : { escape : msg, abort : msg, text : String, action : { msg : msg, text : String } } -> Html msg
+view { escape, abort, text, action } =
     Html.div
         [ -- Use ARIA attributes to define the dialog.
           A11y_Role.alertDialog
@@ -53,7 +63,7 @@ view { escape, text, action } =
                     (\key ->
                         if key == "Escape" then
                             JD.succeed
-                                { message = escape
+                                { message = abort
                                 , stopPropagation = True
                                 , preventDefault = False
                                 }
@@ -89,7 +99,7 @@ view { escape, text, action } =
         , btnIcon
             { title = "abort"
             , tabbable = True
-            , msg = Just escape
+            , msg = Just abort
             , icon = "icon-close"
             }
             [ Attr.id cancelID

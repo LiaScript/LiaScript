@@ -503,6 +503,7 @@ savedCard deletePopup entry =
                                         { text = "Delete this saved classroom and its locally cached content? This cannot be undone."
                                         , action = { msg = ConfirmDeleteClassroom entry.room entry.backend, text = "Delete" }
                                         , escape = CancelDeleteClassroom
+                                        , abort = CancelDeleteClassroom
                                         }
 
                                 else

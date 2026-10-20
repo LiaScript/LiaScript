@@ -41,6 +41,7 @@ type Msg
     | Modal (Maybe Modal)
     | MasonryMsg Masonry.Msg
     | PopupClose
+    | PopupAbort String
     | None
 
 
@@ -128,6 +129,19 @@ update msg settings model =
                 , []
                 )
 
+            PopupAbort trigger ->
+                ( { model
+                    | masonry =
+                        Masonry.map
+                            (\course ->
+                                { course | popup = Nothing }
+                            )
+                            model.masonry
+                  }
+                , Lia.Utils.focus None trigger
+                , []
+                )
+
             Reset False courseID _ ->
                 ( { model
                     | masonry =
@@ -146,7 +160,7 @@ update msg settings model =
                             (mapPopup Popup_Reset "")
                             model.masonry
                   }
-                , Cmd.none
+                , Lia.Utils.focus None (Popup.triggerID "reset" courseID)
                 , [ Service.Database.index_reset
                         { url = courseID
                         , version =
