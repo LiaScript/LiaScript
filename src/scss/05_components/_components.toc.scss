@@ -221,6 +221,37 @@
     --focus-ring-offset: -0.25lh;
   }
 
+  // nested lists, the indentation comes from the level classes of the links
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    a {
+      display: block;
+    }
+  }
+
+  &__parent {
+    position: relative;
+
+    > a {
+      padding-inline-end: 3.5rem;
+    }
+  }
+
+  // collapses the subsections of a section
+  &__toggle {
+    background: none;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    inset-inline-end: 0.5rem;
+    padding: 0.5rem;
+    position: absolute;
+    top: 0.4rem;
+  }
+
   &__bottom {
     // pushed to the bottom, also with only a few sections
     margin: auto 3rem 0;

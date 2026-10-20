@@ -92,7 +92,7 @@ viewIndex modalIsActive hasIndex model =
             model.translation
             model.settings.table_of_contents
             |> Html.map UpdateSettings
-        , model.index_model
+        , model.index_model.search
             |> Index.search
                 model.translation
                 model.settings.table_of_contents
@@ -108,6 +108,8 @@ viewIndex modalIsActive hasIndex model =
                 model.settings.table_of_contents
                 model.section_active
                 Script
+                UpdateIndex
+                model.index_model
             |> Html.div
                 [ Attr.class "lia-toc__content"
                 , A11y_Key.tabbable False

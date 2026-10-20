@@ -12,10 +12,12 @@ import HtmlSnapshot
 import I18n.Translations exposing (Lang(..))
 import Index.Snapshots exposing (snapshots)
 import Json.Encode as JE
+import Lia.Index.Model as IndexModel
 import Lia.Index.Update as Index exposing (Msg(..))
 import Lia.Index.View as View
 import Lia.Markdown.Inline.Types exposing (Inline(..))
 import Lia.Section as Section exposing (Section)
+import Set
 import Test exposing (Test, describe, fuzz2, test)
 import Test.Html.Event as HE
 import Test.Html.Query as Query
@@ -33,37 +35,98 @@ suite =
                             course pages
 
                         ( model, result, _ ) =
-                            Index.update (ScanIndex p) "old" sections
+                            Index.update (ScanIndex p) (search "old") sections
                     in
-                    ( model, visibility result )
+                    ( model.search, visibility result )
                         |> Expect.equal ( p, List.map (\( code, title ) -> oracle p (code ++ title)) pages )
             , test "words may span code and title" <|
                 \_ ->
-                    Index.update (ScanIndex "ab") "" (course [ ( "xa", "bx" ), ( "a", "x" ) ])
+                    Index.update (ScanIndex "ab") (search "") (course [ ( "xa", "bx" ), ( "a", "x" ) ])
                         |> (\( _, result, _ ) -> visibility result)
                         |> Expect.equal [ True, False ]
             , test "DeleteSearch shows all sections again" <|
                 \_ ->
                     let
                         ( _, hidden, _ ) =
-                            Index.update (ScanIndex "zzz") "" (course [ ( "a", "b" ), ( "c", "d" ) ])
+                            Index.update (ScanIndex "zzz") (search "") (course [ ( "a", "b" ), ( "c", "d" ) ])
 
                         ( model, result, _ ) =
-                            Index.update DeleteSearch "zzz" hidden
+                            Index.update DeleteSearch (search "zzz") hidden
                     in
-                    ( model, visibility hidden, visibility result )
+                    ( model.search, visibility hidden, visibility result )
                         |> Expect.equal ( "", [ False, False ], [ True, True ] )
             , test "NoOp changes nothing" <|
                 \_ ->
                     let
                         ( _, hidden, _ ) =
-                            Index.update (ScanIndex "a") "" (course [ ( "a", "b" ), ( "c", "d" ) ])
+                            Index.update (ScanIndex "a") (search "") (course [ ( "a", "b" ), ( "c", "d" ) ])
 
                         ( model, result, _ ) =
-                            Index.update NoOp "a" hidden
+                            Index.update NoOp (search "a") hidden
                     in
-                    ( model, visibility result )
+                    ( model.search, visibility result )
                         |> Expect.equal ( "a", [ True, False ] )
+            , test "tree keys move between the visible entries" <|
+                \_ ->
+                    [ press (search "") False "ArrowDown" 0
+                    , press (search "") False "ArrowUp" 0
+                    , press (search "") False "ArrowUp" 3
+                    , press (search "") False "Home" 3
+                    , press (search "") False "End" 0
+                    , press { search = "", collapsed = Set.fromList [ 1 ], focus = Nothing, defaults = True } False "ArrowDown" 1
+                    ]
+                        |> Expect.equal
+                            [ ( Just 1, [] )
+                            , ( Nothing, [] )
+                            , ( Just 2, [] )
+                            , ( Just 0, [] )
+                            , ( Just 4, [] )
+                            , ( Just 3, [ 1 ] )
+                            ]
+            , test "Right opens a section or moves to its first subsection, Left closes it or moves to its parent" <|
+                \_ ->
+                    [ press (search "") False "ArrowRight" 0
+                    , press { search = "", collapsed = Set.fromList [ 1 ], focus = Nothing, defaults = True } False "ArrowRight" 1
+                    , press (search "") False "ArrowLeft" 1
+                    , press (search "") False "ArrowLeft" 2
+                    , press (search "") False "ArrowRight" 2
+                    , press (search "") True "ArrowLeft" 0
+                    , press (search "") True "ArrowRight" 1
+                    ]
+                        |> Expect.equal
+                            [ ( Just 1, [] )
+                            , ( Nothing, [] )
+                            , ( Nothing, [ 1 ] )
+                            , ( Just 1, [] )
+                            , ( Nothing, [] )
+                            , ( Just 1, [] )
+                            , ( Nothing, [ 1 ] )
+                            ]
+            , test "reveal collapses the sections below the two upper levels once, and opens the branch of the current section" <|
+                \_ ->
+                    let
+                        first =
+                            Index.reveal 4 levels { search = "", collapsed = Set.empty, focus = Nothing, defaults = False }
+
+                        deep =
+                            Index.reveal 2 levels first
+
+                        closedAgain =
+                            Index.reveal 4 levels { deep | collapsed = Set.insert 0 deep.collapsed }
+                    in
+                    [ Set.toList first.collapsed, Set.toList deep.collapsed, Set.toList closedAgain.collapsed ]
+                        |> Expect.equal [ [ 1 ], [], [ 0 ] ]
+            , test "Toggle collapses and expands the subsections of a section" <|
+                \_ ->
+                    let
+                        ( once, _, _ ) =
+                            Index.update (Toggle 1) (search "") (course [ ( "a", "b" ) ])
+
+                        ( twice, _, _ ) =
+                            Index.update (Toggle 1) once (course [ ( "a", "b" ) ])
+                    in
+                    ( Set.toList once.collapsed, Set.toList twice.collapsed )
+                        |> Expect.equal ( [ 1 ], [] )
             ]
         , describe "view"
             (List.map
@@ -131,16 +194,47 @@ views =
     , ( "content"
       , let
             ( _, sections, _ ) =
-                Index.update (ScanIndex "c") "" (course [ ( "a", "b" ), ( "c", "d" ), ( "c", "**e**" ) ])
+                Index.update (ScanIndex "c") (search "") (course [ ( "a", "b" ), ( "c", "d" ), ( "c", "**e**" ) ])
         in
-        Html.div [] (View.content En True 1 identity (Array.map (\s -> { s | indentation = s.id + 1 }) sections))
-            |> Html.map (always ())
+        Html.div [] (View.content En True 1 (always ()) (always ()) (search "c") (Array.map (\s -> { s | indentation = s.id + 1 }) sections))
             |> Html.map (always NoOp)
       )
-    , ( "content inactive", Html.div [] (View.content En False 0 identity (course [ ( "a", "b" ) ])) |> Html.map (always NoOp) )
+    , ( "content inactive", Html.div [] (View.content En False 0 (always ()) (always ()) (search "") (course [ ( "a", "b" ) ])) |> Html.map (always NoOp) )
+    , ( "content nested", tree (search "") )
+    , ( "content collapsed", tree { search = "", collapsed = Set.fromList [ 0 ], focus = Nothing, defaults = True } )
+    , ( "content nested while searching", tree { search = "x", collapsed = Set.fromList [ 0 ], focus = Nothing, defaults = True } )
     , ( "bottom", View.bottom En True NoOp )
     , ( "bottom inactive", View.bottom De False NoOp )
     ]
+
+
+{-| Sections with the levels 1, 2, 3, 2 and 1.
+-}
+tree : IndexModel.Model -> Html.Html Msg
+tree model =
+    levels
+        |> View.content En True 4 (always NoOp) identity model
+        |> Html.div []
+
+
+levels : Array Section
+levels =
+    course [ ( "a", "A" ), ( "b", "B" ), ( "c", "C" ), ( "d", "D" ), ( "e", "E" ) ]
+        |> Array.indexedMap (\i s -> { s | indentation = [ 1, 2, 3, 2, 1 ] |> List.drop i |> List.head |> Maybe.withDefault 1 })
+
+
+{-| The entry with the focus after pressing `key` on entry `id` of `levels`,
+or the collapsed sections, if the key opened or closed one.
+-}
+press : IndexModel.Model -> Bool -> String -> Int -> ( Maybe Int, List Int )
+press model rtl key id =
+    Index.update (Key { current = 4, key = key, rtl = rtl, id = id }) model levels
+        |> (\( m, _, _ ) -> ( Maybe.map Tuple.second m.focus, Set.toList m.collapsed ))
+
+
+search : String -> IndexModel.Model
+search s =
+    { search = s, collapsed = Set.empty, focus = Nothing, defaults = True }
 
 
 searchView : Bool -> List Bool -> String -> Query.Single Msg
