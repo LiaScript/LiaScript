@@ -570,10 +570,13 @@ slideA11y { lang, light, tooltips, translations, mode, formulas, media, effect, 
                                 )
                             |> Maybe.withDefault []
                             |> (::)
-                                (Html.a
-                                    [ Attr.class "hide-lg-down"
+                                -- jumps to the step, named "Step 1 of 4"
+                                (Html.button
+                                    [ Attr.class "lia-notes__step hide-lg-down"
                                     , counter |> JumpToFragment |> onClick
-                                    , Attr.href "#"
+                                    , [ Trans.baseStep lang, String.fromInt counter, Trans.ttsOf lang, String.fromInt effect.effects ]
+                                        |> String.join " "
+                                        |> A11y_Aria.label
                                     ]
                                     [ Html.small
                                         [ Attr.class "lia-notes__counter" ]
@@ -585,26 +588,16 @@ slideA11y { lang, light, tooltips, translations, mode, formulas, media, effect, 
                                     ]
                                 )
                             |> Html.div
-                                [ Attr.class
-                                    ("lia-notes__content"
-                                        ++ (if active then
-                                                " active"
+                                (if active then
+                                    -- an attribute, Elm would only empty an id property
+                                    [ Attr.class "lia-notes__content active", Attr.attribute "id" "lia-notes-active" ]
 
-                                            else
-                                                " hide-lg-down"
-                                           )
-                                    )
-                                , Attr.id
-                                    (if active then
-                                        "lia-notes-active"
-
-                                     else
-                                        ""
-                                    )
-                                ]
+                                 else
+                                    [ Attr.class "lia-notes__content hide-lg-down" ]
+                                )
                             |> Tuple.pair (String.fromInt id ++ "-/-" ++ String.fromInt counter)
                     )
-                |> Keyed.node "aside" (deactivate modalIsActive [ Attr.class "lia-notes", Attr.tabindex -1 ])
+                |> Keyed.node "aside" (deactivate modalIsActive [ Attr.class "lia-notes", Attr.tabindex -1, A11y_Aria.label (Trans.commentSidebar lang) ])
 
         _ ->
             Html.text ""

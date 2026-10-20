@@ -4920,6 +4920,142 @@ commentHide lang =
             "Hide video & avatar comments"
 
 
+commentSidebar : Lang -> String
+commentSidebar lang =
+    case lang of
+        Am ->
+            "አስተያየቶች"
+
+        Ar ->
+            "التعليقات"
+
+        Bg ->
+            "Коментари"
+
+        Bn ->
+            "মন্তব্য"
+
+        Ca ->
+            "Comentaris"
+
+        Cs ->
+            "Komentáře"
+
+        Da ->
+            "Kommentarer"
+
+        De ->
+            "Kommentare"
+
+        El ->
+            "Σχόλια"
+
+        Es ->
+            "Comentarios"
+
+        Et ->
+            "Kommentaarid"
+
+        Eu ->
+            "Iruzkinak"
+
+        Fa ->
+            "توضیحات"
+
+        Fi ->
+            "Kommentit"
+
+        Fr ->
+            "Commentaires"
+
+        Ga ->
+            "Nótaí tráchta"
+
+        Hi ->
+            "टिप्पणियाँ"
+
+        Hr ->
+            "Komentari"
+
+        Hu ->
+            "Megjegyzések"
+
+        Hy ->
+            "Մեկնաբանություններ"
+
+        It ->
+            "Commenti"
+
+        Ja ->
+            "コメント"
+
+        Ka ->
+            "კომენტარები"
+
+        Ko ->
+            "해설"
+
+        Lt ->
+            "Komentarai"
+
+        Lv ->
+            "Komentāri"
+
+        Nb ->
+            "Kommentarer"
+
+        Nl ->
+            "Commentaar"
+
+        Pa ->
+            "ਟਿੱਪਣੀਆਂ"
+
+        Pl ->
+            "Komentarze"
+
+        Pt ->
+            "Comentários"
+
+        Ro ->
+            "Comentarii"
+
+        Ru ->
+            "Комментарии"
+
+        Sk ->
+            "Komentáre"
+
+        Sl ->
+            "Komentarji"
+
+        Sq ->
+            "Komentet"
+
+        Sv ->
+            "Kommentarer"
+
+        Sw ->
+            "Maoni"
+
+        Tr ->
+            "Yorumlar"
+
+        Tw ->
+            "評論"
+
+        Uk ->
+            "Коментарі"
+
+        Ur ->
+            "تبصرے"
+
+        Zh ->
+            "讲解"
+
+        _ ->
+            "Comments"
+
+
 no_translation : Lang -> String
 no_translation lang =
     case lang of

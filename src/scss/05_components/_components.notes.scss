@@ -75,6 +75,15 @@
     }
   }
 
+  // the step button looks like the plain counter
+  &__step {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+  }
+
   &__counter {
     border-block-end: 1px solid rgb(var(--lia-grey));
     color: rgb(var(--color-text));
