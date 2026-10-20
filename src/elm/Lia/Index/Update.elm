@@ -1,6 +1,5 @@
 module Lia.Index.Update exposing
-    ( Entry
-    , Msg(..)
+    ( Msg(..)
     , Node(..)
     , entries
     , linkID
