@@ -136,8 +136,11 @@ a {
   margin-bottom: 1.5rem;
 }
 
+/* no headings within the link, they would be part of the course outline */
 .card__title {
   color: #4b4b4b;
+  font-size: 1.5em;
+  font-weight: bold;
   margin: 0;
   position: relative;
 }
@@ -153,6 +156,8 @@ a {
 
 .card__subtitle {
   color: #707070;
+  font-size: 1.17em;
+  font-weight: bold;
   margin: 0.5rem 0 1rem;
 }
 
@@ -267,7 +272,7 @@ class PreviewLia extends HTMLElement {
     let tagLine = ''
     const tags = (meta.tags || []).filter((tag: string) => tag && tag.trim())
     if (tags.length > 0) {
-      tagLine = `<h3 class="card__subtitle">${tags.join(' | ')}</h3>`
+      tagLine = `<div class="card__subtitle">${tags.join(' | ')}</div>`
     }
 
     // meta is cached in backup and rendered again on every visit, do not modify it
@@ -301,7 +306,7 @@ class PreviewLia extends HTMLElement {
                 meta.icon
               }" alt="" style="display: block; height: 3rem; position: absolute; right: 5px; top: 5px">
               <header class="card__header">
-                <h2 class="card__title">${meta.title}</h2>
+                <div class="card__title">${meta.title}</div>
                 ${tagLine}
               </header>
               <div class="card__body">
