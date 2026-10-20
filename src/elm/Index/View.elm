@@ -12,7 +12,7 @@ import Index.View.Card exposing (card)
 import Index.View.Modal as Modal
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.View as Settings
-import Lia.Utils exposing (btn, deactivate)
+import Lia.Utils exposing (btn, deactivate, newTab, newTabHint)
 import Library.Masonry as Masonry
 import Session exposing (Session)
 
@@ -45,10 +45,13 @@ view session settings model =
                     Attr.style "min-width" "100%"
                 ]
                 [ Html.h1 [] [ Html.text "LiaScript: Open-courSe" ]
+
+                -- the page is English, so is the hint for links in a new tab
+                , newTabHint En
                 , Html.p []
                     [ Html.text "( ... search a list of free LiaScript courses and related material on "
                     , Html.a
-                        [ Attr.href "https://github.com/topics/liascript", Attr.target "_blank" ]
+                        (Attr.href "https://github.com/topics/liascript" :: newTab)
                         [ Html.text "GitHub" ]
                     , Html.text " )"
                     ]

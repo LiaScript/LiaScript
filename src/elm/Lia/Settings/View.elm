@@ -220,6 +220,7 @@ viewTheme grouping lang tabbable theme hasCustom =
                         , Attr.checked (theme == color)
                         , onClick (ChangeTheme color)
                         , Attr.title name
+                        , A11y_Aria.label name
                         , A11y_Key.tabbable tabbable
                         , A11y_Aria.hidden (not tabbable)
                         ]

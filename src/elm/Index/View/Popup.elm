@@ -89,7 +89,9 @@ view { escape, abort, text, action } =
             , Group.id groupID
             , Group.blur (always escape)
             , Attr.style "padding" "10px 20px"
-            , Attr.style "background-color" "#d9534f"
+
+            -- 5.33:1 with white text, #d9534f had 3.96:1
+            , Attr.style "background-color" "#c9302c"
             , Attr.style "color" "#fff"
             , Attr.style "border" "none"
             , Attr.style "border-radius" "4px"
