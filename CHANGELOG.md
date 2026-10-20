@@ -4,6 +4,35 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 20/10/2026
+
+- feat: accessible table of contents – a collapsible navigation tree (APG treeview) with a single tab stop, Up/Down/Home/End move between the entries, Right/Left open and close sections (mirrored for rtl); the two upper levels are shown by default and the branch of the current section is opened, while searching all matches are shown
+- feat: the search in the table of contents tolerates one typo per word (words with 4 or more characters)
+- feat: all dropdowns (gap texts, selection quizzes, select surveys, classroom backend) are select-only comboboxes with full keyboard support (arrows, Home, End, Enter, Space, Escape, Tab)
+- feat: keyboard – arrow keys move between the cells of matrix quizzes and surveys, switch the media of an open gallery, move the splitter between course and chat; images with an alt text are zoomed with Enter or Space
+- feat: do not rely on color alone – a new setting adds patterns to chart series, checked quiz inputs show solid (correct) or dashed (wrong) borders
+- feat: links that open in a new tab say so to screen readers
+- feat: the copy button of code blocks confirms the copy, visually and to screen readers
+- feat: icons with a uniform stroke width, new word cloud icon
+- improve: readable colors (WCAG AA) in all themes in light and dark mode, for quiz states, borders, links, focus rings, notes, the TTS bar and the table of contents
+- improve: focus handling – modals move the focus to their close button, keep Tab inside and return the focus to their opener; Escape closes toolbar panels; deactivated buttons of quizzes, surveys and code stay focusable and greyed out; text fields show their focus ring only on keyboard focus; surveys, course popups and deleted course cards no longer drop the focus to the page
+- improve: screen readers – live regions only announce what changes (quiz feedback, terminal, chat, search results, animation steps) instead of whole slides; names and roles for quiz, survey and task options, matrix inputs (row and column), gaps and drop zones (with a keyboard hint), code editors and read-only code, charts, sort buttons, footnotes, media, gallery, QR codes, link previews, the comments sidebar, the slide navigation and the toolbar (disclosure buttons instead of menus)
+- improve: the system setting "reduce motion" stops all animations, also those of course authors
+- improve: audio, figures and script inputs reflow at 320px without horizontal scrolling
+- improve: translations – all languages complete with native language names, 39 languages revised, Simplified Chinese for `zh`, the remaining English texts of the course view translated
+- fix: arrow keys switched slides while used by a slider, select, radio group or text field, or together with Alt (browser back)
+- fix: Enter on the abort button of the confirm popup deleted or reset the course or classroom
+- fix: swiping within a gallery or a wide table changed the slide
+- fix: YouTube got the language name instead of its code, captions follow the language of a translated course
+- fix: quizzes – hints below the controls in matrix quizzes, drop zones overflowed, gaps too narrow for their solution
+- fix: script errors name their kind (e.g. `ReferenceError: x is not defined`), thrown strings were not shown
+- fix: links in formulas were not reachable for screen readers, pages without a course had no language
+- fix: preview-lia modified cached meta data, broken logo on revisits
+- fix: header – the edit link and the language code match the other menu buttons
+- test: snapshots and tests adapted to the accessible markup
+- chore: `npm run translate` generates `src/elm/I18n/Translations.elm` again
+
+
 ## [2.2.2] - 13/10/2026
 
 - fix: chat – answering a quiz, survey or code block scrolled up to the one of an older message (the ids repeat in every message, the reveal now takes the one next to the click)
