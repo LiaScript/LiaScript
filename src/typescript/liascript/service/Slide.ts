@@ -59,7 +59,7 @@ const Service = {
           if (elem && elem.scrollTo) {
             elem.scrollTo({
               top: elem.scrollHeight,
-              behavior: 'smooth',
+              behavior: scrollBehavior(),
             })
           }
         }, event.message.param.delay)
@@ -147,11 +147,12 @@ export function scrollIntoView(
   block?: ScrollLogicalPosition
 ) {
   setTimeout(function () {
-    const elem =
-      [...document.querySelectorAll<HTMLElement>('#' + CSS.escape(id))].find(
+    const elem = nearest(
+      [...document.querySelectorAll<HTMLElement>('#' + CSS.escape(id))].filter(
         // skip only hidden persistent slides, notes and toc live outside of main
-        el => !el.closest('main[hidden]')
-      ) ?? null
+        (el) => !el.closest('main[hidden]')
+      )
+    )
 
     if (elem) {
       // Double rAF ensures the browser has completed layout after dynamic
@@ -170,9 +171,27 @@ export function scrollIntoView(
   }, delay)
 }
 
+// the element the user clicked last, a quiz check or a code run
+let lastClick: Node | null = null
+
+// The chat renders every message on its own, so the same id (quiz, survey,
+// code) appears once per message: take the one nearest the last click.
+function nearest(elems: HTMLElement[]): HTMLElement | null {
+  for (let node = lastClick; node; node = node.parentNode) {
+    const hit = elems.find((el) => node!.contains(el))
+    if (hit) return hit
+  }
+  return elems[0] ?? null
+}
+
+// no smooth scrolling, if the user reduces motion in the system settings
+function scrollBehavior(): ScrollBehavior {
+  return matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+}
+
 function scrollTo(elem: HTMLElement, block?: ScrollLogicalPosition) {
   try {
-    elem.scrollIntoView({ behavior: 'smooth', block })
+    elem.scrollIntoView({ behavior: scrollBehavior(), block })
   } catch (e) {
     // Gecko < 58 (KaiOS) knows neither 'nearest' nor 'center' and throws,
     // align to the bottom then, but only if it is not visible already
@@ -183,6 +202,8 @@ function scrollTo(elem: HTMLElement, block?: ScrollLogicalPosition) {
 // Opening a `<details>` at the bottom of the screen would hide its new content,
 // so it is moved into view. Clicks only, `<details open>` on load stays put.
 document.addEventListener('click', (event) => {
+  lastClick = event.target as Node
+
   const details = (event.target as HTMLElement)?.closest?.('summary')
     ?.parentElement
 

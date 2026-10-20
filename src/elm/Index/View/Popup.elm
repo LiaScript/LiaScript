@@ -1,11 +1,11 @@
 module Index.View.Popup exposing (..)
 
 import Accessibility.Aria as A11y_Aria
-import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
+import Json.Decode as JD
 import Lia.Utils exposing (btnIcon)
 import Library.Group as Group
 
@@ -15,15 +15,33 @@ groupID =
     "lia-popup"
 
 
-{-| A custom message type for the popup.
+{-| The abort button, which gets the focus when the popup opens, since the
+action is destructive.
 -}
-view : { escape : msg, text : String, action : { msg : msg, text : String } } -> Html msg
-view { escape, text, action } =
+cancelID : String
+cancelID =
+    "lia-popup-cancel"
+
+
+{-| Id of the button that opens the popup `kind` of a course, the focus
+returns there when the popup is aborted.
+-}
+triggerID : String -> String -> String
+triggerID kind courseID =
+    groupID ++ "-" ++ kind ++ "-" ++ courseID
+
+
+{-| A custom message type for the popup. `abort` (Escape or the abort button)
+returns the focus to the opener, `escape` only closes the popup when the
+focus leaves it.
+-}
+view : { escape : msg, abort : msg, text : String, action : { msg : msg, text : String } } -> Html msg
+view { escape, abort, text, action } =
     Html.div
         [ -- Use ARIA attributes to define the dialog.
-          A11y_Role.dialog
-        , A11y_Aria.modal True
+          A11y_Role.alertDialog
         , A11y_Aria.label action.text
+        , A11y_Aria.describedBy [ groupID ++ "-text" ]
         , Attr.style "position" "absolute"
         , Attr.style "min-width" "250px"
         , Attr.style "background-color" "#fff"
@@ -33,17 +51,33 @@ view { escape, text, action } =
         , Attr.style "border-radius" "8px"
         , Attr.style "z-index" "100"
         , Attr.style "bottom" "1rem"
-        , Attr.tabindex 0
+        , Attr.tabindex -1
         , Attr.id groupID
-        , A11y_Key.onKeyDown
-            [ A11y_Key.escape escape
-            , A11y_Key.enter action.msg
-            ]
+
+        -- Enter is handled by the focused button only, otherwise it would
+        -- trigger the action also on abort. Escape must not close a
+        -- surrounding modal as well.
+        , Event.custom "keydown"
+            (JD.field "key" JD.string
+                |> JD.andThen
+                    (\key ->
+                        if key == "Escape" then
+                            JD.succeed
+                                { message = abort
+                                , stopPropagation = True
+                                , preventDefault = False
+                                }
+
+                        else
+                            JD.fail "no escape"
+                    )
+            )
         , Group.id groupID
         , Group.blur (always escape)
         ]
         [ Html.p
-            [ Group.id groupID
+            [ Attr.id (groupID ++ "-text")
+            , Group.id groupID
             , Group.blur (always escape)
             , Attr.style "margin-block-end" "16px"
             , Attr.style "font-size" "16px"
@@ -52,12 +86,12 @@ view { escape, text, action } =
             [ Html.text text ]
         , Html.button
             [ Event.onClick action.msg
-            , Attr.tabindex 0
-            , Attr.autofocus True
             , Group.id groupID
             , Group.blur (always escape)
             , Attr.style "padding" "10px 20px"
-            , Attr.style "background-color" "#d9534f"
+
+            -- 5.33:1 with white text, #d9534f had 3.96:1
+            , Attr.style "background-color" "#c9302c"
             , Attr.style "color" "#fff"
             , Attr.style "border" "none"
             , Attr.style "border-radius" "4px"
@@ -67,10 +101,11 @@ view { escape, text, action } =
         , btnIcon
             { title = "abort"
             , tabbable = True
-            , msg = Just escape
+            , msg = Just abort
             , icon = "icon-close"
             }
-            [ Group.id groupID
+            [ Attr.id cancelID
+            , Group.id groupID
             , Attr.class "lia-btn--transparent px-0 py-0"
             , Attr.style "position" "absolute"
             , Attr.style "right" "2px"

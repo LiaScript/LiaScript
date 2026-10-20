@@ -86,3 +86,17 @@ kbd {
   outline-width: var(--focus-ring-width);
   border-radius: var(--focus-ring-radius);
 }
+
+// The users' system setting "reduce motion" (WCAG 2.3.3) stops all animations,
+// also the ones of course authors. A short duration instead of none keeps the
+// animationend and transitionend events, other code might wait for.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

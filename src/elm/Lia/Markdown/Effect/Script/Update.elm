@@ -108,7 +108,7 @@ update main msg scripts =
                         scripts
                             |> Array.set id (activate node)
                             |> Return.val
-                            |> Return.cmd (focus NoOp "lia-focus")
+                            |> Return.cmd (focus NoOp ("lia-focus-" ++ String.fromInt id))
 
                     else
                         reRun activate (focus NoOp ("lia-script-" ++ String.fromInt id)) id scripts

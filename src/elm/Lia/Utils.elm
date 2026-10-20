@@ -1,7 +1,6 @@
 module Lia.Utils exposing
     ( array_getLast
     , array_setLast
-    , blockKeydown
     , btn
     , btnIcon
     , checkFalse
@@ -11,8 +10,13 @@ module Lia.Utils exposing
     , formatDate
     , get
     , icon
+    , labeledOption
     , identicon
+    , combobox
+    , dropdownList
     , modal
+    , newTab
+    , newTabHint
     , noTranslate
     , onEnter
     , onKeyDown
@@ -34,6 +38,7 @@ import Array exposing (Array)
 import Browser.Dom as Dom
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
+import I18n.Translations exposing (Lang, baseCloseDialog, baseNewTab)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
@@ -67,16 +72,6 @@ onKeyDown : (Int -> msg) -> Html.Attribute msg
 onKeyDown tagger =
     Event.stopPropagationOn "keydown"
         (JD.map (\x -> ( x, True )) (JD.map tagger Event.keyCode))
-
-
-{-| Avoid event bubbling. Especially key-press left or right should be handled
-by some elements itself and not result in a section-switch. Thus, on global
-scale the left and right arrow keys should be used in slide-navigation, but
-locally it must be suppressed in text inputs, search fields, etc.
--}
-blockKeydown : msg -> Html.Attribute msg
-blockKeydown msg =
-    Event.stopPropagationOn "keydown" (JD.succeed ( msg, True ))
 
 
 {-| Get the ith element of a list, a negative index returns the first one:
@@ -137,18 +132,27 @@ btn :
     -> Html msg
 btn { title, tabbable, msg } =
     List.append
-        [ Attr.class "lia-btn"
-        , msg
-            |> Maybe.map Event.onClick
-            |> Maybe.withDefault (Attr.disabled True)
-        , A11y_Key.tabbable tabbable
-        , A11y_Aria.hidden (not tabbable)
-        , if String.isEmpty title then
-            Attr.class ""
+        (Attr.class "lia-btn"
+            :: (case msg of
+                    Just onClick ->
+                        [ Event.onClick onClick ]
 
-          else
-            Attr.title title
-        ]
+                    Nothing ->
+                        -- not `disabled`, which would drop the focus, if it
+                        -- was the focused button that got deactivated
+                        [ A11y_Aria.disabled True
+                        , Attr.class "lia-btn--disabled is-disabled"
+                        ]
+               )
+            ++ [ A11y_Key.tabbable tabbable
+               , A11y_Aria.hidden (not tabbable)
+               , if String.isEmpty title then
+                    Attr.class ""
+
+                 else
+                    Attr.title title
+               ]
+        )
         >> Html.button
 
 
@@ -185,9 +189,10 @@ scheduleFocus delay msg elementID =
 
 {-| Create custom modals, which overlay the entire view.
 -}
-modal : Bool -> msg -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
-modal activeBorder msgClose controls content =
-    Html.div
+modal : Lang -> Bool -> msg -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
+modal lang activeBorder msgClose controls content =
+    -- the custom element moves the focus in and out, see webcomponents/modal.ts
+    Html.node "lia-modal"
         [ Attr.class "lia-modal"
         , A11y_Aria.modal True
         , A11y_Role.dialog
@@ -199,11 +204,10 @@ modal activeBorder msgClose controls content =
                     { icon = "icon-close"
                     , msg = Just msgClose
                     , tabbable = True
-                    , title = "close modal"
+                    , title = baseCloseDialog lang
                     }
                     [ Attr.class "lia-btn--transparent"
                     , Attr.id "lia-modal__close"
-                    , A11y_Key.onKeyDown [ A11y_Key.escape msgClose ]
                     ]
                 ]
             , content
@@ -595,3 +599,66 @@ formatDate ms =
         ++ pad (Time.toHour Time.utc posix)
         ++ ":"
         ++ pad (Time.toMinute Time.utc posix)
+
+
+{-| An option of a quiz, survey or task list: the `input` is named by the
+content with the `id` via `aria-labelledby`. The content is no `label`, since
+it might contain images or scripts, which must not toggle the input.
+-}
+labeledOption : String -> (Attribute a -> Html msg) -> List (Html msg) -> Html msg
+labeledOption id input body =
+    Html.div [ Attr.class "lia-label lia-label--top" ]
+        [ input (A11y_Aria.labelledBy id)
+        , Html.div [ Attr.id id, Attr.style "width" "100%" ] body
+        ]
+
+
+{-| The focusable element of a dropdown (select-only combobox), named by
+`label`, the keyboard is handled by `typescript/liascript/combobox.ts`.
+-}
+combobox : String -> Bool -> Bool -> Attribute msg -> List (Attribute msg)
+combobox listID open disabled label =
+    [ Attr.class "lia-dropdown__selected"
+    , Attr.tabindex 0
+    , A11y_Role.comboBox
+    , A11y_Aria.expanded open
+    , A11y_Aria.hasListBoxPopUp
+    , A11y_Aria.controls [ listID ]
+    , label
+    , A11y_Aria.disabled disabled
+    ]
+
+
+{-| The list of a dropdown, it is removed from the accessibility tree while it
+is closed, otherwise the options would be read as the value of the combobox.
+-}
+dropdownList : String -> Bool -> List (Attribute msg) -> List (Attribute msg)
+dropdownList listID open attributes =
+    Attr.id listID
+        :: A11y_Role.listBox
+        :: (if open then
+                attributes
+
+            else
+                A11y_Aria.hidden True :: Attr.attribute "inert" "" :: attributes
+           )
+
+
+{-| Attributes of a link that opens in a new tab, the hint (`newTabHint`) is
+read as its description.
+-}
+newTab : List (Attribute msg)
+newTab =
+    [ Attr.target "_blank", A11y_Aria.describedBy [ newTabID ] ]
+
+
+{-| The hidden hint "opens in a new tab", it exists once in the course view.
+-}
+newTabHint : Lang -> Html msg
+newTabHint lang =
+    Html.span [ Attr.id newTabID, Attr.hidden True ] [ Html.text (baseNewTab lang) ]
+
+
+newTabID : String
+newTabID =
+    "lia-new-tab"

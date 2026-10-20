@@ -8,15 +8,21 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import I18n.Translations as Translations exposing (Lang)
+import Json.Decode as JD
 import Lia.Markdown.Gallery.Types exposing (Gallery, Vector)
 import Lia.Markdown.Gallery.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
+import Lia.Markdown.Inline.Stringify as Stringify
 import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Inline.View as Inline
-import Lia.Utils exposing (btnIcon, get, icon, modal)
+import Lia.Utils exposing (btnIcon, deactivate, get, icon, modal)
 
 
+{-| Every media is one button that opens the gallery, named by its alt text.
+The preview below is inert, its own controls (zoom, video) are covered by
+the button and would only be extra tab stops.
+-}
 view : Config sub -> Vector -> Parameters -> Gallery -> Html (Msg sub)
 view config vector attr gallery =
     gallery.media
@@ -25,12 +31,21 @@ view config vector attr gallery =
                 [ media
                     |> Inline.view { config | oEmbed = Just { maxwidth = 250, maxheight = 250, scale = 1.0, thumbnail = True } }
                     |> Html.map Script
+                    |> List.singleton
+                    |> Html.div (deactivate True [])
                 , Html.div
                     [ Event.onClick <| Show gallery.id i
                     , Attr.class "lia-lightbox__clickarea"
                     , A11y_Key.tabbable True
                     , A11y_Role.button
-                    , A11y_Aria.label "zoom media"
+                    , Attr.attribute "aria-haspopup" "dialog"
+                    , A11y_Aria.label <|
+                        case String.trim (Stringify.stringify [ media ]) of
+                            "" ->
+                                Translations.baseZoom config.lang
+
+                            alt ->
+                                Translations.baseZoom config.lang ++ ": " ++ alt
                     , A11y_Key.onKeyDown
                         [ A11y_Key.enter (Show gallery.id i)
                         , A11y_Key.space (Show gallery.id i)
@@ -72,7 +87,47 @@ viewOverlay config id mediaID size =
     Inline.viewMedia { config | oEmbed = Just { maxwidth = 0, maxheight = 0, scale = 0.76, thumbnail = False } }
         >> Html.map Script
         >> List.singleton
-        >> modal True (Close id) (viewControls config.lang id mediaID size)
+        >> modal config.lang True (Close id) (viewControls config.lang id mediaID size)
+        >> List.singleton
+        >> Html.div [ Event.on "keydown" (arrows id mediaID size) ]
+
+
+{-| The arrow keys switch to the next or previous media, in the direction of
+the text (`dir` of the document). Within media, inputs and iframes the keys
+belong to the element, e.g. seeking a video.
+-}
+arrows : Int -> Int -> Int -> JD.Decoder (Msg sub)
+arrows id mediaID size =
+    JD.map3
+        (\key tag dir ->
+            let
+                next =
+                    if dir == "rtl" then
+                        "ArrowLeft"
+
+                    else
+                        "ArrowRight"
+
+                target =
+                    if key == next then
+                        mediaID + 1
+
+                    else if key == "ArrowLeft" || key == "ArrowRight" then
+                        mediaID - 1
+
+                    else
+                        -1
+            in
+            if target < 0 || target >= size || List.member tag [ "VIDEO", "AUDIO", "INPUT", "TEXTAREA", "SELECT", "IFRAME" ] then
+                JD.fail "not a switch"
+
+            else
+                JD.succeed (Show id target)
+        )
+        (JD.field "key" JD.string)
+        (JD.at [ "target", "tagName" ] JD.string)
+        (JD.at [ "target", "ownerDocument", "documentElement", "dir" ] JD.string)
+        |> JD.andThen identity
 
 
 viewControls : Lang -> Int -> Int -> Int -> Maybe (List (Html (Msg sub)))

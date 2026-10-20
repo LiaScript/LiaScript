@@ -53,6 +53,9 @@ let hideTimer = 0
 /** the link that currently owns the tooltip, late loads of others are dropped */
 let active: PreviewLink | null = null
 
+/** the inner link that the visible tooltip describes for screen readers */
+let described: Element | null = null
+
 /**
  * Tooltip-webcomponent, which is added to the HTML-DOM by:
  *
@@ -275,11 +278,20 @@ function show(card: HTMLElement, link: PreviewLink) {
   tooltip.textContent = ''
   tooltip.appendChild(card)
   tooltip.style.display = 'block'
+  describe(link.firstElementChild)
 }
 
 function hide() {
   clearTimeout(hideTimer)
   if (container) container.style.display = 'none'
+  describe(null)
+}
+
+/** the card is read as description of the link, as long as it is visible */
+function describe(element: Element | null) {
+  described?.removeAttribute('aria-describedby')
+  described = element
+  described?.setAttribute('aria-describedby', TOOLTIP_ID)
 }
 
 /** hiding is delayed, so that the mouse can move onto the tooltip */

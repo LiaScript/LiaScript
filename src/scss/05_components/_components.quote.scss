@@ -14,6 +14,11 @@
     margin-block-end: 0;
   }
 
+  // nested quotes do not stack the tint, which would darken the alert colors
+  & & {
+    background-color: rgba(var(--color-background), 0.6);
+  }
+
   &__text {
     color: rgb(var(--color-highlight-dark));
     font-family: 'LiaSourceSerifPro';

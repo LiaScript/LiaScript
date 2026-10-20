@@ -1,10 +1,12 @@
 module Lia.Markdown.Inline.View exposing
     ( audio
     , dropHere
+    , dropZoneLabel
     , onError
     , reduce
     , view
     , viewMedia
+    , viewDragHint
     , viewQuizDrops
     , view_inf
     , viewer
@@ -34,7 +36,7 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (blockKeydown, noTranslate, shuffle)
+import Lia.Utils exposing (combobox, dropdownList, newTab, noTranslate, shuffle)
 import List.Extra
 import QRCode
 
@@ -102,7 +104,7 @@ view config element =
         FootnoteMark e attr ->
             attr
                 |> toAttribute
-                |> Footnote.inline e
+                |> Footnote.inline config.lang e
 
         Container list attr ->
             list
@@ -192,8 +194,8 @@ viewQuiz config ( width, id ) attr =
                     |> Maybe.withDefault (dropHere [])
                 ]
 
-        Just (Drop highlighted _ state) ->
-            viewDropTarget config id highlighted state partiallyCorrect attr
+        Just (Drop highlighted active state) ->
+            viewDropTarget config id highlighted active state partiallyCorrect (highlight [] ++ toAttribute attr)
 
         _ ->
             Html.text "todo"
@@ -220,8 +222,7 @@ viewText config id width text attributes =
 
            else
             Attr.disabled True
-         , blockKeydown Msg.NoOp
-         , A11y_Aria.label "quiz answer"
+         , A11y_Aria.label (Translations.quizGap config.lang ++ " " ++ String.fromInt (id + 1))
          , Attr.class <|
             if config.input.active then
                 ""
@@ -236,6 +237,8 @@ viewText config id width text attributes =
 
 
 {-| **@private:** A dropdown, `selected` is the index of the selected option.
+It is a select-only combobox, the keyboard is handled by
+`typescript/liascript/combobox.ts`, which clicks the existing elements.
 -}
 viewSelect : Config sub -> Int -> Bool -> Int -> List (Attribute (Msg sub)) -> (List (Attribute (Msg sub)) -> List (Attribute (Msg sub))) -> Html (Msg sub)
 viewSelect config id open selected attributes highlight =
@@ -245,23 +248,24 @@ viewSelect config id open selected attributes highlight =
                 |> Array.get id
                 |> Maybe.withDefault []
 
+        listID =
+            "lia-select-"
+                ++ inputPrefix config
+                ++ "-"
+                ++ String.fromInt id
+
         action =
             if config.input.active then
-                [ Attr.attribute "onClick" (config.input.on "toggle" id "true")
-                , keyDownEvent (config.input.on "toggle" id "true")
-                ]
+                [ Attr.attribute "onClick" (config.input.on "toggle" id "true") ]
 
             else
-                [ Attr.disabled True
-                , Attr.class "is-disabled"
-                ]
+                [ Attr.class "is-disabled" ]
     in
     Html.span
         (highlight
             (action
                 ++ [ Attr.class "lia-dropdown"
                    , Attr.style "padding" "0 0.5rem"
-                   , Attr.tabindex 0
                    , Attr.style "vertical-align"
                         (if open then
                             "text-top"
@@ -274,14 +278,12 @@ viewSelect config id open selected attributes highlight =
             )
         )
         [ Html.span
-            [ Attr.class "lia-dropdown__selected"
-            , A11y_Aria.hidden False
-            , A11y_Role.button
-            , A11y_Aria.expanded open
-            , Attr.style "font-weight" "inherit"
-            , Attr.style "text-decoration" "inherit"
-            , Attr.style "font-style" "inherit"
-            ]
+            (combobox listID open (not config.input.active) (A11y_Aria.label (Translations.quizSelection config.lang ++ " " ++ String.fromInt (id + 1)))
+                ++ [ Attr.style "font-weight" "inherit"
+                   , Attr.style "text-decoration" "inherit"
+                   , Attr.style "font-style" "inherit"
+                   ]
+            )
             [ case List.Extra.getAt selected options of
                 Just option ->
                     Html.span [] (viewer config option)
@@ -295,41 +297,38 @@ viewSelect config id open selected attributes highlight =
 
                     else
                         "icon icon-chevron-down"
-                , A11y_Role.button
+                , A11y_Aria.hidden True
                 ]
                 []
             ]
         , options
-            |> List.indexedMap (viewOption config open id)
+            |> List.indexedMap (viewOption config listID selected id)
             |> shuffle (Maybe.andThen (Array.get id) config.input.randomize)
             |> Html.div
-                [ Attr.class "lia-dropdown__options"
-                , Attr.tabindex -1
-                , Attr.class <|
-                    if open then
-                        "is-visible"
+                (dropdownList listID
+                    open
+                    [ Attr.class "lia-dropdown__options"
+                    , Attr.class <|
+                        if open then
+                            "is-visible"
 
-                    else
-                        "is-hidden"
-                ]
+                        else
+                            "is-hidden"
+                    ]
+                )
         ]
 
 
 {-| **@private:** An option `i` of the dropdown with `id`.
 -}
-viewOption : Config sub -> Bool -> Int -> Int -> Inlines -> Html (Msg sub)
-viewOption config open id i option =
+viewOption : Config sub -> String -> Int -> Int -> Int -> Inlines -> Html (Msg sub)
+viewOption config listID selected id i option =
     Html.div
         [ Attr.class "lia-dropdown__option"
+        , Attr.id (listID ++ "-" ++ String.fromInt i)
         , Attr.attribute "onclick" (config.input.on "choose" id (String.fromInt i))
-        , A11y_Role.listItem
-        , Attr.tabindex <|
-            if open then
-                0
-
-            else
-                -1
-        , keyDownEvent (config.input.on "choose" id (String.fromInt i))
+        , A11y_Role.option
+        , A11y_Aria.selected (i == selected)
         ]
         [ Html.div [] (viewer config option) ]
 
@@ -337,8 +336,8 @@ viewOption config open id i option =
 {-| **@private:** A drop target, `state` is `[ input, option ]` of the
 dropped option, which can be dragged away again.
 -}
-viewDropTarget : Config sub -> Int -> Bool -> List Int -> Maybe Bool -> Parameters -> Html (Msg sub)
-viewDropTarget config id highlighted state partiallyCorrect attr =
+viewDropTarget : Config sub -> Int -> Bool -> Bool -> List Int -> Maybe Bool -> List (Attribute (Msg sub)) -> Html (Msg sub)
+viewDropTarget config id highlighted active state partiallyCorrect attr =
     let
         option =
             case state of
@@ -351,7 +350,7 @@ viewDropTarget config id highlighted state partiallyCorrect attr =
                     Nothing
     in
     Html.span
-        (toAttribute attr
+        (attr
             ++ dropStyle
                 ((if highlighted then
                     "5px"
@@ -368,6 +367,11 @@ viewDropTarget config id highlighted state partiallyCorrect attr =
                , Attr.attribute "ondragleave" ("setTimeout(()=>" ++ config.input.on "dragenter" id "false" ++ ", 100)")
                , Attr.tabindex 0
                , A11y_Role.button
+               , dropZoneLabel config.lang (" " ++ String.fromInt (id + 1)) (Maybe.map (stringify_ config) option)
+               , A11y_Aria.describedBy [ dragHintID config ]
+
+               -- selected by Enter or click, the next card is placed here
+               , A11y_Aria.pressed (Just active)
                , Attr.attribute "onclick" (config.input.on "dragtarget" id "null")
                , keyDownEvent (config.input.on "dragtarget" id "null")
                ]
@@ -392,7 +396,7 @@ viewDropTarget config id highlighted state partiallyCorrect attr =
                     (viewer config inlines)
 
             Nothing ->
-                dropHere []
+                dropHere [ A11y_Aria.hidden True ]
         ]
 
 
@@ -400,7 +404,8 @@ viewDropTarget config id highlighted state partiallyCorrect attr =
 -}
 dropStyle : String -> String -> List (Attribute msg)
 dropStyle border radius =
-    [ Attr.style "padding" "1rem"
+    [ Attr.class "lia-drop"
+    , Attr.style "padding" "1rem"
     , Attr.style "margin" "0.25rem"
     , Attr.style "position" "relative"
     , Attr.style "border" border
@@ -419,10 +424,10 @@ borderColor partiallyCorrect =
             "#888"
 
         Just True ->
-            "green"
+            "rgb(var(--color-success))"
 
         Just False ->
-            "red"
+            "rgb(var(--color-failure))"
 
 
 {-| **@private:** `[i,j]`
@@ -484,6 +489,48 @@ viewQuizDrops config =
         |> List.concat
 
 
+{-| How to use drag & drop with the keyboard, it describes the cards and drop
+zones of a quiz and is only rendered if it has drop inputs.
+-}
+viewDragHint : Config sub -> Html msg
+viewDragHint config =
+    if
+        config.input.state
+            |> Array.toList
+            |> List.any
+                (\state ->
+                    case state of
+                        Drop _ _ _ ->
+                            True
+
+                        _ ->
+                            False
+                )
+    then
+        Html.span [ Attr.id (dragHintID config), Attr.class "hidden-visually" ]
+            [ Html.text (Translations.quizDragHint config.lang) ]
+
+    else
+        Html.text ""
+
+
+{-| **@private:** The id of the keyboard hint of the drop inputs of a quiz.
+-}
+dragHintID : Config sub -> String
+dragHintID config =
+    "lia-drag-hint-" ++ inputPrefix config
+
+
+{-| **@private:** Identifies the inputs of a quiz within the page.
+-}
+inputPrefix : Config sub -> String
+inputPrefix config =
+    config.input.path
+        |> List.map (\( name, i ) -> "-" ++ name ++ "-" ++ String.fromInt i)
+        |> String.concat
+        |> (++) (String.fromInt config.slide)
+
+
 {-| **@private:** Option `i` of the drop input `id`.
 -}
 viewDragOption : Config sub -> Bool -> Int -> Int -> Inlines -> Html (Msg sub)
@@ -502,13 +549,7 @@ viewDragOption config active id i option =
              , Attr.style "display" "inline-block"
              , A11y_Role.button
              , Attr.tabindex 0
-             , Attr.attribute "aria-grabbed"
-                (if active then
-                    "true"
-
-                 else
-                    "false"
-                )
+             , A11y_Aria.describedBy [ dragHintID config ]
              ]
                 |> CList.appendIf config.input.active
                     [ Attr.style "cursor" "pointer"
@@ -519,6 +560,23 @@ viewDragOption config active id i option =
                     , keyDownEvent (on "dragsource")
                     ]
             )
+
+
+{-| The name of a drop zone and its card, `number` is empty if there is only
+one drop zone.
+-}
+dropZoneLabel : Lang -> String -> Maybe String -> Attribute msg
+dropZoneLabel lang number card =
+    A11y_Aria.label <|
+        Translations.quizDropZone lang
+            ++ number
+            ++ (case card of
+                    Just text ->
+                        ": " ++ text
+
+                    Nothing ->
+                        ", " ++ Translations.quizEmpty lang
+               )
 
 
 {-| An empty drop target.
@@ -720,7 +778,6 @@ viewMedia config inline =
                             :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
                             :: toAttribute attr
                             |> CList.addIf (width == Nothing) (load url_)
-                            |> CList.addWhen (title config title_)
                         )
                         []
                     ]
@@ -798,12 +855,25 @@ alt config =
     Just >> stringFrom config >> Maybe.map Attr.alt
 
 
-{-| **@private:** Add the optional `title` and `alt` attributes.
+{-| **@private:** An iframe is named by its `title`, which is the title of the
+media or otherwise its alt text.
 -}
-titleAndAlt : Config sub -> Inlines -> Maybe Inlines -> List (Attribute msg) -> List (Attribute msg)
-titleAndAlt config alt_ title_ =
-    CList.addWhen (title config title_)
-        >> CList.addWhen (alt config alt_)
+iframeTitle : Config sub -> Inlines -> Maybe Inlines -> List (Attribute msg) -> List (Attribute msg)
+iframeTitle config alt_ title_ =
+    case stringFrom config title_ of
+        Just str ->
+            (::) (Attr.title str)
+
+        Nothing ->
+            CList.addWhen (stringFrom config (Just alt_) |> Maybe.map Attr.title)
+
+
+{-| **@private:** Audio and video elements have no `alt` attribute, the alt text
+names them via `aria-label`. The title is the caption of their figure.
+-}
+mediaLabel : Config sub -> Inlines -> List (Attribute msg) -> List (Attribute msg)
+mediaLabel config alt_ =
+    CList.addWhen (stringFrom config (Just alt_) |> Maybe.map A11y_Aria.label)
 
 
 {-| **@private:** An image, a click opens the zoomed image, if it has no
@@ -816,16 +886,33 @@ img config attr alt_ url_ title_ width =
             :: onError "img" url_
             :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
             :: (if List.isEmpty attr && config.image_zoom then
-                    [ Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") ]
+                    Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")")
+                        :: zoomByKeyboard (stringFrom config (Just alt_))
 
                 else
                     toAttribute attr
                )
             |> CList.addIf (width == Nothing) (load url_)
-            |> CList.addWhen (title config title_)
             |> addLazyLoading config.visible
         )
         []
+
+
+{-| **@private:** Images with an alt text can be zoomed with the keyboard too,
+decorative images (`alt=""`) are not focusable.
+-}
+zoomByKeyboard : Maybe String -> List (Attribute msg)
+zoomByKeyboard alt_ =
+    case alt_ of
+        Just _ ->
+            [ Attr.tabindex 0
+            , A11y_Role.button
+            , Attr.attribute "aria-haspopup" "dialog"
+            , Attr.attribute "onkeydown" "if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"
+            ]
+
+        Nothing ->
+            []
 
 
 {-| **@private:** Only in textbook mode (`visible == Nothing`) media is loaded
@@ -913,14 +1000,14 @@ reference config ref attr =
                                 :: allow
                                 :: Attr.style "width" "100%"
                                 :: annotation "lia-audio" attr
-                                |> titleAndAlt config alt_ title_
+                                |> iframeTitle config alt_ title_
                                 |> addLazyLoading config.visible
                             )
                             []
 
                       else
                         audio
-                            (toAttribute attr |> titleAndAlt config alt_ title_)
+                            (toAttribute attr |> mediaLabel config alt_)
                             { url = url_
                             , controls = True
                             , preload = "none"
@@ -938,7 +1025,7 @@ reference config ref attr =
                                 :: Attr.attribute "allowfullscreen" ""
                                 :: allow
                                 :: toAttribute attr
-                                |> titleAndAlt config alt_ title_
+                                |> iframeTitle config alt_ title_
                                 |> addLazyLoading config.visible
                             )
                             (viewer config alt_)
@@ -959,7 +1046,7 @@ reference config ref attr =
                                     (Attr.controls True
                                         :: Attr.attribute "preload" "none"
                                         :: toAttribute attr
-                                        |> titleAndAlt config alt_ title_
+                                        |> mediaLabel config alt_
                                     )
                                     [ Html.source [ Attr.src url_, onError "video" url_ ] [] ]
                               )
@@ -970,7 +1057,7 @@ reference config ref attr =
             Html.figure [ Attr.class "lia-figure", Attr.style "height" "auto", Attr.style "width" "100%" ]
                 [ Html.div [ Attr.class "lia-figure__media" ]
                     [ printLink config alt_ title_ url
-                    , oembed config.oEmbed attr url
+                    , oembed config.oEmbed attr (stringFrom config (Just alt_)) url
                     , Html.figcaption [ Attr.class "lia-figure__caption" ] <|
                         case title_ of
                             Just sub ->
@@ -978,10 +1065,10 @@ reference config ref attr =
 
                             Nothing ->
                                 [ Html.a
-                                    [ Attr.class "lia-link"
-                                    , Attr.href url
-                                    , Attr.target "blank_"
-                                    ]
+                                    (Attr.class "lia-link"
+                                        :: Attr.href url
+                                        :: newTab
+                                    )
                                     [ Html.text url ]
                                 ]
                     ]
@@ -1005,7 +1092,6 @@ reference config ref attr =
                         :: Attr.style "display" "inline-block"
                         :: Attr.style "background-color" "white"
                         :: annotation "lia-link" attr
-                        |> CList.addWhen (title config title_)
                     )
                 |> figure config title_ (Just 300) "image"
 
@@ -1041,7 +1127,9 @@ audio attr settings =
         ]
 
 
-{-| **@private:** Add the current language to YouTube videos.
+{-| **@private:** Add the current language to YouTube videos. `hl` is only the
+language of the player, if the course has been translated (e.g. by Google),
+the captions are switched on in the new language.
 -}
 addTranslation : Config sub -> String -> String
 addTranslation config url_ =
@@ -1053,9 +1141,16 @@ addTranslation config url_ =
                 else
                     "?hl="
                )
-            ++ (config.translations
-                    |> Maybe.map .new
-                    |> Maybe.withDefault (Translations.baseLang config.lang)
+            ++ (case config.translations of
+                    Just { old, new } ->
+                        if old /= new then
+                            new ++ "&cc_load_policy=1&cc_lang_pref=" ++ new
+
+                        else
+                            new
+
+                    Nothing ->
+                        Translations.getCodeFromLn config.lang
                )
 
     else
@@ -1077,12 +1172,17 @@ printLink config alt_ title_ url_ =
 
 {-| **@private:** The `lia-embed` web component, which loads oEmbed content.
 -}
-oembed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool } -> Parameters -> String -> Html msg
-oembed option attr url =
+oembed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool } -> Parameters -> Maybe String -> String -> Html msg
+oembed option attr alt_ url =
     Html.node "lia-embed"
         [ url
             |> JE.string
             |> Attr.property "url"
+
+        -- names the embedded iframe or image
+        , alt_
+            |> Maybe.map (JE.string >> Attr.property "alt")
+            |> Maybe.withDefault (Attr.class "")
         , option
             |> Maybe.map
                 (\o ->
@@ -1157,21 +1257,25 @@ view_url config alt_ url_ title_ attr =
             ]
 
 
-{-| **@private:** External links are opened in a new tab.
+{-| **@private:** External links are opened in a new tab and say so, mails
+open in a new tab as before, but without the hint.
 -}
 link : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
 link config alt_ url_ title_ attr =
     Html.a
         (Attr.href url_
-            :: Attr.target
-                (if String.startsWith "#" url_ then
-                    ""
-
-                 else
-                    "_blank"
-                )
             :: annotation "lia-link" attr
             |> CList.addWhen (title config title_)
+            |> List.append
+                (if String.startsWith "#" url_ then
+                    []
+
+                 else if String.startsWith "mailto:" url_ then
+                    [ Attr.target "_blank" ]
+
+                 else
+                    newTab
+                )
         )
         (viewer config alt_)
 
@@ -1183,5 +1287,5 @@ qrCode : Lang -> String -> Html msg
 qrCode lang url =
     url
         |> QRCode.fromString
-        |> Result.map (QRCode.toSvg [ A11y_Aria.label <| Translations.qrCode lang ++ ": " ++ url ])
+        |> Result.map (QRCode.toSvg [ A11y_Role.img, A11y_Aria.label <| Translations.qrCode lang ++ ": " ++ url ])
         |> Result.withDefault (Html.text (Translations.qrErr lang))

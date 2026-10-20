@@ -12,6 +12,7 @@ const defaultSettings: Lia.Settings = {
   dir: 'ltr',
 
   tooltips: false,
+  decals: false,
   preferBrowserTTS: true,
   hideVideoComments: false,
   audio: { pitch: 1, rate: 1 },
@@ -73,9 +74,18 @@ export const Settings = {
 
       let className = `lia-theme-${data.theme} lia-variant-${
         data.light ? 'light' : 'dark'
-      } lia-font-scale-${fontSize}`
+      } lia-font-scale-${fontSize}${data.decals ? ' lia-decals' : ''}`
+
+      const decalsChanged =
+        document.documentElement.classList.contains('lia-decals') !==
+        !!data.decals
 
       document.documentElement.className = className
+
+      // charts add patterns to their series, see webcomponents/chart.ts
+      if (decalsChanged) {
+        window.dispatchEvent(new CustomEvent('lia-decals'))
+      }
     } catch (err: any) {
       console.warn('settings (className): ', err.message)
     }
