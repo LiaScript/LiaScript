@@ -112,6 +112,13 @@ init flags url key =
                     , origin = lia_.origin
                     , anchor = lia_.anchor
                     }
+                    |> (\lia ->
+                            let
+                                settings =
+                                    lia.settings
+                            in
+                            { lia | settings = { settings | hasIndex = flags.hasIndex } }
+                       )
                 )
 
         decodedQuery =

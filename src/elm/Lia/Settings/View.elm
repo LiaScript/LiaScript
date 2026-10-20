@@ -468,9 +468,10 @@ viewInformation :
     -> Lang
     -> Bool
     -> Maybe String
+    -> Bool
     -> Definition
     -> List (Html Msg)
-viewInformation grouping lang tabbable repositoryURL definition =
+viewInformation grouping lang tabbable repositoryURL hasIndex definition =
     [ case ( Dict.get "repository" definition.macro, repositoryURL ) of
         ( Just url, _ ) ->
             viewRepository url
@@ -526,7 +527,9 @@ viewInformation grouping lang tabbable repositoryURL definition =
               else
                 Html.text ""
             ]
-        |> CList.addWhen (viewOffline lang tabbable)
+        -- the offline media belong to the index, without one (SCORM, xAPI, ...)
+        -- the course is managed by the LMS
+        |> CList.addWhen (viewOffline lang (tabbable && hasIndex))
         |> List.map (Html.div (grouping [ Attr.tabindex -1, Attr.style "user-select" "text" ]))
 
 
@@ -1128,7 +1131,7 @@ menuInformation repositoryURL definition lang tabbable settings =
         , title = Trans.confInformation lang
         , attributes = []
         }
-    , viewInformation grouping lang tabbable repositoryURL definition
+    , viewInformation grouping lang tabbable repositoryURL settings.hasIndex definition
         |> submenu ShowInformation grouping (settings.action == Just ShowInformation)
     ]
 

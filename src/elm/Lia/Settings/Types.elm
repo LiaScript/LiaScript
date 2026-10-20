@@ -60,6 +60,10 @@ type alias Settings =
     -- progress of "save course offline" (stored and all slides, failed media
     -- files), not persisted
     , offline : Maybe { slides : Int, total : Int, failed : Int }
+
+    -- the connector provides an index (home button), not within LMS packages
+    -- like SCORM or xAPI, set by `Main.init`, not persisted
+    , hasIndex : Bool
     }
 
 
@@ -172,6 +176,7 @@ init hasShareApi isFullscreen mode =
     , fullscreen = isFullscreen
     , edit = Nothing
     , offline = Nothing
+    , hasIndex = False
     }
 
 
