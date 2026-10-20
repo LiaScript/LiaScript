@@ -10,12 +10,14 @@ is shown, in presentation and slides mode only the effects of the current
 animation step.
 -}
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
 import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
+import I18n.Translations as Translations
 import Json.Encode as JE
 import Lia.Markdown.Effect.Model exposing (Model)
 import Lia.Markdown.Effect.Types exposing (Class(..), Effect, class, isIn)
@@ -108,6 +110,10 @@ inline config attr e body =
 
         label =
             Html.label [] (inline_playback config e :: body)
+
+        -- new animation steps are only announced in presentation and slides
+        announce =
+            config.visible /= Nothing
     in
     case class e of
         Animation ->
@@ -115,26 +121,26 @@ inline config attr e body =
             circle "lia-effect__circle lia-effect__circle--inline" e.begin
                 :: Html.text " "
                 :: body
-                |> hiddenSpan hide (speaking && config.visible == Nothing) attr
+                |> hiddenSpan announce hide (speaking && config.visible == Nothing) attr
 
         PlayBack ->
-            hiddenSpan False speaking attr [ label ]
+            hiddenSpan announce False speaking attr [ label ]
 
         PlayBackAnimation ->
-            hiddenSpan hide speaking attr [ circle "lia-effect__circle lia-effect__circle--inline" e.begin, label ]
+            hiddenSpan announce hide speaking attr [ circle "lia-effect__circle lia-effect__circle--inline" e.begin, label ]
 
 
-hiddenSpan : Bool -> Bool -> Parameters -> List (Html msg) -> Html msg
-hiddenSpan hide speaking attr =
+hiddenSpan : Bool -> Bool -> Bool -> Parameters -> List (Html msg) -> Html msg
+hiddenSpan announce hide speaking attr =
     Html.span
         (if hide then
             annotation "lia-effect--inline hide" attr
 
          else if speaking then
-            A11y_Live.polite :: A11y_Role.alert :: annotation "lia-effect--inline lia-effect--speaking" attr
+            CList.appendIf announce [ A11y_Role.alert, A11y_Live.polite ] (annotation "lia-effect--inline lia-effect--speaking" attr)
 
          else
-            A11y_Live.polite :: A11y_Role.alert :: annotation "lia-effect--inline" attr
+            CList.appendIf announce [ A11y_Role.alert, A11y_Live.polite ] (annotation "lia-effect--inline" attr)
         )
 
 
@@ -159,10 +165,10 @@ block_playback config e =
             , onclick (playOrStop config e isActive)
             ]
             (if isActive then
-                "Stop"
+                Translations.baseStop config.lang
 
              else
-                "Play"
+                Translations.basePlay config.lang
             )
             (if isActive then
                 "icon-stop"
@@ -183,10 +189,10 @@ block_playback config e =
                 )
             ]
             (if isPaused then
-                "Resume"
+                Translations.ttsResume config.lang
 
              else
-                "Pause"
+                Translations.ttsPause config.lang
             )
             (if isPaused then
                 "icon-play"
@@ -211,10 +217,10 @@ inline_playback config e =
         , onPlayback config e "this.labels[0]" (playOrStop config e isActive)
         ]
         (if isActive then
-            "Stop"
+            Translations.baseStop config.lang
 
          else
-            "Play"
+            Translations.basePlay config.lang
         )
         (if isActive then
             "icon-stop-circle"
@@ -271,9 +277,11 @@ onPlayback config e text event =
         |> Attr.attribute "onclick"
 
 
+{-| The number only shows the step, a screen reader reads the content.
+-}
 circle : String -> Int -> Html msg
 circle className i =
-    Html.span [ Attr.class className ] [ Html.text ("\u{200A}" ++ String.fromInt i ++ "\u{200A}") ]
+    Html.span [ Attr.class className, A11y_Aria.hidden True ] [ Html.text ("\u{200A}" ++ String.fromInt i ++ "\u{200A}") ]
 
 
 {-| The animation progress `" (visible/effects)"`, empty without effects.

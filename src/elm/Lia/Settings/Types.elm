@@ -7,7 +7,9 @@ module Lia.Settings.Types exposing
     , TTS
     , fromGroup
     , init
+    , submenuID
     , toGroup
+    , toggleID
     )
 
 {-| The user settings of LiaScript and the state of the menus and the TTS
@@ -45,6 +47,7 @@ type alias Settings =
     , translateWithGoogle : Maybe Bool
     , customTheme : Maybe String
     , tooltips : Bool
+    , decals : Bool
     , hideVideoComments : Bool
     , sync : Maybe Bool
     , showQRCode : Bool
@@ -79,6 +82,43 @@ type Action
     | Close
 
 
+{-| The id of the toolbar button, which opens and closes the submenu of an
+action.
+-}
+toggleID : Action -> String
+toggleID action =
+    "lia-btn-" ++ actionName action
+
+
+{-| The id of the submenu of an action, referenced by `aria-controls`.
+-}
+submenuID : Action -> String
+submenuID action =
+    "lia-submenu-" ++ actionName action
+
+
+actionName : Action -> String
+actionName action =
+    case action of
+        ShowInformation ->
+            "information"
+
+        ShowTranslations ->
+            "translations"
+
+        ShowSettings ->
+            "settings"
+
+        ShowModes ->
+            "modes"
+
+        ShowShare ->
+            "share"
+
+        Close ->
+            "close"
+
+
 {-| -}
 type Mode
     = Slides -- Underline Comments and Effects
@@ -110,6 +150,7 @@ init hasShareApi isFullscreen mode =
     , translateWithGoogle = Just False
     , customTheme = Nothing
     , tooltips = False
+    , decals = False
     , hideVideoComments = False
     , sync = Just False
     , showQRCode = False

@@ -16,6 +16,12 @@ figure {
   }
 }
 
+// also content with a fixed width, set by the author, fits small screens
+audio,
+.lia-figure__media > * {
+  max-width: 100%;
+}
+
 .lia-video-wrapper,
 .lia-iframe-wrapper {
   position: relative;

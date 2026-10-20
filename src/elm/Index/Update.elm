@@ -8,8 +8,9 @@ module Index.Update exposing
 
 import Browser.Navigation as Nav
 import Dict
-import Index.Model exposing (Action(..), Course, Modal, Model, Release)
+import Index.Model exposing (Action(..), Course, Modal, Model, Release, cardID, urlInputID)
 import Index.Version as Version
+import Index.View.Popup as Popup
 import Json.Decode as JD
 import Lia.Definition.Json.Decode as Definition
 import Lia.Markdown.Inline.Json.Decode as Inline
@@ -34,12 +35,12 @@ type Msg
     | Share { title : String, text : String, url : String, image : Maybe String }
     | Handle Event
     | Activate String (Maybe String)
-    | NoOp
     | LoadCourse String
     | UpdateSettings Settings.Msg
     | Modal (Maybe Modal)
     | MasonryMsg Masonry.Msg
     | PopupClose
+    | PopupAbort String
     | None
 
 
@@ -93,7 +94,7 @@ update msg settings model =
                             (mapPopup Popup_Delete courseID)
                             model.masonry
                   }
-                , Lia.Utils.focus None "lia-popup"
+                , Lia.Utils.focus None Popup.cancelID
                 , []
                 )
 
@@ -105,25 +106,42 @@ update msg settings model =
 
                     ( masonry, cmd ) =
                         Masonry.init (Just "card") courses
+
+                    -- the focus moves to the next card, the previous one or
+                    -- the url input, if there is no card left
+                    target =
+                        case List.Extra.splitWhen (.id >> (==) courseID) model.courses of
+                            Just ( before, _ :: after ) ->
+                                (case after of
+                                    next :: _ ->
+                                        Just next
+
+                                    [] ->
+                                        List.Extra.last before
+                                )
+                                    |> Maybe.map (.id >> cardID)
+                                    |> Maybe.withDefault urlInputID
+
+                            _ ->
+                                urlInputID
                 in
                 ( { model
                     | courses = courses
                     , masonry = masonry
                   }
-                , Cmd.map MasonryMsg cmd
+                , Cmd.batch [ Cmd.map MasonryMsg cmd, Lia.Utils.focus None target ]
                 , [ Service.Database.index_delete courseID ]
                 )
 
             PopupClose ->
-                ( { model
-                    | masonry =
-                        Masonry.map
-                            (\course ->
-                                { course | popup = Nothing }
-                            )
-                            model.masonry
-                  }
+                ( closePopups model
                 , Cmd.none
+                , []
+                )
+
+            PopupAbort trigger ->
+                ( closePopups model
+                , Lia.Utils.focus None trigger
                 , []
                 )
 
@@ -134,18 +152,13 @@ update msg settings model =
                             (mapPopup Popup_Reset courseID)
                             model.masonry
                   }
-                , Lia.Utils.focus None "lia-popup"
+                , Lia.Utils.focus None Popup.cancelID
                 , []
                 )
 
             Reset True courseID version ->
-                ( { model
-                    | masonry =
-                        Masonry.map
-                            (mapPopup Popup_Reset "")
-                            model.masonry
-                  }
-                , Cmd.none
+                ( closePopups model
+                , Lia.Utils.focus None (Popup.triggerID "reset" courseID)
                 , [ Service.Database.index_reset
                         { url = courseID
                         , version =
@@ -244,7 +257,7 @@ update msg settings model =
                             _ ->
                                 Nothing
                   }
-                , scheduleFocus Nothing NoOp "lia-modal-focus"
+                , scheduleFocus Nothing None "lia-modal-focus"
                 , []
                 )
 
@@ -256,6 +269,11 @@ update msg settings model =
 
             _ ->
                 ( model, Cmd.none, [] )
+
+
+closePopups : Model -> Model
+closePopups model =
+    { model | masonry = Masonry.map (\course -> { course | popup = Nothing }) model.masonry }
 
 
 mapPopup : Action -> String -> Course -> Course

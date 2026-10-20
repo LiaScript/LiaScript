@@ -137,7 +137,13 @@ update session msg model =
                         closeTocOnSmallScreens session model.settings
 
                     loaded =
-                        { model | section_active = idx, settings = { settings | playback = Idle } }
+                        { model
+                            | section_active = idx
+                            , settings = { settings | playback = Idle }
+
+                            -- the table of contents shows the branch of the section
+                            , index_model = Index.reveal idx model.sections model.index_model
+                        }
                 in
                 if idx == model.section_active || force then
                     update session InitSection (generate loaded)

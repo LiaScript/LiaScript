@@ -3,19 +3,19 @@ module Lia.Markdown.Quiz.Block.View exposing (view)
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
-import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import I18n.Translations as Translations
+import Lia.Markdown.Inline.Stringify as Stringify
 import Json.Decode as JD
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (dropHere, viewer)
+import Lia.Markdown.Inline.View exposing (dropHere, dropZoneLabel, viewer)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Utils exposing (blockKeydown, deactivate, icon, onEnter, shuffle)
+import Lia.Utils exposing (combobox, dropdownList, icon, onEnter, shuffle)
 import List.Extra
 
 
@@ -23,16 +23,17 @@ import List.Extra
 can be dragged into the drop zone or clicked (or entered) one after the other.
 -}
 view :
-    Config sub
+    String
+    -> Config sub
     -> Maybe (List Int)
     -> Solution.State
     -> Quiz Inlines
     -> State
     -> List (Html (Msg sub))
-view config randomize solution quiz state =
+view base config randomize solution quiz state =
     case state of
         Text str ->
-            [ text solution str
+            [ text config.lang solution str
             , case solution of
                 ( Solution.Solved, _ ) ->
                     icon "icon-check text-success"
@@ -60,7 +61,7 @@ view config randomize solution quiz state =
             [ value
                 |> List.head
                 |> Maybe.withDefault -1
-                |> select config randomize solution open quiz.options
+                |> select base config randomize solution open quiz.options
             ]
 
         Drop highlight active value ->
@@ -96,8 +97,7 @@ view config randomize solution quiz state =
                     ]
             in
             [ Html.div
-                [ Attr.style "width" "100%"
-                , Attr.style "padding" "0.5rem"
+                [ Attr.style "padding" "0.5rem"
                 , Attr.style "margin" "0.25rem"
                 , Attr.style "position" "relative"
                 , Html.Events.onClick
@@ -108,6 +108,7 @@ view config randomize solution quiz state =
                         None
                     )
                 , A11y_Role.button
+                , dropZoneLabel config.lang "" (Maybe.map Stringify.stringify (List.Extra.getAt id quiz.options))
                 , A11y_Key.onKeyDown
                     (if removable then
                         [ A11y_Key.enter DropTarget
@@ -117,8 +118,10 @@ view config randomize solution quiz state =
                      else
                         []
                     )
+
+                -- only a filled drop zone does something, Enter clears it
                 , Attr.tabindex <|
-                    if List.isEmpty value then
+                    if removable then
                         0
 
                     else
@@ -147,14 +150,12 @@ view config randomize solution quiz state =
                                  , Attr.style "justify-content" "center"
                                  ]
                                     ++ draggable id
-                                    ++ [ A11y_Role.button
-                                       , Attr.tabindex 0
-                                       ]
                                 )
                         )
                     |> Maybe.withDefault
                         (dropHere
-                            [ Attr.style "height" "4rem"
+                            [ A11y_Aria.hidden True
+                            , Attr.style "height" "4rem"
                             , Attr.style "display" "flex"
                             , Attr.style "font-size" "4rem" -- fallback
                             , Attr.style "font-size" "min(10vw, 4rem)" -- scales with viewport
@@ -228,8 +229,8 @@ view config randomize solution quiz state =
             ]
 
 
-text : Solution.State -> String -> Html (Msg sub)
-text solution state =
+text : Translations.Lang -> Solution.State -> String -> Html (Msg sub)
+text lang solution state =
     Html.input
         [ Attr.type_ "input"
         , Attr.class "lia-input lia-quiz__input"
@@ -243,20 +244,24 @@ text solution state =
         , Attr.value state
         , Attr.disabled (not <| Solution.isOpen solution)
         , onInput Input
-        , blockKeydown (Input state)
         , onEnter Submit
-        , A11y_Aria.label "quiz answer"
+        , A11y_Aria.label (Translations.quizInput lang)
         ]
         []
 
 
-{-| **private:** A dropdown, `i` is the selected option.
+{-| **private:** A dropdown, `i` is the selected option. It is a select-only
+combobox, the keyboard is handled by `typescript/liascript/combobox.ts`, which
+clicks the existing elements.
 -}
-select : Config sub -> Maybe (List Int) -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
-select config randomize solution open options i =
+select : String -> Config sub -> Maybe (List Int) -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
+select base config randomize solution open options i =
     let
         active =
             Solution.isOpen solution
+
+        listID =
+            base ++ "-select"
     in
     Html.div
         [ Attr.class "lia-dropdown"
@@ -265,27 +270,10 @@ select config randomize solution open options i =
             onClick Toggle
 
           else
-            Attr.disabled True
-        , Attr.tabindex <|
-            if active then
-                0
-
-            else
-                -1
-        , A11y_Aria.hidden False
-        , A11y_Role.button
-        , A11y_Aria.expanded open
-        , A11y_Aria.hasListBoxPopUp
-        , A11y_Key.onKeyDown <|
-            if active then
-                [ A11y_Key.enter Toggle, A11y_Key.space Toggle ]
-
-            else
-                []
+            Attr.class "is-disabled"
         ]
         [ Html.span
-            [ Attr.class "lia-dropdown__selected"
-            ]
+            (combobox listID open (not active) (A11y_Aria.label (Translations.quizSelection config.lang)))
             [ get_option config i options
             , Html.i
                 [ Attr.class <|
@@ -296,18 +284,17 @@ select config randomize solution open options i =
                             else
                                 " icon-chevron-down"
                            )
+                , A11y_Aria.hidden True
                 ]
                 []
             ]
         , options
-            |> List.indexedMap (option config open active)
+            |> List.indexedMap (option config listID i)
             |> shuffle randomize
             |> Html.div
-                (deactivate (not (open || active))
+                (dropdownList listID
+                    (open && active)
                     [ Attr.class "lia-dropdown__options"
-                    , A11y_Aria.hidden (not (open && active))
-                    , Attr.tabindex -1
-                    , A11y_Role.listBox
                     , Attr.class <|
                         if open then
                             "is-visible"
@@ -319,29 +306,20 @@ select config randomize solution open options i =
         ]
 
 
-option : Config sub -> Bool -> Bool -> Int -> Inlines -> Html (Msg sub)
-option config open active id =
+option : Config sub -> String -> Int -> Int -> Inlines -> Html (Msg sub)
+option config listID selected id =
     viewer config
         >> Html.div []
         >> Html.map Script
         >> List.singleton
         >> Html.div
             [ Attr.class "lia-dropdown__option"
+            , Attr.id (listID ++ "-" ++ String.fromInt id)
             , id
                 |> Choose
                 |> onClick
-            , [ A11y_Key.enter (Choose id)
-              , A11y_Key.space (Choose id)
-              ]
-                |> CList.addIf active (A11y_Key.escape Toggle)
-                |> A11y_Key.onKeyDown
-            , A11y_Role.listItem
-            , Attr.tabindex <|
-                if open then
-                    0
-
-                else
-                    -1
+            , A11y_Role.option
+            , A11y_Aria.selected (id == selected)
             ]
 
 

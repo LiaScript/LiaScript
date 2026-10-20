@@ -587,12 +587,16 @@
   content: "\EA5D"
 }
 
-.icon-zoom-out:before {
+.icon-wordcloud:before {
   content: "\EA5E"
 }
 
-.icon-zoom:before {
+.icon-zoom-out:before {
   content: "\EA5F"
+}
+
+.icon-zoom:before {
+  content: "\EA60"
 }
 
 

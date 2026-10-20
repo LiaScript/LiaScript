@@ -120,7 +120,8 @@ suite =
                         |> clickArea 1
                         |> Query.has
                             [ attribute (Attr.attribute "role" "button")
-                            , attribute (Attr.attribute "aria-label" "zoom media")
+                            , attribute (Attr.attribute "aria-label" "Enlarge: alt1")
+                            , attribute (Attr.attribute "aria-haspopup" "dialog")
                             , attribute (Attr.tabindex 0)
                             ]
             , test "the click area contains the zoom icon" <|
@@ -196,12 +197,12 @@ suite =
                 \_ ->
                     render (Array.fromList [ 2 ]) (gallery 0 3)
                         |> modalButton "lia-modal__ctrl-next"
-                        |> Query.has [ Selector.disabled True ]
+                        |> Query.has [ Selector.attribute (Attr.attribute "aria-disabled" "true") ]
             , test "prev is disabled at the first media" <|
                 \_ ->
                     render (Array.fromList [ 0 ]) (gallery 0 3)
                         |> modalButton "lia-modal__ctrl-prev"
-                        |> Query.has [ Selector.disabled True ]
+                        |> Query.has [ Selector.attribute (Attr.attribute "aria-disabled" "true") ]
             , test "next and prev are enabled in between" <|
                 \_ ->
                     render (Array.fromList [ 1 ]) (gallery 0 3)
