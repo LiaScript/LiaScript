@@ -102,25 +102,29 @@ closed =
     
     <div class="lia-gallery">
         <div class="lia-lightbox">
-            <figure class="lia-figure">
-                <div class="lia-figure__media" data-media-type="image">
-                    <img alt="alt0" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" src="http://example.com/0.png">
-                </div>
-                
-            </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div aria-hidden="true" inert="true">
+                <figure class="lia-figure">
+                    <div class="lia-figure__media" data-media-type="image">
+                        <img alt="alt0" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" role="button" src="http://example.com/0.png" tabIndex="0">
+                    </div>
+                    
+                </figure>
+            </div>
+            <div class="lia-lightbox__clickarea" aria-haspopup="dialog" aria-label="Enlarge: alt0" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
         </div>
         <div class="lia-lightbox">
-            <figure class="lia-figure">
-                <div class="lia-figure__media" data-media-type="image">
-                    <img alt="alt1" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" src="http://example.com/1.png">
-                </div>
-                
-            </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div aria-hidden="true" inert="true">
+                <figure class="lia-figure">
+                    <div class="lia-figure__media" data-media-type="image">
+                        <img alt="alt1" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" role="button" src="http://example.com/1.png" tabIndex="0">
+                    </div>
+                    
+                </figure>
+            </div>
+            <div class="lia-lightbox__clickarea" aria-haspopup="dialog" aria-label="Enlarge: alt1" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -132,57 +136,63 @@ closed =
 first : String
 first =
     """<div>
-    <div class="lia-modal" aria-modal="true" role="dialog">
-        <div class="lia-modal__inner">
-            <div class="lia-modal__close">
-                <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="close modal">
-                    <i class="icon icon-close lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
+    <div>
+        <lia-modal class="lia-modal" aria-modal="true" role="dialog">
+            <div class="lia-modal__inner">
+                <div class="lia-modal__close">
+                    <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="Close dialog">
+                        <i class="icon icon-close lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                </div>
+                <div class="lia-modal__content">
+                    <figure class="lia-figure">
+                        <div class="lia-figure__media  lia-figure__zoom" style="background-image:url('http://example.com/0.png');" data-media-image="image" onmousemove="window.LIA.img.zoom(event)">
+                            <img alt="alt0" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" src="http://example.com/0.png">
+                        </div>
+                        
+                    </figure>
+                </div>
+                <div class="lia-modal__controls">
+                    <button class="lia-btn lia-modal__ctrl-next lia-btn--transparent" aria-hidden="false" tabIndex="0" title="next">
+                        <i class="icon icon-arrow-right lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                    <button class="lia-btn lia-btn--disabled is-disabled lia-modal__ctrl-prev lia-btn--transparent" aria-disabled="true" aria-hidden="false" tabIndex="0" title="previous">
+                        <i class="icon icon-arrow-left lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                </div>
             </div>
-            <div class="lia-modal__content">
+            <div class="lia-modal__outer">
+            </div>
+        </lia-modal>
+    </div>
+    <div class="lia-gallery">
+        <div class="lia-lightbox">
+            <div aria-hidden="true" inert="true">
                 <figure class="lia-figure">
-                    <div class="lia-figure__media  lia-figure__zoom" style="background-image:url('http://example.com/0.png');" data-media-image="image" onmousemove="window.LIA.img.zoom(event)">
-                        <img alt="alt0" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" src="http://example.com/0.png">
+                    <div class="lia-figure__media" data-media-type="image">
+                        <img alt="alt0" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" role="button" src="http://example.com/0.png" tabIndex="0">
                     </div>
                     
                 </figure>
             </div>
-            <div class="lia-modal__controls">
-                <button class="lia-btn lia-modal__ctrl-next lia-btn--transparent" aria-hidden="false" tabIndex="0" title="next">
-                    <i class="icon icon-arrow-right lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
-                <button class="lia-btn lia-modal__ctrl-prev lia-btn--transparent" aria-hidden="false" tabIndex="0" title="previous" disabled>
-                    <i class="icon icon-arrow-left lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
-            </div>
-        </div>
-        <div class="lia-modal__outer">
-        </div>
-    </div>
-    <div class="lia-gallery">
-        <div class="lia-lightbox">
-            <figure class="lia-figure">
-                <div class="lia-figure__media" data-media-type="image">
-                    <img alt="alt0" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" src="http://example.com/0.png">
-                </div>
-                
-            </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-haspopup="dialog" aria-label="Enlarge: alt0" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
         </div>
         <div class="lia-lightbox">
-            <figure class="lia-figure">
-                <div class="lia-figure__media" data-media-type="image">
-                    <img alt="alt1" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" src="http://example.com/1.png">
-                </div>
-                
-            </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div aria-hidden="true" inert="true">
+                <figure class="lia-figure">
+                    <div class="lia-figure__media" data-media-type="image">
+                        <img alt="alt1" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" role="button" src="http://example.com/1.png" tabIndex="0">
+                    </div>
+                    
+                </figure>
+            </div>
+            <div class="lia-lightbox__clickarea" aria-haspopup="dialog" aria-label="Enlarge: alt1" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -194,57 +204,63 @@ first =
 last : String
 last =
     """<div>
-    <div class="lia-modal" aria-modal="true" role="dialog">
-        <div class="lia-modal__inner">
-            <div class="lia-modal__close">
-                <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="close modal">
-                    <i class="icon icon-close lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
+    <div>
+        <lia-modal class="lia-modal" aria-modal="true" role="dialog">
+            <div class="lia-modal__inner">
+                <div class="lia-modal__close">
+                    <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="Close dialog">
+                        <i class="icon icon-close lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                </div>
+                <div class="lia-modal__content">
+                    <figure class="lia-figure">
+                        <div class="lia-figure__media  lia-figure__zoom" style="background-image:url('http://example.com/1.png');" data-media-image="image" onmousemove="window.LIA.img.zoom(event)">
+                            <img alt="alt1" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" src="http://example.com/1.png">
+                        </div>
+                        
+                    </figure>
+                </div>
+                <div class="lia-modal__controls">
+                    <button class="lia-btn lia-btn--disabled is-disabled lia-modal__ctrl-next lia-btn--transparent" aria-disabled="true" aria-hidden="false" tabIndex="0" title="next">
+                        <i class="icon icon-arrow-right lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                    <button class="lia-btn lia-modal__ctrl-prev lia-btn--transparent" aria-hidden="false" tabIndex="0" title="previous">
+                        <i class="icon icon-arrow-left lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                </div>
             </div>
-            <div class="lia-modal__content">
+            <div class="lia-modal__outer">
+            </div>
+        </lia-modal>
+    </div>
+    <div class="lia-gallery">
+        <div class="lia-lightbox">
+            <div aria-hidden="true" inert="true">
                 <figure class="lia-figure">
-                    <div class="lia-figure__media  lia-figure__zoom" style="background-image:url('http://example.com/1.png');" data-media-image="image" onmousemove="window.LIA.img.zoom(event)">
-                        <img alt="alt1" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" src="http://example.com/1.png">
+                    <div class="lia-figure__media" data-media-type="image">
+                        <img alt="alt0" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" role="button" src="http://example.com/0.png" tabIndex="0">
                     </div>
                     
                 </figure>
             </div>
-            <div class="lia-modal__controls">
-                <button class="lia-btn lia-modal__ctrl-next lia-btn--transparent" aria-hidden="false" tabIndex="0" title="next" disabled>
-                    <i class="icon icon-arrow-right lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
-                <button class="lia-btn lia-modal__ctrl-prev lia-btn--transparent" aria-hidden="false" tabIndex="0" title="previous">
-                    <i class="icon icon-arrow-left lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
-            </div>
-        </div>
-        <div class="lia-modal__outer">
-        </div>
-    </div>
-    <div class="lia-gallery">
-        <div class="lia-lightbox">
-            <figure class="lia-figure">
-                <div class="lia-figure__media" data-media-type="image">
-                    <img alt="alt0" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" src="http://example.com/0.png">
-                </div>
-                
-            </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-haspopup="dialog" aria-label="Enlarge: alt0" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
         </div>
         <div class="lia-lightbox">
-            <figure class="lia-figure">
-                <div class="lia-figure__media" data-media-type="image">
-                    <img alt="alt1" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" src="http://example.com/1.png">
-                </div>
-                
-            </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div aria-hidden="true" inert="true">
+                <figure class="lia-figure">
+                    <div class="lia-figure__media" data-media-type="image">
+                        <img alt="alt1" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" role="button" src="http://example.com/1.png" tabIndex="0">
+                    </div>
+                    
+                </figure>
+            </div>
+            <div class="lia-lightbox__clickarea" aria-haspopup="dialog" aria-label="Enlarge: alt1" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -259,25 +275,29 @@ outOfRange =
     
     <div class="lia-gallery">
         <div class="lia-lightbox">
-            <figure class="lia-figure">
-                <div class="lia-figure__media" data-media-type="image">
-                    <img alt="alt0" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" src="http://example.com/0.png">
-                </div>
-                
-            </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div aria-hidden="true" inert="true">
+                <figure class="lia-figure">
+                    <div class="lia-figure__media" data-media-type="image">
+                        <img alt="alt0" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" role="button" src="http://example.com/0.png" tabIndex="0">
+                    </div>
+                    
+                </figure>
+            </div>
+            <div class="lia-lightbox__clickarea" aria-haspopup="dialog" aria-label="Enlarge: alt0" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
         </div>
         <div class="lia-lightbox">
-            <figure class="lia-figure">
-                <div class="lia-figure__media" data-media-type="image">
-                    <img alt="alt1" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" src="http://example.com/1.png">
-                </div>
-                
-            </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div aria-hidden="true" inert="true">
+                <figure class="lia-figure">
+                    <div class="lia-figure__media" data-media-type="image">
+                        <img alt="alt1" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" role="button" src="http://example.com/1.png" tabIndex="0">
+                    </div>
+                    
+                </figure>
+            </div>
+            <div class="lia-lightbox__clickarea" aria-haspopup="dialog" aria-label="Enlarge: alt1" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -292,25 +312,29 @@ annotated =
     
     <div class="lia-gallery wide" title="my gallery">
         <div class="lia-lightbox">
-            <figure class="lia-figure">
-                <div class="lia-figure__media" data-media-type="image">
-                    <img alt="alt0" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" src="http://example.com/0.png">
-                </div>
-                
-            </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div aria-hidden="true" inert="true">
+                <figure class="lia-figure">
+                    <div class="lia-figure__media" data-media-type="image">
+                        <img alt="alt0" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" role="button" src="http://example.com/0.png" tabIndex="0">
+                    </div>
+                    
+                </figure>
+            </div>
+            <div class="lia-lightbox__clickarea" aria-haspopup="dialog" aria-label="Enlarge: alt0" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
         </div>
         <div class="lia-lightbox">
-            <figure class="lia-figure">
-                <div class="lia-figure__media" data-media-type="image">
-                    <img alt="alt1" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" src="http://example.com/1.png">
-                </div>
-                
-            </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div aria-hidden="true" inert="true">
+                <figure class="lia-figure">
+                    <div class="lia-figure__media" data-media-type="image">
+                        <img alt="alt1" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" role="button" src="http://example.com/1.png" tabIndex="0">
+                    </div>
+                    
+                </figure>
+            </div>
+            <div class="lia-lightbox__clickarea" aria-haspopup="dialog" aria-label="Enlarge: alt1" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>
@@ -322,73 +346,79 @@ annotated =
 embedOpen : String
 embedOpen =
     """<div>
-    <div class="lia-modal" aria-modal="true" role="dialog">
-        <div class="lia-modal__inner">
-            <div class="lia-modal__close">
-                <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="close modal">
-                    <i class="icon icon-close lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
+    <div>
+        <lia-modal class="lia-modal" aria-modal="true" role="dialog">
+            <div class="lia-modal__inner">
+                <div class="lia-modal__close">
+                    <button class="lia-btn lia-btn--transparent" aria-hidden="false" id="lia-modal__close" tabIndex="0" title="Close dialog">
+                        <i class="icon icon-close lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                </div>
+                <div class="lia-modal__content">
+                    <figure class="lia-figure" style="height:auto;width:100%;">
+                        <div class="lia-figure__media">
+                            <a class="lia-link lia-print-only" href="https://www.youtube.com/watch?v=abc">
+                                video
+                            </a>
+                            <lia-embed style="display:inline-block;height:auto;max-height:100%;width:100%;" alt="video" data-attributes="{}" scale="0.76" url="https://www.youtube.com/watch?v=abc">
+                            </lia-embed>
+                            <figcaption class="lia-figure__caption">
+                                <a class="lia-link" aria-describedby="lia-new-tab" href="https://www.youtube.com/watch?v=abc" target="_blank">
+                                    https://www.youtube.com/watch?v=abc
+                                </a>
+                            </figcaption>
+                        </div>
+                    </figure>
+                </div>
+                <div class="lia-modal__controls">
+                    <button class="lia-btn lia-btn--disabled is-disabled lia-modal__ctrl-next lia-btn--transparent" aria-disabled="true" aria-hidden="false" tabIndex="0" title="next">
+                        <i class="icon icon-arrow-right lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                    <button class="lia-btn lia-modal__ctrl-prev lia-btn--transparent" aria-hidden="false" tabIndex="0" title="previous">
+                        <i class="icon icon-arrow-left lia-btn__icon" aria-hidden="true">
+                        </i>
+                    </button>
+                </div>
             </div>
-            <div class="lia-modal__content">
+            <div class="lia-modal__outer">
+            </div>
+        </lia-modal>
+    </div>
+    <div class="lia-gallery">
+        <div class="lia-lightbox">
+            <div aria-hidden="true" inert="true">
+                <figure class="lia-figure">
+                    <div class="lia-figure__media" data-media-type="image">
+                        <img alt="alt0" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" role="button" src="http://example.com/0.png" tabIndex="0">
+                    </div>
+                    
+                </figure>
+            </div>
+            <div class="lia-lightbox__clickarea" aria-haspopup="dialog" aria-label="Enlarge: alt0" role="button" tabIndex="0">
+                <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
+                </i>
+            </div>
+        </div>
+        <div class="lia-lightbox">
+            <div aria-hidden="true" inert="true">
                 <figure class="lia-figure" style="height:auto;width:100%;">
                     <div class="lia-figure__media">
                         <a class="lia-link lia-print-only" href="https://www.youtube.com/watch?v=abc">
                             video
                         </a>
-                        <lia-embed style="display:inline-block;height:auto;max-height:100%;width:100%;" data-attributes="{}" scale="0.76" url="https://www.youtube.com/watch?v=abc">
+                        <lia-embed style="display:inline-block;height:250px;max-height:100%;width:250px;" alt="video" data-attributes="{}" scale="1" url="https://www.youtube.com/watch?v=abc" thumbnail>
                         </lia-embed>
                         <figcaption class="lia-figure__caption">
-                            <a class="lia-link" href="https://www.youtube.com/watch?v=abc" target="blank_">
+                            <a class="lia-link" aria-describedby="lia-new-tab" href="https://www.youtube.com/watch?v=abc" target="_blank">
                                 https://www.youtube.com/watch?v=abc
                             </a>
                         </figcaption>
                     </div>
                 </figure>
             </div>
-            <div class="lia-modal__controls">
-                <button class="lia-btn lia-modal__ctrl-next lia-btn--transparent" aria-hidden="false" tabIndex="0" title="next" disabled>
-                    <i class="icon icon-arrow-right lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
-                <button class="lia-btn lia-modal__ctrl-prev lia-btn--transparent" aria-hidden="false" tabIndex="0" title="previous">
-                    <i class="icon icon-arrow-left lia-btn__icon" aria-hidden="true">
-                    </i>
-                </button>
-            </div>
-        </div>
-        <div class="lia-modal__outer">
-        </div>
-    </div>
-    <div class="lia-gallery">
-        <div class="lia-lightbox">
-            <figure class="lia-figure">
-                <div class="lia-figure__media" data-media-type="image">
-                    <img alt="alt0" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" src="http://example.com/0.png">
-                </div>
-                
-            </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
-                <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
-                </i>
-            </div>
-        </div>
-        <div class="lia-lightbox">
-            <figure class="lia-figure" style="height:auto;width:100%;">
-                <div class="lia-figure__media">
-                    <a class="lia-link lia-print-only" href="https://www.youtube.com/watch?v=abc">
-                        video
-                    </a>
-                    <lia-embed style="display:inline-block;height:250px;max-height:100%;width:250px;" data-attributes="{}" scale="1" url="https://www.youtube.com/watch?v=abc" thumbnail>
-                    </lia-embed>
-                    <figcaption class="lia-figure__caption">
-                        <a class="lia-link" href="https://www.youtube.com/watch?v=abc" target="blank_">
-                            https://www.youtube.com/watch?v=abc
-                        </a>
-                    </figcaption>
-                </div>
-            </figure>
-            <div class="lia-lightbox__clickarea" aria-label="zoom media" role="button" tabIndex="0">
+            <div class="lia-lightbox__clickarea" aria-haspopup="dialog" aria-label="Enlarge: video" role="button" tabIndex="0">
                 <i class="icon icon-zoom lia-lightbox__icon" aria-hidden="true">
                 </i>
             </div>

@@ -33,7 +33,7 @@ suite =
             \_ ->
                 Dict.singleton 1
                     { narrator = "v"
-                    , content = Array.fromList [ { visible = True, attr = [ ( "a", "1" ) ], content = [], audio = Array.empty, video = Array.empty } ]
+                    , content = Array.fromList [ { visible = True, attr = [ ( "a", "1" ) ], content = [], audio = Array.empty, video = Array.empty, embedVideo = Array.empty } ]
                     }
                     |> (\d -> Model.set_annotation 1 0 d [ ( "b", "2" ) ])
                     |> Dict.get 1
@@ -49,8 +49,8 @@ suite =
                         { narrator = "Deutsch Female"
                         , content =
                             Array.fromList
-                                [ { visible = True, attr = [ ( "data-speaker", "anna" ), ( "style", "color: red" ) ], content = [], audio = Array.empty, video = Array.empty }
-                                , { visible = True, attr = [ ( "data-mood", "happy" ) ], content = [], audio = Array.empty, video = Array.empty }
+                                [ { visible = True, attr = [ ( "data-speaker", "anna" ), ( "style", "color: red" ) ], content = [], audio = Array.empty, video = Array.empty, embedVideo = Array.empty }
+                                , { visible = True, attr = [ ( "data-mood", "happy" ) ], content = [], audio = Array.empty, video = Array.empty, embedVideo = Array.empty }
                                 ]
                         }
                 , javascript = Array.empty
@@ -88,7 +88,7 @@ suite =
                     |> (\e -> View.block (config (Just 0)) Model.init [] e [])
                     |> Query.fromHtml
                     |> Expect.all
-                        [ Query.has [ Selector.attribute (Attr.title "Stop") ]
+                        [ Query.has [ Selector.attribute (Attr.title "stop") ]
                         , Query.has [ Selector.attribute (Attr.title "Resume") ]
                         ]
         ]

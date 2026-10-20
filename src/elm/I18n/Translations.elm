@@ -341,6 +341,12 @@ home lang =
         Am ->
             "ዋና ገጽ"
 
+        Ar ->
+            "الرئيسية"
+
+        Bg ->
+            "Начало"
+
         Bn ->
             "হোম"
 
@@ -359,11 +365,17 @@ home lang =
         El ->
             "Αρχική"
 
+        Es ->
+            "Inicio"
+
         Et ->
             "Avaleht"
 
         Eu ->
             "Hasiera"
+
+        Fa ->
+            "خانه"
 
         Fi ->
             "Etusivu"
@@ -383,6 +395,9 @@ home lang =
         Hu ->
             "Kezdőlap"
 
+        Hy ->
+            "Գլխավոր"
+
         It ->
             "Home"
 
@@ -393,7 +408,7 @@ home lang =
             "მთავარი"
 
         Ko ->
-            "집"
+            "홈"
 
         Lt ->
             "Pradžia"
@@ -404,8 +419,11 @@ home lang =
         Nb ->
             "Hjem"
 
+        Nl ->
+            "Start"
+
         Pa ->
-            "ਘਰ"
+            "ਮੁੱਖ ਪੰਨਾ"
 
         Pl ->
             "Strona główna"
@@ -437,8 +455,17 @@ home lang =
         Tr ->
             "Ana sayfa"
 
+        Tw ->
+            "首頁"
+
+        Uk ->
+            "Головна"
+
         Ur ->
             "ہوم"
+
+        Zh ->
+            "首页"
 
         _ ->
             "Home"
@@ -475,7 +502,7 @@ baseNext lang =
             "επόμενο"
 
         Es ->
-            "siguente"
+            "siguiente"
 
         Et ->
             "järgmine"
@@ -574,7 +601,7 @@ baseNext lang =
             "اگلا"
 
         Zh ->
-            "繼續"
+            "下一个"
 
         _ ->
             "next"
@@ -584,7 +611,7 @@ basePrev : Lang -> String
 basePrev lang =
     case lang of
         Am ->
-            "ተመለስ"
+            "ቀዳሚ"
 
         Ar ->
             "السابق"
@@ -710,7 +737,7 @@ basePrev lang =
             "پچھلا"
 
         Zh ->
-            "返回"
+            "上一个"
 
         _ ->
             "previous"
@@ -720,16 +747,16 @@ basePlay : Lang -> String
 basePlay lang =
     case lang of
         Am ->
-            "ጨርሰን"
+            "አጫውት"
 
         Ar ->
-            "العب"
+            "تشغيل"
 
         Bg ->
-            "играйте"
+            "Възпроизвеждане"
 
         Bn ->
-            "প্লে"
+            "চালান"
 
         Ca ->
             "reprodueix"
@@ -747,7 +774,7 @@ basePlay lang =
             "αναπαραγωγή"
 
         Es ->
-            "jugar"
+            "reproducir"
 
         Et ->
             "esita"
@@ -756,7 +783,7 @@ basePlay lang =
             "erreproduzitu"
 
         Fa ->
-            "بازی کن"
+            "پخش"
 
         Fi ->
             "toista"
@@ -777,7 +804,7 @@ basePlay lang =
             "lejátszás"
 
         Hy ->
-            "Խաղացեք"
+            "նվագարկել"
 
         It ->
             "avvia"
@@ -786,7 +813,7 @@ basePlay lang =
             "再生"
 
         Ka ->
-            "დაწყება"
+            "დაკვრა"
 
         Ko ->
             "재생"
@@ -816,7 +843,7 @@ basePlay lang =
             "redă"
 
         Ru ->
-            "играй"
+            "воспроизвести"
 
         Sk ->
             "prehrať"
@@ -831,7 +858,7 @@ basePlay lang =
             "spela upp"
 
         Sw ->
-            "kucheza"
+            "cheza"
 
         Tr ->
             "oynat"
@@ -840,7 +867,7 @@ basePlay lang =
             "播放"
 
         Uk ->
-            "грати"
+            "відтворити"
 
         Ur ->
             "چلائیں"
@@ -856,16 +883,16 @@ baseStop : Lang -> String
 baseStop lang =
     case lang of
         Am ->
-            "አቆጣጠር"
+            "አቁም"
 
         Ar ->
             "توقف"
 
         Bg ->
-            "спрете"
+            "Спиране"
 
         Bn ->
-            "স্টপ"
+            "থামান"
 
         Ca ->
             "atura"
@@ -892,7 +919,7 @@ baseStop lang =
             "gelditu"
 
         Fa ->
-            "بس کن"
+            "توقف"
 
         Fi ->
             "pysäytä"
@@ -904,7 +931,7 @@ baseStop lang =
             "stop"
 
         Hi ->
-            "बंद करो"
+            "रोकें"
 
         Hr ->
             "zaustavi"
@@ -913,7 +940,7 @@ baseStop lang =
             "leállítás"
 
         Hy ->
-            "դադարեցրեք"
+            "կանգնեցնել"
 
         It ->
             "ferma"
@@ -952,7 +979,7 @@ baseStop lang =
             "oprește"
 
         Ru ->
-            "остановись"
+            "остановить"
 
         Sk ->
             "zastaviť"
@@ -967,7 +994,7 @@ baseStop lang =
             "stoppa"
 
         Sw ->
-            "kuacha"
+            "simamisha"
 
         Tr ->
             "durdur"
@@ -976,7 +1003,7 @@ baseStop lang =
             "停止"
 
         Uk ->
-            "зупинятися"
+            "зупинити"
 
         Ur ->
             "روکیں"
@@ -1089,10 +1116,10 @@ baseFont : Lang -> String -> String
 baseFont lang str0 =
     case lang of
         Am ->
-            "ፎንት መጠን: " ++ str0 ++ ""
+            "የፊደል መጠን: " ++ str0 ++ ""
 
         Ar ->
-            " :حجم الخط " ++ str0 ++ ""
+            "حجم الخط: " ++ str0 ++ ""
 
         Bg ->
             "Размер на шрифта: " ++ str0 ++ ""
@@ -1146,7 +1173,7 @@ baseFont lang str0 =
             "betűméret: " ++ str0 ++ ""
 
         Hy ->
-            "Տառատեսակի չափը ՝ " ++ str0 ++ ""
+            "Տառաչափ՝ " ++ str0 ++ ""
 
         It ->
             "Dimensione carattere: " ++ str0 ++ ""
@@ -1200,13 +1227,13 @@ baseFont lang str0 =
             "teckenstorlek: " ++ str0 ++ ""
 
         Sw ->
-            "saizi ya fonti: " ++ str0 ++ ""
+            "ukubwa wa fonti: " ++ str0 ++ ""
 
         Tr ->
             "yazı tipi boyutu: " ++ str0 ++ ""
 
         Tw ->
-            "字体大小： " ++ str0 ++ ""
+            "字體大小： " ++ str0 ++ ""
 
         Uk ->
             "Розмір шрифту: " ++ str0 ++ ""
@@ -1361,7 +1388,7 @@ baseSize2 : Lang -> String
 baseSize2 lang =
     case lang of
         Am ->
-            "መልካም"
+            "መካከለኛ"
 
         Ar ->
             "متوسط"
@@ -1472,7 +1499,7 @@ baseSize2 lang =
             "medelstor"
 
         Sw ->
-            "kati"
+            "ya kati"
 
         Tr ->
             "orta"
@@ -1497,7 +1524,7 @@ baseSize3 : Lang -> String
 baseSize3 lang =
     case lang of
         Am ->
-            "በጣም ስምንት"
+            "ትልቅ"
 
         Ar ->
             "كبير"
@@ -1690,7 +1717,7 @@ baseSearch lang =
             "Keresés"
 
         Hy ->
-            "փնտրել"
+            "որոնել"
 
         It ->
             "Cerca"
@@ -1714,7 +1741,7 @@ baseSearch lang =
             "Søk"
 
         Nl ->
-            "zoek"
+            "Zoeken"
 
         Pa ->
             "ਖੋਜ"
@@ -1759,7 +1786,7 @@ baseSearch lang =
             "تلاش"
 
         Zh ->
-            "搜尋"
+            "搜索"
 
         _ ->
             "Search"
@@ -1769,13 +1796,13 @@ baseDelete : Lang -> String
 baseDelete lang =
     case lang of
         Am ->
-            "ፈልግ ያድገት"
+            "ፍለጋውን አጽዳ"
 
         Ar ->
             "إزالة البحث"
 
         Bg ->
-            "търсене изтриване"
+            "Изчистване на търсенето"
 
         Bn ->
             "অনুসন্ধান মুছে ফেলুন"
@@ -1826,7 +1853,7 @@ baseDelete lang =
             "keresés törlése"
 
         Hy ->
-            "ջնջել որոնումը"
+            "մաքրել որոնումը"
 
         It ->
             "cancella ricerca"
@@ -1850,7 +1877,7 @@ baseDelete lang =
             "tøm søk"
 
         Nl ->
-            "Duidelijke zoek"
+            "Zoekopdracht wissen"
 
         Pa ->
             "ਖੋਜ ਹਟਾਓ"
@@ -1865,7 +1892,7 @@ baseDelete lang =
             "șterge căutarea"
 
         Ru ->
-            "удалить поиск"
+            "очистить поиск"
 
         Sk ->
             "vymazať vyhľadávanie"
@@ -1880,13 +1907,13 @@ baseDelete lang =
             "rensa sökning"
 
         Sw ->
-            "tafuta wazi"
+            "futa utafutaji"
 
         Tr ->
             "aramayı temizle"
 
         Tw ->
-            "删除搜寻"
+            "清除搜尋"
 
         Uk ->
             "видалити пошук"
@@ -1895,7 +1922,7 @@ baseDelete lang =
             "تلاش صاف کریں"
 
         Zh ->
-            "删除搜寻"
+            "清除搜索"
 
         _ ->
             "clear search"
@@ -2022,7 +2049,7 @@ baseResults lang =
             "sonuçlar"
 
         Tw ->
-            "结果"
+            "結果"
 
         Uk ->
             "результати"
@@ -2110,7 +2137,7 @@ baseOneResult lang =
             "ერთი შედეგი"
 
         Ko ->
-            "단일 결과"
+            "결과 1개"
 
         Lt ->
             "vienas rezultatas"
@@ -2152,13 +2179,13 @@ baseOneResult lang =
             "ett resultat"
 
         Sw ->
-            "matokeo moja"
+            "tokeo moja"
 
         Tr ->
             "bir sonuç"
 
         Tw ->
-            "一个结果"
+            "一個結果"
 
         Uk ->
             "один результат"
@@ -2177,10 +2204,10 @@ baseNoResult : Lang -> String
 baseNoResult lang =
     case lang of
         Am ->
-            "ምንም ውጤት የሉም"
+            "ምንም ውጤት የለም"
 
         Ar ->
-            "ولا أي نتيجة"
+            "لا توجد نتائج"
 
         Bg ->
             "няма резултати"
@@ -2294,7 +2321,7 @@ baseNoResult lang =
             "sonuç yok"
 
         Tw ->
-            "没有结果"
+            "沒有結果"
 
         Uk ->
             "немає результатів"
@@ -2313,7 +2340,7 @@ baseToc : Lang -> String
 baseToc lang =
     case lang of
         Am ->
-            "የዋጋ ዓረብ"
+            "ማውጫ"
 
         Ar ->
             "جدول المحتويات"
@@ -2361,7 +2388,7 @@ baseToc lang =
             "Clár na nÁbhar"
 
         Hi ->
-            "सामग्री की तालिका"
+            "विषय सूची"
 
         Hr ->
             "Sadržaj"
@@ -2379,7 +2406,7 @@ baseToc lang =
             "目次"
 
         Ka ->
-            "შინაარსის სია"
+            "სარჩევი"
 
         Ko ->
             "목차"
@@ -2397,7 +2424,7 @@ baseToc lang =
             "Inhoudsopgave"
 
         Pa ->
-            "ਸਮੱਗਰੀ ਦੇ ਨਾਲ-ਨਾਲ"
+            "ਵਿਸ਼ਾ ਸੂਚੀ"
 
         Pl ->
             "Spis treści"
@@ -2439,10 +2466,1370 @@ baseToc lang =
             "فہرست مشمولات"
 
         Zh ->
-            "目錄"
+            "目录"
 
         _ ->
             "Table of Contents"
+
+
+baseSkipNav : Lang -> String
+baseSkipNav lang =
+    case lang of
+        Am ->
+            "ዳሰሳን ዝለል"
+
+        Ar ->
+            "تخطي التنقل"
+
+        Bg ->
+            "Пропусни навигацията"
+
+        Bn ->
+            "নেভিগেশন এড়িয়ে যান"
+
+        Ca ->
+            "Salta la navegació"
+
+        Cs ->
+            "Přeskočit navigaci"
+
+        Da ->
+            "Spring navigation over"
+
+        De ->
+            "Navigation überspringen"
+
+        El ->
+            "Παράλειψη πλοήγησης"
+
+        Es ->
+            "Saltar navegación"
+
+        Et ->
+            "Jäta navigeerimine vahele"
+
+        Eu ->
+            "Saltatu nabigazioa"
+
+        Fa ->
+            "رد شدن از پیمایش"
+
+        Fi ->
+            "Ohita navigointi"
+
+        Fr ->
+            "Passer la navigation"
+
+        Ga ->
+            "Léim thar an nascleanúint"
+
+        Hi ->
+            "नेविगेशन छोड़ें"
+
+        Hr ->
+            "Preskoči navigaciju"
+
+        Hu ->
+            "Navigáció átugrása"
+
+        Hy ->
+            "Բաց թողնել նավիգացիան"
+
+        It ->
+            "Salta la navigazione"
+
+        Ja ->
+            "ナビゲーションをスキップ"
+
+        Ka ->
+            "ნავიგაციის გამოტოვება"
+
+        Ko ->
+            "탐색 건너뛰기"
+
+        Lt ->
+            "Praleisti naršymą"
+
+        Lv ->
+            "Izlaist navigāciju"
+
+        Nb ->
+            "Hopp over navigasjonen"
+
+        Nl ->
+            "Navigatie overslaan"
+
+        Pa ->
+            "ਨੈਵੀਗੇਸ਼ਨ ਛੱਡੋ"
+
+        Pl ->
+            "Pomiń nawigację"
+
+        Pt ->
+            "Pular navegação"
+
+        Ro ->
+            "Sari peste navigare"
+
+        Ru ->
+            "Пропустить навигацию"
+
+        Sk ->
+            "Preskočiť navigáciu"
+
+        Sl ->
+            "Preskoči navigacijo"
+
+        Sq ->
+            "Kapërce navigimin"
+
+        Sv ->
+            "Hoppa över navigeringen"
+
+        Sw ->
+            "Ruka urambazaji"
+
+        Tr ->
+            "Gezintiyi atla"
+
+        Tw ->
+            "跳過導覽"
+
+        Uk ->
+            "Пропустити навігацію"
+
+        Ur ->
+            "نیویگیشن چھوڑیں"
+
+        Zh ->
+            "跳过导航"
+
+        _ ->
+            "Skip navigation"
+
+
+baseCloseDialog : Lang -> String
+baseCloseDialog lang =
+    case lang of
+        Am ->
+            "የንግግር ሳጥን ዝጋ"
+
+        Ar ->
+            "إغلاق مربع الحوار"
+
+        Bg ->
+            "Затвори диалога"
+
+        Bn ->
+            "ডায়ালগ বন্ধ করুন"
+
+        Ca ->
+            "Tanca el diàleg"
+
+        Cs ->
+            "Zavřít dialog"
+
+        Da ->
+            "Luk dialogboks"
+
+        De ->
+            "Dialog schließen"
+
+        El ->
+            "Κλείσιμο διαλόγου"
+
+        Es ->
+            "Cerrar diálogo"
+
+        Et ->
+            "Sulge dialoog"
+
+        Eu ->
+            "Itxi elkarrizketa-koadroa"
+
+        Fa ->
+            "بستن کادر محاوره"
+
+        Fi ->
+            "Sulje valintaikkuna"
+
+        Fr ->
+            "Fermer la boîte de dialogue"
+
+        Ga ->
+            "Dún an bosca dialóige"
+
+        Hi ->
+            "डायलॉग बंद करें"
+
+        Hr ->
+            "Zatvori dijalog"
+
+        Hu ->
+            "Párbeszédablak bezárása"
+
+        Hy ->
+            "Փակել երկխոսության պատուհանը"
+
+        It ->
+            "Chiudi la finestra di dialogo"
+
+        Ja ->
+            "ダイアログを閉じる"
+
+        Ka ->
+            "დიალოგის დახურვა"
+
+        Ko ->
+            "대화 상자 닫기"
+
+        Lt ->
+            "Užverti dialogo langą"
+
+        Lv ->
+            "Aizvērt dialoglodziņu"
+
+        Nb ->
+            "Lukk dialogen"
+
+        Nl ->
+            "Dialoogvenster sluiten"
+
+        Pa ->
+            "ਡਾਇਲਾਗ ਬੰਦ ਕਰੋ"
+
+        Pl ->
+            "Zamknij okno dialogowe"
+
+        Pt ->
+            "Fechar diálogo"
+
+        Ro ->
+            "Închide dialogul"
+
+        Ru ->
+            "Закрыть диалог"
+
+        Sk ->
+            "Zavrieť dialóg"
+
+        Sl ->
+            "Zapri pogovorno okno"
+
+        Sq ->
+            "Mbyll dialogun"
+
+        Sv ->
+            "Stäng dialogrutan"
+
+        Sw ->
+            "Funga kidirisha"
+
+        Tr ->
+            "İletişim kutusunu kapat"
+
+        Tw ->
+            "關閉對話方塊"
+
+        Uk ->
+            "Закрити діалог"
+
+        Ur ->
+            "ڈائیلاگ بند کریں"
+
+        Zh ->
+            "关闭对话框"
+
+        _ ->
+            "Close dialog"
+
+
+baseNewTab : Lang -> String
+baseNewTab lang =
+    case lang of
+        Am ->
+            "በአዲስ ትር ውስጥ ይከፈታል"
+
+        Ar ->
+            "يفتح في علامة تبويب جديدة"
+
+        Bg ->
+            "отваря се в нов раздел"
+
+        Bn ->
+            "নতুন ট্যাবে খোলে"
+
+        Ca ->
+            "s'obre en una pestanya nova"
+
+        Cs ->
+            "otevře se na nové kartě"
+
+        Da ->
+            "åbner i en ny fane"
+
+        De ->
+            "öffnet in neuem Tab"
+
+        El ->
+            "ανοίγει σε νέα καρτέλα"
+
+        Es ->
+            "se abre en una pestaña nueva"
+
+        Et ->
+            "avaneb uuel vahekaardil"
+
+        Eu ->
+            "fitxa berri batean irekitzen da"
+
+        Fa ->
+            "در زبانه جدید باز می‌شود"
+
+        Fi ->
+            "avautuu uudelle välilehdelle"
+
+        Fr ->
+            "s'ouvre dans un nouvel onglet"
+
+        Ga ->
+            "osclaítear i gcluaisín nua é"
+
+        Hi ->
+            "नए टैब में खुलता है"
+
+        Hr ->
+            "otvara se u novoj kartici"
+
+        Hu ->
+            "új lapon nyílik meg"
+
+        Hy ->
+            "բացվում է նոր ներդիրում"
+
+        It ->
+            "si apre in una nuova scheda"
+
+        Ja ->
+            "新しいタブで開きます"
+
+        Ka ->
+            "იხსნება ახალ ჩანართში"
+
+        Ko ->
+            "새 탭에서 열림"
+
+        Lt ->
+            "atsidaro naujame skirtuke"
+
+        Lv ->
+            "atveras jaunā cilnē"
+
+        Nb ->
+            "åpnes i en ny fane"
+
+        Nl ->
+            "opent in een nieuw tabblad"
+
+        Pa ->
+            "ਨਵੀਂ ਟੈਬ ਵਿੱਚ ਖੁੱਲ੍ਹਦਾ ਹੈ"
+
+        Pl ->
+            "otwiera się w nowej karcie"
+
+        Pt ->
+            "abre em uma nova aba"
+
+        Ro ->
+            "se deschide într-o filă nouă"
+
+        Ru ->
+            "открывается в новой вкладке"
+
+        Sk ->
+            "otvorí sa na novej karte"
+
+        Sl ->
+            "odpre se v novem zavihku"
+
+        Sq ->
+            "hapet në një skedë të re"
+
+        Sv ->
+            "öppnas i en ny flik"
+
+        Sw ->
+            "hufunguka kwenye kichupo kipya"
+
+        Tr ->
+            "yeni sekmede açılır"
+
+        Tw ->
+            "在新分頁中開啟"
+
+        Uk ->
+            "відкривається в новій вкладці"
+
+        Ur ->
+            "نئے ٹیب میں کھلتا ہے"
+
+        Zh ->
+            "在新标签页中打开"
+
+        _ ->
+            "opens in a new tab"
+
+
+baseZoom : Lang -> String
+baseZoom lang =
+    case lang of
+        Am ->
+            "አስፋ"
+
+        Ar ->
+            "تكبير"
+
+        Bg ->
+            "Увеличи"
+
+        Bn ->
+            "বড় করুন"
+
+        Ca ->
+            "Amplia"
+
+        Cs ->
+            "Zvětšit"
+
+        Da ->
+            "Forstør"
+
+        De ->
+            "Vergrößern"
+
+        El ->
+            "Μεγέθυνση"
+
+        Es ->
+            "Ampliar"
+
+        Et ->
+            "Suurenda"
+
+        Eu ->
+            "Handitu"
+
+        Fa ->
+            "بزرگ‌نمایی"
+
+        Fi ->
+            "Suurenna"
+
+        Fr ->
+            "Agrandir"
+
+        Ga ->
+            "Méadaigh"
+
+        Hi ->
+            "बड़ा करें"
+
+        Hr ->
+            "Povećaj"
+
+        Hu ->
+            "Nagyítás"
+
+        Hy ->
+            "Մեծացնել"
+
+        It ->
+            "Ingrandisci"
+
+        Ja ->
+            "拡大"
+
+        Ka ->
+            "გადიდება"
+
+        Ko ->
+            "확대"
+
+        Lt ->
+            "Padidinti"
+
+        Lv ->
+            "Palielināt"
+
+        Nb ->
+            "Forstørr"
+
+        Nl ->
+            "Vergroten"
+
+        Pa ->
+            "ਵੱਡਾ ਕਰੋ"
+
+        Pl ->
+            "Powiększ"
+
+        Pt ->
+            "Ampliar"
+
+        Ro ->
+            "Mărește"
+
+        Ru ->
+            "Увеличить"
+
+        Sk ->
+            "Zväčšiť"
+
+        Sl ->
+            "Povečaj"
+
+        Sq ->
+            "Zmadho"
+
+        Sv ->
+            "Förstora"
+
+        Sw ->
+            "Kuza"
+
+        Tr ->
+            "Büyüt"
+
+        Tw ->
+            "放大"
+
+        Uk ->
+            "Збільшити"
+
+        Ur ->
+            "بڑا کریں"
+
+        Zh ->
+            "放大"
+
+        _ ->
+            "Enlarge"
+
+
+baseSlide : Lang -> String
+baseSlide lang =
+    case lang of
+        Am ->
+            "ስላይድ"
+
+        Ar ->
+            "شريحة"
+
+        Bg ->
+            "Слайд"
+
+        Bn ->
+            "স্লাইড"
+
+        Ca ->
+            "Diapositiva"
+
+        Cs ->
+            "Snímek"
+
+        Da ->
+            "Dias"
+
+        De ->
+            "Folie"
+
+        El ->
+            "Διαφάνεια"
+
+        Es ->
+            "Diapositiva"
+
+        Et ->
+            "Slaid"
+
+        Eu ->
+            "Diapositiba"
+
+        Fa ->
+            "اسلاید"
+
+        Fi ->
+            "Dia"
+
+        Fr ->
+            "Diapositive"
+
+        Ga ->
+            "Sleamhnán"
+
+        Hi ->
+            "स्लाइड"
+
+        Hr ->
+            "Slajd"
+
+        Hu ->
+            "Dia"
+
+        Hy ->
+            "Սլայդ"
+
+        It ->
+            "Diapositiva"
+
+        Ja ->
+            "スライド"
+
+        Ka ->
+            "სლაიდი"
+
+        Ko ->
+            "슬라이드"
+
+        Lt ->
+            "Skaidrė"
+
+        Lv ->
+            "Slaids"
+
+        Nb ->
+            "Lysbilde"
+
+        Nl ->
+            "Dia"
+
+        Pa ->
+            "ਸਲਾਈਡ"
+
+        Pl ->
+            "Slajd"
+
+        Pt ->
+            "Slide"
+
+        Ro ->
+            "Diapozitiv"
+
+        Ru ->
+            "Слайд"
+
+        Sk ->
+            "Snímka"
+
+        Sl ->
+            "Prosojnica"
+
+        Sq ->
+            "Diapozitivi"
+
+        Sv ->
+            "Bild"
+
+        Sw ->
+            "Slaidi"
+
+        Tr ->
+            "Slayt"
+
+        Tw ->
+            "投影片"
+
+        Uk ->
+            "Слайд"
+
+        Ur ->
+            "سلائیڈ"
+
+        Zh ->
+            "幻灯片"
+
+        _ ->
+            "Slide"
+
+
+baseStep : Lang -> String
+baseStep lang =
+    case lang of
+        Am ->
+            "ደረጃ"
+
+        Ar ->
+            "خطوة"
+
+        Bg ->
+            "Стъпка"
+
+        Bn ->
+            "ধাপ"
+
+        Ca ->
+            "Pas"
+
+        Cs ->
+            "Krok"
+
+        Da ->
+            "Trin"
+
+        De ->
+            "Schritt"
+
+        El ->
+            "Βήμα"
+
+        Es ->
+            "Paso"
+
+        Et ->
+            "Samm"
+
+        Eu ->
+            "Urratsa"
+
+        Fa ->
+            "مرحله"
+
+        Fi ->
+            "Vaihe"
+
+        Fr ->
+            "Étape"
+
+        Ga ->
+            "Céim"
+
+        Hi ->
+            "चरण"
+
+        Hr ->
+            "Korak"
+
+        Hu ->
+            "Lépés"
+
+        Hy ->
+            "Քայլ"
+
+        It ->
+            "Passo"
+
+        Ja ->
+            "ステップ"
+
+        Ka ->
+            "ნაბიჯი"
+
+        Ko ->
+            "단계"
+
+        Lt ->
+            "Žingsnis"
+
+        Lv ->
+            "Solis"
+
+        Nb ->
+            "Trinn"
+
+        Nl ->
+            "Stap"
+
+        Pa ->
+            "ਕਦਮ"
+
+        Pl ->
+            "Krok"
+
+        Pt ->
+            "Passo"
+
+        Ro ->
+            "Pas"
+
+        Ru ->
+            "Шаг"
+
+        Sk ->
+            "Krok"
+
+        Sl ->
+            "Korak"
+
+        Sq ->
+            "Hapi"
+
+        Sv ->
+            "Steg"
+
+        Sw ->
+            "Hatua"
+
+        Tr ->
+            "Adım"
+
+        Tw ->
+            "步驟"
+
+        Uk ->
+            "Крок"
+
+        Ur ->
+            "مرحلہ"
+
+        Zh ->
+            "步骤"
+
+        _ ->
+            "Step"
+
+
+baseSlideNavigation : Lang -> String
+baseSlideNavigation lang =
+    case lang of
+        Am ->
+            "የስላይድ ዳሰሳ"
+
+        Ar ->
+            "التنقل بين الشرائح"
+
+        Bg ->
+            "Навигация по слайдовете"
+
+        Bn ->
+            "স্লাইড নেভিগেশন"
+
+        Ca ->
+            "Navegació per les diapositives"
+
+        Cs ->
+            "Navigace mezi snímky"
+
+        Da ->
+            "Diasnavigation"
+
+        De ->
+            "Folien-Navigation"
+
+        El ->
+            "Πλοήγηση διαφανειών"
+
+        Es ->
+            "Navegación de diapositivas"
+
+        Et ->
+            "Slaidide navigeerimine"
+
+        Eu ->
+            "Diapositiben nabigazioa"
+
+        Fa ->
+            "پیمایش اسلایدها"
+
+        Fi ->
+            "Dianavigointi"
+
+        Fr ->
+            "Navigation entre les diapositives"
+
+        Ga ->
+            "Nascleanúint sleamhnán"
+
+        Hi ->
+            "स्लाइड नेविगेशन"
+
+        Hr ->
+            "Navigacija slajdova"
+
+        Hu ->
+            "Dianavigáció"
+
+        Hy ->
+            "Սլայդների նավիգացիա"
+
+        It ->
+            "Navigazione diapositive"
+
+        Ja ->
+            "スライドナビゲーション"
+
+        Ka ->
+            "სლაიდების ნავიგაცია"
+
+        Ko ->
+            "슬라이드 탐색"
+
+        Lt ->
+            "Skaidrių naršymas"
+
+        Lv ->
+            "Slaidu navigācija"
+
+        Nb ->
+            "Lysbildenavigasjon"
+
+        Nl ->
+            "Dianavigatie"
+
+        Pa ->
+            "ਸਲਾਈਡ ਨੈਵੀਗੇਸ਼ਨ"
+
+        Pl ->
+            "Nawigacja slajdów"
+
+        Pt ->
+            "Navegação dos slides"
+
+        Ro ->
+            "Navigare între diapozitive"
+
+        Ru ->
+            "Навигация по слайдам"
+
+        Sk ->
+            "Navigácia snímok"
+
+        Sl ->
+            "Navigacija po prosojnicah"
+
+        Sq ->
+            "Navigimi i diapozitivave"
+
+        Sv ->
+            "Bildnavigering"
+
+        Sw ->
+            "Urambazaji wa slaidi"
+
+        Tr ->
+            "Slayt gezintisi"
+
+        Tw ->
+            "投影片導覽"
+
+        Uk ->
+            "Навігація слайдами"
+
+        Ur ->
+            "سلائیڈ نیویگیشن"
+
+        Zh ->
+            "幻灯片导航"
+
+        _ ->
+            "Slide navigation"
+
+
+baseFootnote : Lang -> String
+baseFootnote lang =
+    case lang of
+        Am ->
+            "የግርጌ ማስታወሻ"
+
+        Ar ->
+            "حاشية"
+
+        Bg ->
+            "Бележка под линия"
+
+        Bn ->
+            "পাদটীকা"
+
+        Ca ->
+            "Nota al peu"
+
+        Cs ->
+            "Poznámka pod čarou"
+
+        Da ->
+            "Fodnote"
+
+        De ->
+            "Fußnote"
+
+        El ->
+            "Υποσημείωση"
+
+        Es ->
+            "Nota al pie"
+
+        Et ->
+            "Joonealune märkus"
+
+        Eu ->
+            "Oin-oharra"
+
+        Fa ->
+            "پانویس"
+
+        Fi ->
+            "Alaviite"
+
+        Fr ->
+            "Note de bas de page"
+
+        Ga ->
+            "Fonóta"
+
+        Hi ->
+            "फ़ुटनोट"
+
+        Hr ->
+            "Fusnota"
+
+        Hu ->
+            "Lábjegyzet"
+
+        Hy ->
+            "Ծանոթագրություն"
+
+        It ->
+            "Nota"
+
+        Ja ->
+            "脚注"
+
+        Ka ->
+            "სქოლიო"
+
+        Ko ->
+            "각주"
+
+        Lt ->
+            "Išnaša"
+
+        Lv ->
+            "Vēre"
+
+        Nb ->
+            "Fotnote"
+
+        Nl ->
+            "Voetnoot"
+
+        Pa ->
+            "ਫੁਟਨੋਟ"
+
+        Pl ->
+            "Przypis"
+
+        Pt ->
+            "Nota de rodapé"
+
+        Ro ->
+            "Notă de subsol"
+
+        Ru ->
+            "Сноска"
+
+        Sk ->
+            "Poznámka pod čiarou"
+
+        Sl ->
+            "Opomba"
+
+        Sq ->
+            "Shënim në fund të faqes"
+
+        Sv ->
+            "Fotnot"
+
+        Sw ->
+            "Tanbihi"
+
+        Tr ->
+            "Dipnot"
+
+        Tw ->
+            "註腳"
+
+        Uk ->
+            "Виноска"
+
+        Ur ->
+            "حاشیہ"
+
+        Zh ->
+            "脚注"
+
+        _ ->
+            "Footnote"
+
+
+baseFootnotes : Lang -> String
+baseFootnotes lang =
+    case lang of
+        Am ->
+            "የግርጌ ማስታወሻዎች"
+
+        Ar ->
+            "الحواشي"
+
+        Bg ->
+            "Бележки под линия"
+
+        Bn ->
+            "পাদটীকাসমূহ"
+
+        Ca ->
+            "Notes al peu"
+
+        Cs ->
+            "Poznámky pod čarou"
+
+        Da ->
+            "Fodnoter"
+
+        De ->
+            "Fußnoten"
+
+        El ->
+            "Υποσημειώσεις"
+
+        Es ->
+            "Notas al pie"
+
+        Et ->
+            "Joonealused märkused"
+
+        Eu ->
+            "Oin-oharrak"
+
+        Fa ->
+            "پانویس‌ها"
+
+        Fi ->
+            "Alaviitteet"
+
+        Fr ->
+            "Notes de bas de page"
+
+        Ga ->
+            "Fonótaí"
+
+        Hi ->
+            "फ़ुटनोट्स"
+
+        Hr ->
+            "Fusnote"
+
+        Hu ->
+            "Lábjegyzetek"
+
+        Hy ->
+            "Ծանոթագրություններ"
+
+        It ->
+            "Note"
+
+        Ja ->
+            "脚注一覧"
+
+        Ka ->
+            "სქოლიოები"
+
+        Ko ->
+            "각주"
+
+        Lt ->
+            "Išnašos"
+
+        Lv ->
+            "Vēres"
+
+        Nb ->
+            "Fotnoter"
+
+        Nl ->
+            "Voetnoten"
+
+        Pa ->
+            "ਫੁਟਨੋਟ"
+
+        Pl ->
+            "Przypisy"
+
+        Pt ->
+            "Notas de rodapé"
+
+        Ro ->
+            "Note de subsol"
+
+        Ru ->
+            "Сноски"
+
+        Sk ->
+            "Poznámky pod čiarou"
+
+        Sl ->
+            "Opombe"
+
+        Sq ->
+            "Shënimet në fund të faqes"
+
+        Sv ->
+            "Fotnoter"
+
+        Sw ->
+            "Tanbihi"
+
+        Tr ->
+            "Dipnotlar"
+
+        Tw ->
+            "註腳"
+
+        Uk ->
+            "Виноски"
+
+        Ur ->
+            "حواشی"
+
+        Zh ->
+            "脚注"
+
+        _ ->
+            "Footnotes"
+
+
+baseResize : Lang -> String
+baseResize lang =
+    case lang of
+        Am ->
+            "የክፍሎችን መጠን ቀይር"
+
+        Ar ->
+            "تغيير حجم الأجزاء"
+
+        Bg ->
+            "Преоразмеряване на панелите"
+
+        Bn ->
+            "প্যানেলের আকার পরিবর্তন করুন"
+
+        Ca ->
+            "Redimensiona els panells"
+
+        Cs ->
+            "Změnit velikost panelů"
+
+        Da ->
+            "Tilpas panelernes størrelse"
+
+        De ->
+            "Größe der Bereiche ändern"
+
+        El ->
+            "Αλλαγή μεγέθους περιοχών"
+
+        Es ->
+            "Cambiar el tamaño de los paneles"
+
+        Et ->
+            "Muuda paanide suurust"
+
+        Eu ->
+            "Aldatu panelen tamaina"
+
+        Fa ->
+            "تغییر اندازهٔ بخش‌ها"
+
+        Fi ->
+            "Muuta ruutujen kokoa"
+
+        Fr ->
+            "Redimensionner les volets"
+
+        Ga ->
+            "Athraigh méid na bpainéal"
+
+        Hi ->
+            "पैनल का आकार बदलें"
+
+        Hr ->
+            "Promijeni veličinu okna"
+
+        Hu ->
+            "Panelek átméretezése"
+
+        Hy ->
+            "Փոխել վահանակների չափը"
+
+        It ->
+            "Ridimensiona i riquadri"
+
+        Ja ->
+            "パネルのサイズを変更"
+
+        Ka ->
+            "არეების ზომის შეცვლა"
+
+        Ko ->
+            "영역 크기 조절"
+
+        Lt ->
+            "Keisti sričių dydį"
+
+        Lv ->
+            "Mainīt apgabalu izmēru"
+
+        Nb ->
+            "Endre størrelse på panelene"
+
+        Nl ->
+            "Grootte van deelvensters wijzigen"
+
+        Pa ->
+            "ਭਾਗਾਂ ਦਾ ਆਕਾਰ ਬਦਲੋ"
+
+        Pl ->
+            "Zmień rozmiar paneli"
+
+        Pt ->
+            "Redimensionar painéis"
+
+        Ro ->
+            "Redimensionează panourile"
+
+        Ru ->
+            "Изменить размер панелей"
+
+        Sk ->
+            "Zmeniť veľkosť panelov"
+
+        Sl ->
+            "Spremeni velikost podoken"
+
+        Sq ->
+            "Ndrysho madhësinë e paneleve"
+
+        Sv ->
+            "Ändra storlek på panelerna"
+
+        Sw ->
+            "Badilisha ukubwa wa vidirisha"
+
+        Tr ->
+            "Bölmeleri yeniden boyutlandır"
+
+        Tw ->
+            "調整窗格大小"
+
+        Uk ->
+            "Змінити розмір панелей"
+
+        Ur ->
+            "پینلز کا سائز تبدیل کریں"
+
+        Zh ->
+            "调整窗格大小"
+
+        _ ->
+            "Resize panes"
 
 
 baseShow : Lang -> String
@@ -2515,7 +3902,7 @@ baseShow lang =
             "表示"
 
         Ka ->
-            "გამოჩვენე"
+            "ჩვენება"
 
         Ko ->
             "보이기"
@@ -2533,7 +3920,7 @@ baseShow lang =
             "tonen"
 
         Pa ->
-            "ਵੇਖਾਓ"
+            "ਦਿਖਾਓ"
 
         Pl ->
             "pokaż"
@@ -2560,7 +3947,7 @@ baseShow lang =
             "visa"
 
         Sw ->
-            "show"
+            "onyesha"
 
         Tr ->
             "göster"
@@ -2575,7 +3962,7 @@ baseShow lang =
             "دکھائیں"
 
         Zh ->
-            "顯示"
+            "显示"
 
         _ ->
             "show"
@@ -2651,7 +4038,7 @@ baseHide lang =
             "非表示"
 
         Ka ->
-            "დამალე"
+            "დამალვა"
 
         Ko ->
             "감추기"
@@ -2669,7 +4056,7 @@ baseHide lang =
             "verbergen"
 
         Pa ->
-            "ਓਹਲੇ"
+            "ਛੁਪਾਓ"
 
         Pl ->
             "ukryj"
@@ -2696,7 +4083,7 @@ baseHide lang =
             "dölj"
 
         Sw ->
-            "kujificha"
+            "ficha"
 
         Tr ->
             "gizle"
@@ -2711,7 +4098,7 @@ baseHide lang =
             "چھپائیں"
 
         Zh ->
-            "隱藏"
+            "隐藏"
 
         _ ->
             "hide"
@@ -2721,10 +4108,10 @@ baseEditor : Lang -> String
 baseEditor lang =
     case lang of
         Am ->
-            "ኤዲተር-ዘዴ"
+            "የአርታኢ ዘይቤ"
 
         Ar ->
-            "على غرار المحرر"
+            "نمط المحرر"
 
         Bg ->
             "редакторски стил"
@@ -2778,7 +4165,7 @@ baseEditor lang =
             "Szerkesztő stílusa"
 
         Hy ->
-            "խմբագիր ոճով"
+            "Խմբագրիչի ոճ"
 
         It ->
             "stile editor"
@@ -2790,7 +4177,7 @@ baseEditor lang =
             "რედაქტორის სტილი"
 
         Ko ->
-            "에디터 스타일"
+            "편집기 스타일"
 
         Lt ->
             "Rengyklės stilius"
@@ -2832,13 +4219,13 @@ baseEditor lang =
             "Redigerarstil"
 
         Sw ->
-            "Mtindo wa Mhariri"
+            "Mtindo wa Kihariri"
 
         Tr ->
             "Düzenleyici stili"
 
         Tw ->
-            "编辑风格"
+            "編輯器樣式"
 
         Uk ->
             "стиль редактора"
@@ -2847,7 +4234,7 @@ baseEditor lang =
             "ایڈیٹر اسٹائل"
 
         Zh ->
-            "编辑风格"
+            "编辑器样式"
 
         _ ->
             "Editor-Style"
@@ -2866,7 +4253,7 @@ baseLang lang =
             "български"
 
         Bn ->
-            "ইংরেজি"
+            "বাংলা"
 
         Ca ->
             "Català"
@@ -2905,7 +4292,7 @@ baseLang lang =
             "Gaeilge"
 
         Hi ->
-            "जर्मन"
+            "हिन्दी"
 
         Hr ->
             "Hrvatski"
@@ -2923,7 +4310,7 @@ baseLang lang =
             "日本語"
 
         Ka ->
-            "ინგლისური"
+            "ქართული"
 
         Ko ->
             "한국어"
@@ -2968,22 +4355,22 @@ baseLang lang =
             "Svenska"
 
         Sw ->
-            "Suaheli"
+            "Kiswahili"
 
         Tr ->
             "Türkçe"
 
         Tw ->
-            "中国人"
+            "繁體中文"
 
         Uk ->
-            "Український"
+            "Українська"
 
         Ur ->
-            "انگریزی"
+            "اردو"
 
         Zh ->
-            "中国人"
+            "简体中文"
 
         _ ->
             "English"
@@ -2993,7 +4380,7 @@ commentRate : Lang -> String
 commentRate lang =
     case lang of
         Am ->
-            "የድምጽ ፍጥነት ቀይር"
+            "የማጫወቻ ፍጥነት አስተካክል"
 
         Ar ->
             "تعديل سرعة التشغيل"
@@ -3002,7 +4389,7 @@ commentRate lang =
             "Промяна на скоростта на възпроизвеждане"
 
         Bn ->
-            "প্লেব্যাক গতি সংশোধন করুন"
+            "প্লেব্যাকের গতি সামঞ্জস্য করুন"
 
         Ca ->
             "Ajusta la velocitat de reproducció"
@@ -3050,7 +4437,7 @@ commentRate lang =
             "Lejátszási sebesség beállítása"
 
         Hy ->
-            "ձայնագիրը կարգավորել"
+            "Կարգավորել նվագարկման արագությունը"
 
         It ->
             "Regola la velocità di riproduzione"
@@ -3059,7 +4446,7 @@ commentRate lang =
             "再生速度を変更"
 
         Ka ->
-            "ჩათამაშების სიჩქარის რეგულირება"
+            "დაკვრის სიჩქარის რეგულირება"
 
         Ko ->
             "재생 속도 조절"
@@ -3110,7 +4497,7 @@ commentRate lang =
             "Oynatma hızını ayarla"
 
         Tw ->
-            "调整播放速度"
+            "調整播放速度"
 
         Uk ->
             "налаштування швидкості відтворення"
@@ -3125,20 +4512,156 @@ commentRate lang =
             "Adjust playback speed"
 
 
+commentRateLabel : Lang -> String
+commentRateLabel lang =
+    case lang of
+        Am ->
+            "ፍጥነት"
+
+        Ar ->
+            "السرعة"
+
+        Bg ->
+            "Скорост"
+
+        Bn ->
+            "গতি"
+
+        Ca ->
+            "Velocitat"
+
+        Cs ->
+            "Rychlost"
+
+        Da ->
+            "Tempo"
+
+        De ->
+            "Tempo"
+
+        El ->
+            "Ταχύτητα"
+
+        Es ->
+            "Velocidad"
+
+        Et ->
+            "Kiirus"
+
+        Eu ->
+            "Abiadura"
+
+        Fa ->
+            "سرعت"
+
+        Fi ->
+            "Nopeus"
+
+        Fr ->
+            "Vitesse"
+
+        Ga ->
+            "Luas"
+
+        Hi ->
+            "गति"
+
+        Hr ->
+            "Brzina"
+
+        Hu ->
+            "Tempó"
+
+        Hy ->
+            "Արագություն"
+
+        It ->
+            "Velocità"
+
+        Ja ->
+            "速度"
+
+        Ka ->
+            "სიჩქარე"
+
+        Ko ->
+            "속도"
+
+        Lt ->
+            "Greitis"
+
+        Lv ->
+            "Ātrums"
+
+        Nb ->
+            "Tempo"
+
+        Nl ->
+            "Tempo"
+
+        Pa ->
+            "ਗਤੀ"
+
+        Pl ->
+            "Tempo"
+
+        Pt ->
+            "Ritmo"
+
+        Ro ->
+            "Viteză"
+
+        Ru ->
+            "Скорость"
+
+        Sk ->
+            "Rýchlosť"
+
+        Sl ->
+            "Hitrost"
+
+        Sq ->
+            "Ritmi"
+
+        Sv ->
+            "Tempo"
+
+        Sw ->
+            "Kasi"
+
+        Tr ->
+            "Hız"
+
+        Tw ->
+            "速度"
+
+        Uk ->
+            "Темп"
+
+        Ur ->
+            "رفتار"
+
+        Zh ->
+            "速度"
+
+        _ ->
+            "Speed"
+
+
 commentPitch : Lang -> String
 commentPitch lang =
     case lang of
         Am ->
-            "የድምጽ አንድ ቀይር"
+            "የድምጽ ከፍታ አስተካክል"
 
         Ar ->
-            "تعديل الارتفاع"
+            "تعديل طبقة الصوت"
 
         Bg ->
             "Промяна на тон"
 
         Bn ->
-            "টোন সংশোধন করুন"
+            "স্বরের উচ্চতা সামঞ্জস্য করুন"
 
         Ca ->
             "Ajusta el to de la veu"
@@ -3165,7 +4688,7 @@ commentPitch lang =
             "Doitu ahotsaren tonua"
 
         Fa ->
-            "تنظیم تغییر صدا"
+            "تنظیم زیر و بمی صدا"
 
         Fi ->
             "Säädä äänenkorkeutta"
@@ -3177,7 +4700,7 @@ commentPitch lang =
             "Coigeartaigh tuinairde an ghutha"
 
         Hi ->
-            "ध्वनि सेट करें"
+            "पिच सेट करें"
 
         Hr ->
             "Prilagodi visinu glasa"
@@ -3186,7 +4709,7 @@ commentPitch lang =
             "Hangmagasság beállítása"
 
         Hy ->
-            "ձայնահատկությունը կարգավորել"
+            "Կարգավորել ձայնի տոնը"
 
         It ->
             "Regola l'altezza del tono"
@@ -3213,7 +4736,7 @@ commentPitch lang =
             "Toonhoogte aanpassen"
 
         Pa ->
-            "ਧੁਨ ਸੰਰਚਨਾ"
+            "ਸੁਰ ਸੰਰਚਨਾ"
 
         Pl ->
             "Dostosuj wysokość głosu"
@@ -3240,13 +4763,13 @@ commentPitch lang =
             "Justera tonhöjd"
 
         Sw ->
-            "Badilisha sauti"
+            "Badilisha kiwango cha sauti"
 
         Tr ->
             "Ses perdesini ayarla"
 
         Tw ->
-            "调整音高"
+            "調整音高"
 
         Uk ->
             "налаштування висоти тону"
@@ -3261,153 +4784,425 @@ commentPitch lang =
             "Adjust pitch"
 
 
+commentPitchLabel : Lang -> String
+commentPitchLabel lang =
+    case lang of
+        Am ->
+            "ከፍታ"
+
+        Ar ->
+            "الطبقة"
+
+        Bg ->
+            "Тон"
+
+        Bn ->
+            "স্বর"
+
+        Ca ->
+            "To"
+
+        Cs ->
+            "Výška"
+
+        Da ->
+            "Tonehøjde"
+
+        De ->
+            "Tonhöhe"
+
+        El ->
+            "Τόνος"
+
+        Es ->
+            "Tono"
+
+        Et ->
+            "Kõrgus"
+
+        Eu ->
+            "Tonua"
+
+        Fa ->
+            "زیر و بمی"
+
+        Fi ->
+            "Korkeus"
+
+        Fr ->
+            "Hauteur"
+
+        Ga ->
+            "Tuinairde"
+
+        Hi ->
+            "पिच"
+
+        Hr ->
+            "Visina"
+
+        Hu ->
+            "Magasság"
+
+        Hy ->
+            "Տոն"
+
+        It ->
+            "Tono"
+
+        Ja ->
+            "音程"
+
+        Ka ->
+            "ტონი"
+
+        Ko ->
+            "음높이"
+
+        Lt ->
+            "Aukštis"
+
+        Lv ->
+            "Augstums"
+
+        Nb ->
+            "Tone"
+
+        Nl ->
+            "Toon"
+
+        Pa ->
+            "ਸੁਰ"
+
+        Pl ->
+            "Wysokość"
+
+        Pt ->
+            "Tom"
+
+        Ro ->
+            "Ton"
+
+        Ru ->
+            "Тон"
+
+        Sk ->
+            "Výška"
+
+        Sl ->
+            "Višina"
+
+        Sq ->
+            "Toni"
+
+        Sv ->
+            "Tonhöjd"
+
+        Sw ->
+            "Kiwango"
+
+        Tr ->
+            "Perde"
+
+        Tw ->
+            "音高"
+
+        Uk ->
+            "Тон"
+
+        Ur ->
+            "پچ"
+
+        Zh ->
+            "音高"
+
+        _ ->
+            "Pitch"
+
+
 commentHide : Lang -> String
 commentHide lang =
     case lang of
         Am ->
-            "የቪዲዮ አስተካክል ደብቅ"
+            "የቪዲዮ እና የአቫታር አስተያየቶችን ደብቅ"
 
         Ar ->
-            "إخفاء تعليقات الفيديو"
+            "إخفاء تعليقات الفيديو والصورة الرمزية"
 
         Bg ->
-            "Скриване на видео коментари"
+            "Скриване на коментарите с видео и аватар"
 
         Bn ->
-            "ভিডিও মন্তব্য লুকান"
+            "ভিডিও ও অবতার মন্তব্য লুকান"
 
         Ca ->
-            "Amaga els comentaris de vídeo"
+            "Amaga els comentaris de vídeo i d'avatar"
 
         Cs ->
-            "Skrýt videokomentáře"
+            "Skrýt komentáře videa a avatara"
 
         Da ->
-            "Skjul videokommentarer"
+            "Skjul video- og avatarkommentarer"
 
         De ->
             "Video- & Avatar-Kommentare ausblenden"
 
         El ->
-            "Απόκρυψη σχολίων βίντεο"
+            "Απόκρυψη σχολίων βίντεο και άβαταρ"
 
         Es ->
-            "Ocultar los comentarios del video"
+            "Ocultar los comentarios de video y avatar"
 
         Et ->
-            "Peida videokommentaarid"
+            "Peida video- ja avatarikommentaarid"
 
         Eu ->
-            "Ezkutatu bideo-iruzkinak"
+            "Ezkutatu bideo- eta avatar-iruzkinak"
 
         Fa ->
-            "مخفی کردن نظرات ویدیو"
+            "پنهان کردن توضیحات ویدیو و آواتار"
 
         Fi ->
-            "Piilota videokommentit"
+            "Piilota video- ja avatarikommentit"
 
         Fr ->
-            "Masquer les commentaires vidéo"
+            "Masquer les commentaires vidéo et avatar"
 
         Ga ->
-            "Folaigh nótaí tráchta físe"
+            "Folaigh nótaí tráchta físe agus abhatáir"
 
         Hi ->
-            "वीडियो टिप्पणियाँ छुपाएं"
+            "वीडियो और अवतार टिप्पणियाँ छुपाएं"
 
         Hr ->
-            "Sakrij videokomentare"
+            "Sakrij komentare videa i avatara"
 
         Hu ->
-            "Videós megjegyzések elrejtése"
+            "Videós és avatar-megjegyzések elrejtése"
 
         Hy ->
-            "թաքցնել տեսանյութի մեջ մեկնաբանությունները"
+            "Թաքցնել տեսանյութի և ավատարի մեկնաբանությունները"
 
         It ->
-            "Nascondi i commenti video"
+            "Nascondi i commenti video e avatar"
 
         Ja ->
-            "動画のコメントを非表示にする"
+            "動画とアバターのコメントを非表示にする"
 
         Ka ->
-            "დამალე ვიდეო კომენტარები"
+            "ვიდეოსა და ავატარის კომენტარების დამალვა"
 
         Ko ->
-            "비디오 댓글 숨기기"
+            "비디오 및 아바타 해설 숨기기"
 
         Lt ->
-            "Slėpti vaizdo komentarus"
+            "Slėpti vaizdo ir avataro komentarus"
 
         Lv ->
-            "Paslēpt video komentārus"
+            "Paslēpt video un avatāra komentārus"
 
         Nb ->
-            "Skjul videokommentarer"
+            "Skjul video- og avatarkommentarer"
 
         Nl ->
-            "Hide video comments"
+            "Video- en avatarcommentaar verbergen"
 
         Pa ->
-            "ਵੀਡੀਓ ਟਿੱਪਣੀਆਂ ਛੁਪਾਓ"
+            "ਵੀਡੀਓ ਅਤੇ ਅਵਤਾਰ ਟਿੱਪਣੀਆਂ ਛੁਪਾਓ"
 
         Pl ->
-            "Ukryj komentarze wideo"
+            "Ukryj komentarze wideo i awatara"
 
         Pt ->
-            "Ocultar comentários do vídeo"
+            "Ocultar comentários de vídeo e avatar"
 
         Ro ->
-            "Ascunde comentariile video"
+            "Ascunde comentariile video și de avatar"
 
         Ru ->
-            "Скрыть комментарии к видео"
+            "Скрыть комментарии видео и аватара"
 
         Sk ->
-            "Skryť videokomentáre"
+            "Skryť komentáre videa a avatara"
 
         Sl ->
-            "Skrij video komentarje"
+            "Skrij komentarje videa in avatarja"
 
         Sq ->
-            "Fshih komentet me video"
+            "Fshih komentet me video dhe avatar"
 
         Sv ->
-            "Dölj videokommentarer"
+            "Dölj video- och avatarkommentarer"
 
         Sw ->
-            "Ficha maoni ya video"
+            "Ficha maoni ya video na avatar"
 
         Tr ->
-            "Video yorumlarını gizle"
+            "Video ve avatar yorumlarını gizle"
 
         Tw ->
-            "隱藏影片評論"
+            "隱藏影片與虛擬形象評論"
 
         Uk ->
-            "Приховати коментарі до відео"
+            "Приховати коментарі до відео та аватара"
 
         Ur ->
-            "ویڈیو تبصرے چھپائیں"
+            "ویڈیو اور اوتار تبصرے چھپائیں"
 
         Zh ->
-            "隱藏影片評論"
+            "隐藏视频和虚拟形象讲解"
 
         _ ->
             "Hide video & avatar comments"
+
+
+commentSidebar : Lang -> String
+commentSidebar lang =
+    case lang of
+        Am ->
+            "አስተያየቶች"
+
+        Ar ->
+            "التعليقات"
+
+        Bg ->
+            "Коментари"
+
+        Bn ->
+            "মন্তব্য"
+
+        Ca ->
+            "Comentaris"
+
+        Cs ->
+            "Komentáře"
+
+        Da ->
+            "Kommentarer"
+
+        De ->
+            "Kommentare"
+
+        El ->
+            "Σχόλια"
+
+        Es ->
+            "Comentarios"
+
+        Et ->
+            "Kommentaarid"
+
+        Eu ->
+            "Iruzkinak"
+
+        Fa ->
+            "توضیحات"
+
+        Fi ->
+            "Kommentit"
+
+        Fr ->
+            "Commentaires"
+
+        Ga ->
+            "Nótaí tráchta"
+
+        Hi ->
+            "टिप्पणियाँ"
+
+        Hr ->
+            "Komentari"
+
+        Hu ->
+            "Megjegyzések"
+
+        Hy ->
+            "Մեկնաբանություններ"
+
+        It ->
+            "Commenti"
+
+        Ja ->
+            "コメント"
+
+        Ka ->
+            "კომენტარები"
+
+        Ko ->
+            "해설"
+
+        Lt ->
+            "Komentarai"
+
+        Lv ->
+            "Komentāri"
+
+        Nb ->
+            "Kommentarer"
+
+        Nl ->
+            "Commentaar"
+
+        Pa ->
+            "ਟਿੱਪਣੀਆਂ"
+
+        Pl ->
+            "Komentarze"
+
+        Pt ->
+            "Comentários"
+
+        Ro ->
+            "Comentarii"
+
+        Ru ->
+            "Комментарии"
+
+        Sk ->
+            "Komentáre"
+
+        Sl ->
+            "Komentarji"
+
+        Sq ->
+            "Komentet"
+
+        Sv ->
+            "Kommentarer"
+
+        Sw ->
+            "Maoni"
+
+        Tr ->
+            "Yorumlar"
+
+        Tw ->
+            "評論"
+
+        Uk ->
+            "Коментарі"
+
+        Ur ->
+            "تبصرے"
+
+        Zh ->
+            "讲解"
+
+        _ ->
+            "Comments"
 
 
 no_translation : Lang -> String
 no_translation lang =
     case lang of
         Am ->
-            "በመሆን ላይ ምንም ተስተካክል የለም"
+            "እስካሁን ምንም ትርጉም የለም"
 
         Ar ->
-            "لا يوجد ترجمة حتى الآن"
+            "لا توجد ترجمة حتى الآن"
 
         Bg ->
-            "Без превод"
+            "Все още няма превод"
 
         Bn ->
             "এখনও অনুবাদ নেই"
@@ -3437,7 +5232,7 @@ no_translation lang =
             "oraindik ez dago itzulpenik"
 
         Fa ->
-            "در دست ترجمه"
+            "هنوز ترجمه‌ای وجود ندارد"
 
         Fi ->
             "käännöstä ei vielä ole"
@@ -3458,7 +5253,7 @@ no_translation lang =
             "még nincs fordítás"
 
         Hy ->
-            "դեռ թագմանություն չկա"
+            "Թարգմանություն դեռ չկա"
 
         It ->
             "ancora non tradotto"
@@ -3482,7 +5277,7 @@ no_translation lang =
             "ingen oversettelse ennå"
 
         Nl ->
-            "noch geen vertaling aanwezig"
+            "nog geen vertaling beschikbaar"
 
         Pa ->
             "ਅਜੇ ਅਨੁਵਾਦ ਨਹੀਂ ਹੈ"
@@ -3527,7 +5322,7 @@ no_translation lang =
             "ابھی تک کوئی ترجمہ نہیں"
 
         Zh ->
-            "尚未翻譯"
+            "尚未翻译"
 
         _ ->
             "no translation yet"
@@ -3537,7 +5332,7 @@ translateWithGoogle : Lang -> String
 translateWithGoogle lang =
     case lang of
         Am ->
-            "በ Google ትርጉም (ምርጥ) ተመርጧል"
+            "በGoogle ተርጉም (የሙከራ)"
 
         Ar ->
             "ترجمة من جوجل (تجريبي)"
@@ -3546,7 +5341,7 @@ translateWithGoogle lang =
             "Превод с Google (експериментално)"
 
         Bn ->
-            "Google দিয়ে অনুবাদ করুন (প্রায়োগিক)"
+            "Google দিয়ে অনুবাদ করুন (পরীক্ষামূলক)"
 
         Ca ->
             "Tradueix amb Google (experimental)"
@@ -3594,7 +5389,7 @@ translateWithGoogle lang =
             "Fordítás a Google segítségével (kísérleti)"
 
         Hy ->
-            "Թարգմանեք Google- ի միջոցով (փորձնական)"
+            "Թարգմանել Google-ի միջոցով (փորձնական)"
 
         It ->
             "Tradurre con Google (sperimentale)"
@@ -3621,7 +5416,7 @@ translateWithGoogle lang =
             "Vertalen met Google (experimenteel)"
 
         Pa ->
-            "ਗੂਗਲ ਵਿੱਚ ਅਨੁਵਾਦ ਕਰੋ (ਪ੍ਰਯੋਗਾਤਮਕ)"
+            "ਗੂਗਲ ਨਾਲ ਅਨੁਵਾਦ ਕਰੋ (ਪ੍ਰਯੋਗਾਤਮਕ)"
 
         Pl ->
             "Przetłumacz za pomocą Google (eksperymentalne)"
@@ -3654,16 +5449,16 @@ translateWithGoogle lang =
             "Google ile çevir (deneysel)"
 
         Tw ->
-            "与Google进行翻译（实验性）"
+            "使用 Google 翻譯（實驗性）"
 
         Uk ->
             "Перекласти за допомогою Google (експериментально)"
 
         Ur ->
-            "گوگل کے ساتھ ترجمہ کریں (تجربی)"
+            "گوگل کے ساتھ ترجمہ کریں (تجرباتی)"
 
         Zh ->
-            "与Google进行翻译（实验性）"
+            "使用 Google 翻译（实验性）"
 
         _ ->
             "Translate with Google (experimental)"
@@ -3799,7 +5594,7 @@ cColor lang =
             "رنگ"
 
         Zh ->
-            "顏色"
+            "颜色"
 
         _ ->
             "Color"
@@ -3809,7 +5604,7 @@ cSchema : Lang -> String
 cSchema lang =
     case lang of
         Am ->
-            "ቀለም ሥነጽሑፍ"
+            "የቀለም ገጽታ"
 
         Ar ->
             "نظام الألوان"
@@ -3866,7 +5661,7 @@ cSchema lang =
             "Színséma"
 
         Hy ->
-            "Գունային սխեման"
+            "Գունային սխեմա"
 
         It ->
             "Schema di colori"
@@ -3875,7 +5670,7 @@ cSchema lang =
             "カラースキーム"
 
         Ka ->
-            "ფერის გეგმა"
+            "ფერთა სქემა"
 
         Ko ->
             "색상 스키마"
@@ -3945,7 +5740,7 @@ cDark : Lang -> String
 cDark lang =
     case lang of
         Am ->
-            "እንቅስቃሴ"
+            "ጨለማ ሁነታ"
 
         Ar ->
             "الوضع المظلم"
@@ -4002,10 +5797,10 @@ cDark lang =
             "Sötét mód"
 
         Hy ->
-            "մութ ռեժիմ"
+            "Մուգ ռեժիմ"
 
         It ->
-            "modo scuro"
+            "modalità scura"
 
         Ja ->
             "ダークモード"
@@ -4071,7 +5866,7 @@ cDark lang =
             "تاریک موڈ"
 
         Zh ->
-            "暗模式"
+            "深色模式"
 
         _ ->
             "Dark-Mode"
@@ -4081,10 +5876,10 @@ cBright : Lang -> String
 cBright lang =
     case lang of
         Am ->
-            "እንደዛሬ"
+            "ብሩህ ሁነታ"
 
         Ar ->
-            "وضع الإضاءة"
+            "الوضع الفاتح"
 
         Bg ->
             "светъл режим"
@@ -4138,10 +5933,10 @@ cBright lang =
             "Világos mód"
 
         Hy ->
-            "թեթև ռեժիմ"
+            "Բաց ռեժիմ"
 
         It ->
-            "modo chiaro"
+            "modalità chiara"
 
         Ja ->
             "ライトモード"
@@ -4165,7 +5960,7 @@ cBright lang =
             "lichte modus"
 
         Pa ->
-            "ਚਮਕੀਲਾ ਮੋਡ"
+            "ਲਾਈਟ ਮੋਡ"
 
         Pl ->
             "Tryb jasny"
@@ -4192,7 +5987,7 @@ cBright lang =
             "Ljust läge"
 
         Sw ->
-            "Modi-Nuru"
+            "Hali ya Mwanga"
 
         Tr ->
             "Açık mod"
@@ -4207,7 +6002,7 @@ cBright lang =
             "روشن موڈ"
 
         Zh ->
-            "亮模式"
+            "浅色模式"
 
         _ ->
             "Light-Mode"
@@ -4220,10 +6015,10 @@ cDefault lang =
             "ነባሪ"
 
         Ar ->
-            "المعيار الافتراضي"
+            "الافتراضي"
 
         Bg ->
-            "Подразбиране"
+            "По подразбиране"
 
         Bn ->
             "ডিফল্ট"
@@ -4244,7 +6039,7 @@ cDefault lang =
             "Προεπιλογή"
 
         Es ->
-            "defecto"
+            "predeterminado"
 
         Et ->
             "Vaikimisi"
@@ -4253,7 +6048,7 @@ cDefault lang =
             "Lehenetsia"
 
         Fa ->
-            "پیشفرض"
+            "پیش‌فرض"
 
         Fi ->
             "Oletus"
@@ -4313,7 +6108,7 @@ cDefault lang =
             "Implicit"
 
         Ru ->
-            "стандарт по умолчанию"
+            "по умолчанию"
 
         Sk ->
             "Predvolené"
@@ -4343,7 +6138,7 @@ cDefault lang =
             "پہلے سے طے شدہ"
 
         Zh ->
-            "預設"
+            "默认"
 
         _ ->
             "Default"
@@ -4479,7 +6274,7 @@ cBlue lang =
             "نیلا"
 
         Zh ->
-            "藍色"
+            "蓝色"
 
         _ ->
             "Blue"
@@ -4495,7 +6290,7 @@ cRed lang =
             "أحمر"
 
         Bg ->
-            "червен"
+            "Червено"
 
         Bn ->
             "লাল"
@@ -4600,13 +6395,13 @@ cRed lang =
             "Röd"
 
         Sw ->
-            "nyekundu"
+            "Nyekundu"
 
         Tr ->
             "Kırmızı"
 
         Tw ->
-            "红色的"
+            "紅色"
 
         Uk ->
             "червоний"
@@ -4615,7 +6410,7 @@ cRed lang =
             "سرخ"
 
         Zh ->
-            "红色的"
+            "红色"
 
         _ ->
             "Red"
@@ -4631,7 +6426,7 @@ cYellow lang =
             "أصفر"
 
         Bg ->
-            "жълт"
+            "Жълто"
 
         Bn ->
             "হলুদ"
@@ -4661,7 +6456,7 @@ cYellow lang =
             "Horia"
 
         Fa ->
-            "رنگ زرد"
+            "زرد"
 
         Fi ->
             "Keltainen"
@@ -4742,7 +6537,7 @@ cYellow lang =
             "Sarı"
 
         Tw ->
-            "黄色的"
+            "黃色"
 
         Uk ->
             "жовтий"
@@ -4751,7 +6546,7 @@ cYellow lang =
             "پیلا"
 
         Zh ->
-            "黄色的"
+            "黄色"
 
         _ ->
             "Yellow"
@@ -4761,13 +6556,13 @@ cTurquoise : Lang -> String
 cTurquoise lang =
     case lang of
         Am ->
-            "ዓሣደኝ"
+            "ቱርኩዝ"
 
         Ar ->
             "فيروزي"
 
         Bg ->
-            "тюркоаз"
+            "Тюркоазено"
 
         Bn ->
             "টার্কোয়াজ"
@@ -4797,7 +6592,7 @@ cTurquoise lang =
             "Turkesa"
 
         Fa ->
-            "فیروزه"
+            "فیروزه‌ای"
 
         Fi ->
             "Turkoosi"
@@ -4827,7 +6622,7 @@ cTurquoise lang =
             "ターコイズ"
 
         Ka ->
-            "თურქიზი"
+            "ფირუზისფერი"
 
         Ko ->
             "청록"
@@ -4872,13 +6667,13 @@ cTurquoise lang =
             "Turkos"
 
         Sw ->
-            "Turquoise"
+            "Feruzi"
 
         Tr ->
             "Turkuaz"
 
         Tw ->
-            "绿松石"
+            "綠松石色"
 
         Uk ->
             "бірюзовий"
@@ -4887,7 +6682,7 @@ cTurquoise lang =
             "فیروزی"
 
         Zh ->
-            "绿松石"
+            "绿松石色"
 
         _ ->
             "Turquoise"
@@ -4897,13 +6692,13 @@ fullscreenEnter : Lang -> String
 fullscreenEnter lang =
     case lang of
         Am ->
-            "ሙሉ ማስታወሻ"
+            "ወደ ሙሉ ማያ ገጽ ግባ"
 
         Ar ->
-            "الدخول إلى وضع العرض الكامل"
+            "الدخول إلى وضع ملء الشاشة"
 
         Bg ->
-            "Влезте в цял екран"
+            "Цял екран"
 
         Bn ->
             "ফুলস্ক্রিনে ঢুকুন"
@@ -4954,16 +6749,16 @@ fullscreenEnter lang =
             "Teljes képernyő megnyitása"
 
         Hy ->
-            "մոտեցնել լիավանդակային ռեժիմ"
+            "Անցնել լիաէկրան ռեժիմի"
 
         It ->
             "Entra a schermo intero"
 
         Ja ->
-            "フルスクリーンに入る"
+            "フルスクリーン表示"
 
         Ka ->
-            "სრულეკრანი"
+            "სრულ ეკრანზე გადასვლა"
 
         Ko ->
             "전체 화면으로"
@@ -5014,7 +6809,7 @@ fullscreenEnter lang =
             "Tam ekrana geç"
 
         Tw ->
-            "進入全屏模式"
+            "進入全螢幕模式"
 
         Uk ->
             "увімкнути повноекранний режим"
@@ -5023,7 +6818,7 @@ fullscreenEnter lang =
             "پوری سکرین"
 
         Zh ->
-            "進入全屏模式"
+            "进入全屏模式"
 
         _ ->
             "Enter Fullscreen"
@@ -5033,13 +6828,13 @@ fullscreenExit : Lang -> String
 fullscreenExit lang =
     case lang of
         Am ->
-            "ሙሉ ማስታወሻ ያድርጉz6"
+            "ከሙሉ ማያ ገጽ ውጣ"
 
         Ar ->
-            "الخروج من وضع العرض الكامل"
+            "الخروج من وضع ملء الشاشة"
 
         Bg ->
-            "Излезте от цял екран"
+            "Изход от цял екран"
 
         Bn ->
             "ফুলস্ক্রিন থেকে বের হোন"
@@ -5090,7 +6885,7 @@ fullscreenExit lang =
             "Kilépés a teljes képernyőből"
 
         Hy ->
-            "դուրս գալ լիավանդակային ռեժիմից"
+            "Դուրս գալ լիաէկրան ռեժիմից"
 
         It ->
             "Esci da schermo intero"
@@ -5099,7 +6894,7 @@ fullscreenExit lang =
             "フルスクリーンを終了する"
 
         Ka ->
-            "გამოსვლა"
+            "სრული ეკრანიდან გამოსვლა"
 
         Ko ->
             "전체 화면에서 나가기"
@@ -5150,7 +6945,7 @@ fullscreenExit lang =
             "Tam ekrandan çık"
 
         Tw ->
-            "退出全屏模式"
+            "退出全螢幕模式"
 
         Uk ->
             "вийти з повноекранного режиму"
@@ -5169,7 +6964,7 @@ modeMode : Lang -> String
 modeMode lang =
     case lang of
         Am ->
-            "ዘመን ተዘጋጅ"
+            "የአቀራረብ ሁነታ"
 
         Ar ->
             "وضع العرض"
@@ -5178,7 +6973,7 @@ modeMode lang =
             "Режим на презентация"
 
         Bn ->
-            "প্রস্তুতির মোড"
+            "প্রেজেন্টেশন মোড"
 
         Ca ->
             "Mode de presentació"
@@ -5199,7 +6994,7 @@ modeMode lang =
             "Modo presentación"
 
         Et ->
-            "Esitusrežiim"
+            "Esitlusrežiim"
 
         Eu ->
             "Aurkezpen-modua"
@@ -5229,7 +7024,7 @@ modeMode lang =
             "Ներկայացման ռեժիմ"
 
         It ->
-            "Modo presentazione"
+            "Modalità presentazione"
 
         Ja ->
             "プレゼンテーションモード"
@@ -5241,7 +7036,7 @@ modeMode lang =
             "프레젠테이션 모드"
 
         Lt ->
-            "Pateikimo režimas"
+            "Pristatymo režimas"
 
         Lv ->
             "Prezentācijas režīms"
@@ -5286,7 +7081,7 @@ modeMode lang =
             "Sunum modu"
 
         Tw ->
-            "简报模式"
+            "簡報模式"
 
         Uk ->
             "режим презентації"
@@ -5295,7 +7090,7 @@ modeMode lang =
             "پریزنٹیشن موڈ"
 
         Zh ->
-            "简报模式"
+            "演示模式"
 
         _ ->
             "Presentation mode"
@@ -5305,16 +7100,16 @@ modeTextbook : Lang -> String
 modeTextbook lang =
     case lang of
         Am ->
-            "ተማሪ መስመር"
+            "መማሪያ መጽሐፍ"
 
         Ar ->
-            "المقرر"
+            "الكتاب المدرسي"
 
         Bg ->
-            "Текст"
+            "Учебник"
 
         Bn ->
-            "টেক্সটবুক"
+            "পাঠ্যবই"
 
         Ca ->
             "Llibre de text"
@@ -5341,7 +7136,7 @@ modeTextbook lang =
             "Testuliburua"
 
         Fa ->
-            "کتاب"
+            "کتاب درسی"
 
         Fi ->
             "Oppikirja"
@@ -5362,7 +7157,7 @@ modeTextbook lang =
             "Tankönyv"
 
         Hy ->
-            "գիրք"
+            "դասագիրք"
 
         It ->
             "Manuale"
@@ -5371,10 +7166,10 @@ modeTextbook lang =
             "教科書"
 
         Ka ->
-            "ტექსტური"
+            "სახელმძღვანელო"
 
         Ko ->
-            "텍스트 북"
+            "교과서"
 
         Lt ->
             "Vadovėlis"
@@ -5401,7 +7196,7 @@ modeTextbook lang =
             "Manual"
 
         Ru ->
-            "чтения"
+            "учебник"
 
         Sk ->
             "Učebnica"
@@ -5416,7 +7211,7 @@ modeTextbook lang =
             "Lärobok"
 
         Sw ->
-            "Kitabu cha maandishi"
+            "Kitabu cha kiada"
 
         Tr ->
             "Ders kitabı"
@@ -5425,13 +7220,13 @@ modeTextbook lang =
             "教科書"
 
         Uk ->
-            "навчальна книга"
+            "підручник"
 
         Ur ->
             "ٹیکسٹ بک"
 
         Zh ->
-            "教科書"
+            "教科书"
 
         _ ->
             "Textbook"
@@ -5441,7 +7236,7 @@ modePresentation : Lang -> String
 modePresentation lang =
     case lang of
         Am ->
-            "እንቅስቃሴ"
+            "አቀራረብ"
 
         Ar ->
             "العرض"
@@ -5537,7 +7332,7 @@ modePresentation lang =
             "Prezentare"
 
         Ru ->
-            "презентации"
+            "презентация"
 
         Sk ->
             "Prezentácia"
@@ -5558,7 +7353,7 @@ modePresentation lang =
             "Sunum"
 
         Tw ->
-            "報告"
+            "簡報"
 
         Uk ->
             "презентація"
@@ -5567,7 +7362,7 @@ modePresentation lang =
             "پریزنٹیشن"
 
         Zh ->
-            "報告"
+            "演示"
 
         _ ->
             "Presentation"
@@ -5577,7 +7372,7 @@ modeSlides : Lang -> String
 modeSlides lang =
     case lang of
         Am ->
-            "ስላይድስ"
+            "ስላይዶች"
 
         Ar ->
             "الشرائح"
@@ -5604,7 +7399,7 @@ modeSlides lang =
             "Διαφάνειες"
 
         Es ->
-            "Imagen"
+            "Diapositivas"
 
         Et ->
             "Slaidid"
@@ -5658,7 +7453,7 @@ modeSlides lang =
             "Lysbilder"
 
         Nl ->
-            "Folies"
+            "Dia's"
 
         Pa ->
             "ਸਲਾਈਡ"
@@ -5694,7 +7489,7 @@ modeSlides lang =
             "Slaytlar"
 
         Tw ->
-            "幻燈片"
+            "投影片"
 
         Uk ->
             "слайди"
@@ -5703,7 +7498,7 @@ modeSlides lang =
             "سلائیڈز"
 
         Zh ->
-            "幻燈片"
+            "幻灯片"
 
         _ ->
             "Slides"
@@ -5719,16 +7514,16 @@ soundOn lang =
             "الصوت مفعل"
 
         Bg ->
-            "Звук изкл."
+            "Звук вкл."
 
         Bn ->
             "শব্দ চালু"
 
         Ca ->
-            "Activa el so"
+            "So activat"
 
         Cs ->
-            "Zapnout zvuk"
+            "Zvuk zapnut"
 
         Da ->
             "Lyd til"
@@ -5794,10 +7589,10 @@ soundOn lang =
             "Lyd på"
 
         Nl ->
-            "Luidspreker aan"
+            "Geluid aan"
 
         Pa ->
-            "ਸਾਊਂਡ ਚਾਲੂ"
+            "ਆਵਾਜ਼ ਚਾਲੂ"
 
         Pl ->
             "Włącz dźwięk"
@@ -5812,13 +7607,13 @@ soundOn lang =
             "звук включён"
 
         Sk ->
-            "Zapnúť zvuk"
+            "Zvuk zapnutý"
 
         Sl ->
-            "Vklopi zvok"
+            "Zvok vklopljen"
 
         Sq ->
-            "Aktivizo zërin"
+            "Zëri i aktivizuar"
 
         Sv ->
             "Ljud på"
@@ -5833,13 +7628,13 @@ soundOn lang =
             "聲音開啟"
 
         Uk ->
-            "увімкнений"
+            "Звук увімкнено"
 
         Ur ->
             "آواز آن"
 
         Zh ->
-            "聲音開啟"
+            "声音开启"
 
         _ ->
             "Sound on"
@@ -5849,22 +7644,22 @@ soundOff : Lang -> String
 soundOff lang =
     case lang of
         Am ->
-            "ድምጽ ያልተጫኑ"
+            "ድምጽ አጥፋ"
 
         Ar ->
-            "الصوت مقفل"
+            "الصوت معطل"
 
         Bg ->
-            "Звук вкл."
+            "Звук изкл."
 
         Bn ->
             "শব্দ বন্ধ"
 
         Ca ->
-            "Desactiva el so"
+            "So desactivat"
 
         Cs ->
-            "Vypnout zvuk"
+            "Zvuk vypnut"
 
         Da ->
             "Lyd fra"
@@ -5906,7 +7701,7 @@ soundOff lang =
             "Hang kikapcsolása"
 
         Hy ->
-            "առանց ձայն"
+            "առանց ձայնի"
 
         It ->
             "Suono disattivato"
@@ -5930,10 +7725,10 @@ soundOff lang =
             "Lyd av"
 
         Nl ->
-            "Luidspreker uit"
+            "Geluid uit"
 
         Pa ->
-            "ਸਾਊਂਡ ਬੰਦ"
+            "ਆਵਾਜ਼ ਬੰਦ"
 
         Pl ->
             "Wyłącz dźwięk"
@@ -5948,13 +7743,13 @@ soundOff lang =
             "звук выключен"
 
         Sk ->
-            "Vypnúť zvuk"
+            "Zvuk vypnutý"
 
         Sl ->
-            "Izklopi zvok"
+            "Zvok izklopljen"
 
         Sq ->
-            "Çaktivizo zërin"
+            "Zëri i çaktivizuar"
 
         Sv ->
             "Ljud av"
@@ -5969,13 +7764,13 @@ soundOff lang =
             "聲音關閉"
 
         Uk ->
-            "вимкнений"
+            "Звук вимкнено"
 
         Ur ->
             "آواز بند"
 
         Zh ->
-            "聲音關閉"
+            "声音关闭"
 
         _ ->
             "Sound off"
@@ -5985,10 +7780,10 @@ infoAuthor : Lang -> String
 infoAuthor lang =
     case lang of
         Am ->
-            "ሰላም ያለፈ: "
+            "ደራሲ: "
 
         Ar ->
-            "مؤلف"
+            "المؤلف: "
 
         Bg ->
             "Автор: "
@@ -6012,7 +7807,7 @@ infoAuthor lang =
             "Συγγραφέας: "
 
         Es ->
-            "Autor"
+            "Autor: "
 
         Et ->
             "Autor: "
@@ -6033,7 +7828,7 @@ infoAuthor lang =
             "Údar: "
 
         Hi ->
-            "लेखक:"
+            "लेखक: "
 
         Hr ->
             "Autor: "
@@ -6111,7 +7906,7 @@ infoAuthor lang =
             "مصنف: "
 
         Zh ->
-            "作者: "
+            "作者："
 
         _ ->
             "Author: "
@@ -6121,10 +7916,10 @@ infoAuthors : Lang -> String
 infoAuthors lang =
     case lang of
         Am ->
-            "ሰላም ያለፈውን: "
+            "ደራሲዎች: "
 
         Ar ->
-            "المؤلفون"
+            "المؤلفون: "
 
         Bg ->
             "Автори: "
@@ -6148,7 +7943,7 @@ infoAuthors lang =
             "Συγγραφείς: "
 
         Es ->
-            "Autores"
+            "Autores: "
 
         Et ->
             "Autorid: "
@@ -6169,7 +7964,7 @@ infoAuthors lang =
             "Údair: "
 
         Hi ->
-            "लेखकों:"
+            "लेखक: "
 
         Hr ->
             "Autori: "
@@ -6247,7 +8042,7 @@ infoAuthors lang =
             "مصنفین: "
 
         Zh ->
-            "作者: "
+            "作者："
 
         _ ->
             "Authors: "
@@ -6260,7 +8055,7 @@ infoDate lang =
             "ቀን: "
 
         Ar ->
-            "التاريخ"
+            "التاريخ: "
 
         Bg ->
             "Дата: "
@@ -6284,7 +8079,7 @@ infoDate lang =
             "Ημερομηνία: "
 
         Es ->
-            "fecha"
+            "Fecha: "
 
         Et ->
             "Kuupäev: "
@@ -6305,7 +8100,7 @@ infoDate lang =
             "Dáta: "
 
         Hi ->
-            "तारीख:"
+            "तारीख: "
 
         Hr ->
             "Datum: "
@@ -6383,7 +8178,7 @@ infoDate lang =
             "تاریخ: "
 
         Zh ->
-            "日期: "
+            "日期："
 
         _ ->
             "Date: "
@@ -6396,7 +8191,7 @@ infoEmail lang =
             "ኢሜል: "
 
         Ar ->
-            "البريد الإلكتروني"
+            "البريد الإلكتروني: "
 
         Bg ->
             "Имейл: "
@@ -6420,7 +8215,7 @@ infoEmail lang =
             "Email: "
 
         Es ->
-            "email"
+            "Correo electrónico: "
 
         Et ->
             "E-post: "
@@ -6441,7 +8236,7 @@ infoEmail lang =
             "Ríomhphost: "
 
         Hi ->
-            "ईमेल:"
+            "ईमेल: "
 
         Hr ->
             "E-pošta: "
@@ -6459,7 +8254,7 @@ infoEmail lang =
             "メール："
 
         Ka ->
-            "იმეილი: "
+            "ელფოსტა: "
 
         Ko ->
             "이메일: "
@@ -6519,7 +8314,7 @@ infoEmail lang =
             "ای میل: "
 
         Zh ->
-            "電郵: "
+            "电子邮件："
 
         _ ->
             "Email: "
@@ -6529,7 +8324,7 @@ infoVersion : Lang -> String
 infoVersion lang =
     case lang of
         Am ->
-            "ቅድሚያ: "
+            "ስሪት: "
 
         Ar ->
             "الإصدار: "
@@ -6556,7 +8351,7 @@ infoVersion lang =
             "Έκδοση: "
 
         Es ->
-            "versión"
+            "Versión: "
 
         Et ->
             "Versioon: "
@@ -6577,7 +8372,7 @@ infoVersion lang =
             "Leagan: "
 
         Hi ->
-            "संस्करण:"
+            "संस्करण: "
 
         Hr ->
             "Verzija: "
@@ -6589,7 +8384,7 @@ infoVersion lang =
             "տարբերակ: "
 
         It ->
-            "Versione:  "
+            "Versione: "
 
         Ja ->
             "バージョン："
@@ -6613,7 +8408,7 @@ infoVersion lang =
             "Versie: "
 
         Pa ->
-            "ਵਰਜਨ"
+            "ਵਰਜਨ: "
 
         Pl ->
             "Wersja: "
@@ -6655,7 +8450,7 @@ infoVersion lang =
             "ورژن: "
 
         Zh ->
-            "版本: "
+            "版本："
 
         _ ->
             "Version: "
@@ -6692,7 +8487,7 @@ confInformation lang =
             "Πληροφορίες"
 
         Es ->
-            "informaciones"
+            "información"
 
         Et ->
             "Teave"
@@ -6722,7 +8517,7 @@ confInformation lang =
             "Információk"
 
         Hy ->
-            "ինֆորմացիա"
+            "տեղեկություններ"
 
         It ->
             "Informazioni"
@@ -6791,7 +8586,7 @@ confInformation lang =
             "معلومات"
 
         Zh ->
-            "關於"
+            "信息"
 
         _ ->
             "Information"
@@ -6804,7 +8599,7 @@ confSettings lang =
             "ማስተካከያዎች"
 
         Ar ->
-            "اعدادات"
+            "الإعدادات"
 
         Bg ->
             "Настройки"
@@ -6885,7 +8680,7 @@ confSettings lang =
             "Instellingen"
 
         Pa ->
-            "ਸੈਟਿੰਗ"
+            "ਸੈਟਿੰਗਾਂ"
 
         Pl ->
             "Ustawienia"
@@ -6927,7 +8722,7 @@ confSettings lang =
             "ترتیبات"
 
         Zh ->
-            "設定"
+            "设置"
 
         _ ->
             "Settings"
@@ -6937,7 +8732,7 @@ confShare : Lang -> String
 confShare lang =
     case lang of
         Am ->
-            "አገልግሎት"
+            "አጋራ"
 
         Ar ->
             "مشاركة"
@@ -6973,7 +8768,7 @@ confShare lang =
             "Partekatu"
 
         Fa ->
-            "اشتراک"
+            "اشتراک‌گذاری"
 
         Fi ->
             "Jaa"
@@ -7073,7 +8868,7 @@ confShareVia : Lang -> String
 confShareVia lang =
     case lang of
         Am ->
-            "ከተጨማሪ ያግኙ ..."
+            "በ... በኩል አጋራ"
 
         Ar ->
             "شارك عبر ..."
@@ -7100,7 +8895,7 @@ confShareVia lang =
             "κοινοποίηση μέσω ..."
 
         Es ->
-            "compartir via ..."
+            "compartir vía ..."
 
         Et ->
             "jaga ... kaudu"
@@ -7130,7 +8925,7 @@ confShareVia lang =
             "megosztás ezen keresztül: ..."
 
         Hy ->
-            "տարածել միջոցով ..."
+            "կիսվել հետևյալ միջոցով ..."
 
         It ->
             "Condividi via ..."
@@ -7139,7 +8934,7 @@ confShareVia lang =
             "共有方法..."
 
         Ka ->
-            "გაზიარება მეშვეობით ..."
+            "გაზიარება ..."
 
         Ko ->
             "공유하기"
@@ -7157,7 +8952,7 @@ confShareVia lang =
             "deel via ..."
 
         Pa ->
-            "ਸਾਂਝਾ ਕਰੋ ਵਿਆ ..."
+            "ਇਸ ਰਾਹੀਂ ਸਾਂਝਾ ਕਰੋ ..."
 
         Pl ->
             "udostępnij przez ..."
@@ -7190,16 +8985,16 @@ confShareVia lang =
             "... aracılığıyla paylaş"
 
         Tw ->
-            "通过...分享"
+            "透過...分享"
 
         Uk ->
             "поділитися через ..."
 
         Ur ->
-            "ذریعے شیئر کریں ..."
+            "... کے ذریعے شیئر کریں"
 
         Zh ->
-            "通过...分享"
+            "通过……分享"
 
         _ ->
             "share via ..."
@@ -7209,13 +9004,13 @@ confTranslations : Lang -> String
 confTranslations lang =
     case lang of
         Am ->
-            "ትርጉም"
+            "ትርጉሞች"
 
         Ar ->
-            "ترجمة"
+            "الترجمات"
 
         Bg ->
-            "Транслации"
+            "Преводи"
 
         Bn ->
             "অনুবাদ"
@@ -7275,7 +9070,7 @@ confTranslations lang =
             "翻訳"
 
         Ka ->
-            "თარგმნები"
+            "თარგმანები"
 
         Ko ->
             "번역"
@@ -7335,7 +9130,7 @@ confTranslations lang =
             "ترجمے"
 
         Zh ->
-            "翻譯"
+            "翻译"
 
         _ ->
             "Translations"
@@ -7345,7 +9140,7 @@ confTooltip : Lang -> String
 confTooltip lang =
     case lang of
         Am ->
-            "የማጣሪያ ጥቅል"
+            "የመሣሪያ ጥቆማዎች"
 
         Ar ->
             "تلميحات"
@@ -7354,7 +9149,7 @@ confTooltip lang =
             "Подсказки"
 
         Bn ->
-            "টুল"
+            "টুলটিপ"
 
         Ca ->
             "Indicadors de funció"
@@ -7370,6 +9165,9 @@ confTooltip lang =
 
         El ->
             "Συμβουλές εργαλείων"
+
+        Es ->
+            "Descripciones emergentes"
 
         Et ->
             "Kohtspikrid"
@@ -7398,14 +9196,17 @@ confTooltip lang =
         Hu ->
             "Eszköztippek"
 
+        Hy ->
+            "Հուշումներ"
+
         It ->
-            "Suggerimento"
+            "Suggerimenti"
 
         Ja ->
             "ツールチップ"
 
         Ka ->
-            "ინსტრუქციები"
+            "ამომხტარი მინიშნებები"
 
         Ko ->
             "도구 설명"
@@ -7419,8 +9220,11 @@ confTooltip lang =
         Nb ->
             "Verktøytips"
 
+        Nl ->
+            "Tooltips"
+
         Pa ->
-            "ਉਪਸਮਾਨ"
+            "ਟੂਲਟਿੱਪ"
 
         Pl ->
             "Podpowiedzi"
@@ -7468,11 +9272,147 @@ confTooltip lang =
             "Tooltips"
 
 
+confDecals : Lang -> String
+confDecals lang =
+    case lang of
+        Am ->
+            "በቀለም ብቻ አትመካ"
+
+        Ar ->
+            "عدم الاعتماد على الألوان وحدها"
+
+        Bg ->
+            "Не разчитайте само на цвета"
+
+        Bn ->
+            "শুধু রঙের উপর নির্ভর করবেন না"
+
+        Ca ->
+            "No dependre només del color"
+
+        Cs ->
+            "Nespoléhat jen na barvy"
+
+        Da ->
+            "Brug ikke kun farver"
+
+        De ->
+            "Nicht nur Farben verwenden"
+
+        El ->
+            "Όχι μόνο με χρώματα"
+
+        Es ->
+            "No depender solo del color"
+
+        Et ->
+            "Ära tugine ainult värvidele"
+
+        Eu ->
+            "Ez erabili koloreak soilik"
+
+        Fa ->
+            "عدم اتکا تنها به رنگ"
+
+        Fi ->
+            "Älä luota pelkkiin väreihin"
+
+        Fr ->
+            "Ne pas se fier uniquement aux couleurs"
+
+        Ga ->
+            "Ná bí ag brath ar dhath amháin"
+
+        Hi ->
+            "केवल रंग पर निर्भर न रहें"
+
+        Hr ->
+            "Ne oslanjaj se samo na boju"
+
+        Hu ->
+            "Ne csak a színekre hagyatkozz"
+
+        Hy ->
+            "Չհենվել միայն գույնի վրա"
+
+        It ->
+            "Non affidarti solo ai colori"
+
+        Ja ->
+            "色だけに頼らない"
+
+        Ka ->
+            "მხოლოდ ფერებზე არ დაყრდნობა"
+
+        Ko ->
+            "색상에만 의존하지 않기"
+
+        Lt ->
+            "Nesiremti vien spalvomis"
+
+        Lv ->
+            "Nepaļauties tikai uz krāsām"
+
+        Nb ->
+            "Ikke stol på farger alene"
+
+        Nl ->
+            "Niet alleen op kleur vertrouwen"
+
+        Pa ->
+            "ਸਿਰਫ਼ ਰੰਗਾਂ 'ਤੇ ਨਿਰਭਰ ਨਾ ਕਰੋ"
+
+        Pl ->
+            "Nie polegaj tylko na kolorze"
+
+        Pt ->
+            "Não depender apenas de cores"
+
+        Ro ->
+            "Nu te baza doar pe culori"
+
+        Ru ->
+            "Не полагаться только на цвет"
+
+        Sk ->
+            "Nespoliehať sa len na farby"
+
+        Sl ->
+            "Ne zanašaj se le na barve"
+
+        Sq ->
+            "Mos u mbështet vetëm te ngjyrat"
+
+        Sv ->
+            "Använd inte enbart färger"
+
+        Sw ->
+            "Usitegemee rangi pekee"
+
+        Tr ->
+            "Yalnızca renge güvenme"
+
+        Tw ->
+            "不只依賴顏色"
+
+        Uk ->
+            "Не покладатися лише на колір"
+
+        Ur ->
+            "صرف رنگوں پر انحصار نہ کریں"
+
+        Zh ->
+            "不仅依靠颜色区分"
+
+        _ ->
+            "Do not rely on color alone"
+
+
 confEdit : Lang -> String
 confEdit lang =
     case lang of
         Am ->
-            "ኤዲተር ክፈት"
+            "አርታኢ ክፈት"
 
         Ar ->
             "فتح المحرر"
@@ -7598,17 +9538,564 @@ confEdit lang =
             "ایڈیٹر کھولیں"
 
         Zh ->
-            "打開編輯器"
+            "打开编辑器"
 
         _ ->
             "Open editor"
+
+
+ttsPosition : Lang -> String
+ttsPosition lang =
+    case lang of
+        Am ->
+            "የማጫወቻ ቦታ"
+
+        Ar ->
+            "موضع التشغيل"
+
+        Bg ->
+            "Позиция на възпроизвеждане"
+
+        Bn ->
+            "প্লেব্যাকের অবস্থান"
+
+        Ca ->
+            "Posició de reproducció"
+
+        Cs ->
+            "Pozice přehrávání"
+
+        Da ->
+            "Afspilningsposition"
+
+        De ->
+            "Wiedergabeposition"
+
+        El ->
+            "Θέση αναπαραγωγής"
+
+        Es ->
+            "Posición de reproducción"
+
+        Et ->
+            "Taasesituse asukoht"
+
+        Eu ->
+            "Erreprodukzio-posizioa"
+
+        Fa ->
+            "موقعیت پخش"
+
+        Fi ->
+            "Toistokohta"
+
+        Fr ->
+            "Position de lecture"
+
+        Ga ->
+            "Suíomh athsheinnte"
+
+        Hi ->
+            "प्लेबैक स्थिति"
+
+        Hr ->
+            "Položaj reprodukcije"
+
+        Hu ->
+            "Lejátszási pozíció"
+
+        Hy ->
+            "Նվագարկման դիրքը"
+
+        It ->
+            "Posizione di riproduzione"
+
+        Ja ->
+            "再生位置"
+
+        Ka ->
+            "დაკვრის პოზიცია"
+
+        Ko ->
+            "재생 위치"
+
+        Lt ->
+            "Atkūrimo padėtis"
+
+        Lv ->
+            "Atskaņošanas pozīcija"
+
+        Nb ->
+            "Avspillingsposisjon"
+
+        Nl ->
+            "Afspeelpositie"
+
+        Pa ->
+            "ਪਲੇਬੈਕ ਸਥਿਤੀ"
+
+        Pl ->
+            "Pozycja odtwarzania"
+
+        Pt ->
+            "Posição de reprodução"
+
+        Ro ->
+            "Poziția redării"
+
+        Ru ->
+            "Позиция воспроизведения"
+
+        Sk ->
+            "Pozícia prehrávania"
+
+        Sl ->
+            "Položaj predvajanja"
+
+        Sq ->
+            "Pozicioni i riprodhimit"
+
+        Sv ->
+            "Uppspelningsposition"
+
+        Sw ->
+            "Nafasi ya uchezaji"
+
+        Tr ->
+            "Oynatma konumu"
+
+        Tw ->
+            "播放位置"
+
+        Uk ->
+            "Позиція відтворення"
+
+        Ur ->
+            "پلے بیک کی پوزیشن"
+
+        Zh ->
+            "播放位置"
+
+        _ ->
+            "Playback position"
+
+
+ttsOf : Lang -> String
+ttsOf lang =
+    case lang of
+        Am ->
+            "ከ"
+
+        Ar ->
+            "من"
+
+        Bg ->
+            "от"
+
+        Bn ->
+            "/"
+
+        Ca ->
+            "de"
+
+        Cs ->
+            "z"
+
+        Da ->
+            "af"
+
+        De ->
+            "von"
+
+        El ->
+            "από"
+
+        Es ->
+            "de"
+
+        Et ->
+            "/"
+
+        Eu ->
+            "/"
+
+        Fa ->
+            "از"
+
+        Fi ->
+            "/"
+
+        Fr ->
+            "sur"
+
+        Ga ->
+            "as"
+
+        Hi ->
+            "/"
+
+        Hr ->
+            "od"
+
+        Hu ->
+            "/"
+
+        Hy ->
+            "/"
+
+        It ->
+            "di"
+
+        Ja ->
+            "/"
+
+        Ka ->
+            "/"
+
+        Ko ->
+            "/"
+
+        Lt ->
+            "iš"
+
+        Lv ->
+            "no"
+
+        Nb ->
+            "av"
+
+        Nl ->
+            "van"
+
+        Pa ->
+            "/"
+
+        Pl ->
+            "z"
+
+        Pt ->
+            "de"
+
+        Ro ->
+            "din"
+
+        Ru ->
+            "из"
+
+        Sk ->
+            "z"
+
+        Sl ->
+            "od"
+
+        Sq ->
+            "nga"
+
+        Sv ->
+            "av"
+
+        Sw ->
+            "kati ya"
+
+        Tr ->
+            "/"
+
+        Tw ->
+            "/"
+
+        Uk ->
+            "з"
+
+        Ur ->
+            "/"
+
+        Zh ->
+            "/"
+
+        _ ->
+            "of"
+
+
+ttsPause : Lang -> String
+ttsPause lang =
+    case lang of
+        Am ->
+            "ለአፍታ አቁም"
+
+        Ar ->
+            "إيقاف مؤقت"
+
+        Bg ->
+            "Пауза"
+
+        Bn ->
+            "বিরতি"
+
+        Ca ->
+            "Pausa"
+
+        Cs ->
+            "Pozastavit"
+
+        Da ->
+            "Pause"
+
+        De ->
+            "Pausieren"
+
+        El ->
+            "Παύση"
+
+        Es ->
+            "Pausar"
+
+        Et ->
+            "Paus"
+
+        Eu ->
+            "Pausatu"
+
+        Fa ->
+            "مکث"
+
+        Fi ->
+            "Tauko"
+
+        Fr ->
+            "Pause"
+
+        Ga ->
+            "Sos"
+
+        Hi ->
+            "विराम"
+
+        Hr ->
+            "Pauziraj"
+
+        Hu ->
+            "Szünet"
+
+        Hy ->
+            "Դադար"
+
+        It ->
+            "Pausa"
+
+        Ja ->
+            "一時停止"
+
+        Ka ->
+            "პაუზა"
+
+        Ko ->
+            "일시 정지"
+
+        Lt ->
+            "Pristabdyti"
+
+        Lv ->
+            "Pauzēt"
+
+        Nb ->
+            "Pause"
+
+        Nl ->
+            "Pauzeren"
+
+        Pa ->
+            "ਵਿਰਾਮ"
+
+        Pl ->
+            "Wstrzymaj"
+
+        Pt ->
+            "Pausar"
+
+        Ro ->
+            "Întrerupe"
+
+        Ru ->
+            "Пауза"
+
+        Sk ->
+            "Pozastaviť"
+
+        Sl ->
+            "Začasno ustavi"
+
+        Sq ->
+            "Pauzë"
+
+        Sv ->
+            "Pausa"
+
+        Sw ->
+            "Sitisha"
+
+        Tr ->
+            "Duraklat"
+
+        Tw ->
+            "暫停"
+
+        Uk ->
+            "Пауза"
+
+        Ur ->
+            "توقف"
+
+        Zh ->
+            "暂停"
+
+        _ ->
+            "Pause"
+
+
+ttsResume : Lang -> String
+ttsResume lang =
+    case lang of
+        Am ->
+            "ቀጥል"
+
+        Ar ->
+            "استئناف"
+
+        Bg ->
+            "Продължи"
+
+        Bn ->
+            "চালিয়ে যান"
+
+        Ca ->
+            "Reprèn"
+
+        Cs ->
+            "Pokračovat"
+
+        Da ->
+            "Genoptag"
+
+        De ->
+            "Fortsetzen"
+
+        El ->
+            "Συνέχεια"
+
+        Es ->
+            "Reanudar"
+
+        Et ->
+            "Jätka"
+
+        Eu ->
+            "Jarraitu"
+
+        Fa ->
+            "ادامه"
+
+        Fi ->
+            "Jatka"
+
+        Fr ->
+            "Reprendre"
+
+        Ga ->
+            "Atosaigh"
+
+        Hi ->
+            "फिर से शुरू करें"
+
+        Hr ->
+            "Nastavi"
+
+        Hu ->
+            "Folytatás"
+
+        Hy ->
+            "Շարունակել"
+
+        It ->
+            "Riprendi"
+
+        Ja ->
+            "再開"
+
+        Ka ->
+            "გაგრძელება"
+
+        Ko ->
+            "재개"
+
+        Lt ->
+            "Tęsti"
+
+        Lv ->
+            "Turpināt"
+
+        Nb ->
+            "Fortsett"
+
+        Nl ->
+            "Hervatten"
+
+        Pa ->
+            "ਜਾਰੀ ਰੱਖੋ"
+
+        Pl ->
+            "Wznów"
+
+        Pt ->
+            "Retomar"
+
+        Ro ->
+            "Reia"
+
+        Ru ->
+            "Продолжить"
+
+        Sk ->
+            "Pokračovať"
+
+        Sl ->
+            "Nadaljuj"
+
+        Sq ->
+            "Vazhdo"
+
+        Sv ->
+            "Fortsätt"
+
+        Sw ->
+            "Endelea"
+
+        Tr ->
+            "Devam et"
+
+        Tw ->
+            "繼續"
+
+        Uk ->
+            "Продовжити"
+
+        Ur ->
+            "جاری رکھیں"
+
+        Zh ->
+            "继续"
+
+        _ ->
+            "Resume"
 
 
 ttsPreferBrowser : Lang -> String
 ttsPreferBrowser lang =
     case lang of
         Am ->
-            "የብሮውን ቴክስት-ተምረው መቀመጥ"
+            "የአሳሹን ጽሑፍ-ወደ-ንግግር ተመራጭ አድርግ"
+
+        Ar ->
+            "تفضيل تحويل النص إلى كلام في المتصفح"
 
         Bg ->
             "Предпочитам TTS на браузъра"
@@ -7640,23 +10127,29 @@ ttsPreferBrowser lang =
         Eu ->
             "Lehenetsi nabigatzailearen hizketa-sintesia"
 
+        Fa ->
+            "ترجیح تبدیل متن به گفتار مرورگر"
+
         Fi ->
             "Suosi selaimen puhesynteesiä"
 
         Fr ->
-            "Préférer le TTS du navigateur"
+            "Préférer la synthèse vocale du navigateur"
 
         Ga ->
             "Tabhair tús áite do shintéis cainte an bhrabhsálaí"
 
         Hi ->
-            "ब्राउज़र TTS को प्राथमिकता दें"
+            "ब्राउज़र के टेक्स्ट-टू-स्पीच को प्राथमिकता दें"
 
         Hr ->
             "Daj prednost sintezi govora preglednika"
 
         Hu ->
             "A böngésző beszédszintézisének előnyben részesítése"
+
+        Hy ->
+            "Նախընտրել դիտարկիչի խոսքի սինթեզը"
 
         It ->
             "Preferisci la sintesi vocale del browser"
@@ -7680,10 +10173,10 @@ ttsPreferBrowser lang =
             "Foretrekk nettleserens talesyntese"
 
         Nl ->
-            "Voorkeur browser TTS"
+            "Voorkeur voor browser-TTS"
 
         Pa ->
-            "ਬਰਾਊਜ਼ਰ TTS ਦਾ ਪਸੰਦ ਦਿਓ"
+            "ਬਰਾਊਜ਼ਰ TTS ਨੂੰ ਤਰਜੀਹ ਦਿਓ"
 
         Pl ->
             "Preferuj syntezę mowy przeglądarki"
@@ -7710,22 +10203,22 @@ ttsPreferBrowser lang =
             "Föredra webbläsarens talsyntes"
 
         Sw ->
-            "Pendelea kivinjari TTS"
+            "Pendelea TTS ya kivinjari"
 
         Tr ->
             "Tarayıcının metin okuma özelliğini tercih et"
 
         Tw ->
-            "首选浏览器 TTS"
+            "優先使用瀏覽器 TTS"
 
         Uk ->
-            "Надаю перевагу браузеру TTS"
+            "Надавати перевагу TTS браузера"
 
         Ur ->
             "براؤزر TTS کو ترجیح دیں"
 
         Zh ->
-            "首选浏览器 TTS"
+            "优先使用浏览器的文本转语音"
 
         _ ->
             "Prefer browser TTS"
@@ -7735,13 +10228,16 @@ ttsUsingBrowser : Lang -> String
 ttsUsingBrowser lang =
     case lang of
         Am ->
-            "በብሮው ቴክስት-ተምረው መጫን ነው።"
+            "የአሳሹ ውስጣዊ ጽሑፍ-ወደ-ንግግር ሞተር ጥቅም ላይ እየዋለ ነው።"
+
+        Ar ->
+            "يتم استخدام محرك تحويل النص إلى كلام المدمج في المتصفح."
 
         Bg ->
             "Използване на вътрешната машина за синтезиран говор на браузъра."
 
         Bn ->
-            "ব্রাউজারের অভ্যন্তরীণ পাঠকন ইঞ্জিন ব্যবহার করা হচ্ছে।"
+            "ব্রাউজারের অভ্যন্তরীণ টেক্সট-টু-স্পিচ ইঞ্জিন ব্যবহার করা হচ্ছে।"
 
         Ca ->
             "S'utilitza el motor de síntesi de veu integrat del navegador."
@@ -7767,6 +10263,9 @@ ttsUsingBrowser lang =
         Eu ->
             "Nabigatzailearen hizketa-sintesi integratua erabiltzen ari da."
 
+        Fa ->
+            "استفاده از موتور داخلی تبدیل متن به گفتار مرورگر."
+
         Fi ->
             "Käytetään selaimen sisäänrakennettua puhesynteesiä."
 
@@ -7777,7 +10276,7 @@ ttsUsingBrowser lang =
             "Tá sintéis cainte ionsuite an bhrabhsálaí in úsáid."
 
         Hi ->
-            "ब्राउज़र के आंतरिक टेक्स्ट-टू-स्पीच इंजन का उपयोग करना।"
+            "ब्राउज़र के आंतरिक टेक्स्ट-टू-स्पीच इंजन का उपयोग किया जा रहा है।"
 
         Hr ->
             "Koristi se ugrađena sinteza govora preglednika."
@@ -7785,14 +10284,17 @@ ttsUsingBrowser lang =
         Hu ->
             "A böngésző beépített beszédszintetizátora van használatban."
 
+        Hy ->
+            "Օգտագործվում է դիտարկիչի ներկառուցված խոսքի սինթեզը։"
+
         It ->
-            "Sto utilizzando il motore interno di conversione del testo a voce del browser."
+            "Viene utilizzata la sintesi vocale integrata del browser."
 
         Ja ->
             "ブラウザの内蔵テキスト読み上げエンジンを使用中"
 
         Ka ->
-            "გამოიყენება ბრაუზერის შიდა ტექსტ-დან-ხმამდე სისტემა."
+            "გამოიყენება ბრაუზერის ჩაშენებული მეტყველების სინთეზი."
 
         Ko ->
             "브라우저의 내부 텍스트 음성 변환 엔진을 사용합니다."
@@ -7807,7 +10309,7 @@ ttsUsingBrowser lang =
             "Nettleserens innebygde talesyntese brukes."
 
         Nl ->
-            "De interne tekst-naar-spraak-engine van de browser gebruiken."
+            "De interne tekst-naar-spraak-engine van de browser wordt gebruikt."
 
         Pa ->
             "ਬਰਾਊਜ਼ਰ ਦੇ ਅੰਦਰੂਨੀ ਟੈਕਸਟ-ਟੁ-ਸਪੀਚ ਇੰਜਨ ਦੀ ਵਰਤੋਂ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ।"
@@ -7822,7 +10324,7 @@ ttsUsingBrowser lang =
             "Se utilizează motorul de sinteză vocală integrat în browser."
 
         Ru ->
-            "Используя внутренний механизм преобразования текста в речь браузера."
+            "Используется встроенный в браузер механизм преобразования текста в речь."
 
         Sk ->
             "Používa sa vstavaná syntéza reči prehliadača."
@@ -7837,13 +10339,13 @@ ttsUsingBrowser lang =
             "Webbläsarens inbyggda talsyntes används."
 
         Sw ->
-            "Kwa kutumia injini ya ndani ya kivinjari ya Maandishi-hadi-Hotuba."
+            "Inatumia injini ya ndani ya kivinjari ya Maandishi-hadi-Hotuba."
 
         Tr ->
             "Tarayıcının yerleşik metin okuma motoru kullanılıyor."
 
         Tw ->
-            "使用浏览器的内部文本转语音引擎。"
+            "正在使用瀏覽器內建的文字轉語音引擎。"
 
         Uk ->
             "Використання внутрішньої системи синтезу мовлення у браузері."
@@ -7862,10 +10364,13 @@ ttsUnsupported : Lang -> String
 ttsUnsupported lang =
     case lang of
         Am ->
-            "የምንጠቀመው ብሮዎች ሊያውቅ አይችልም፣ በሌላ ቦታ ያሳያል።"
+            "አሳሽዎ ጽሑፍ-ወደ-ንግግርን አይደግፍም፤ እባክዎ ሌላ አሳሽ ይሞክሩ።"
+
+        Ar ->
+            "متصفحك لا يدعم تحويل النص إلى كلام، جرّب متصفحًا آخر."
 
         Bg ->
-            "Вашият браузър не поддържа Text-to-Speech, опитайте друг."
+            "Вашият браузър не поддържа синтез на говор, опитайте с друг."
 
         Bn ->
             "আপনার ব্রাউজার টেক্সট-টু-স্পিচ সমর্থন করে না, অন্য কোন ব্রাউজার চেষ্টা করুন।"
@@ -7886,7 +10391,7 @@ ttsUnsupported lang =
             "Το πρόγραμμα περιήγησής σου δεν υποστηρίζει σύνθεση ομιλίας. Δοκίμασε κάποιο άλλο."
 
         Es ->
-            "Tu navegador no es compatible con Text-to-Speech, prueba con otro."
+            "Tu navegador no es compatible con la conversión de texto a voz, prueba con otro."
 
         Et ->
             "Sinu brauser ei toeta kõnesünteesi. Proovi mõnda teist brauserit."
@@ -7894,17 +10399,20 @@ ttsUnsupported lang =
         Eu ->
             "Zure nabigatzaileak ez du hizketa-sintesia onartzen. Probatu beste bat."
 
+        Fa ->
+            "مرورگر شما از تبدیل متن به گفتار پشتیبانی نمی‌کند، مرورگر دیگری را امتحان کنید."
+
         Fi ->
             "Selaimesi ei tue puhesynteesiä. Kokeile toista selainta."
 
         Fr ->
-            "Votre navigateur ne prend pas en charge le texte en discours, essayez-en un autre."
+            "Votre navigateur ne prend pas en charge la synthèse vocale, essayez-en un autre."
 
         Ga ->
             "Ní thacaíonn do bhrabhsálaí le sintéis cainte. Bain triail as brabhsálaí eile."
 
         Hi ->
-            "आपका ब्राउज़र टेक्स्ट-टू-स्पीच का समर्थन नहीं करता है, एक अलग प्रयास करें।"
+            "आपका ब्राउज़र टेक्स्ट-टू-स्पीच का समर्थन नहीं करता है, कोई दूसरा ब्राउज़र आज़माएँ।"
 
         Hr ->
             "Tvoj preglednik ne podržava sintezu govora. Isprobaj drugi."
@@ -7912,17 +10420,20 @@ ttsUnsupported lang =
         Hu ->
             "A böngésződ nem támogatja a beszédszintézist. Próbálj ki egy másikat."
 
+        Hy ->
+            "Ձեր դիտարկիչը չի աջակցում խոսքի սինթեզ, փորձեք մեկ ուրիշը։"
+
         It ->
-            "Il tuo browser non è compatibile con Text-to-Speech, provane un altro."
+            "Il tuo browser non supporta la sintesi vocale, provane un altro."
 
         Ja ->
             "このブラウザはテキスト読み上げに対応していません。他のブラウザをお試しください。"
 
         Ka ->
-            "თქვენი ბრაუზერი არ მხარს უჭერს ტექსტ-დან-ხმამდე ფუნქციას, სცადეთ სხვა."
+            "თქვენი ბრაუზერი მხარს არ უჭერს მეტყველების სინთეზს, სცადეთ სხვა."
 
         Ko ->
-            "당신의 브라우저는 Text-to-Speech를 지원하지 않습니다. 다른 것을 시도해 보세요."
+            "이 브라우저는 텍스트 음성 변환을 지원하지 않습니다. 다른 브라우저를 사용해 보세요."
 
         Lt ->
             "Tavo naršyklė nepalaiko kalbos sintezės. Išbandyk kitą."
@@ -7934,10 +10445,10 @@ ttsUnsupported lang =
             "Nettleseren din støtter ikke talesyntese. Prøv en annen."
 
         Nl ->
-            "Uw browser ondersteunt tekst-naar-spraak niet, probeer een andere."
+            "Je browser ondersteunt geen tekst-naar-spraak, probeer een andere."
 
         Pa ->
-            "ਤੁਸੀਂ ਟੈਕਸਟ-ਟੁ-ਸਪੀਚ ਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦੇ, ਕੋਈ ਹੋਰ ਸਫ਼ਾਰੀ ਵਰਤੋ।"
+            "ਤੁਹਾਡਾ ਬਰਾਊਜ਼ਰ ਟੈਕਸਟ-ਟੁ-ਸਪੀਚ ਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦਾ, ਕੋਈ ਹੋਰ ਬਰਾਊਜ਼ਰ ਵਰਤੋ।"
 
         Pl ->
             "Twoja przeglądarka nie obsługuje syntezy mowy. Wypróbuj inną."
@@ -7964,13 +10475,13 @@ ttsUnsupported lang =
             "Din webbläsare stöder inte talsyntes. Prova en annan."
 
         Sw ->
-            "Kivinjari chako hakitumii Maandishi-hadi-Hotuba, jaribu nyingine."
+            "Kivinjari chako hakiauni Maandishi-hadi-Hotuba, jaribu kingine."
 
         Tr ->
             "Tarayıcınız metin okumayı desteklemiyor. Başka bir tarayıcı deneyin."
 
         Tw ->
-            "您的浏览器不支持文本转语音，请换一个浏览器。"
+            "您的瀏覽器不支援文字轉語音，請換一個瀏覽器。"
 
         Uk ->
             "Ваш браузер не підтримує синтез мовлення з тексту, спробуйте інший."
@@ -7985,11 +10496,283 @@ ttsUnsupported lang =
             "Your browser does not support Text-to-Speech, try another one."
 
 
+codeEditor : Lang -> String
+codeEditor lang =
+    case lang of
+        Am ->
+            "የኮድ አርታኢ"
+
+        Ar ->
+            "محرر الشيفرة"
+
+        Bg ->
+            "Редактор на код"
+
+        Bn ->
+            "কোড এডিটর"
+
+        Ca ->
+            "Editor de codi"
+
+        Cs ->
+            "Editor kódu"
+
+        Da ->
+            "Kodeeditor"
+
+        De ->
+            "Code-Editor"
+
+        El ->
+            "Επεξεργαστής κώδικα"
+
+        Es ->
+            "Editor de código"
+
+        Et ->
+            "Koodiredaktor"
+
+        Eu ->
+            "Kode-editorea"
+
+        Fa ->
+            "ویرایشگر کد"
+
+        Fi ->
+            "Koodieditori"
+
+        Fr ->
+            "Éditeur de code"
+
+        Ga ->
+            "Eagarthóir cóid"
+
+        Hi ->
+            "कोड संपादक"
+
+        Hr ->
+            "Uređivač koda"
+
+        Hu ->
+            "Kódszerkesztő"
+
+        Hy ->
+            "Կոդի խմբագրիչ"
+
+        It ->
+            "Editor di codice"
+
+        Ja ->
+            "コードエディター"
+
+        Ka ->
+            "კოდის რედაქტორი"
+
+        Ko ->
+            "코드 편집기"
+
+        Lt ->
+            "Kodo rengyklė"
+
+        Lv ->
+            "Koda redaktors"
+
+        Nb ->
+            "Kodeeditor"
+
+        Nl ->
+            "Code-editor"
+
+        Pa ->
+            "ਕੋਡ ਸੰਪਾਦਕ"
+
+        Pl ->
+            "Edytor kodu"
+
+        Pt ->
+            "Editor de código"
+
+        Ro ->
+            "Editor de cod"
+
+        Ru ->
+            "Редактор кода"
+
+        Sk ->
+            "Editor kódu"
+
+        Sl ->
+            "Urejevalnik kode"
+
+        Sq ->
+            "Redaktuesi i kodit"
+
+        Sv ->
+            "Kodredigerare"
+
+        Sw ->
+            "Kihariri cha msimbo"
+
+        Tr ->
+            "Kod düzenleyici"
+
+        Tw ->
+            "程式碼編輯器"
+
+        Uk ->
+            "Редактор коду"
+
+        Ur ->
+            "کوڈ ایڈیٹر"
+
+        Zh ->
+            "代码编辑器"
+
+        _ ->
+            "Code editor"
+
+
+codeBlock : Lang -> String
+codeBlock lang =
+    case lang of
+        Am ->
+            "የኮድ ብሎክ"
+
+        Ar ->
+            "كتلة شيفرة"
+
+        Bg ->
+            "Блок с код"
+
+        Bn ->
+            "কোড ব্লক"
+
+        Ca ->
+            "Bloc de codi"
+
+        Cs ->
+            "Blok kódu"
+
+        Da ->
+            "Kodeblok"
+
+        De ->
+            "Codeblock"
+
+        El ->
+            "Μπλοκ κώδικα"
+
+        Es ->
+            "Bloque de código"
+
+        Et ->
+            "Koodiplokk"
+
+        Eu ->
+            "Kode-blokea"
+
+        Fa ->
+            "بلوک کد"
+
+        Fi ->
+            "Koodilohko"
+
+        Fr ->
+            "Bloc de code"
+
+        Ga ->
+            "Bloc cóid"
+
+        Hi ->
+            "कोड ब्लॉक"
+
+        Hr ->
+            "Blok koda"
+
+        Hu ->
+            "Kódblokk"
+
+        Hy ->
+            "Կոդի բլոկ"
+
+        It ->
+            "Blocco di codice"
+
+        Ja ->
+            "コードブロック"
+
+        Ka ->
+            "კოდის ბლოკი"
+
+        Ko ->
+            "코드 블록"
+
+        Lt ->
+            "Kodo blokas"
+
+        Lv ->
+            "Koda bloks"
+
+        Nb ->
+            "Kodeblokk"
+
+        Nl ->
+            "Codeblok"
+
+        Pa ->
+            "ਕੋਡ ਬਲਾਕ"
+
+        Pl ->
+            "Blok kodu"
+
+        Pt ->
+            "Bloco de código"
+
+        Ro ->
+            "Bloc de cod"
+
+        Ru ->
+            "Блок кода"
+
+        Sk ->
+            "Blok kódu"
+
+        Sl ->
+            "Blok kode"
+
+        Sq ->
+            "Blloku i kodit"
+
+        Sv ->
+            "Kodblock"
+
+        Sw ->
+            "Kipande cha msimbo"
+
+        Tr ->
+            "Kod bloğu"
+
+        Tw ->
+            "程式碼區塊"
+
+        Uk ->
+            "Блок коду"
+
+        Ur ->
+            "کوڈ بلاک"
+
+        Zh ->
+            "代码块"
+
+        _ ->
+            "Code block"
+
+
 codeExecute : Lang -> String
 codeExecute lang =
     case lang of
         Am ->
-            "ተጠቃሚ ስጥ"
+            "አሂድ"
 
         Ar ->
             "تنفيذ"
@@ -7998,7 +10781,7 @@ codeExecute lang =
             "Изпълни"
 
         Bn ->
-            "সম্পাদনা করুন"
+            "চালান"
 
         Ca ->
             "Executa"
@@ -8037,7 +10820,7 @@ codeExecute lang =
             "Rith"
 
         Hi ->
-            "भागो"
+            "चलाएँ"
 
         Hr ->
             "Pokreni"
@@ -8046,7 +10829,7 @@ codeExecute lang =
             "Futtatás"
 
         Hy ->
-            "իրականացնել"
+            "գործարկել"
 
         It ->
             "Esegui"
@@ -8112,10 +10895,10 @@ codeExecute lang =
             "запустити"
 
         Ur ->
-            "عملدرآمد کریں"
+            "چلائیں"
 
         Zh ->
-            "開始執行"
+            "运行"
 
         _ ->
             "Execute"
@@ -8125,13 +10908,13 @@ codeRunning : Lang -> String
 codeRunning lang =
     case lang of
         Am ->
-            "ተጠቃሚ ላይ ነው"
+            "እየሄደ ነው"
 
         Ar ->
-            "إجراء"
+            "قيد التشغيل"
 
         Bg ->
-            "Работещ"
+            "се изпълнява"
 
         Bn ->
             "চলছে"
@@ -8182,10 +10965,10 @@ codeRunning lang =
             "fut"
 
         Hy ->
-            "ընթանում է"
+            "գործարկվում է"
 
         It ->
-            "in funzione"
+            "in esecuzione"
 
         Ja ->
             "実行中"
@@ -8236,7 +11019,7 @@ codeRunning lang =
             "körs"
 
         Sw ->
-            "inakimbia"
+            "inaendeshwa"
 
         Tr ->
             "çalışıyor"
@@ -8251,7 +11034,7 @@ codeRunning lang =
             "چل رہا ہے"
 
         Zh ->
-            "執行中"
+            "正在运行"
 
         _ ->
             "is running"
@@ -8261,7 +11044,7 @@ codePrev : Lang -> String
 codePrev lang =
     case lang of
         Am ->
-            "የመጀመሪያ ክፍሎች"
+            "ቀዳሚ ስሪት"
 
         Ar ->
             "الإصدار السابق"
@@ -8309,7 +11092,7 @@ codePrev lang =
             "an leagan roimhe"
 
         Hi ->
-            "एक संस्करण वापस"
+            "पिछला संस्करण"
 
         Hr ->
             "prethodna verzija"
@@ -8387,7 +11170,7 @@ codePrev lang =
             "پچھلا ورژن"
 
         Zh ->
-            "上一版"
+            "上一版本"
 
         _ ->
             "previous version"
@@ -8397,7 +11180,7 @@ codeNext : Lang -> String
 codeNext lang =
     case lang of
         Am ->
-            "የቀጣይ ክፍሎች"
+            "ቀጣይ ስሪት"
 
         Ar ->
             "الإصدار التالي"
@@ -8445,7 +11228,7 @@ codeNext lang =
             "an chéad leagan eile"
 
         Hi ->
-            "एक संस्करण पहले"
+            "अगला संस्करण"
 
         Hr ->
             "sljedeća verzija"
@@ -8523,7 +11306,7 @@ codeNext lang =
             "اگلا ورژن"
 
         Zh ->
-            "下一版"
+            "下一版本"
 
         _ ->
             "next version"
@@ -8533,7 +11316,7 @@ codeFirst : Lang -> String
 codeFirst lang =
     case lang of
         Am ->
-            "የመጀመሪያ ክፍል"
+            "የመጀመሪያ ስሪት"
 
         Ar ->
             "الإصدار الأول"
@@ -8581,7 +11364,7 @@ codeFirst lang =
             "an chéad leagan"
 
         Hi ->
-            "पहली रिलीज"
+            "पहला संस्करण"
 
         Hr ->
             "prva verzija"
@@ -8617,7 +11400,7 @@ codeFirst lang =
             "eerste versie"
 
         Pa ->
-            "ਪਹਿਲਾਂ ਦਾ ਵਰਜਨ"
+            "ਪਹਿਲਾ ਵਰਜਨ"
 
         Pl ->
             "pierwsza wersja"
@@ -8659,7 +11442,7 @@ codeFirst lang =
             "پہلا ورژن"
 
         Zh ->
-            "最初版"
+            "第一个版本"
 
         _ ->
             "first version"
@@ -8669,7 +11452,7 @@ codeLast : Lang -> String
 codeLast lang =
     case lang of
         Am ->
-            "የመጨረሻ ክፍል"
+            "የመጨረሻ ስሪት"
 
         Ar ->
             "أحدث إصدار"
@@ -8753,7 +11536,7 @@ codeLast lang =
             "laatste versie"
 
         Pa ->
-            "ਆਖੀਰੀ ਵਰਜਨ"
+            "ਆਖਰੀ ਵਰਜਨ"
 
         Pl ->
             "ostatnia wersja"
@@ -8795,7 +11578,7 @@ codeLast lang =
             "آخری ورژن"
 
         Zh ->
-            "最終版"
+            "最后一个版本"
 
         _ ->
             "last version"
@@ -8805,7 +11588,7 @@ codeMinimize : Lang -> String
 codeMinimize lang =
     case lang of
         Am ->
-            "ማሳወቅ ያድርጉ"
+            "እይታውን አሳንስ"
 
         Ar ->
             "تصغير"
@@ -8814,7 +11597,7 @@ codeMinimize lang =
             "Минимизиране"
 
         Bn ->
-            "সামঞ্জস্য কমান"
+            "দৃশ্য ছোট করুন"
 
         Ca ->
             "minimitza la vista"
@@ -8862,7 +11645,7 @@ codeMinimize lang =
             "nézet kicsinyítése"
 
         Hy ->
-            "նվազեցնել տեսքը"
+            "փոքրացնել տեսքը"
 
         It ->
             "minimizzare la vista"
@@ -8889,7 +11672,7 @@ codeMinimize lang =
             "weergave verkleinen"
 
         Pa ->
-            "ਨਿੱਚੇ ਕਰੋ ਝਲਕ"
+            "ਝਲਕ ਛੋਟੀ ਕਰੋ"
 
         Pl ->
             "minimalizuj widok"
@@ -8922,16 +11705,16 @@ codeMinimize lang =
             "görünümü küçült"
 
         Tw ->
-            "極小視窗"
+            "最小化顯示"
 
         Uk ->
-            "зображення зменшити"
+            "зменшити вигляд"
 
         Ur ->
-            "منظر کو کم کریں"
+            "منظر کو چھوٹا کریں"
 
         Zh ->
-            "極小視窗"
+            "最小化视图"
 
         _ ->
             "minimize view"
@@ -8941,7 +11724,7 @@ codeMaximize : Lang -> String
 codeMaximize lang =
     case lang of
         Am ->
-            "ማግኘት ያድርጉ"
+            "እይታውን አስፋ"
 
         Ar ->
             "إظهار بالكامل"
@@ -8950,7 +11733,7 @@ codeMaximize lang =
             "Максимизиране"
 
         Bn ->
-            "সামঞ্জস্য বাড়ান"
+            "দৃশ্য বড় করুন"
 
         Ca ->
             "maximitza la vista"
@@ -8968,7 +11751,7 @@ codeMaximize lang =
             "μεγιστοποίηση προβολής"
 
         Es ->
-            "maximinzar vista"
+            "maximizar vista"
 
         Et ->
             "maksimeeri vaade"
@@ -8998,7 +11781,7 @@ codeMaximize lang =
             "nézet nagyítása"
 
         Hy ->
-            "բարձրագունել տեսքը"
+            "մեծացնել տեսքը"
 
         It ->
             "massimizzare la vista"
@@ -9025,7 +11808,7 @@ codeMaximize lang =
             "weergave maximaliseren"
 
         Pa ->
-            "ਵੱਧ ਕਰੋ ਝਲਕ"
+            "ਝਲਕ ਵੱਡੀ ਕਰੋ"
 
         Pl ->
             "maksymalizuj widok"
@@ -9052,22 +11835,22 @@ codeMaximize lang =
             "maximera vyn"
 
         Sw ->
-            "kuongeza mtazamo"
+            "ongeza mtazamo"
 
         Tr ->
             "görünümü büyüt"
 
         Tw ->
-            "極大視窗"
+            "最大化顯示"
 
         Uk ->
-            "зображення збільшити"
+            "збільшити вигляд"
 
         Ur ->
-            "منظر کو زیادہ کریں"
+            "منظر کو بڑا کریں"
 
         Zh ->
-            "極大視窗"
+            "最大化视图"
 
         _ ->
             "maximize view"
@@ -9077,7 +11860,7 @@ codeTerminal : Lang -> String
 codeTerminal lang =
     case lang of
         Am ->
-            "ቴርማው"
+            "ተርሚናል"
 
         Ar ->
             "طرفية"
@@ -9102,6 +11885,9 @@ codeTerminal lang =
 
         El ->
             "τερματικό"
+
+        Es ->
+            "terminal"
 
         Et ->
             "terminal"
@@ -9133,6 +11919,9 @@ codeTerminal lang =
         Hy ->
             "տերմինալ"
 
+        It ->
+            "terminale"
+
         Ja ->
             "ターミナル"
 
@@ -9140,7 +11929,7 @@ codeTerminal lang =
             "ტერმინალი"
 
         Ko ->
-            "단말기"
+            "터미널"
 
         Lt ->
             "terminalas"
@@ -9149,6 +11938,9 @@ codeTerminal lang =
             "terminālis"
 
         Nb ->
+            "terminal"
+
+        Nl ->
             "terminal"
 
         Pa ->
@@ -9164,7 +11956,7 @@ codeTerminal lang =
             "terminal"
 
         Ru ->
-            "термина́л"
+            "терминал"
 
         Sk ->
             "terminál"
@@ -9185,7 +11977,7 @@ codeTerminal lang =
             "terminal"
 
         Tw ->
-            "终端"
+            "終端機"
 
         Uk ->
             "термінал"
@@ -9198,6 +11990,142 @@ codeTerminal lang =
 
         _ ->
             "terminal"
+
+
+codeSendTerminal : Lang -> String
+codeSendTerminal lang =
+    case lang of
+        Am ->
+            "ወደ ተርሚናል ላክ"
+
+        Ar ->
+            "إرسال إلى الطرفية"
+
+        Bg ->
+            "Изпрати към терминала"
+
+        Bn ->
+            "টার্মিনালে পাঠান"
+
+        Ca ->
+            "Envia al terminal"
+
+        Cs ->
+            "Odeslat do terminálu"
+
+        Da ->
+            "Send til terminal"
+
+        De ->
+            "An das Terminal senden"
+
+        El ->
+            "Αποστολή στο τερματικό"
+
+        Es ->
+            "Enviar al terminal"
+
+        Et ->
+            "Saada terminali"
+
+        Eu ->
+            "Bidali terminalera"
+
+        Fa ->
+            "ارسال به پایانه"
+
+        Fi ->
+            "Lähetä päätteeseen"
+
+        Fr ->
+            "Envoyer au terminal"
+
+        Ga ->
+            "Seol chuig an teirminéal"
+
+        Hi ->
+            "टर्मिनल पर भेजें"
+
+        Hr ->
+            "Pošalji u terminal"
+
+        Hu ->
+            "Küldés a terminálba"
+
+        Hy ->
+            "Ուղարկել տերմինալ"
+
+        It ->
+            "Invia al terminale"
+
+        Ja ->
+            "ターミナルに送信"
+
+        Ka ->
+            "ტერმინალში გაგზავნა"
+
+        Ko ->
+            "터미널로 보내기"
+
+        Lt ->
+            "Siųsti į terminalą"
+
+        Lv ->
+            "Sūtīt uz termināli"
+
+        Nb ->
+            "Send til terminalen"
+
+        Nl ->
+            "Naar terminal sturen"
+
+        Pa ->
+            "ਟਰਮੀਨਲ ਨੂੰ ਭੇਜੋ"
+
+        Pl ->
+            "Wyślij do terminala"
+
+        Pt ->
+            "Enviar ao terminal"
+
+        Ro ->
+            "Trimite la terminal"
+
+        Ru ->
+            "Отправить в терминал"
+
+        Sk ->
+            "Odoslať do terminálu"
+
+        Sl ->
+            "Pošlji v terminal"
+
+        Sq ->
+            "Dërgo në terminal"
+
+        Sv ->
+            "Skicka till terminalen"
+
+        Sw ->
+            "Tuma kwenye terminal"
+
+        Tr ->
+            "Terminale gönder"
+
+        Tw ->
+            "傳送至終端機"
+
+        Uk ->
+            "Надіслати в термінал"
+
+        Ur ->
+            "ٹرمینل کو بھیجیں"
+
+        Zh ->
+            "发送到终端"
+
+        _ ->
+            "Send to terminal"
 
 
 codeCopy : Lang -> String
@@ -9270,7 +12198,7 @@ codeCopy lang =
             "クリップボードにコピー"
 
         Ka ->
-            "დაკოპირე კლიპბორდზე"
+            "ბუფერში კოპირება"
 
         Ko ->
             "클립보드에 복사"
@@ -9321,7 +12249,7 @@ codeCopy lang =
             "panoya kopyala"
 
         Tw ->
-            "复制到剪贴板"
+            "複製到剪貼簿"
 
         Uk ->
             "копіювати в буфер обміну"
@@ -9336,11 +12264,273 @@ codeCopy lang =
             "copy to clipboard"
 
 
+codeCopied : Lang -> String
+codeCopied lang =
+    case lang of
+        Am ->
+            "ወደ ቅንጥብ ሰሌዳ ተቀድቷል"
+
+        Ar ->
+            "تم النسخ إلى الحافظة"
+
+        Bg ->
+            "Копирано в клипборда"
+
+        Bn ->
+            "ক্লিপবোর্ডে কপি করা হয়েছে"
+
+        Ca ->
+            "copiat al porta-retalls"
+
+        Cs ->
+            "zkopírováno do schránky"
+
+        Da ->
+            "kopieret til udklipsholder"
+
+        De ->
+            "in die Zwischenablage kopiert"
+
+        El ->
+            "αντιγράφηκε στο πρόχειρο"
+
+        Es ->
+            "copiado al portapapeles"
+
+        Et ->
+            "kopeeritud lõikelauale"
+
+        Eu ->
+            "arbelean kopiatuta"
+
+        Fa ->
+            "در کلیپ بورد کپی شد"
+
+        Fi ->
+            "kopioitu leikepöydälle"
+
+        Fr ->
+            "Copié dans le presse-papiers"
+
+        Ga ->
+            "cóipeáilte chuig an ngearrthaisce"
+
+        Hi ->
+            "क्लिपबोर्ड पर कॉपी हो गया"
+
+        Hr ->
+            "kopirano u međuspremnik"
+
+        Hu ->
+            "vágólapra másolva"
+
+        Hy ->
+            "Պատճենվել է սեղմատախտակին"
+
+        It ->
+            "copiato negli appunti"
+
+        Ja ->
+            "クリップボードにコピーしました"
+
+        Ka ->
+            "ბუფერში დაკოპირდა"
+
+        Ko ->
+            "클립보드에 복사됨"
+
+        Lt ->
+            "nukopijuota į iškarpinę"
+
+        Lv ->
+            "nokopēts starpliktuvē"
+
+        Nb ->
+            "kopiert til utklippstavlen"
+
+        Nl ->
+            "gekopieerd naar klembord"
+
+        Pa ->
+            "ਕਲਿੱਪਬੋਰਡ 'ਤੇ ਕਾਪੀ ਹੋ ਗਿਆ"
+
+        Pl ->
+            "skopiowano do schowka"
+
+        Pt ->
+            "copiado para a área de transferência"
+
+        Ro ->
+            "copiat în clipboard"
+
+        Ru ->
+            "скопировано в буфер обмена"
+
+        Sk ->
+            "skopírované do schránky"
+
+        Sl ->
+            "kopirano v odložišče"
+
+        Sq ->
+            "u kopjua në kujtesën e përkohshme"
+
+        Sv ->
+            "kopierat till urklipp"
+
+        Sw ->
+            "imenakiliwa kwenye ubao wa kunakili"
+
+        Tr ->
+            "panoya kopyalandı"
+
+        Tw ->
+            "已複製到剪貼簿"
+
+        Uk ->
+            "скопійовано в буфер обміну"
+
+        Ur ->
+            "کلپ بورڈ پر کاپی ہو گیا"
+
+        Zh ->
+            "已复制到剪贴板"
+
+        _ ->
+            "copied to clipboard"
+
+
 codeReset : Lang -> String
 codeReset lang =
     case lang of
+        Am ->
+            "ግቤቱን ዳግም አስጀምር"
+
+        Ar ->
+            "إعادة تعيين الإدخال"
+
+        Bg ->
+            "нулиране на въведеното"
+
+        Bn ->
+            "ইনপুট রিসেট করুন"
+
+        Ca ->
+            "restableix l'entrada"
+
+        Cs ->
+            "obnovit vstup"
+
+        Da ->
+            "nulstil input"
+
         De ->
             "Eingabe zurücksetzen"
+
+        El ->
+            "επαναφορά εισόδου"
+
+        Es ->
+            "restablecer entrada"
+
+        Et ->
+            "lähtesta sisend"
+
+        Eu ->
+            "berrezarri sarrera"
+
+        Fa ->
+            "بازنشانی ورودی"
+
+        Fi ->
+            "palauta syöte"
+
+        Fr ->
+            "réinitialiser la saisie"
+
+        Ga ->
+            "athshocraigh an t-ionchur"
+
+        Hi ->
+            "इनपुट रीसेट करें"
+
+        Hr ->
+            "poništi unos"
+
+        Hu ->
+            "bevitel visszaállítása"
+
+        Hy ->
+            "վերակայել մուտքագրումը"
+
+        It ->
+            "ripristina l'input"
+
+        Ja ->
+            "入力をリセット"
+
+        Ka ->
+            "შეყვანის გადაყენება"
+
+        Ko ->
+            "입력 초기화"
+
+        Lt ->
+            "atkurti pradinę įvestį"
+
+        Lv ->
+            "atiestatīt ievadi"
+
+        Nb ->
+            "tilbakestill inndata"
+
+        Nl ->
+            "invoer herstellen"
+
+        Pa ->
+            "ਇਨਪੁਟ ਰੀਸੈੱਟ ਕਰੋ"
+
+        Pl ->
+            "resetuj dane wejściowe"
+
+        Pt ->
+            "redefinir entrada"
+
+        Ro ->
+            "resetează valoarea introdusă"
+
+        Ru ->
+            "сбросить ввод"
+
+        Sk ->
+            "obnoviť vstup"
+
+        Sl ->
+            "ponastavi vnos"
+
+        Sq ->
+            "rivendos hyrjen"
+
+        Sv ->
+            "återställ inmatning"
+
+        Sw ->
+            "weka upya ingizo"
+
+        Tr ->
+            "girişi sıfırla"
+
+        Tw ->
+            "重設輸入"
+
+        Uk ->
+            "скинути введення"
+
+        Ur ->
+            "ان پٹ ری سیٹ کریں"
+
+        Zh ->
+            "重置输入"
 
         _ ->
             "reset input"
@@ -9350,7 +12540,7 @@ quizCheck : Lang -> String
 quizCheck lang =
     case lang of
         Am ->
-            "መለየት"
+            "አረጋግጥ"
 
         Ar ->
             "تحقق"
@@ -9431,7 +12621,7 @@ quizCheck lang =
             "Kontroller"
 
         Nl ->
-            "bekijk"
+            "Controleren"
 
         Pa ->
             "ਜਾਂਚ ਕਰੋ"
@@ -9467,7 +12657,7 @@ quizCheck lang =
             "Kontrol et"
 
         Tw ->
-            "選取"
+            "檢查"
 
         Uk ->
             "перевірити"
@@ -9476,7 +12666,7 @@ quizCheck lang =
             "چیک کریں"
 
         Zh ->
-            "選取"
+            "检查"
 
         _ ->
             "Check"
@@ -9486,13 +12676,13 @@ quizSolution : Lang -> String
 quizSolution lang =
     case lang of
         Am ->
-            "አስገሳት አሳይ"
+            "መፍትሔ አሳይ"
 
         Ar ->
             "إظهار الحل"
 
         Bg ->
-            "Отговор"
+            "Покажи решението"
 
         Bn ->
             "সমাধান প্রদর্শন করুন"
@@ -9522,7 +12712,7 @@ quizSolution lang =
             "erakutsi ebazpena"
 
         Fa ->
-            "نمایش راهکار"
+            "نمایش راه‌حل"
 
         Fi ->
             "näytä ratkaisu"
@@ -9552,7 +12742,7 @@ quizSolution lang =
             "解答を表示"
 
         Ka ->
-            "გადაჭრა გაჩვენე"
+            "ამოხსნის ჩვენება"
 
         Ko ->
             "정답 보기"
@@ -9612,7 +12802,7 @@ quizSolution lang =
             "حل دکھائیں"
 
         Zh ->
-            "顯示解答"
+            "显示解答"
 
         _ ->
             "show solution"
@@ -9622,16 +12812,16 @@ quizHint : Lang -> String
 quizHint lang =
     case lang of
         Am ->
-            "አስታዋሽ"
+            "ፍንጭ አሳይ"
 
         Ar ->
-            "تلميح"
+            "إظهار تلميح"
 
         Bg ->
-            "Подсказване"
+            "Покажи подсказка"
 
         Bn ->
-            "হিন্ট দেখান"
+            "ইঙ্গিত দেখান"
 
         Ca ->
             "mostra una pista"
@@ -9649,7 +12839,7 @@ quizHint lang =
             "εμφάνιση υπόδειξης"
 
         Es ->
-            "mostrar indicio"
+            "mostrar pista"
 
         Et ->
             "näita vihjet"
@@ -9658,7 +12848,7 @@ quizHint lang =
             "erakutsi pista"
 
         Fa ->
-            "نمایش یادآوری"
+            "نمایش راهنمایی"
 
         Fi ->
             "näytä vihje"
@@ -9679,7 +12869,7 @@ quizHint lang =
             "tipp megjelenítése"
 
         Hy ->
-            "ցուցադրել ակնարկ"
+            "ցույց տալ հուշումը"
 
         It ->
             "mostra un indizio"
@@ -9688,7 +12878,7 @@ quizHint lang =
             "ヒントを表示"
 
         Ka ->
-            "რჩევა გაჩვენე"
+            "მინიშნების ჩვენება"
 
         Ko ->
             "힌트 보기"
@@ -9706,7 +12896,7 @@ quizHint lang =
             "toon hint"
 
         Pa ->
-            "ਇੱਕ ਇੰਗਿਤ ਦਿਖਾਓ"
+            "ਸੰਕੇਤ ਦਿਖਾਓ"
 
         Pl ->
             "pokaż wskazówkę"
@@ -9739,7 +12929,7 @@ quizHint lang =
             "ipucunu göster"
 
         Tw ->
-            "暗示"
+            "顯示提示"
 
         Uk ->
             "показати підказку"
@@ -9748,7 +12938,7 @@ quizHint lang =
             "اشارہ دکھائیں"
 
         Zh ->
-            "暗示"
+            "显示提示"
 
         _ ->
             "show hint"
@@ -9758,7 +12948,7 @@ quizSelection : Lang -> String
 quizSelection lang =
     case lang of
         Am ->
-            "ምረጡ"
+            "ምርጫ"
 
         Ar ->
             "اختيار"
@@ -9875,7 +13065,7 @@ quizSelection lang =
             "seçim"
 
         Tw ->
-            "选择"
+            "選擇"
 
         Uk ->
             "вибір"
@@ -9890,17 +13080,697 @@ quizSelection lang =
             "selection"
 
 
+quizInput : Lang -> String
+quizInput lang =
+    case lang of
+        Am ->
+            "መልስ"
+
+        Ar ->
+            "الإجابة"
+
+        Bg ->
+            "Отговор"
+
+        Bn ->
+            "উত্তর"
+
+        Ca ->
+            "Resposta"
+
+        Cs ->
+            "Odpověď"
+
+        Da ->
+            "Svar"
+
+        De ->
+            "Antwort"
+
+        El ->
+            "Απάντηση"
+
+        Es ->
+            "Respuesta"
+
+        Et ->
+            "Vastus"
+
+        Eu ->
+            "Erantzuna"
+
+        Fa ->
+            "پاسخ"
+
+        Fi ->
+            "Vastaus"
+
+        Fr ->
+            "Réponse"
+
+        Ga ->
+            "Freagra"
+
+        Hi ->
+            "उत्तर"
+
+        Hr ->
+            "Odgovor"
+
+        Hu ->
+            "Válasz"
+
+        Hy ->
+            "Պատասխան"
+
+        It ->
+            "Risposta"
+
+        Ja ->
+            "回答"
+
+        Ka ->
+            "პასუხი"
+
+        Ko ->
+            "답"
+
+        Lt ->
+            "Atsakymas"
+
+        Lv ->
+            "Atbilde"
+
+        Nb ->
+            "Svar"
+
+        Nl ->
+            "Antwoord"
+
+        Pa ->
+            "ਜਵਾਬ"
+
+        Pl ->
+            "Odpowiedź"
+
+        Pt ->
+            "Resposta"
+
+        Ro ->
+            "Răspuns"
+
+        Ru ->
+            "Ответ"
+
+        Sk ->
+            "Odpoveď"
+
+        Sl ->
+            "Odgovor"
+
+        Sq ->
+            "Përgjigjja"
+
+        Sv ->
+            "Svar"
+
+        Sw ->
+            "Jibu"
+
+        Tr ->
+            "Yanıt"
+
+        Tw ->
+            "答案"
+
+        Uk ->
+            "Відповідь"
+
+        Ur ->
+            "جواب"
+
+        Zh ->
+            "答案"
+
+        _ ->
+            "Answer"
+
+
+quizGap : Lang -> String
+quizGap lang =
+    case lang of
+        Am ->
+            "ክፍት ቦታ"
+
+        Ar ->
+            "فراغ"
+
+        Bg ->
+            "Празно място"
+
+        Bn ->
+            "শূন্যস্থান"
+
+        Ca ->
+            "Buit"
+
+        Cs ->
+            "Mezera"
+
+        Da ->
+            "Hul"
+
+        De ->
+            "Lücke"
+
+        El ->
+            "Κενό"
+
+        Es ->
+            "Hueco"
+
+        Et ->
+            "Lünk"
+
+        Eu ->
+            "Hutsunea"
+
+        Fa ->
+            "جای خالی"
+
+        Fi ->
+            "Aukko"
+
+        Fr ->
+            "Trou"
+
+        Ga ->
+            "Bearna"
+
+        Hi ->
+            "रिक्त स्थान"
+
+        Hr ->
+            "Praznina"
+
+        Hu ->
+            "Kitöltendő hely"
+
+        Hy ->
+            "Բացթողում"
+
+        It ->
+            "Lacuna"
+
+        Ja ->
+            "空欄"
+
+        Ka ->
+            "გამოტოვებული ადგილი"
+
+        Ko ->
+            "빈칸"
+
+        Lt ->
+            "Spraga"
+
+        Lv ->
+            "Aizpildāmā vieta"
+
+        Nb ->
+            "Luke"
+
+        Nl ->
+            "Invulveld"
+
+        Pa ->
+            "ਖਾਲੀ ਥਾਂ"
+
+        Pl ->
+            "Luka"
+
+        Pt ->
+            "Lacuna"
+
+        Ro ->
+            "Spațiu liber"
+
+        Ru ->
+            "Пропуск"
+
+        Sk ->
+            "Medzera"
+
+        Sl ->
+            "Vrzel"
+
+        Sq ->
+            "Boshllëku"
+
+        Sv ->
+            "Lucka"
+
+        Sw ->
+            "Pengo"
+
+        Tr ->
+            "Boşluk"
+
+        Tw ->
+            "填空"
+
+        Uk ->
+            "Пропуск"
+
+        Ur ->
+            "خالی جگہ"
+
+        Zh ->
+            "填空"
+
+        _ ->
+            "Gap"
+
+
+quizDropZone : Lang -> String
+quizDropZone lang =
+    case lang of
+        Am ->
+            "ማስቀመጫ ቦታ"
+
+        Ar ->
+            "منطقة الإفلات"
+
+        Bg ->
+            "Зона за пускане"
+
+        Bn ->
+            "ড্রপ জোন"
+
+        Ca ->
+            "Zona per deixar anar"
+
+        Cs ->
+            "Cílové pole"
+
+        Da ->
+            "Slipfelt"
+
+        De ->
+            "Ablagefeld"
+
+        El ->
+            "Περιοχή απόθεσης"
+
+        Es ->
+            "Zona de destino"
+
+        Et ->
+            "Sihtala"
+
+        Eu ->
+            "Jaregite-eremua"
+
+        Fa ->
+            "ناحیهٔ رهاسازی"
+
+        Fi ->
+            "Pudotusalue"
+
+        Fr ->
+            "Zone de dépôt"
+
+        Ga ->
+            "Limistéar scaoilte"
+
+        Hi ->
+            "ड्रॉप ज़ोन"
+
+        Hr ->
+            "Polje za ispuštanje"
+
+        Hu ->
+            "Célterület"
+
+        Hy ->
+            "Տեղադրման դաշտ"
+
+        It ->
+            "Area di rilascio"
+
+        Ja ->
+            "ドロップ領域"
+
+        Ka ->
+            "ჩასაგდები არე"
+
+        Ko ->
+            "드롭 영역"
+
+        Lt ->
+            "Numetimo sritis"
+
+        Lv ->
+            "Nomešanas zona"
+
+        Nb ->
+            "Slippsone"
+
+        Nl ->
+            "Neerzetzone"
+
+        Pa ->
+            "ਰੱਖਣ ਵਾਲਾ ਖੇਤਰ"
+
+        Pl ->
+            "Pole upuszczania"
+
+        Pt ->
+            "Área de soltar"
+
+        Ro ->
+            "Zonă de plasare"
+
+        Ru ->
+            "Область размещения"
+
+        Sk ->
+            "Cieľové pole"
+
+        Sl ->
+            "Ciljno polje"
+
+        Sq ->
+            "Zona e lëshimit"
+
+        Sv ->
+            "Släppyta"
+
+        Sw ->
+            "Eneo la kudondoshea"
+
+        Tr ->
+            "Bırakma alanı"
+
+        Tw ->
+            "放置區"
+
+        Uk ->
+            "Зона розміщення"
+
+        Ur ->
+            "ڈراپ زون"
+
+        Zh ->
+            "放置区"
+
+        _ ->
+            "Drop zone"
+
+
+quizEmpty : Lang -> String
+quizEmpty lang =
+    case lang of
+        Am ->
+            "ባዶ"
+
+        Ar ->
+            "فارغة"
+
+        Bg ->
+            "празна"
+
+        Bn ->
+            "খালি"
+
+        Ca ->
+            "buida"
+
+        Cs ->
+            "prázdné"
+
+        Da ->
+            "tomt"
+
+        De ->
+            "leer"
+
+        El ->
+            "κενή"
+
+        Es ->
+            "vacía"
+
+        Et ->
+            "tühi"
+
+        Eu ->
+            "hutsik"
+
+        Fa ->
+            "خالی"
+
+        Fi ->
+            "tyhjä"
+
+        Fr ->
+            "vide"
+
+        Ga ->
+            "folamh"
+
+        Hi ->
+            "खाली"
+
+        Hr ->
+            "prazno"
+
+        Hu ->
+            "üres"
+
+        Hy ->
+            "դատարկ"
+
+        It ->
+            "vuota"
+
+        Ja ->
+            "空"
+
+        Ka ->
+            "ცარიელი"
+
+        Ko ->
+            "비어 있음"
+
+        Lt ->
+            "tuščia"
+
+        Lv ->
+            "tukša"
+
+        Nb ->
+            "tom"
+
+        Nl ->
+            "leeg"
+
+        Pa ->
+            "ਖਾਲੀ"
+
+        Pl ->
+            "puste"
+
+        Pt ->
+            "vazia"
+
+        Ro ->
+            "goală"
+
+        Ru ->
+            "пустая"
+
+        Sk ->
+            "prázdne"
+
+        Sl ->
+            "prazno"
+
+        Sq ->
+            "bosh"
+
+        Sv ->
+            "tom"
+
+        Sw ->
+            "tupu"
+
+        Tr ->
+            "boş"
+
+        Tw ->
+            "空"
+
+        Uk ->
+            "порожня"
+
+        Ur ->
+            "خالی"
+
+        Zh ->
+            "空"
+
+        _ ->
+            "empty"
+
+
+quizDragHint : Lang -> String
+quizDragHint lang =
+    case lang of
+        Am ->
+            "ማስቀመጫ ቦታን ለመምረጥ በላዩ ላይ Enter ይጫኑ፣ ከዚያም ካርዱን እዚያ ለማስቀመጥ በካርዱ ላይ Enter ይጫኑ"
+
+        Ar ->
+            "اضغط Enter على منطقة إفلات لتحديدها، ثم Enter على بطاقة لوضعها فيها"
+
+        Bg ->
+            "Натиснете Enter върху зона за пускане, за да я изберете, след това Enter върху карта, за да я поставите там"
+
+        Bn ->
+            "একটি ড্রপ জোন নির্বাচন করতে তাতে Enter চাপুন, তারপর একটি কার্ড সেখানে রাখতে কার্ডটিতে Enter চাপুন"
+
+        Ca ->
+            "Prem Retorn en una zona per seleccionar-la i després Retorn en una targeta per col·locar-la-hi"
+
+        Cs ->
+            "Klávesou Enter vyber cílové pole, pak klávesou Enter na kartě ji do něj umísti"
+
+        Da ->
+            "Tryk Enter på et slipfelt for at vælge det, og derefter Enter på et kort for at placere det der"
+
+        De ->
+            "Mit Enter ein Ablagefeld wählen, dann mit Enter eine Karte darauf ablegen"
+
+        El ->
+            "Πάτησε Enter σε μια περιοχή απόθεσης για να την επιλέξεις και μετά Enter σε μια κάρτα για να την τοποθετήσεις εκεί"
+
+        Es ->
+            "Pulsa Enter en una zona de destino para seleccionarla y luego Enter en una tarjeta para colocarla allí"
+
+        Et ->
+            "Vajuta sihtalal Enterit, et see valida, seejärel vajuta kaardil Enterit, et see sinna paigutada"
+
+        Eu ->
+            "Sakatu Enter jaregite-eremu batean hura hautatzeko, eta gero Enter txartel batean bertan kokatzeko"
+
+        Fa ->
+            "روی یک ناحیهٔ رهاسازی Enter را بزنید تا انتخاب شود، سپس روی یک کارت Enter را بزنید تا در آنجا قرار گیرد"
+
+        Fi ->
+            "Valitse pudotusalue painamalla siinä Enteriä ja paina sitten kortissa Enteriä sijoittaaksesi sen sinne"
+
+        Fr ->
+            "Appuyez sur Entrée sur une zone de dépôt pour la sélectionner, puis sur Entrée sur une carte pour l'y placer"
+
+        Ga ->
+            "Brúigh Enter ar limistéar scaoilte chun é a roghnú, ansin Enter ar chárta chun é a chur ann"
+
+        Hi ->
+            "ड्रॉप ज़ोन चुनने के लिए उस पर Enter दबाएँ, फिर किसी कार्ड को वहाँ रखने के लिए उस पर Enter दबाएँ"
+
+        Hr ->
+            "Pritisni Enter na polju za ispuštanje da ga odabereš, zatim Enter na kartici da je postaviš ondje"
+
+        Hu ->
+            "Nyomj Entert egy célterületen a kiválasztásához, majd Entert egy kártyán, hogy oda helyezd"
+
+        Hy ->
+            "Սեղմեք Enter տեղադրման դաշտի վրա՝ այն ընտրելու համար, ապա Enter քարտի վրա՝ այն այնտեղ տեղադրելու համար"
+
+        It ->
+            "Premi Invio su un'area di rilascio per selezionarla, poi Invio su una scheda per posizionarla lì"
+
+        Ja ->
+            "ドロップ領域でEnterを押して選択し、次にカードでEnterを押してそこに配置します"
+
+        Ka ->
+            "დააჭირეთ Enter-ს ჩასაგდებ არეზე მის ასარჩევად, შემდეგ Enter-ს ბარათზე, რომ იქ მოათავსოთ"
+
+        Ko ->
+            "드롭 영역에서 Enter 키를 눌러 선택한 다음, 카드에서 Enter 키를 눌러 그곳에 놓으세요"
+
+        Lt ->
+            "Paspausk Enter ant numetimo srities, kad ją pasirinktum, tada Enter ant kortelės, kad ją ten padėtum"
+
+        Lv ->
+            "Nospied Enter uz nomešanas zonas, lai to izvēlētos, tad Enter uz kartītes, lai to tur novietotu"
+
+        Nb ->
+            "Trykk Enter på en slippsone for å velge den, og deretter Enter på et kort for å plassere det der"
+
+        Nl ->
+            "Druk op Enter bij een neerzetzone om die te selecteren en daarna op Enter bij een kaart om die daar te plaatsen"
+
+        Pa ->
+            "ਰੱਖਣ ਵਾਲੇ ਖੇਤਰ ਨੂੰ ਚੁਣਨ ਲਈ ਉਸ 'ਤੇ Enter ਦਬਾਓ, ਫਿਰ ਕਾਰਡ ਨੂੰ ਉੱਥੇ ਰੱਖਣ ਲਈ ਕਾਰਡ 'ਤੇ Enter ਦਬਾਓ"
+
+        Pl ->
+            "Naciśnij Enter na polu upuszczania, aby je wybrać, a następnie Enter na karcie, aby ją tam umieścić"
+
+        Pt ->
+            "Pressione Enter em uma área de soltar para selecioná-la e, em seguida, Enter em um cartão para colocá-lo nela"
+
+        Ro ->
+            "Apasă Enter pe o zonă de plasare pentru a o selecta, apoi Enter pe un card pentru a-l plasa acolo"
+
+        Ru ->
+            "Нажмите Enter на области размещения, чтобы выбрать её, затем Enter на карточке, чтобы поместить её туда"
+
+        Sk ->
+            "Stlačením Enter vyber cieľové pole, potom stlačením Enter na karte ju tam vlož"
+
+        Sl ->
+            "Pritisni Enter na ciljnem polju, da ga izbereš, nato Enter na kartici, da jo postaviš tja"
+
+        Sq ->
+            "Shtyp Enter mbi një zonë lëshimi për ta zgjedhur, pastaj Enter mbi një kartë për ta vendosur atje"
+
+        Sv ->
+            "Tryck Enter på en släppyta för att välja den och sedan Enter på ett kort för att placera det där"
+
+        Sw ->
+            "Bonyeza Enter kwenye eneo la kudondoshea ili kulichagua, kisha Enter kwenye kadi ili kuiweka hapo"
+
+        Tr ->
+            "Seçmek için bir bırakma alanında Enter'a, ardından oraya yerleştirmek için bir kartta Enter'a basın"
+
+        Tw ->
+            "在放置區按 Enter 以選取，再在卡片上按 Enter 將其放到該處"
+
+        Uk ->
+            "Натисніть Enter на зоні розміщення, щоб вибрати її, потім Enter на картці, щоб розмістити її там"
+
+        Ur ->
+            "منتخب کرنے کے لیے کسی ڈراپ زون پر Enter دبائیں، پھر کسی کارڈ پر Enter دبا کر اسے وہاں رکھیں"
+
+        Zh ->
+            "在放置区上按 Enter 键将其选中，然后在卡片上按 Enter 键将卡片放到那里"
+
+        _ ->
+            "Press Enter on a drop zone to select it, then Enter on a card to place it there"
+
+
 quizLabelCheck : Lang -> String
 quizLabelCheck lang =
     case lang of
         Am ->
-            "መረጃው ተመርጧል ወይም ቆይተው ይቀጥሉ"
+            "መልሱን አረጋግጥ። መልሱ ትክክል ወይም ስህተት ተብሎ ምልክት ይደረግበታል።"
 
         Ar ->
-            "تحقق من الجواب. تم وضع علامة على الإجابة على أنها صحيحة أو غير صحيحة."
+            "تحقق من الإجابة. سيتم وضع علامة على الإجابة بأنها صحيحة أو غير صحيحة."
 
         Bg ->
-            "Проверете отговора. Отговорът е маркиран като правилен или неправилен."
+            "Проверете отговора. Отговорът ще бъде маркиран като правилен или неправилен."
 
         Bn ->
             "উত্তরটি পরীক্ষা করুন। প্রতিক্রিয়াটি সঠিক বা ভুল হিসাবে চিহ্নিত করা হবে।"
@@ -9921,7 +13791,7 @@ quizLabelCheck lang =
             "Έλεγχος της απάντησης. Η απάντηση θα επισημανθεί ως σωστή ή λανθασμένη."
 
         Es ->
-            "Comprueba la respuesta. La respuesta está marcada como correcta o incorrecta."
+            "Comprueba la respuesta. Se marcará como correcta o incorrecta."
 
         Et ->
             "Kontrolli vastust. Vastus märgitakse õigeks või valeks."
@@ -9930,7 +13800,7 @@ quizLabelCheck lang =
             "Egiaztatu erantzuna. Erantzuna zuzen edo oker gisa markatuko da."
 
         Fa ->
-            "پاسخ را بررسی کنید. پاسخ صحیح یا نادرست علامت گذاری شده است."
+            "پاسخ را بررسی کنید. پاسخ به‌عنوان درست یا نادرست علامت‌گذاری می‌شود."
 
         Fi ->
             "Tarkista vastaus. Vastaus merkitään oikeaksi tai vääräksi."
@@ -9942,7 +13812,7 @@ quizLabelCheck lang =
             "Seiceáil an freagra. Marcálfar an freagra mar cheart nó mícheart."
 
         Hi ->
-            "उत्तर की जाँच करें। उत्तर को सही या गलत के रूप में चिह्नित किया गया है।"
+            "उत्तर की जाँच करें। उत्तर को सही या गलत के रूप में चिह्नित किया जाएगा।"
 
         Hr ->
             "Provjeri odgovor. Odgovor će biti označen kao točan ili netočan."
@@ -9951,7 +13821,7 @@ quizLabelCheck lang =
             "A válasz ellenőrzése. A válasz helyesnek vagy helytelennek lesz jelölve."
 
         Hy ->
-            "Ստուգեք պատասխանը: Պատասխանը նշվում է որպես ճիշտ կամ սխալ:"
+            "Ստուգեք պատասխանը։ Այն կնշվի որպես ճիշտ կամ սխալ։"
 
         It ->
             "Controlla la risposta. La risposta è indicata come corretta o errata."
@@ -9960,7 +13830,7 @@ quizLabelCheck lang =
             "答えを確認してください。回答は正解または不正解でマークされます。"
 
         Ka ->
-            "შეამოწმეთ პასუხი. პასუხი ჩაინიშნება როგორც სწორი ან არასწორი."
+            "შეამოწმეთ პასუხი. პასუხი მოინიშნება როგორც სწორი ან არასწორი."
 
         Ko ->
             "답을 확인하세요. 정답 또는 오답으로 표시됩니다."
@@ -9978,7 +13848,7 @@ quizLabelCheck lang =
             "Controleer het antwoord. Het antwoord wordt gemarkeerd als goed of fout."
 
         Pa ->
-            "ਜਵਾਬ ਦੀ ਜਾਂਚ ਕਰੋ। ਜਵਾਬ ਸਹੀ ਜਾਂ ਗਲਤ ਨਿਸ਼ਾਨਾ ਲਗਾਇਆ ਜਾਵੇਗਾ।"
+            "ਜਵਾਬ ਦੀ ਜਾਂਚ ਕਰੋ। ਜਵਾਬ ਨੂੰ ਸਹੀ ਜਾਂ ਗਲਤ ਵਜੋਂ ਨਿਸ਼ਾਨਬੱਧ ਕੀਤਾ ਜਾਵੇਗਾ।"
 
         Pl ->
             "Sprawdź odpowiedź. Odpowiedź zostanie oznaczona jako poprawna lub niepoprawna."
@@ -9990,7 +13860,7 @@ quizLabelCheck lang =
             "Verifică răspunsul. Răspunsul va fi marcat drept corect sau incorect."
 
         Ru ->
-            "Проверьте ответ. Ответ отмечен как правильный или неправильный."
+            "Проверьте ответ. Ответ будет отмечен как правильный или неправильный."
 
         Sk ->
             "Skontrolovať odpoveď. Odpoveď bude označená ako správna alebo nesprávna."
@@ -10011,16 +13881,16 @@ quizLabelCheck lang =
             "Yanıtı kontrol et. Yanıt doğru veya yanlış olarak işaretlenecek."
 
         Tw ->
-            "检查答案。答案被标记为正确或不正确。"
+            "檢查答案。答案將被標記為正確或錯誤。"
 
         Uk ->
-            "Перевірте відповідь. Відповідь позначена як правильна чи неправильна."
+            "Перевірте відповідь. Відповідь буде позначено як правильну чи неправильну."
 
         Ur ->
             "جواب چیک کریں۔ جواب کو درست یا غلط کے طور پر نشان زد کیا جائے گا۔"
 
         Zh ->
-            "检查答案。答案被标记为正确或不正确。"
+            "检查答案。答案将被标记为正确或错误。"
 
         _ ->
             "Check the answer. The response will be marked as correct or incorrect."
@@ -10030,16 +13900,16 @@ quizLabelSolution : Lang -> String
 quizLabelSolution lang =
     case lang of
         Am ->
-            "የይለፍ መረጃ ይሰራል"
+            "መፍትሔውን አሳይ። ጥያቄው እንደተፈታ ምልክት ይደረግበታል።"
 
         Ar ->
-            "اعرض الحل. تم وضع علامة 'حل' الاختبار."
+            "اعرض الحل. سيتم وضع علامة على الاختبار بأنه محلول."
 
         Bg ->
-            "Покажете решението. Тестът е означен като решен."
+            "Покажете решението. Тестът ще бъде отбелязан като решен."
 
         Bn ->
-            "সমাধান প্রদর্শন করুন। কুইজটি সমাধানিত হিসাবে চিহ্নিত করা হবে।"
+            "সমাধান প্রদর্শন করুন। কুইজটি সমাধানকৃত হিসাবে চিহ্নিত করা হবে।"
 
         Ca ->
             "Mostra la solució. L'exercici es marcarà com a resolt."
@@ -10057,7 +13927,7 @@ quizLabelSolution lang =
             "Εμφάνιση της λύσης. Η άσκηση θα επισημανθεί ως λυμένη."
 
         Es ->
-            "Muestre la solución. El cuestionario se marca como resuelto."
+            "Muestra la solución. El cuestionario se marcará como resuelto."
 
         Et ->
             "Näita lahendust. Ülesanne märgitakse lahendatuks."
@@ -10066,7 +13936,7 @@ quizLabelSolution lang =
             "Erakutsi ebazpena. Ariketa ebatzita dagoela markatuko da."
 
         Fa ->
-            "راه حل را نشان دهید. مسابقه به عنوان حل شده علامت گذاری شده است."
+            "راه‌حل را نشان دهید. آزمون به‌عنوان حل‌شده علامت‌گذاری می‌شود."
 
         Fi ->
             "Näytä ratkaisu. Tehtävä merkitään ratkaistuksi."
@@ -10087,19 +13957,19 @@ quizLabelSolution lang =
             "A megoldás megjelenítése. A feladat megoldottként lesz jelölve."
 
         Hy ->
-            "Showույց տվեք լուծումը: Վիկտորինան նշվում է որպես լուծված:"
+            "Ցույց տվեք լուծումը։ Առաջադրանքը կնշվի որպես լուծված։"
 
         It ->
-            "Mostra la soluzione. Il questionario si registra come risolto."
+            "Mostra la soluzione. Il quiz verrà contrassegnato come risolto."
 
         Ja ->
             "解答を表示します。クイズは解決済みとマークされます。"
 
         Ka ->
-            "გაჩვენეთ გადაჭრა. კიზი ჩაინიშნება როგორც გადაჭრული."
+            "ამოხსნის ჩვენება. ქვიზი მოინიშნება როგორც ამოხსნილი."
 
         Ko ->
-            "솔루션을 보여주세요. 퀴즈가 해결된 것으로 표시됩니다."
+            "정답을 보여 줍니다. 퀴즈가 해결된 것으로 표시됩니다."
 
         Lt ->
             "Parodyti sprendimą. Užduotis bus pažymėta kaip išspręsta."
@@ -10111,10 +13981,10 @@ quizLabelSolution lang =
             "Vis løsningen. Oppgaven markeres som løst."
 
         Nl ->
-            "Laat de oplossing zien. De quiz is gemarkeerd als opgelost."
+            "Laat de oplossing zien. De quiz wordt gemarkeerd als opgelost."
 
         Pa ->
-            "ਹੱਲ ਦਿਖਾਓ। ਕਵਿਜ਼ ਹੱਲ ਕੀਤਾ ਜਾਵੇਗਾ।"
+            "ਹੱਲ ਦਿਖਾਓ। ਕਵਿਜ਼ ਨੂੰ ਹੱਲ ਕੀਤਾ ਵਜੋਂ ਨਿਸ਼ਾਨਬੱਧ ਕੀਤਾ ਜਾਵੇਗਾ।"
 
         Pl ->
             "Pokaż rozwiązanie. Zadanie zostanie oznaczone jako rozwiązane."
@@ -10126,7 +13996,7 @@ quizLabelSolution lang =
             "Arată soluția. Exercițiul va fi marcat ca rezolvat."
 
         Ru ->
-            "Покажи решение. Викторина помечается как решенная."
+            "Показать решение. Задание будет отмечено как решённое."
 
         Sk ->
             "Zobraziť riešenie. Úloha bude označená ako vyriešená."
@@ -10147,16 +14017,16 @@ quizLabelSolution lang =
             "Çözümü göster. Soru çözülmüş olarak işaretlenecek."
 
         Tw ->
-            "显示解决方案。测验被标记为已解决。"
+            "顯示解答。測驗將被標記為已解答。"
 
         Uk ->
-            "Покажіть рішення. Вікторина позначена як розв’язана."
+            "Покажіть розв’язок. Вікторину буде позначено як розв’язану."
 
         Ur ->
             "حل دکھائیں۔ کوئز کو حل شدہ کے طور پر نشان زد کیا جائے گا۔"
 
         Zh ->
-            "显示解决方案。测验被标记为已解决。"
+            "显示解答。测验将被标记为已解答。"
 
         _ ->
             "Show the solution. The quiz will be marked as resolved."
@@ -10166,10 +14036,10 @@ quizAnswerSuccess : Lang -> String
 quizAnswerSuccess lang =
     case lang of
         Am ->
-            "እንኳን ደስ አለዎት! ይህ ማሳወቅ ተመልከቱ"
+            "እንኳን ደስ አለዎት፣ ይህ ትክክለኛው መልስ ነው"
 
         Ar ->
-            "مبروك هذه كانت الإجابة الصحيحة"
+            "مبروك، هذه كانت الإجابة الصحيحة"
 
         Bg ->
             "Поздравления, това беше правилният отговор"
@@ -10202,7 +14072,7 @@ quizAnswerSuccess lang =
             "Zorionak, hori zen erantzun zuzena"
 
         Fa ->
-            "تبریک می گویم ، جواب صحیحی بود"
+            "تبریک می‌گویم، پاسخ درست بود"
 
         Fi ->
             "Onnittelut, vastaus oli oikein"
@@ -10235,7 +14105,7 @@ quizAnswerSuccess lang =
             "გილოცავთ, ეს იყო სწორი პასუხი"
 
         Ko ->
-            "축하합니다. 올바른 답을 선택했습니다"
+            "축하합니다. 정답입니다"
 
         Lt ->
             "Sveikiname, tai buvo teisingas atsakymas"
@@ -10250,7 +14120,7 @@ quizAnswerSuccess lang =
             "Gefeliciteerd, dat was het juiste antwoord"
 
         Pa ->
-            "ਬਧਾਈ ਹੋ, ਜਿਹਨਾਂ ਜਵਾਬ ਸਹੀ ਸੀ।"
+            "ਵਧਾਈ ਹੋ, ਇਹ ਸਹੀ ਜਵਾਬ ਸੀ।"
 
         Pl ->
             "Gratulacje, to była poprawna odpowiedź"
@@ -10283,7 +14153,7 @@ quizAnswerSuccess lang =
             "Tebrikler, doğru yanıt verdiniz"
 
         Tw ->
-            "恭喜，那是正确的答案"
+            "恭喜，這是正確答案"
 
         Uk ->
             "Вітаю, це була правильна відповідь"
@@ -10292,7 +14162,7 @@ quizAnswerSuccess lang =
             "مبارک ہو، یہ درست جواب تھا"
 
         Zh ->
-            "恭喜，那是正确的答案"
+            "恭喜，这是正确答案"
 
         _ ->
             "Congratulations, that was the right answer"
@@ -10302,7 +14172,7 @@ quizAnswerError : Lang -> String
 quizAnswerError lang =
     case lang of
         Am ->
-            "የሚነካ መለያ መገለጫ በድጋሚ ነው"
+            "ትክክለኛው መልስ ገና አልተሰጠም"
 
         Ar ->
             "لم يتم إعطاء الإجابة الصحيحة بعد"
@@ -10338,7 +14208,7 @@ quizAnswerError lang =
             "Oraindik ez da erantzun zuzena eman"
 
         Fa ->
-            "بله، این ترجمه فارسی است"
+            "پاسخ درست هنوز داده نشده است"
 
         Fi ->
             "Oikeaa vastausta ei ole vielä annettu"
@@ -10365,7 +14235,7 @@ quizAnswerError lang =
             "La risposta corretta non è stata ancora fornita"
 
         Ja ->
-            "正解がまだ与えられていません"
+            "まだ正解ではありません"
 
         Ka ->
             "სწორი პასუხი ჯერ არ არის მოწოდებული"
@@ -10428,7 +14298,7 @@ quizAnswerError lang =
             "صحیح جواب ابھی تک نہیں دیا گیا"
 
         Zh ->
-            "正确的答案尚未给出"
+            "尚未给出正确答案"
 
         _ ->
             "The correct answer has not yet been given"
@@ -10438,7 +14308,7 @@ quizAnswerResolved : Lang -> String
 quizAnswerResolved lang =
     case lang of
         Am ->
-            "ተመርጧል"
+            "የተፈታ መልስ"
 
         Ar ->
             "إجابة تم حلها"
@@ -10447,7 +14317,7 @@ quizAnswerResolved lang =
             "Решен отговор"
 
         Bn ->
-            "সমাধানিত উত্তর"
+            "সমাধানকৃত উত্তর"
 
         Ca ->
             "Resposta revelada"
@@ -10486,7 +14356,7 @@ quizAnswerResolved lang =
             "Freagra nochta"
 
         Hi ->
-            "हल की गई प्रतिक्रिया"
+            "हल किया गया उत्तर"
 
         Hr ->
             "Otkriveni odgovor"
@@ -10498,16 +14368,16 @@ quizAnswerResolved lang =
             "Լուծված պատասխան"
 
         It ->
-            "Risposta decisiva"
+            "Risposta rivelata"
 
         Ja ->
             "解決済みの回答"
 
         Ka ->
-            "გადაჭრული პასუხი"
+            "ამოხსნილი პასუხი"
 
         Ko ->
-            "이미 푼 퀴즈입니다"
+            "정답 공개됨"
 
         Lt ->
             "Atskleistas atsakymas"
@@ -10528,13 +14398,13 @@ quizAnswerResolved lang =
             "Ujawniona odpowiedź"
 
         Pt ->
-            "Resposta resolvida."
+            "Resposta revelada"
 
         Ro ->
             "Răspuns dezvăluit"
 
         Ru ->
-            "Решенный ответ"
+            "Раскрытый ответ"
 
         Sk ->
             "Odhalená odpoveď"
@@ -10555,7 +14425,7 @@ quizAnswerResolved lang =
             "Açıklanan yanıt"
 
         Tw ->
-            "解决的答案"
+            "已顯示解答"
 
         Uk ->
             "Вирішена відповідь"
@@ -10564,7 +14434,7 @@ quizAnswerResolved lang =
             "حل شدہ جواب"
 
         Zh ->
-            "解决的答案"
+            "已显示解答"
 
         _ ->
             "Resolved answer"
@@ -10574,10 +14444,10 @@ surveySubmit : Lang -> String
 surveySubmit lang =
     case lang of
         Am ->
-            "አመድ"
+            "ላክ"
 
         Ar ->
-            "إرسال "
+            "إرسال"
 
         Bg ->
             "Изпрати"
@@ -10631,7 +14501,7 @@ surveySubmit lang =
             "Küldés"
 
         Hy ->
-            "ներկայացնել"
+            "Ուղարկել"
 
         It ->
             "Invia"
@@ -10658,7 +14528,7 @@ surveySubmit lang =
             "Verzenden"
 
         Pa ->
-            "ਜਮਾ ਕਰੋ"
+            "ਜਮ੍ਹਾਂ ਕਰੋ"
 
         Pl ->
             "Wyślij"
@@ -10691,16 +14561,16 @@ surveySubmit lang =
             "Gönder"
 
         Tw ->
-            "遞交"
+            "提交"
 
         Uk ->
-            "відіслати"
+            "Надіслати"
 
         Ur ->
             "جمع کریں"
 
         Zh ->
-            "遞交"
+            "提交"
 
         _ ->
             "Submit"
@@ -11018,7 +14888,7 @@ surveyErrorMatrix lang =
             "Errenkada guztiei erantzun behar zaie bidali aurretik."
 
         Fa ->
-            "پیش از ارسال باید به همهٔ ردیف\u{200C}ها پاسخ داده شود."
+            "پیش از ارسال باید به همهٔ ردیف‌ها پاسخ داده شود."
 
         Fi ->
             "Jokaiseen riviin on vastattava ennen lähettämistä."
@@ -11118,10 +14988,10 @@ surveyText : Lang -> String
 surveyText lang =
     case lang of
         Am ->
-            "ግል ጽሑፍ ያስገቡ..."
+            "ጽሑፍ ያስገቡ..."
 
         Ar ->
-            "أدخل نص..."
+            "أدخل نصًا..."
 
         Bg ->
             "Въведете текст..."
@@ -11175,7 +15045,7 @@ surveyText lang =
             "Írj be szöveget..."
 
         Hy ->
-            "Մուտքագրեք որոշ տեքստ"
+            "Մուտքագրեք տեքստ..."
 
         It ->
             "Immetti del testo"
@@ -11238,13 +15108,13 @@ surveyText lang =
             "輸入文字..."
 
         Uk ->
-            "Ввід тексту ..."
+            "Введення тексту ..."
 
         Ur ->
             "کچھ متن درج کریں..."
 
         Zh ->
-            "輸入文字..."
+            "请输入文本……"
 
         _ ->
             "Enter some text..."
@@ -11290,7 +15160,7 @@ surveyUpdate lang =
             "Eguneratu"
 
         Fa ->
-            "به\u{200C}روزرسانی"
+            "به‌روزرسانی"
 
         Fi ->
             "Päivitä"
@@ -11390,10 +15260,13 @@ sortAsc : Lang -> String
 sortAsc lang =
     case lang of
         Am ->
-            "ቅደም አስቀድሞ"
+            "ሽቅብ ደርድር"
 
         Ar ->
             "ترتيب تصاعدي"
+
+        Bg ->
+            "сортиране във възходящ ред"
 
         Bn ->
             "আরোহী ক্রমানুসারে সাজান"
@@ -11422,6 +15295,9 @@ sortAsc lang =
         Eu ->
             "ordenatu gorantz"
 
+        Fa ->
+            "مرتب‌سازی صعودی"
+
         Fi ->
             "lajittele nousevasti"
 
@@ -11439,6 +15315,9 @@ sortAsc lang =
 
         Hu ->
             "növekvő rendezés"
+
+        Hy ->
+            "դասավորել աճման կարգով"
 
         It ->
             "ordine crescente"
@@ -11465,7 +15344,7 @@ sortAsc lang =
             "oplopend sorteren"
 
         Pa ->
-            "ਚੜਦੀ ਕ੍ਰਮ ਵਿੱਚ"
+            "ਵਧਦੇ ਕ੍ਰਮ ਵਿੱਚ ਕ੍ਰਮਬੱਧ ਕਰੋ"
 
         Pl ->
             "sortuj rosnąco"
@@ -11492,16 +15371,22 @@ sortAsc lang =
             "sortera stigande"
 
         Sw ->
-            "kupanga kupanda"
+            "panga kwa kupanda"
 
         Tr ->
             "artan sırada sırala"
 
+        Tw ->
+            "遞增排序"
+
         Uk ->
-            "сортування за зростанням"
+            "сортувати за зростанням"
 
         Ur ->
             "صعودی ترتیب"
+
+        Zh ->
+            "升序排序"
 
         _ ->
             "sort ascending"
@@ -11511,10 +15396,13 @@ sortDesc : Lang -> String
 sortDesc lang =
     case lang of
         Am ->
-            "ታሪክ አስቀድሞ"
+            "ቁልቁል ደርድር"
 
         Ar ->
             "ترتيب تنازلي"
+
+        Bg ->
+            "сортиране в низходящ ред"
 
         Bn ->
             "অবরোহী ক্রমানুসারে সাজান"
@@ -11535,13 +15423,16 @@ sortDesc lang =
             "φθίνουσα ταξινόμηση"
 
         Es ->
-            "orden descendiente"
+            "orden descendente"
 
         Et ->
             "sorteeri kahanevalt"
 
         Eu ->
             "ordenatu beherantz"
+
+        Fa ->
+            "مرتب‌سازی نزولی"
 
         Fi ->
             "lajittele laskevasti"
@@ -11560,6 +15451,9 @@ sortDesc lang =
 
         Hu ->
             "csökkenő rendezés"
+
+        Hy ->
+            "դասավորել նվազման կարգով"
 
         It ->
             "ordine discendente"
@@ -11583,10 +15477,10 @@ sortDesc lang =
             "sorter synkende"
 
         Nl ->
-            "sorteer aflopend"
+            "aflopend sorteren"
 
         Pa ->
-            "ਡਿਸਕੰਡਿੰਗ ਕ੍ਰਮ ਵਿੱਚ"
+            "ਘਟਦੇ ਕ੍ਰਮ ਵਿੱਚ ਕ੍ਰਮਬੱਧ ਕਰੋ"
 
         Pl ->
             "sortuj malejąco"
@@ -11598,7 +15492,7 @@ sortDesc lang =
             "sortează descrescător"
 
         Ru ->
-            "сортировка по убыванию"
+            "сортировать по убыванию"
 
         Sk ->
             "zoradiť zostupne"
@@ -11613,16 +15507,22 @@ sortDesc lang =
             "sortera fallande"
 
         Sw ->
-            "panga kushuka"
+            "panga kwa kushuka"
 
         Tr ->
             "azalan sırada sırala"
+
+        Tw ->
+            "遞減排序"
 
         Uk ->
             "сортувати за спаданням"
 
         Ur ->
             "نزولی ترتیب"
+
+        Zh ->
+            "降序排序"
 
         _ ->
             "sort descending"
@@ -11632,13 +15532,16 @@ sortNot : Lang -> String
 sortNot lang =
     case lang of
         Am ->
-            "ተመርጧል"
+            "ያልተደረደረ"
 
         Ar ->
             "غير مرتب"
 
+        Bg ->
+            "несортирано"
+
         Bn ->
-            "বিন্যাসযোগ্য নয়"
+            "সাজানো নয়"
 
         Ca ->
             "sense ordenar"
@@ -11664,6 +15567,9 @@ sortNot lang =
         Eu ->
             "ordenatu gabe"
 
+        Fa ->
+            "مرتب‌نشده"
+
         Fi ->
             "ei lajiteltu"
 
@@ -11682,11 +15588,14 @@ sortNot lang =
         Hu ->
             "rendezetlen"
 
+        Hy ->
+            "դասավորված չէ"
+
         It ->
             "non ordinato"
 
         Ja ->
-            "未並べ替え"
+            "並べ替えなし"
 
         Ka ->
             "არ არის დალაგებული"
@@ -11707,7 +15616,7 @@ sortNot lang =
             "niet gesorteerd"
 
         Pa ->
-            "ਨਾ ਸੋਰਟ"
+            "ਕ੍ਰਮਬੱਧ ਨਹੀਂ"
 
         Pl ->
             "nieposortowane"
@@ -11739,24 +15648,305 @@ sortNot lang =
         Tr ->
             "sıralanmamış"
 
+        Tw ->
+            "未排序"
+
         Uk ->
-            "не сортується"
+            "не відсортовано"
 
         Ur ->
             "ترتیب نہیں دی گئی"
 
+        Zh ->
+            "未排序"
+
         _ ->
             "not sorted"
+
+
+chartDefault : Lang -> String
+chartDefault lang =
+    case lang of
+        Am ->
+            "ገበታ"
+
+        Ar ->
+            "مخطط"
+
+        Bg ->
+            "Диаграма"
+
+        Bn ->
+            "চার্ট"
+
+        Ca ->
+            "Gràfic"
+
+        Cs ->
+            "Graf"
+
+        Da ->
+            "Diagram"
+
+        De ->
+            "Diagramm"
+
+        El ->
+            "Διάγραμμα"
+
+        Es ->
+            "Gráfico"
+
+        Et ->
+            "Diagramm"
+
+        Eu ->
+            "Diagrama"
+
+        Fa ->
+            "نمودار"
+
+        Fi ->
+            "Kaavio"
+
+        Fr ->
+            "Graphique"
+
+        Ga ->
+            "Cairt"
+
+        Hi ->
+            "चार्ट"
+
+        Hr ->
+            "Grafikon"
+
+        Hu ->
+            "Diagram"
+
+        Hy ->
+            "Գծապատկեր"
+
+        It ->
+            "Grafico"
+
+        Ja ->
+            "グラフ"
+
+        Ka ->
+            "დიაგრამა"
+
+        Ko ->
+            "차트"
+
+        Lt ->
+            "Diagrama"
+
+        Lv ->
+            "Diagramma"
+
+        Nb ->
+            "Diagram"
+
+        Nl ->
+            "Grafiek"
+
+        Pa ->
+            "ਚਾਰਟ"
+
+        Pl ->
+            "Wykres"
+
+        Pt ->
+            "Gráfico"
+
+        Ro ->
+            "Diagramă"
+
+        Ru ->
+            "Диаграмма"
+
+        Sk ->
+            "Graf"
+
+        Sl ->
+            "Grafikon"
+
+        Sq ->
+            "Diagram"
+
+        Sv ->
+            "Diagram"
+
+        Sw ->
+            "Chati"
+
+        Tr ->
+            "Grafik"
+
+        Tw ->
+            "圖表"
+
+        Uk ->
+            "Діаграма"
+
+        Ur ->
+            "چارٹ"
+
+        Zh ->
+            "图表"
+
+        _ ->
+            "Chart"
+
+
+chartTable : Lang -> String
+chartTable lang =
+    case lang of
+        Am ->
+            "ሰንጠረዥ"
+
+        Ar ->
+            "جدول"
+
+        Bg ->
+            "Таблица"
+
+        Bn ->
+            "টেবিল"
+
+        Ca ->
+            "Taula"
+
+        Cs ->
+            "Tabulka"
+
+        Da ->
+            "Tabel"
+
+        De ->
+            "Tabelle"
+
+        El ->
+            "Πίνακας"
+
+        Es ->
+            "Tabla"
+
+        Et ->
+            "Tabel"
+
+        Eu ->
+            "Taula"
+
+        Fa ->
+            "جدول"
+
+        Fi ->
+            "Taulukko"
+
+        Fr ->
+            "Tableau"
+
+        Ga ->
+            "Tábla"
+
+        Hi ->
+            "तालिका"
+
+        Hr ->
+            "Tablica"
+
+        Hu ->
+            "Táblázat"
+
+        Hy ->
+            "Աղյուսակ"
+
+        It ->
+            "Tabella"
+
+        Ja ->
+            "表"
+
+        Ka ->
+            "ცხრილი"
+
+        Ko ->
+            "표"
+
+        Lt ->
+            "Lentelė"
+
+        Lv ->
+            "Tabula"
+
+        Nb ->
+            "Tabell"
+
+        Nl ->
+            "Tabel"
+
+        Pa ->
+            "ਸਾਰਣੀ"
+
+        Pl ->
+            "Tabela"
+
+        Pt ->
+            "Tabela"
+
+        Ro ->
+            "Tabel"
+
+        Ru ->
+            "Таблица"
+
+        Sk ->
+            "Tabuľka"
+
+        Sl ->
+            "Tabela"
+
+        Sq ->
+            "Tabela"
+
+        Sv ->
+            "Tabell"
+
+        Sw ->
+            "Jedwali"
+
+        Tr ->
+            "Tablo"
+
+        Tw ->
+            "表格"
+
+        Uk ->
+            "Таблиця"
+
+        Ur ->
+            "جدول"
+
+        Zh ->
+            "表格"
+
+        _ ->
+            "Table"
 
 
 chartPie : Lang -> String
 chartPie lang =
     case lang of
         Am ->
-            "ፒ ሾስትን ጫን ቦታ"
+            "የፓይ ገበታ"
 
         Ar ->
             "مخطط دائري"
+
+        Bg ->
+            "Кръгова диаграма"
 
         Bn ->
             "পাই চার্ট"
@@ -11776,11 +15966,17 @@ chartPie lang =
         El ->
             "Κυκλικό διάγραμμα"
 
+        Es ->
+            "Gráfico circular"
+
         Et ->
             "Sektordiagramm"
 
         Eu ->
             "Sektore-diagrama"
+
+        Fa ->
+            "نمودار دایره‌ای"
 
         Fi ->
             "Ympyräkaavio"
@@ -11800,6 +15996,9 @@ chartPie lang =
         Hu ->
             "Kördiagram"
 
+        Hy ->
+            "Շրջանաձև գծապատկեր"
+
         It ->
             "Diagramma a torta"
 
@@ -11807,7 +16006,7 @@ chartPie lang =
             "円グラフ"
 
         Ka ->
-            "პაი დიაგრამა"
+            "წრიული დიაგრამა"
 
         Ko ->
             "파이 차트"
@@ -11821,6 +16020,9 @@ chartPie lang =
         Nb ->
             "Sektordiagram"
 
+        Nl ->
+            "Cirkeldiagram"
+
         Pa ->
             "ਪਾਈ ਚਾਰਟ"
 
@@ -11832,6 +16034,9 @@ chartPie lang =
 
         Ro ->
             "Diagramă circulară"
+
+        Ru ->
+            "Круговая диаграмма"
 
         Sk ->
             "Koláčový graf"
@@ -11846,13 +16051,16 @@ chartPie lang =
             "Cirkeldiagram"
 
         Sw ->
-            "chati ya pai"
+            "Chati ya pai"
 
         Tr ->
             "Pasta grafiği"
 
         Tw ->
-            "饼图"
+            "圓餅圖"
+
+        Uk ->
+            "Кругова діаграма"
 
         Ur ->
             "پائی چارٹ"
@@ -11868,10 +16076,13 @@ chartBar : Lang -> String
 chartBar lang =
     case lang of
         Am ->
-            "ባር ሾስትን ጫን ቦታ"
+            "የአሞሌ ገበታ"
 
         Ar ->
             "مخطط شريطي"
+
+        Bg ->
+            "Стълбовидна диаграма"
 
         Bn ->
             "বার চার্ট"
@@ -11891,11 +16102,17 @@ chartBar lang =
         El ->
             "Ραβδόγραμμα"
 
+        Es ->
+            "Gráfico de barras"
+
         Et ->
             "Tulpdiagramm"
 
         Eu ->
             "Barra-diagrama"
+
+        Fa ->
+            "نمودار میله‌ای"
 
         Fi ->
             "Pylväskaavio"
@@ -11915,6 +16132,9 @@ chartBar lang =
         Hu ->
             "Oszlopdiagram"
 
+        Hy ->
+            "Սյունակային գծապատկեր"
+
         It ->
             "Diagramma a barre"
 
@@ -11922,10 +16142,10 @@ chartBar lang =
             "棒グラフ"
 
         Ka ->
-            "ბარი დიაგრამა"
+            "სვეტოვანი დიაგრამა"
 
         Ko ->
-            "바 차트"
+            "막대 차트"
 
         Lt ->
             "Stulpelinė diagrama"
@@ -11935,6 +16155,9 @@ chartBar lang =
 
         Nb ->
             "Stolpediagram"
+
+        Nl ->
+            "Staafdiagram"
 
         Pa ->
             "ਬਾਰ ਚਾਰਟ"
@@ -11947,6 +16170,9 @@ chartBar lang =
 
         Ro ->
             "Diagramă cu bare"
+
+        Ru ->
+            "Столбчатая диаграмма"
 
         Sk ->
             "Stĺpcový graf"
@@ -11961,13 +16187,16 @@ chartBar lang =
             "Stapeldiagram"
 
         Sw ->
-            "Chati ya paa"
+            "Chati ya pau"
 
         Tr ->
             "Çubuk grafiği"
 
         Tw ->
-            "柱状图"
+            "長條圖"
+
+        Uk ->
+            "Стовпчикова діаграма"
 
         Ur ->
             "بار چارٹ"
@@ -11983,10 +16212,13 @@ chartLine : Lang -> String
 chartLine lang =
     case lang of
         Am ->
-            "ስብስብ ሾስትን ጫን ቦታ"
+            "የመስመር ገበታ"
 
         Ar ->
             "مخطط خطي"
+
+        Bg ->
+            "Линейна диаграма"
 
         Bn ->
             "লাইন চার্ট"
@@ -12006,11 +16238,17 @@ chartLine lang =
         El ->
             "Γραμμικό διάγραμμα"
 
+        Es ->
+            "Gráfico de líneas"
+
         Et ->
             "Joondiagramm"
 
         Eu ->
             "Lerro-diagrama"
+
+        Fa ->
+            "نمودار خطی"
 
         Fi ->
             "Viivakaavio"
@@ -12030,6 +16268,9 @@ chartLine lang =
         Hu ->
             "Vonaldiagram"
 
+        Hy ->
+            "Գծային գծապատկեր"
+
         It ->
             "Diagramma a linee"
 
@@ -12037,7 +16278,7 @@ chartLine lang =
             "折れ線グラフ"
 
         Ka ->
-            "ხაზიანი დიაგრამა"
+            "ხაზოვანი დიაგრამა"
 
         Ko ->
             "라인 차트"
@@ -12051,6 +16292,9 @@ chartLine lang =
         Nb ->
             "Linjediagram"
 
+        Nl ->
+            "Lijndiagram"
+
         Pa ->
             "ਰੇਖਾ ਚਾਰਟ"
 
@@ -12062,6 +16306,9 @@ chartLine lang =
 
         Ro ->
             "Diagramă liniară"
+
+        Ru ->
+            "Линейная диаграмма"
 
         Sk ->
             "Čiarový graf"
@@ -12082,7 +16329,10 @@ chartLine lang =
             "Çizgi grafiği"
 
         Tw ->
-            "折线图"
+            "折線圖"
+
+        Uk ->
+            "Лінійна діаграма"
 
         Ur ->
             "لائن چارٹ"
@@ -12098,10 +16348,13 @@ chartScatter : Lang -> String
 chartScatter lang =
     case lang of
         Am ->
-            "መስመር ግርግር ስቀር ቦታ"
+            "የብተና ገበታ"
 
         Ar ->
             "مخطط مبعثر"
+
+        Bg ->
+            "Точкова диаграма"
 
         Bn ->
             "স্ক্যাটার প্লট"
@@ -12121,11 +16374,17 @@ chartScatter lang =
         El ->
             "Διάγραμμα διασποράς"
 
+        Es ->
+            "Diagrama de dispersión"
+
         Et ->
             "Hajuvusdiagramm"
 
         Eu ->
             "Sakabanatze-diagrama"
+
+        Fa ->
+            "نمودار پراکندگی"
 
         Fi ->
             "Hajontakaavio"
@@ -12145,6 +16404,9 @@ chartScatter lang =
         Hu ->
             "Szórásdiagram"
 
+        Hy ->
+            "Ցրման գծապատկեր"
+
         It ->
             "Diagramma a dispersione"
 
@@ -12152,10 +16414,10 @@ chartScatter lang =
             "散布図"
 
         Ka ->
-            "გადანაწილების დიაგრამა"
+            "წერტილოვანი დიაგრამა"
 
         Ko ->
-            "분포도"
+            "산점도"
 
         Lt ->
             "Sklaidos diagrama"
@@ -12166,8 +16428,11 @@ chartScatter lang =
         Nb ->
             "Spredningsdiagram"
 
+        Nl ->
+            "Spreidingsdiagram"
+
         Pa ->
-            "ਸਿਆਨਾ ਚਿੰਨ੍ਹ ਚਾਰਟ"
+            "ਸਕੈਟਰ ਪਲਾਟ"
 
         Pl ->
             "Wykres punktowy"
@@ -12177,6 +16442,9 @@ chartScatter lang =
 
         Ro ->
             "Diagramă de dispersie"
+
+        Ru ->
+            "Точечная диаграмма"
 
         Sk ->
             "Bodový graf"
@@ -12191,13 +16459,16 @@ chartScatter lang =
             "Spridningsdiagram"
 
         Sw ->
-            "Kutawanya njama"
+            "Chati ya mtawanyiko"
 
         Tr ->
             "Dağılım grafiği"
 
         Tw ->
-            "散点图"
+            "散佈圖"
+
+        Uk ->
+            "Точкова діаграма"
 
         Ur ->
             "اسکیٹر پلاٹ"
@@ -12213,10 +16484,13 @@ chartRadar : Lang -> String
 chartRadar lang =
     case lang of
         Am ->
-            "ራዳር ሾስት"
+            "የራዳር ገበታ"
 
         Ar ->
             "مخطط نسيجي"
+
+        Bg ->
+            "Радарна диаграма"
 
         Bn ->
             "রেডার চার্ট"
@@ -12236,11 +16510,17 @@ chartRadar lang =
         El ->
             "Διάγραμμα ραντάρ"
 
+        Es ->
+            "Gráfico de radar"
+
         Et ->
             "Radardiagramm"
 
         Eu ->
             "Radar-diagrama"
+
+        Fa ->
+            "نمودار راداری"
 
         Fi ->
             "Tutkakaavio"
@@ -12252,13 +16532,16 @@ chartRadar lang =
             "Cairt radair"
 
         Hi ->
-            "रडार मैप"
+            "रडार चार्ट"
 
         Hr ->
             "Radarski grafikon"
 
         Hu ->
             "Sugárdiagram"
+
+        Hy ->
+            "Ռադարային գծապատկեր"
 
         It ->
             "Diagramma Radar"
@@ -12267,7 +16550,7 @@ chartRadar lang =
             "レーダーチャート"
 
         Ka ->
-            "რადარი დიაგრამა"
+            "რადარული დიაგრამა"
 
         Ko ->
             "레이더 차트"
@@ -12281,6 +16564,9 @@ chartRadar lang =
         Nb ->
             "Radardiagram"
 
+        Nl ->
+            "Radardiagram"
+
         Pa ->
             "ਰਾਡਾਰ ਚਾਰਟ"
 
@@ -12292,6 +16578,9 @@ chartRadar lang =
 
         Ro ->
             "Diagramă radar"
+
+        Ru ->
+            "Лепестковая диаграмма"
 
         Sk ->
             "Radarový graf"
@@ -12312,7 +16601,10 @@ chartRadar lang =
             "Radar grafiği"
 
         Tw ->
-            "雷达图"
+            "雷達圖"
+
+        Uk ->
+            "Радарна діаграма"
 
         Ur ->
             "ریڈار چارٹ"
@@ -12328,7 +16620,13 @@ chartBoxplot : Lang -> String
 chartBoxplot lang =
     case lang of
         Am ->
-            "ቦክስ ፕሎት"
+            "የሳጥን ገበታ"
+
+        Ar ->
+            "مخطط صندوقي"
+
+        Bg ->
+            "Диаграма „кутия с мустаци“"
 
         Bn ->
             "বক্স প্লট"
@@ -12348,11 +16646,17 @@ chartBoxplot lang =
         El ->
             "Θηκόγραμμα"
 
+        Es ->
+            "Diagrama de caja"
+
         Et ->
             "Karpdiagramm"
 
         Eu ->
             "Kutxa-diagrama"
+
+        Fa ->
+            "نمودار جعبه‌ای"
 
         Fi ->
             "Laatikkokaavio"
@@ -12371,6 +16675,9 @@ chartBoxplot lang =
 
         Hu ->
             "Dobozdiagram"
+
+        Hy ->
+            "Արկղային գծապատկեր"
 
         It ->
             "Diagramma a scatola"
@@ -12393,6 +16700,9 @@ chartBoxplot lang =
         Nb ->
             "Boksplott"
 
+        Nl ->
+            "Boxplot"
+
         Pa ->
             "ਬਾਕਸਪਲਾਟ"
 
@@ -12404,6 +16714,9 @@ chartBoxplot lang =
 
         Ro ->
             "Diagramă cutie"
+
+        Ru ->
+            "Диаграмма размаха"
 
         Sk ->
             "Krabicový graf"
@@ -12424,13 +16737,16 @@ chartBoxplot lang =
             "Kutu grafiği"
 
         Tw ->
-            "箱型图"
+            "箱形圖"
+
+        Uk ->
+            "Діаграма розмаху"
 
         Ur ->
             "باکس پلاٹ"
 
         Zh ->
-            "箱型图"
+            "箱线图"
 
         _ ->
             "Boxplot"
@@ -12440,10 +16756,13 @@ chartHeatmap : Lang -> String
 chartHeatmap lang =
     case lang of
         Am ->
-            "ሜይፕ ሾስት"
+            "የሙቀት ካርታ"
 
         Ar ->
             "خريطة التمثيل اللوني"
+
+        Bg ->
+            "Топлинна карта"
 
         Bn ->
             "হিটম্যাপ"
@@ -12452,7 +16771,7 @@ chartHeatmap lang =
             "Mapa de calor"
 
         Cs ->
-            "Teplotní mapa"
+            "Tepelná mapa"
 
         Da ->
             "Varmekort"
@@ -12463,11 +16782,17 @@ chartHeatmap lang =
         El ->
             "Θερμικός χάρτης"
 
+        Es ->
+            "Mapa de calor"
+
         Et ->
             "Soojuskaart"
 
         Eu ->
             "Bero-mapa"
+
+        Fa ->
+            "نقشهٔ حرارتی"
 
         Fi ->
             "Lämpökartta"
@@ -12487,6 +16812,9 @@ chartHeatmap lang =
         Hu ->
             "Hőtérkép"
 
+        Hy ->
+            "Ջերմային քարտեզ"
+
         It ->
             "Mappa termica"
 
@@ -12494,7 +16822,7 @@ chartHeatmap lang =
             "ヒートマップ"
 
         Ka ->
-            "თბილობის რუქა"
+            "სითბური რუქა"
 
         Ko ->
             "히트 맵"
@@ -12508,6 +16836,9 @@ chartHeatmap lang =
         Nb ->
             "Varmekart"
 
+        Nl ->
+            "Heatmap"
+
         Pa ->
             "ਹੀਟਮੈਪ"
 
@@ -12519,6 +16850,9 @@ chartHeatmap lang =
 
         Ro ->
             "Hartă termică"
+
+        Ru ->
+            "Тепловая карта"
 
         Sk ->
             "Teplotná mapa"
@@ -12539,7 +16873,10 @@ chartHeatmap lang =
             "Isı haritası"
 
         Tw ->
-            "热力图"
+            "熱度圖"
+
+        Uk ->
+            "Теплова карта"
 
         Ur ->
             "ہیٹ میپ"
@@ -12560,6 +16897,9 @@ chartMap lang =
         Ar ->
             "خريطة"
 
+        Bg ->
+            "Карта"
+
         Bn ->
             "ম্যাপ"
 
@@ -12578,11 +16918,17 @@ chartMap lang =
         El ->
             "Χάρτης"
 
+        Es ->
+            "Mapa"
+
         Et ->
             "Kaart"
 
         Eu ->
             "Mapa"
+
+        Fa ->
+            "نقشه"
 
         Fi ->
             "Kartta"
@@ -12602,6 +16948,9 @@ chartMap lang =
         Hu ->
             "Térkép"
 
+        Hy ->
+            "Քարտեզ"
+
         It ->
             "Mappa"
 
@@ -12612,7 +16961,7 @@ chartMap lang =
             "რუქა"
 
         Ko ->
-            "맵"
+            "지도"
 
         Lt ->
             "Žemėlapis"
@@ -12622,6 +16971,9 @@ chartMap lang =
 
         Nb ->
             "Kart"
+
+        Nl ->
+            "Kaart"
 
         Pa ->
             "ਨਕਸ਼ਾ"
@@ -12634,6 +16986,9 @@ chartMap lang =
 
         Ro ->
             "Hartă"
+
+        Ru ->
+            "Карта"
 
         Sk ->
             "Mapa"
@@ -12648,13 +17003,16 @@ chartMap lang =
             "Karta"
 
         Sw ->
-            "ramani"
+            "Ramani"
 
         Tr ->
             "Harita"
 
         Tw ->
-            "地图"
+            "地圖"
+
+        Uk ->
+            "Карта"
 
         Ur ->
             "نقشہ"
@@ -12670,13 +17028,16 @@ chartParallel : Lang -> String
 chartParallel lang =
     case lang of
         Am ->
-            "ፓራለል ኮይላርድን ቦታ"
+            "የትይዩ መጋጠሚያዎች ገበታ"
 
         Ar ->
-            "متوازي"
+            "مخطط الإحداثيات المتوازية"
+
+        Bg ->
+            "Диаграма с паралелни координати"
 
         Bn ->
-            "প্যারালেল কো\u{0991}র্ডিনেট ম্যাপ"
+            "প্যারালেল কোঅর্ডিনেট ম্যাপ"
 
         Ca ->
             "Gràfic de coordenades paral·leles"
@@ -12693,11 +17054,17 @@ chartParallel lang =
         El ->
             "Διάγραμμα παράλληλων συντεταγμένων"
 
+        Es ->
+            "Gráfico de coordenadas paralelas"
+
         Et ->
             "Paralleelkoordinaatide diagramm"
 
         Eu ->
             "Koordenatu paraleloen diagrama"
+
+        Fa ->
+            "نمودار مختصات موازی"
 
         Fi ->
             "Rinnakkaiskoordinaattikaavio"
@@ -12717,6 +17084,9 @@ chartParallel lang =
         Hu ->
             "Párhuzamos koordinátadiagram"
 
+        Hy ->
+            "Զուգահեռ կոորդինատների գծապատկեր"
+
         It ->
             "Mappa a coordinate parallele"
 
@@ -12727,7 +17097,7 @@ chartParallel lang =
             "პარალელური კოორდინატების რუქა"
 
         Ko ->
-            "평행 좌표 맵"
+            "평행 좌표 그래프"
 
         Lt ->
             "Lygiagrečių koordinačių diagrama"
@@ -12738,6 +17108,12 @@ chartParallel lang =
         Nb ->
             "Diagram med parallelle koordinater"
 
+        Nl ->
+            "Diagram met parallelle coördinaten"
+
+        Pa ->
+            "ਸਮਾਂਤਰ ਕੋਆਰਡੀਨੇਟ ਚਾਰਟ"
+
         Pl ->
             "Wykres współrzędnych równoległych"
 
@@ -12746,6 +17122,9 @@ chartParallel lang =
 
         Ro ->
             "Diagramă cu coordonate paralele"
+
+        Ru ->
+            "Диаграмма параллельных координат"
 
         Sk ->
             "Graf paralelných súradníc"
@@ -12760,13 +17139,16 @@ chartParallel lang =
             "Diagram med parallella koordinater"
 
         Sw ->
-            "Ramani ya kuratibu sambamba"
+            "Chati ya viwianishi sambamba"
 
         Tr ->
             "Paralel koordinat grafiği"
 
         Tw ->
-            "平行坐标图"
+            "平行座標圖"
+
+        Uk ->
+            "Діаграма паралельних координат"
 
         Ur ->
             "متوازی کوآرڈینیٹ نقشہ"
@@ -12782,10 +17164,13 @@ chartLines : Lang -> String
 chartLines lang =
     case lang of
         Am ->
-            "ስብስቦች ሾስት"
+            "የመስመሮች ገበታ"
 
         Ar ->
-            "خطوط"
+            "رسم بياني خطي"
+
+        Bg ->
+            "Линейна графика"
 
         Bn ->
             "লাইন গ্রাফ"
@@ -12805,11 +17190,17 @@ chartLines lang =
         El ->
             "Γραμμικό γράφημα"
 
+        Es ->
+            "Gráfico lineal"
+
         Et ->
             "Joongraafik"
 
         Eu ->
             "Lerro-grafikoa"
+
+        Fa ->
+            "گراف خطی"
 
         Fi ->
             "Viivakuvaaja"
@@ -12821,13 +17212,16 @@ chartLines lang =
             "Líneghraf"
 
         Hi ->
-            "लाइन चार्ट"
+            "लाइन ग्राफ"
 
         Hr ->
             "Linijski graf"
 
         Hu ->
             "Vonalgrafikon"
+
+        Hy ->
+            "Գծային գրաֆիկ"
 
         It ->
             "Grafico a linee"
@@ -12850,6 +17244,12 @@ chartLines lang =
         Nb ->
             "Linjegraf"
 
+        Nl ->
+            "Lijngrafiek"
+
+        Pa ->
+            "ਰੇਖਾ ਗ੍ਰਾਫ਼"
+
         Pl ->
             "Wykres liniowy"
 
@@ -12858,6 +17258,9 @@ chartLines lang =
 
         Ro ->
             "Grafic liniar"
+
+        Ru ->
+            "Линейный график"
 
         Sk ->
             "Čiarový graf"
@@ -12878,7 +17281,10 @@ chartLines lang =
             "Çizgi grafiği"
 
         Tw ->
-            "线图"
+            "線圖"
+
+        Uk ->
+            "Лінійний графік"
 
         Ur ->
             "لائن گراف"
@@ -12894,10 +17300,13 @@ chartGraph : Lang -> String
 chartGraph lang =
     case lang of
         Am ->
-            "ባህሪዎች ሾስት"
+            "የግንኙነት ገበታ"
 
         Ar ->
-            "رسم بياني"
+            "مخطط العلاقات"
+
+        Bg ->
+            "Граф на връзките"
 
         Bn ->
             "সম্পর্ক গ্রাফ"
@@ -12917,11 +17326,17 @@ chartGraph lang =
         El ->
             "Γράφος σχέσεων"
 
+        Es ->
+            "Grafo de relaciones"
+
         Et ->
             "Seoste graaf"
 
         Eu ->
             "Erlazio-grafoa"
+
+        Fa ->
+            "گراف روابط"
 
         Fi ->
             "Suhdeverkko"
@@ -12941,6 +17356,9 @@ chartGraph lang =
         Hu ->
             "Kapcsolati gráf"
 
+        Hy ->
+            "Կապերի գրաֆ"
+
         It ->
             "Grafico delle relazioni"
 
@@ -12948,7 +17366,7 @@ chartGraph lang =
             "関係グラフ"
 
         Ka ->
-            "კავშირების გრაფიკი"
+            "კავშირების გრაფი"
 
         Ko ->
             "관계도"
@@ -12962,6 +17380,12 @@ chartGraph lang =
         Nb ->
             "Relasjonsgraf"
 
+        Nl ->
+            "Relatiegrafiek"
+
+        Pa ->
+            "ਸੰਬੰਧ ਗ੍ਰਾਫ਼"
+
         Pl ->
             "Graf relacji"
 
@@ -12970,6 +17394,9 @@ chartGraph lang =
 
         Ro ->
             "Graf de relații"
+
+        Ru ->
+            "Граф связей"
 
         Sk ->
             "Graf vzťahov"
@@ -12990,7 +17417,10 @@ chartGraph lang =
             "İlişki grafiği"
 
         Tw ->
-            "关系图"
+            "關係圖"
+
+        Uk ->
+            "Граф зв'язків"
 
         Ur ->
             "رابطہ گراف"
@@ -13006,10 +17436,13 @@ chartSankey : Lang -> String
 chartSankey lang =
     case lang of
         Am ->
-            "ሳንኪ ዲዚግም"
+            "የሳንኪ ገበታ"
 
         Ar ->
             "مخطط سانكي"
+
+        Bg ->
+            "Диаграма на Санки"
 
         Bn ->
             "স্যাঙ্কি ডায়াগ্রাম"
@@ -13029,11 +17462,17 @@ chartSankey lang =
         El ->
             "Διάγραμμα Sankey"
 
+        Es ->
+            "Diagrama de Sankey"
+
         Et ->
             "Sankey diagramm"
 
         Eu ->
             "Sankey diagrama"
+
+        Fa ->
+            "نمودار سنکی"
 
         Fi ->
             "Sankey-kaavio"
@@ -13052,6 +17491,9 @@ chartSankey lang =
 
         Hu ->
             "Sankey-diagram"
+
+        Hy ->
+            "Սանկիի դիագրամ"
 
         It ->
             "Diagramma di Sankey"
@@ -13074,6 +17516,12 @@ chartSankey lang =
         Nb ->
             "Sankey-diagram"
 
+        Nl ->
+            "Sankeydiagram"
+
+        Pa ->
+            "ਸੈਂਕੀ ਡਾਇਗ੍ਰਾਮ"
+
         Pl ->
             "Diagram Sankeya"
 
@@ -13082,6 +17530,9 @@ chartSankey lang =
 
         Ro ->
             "Diagramă Sankey"
+
+        Ru ->
+            "Диаграмма Санкея"
 
         Sk ->
             "Sankeyho diagram"
@@ -13096,16 +17547,19 @@ chartSankey lang =
             "Sankeydiagram"
 
         Sw ->
-            "mchoro wa Sankey"
+            "Mchoro wa Sankey"
 
         Tr ->
             "Sankey diyagramı"
 
         Tw ->
-            "桑基图"
+            "桑基圖"
+
+        Uk ->
+            "Діаграма Санкі"
 
         Ur ->
-            "سنکی ڈایاگرام"
+            "سینکی ڈایاگرام"
 
         Zh ->
             "桑基图"
@@ -13118,10 +17572,13 @@ chartFunnel : Lang -> String
 chartFunnel lang =
     case lang of
         Am ->
-            "ፋንኤል ጫን ቦታ"
+            "የማንቆርቆሪያ ገበታ"
 
         Ar ->
             "مخطط قمعي"
+
+        Bg ->
+            "Фунийна диаграма"
 
         Bn ->
             "ফানেল চার্ট"
@@ -13141,11 +17598,17 @@ chartFunnel lang =
         El ->
             "Διάγραμμα χοάνης"
 
+        Es ->
+            "Gráfico de embudo"
+
         Et ->
             "Lehterdiagramm"
 
         Eu ->
             "Inbutu-diagrama"
+
+        Fa ->
+            "نمودار قیفی"
 
         Fi ->
             "Suppilokaavio"
@@ -13165,6 +17628,9 @@ chartFunnel lang =
         Hu ->
             "Tölcsérdiagram"
 
+        Hy ->
+            "Ձագարաձև գծապատկեր"
+
         It ->
             "Grafico a imbuto"
 
@@ -13172,7 +17638,7 @@ chartFunnel lang =
             "ファネルチャート"
 
         Ka ->
-            "ფანელი დიაგრამა"
+            "ძაბრისებრი დიაგრამა"
 
         Ko ->
             "퍼널 차트"
@@ -13186,6 +17652,12 @@ chartFunnel lang =
         Nb ->
             "Traktdiagram"
 
+        Nl ->
+            "Trechterdiagram"
+
+        Pa ->
+            "ਫਨਲ ਚਾਰਟ"
+
         Pl ->
             "Wykres lejkowy"
 
@@ -13194,6 +17666,9 @@ chartFunnel lang =
 
         Ro ->
             "Diagramă pâlnie"
+
+        Ru ->
+            "Диаграмма-воронка"
 
         Sk ->
             "Lievikový graf"
@@ -13214,7 +17689,10 @@ chartFunnel lang =
             "Huni grafiği"
 
         Tw ->
-            "漏斗图"
+            "漏斗圖"
+
+        Uk ->
+            "Воронкова діаграма"
 
         Ur ->
             "فنل چارٹ"
@@ -13229,8 +17707,134 @@ chartFunnel lang =
 chartWordcloud : Lang -> String
 chartWordcloud lang =
     case lang of
+        Am ->
+            "የቃላት ደመና"
+
+        Ar ->
+            "سحابة كلمات"
+
+        Bg ->
+            "Облак от думи"
+
+        Bn ->
+            "ওয়ার্ড ক্লাউড"
+
+        Ca ->
+            "Núvol de paraules"
+
+        Cs ->
+            "Slovní mrak"
+
+        Da ->
+            "Ordsky"
+
         De ->
             "Wortwolke"
+
+        El ->
+            "Σύννεφο λέξεων"
+
+        Es ->
+            "Nube de palabras"
+
+        Et ->
+            "Sõnapilv"
+
+        Eu ->
+            "Hitz-hodeia"
+
+        Fa ->
+            "ابر واژگان"
+
+        Fi ->
+            "Sanapilvi"
+
+        Fr ->
+            "Nuage de mots"
+
+        Ga ->
+            "Scamall focal"
+
+        Hi ->
+            "वर्ड क्लाउड"
+
+        Hr ->
+            "Oblak riječi"
+
+        Hu ->
+            "Szófelhő"
+
+        Hy ->
+            "Բառերի ամպ"
+
+        It ->
+            "Nuvola di parole"
+
+        Ja ->
+            "ワードクラウド"
+
+        Ka ->
+            "სიტყვების ღრუბელი"
+
+        Ko ->
+            "워드 클라우드"
+
+        Lt ->
+            "Žodžių debesis"
+
+        Lv ->
+            "Vārdu mākonis"
+
+        Nb ->
+            "Ordsky"
+
+        Nl ->
+            "Woordwolk"
+
+        Pa ->
+            "ਸ਼ਬਦ ਬੱਦਲ"
+
+        Pl ->
+            "Chmura słów"
+
+        Pt ->
+            "Nuvem de palavras"
+
+        Ro ->
+            "Nor de cuvinte"
+
+        Ru ->
+            "Облако слов"
+
+        Sk ->
+            "Oblak slov"
+
+        Sl ->
+            "Oblak besed"
+
+        Sq ->
+            "Re fjalësh"
+
+        Sv ->
+            "Ordmoln"
+
+        Sw ->
+            "Wingu la maneno"
+
+        Tr ->
+            "Kelime bulutu"
+
+        Tw ->
+            "文字雲"
+
+        Uk ->
+            "Хмара слів"
+
+        Ur ->
+            "ورڈ کلاؤڈ"
+
+        Zh ->
+            "词云"
 
         _ ->
             "Word cloud"
@@ -13324,7 +17928,7 @@ qrCode lang =
             "QR-code voor website"
 
         Pa ->
-            "ਵੈੱਬਸਾਈਟ ਲਈ ਕੁਆਰ ਕੋਡ"
+            "ਵੈੱਬਸਾਈਟ ਲਈ QR ਕੋਡ"
 
         Pl ->
             "Kod QR strony internetowej"
@@ -13357,10 +17961,10 @@ qrCode lang =
             "Web sitesi için QR kodu"
 
         Tw ->
-            "网站二维码"
+            "網站 QR 碼"
 
         Uk ->
-            "QR -код для веб -сайту"
+            "QR-код для вебсайту"
 
         Ur ->
             "ویب سائٹ کے لیے QR کوڈ"
@@ -13372,11 +17976,147 @@ qrCode lang =
             "QR code for website"
 
 
+qrEnlarge : Lang -> String
+qrEnlarge lang =
+    case lang of
+        Am ->
+            "QR ኮድ አስፋ"
+
+        Ar ->
+            "تكبير رمز الاستجابة السريعة"
+
+        Bg ->
+            "Увеличи QR кода"
+
+        Bn ->
+            "QR কোড বড় করুন"
+
+        Ca ->
+            "Amplia el codi QR"
+
+        Cs ->
+            "Zvětšit QR kód"
+
+        Da ->
+            "Forstør QR-kode"
+
+        De ->
+            "QR-Code vergrößern"
+
+        El ->
+            "Μεγέθυνση κωδικού QR"
+
+        Es ->
+            "Ampliar código QR"
+
+        Et ->
+            "Suurenda QR-koodi"
+
+        Eu ->
+            "Handitu QR kodea"
+
+        Fa ->
+            "بزرگ‌نمایی کد QR"
+
+        Fi ->
+            "Suurenna QR-koodi"
+
+        Fr ->
+            "Agrandir le code QR"
+
+        Ga ->
+            "Méadaigh an cód QR"
+
+        Hi ->
+            "क्यूआर कोड बड़ा करें"
+
+        Hr ->
+            "Povećaj QR kod"
+
+        Hu ->
+            "QR-kód nagyítása"
+
+        Hy ->
+            "Մեծացնել QR կոդը"
+
+        It ->
+            "Ingrandisci il codice QR"
+
+        Ja ->
+            "QR コードを拡大"
+
+        Ka ->
+            "QR კოდის გადიდება"
+
+        Ko ->
+            "QR 코드 확대"
+
+        Lt ->
+            "Padidinti QR kodą"
+
+        Lv ->
+            "Palielināt QR kodu"
+
+        Nb ->
+            "Forstørr QR-koden"
+
+        Nl ->
+            "QR-code vergroten"
+
+        Pa ->
+            "QR ਕੋਡ ਵੱਡਾ ਕਰੋ"
+
+        Pl ->
+            "Powiększ kod QR"
+
+        Pt ->
+            "Ampliar código QR"
+
+        Ro ->
+            "Mărește codul QR"
+
+        Ru ->
+            "Увеличить QR-код"
+
+        Sk ->
+            "Zväčšiť QR kód"
+
+        Sl ->
+            "Povečaj kodo QR"
+
+        Sq ->
+            "Zmadho kodin QR"
+
+        Sv ->
+            "Förstora QR-koden"
+
+        Sw ->
+            "Kuza msimbo wa QR"
+
+        Tr ->
+            "QR kodunu büyüt"
+
+        Tw ->
+            "放大 QR 碼"
+
+        Uk ->
+            "Збільшити QR-код"
+
+        Ur ->
+            "QR کوڈ بڑا کریں"
+
+        Zh ->
+            "放大二维码"
+
+        _ ->
+            "Enlarge QR code"
+
+
 qrErr : Lang -> String
 qrErr lang =
     case lang of
         Am ->
-            "ስህተት ያለባቸው በ QR ኮድ ወይም ትክክል አልተመለከተም"
+            "ወደ QR ኮድ በመቀየር ላይ ስህተት ተፈጥሯል"
 
         Ar ->
             "خطأ أثناء الترميز إلى رمز الاستجابة السريعة"
@@ -13460,7 +18200,7 @@ qrErr lang =
             "Fout bij het coderen naar QR-code"
 
         Pa ->
-            "ਕੁਆਰ ਕੋਡ ਨੂੰ ਏਨਕੋਡ ਕਰਨ ਦੌਰਾਨ ਗਲਤੀ ਆਈ ਹੈ"
+            "QR ਕੋਡ ਨੂੰ ਏਨਕੋਡ ਕਰਨ ਦੌਰਾਨ ਗਲਤੀ ਆਈ ਹੈ"
 
         Pl ->
             "Błąd podczas tworzenia kodu QR"
@@ -13493,10 +18233,10 @@ qrErr lang =
             "QR kodu oluşturulurken hata oluştu"
 
         Tw ->
-            "编码为二维码时出错"
+            "編碼為 QR 碼時出錯"
 
         Uk ->
-            "Помилка під час кодування в QR -код"
+            "Помилка під час кодування в QR-код"
 
         Ur ->
             "QR کوڈ میں انکوڈ کرتے وقت خرابی"
@@ -13508,11 +18248,283 @@ qrErr lang =
             "Error while encoding to QR code"
 
 
+chatMessage : Lang -> String
+chatMessage lang =
+    case lang of
+        Am ->
+            "የውይይት መልእክት"
+
+        Ar ->
+            "رسالة دردشة"
+
+        Bg ->
+            "Съобщение в чата"
+
+        Bn ->
+            "চ্যাট বার্তা"
+
+        Ca ->
+            "Missatge de xat"
+
+        Cs ->
+            "Zpráva do chatu"
+
+        Da ->
+            "Chatbesked"
+
+        De ->
+            "Chat-Nachricht"
+
+        El ->
+            "Μήνυμα συνομιλίας"
+
+        Es ->
+            "Mensaje de chat"
+
+        Et ->
+            "Vestlussõnum"
+
+        Eu ->
+            "Txat-mezua"
+
+        Fa ->
+            "پیام گفتگو"
+
+        Fi ->
+            "Keskusteluviesti"
+
+        Fr ->
+            "Message de chat"
+
+        Ga ->
+            "Teachtaireacht chomhrá"
+
+        Hi ->
+            "चैट संदेश"
+
+        Hr ->
+            "Poruka u razgovoru"
+
+        Hu ->
+            "Csevegőüzenet"
+
+        Hy ->
+            "Զրույցի հաղորդագրություն"
+
+        It ->
+            "Messaggio della chat"
+
+        Ja ->
+            "チャットメッセージ"
+
+        Ka ->
+            "ჩატის შეტყობინება"
+
+        Ko ->
+            "채팅 메시지"
+
+        Lt ->
+            "Pokalbio žinutė"
+
+        Lv ->
+            "Tērzēšanas ziņojums"
+
+        Nb ->
+            "Chatmelding"
+
+        Nl ->
+            "Chatbericht"
+
+        Pa ->
+            "ਚੈਟ ਸੁਨੇਹਾ"
+
+        Pl ->
+            "Wiadomość czatu"
+
+        Pt ->
+            "Mensagem de chat"
+
+        Ro ->
+            "Mesaj în conversație"
+
+        Ru ->
+            "Сообщение чата"
+
+        Sk ->
+            "Správa v čete"
+
+        Sl ->
+            "Sporočilo v klepetu"
+
+        Sq ->
+            "Mesazh bisede"
+
+        Sv ->
+            "Chattmeddelande"
+
+        Sw ->
+            "Ujumbe wa gumzo"
+
+        Tr ->
+            "Sohbet mesajı"
+
+        Tw ->
+            "聊天訊息"
+
+        Uk ->
+            "Повідомлення чату"
+
+        Ur ->
+            "چیٹ پیغام"
+
+        Zh ->
+            "聊天消息"
+
+        _ ->
+            "Chat message"
+
+
+chatUnverified : Lang -> String
+chatUnverified lang =
+    case lang of
+        Am ->
+            "ያልተረጋገጠ ላኪ"
+
+        Ar ->
+            "مرسل غير موثّق"
+
+        Bg ->
+            "Непотвърден подател"
+
+        Bn ->
+            "অযাচাইকৃত প্রেরক"
+
+        Ca ->
+            "Remitent no verificat"
+
+        Cs ->
+            "Neověřený odesílatel"
+
+        Da ->
+            "Ubekræftet afsender"
+
+        De ->
+            "Unbestätigter Absender"
+
+        El ->
+            "Μη επαληθευμένος αποστολέας"
+
+        Es ->
+            "Remitente no verificado"
+
+        Et ->
+            "Kinnitamata saatja"
+
+        Eu ->
+            "Egiaztatu gabeko igorlea"
+
+        Fa ->
+            "فرستندهٔ تأییدنشده"
+
+        Fi ->
+            "Vahvistamaton lähettäjä"
+
+        Fr ->
+            "Expéditeur non vérifié"
+
+        Ga ->
+            "Seoltóir neamhfhíoraithe"
+
+        Hi ->
+            "असत्यापित प्रेषक"
+
+        Hr ->
+            "Neprovjereni pošiljatelj"
+
+        Hu ->
+            "Nem ellenőrzött feladó"
+
+        Hy ->
+            "Չհաստատված ուղարկող"
+
+        It ->
+            "Mittente non verificato"
+
+        Ja ->
+            "未確認の送信者"
+
+        Ka ->
+            "დაუდასტურებელი გამგზავნი"
+
+        Ko ->
+            "확인되지 않은 보낸 사람"
+
+        Lt ->
+            "Nepatvirtintas siuntėjas"
+
+        Lv ->
+            "Nepārbaudīts sūtītājs"
+
+        Nb ->
+            "Ubekreftet avsender"
+
+        Nl ->
+            "Niet-geverifieerde afzender"
+
+        Pa ->
+            "ਅਪ੍ਰਮਾਣਿਤ ਭੇਜਣ ਵਾਲਾ"
+
+        Pl ->
+            "Niezweryfikowany nadawca"
+
+        Pt ->
+            "Remetente não verificado"
+
+        Ro ->
+            "Expeditor neverificat"
+
+        Ru ->
+            "Неподтверждённый отправитель"
+
+        Sk ->
+            "Neoverený odosielateľ"
+
+        Sl ->
+            "Nepreverjen pošiljatelj"
+
+        Sq ->
+            "Dërgues i paverifikuar"
+
+        Sv ->
+            "Overifierad avsändare"
+
+        Sw ->
+            "Mtumaji asiyethibitishwa"
+
+        Tr ->
+            "Doğrulanmamış gönderen"
+
+        Tw ->
+            "未驗證的傳送者"
+
+        Uk ->
+            "Неперевірений відправник"
+
+        Ur ->
+            "غیر تصدیق شدہ بھیجنے والا"
+
+        Zh ->
+            "未验证的发送者"
+
+        _ ->
+            "Unverified sender"
+
+
 chatOpen : Lang -> String
 chatOpen lang =
     case lang of
         Am ->
-            "ቀዳሚ ማድረግ"
+            "ውይይት ክፈት"
 
         Ar ->
             "فتح الدردشة"
@@ -13569,7 +18581,7 @@ chatOpen lang =
             "Csevegés megnyitása"
 
         Hy ->
-            "Բացել խոսակցություն"
+            "Բացել զրույցը"
 
         It ->
             "Aprire la chat"
@@ -13578,7 +18590,7 @@ chatOpen lang =
             "チャットを開く"
 
         Ka ->
-            "ჩატი გახსნა"
+            "ჩატის გახსნა"
 
         Ko ->
             "채팅 열기"
@@ -13648,7 +18660,7 @@ chatClose : Lang -> String
 chatClose lang =
     case lang of
         Am ->
-            "ዝጋት ያድርጉ"
+            "ውይይት ዝጋ"
 
         Ar ->
             "إغلاق الدردشة"
@@ -13705,7 +18717,7 @@ chatClose lang =
             "Csevegés bezárása"
 
         Hy ->
-            "Փակել խոսակցություն"
+            "Փակել զրույցը"
 
         It ->
             "Chiudere la chat"
@@ -13714,7 +18726,7 @@ chatClose lang =
             "チャットを閉じる"
 
         Ka ->
-            "ჩატი დახურვა"
+            "ჩატის დახურვა"
 
         Ko ->
             "채팅 닫기"
@@ -13784,7 +18796,7 @@ chatNew : Lang -> String
 chatNew lang =
     case lang of
         Am ->
-            "የተከፈሉ የቀዳሚ መልዕክቶች አልተመለከተም"
+            "ያልተነበቡ የውይይት መልእክቶች አሉዎት"
 
         Ar ->
             "لديك رسائل دردشة غير مقروءة"
@@ -13793,7 +18805,7 @@ chatNew lang =
             "Имате непрочетени чат съобщения"
 
         Bn ->
-            "আপনার অপঠিত চ্যাট বার্তাগুলি আছে"
+            "আপনার অপঠিত চ্যাট বার্তা আছে"
 
         Ca ->
             "Tens missatges de xat sense llegir"
@@ -13820,7 +18832,7 @@ chatNew lang =
             "Irakurri gabeko txat-mezuak dituzu"
 
         Fa ->
-            "شما پیام\u{200C}های چت خوانده نشده دارید"
+            "پیام‌های گفتگوی خوانده‌نشده دارید"
 
         Fi ->
             "Sinulla on lukemattomia keskusteluviestejä"
@@ -13841,7 +18853,7 @@ chatNew lang =
             "Olvasatlan csevegőüzeneteid vannak"
 
         Hy ->
-            "Դուք ունեք չկարդացված խոսածքներ խոսակցության մեջ"
+            "Դուք ունեք չկարդացված հաղորդագրություններ զրույցում"
 
         It ->
             "Ci sono messaggi di chat non letti"
@@ -13850,7 +18862,7 @@ chatNew lang =
             "未読のチャットメッセージがあります"
 
         Ka ->
-            "გაქვთ არაკითხული ჩატის შეტყობინებები"
+            "გაქვთ წაუკითხავი ჩატის შეტყობინებები"
 
         Ko ->
             "읽지 않은 채팅 메시지가 있습니다"
@@ -13868,7 +18880,7 @@ chatNew lang =
             "Je hebt ongelezen chatberichten"
 
         Pa ->
-            "ਤੁਸੀਂ ਨਾ-ਪੜ੍ਹੇ ਚੈਟ ਸੁਨੇਹੇ ਹਨ"
+            "ਤੁਹਾਡੇ ਕੋਲ ਨਾ-ਪੜ੍ਹੇ ਚੈਟ ਸੁਨੇਹੇ ਹਨ"
 
         Pl ->
             "Masz nieprzeczytane wiadomości na czacie"
@@ -13895,22 +18907,22 @@ chatNew lang =
             "Du har olästa chattmeddelanden"
 
         Sw ->
-            "Una ujumbe wa gumzo usio soma"
+            "Una ujumbe wa gumzo ambao haujasomwa"
 
         Tr ->
             "Okunmamış sohbet mesajlarınız var"
 
         Tw ->
-            "你有未讀的聊天訊息"
+            "您有未讀的聊天訊息"
 
         Uk ->
             "У вас є непрочитані повідомлення в чаті"
 
         Ur ->
-            "آپ کے پاس ان پڑھی چیٹ پیغامات ہیں"
+            "آپ کے پاس ان پڑھے چیٹ پیغامات ہیں"
 
         Zh ->
-            "你有未读的聊天消息"
+            "您有未读的聊天消息"
 
         _ ->
             "You have unread chat messages"
@@ -13977,7 +18989,7 @@ chatSend lang =
             "Üzenet küldése"
 
         Hy ->
-            "Ուղարկել նամակ"
+            "Ուղարկել հաղորդագրությունը"
 
         It ->
             "Invia messaggio"
@@ -14050,3 +19062,4 @@ chatSend lang =
 
         _ ->
             "Send message"
+

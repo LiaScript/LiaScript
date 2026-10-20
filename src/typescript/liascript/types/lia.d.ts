@@ -33,6 +33,7 @@ export type Settings = {
   lang: Lang
   dir: 'ltr' | 'rtl'
   tooltips: boolean
+  decals?: boolean
   preferBrowserTTS: boolean
   hideVideoComments: boolean
   audio: {

@@ -11,7 +11,7 @@ import Lia.Sync.Classroom as Classroom
 import Lia.Sync.Types as Sync exposing (ClassroomMode(..), State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
 import Lia.Sync.Via as Backend exposing (Backend)
-import Lia.Utils exposing (btn, btnIcon, formatDate, icon)
+import Lia.Utils exposing (btn, btnIcon, combobox, dropdownList, formatDate, icon)
 
 
 view : Sync.Settings -> Html Msg
@@ -25,7 +25,7 @@ view settings =
         [ Html.h1
             [ Attr.style "text-align" "center"
             , Attr.id "lia-modal-focus"
-            , Attr.tabindex 0
+            , Attr.tabindex -1
             ]
             [ Html.text "Classroom"
             , Html.img
@@ -349,7 +349,7 @@ viewError message =
 
         Just msg ->
             Html.div
-                [ Attr.style "margin-block-start" "2rem", Attr.style "font-weight" "bold" ]
+                [ Attr.style "margin-block-start" "2rem", Attr.style "font-weight" "bold", A11y_Role.alert ]
                 [ Html.text <| "Error: " ++ msg ]
 
 
@@ -460,6 +460,7 @@ savedCard deletePopup entry =
                     [ Attr.class "lia-classroom__card-title"
                     , Attr.value meta.title
                     , Attr.placeholder entry.room
+                    , A11y_Aria.label "Classroom title"
                     , Event.onInput (\title -> EditMeta entry { meta | title = title })
                     , Event.onBlur (SaveMeta entry)
                     ]
@@ -479,6 +480,7 @@ savedCard deletePopup entry =
                 [ Attr.class "lia-classroom__card-notes"
                 , Attr.rows 1
                 , Attr.placeholder "Add a comment…"
+                , A11y_Aria.label "Comment"
                 , Attr.value meta.notes
                 , Event.onInput (\notes -> EditMeta entry { meta | notes = notes })
                 , Event.onBlur (SaveMeta entry)
@@ -501,6 +503,7 @@ savedCard deletePopup entry =
                                         { text = "Delete this saved classroom and its locally cached content? This cannot be undone."
                                         , action = { msg = ConfirmDeleteClassroom entry.room entry.backend, text = "Delete" }
                                         , escape = CancelDeleteClassroom
+                                        , abort = CancelDeleteClassroom
                                         }
 
                                 else
@@ -555,30 +558,25 @@ select label editable sync =
 
         toggle =
             Open (not sync.open)
+
+        listID =
+            "lia-sync-backend-list"
     in
     Html.map Backend <|
-        Html.label []
-            [ Html.span [ Attr.class "lia-label" ] [ Html.text label ]
+        Html.div []
+            [ Html.span [ Attr.class "lia-label", Attr.id "lia-sync-backend-label" ] [ Html.text label ]
             , Html.br [] []
             , Html.div
                 (Attr.class "lia-dropdown"
                     :: (if editable then
-                            [ Event.onClick toggle
-                            , A11y_Key.onKeyDown [ A11y_Key.enter toggle, A11y_Key.space toggle ]
-                            ]
+                            [ Event.onClick toggle ]
 
                         else
-                            [ Attr.disabled True ]
+                            [ Attr.class "is-disabled" ]
                        )
                 )
                 [ Html.div
-                    [ Attr.class "lia-dropdown__selected"
-                    , A11y_Aria.hidden False
-                    , A11y_Role.button
-                    , Attr.tabindex 0
-                    , A11y_Aria.expanded isOpen
-                    , A11y_Aria.disabled (not editable)
-                    ]
+                    (combobox listID isOpen (not editable) (A11y_Aria.labelledBy "lia-sync-backend-label"))
                     [ case sync.select of
                         Nothing ->
                             Html.text "Choose a backend…"
@@ -594,43 +592,42 @@ select label editable sync =
                                     else
                                         " icon-chevron-down"
                                    )
-                        , A11y_Role.button
+                        , A11y_Aria.hidden True
                         ]
                         []
                     ]
                 , sync.support
                     |> (if isOpen then
-                            List.map (Just >> option)
-                                >> (::) (option Nothing)
+                            List.map Just
+                                >> (::) Nothing
+                                >> List.indexedMap (option listID sync.select)
 
                         else
                             always []
                        )
                     |> Html.div
-                        [ Attr.class "lia-dropdown__options"
-                        , Attr.tabindex -1
-                        , Attr.class <|
-                            if isOpen then
-                                "is-visible"
+                        (dropdownList listID
+                            isOpen
+                            [ Attr.class "lia-dropdown__options"
+                            , Attr.class <|
+                                if isOpen then
+                                    "is-visible"
 
-                            else
-                                "is-hidden"
-                        ]
+                                else
+                                    "is-hidden"
+                            ]
+                        )
                 ]
             ]
 
 
-option : Maybe ( Bool, Backend ) -> Html SyncMsg
-option via =
+option : String -> Maybe ( Bool, Backend ) -> Int -> Maybe ( Bool, Backend ) -> Html SyncMsg
+option listID selected i via =
     Html.div
         [ Event.onClick (Select via)
-        , Attr.tabindex 0
-        , A11y_Key.onKeyDown
-            [ Select via
-                |> A11y_Key.enter
-            , Select via
-                |> A11y_Key.space
-            ]
+        , Attr.id (listID ++ "-" ++ String.fromInt i)
+        , A11y_Role.option
+        , A11y_Aria.selected (via == selected)
         ]
         [ maybeSelect via
         , via

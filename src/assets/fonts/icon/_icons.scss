@@ -680,12 +680,17 @@ $icon-websocket: "\EA5D";
   content: $icon-websocket
 }
 
-$icon-zoom-out: "\EA5E";
+$icon-wordcloud: "\EA5E";
+.icon-wordcloud:before {
+  content: $icon-wordcloud
+}
+
+$icon-zoom-out: "\EA5F";
 .icon-zoom-out:before {
   content: $icon-zoom-out
 }
 
-$icon-zoom: "\EA5F";
+$icon-zoom: "\EA60";
 .icon-zoom:before {
   content: $icon-zoom
 }

@@ -1,5 +1,6 @@
 @use '../00_settings/settings.global';
 @use '../01_tools/tools.breakpoints';
+@use '../01_tools/tools.color' as color;
 
 $responsive-voice-hight: 5rem;
 
@@ -33,8 +34,8 @@ $responsive-voice-hight: 5rem;
       align-items: center;
       justify-content: center;
 
-      &:not(:disabled) {
-        border-color: rgb(var(--color-highlight));
+      &:not(:disabled):not([aria-disabled='true']) {
+        border-color: var(--color-accent);
       }
     }
 
@@ -57,8 +58,8 @@ $responsive-voice-hight: 5rem;
       }
     }
 
-    & > *:first-child:not(:disabled) + * {
-      border-inline-start-color: rgb(var(--color-highlight));
+    & > *:first-child:not(:disabled):not([aria-disabled='true']) + * {
+      border-inline-start-color: var(--color-accent);
     }
   }
 
@@ -72,8 +73,11 @@ $responsive-voice-hight: 5rem;
     text-align: center;
   }
 
+  // no highlight is readable on anthracite in every theme
   @at-root html.lia-variant-dark & {
     background-color: rgb(var(--lia-anthracite));
+    color: rgb(var(--lia-white));
+    @include color.dark-accent-on-anthracite;
   }
 
   @include tools.breakpoint('xs') {

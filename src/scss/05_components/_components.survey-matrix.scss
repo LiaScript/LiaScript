@@ -25,7 +25,8 @@
   }
 
   &__row {
-    &:last-child > td {
+    &:last-child > td,
+    &:last-child > th {
       border-block-end: 0;
     }
 
@@ -33,10 +34,17 @@
       border-inline-start: 0;
     }
 
-    td:last-child {
+    td:last-child,
+    th:last-child {
       max-width: 50rem;
       min-width: 20rem;
       border-inline-end: 0;
     }
   }
+}
+
+// the statement of a row is its header (th scope=row), but looks like a cell
+th.lia-survey-matrix__data {
+  font-weight: inherit;
+  text-align: start;
 }
