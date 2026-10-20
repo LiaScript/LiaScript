@@ -22,6 +22,7 @@ import Conditional.List as CList
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
+import Html.Keyed as Keyed
 import I18n.Translations as Translations
     exposing
         ( Lang
@@ -541,7 +542,7 @@ viewState config elem quiz renderedOptions =
         ( Block_State s, Block_Type q ) ->
             ( []
             , s
-                |> Block.view config elem.opt.randomize ( elem.solved, elem.trial ) q
+                |> Block.view ("lia-quiz-" ++ String.fromInt config.slide ++ "-" ++ String.fromInt quiz.id) config elem.opt.randomize ( elem.solved, elem.trial ) q
                 |> List.map
                     (Html.map
                         (\msg ->
@@ -562,6 +563,7 @@ viewState config elem quiz renderedOptions =
 
         ( Vector_State s, Vector_Type q ) ->
             Vector.view
+                ("lia-quiz-" ++ String.fromInt config.slide ++ "-" ++ String.fromInt quiz.id)
                 (elem.solved == Solution.Open)
                 (Solution.toClass ( elem.solved, elem.trial ) Nothing)
                 quiz.id
@@ -573,6 +575,7 @@ viewState config elem quiz renderedOptions =
         ( Matrix_State s, Matrix_Type q ) ->
             ( []
             , [ { config = config
+                , base = "lia-quiz-" ++ String.fromInt config.slide ++ "-" ++ String.fromInt quiz.id
                 , shuffle = shuffle elem.opt.randomize
                 , open = elem.solved == Solution.Open
                 , class = Solution.toClass ( elem.solved, elem.trial )
@@ -613,8 +616,13 @@ viewQuiz config labeledBy state quiz renderedHints ( attr, body ) =
                     |> Maybe.map A11y_Aria.labelledBy
                     |> Maybe.withDefault (Attr.class "")
                )
-            :: attr
-            |> CList.addIf (state.solved == Solution.ReSolved) A11y_Live.polite
+            -- aria-labelledby is ignored on elements without a role
+            :: (if List.isEmpty attr then
+                    [ A11y_Role.group ]
+
+                else
+                    attr
+               )
         )
         body
     , Html.div [ Attr.class "lia-quiz__control" ]
@@ -646,18 +654,15 @@ viewFeedback : Config Main.Msg -> Int -> Element -> Html Main.Msg
 viewFeedback config id state =
     let
         feedback color =
-            Html.div
-                [ Attr.class ("lia-quiz__feedback " ++ color)
-                , Attr.id ("lia-quiz-feedback-" ++ String.fromInt id)
-                , A11y_Live.polite
-                ]
+            Html.div [ Attr.class ("lia-quiz__feedback " ++ color) ]
+                >> Just
     in
-    if state.error_msg /= "" then
+    (if state.error_msg /= "" then
         feedback "text-error"
             [ Html.text state.error_msg
             ]
 
-    else
+     else
         case state.solved of
             Solution.Solved ->
                 feedback "text-success"
@@ -678,7 +683,7 @@ viewFeedback config id state =
 
             Solution.Open ->
                 if state.trial == 0 then
-                    Html.text ""
+                    Nothing
 
                 else
                     feedback "text-error"
@@ -687,6 +692,16 @@ viewFeedback config id state =
                             state.opt.text_failed
                             quizAnswerError
                         ]
+    )
+        -- the status region exists from the beginning, otherwise the first
+        -- feedback is not announced, every trial replaces its content, thus
+        -- also a repeated message gets announced again
+        |> Maybe.map (Tuple.pair (String.fromInt state.trial) >> List.singleton)
+        |> Maybe.withDefault []
+        |> Keyed.node "div"
+            [ Attr.id ("lia-quiz-feedback-" ++ String.fromInt id)
+            , A11y_Role.status
+            ]
 
 
 {-| **private:** Show the `custom` feedback text, if defined, otherwise the
@@ -720,7 +735,7 @@ viewSolutionButton { config, hidden, solution, msg, deactivated } =
 
             else
                 Nothing
-        , tabbable = not hidden && solution == Solution.Open
+        , tabbable = not hidden
         , icon = "icon-resolve"
         }
         [ Attr.classList
@@ -744,7 +759,7 @@ viewMainButton config trials isDeactivated solution quizId typeOf =
 
             else
                 Nothing
-        , tabbable = solution == Solution.Open
+        , tabbable = True
         }
         [ Attr.class "lia-btn--outline lia-quiz__check", A11y_Aria.label (quizLabelCheck config.lang) ]
         [ Html.text (quizCheck config.lang)

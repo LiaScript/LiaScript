@@ -24,11 +24,13 @@ import Lia.Markdown.Code.Sync as Sync_ exposing (Sync)
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Model, Project, Vector, loadVersion, updateVersion)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
+import Process
 import Return exposing (Return)
 import Service.Event as PEvent exposing (Event)
 import Service.Script as Script exposing (Eval)
 import Service.Slide
 import Service.Sync as Sync
+import Task
 
 
 {-| Most messages carry the project id (the index in `evaluate`) and
@@ -50,6 +52,7 @@ type Msg
     | Resize Code String
     | ToggleSync Int
     | CopyToClipboard Code Int
+    | ResetCopied Code Int
 
 
 port copyToClipboard : String -> Cmd msg
@@ -66,7 +69,7 @@ handle =
 `sectionID` is `Nothing` within subsections, there nothing gets stored.
 Without a classroom (anymore) all projects are back in the local editor.
 -}
-update : Array Sync -> Maybe Int -> Scripts a -> Msg -> Model -> Return Model msg sub
+update : Array Sync -> Maybe Int -> Scripts a -> Msg -> Model -> Return Model Msg sub
 update sync sectionID scripts msg model =
     process sync sectionID scripts msg <|
         if Array.isEmpty sync then
@@ -76,7 +79,7 @@ update sync sectionID scripts msg model =
             model
 
 
-process : Array Sync -> Maybe Int -> Scripts a -> Msg -> Model -> Return Model msg sub
+process : Array Sync -> Maybe Int -> Scripts a -> Msg -> Model -> Return Model Msg sub
 process sync sectionID scripts msg model =
     case msg of
         Eval id ->
@@ -224,9 +227,25 @@ process sync sectionID scripts msg model =
                         Highlight _ ->
                             local model.highlight
             in
-            model
+            { model | copied = Just ( project, fileID ) }
                 |> Return.val
-                |> Return.cmd (copyToClipboard code)
+                |> Return.batchCmd
+                    [ copyToClipboard code
+                    , Process.sleep 2000
+                        |> Task.perform (always (ResetCopied project fileID))
+                    ]
+
+        ResetCopied project fileID ->
+            -- a later copy keeps its own confirmation
+            -- ponytail: the reset goes to the active section, leaving it within
+            -- the 2s keeps the check icon there until the next copy
+            (if model.copied == Just ( project, fileID ) then
+                { model | copied = Nothing }
+
+             else
+                model
+            )
+                |> Return.val
 
 
 idOf : Code -> Int

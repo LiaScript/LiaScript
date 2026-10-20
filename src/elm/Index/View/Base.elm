@@ -4,6 +4,7 @@ import Const
 import Html exposing (Attribute)
 import Html.Attributes as Attr
 import Lia.Parser.PatReplace exposing (link)
+import Lia.Utils exposing (newTab)
 
 
 href : String -> Attribute msg
@@ -18,21 +19,21 @@ view =
             [ Attr.class "lia-paragraph" ]
             [ Html.text "If you cannot see any courses in this list, try out one of the following links, to get more information about this project and to visit some examples and free interactive books."
             ]
-        , Html.u
-            []
+        , Html.ul
+            [ Attr.class "lia-list--unordered" ]
             [ Html.li []
                 [ Html.a
-                    [ Attr.href Const.urlLiascript, Attr.target "_blank" ]
+                    (Attr.href Const.urlLiascript :: newTab)
                     [ Html.text "Project-Website" ]
                 ]
             , Html.li []
                 [ Html.a
-                    [ href "https://raw.githubusercontent.com/liaScript/docs/master/README.md", Attr.target "_blank" ]
+                    (href "https://raw.githubusercontent.com/liaScript/docs/master/README.md" :: newTab)
                     [ Html.text "Project-Documentation" ]
                 ]
             , Html.li []
                 [ Html.a
-                    [ href "https://raw.githubusercontent.com/liaScript/index/master/README.md", Attr.target "_blank" ]
+                    (href "https://raw.githubusercontent.com/liaScript/index/master/README.md" :: newTab)
                     [ Html.text "Index" ]
                 ]
             ]

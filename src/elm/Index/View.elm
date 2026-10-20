@@ -5,14 +5,14 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onInput)
 import I18n.Translations exposing (Lang(..))
-import Index.Model exposing (Course, Modal(..), Model)
+import Index.Model exposing (Course, Modal(..), Model, urlInputID)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
 import Index.View.Card exposing (card)
 import Index.View.Modal as Modal
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.View as Settings
-import Lia.Utils exposing (blockKeydown, btn, deactivate)
+import Lia.Utils exposing (btn, deactivate, newTab, newTabHint)
 import Library.Masonry as Masonry
 import Session exposing (Session)
 
@@ -45,10 +45,13 @@ view session settings model =
                     Attr.style "min-width" "100%"
                 ]
                 [ Html.h1 [] [ Html.text "LiaScript: Open-courSe" ]
+
+                -- the page is English, so is the hint for links in a new tab
+                , newTabHint En
                 , Html.p []
                     [ Html.text "( ... search a list of free LiaScript courses and related material on "
                     , Html.a
-                        [ Attr.href "https://github.com/topics/liascript", Attr.target "_blank" ]
+                        (Attr.href "https://github.com/topics/liascript" :: newTab)
                         [ Html.text "GitHub" ]
                     , Html.text " )"
                     ]
@@ -102,8 +105,8 @@ searchBar url =
             , onInput Input
             , Attr.value url
             , Attr.placeholder "course-url"
-            , Attr.class "lia-input border-grey-light max-w-50 mr-1 mb-1"
-            , blockKeydown NoOp
+            , Attr.id urlInputID
+            , Attr.class "lia-input border-highlight max-w-50 mr-1 mb-1"
             ]
             []
         , let

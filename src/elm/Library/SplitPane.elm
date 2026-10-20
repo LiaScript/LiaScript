@@ -60,6 +60,7 @@ type Msg
     = SplitterClick { x : Maybe Int, width : Int }
     | SplitterMove Int
     | SplitterLeftAlone
+    | SplitterSet Float
 
 
 {-| Start, follow and end dragging the splitter.
@@ -85,6 +86,9 @@ update msg (State state) =
                 , drag = Just { width = width, x = newX }
                 }
 
+        ( _, SplitterSet position ) ->
+            State { state | position = clamp 0.1 0.9 position }
+
         _ ->
             State state
 
@@ -108,10 +112,11 @@ subscriptions (State state) =
 -- VIEW
 
 
-{-| Render the two panes and the splitter, `toMsg` wraps the splitter events.
+{-| Render the two panes and the splitter, `toMsg` wraps the splitter events,
+`label` names the splitter for screen readers.
 -}
-view : Visible -> (Msg -> msg) -> Html msg -> Html msg -> State -> Html msg
-view visible toMsg firstView secondView (State state) =
+view : String -> Visible -> (Msg -> msg) -> Html msg -> Html msg -> State -> Html msg
+view label visible toMsg firstView secondView (State state) =
     div
         [ class "pane-container"
         , style "overflow" "hidden"
@@ -139,7 +144,7 @@ view visible toMsg firstView secondView (State state) =
                     )
             )
             [ firstView ]
-        , viewSplitter visible |> Html.map toMsg
+        , viewSplitter label visible state.position |> Html.map toMsg
         , div
             (class "pane-second-view"
                 :: paneStyle (visible /= OnlyFirst)
@@ -173,12 +178,46 @@ paneStyle visible flex =
     ]
 
 
-{-| **@private:** The splitter, hidden unless both panes are shown.
+{-| **@private:** The splitter, hidden unless both panes are shown. It can be
+moved with the arrow keys too, Home and End move it to the borders.
 -}
-viewSplitter : Visible -> Html Msg
-viewSplitter visible =
+viewSplitter : String -> Visible -> Float -> Html Msg
+viewSplitter label visible position =
     span
         ([ on "mousedown" False click
+         , Html.Attributes.attribute "role" "separator"
+         , Html.Attributes.attribute "aria-orientation" "vertical"
+         , Html.Attributes.attribute "aria-label" label
+         , Html.Attributes.attribute "aria-valuemin" "10"
+         , Html.Attributes.attribute "aria-valuemax" "90"
+         , Html.Attributes.attribute "aria-valuenow" (String.fromInt (round (position * 100)))
+         , Html.Attributes.tabindex
+            (if visible == Both then
+                0
+
+             else
+                -1
+            )
+         , JD.field "key" JD.string
+            |> JD.andThen
+                (\key ->
+                    case key of
+                        "ArrowLeft" ->
+                            JD.succeed ( SplitterSet (position - 0.05), True )
+
+                        "ArrowRight" ->
+                            JD.succeed ( SplitterSet (position + 0.05), True )
+
+                        "Home" ->
+                            JD.succeed ( SplitterSet 0.1, True )
+
+                        "End" ->
+                            JD.succeed ( SplitterSet 0.9, True )
+
+                        _ ->
+                            JD.fail "no splitter key"
+                )
+            |> Html.Events.preventDefaultOn "keydown"
          , on "touchstart" True click
          , on "touchend" True (JD.map (always SplitterLeftAlone) parentWidth)
          , on "touchmove" True (JD.map2 always (JD.map SplitterMove clientX) parentWidth)

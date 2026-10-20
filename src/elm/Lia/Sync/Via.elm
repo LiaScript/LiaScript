@@ -963,7 +963,7 @@ trysteroRelayHint kind =
 
 link : String -> String -> Html msg
 link title url =
-    Html.a [ Attr.href url, Attr.target "_blank" ] [ Html.text title ]
+    Html.a (Attr.href url :: Util.newTab) [ Html.text title ]
 
 
 view : Bool -> Bool -> Backend -> Html Msg

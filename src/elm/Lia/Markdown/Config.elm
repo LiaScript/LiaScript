@@ -36,6 +36,7 @@ type alias Config sub =
     , light : Bool
     , screen : Screen
     , main : Inline.Config sub
+    , sound : Bool
     }
 
 
@@ -89,6 +90,7 @@ init lang translations settings sync screen id formulas media section =
         else
             screen
     , main = main
+    , sound = settings.sound
     }
 
 

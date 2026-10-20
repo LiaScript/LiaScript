@@ -4,6 +4,7 @@
 
 .lia-accordion {
   &__header {
+    --focus-ring-color: rgb(var(--lia-white));
     background-color: rgb(var(--color-highlight));
     display: flex;
     align-items: center;

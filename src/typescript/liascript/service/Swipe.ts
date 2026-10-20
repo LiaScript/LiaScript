@@ -19,6 +19,22 @@ enum Dir {
 }
 
 /**
+ * **Helper:** Is `el` or one of its parents up to `surface` horizontally
+ * scrollable?
+ */
+function scrollsX(el: Element | null, surface: HTMLElement): boolean {
+  for (; el && el !== surface; el = el.parentElement) {
+    if (
+      el.scrollWidth > el.clientWidth &&
+      /auto|scroll/.test(getComputedStyle(el).overflowX)
+    ) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
  * **Helper:** Simple Swipe detection function.
  *
  * @param el - HTML to look for touch events
@@ -77,10 +93,14 @@ function detect(el: HTMLElement, callback: (_: Dir) => void) {
       swipeDir = Dir.none
       startX = touchObj.pageX
       startY = touchObj.pageY
-      // a touch on a draggable element is a (polyfilled) drag & drop, never a swipe
-      startTime = (e.target as Element)?.closest?.('[draggable="true"]')
-        ? 0
-        : new Date().getTime() // record time when finger first makes contact with surface
+      // a touch on a draggable element is a (polyfilled) drag & drop and one
+      // within a horizontally scrolling element (gallery, wide table) scrolls
+      // it, never a swipe
+      const target = e.target as Element
+      startTime =
+        target?.closest?.('[draggable="true"]') || scrollsX(target, touchSurface)
+          ? 0
+          : new Date().getTime() // record time when finger first makes contact with surface
       // e.preventDefault()
     },
     { passive: true }
@@ -206,7 +226,7 @@ const Service = {
       'keydown',
       (e) => {
         if (
-          e.key === 'ArrowRight' ||
+          (e.key === 'ArrowRight' && !arrowsInUse(e)) ||
           (e.altKey && e.shiftKey && (e.key === 'N' || e.key === 'n'))
         ) {
           sendReply(elmSend, Dir.left)
@@ -214,7 +234,7 @@ const Service = {
         }
 
         if (
-          e.key === 'ArrowLeft' ||
+          (e.key === 'ArrowLeft' && !arrowsInUse(e)) ||
           (e.altKey && e.shiftKey && (e.key === 'P' || e.key === 'p'))
         ) {
           sendReply(elmSend, Dir.right)
@@ -273,6 +293,24 @@ const Service = {
 }
 
 const isKaiOS = /KAIOS/i.test(navigator.userAgent)
+
+// arrow keys belong to the focused control or the browser, not to the slides
+const ARROW_WIDGETS =
+  '[role=slider],[role=spinbutton],[role=radiogroup],[role=radio],[role=listbox],' +
+  '[role=combobox],[role=tablist],[role=grid],[role=tree],[role=separator]'
+
+function arrowsInUse(e: KeyboardEvent) {
+  const target = e.target as HTMLInputElement
+  return (
+    e.defaultPrevented ||
+    e.altKey ||
+    e.ctrlKey ||
+    e.metaKey ||
+    e.shiftKey ||
+    (isEditable(target) && !/^(checkbox|button|submit|reset)$/.test(target.type)) ||
+    !!target?.closest?.(ARROW_WIDGETS)
+  )
+}
 
 function isEditable(elem: HTMLElement | null) {
   return (
