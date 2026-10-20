@@ -44,6 +44,15 @@ suite =
                     Index.update (ScanIndex "ab") (search "") (course [ ( "xa", "bx" ), ( "a", "x" ) ])
                         |> (\( _, result, _ ) -> visibility result)
                         |> Expect.equal [ True, False ]
+            , test "words with 4 or more characters tolerate one typo" <|
+                \_ ->
+                    [ "Algoritm", "algorihtm", "algxrithm", "allgorithm", "Algorythmus", "kriese", "lgo" ]
+                        |> List.map
+                            (\p ->
+                                Index.update (ScanIndex p) (search "") (course [ ( "Die **Algorithmen** der Krise", "" ) ])
+                                    |> (\( _, result, _ ) -> visibility result)
+                            )
+                        |> Expect.equal [ [ True ], [ True ], [ True ], [ True ], [ False ], [ True ], [ True ] ]
             , test "DeleteSearch shows all sections again" <|
                 \_ ->
                     let

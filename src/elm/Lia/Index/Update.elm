@@ -11,7 +11,8 @@ module Lia.Index.Update exposing
 
 {-| Searching the sections of a course, the search pattern is a list of words,
 separated by spaces. A section is visible, if its code or title contain all of
-them (ignoring the case).
+them (ignoring the case). Words with 4 or more characters may also match the
+start of a word with one typo.
 -}
 
 import Array
@@ -132,7 +133,7 @@ navigate { current, key, rtl, id } model sections =
                                 else
                                     Nothing
 
-                            Nothing ->
+                            _ ->
                                 Nothing
                         )
 
@@ -298,5 +299,68 @@ scan pattern =
                         text =
                             String.toLower (section.code ++ stringify section.title)
                     in
-                    { section | visible = List.all (\word -> String.contains word text) words }
+                    { section
+                        | visible =
+                            case List.filter (\word -> not (String.contains word text)) words of
+                                [] ->
+                                    True
+
+                                missing ->
+                                    let
+                                        tokens =
+                                            text
+                                                |> String.map
+                                                    (\c ->
+                                                        if Char.isAlphaNum c || Char.toCode c > 127 then
+                                                            c
+
+                                                        else
+                                                            ' '
+                                                    )
+                                                |> String.words
+                                                |> List.map String.toList
+                                    in
+                                    List.all
+                                        (\word ->
+                                            String.length word >= 4 && List.any (near (String.toList word)) tokens
+                                        )
+                                        missing
+                    }
                 )
+
+
+{-| Typo tolerance: `word` differs from the start of `token` by at most one
+wrong, missing, extra or swapped character.
+
+ponytail: tokenizes the whole section on every miss, precompute tokens if large courses lag
+
+-}
+near : List Char -> List Char -> Bool
+near word token =
+    case ( word, token ) of
+        ( [], _ ) ->
+            True
+
+        ( _, [] ) ->
+            List.length word <= 1
+
+        ( x :: xs, y :: ys ) ->
+            if x == y then
+                near xs ys
+
+            else
+                startsWith xs ys
+                    || startsWith xs token
+                    || startsWith word ys
+                    || (case ( xs, ys ) of
+                            ( x2 :: xs2, y2 :: ys2 ) ->
+                                x2 == y && y2 == x && startsWith xs2 ys2
+
+                            _ ->
+                                False
+                       )
+
+
+startsWith : List Char -> List Char -> Bool
+startsWith prefix list =
+    prefix == List.take (List.length prefix) list
