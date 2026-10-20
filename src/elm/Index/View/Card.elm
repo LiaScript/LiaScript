@@ -256,6 +256,13 @@ controls hasShareAPI title definition course =
                 , icon = "icon-copy"
                 }
                 [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise" ]
+        , btnIcon
+            { msg = Just <| SaveOffline course.id
+            , title = "Download media for offline use (images, audio and video)"
+            , tabbable = True
+            , icon = "icon-download"
+            }
+            [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise" ]
         , Html.a
             [ Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise"
             , Attr.href <| "mailto:" ++ definition.email

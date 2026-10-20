@@ -10,6 +10,30 @@ workbox.setConfig({
 self.skipWaiting()
 workbox.core.clientsClaim()
 
+// Media stored by "save course offline" (Resource.ts), used if the network and
+// the route's own cache fail. Audio and video (range requests) get the whole
+// file with `Accept-Ranges`, which keeps them seekable. A sliced 206 response
+// is rejected by Chrome for cross-origin media (tested).
+// ponytail: opaque responses (no CORS) cannot be rebuilt, they play but cannot
+// be seeked offline
+const offlineFallback = {
+  handlerDidError: async ({ request }) => {
+    const response = await caches.match(request.url, { cacheName: 'offline' })
+
+    if (
+      !response ||
+      response.type === 'opaque' ||
+      !request.headers.has('range')
+    ) {
+      return response
+    }
+
+    const headers = new Headers(response.headers)
+    headers.set('Accept-Ranges', 'bytes')
+    return new Response(response.body, { headers })
+  },
+}
+
 // NetworkFirst with expiration, offline a failing fetch falls back to the cache
 // immediately, the timeout covers slow networks
 function networkFirst(
@@ -30,6 +54,7 @@ function networkFirst(
         maxAgeSeconds: maxAgeDays * 24 * 60 * 60,
         purgeOnQuotaError: true,
       }),
+      offlineFallback,
     ],
   })
 }
@@ -88,4 +113,11 @@ workbox.routing.registerRoute(
     !url.search && // cache-busted urls would pile up
     ['script', 'worker', 'style', 'font'].includes(request.destination),
   new workbox.strategies.StaleWhileRevalidate({ cacheName: 'assets' })
+)
+
+// Media without a route above (audio, video, images from the own origin) only
+// need the fallback to the courses stored offline
+workbox.routing.registerRoute(
+  ({ request }) => ['image', 'audio', 'video'].includes(request.destination),
+  new workbox.strategies.NetworkOnly({ plugins: [offlineFallback] })
 )

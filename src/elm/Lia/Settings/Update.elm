@@ -9,12 +9,14 @@ module Lia.Settings.Update exposing
     , updatedChatMessages
     )
 
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Settings.Json as Json
 import Lia.Settings.Types exposing (Action(..), Audio(..), Mode(..), PlaybackState(..), Settings, TTS, toggleID)
 import Lia.Utils exposing (focus, scheduleFocus)
+import Process
 import Return exposing (Return)
 import Service.Database
 import Service.Event as Event exposing (Event)
@@ -23,6 +25,7 @@ import Service.Slide
 import Service.Sync
 import Service.TTS
 import Service.Translate
+import Task
 
 
 {-| -}
@@ -38,6 +41,8 @@ type Msg
     | Ignore
     | FocusLoss (Maybe Action)
     | Change Audio
+    | SaveOffline
+    | CloseOffline
 
 
 {-| -}
@@ -135,6 +140,25 @@ update main msg model =
 
                                     _ ->
                                         model
+
+                        -- progress of "save course offline", see `Lia.Update`
+                        "resource" ->
+                            case JD.decodeValue decodeOffline event.message.param of
+                                Ok progress ->
+                                    { model | offline = Just progress }
+                                        |> Return.val
+                                        |> Return.cmd
+                                            (if progress.total > 0 && progress.slides == progress.total then
+                                                -- the status is hidden after a while
+                                                Process.sleep 5000
+                                                    |> Task.perform (always CloseOffline)
+
+                                             else
+                                                Cmd.none
+                                            )
+
+                                Err _ ->
+                                    Return.val model
 
                         _ ->
                             log model
@@ -367,6 +391,13 @@ update main msg model =
         Ignore ->
             Return.val model
 
+        -- handled by `Lia.Update`, which has access to all sections
+        SaveOffline ->
+            Return.val model
+
+        CloseOffline ->
+            Return.val { model | offline = Nothing }
+
 
 {-| Close the classroom dialog (if classrooms are not disabled).
 -}
@@ -387,6 +418,14 @@ closeSync model =
 handle : Event -> Msg
 handle =
     Handle
+
+
+decodeOffline : JD.Decoder { slides : Int, total : Int, failed : Int }
+decodeOffline =
+    JD.map3 (\slides total failed -> { slides = slides, total = total, failed = failed })
+        (JD.field "slides" JD.int)
+        (JD.field "total" JD.int)
+        (JD.field "failed" JD.int)
 
 
 load : Settings -> JE.Value -> Settings

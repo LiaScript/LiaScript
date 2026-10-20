@@ -67,6 +67,7 @@ view screen hasIndex model =
             :: newTabHint model.translation
             :: viewIndex modalIsActive hasIndex model
             :: viewSlide modalIsActive screen model
+            ++ [ Settings.viewOfflineStatus model.translation model.settings.offline ]
         )
 
 

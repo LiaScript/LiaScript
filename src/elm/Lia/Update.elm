@@ -10,11 +10,13 @@ import Array exposing (Array)
 import Const
 import Dict
 import Json.Decode as JD
+import Json.Encode as JE
 import Lia.Chat.Update as Chat
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
+import Lia.Markdown.Json.Encode as Body
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, loadResource)
 import Lia.Parser.Parser exposing (parse_section)
@@ -29,6 +31,7 @@ import Return exposing (Return)
 import Service.Console
 import Service.Database
 import Service.Event as Event exposing (Event)
+import Service.Resource
 import Service.Slide
 import Service.TTS
 import Session exposing (Session)
@@ -291,6 +294,9 @@ update session msg model =
                             |> Return.mapValCmd (setSection model model.section_active) UpdateMarkdown
                 )
 
+        UpdateSettings Settings.SaveOffline ->
+            saveOffline model
+
         UpdateSettings childMsg ->
             Settings.update
                 (Just
@@ -371,6 +377,51 @@ update session msg model =
                     Return.val model
 
 
+{-| **@private:** Parse all sections, without storing them in the model, and
+pass their bodies to `Resource.ts`, which stores all media for offline use. The
+progress is replied to the settings, see `Settings.update`.
+-}
+saveOffline : Model -> Return Model Msg Markdown.Msg
+saveOffline model =
+    let
+        settings =
+            model.settings
+    in
+    { model | settings = { settings | offline = Just { slides = 0, total = 0, failed = 0 } } }
+        |> Return.val
+        |> Return.batchEvent
+            ([ ( "logo", JE.string model.definition.logo )
+             , ( "sections"
+               , model.sections
+                    |> Array.toList
+                    |> List.filterMap (parse_section model.search_index model.definition >> Result.toMaybe)
+                    |> JE.list
+                        (\sec ->
+                            JE.object
+                                [ ( "body", Body.encode sec.body )
+                                , ( "media", JE.list JE.string (commentMedia sec) )
+                                ]
+                        )
+               )
+             ]
+                |> JE.object
+                |> Service.Resource.offline
+                |> Event.push "settings"
+            )
+
+
+{-| **@private:** The audio and video recordings of the comments (narrator),
+they are not part of the section body.
+-}
+commentMedia : Section -> List String
+commentMedia =
+    .effect_model
+        >> .comments
+        >> Dict.values
+        >> List.concatMap (.content >> Array.toList)
+        >> List.concatMap (\comment -> Array.toList comment.audio ++ Array.toList comment.video)
+
+
 {-| **@private:** Route an external event by the first topic of its track.
 -}
 handle : Session -> Event -> Model -> Return Model Msg Markdown.Msg
@@ -381,6 +432,10 @@ handle session event model =
 
         ( Just "load", _ ) ->
             update session InitSection (generate model)
+
+        -- "save course offline" was clicked on the course card, see Resource.ts
+        ( Just "offline", _ ) ->
+            saveOffline model
 
         -- external triggers to move to a specific slide
         ( Just "goto", _ ) ->
