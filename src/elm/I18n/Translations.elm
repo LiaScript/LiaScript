@@ -2744,6 +2744,142 @@ baseCloseDialog lang =
             "Close dialog"
 
 
+baseNewTab : Lang -> String
+baseNewTab lang =
+    case lang of
+        Am ->
+            "በአዲስ ትር ውስጥ ይከፈታል"
+
+        Ar ->
+            "يفتح في علامة تبويب جديدة"
+
+        Bg ->
+            "отваря се в нов раздел"
+
+        Bn ->
+            "নতুন ট্যাবে খোলে"
+
+        Ca ->
+            "s'obre en una pestanya nova"
+
+        Cs ->
+            "otevře se na nové kartě"
+
+        Da ->
+            "åbner i en ny fane"
+
+        De ->
+            "öffnet in neuem Tab"
+
+        El ->
+            "ανοίγει σε νέα καρτέλα"
+
+        Es ->
+            "se abre en una pestaña nueva"
+
+        Et ->
+            "avaneb uuel vahekaardil"
+
+        Eu ->
+            "fitxa berri batean irekitzen da"
+
+        Fa ->
+            "در زبانه جدید باز می‌شود"
+
+        Fi ->
+            "avautuu uudelle välilehdelle"
+
+        Fr ->
+            "s'ouvre dans un nouvel onglet"
+
+        Ga ->
+            "osclaítear i gcluaisín nua é"
+
+        Hi ->
+            "नए टैब में खुलता है"
+
+        Hr ->
+            "otvara se u novoj kartici"
+
+        Hu ->
+            "új lapon nyílik meg"
+
+        Hy ->
+            "բացվում է նոր ներդիրում"
+
+        It ->
+            "si apre in una nuova scheda"
+
+        Ja ->
+            "新しいタブで開きます"
+
+        Ka ->
+            "იხსნება ახალ ჩანართში"
+
+        Ko ->
+            "새 탭에서 열림"
+
+        Lt ->
+            "atsidaro naujame skirtuke"
+
+        Lv ->
+            "atveras jaunā cilnē"
+
+        Nb ->
+            "åpnes i en ny fane"
+
+        Nl ->
+            "opent in een nieuw tabblad"
+
+        Pa ->
+            "ਨਵੀਂ ਟੈਬ ਵਿੱਚ ਖੁੱਲ੍ਹਦਾ ਹੈ"
+
+        Pl ->
+            "otwiera się w nowej karcie"
+
+        Pt ->
+            "abre em uma nova aba"
+
+        Ro ->
+            "se deschide într-o filă nouă"
+
+        Ru ->
+            "открывается в новой вкладке"
+
+        Sk ->
+            "otvorí sa na novej karte"
+
+        Sl ->
+            "odpre se v novem zavihku"
+
+        Sq ->
+            "hapet në një skedë të re"
+
+        Sv ->
+            "öppnas i en ny flik"
+
+        Sw ->
+            "hufunguka kwenye kichupo kipya"
+
+        Tr ->
+            "yeni sekmede açılır"
+
+        Tw ->
+            "在新分頁中開啟"
+
+        Uk ->
+            "відкривається в новій вкладці"
+
+        Ur ->
+            "نئے ٹیب میں کھلتا ہے"
+
+        Zh ->
+            "在新标签页中打开"
+
+        _ ->
+            "opens in a new tab"
+
+
 baseZoom : Lang -> String
 baseZoom lang =
     case lang of

@@ -364,7 +364,7 @@ embedOpen =
                             <lia-embed style="display:inline-block;height:auto;max-height:100%;width:100%;" alt="video" data-attributes="{}" scale="0.76" url="https://www.youtube.com/watch?v=abc">
                             </lia-embed>
                             <figcaption class="lia-figure__caption">
-                                <a class="lia-link" href="https://www.youtube.com/watch?v=abc" target="_blank">
+                                <a class="lia-link" aria-describedby="lia-new-tab" href="https://www.youtube.com/watch?v=abc" target="_blank">
                                     https://www.youtube.com/watch?v=abc
                                 </a>
                             </figcaption>
@@ -411,7 +411,7 @@ embedOpen =
                         <lia-embed style="display:inline-block;height:250px;max-height:100%;width:250px;" alt="video" data-attributes="{}" scale="1" url="https://www.youtube.com/watch?v=abc" thumbnail>
                         </lia-embed>
                         <figcaption class="lia-figure__caption">
-                            <a class="lia-link" href="https://www.youtube.com/watch?v=abc" target="_blank">
+                            <a class="lia-link" aria-describedby="lia-new-tab" href="https://www.youtube.com/watch?v=abc" target="_blank">
                                 https://www.youtube.com/watch?v=abc
                             </a>
                         </figcaption>

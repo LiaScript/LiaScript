@@ -36,7 +36,7 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (combobox, dropdownList, noTranslate, shuffle)
+import Lia.Utils exposing (combobox, dropdownList, newTab, noTranslate, shuffle)
 import List.Extra
 import QRCode
 
@@ -1065,10 +1065,10 @@ reference config ref attr =
 
                             Nothing ->
                                 [ Html.a
-                                    [ Attr.class "lia-link"
-                                    , Attr.href url
-                                    , Attr.target "_blank"
-                                    ]
+                                    (Attr.class "lia-link"
+                                        :: Attr.href url
+                                        :: newTab
+                                    )
                                     [ Html.text url ]
                                 ]
                     ]
@@ -1257,21 +1257,25 @@ view_url config alt_ url_ title_ attr =
             ]
 
 
-{-| **@private:** External links are opened in a new tab.
+{-| **@private:** External links are opened in a new tab and say so, mails
+open in a new tab as before, but without the hint.
 -}
 link : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
 link config alt_ url_ title_ attr =
     Html.a
         (Attr.href url_
-            :: Attr.target
-                (if String.startsWith "#" url_ then
-                    ""
-
-                 else
-                    "_blank"
-                )
             :: annotation "lia-link" attr
             |> CList.addWhen (title config title_)
+            |> List.append
+                (if String.startsWith "#" url_ then
+                    []
+
+                 else if String.startsWith "mailto:" url_ then
+                    [ Attr.target "_blank" ]
+
+                 else
+                    newTab
+                )
         )
         (viewer config alt_)
 

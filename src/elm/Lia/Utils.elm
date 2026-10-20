@@ -15,6 +15,8 @@ module Lia.Utils exposing
     , combobox
     , dropdownList
     , modal
+    , newTab
+    , newTabHint
     , noTranslate
     , onEnter
     , onKeyDown
@@ -36,7 +38,7 @@ import Array exposing (Array)
 import Browser.Dom as Dom
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
-import I18n.Translations exposing (Lang, baseCloseDialog)
+import I18n.Translations exposing (Lang, baseCloseDialog, baseNewTab)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
@@ -640,3 +642,23 @@ dropdownList listID open attributes =
             else
                 A11y_Aria.hidden True :: Attr.attribute "inert" "" :: attributes
            )
+
+
+{-| Attributes of a link that opens in a new tab, the hint (`newTabHint`) is
+read as its description.
+-}
+newTab : List (Attribute msg)
+newTab =
+    [ Attr.target "_blank", A11y_Aria.describedBy [ newTabID ] ]
+
+
+{-| The hidden hint "opens in a new tab", it exists once in the course view.
+-}
+newTabHint : Lang -> Html msg
+newTabHint lang =
+    Html.span [ Attr.id newTabID, Attr.hidden True ] [ Html.text (baseNewTab lang) ]
+
+
+newTabID : String
+newTabID =
+    "lia-new-tab"

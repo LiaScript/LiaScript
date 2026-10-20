@@ -50,6 +50,7 @@ import Lia.Utils
         , btnIcon
         , deactivate
         , icon
+        , newTab
         , noTranslate
         )
 import Library.Group as Group
@@ -568,11 +569,12 @@ viewRepository : String -> List (Html msg)
 viewRepository url =
     [ bold "Repository: "
     , Html.a
-        [ Attr.href url
-        , Attr.target "_blank"
-        , Attr.attribute "data-group-id" "information"
-        , Attr.tabindex 0
-        ]
+        ([ Attr.href url
+         , Attr.attribute "data-group-id" "information"
+         , Attr.tabindex 0
+         ]
+            ++ newTab
+        )
         [ Html.text url ]
     ]
 
@@ -1051,15 +1053,16 @@ menuShare url sync lang tabbable settings =
 menuEdit : String -> Lang -> Bool -> Settings -> List (Html Msg)
 menuEdit url lang tabbable _ =
     [ Html.a
-        [ Attr.class "lia-btn lia-btn--transparent lia-btn--tag "
-        , Attr.href url
-        , A11y_Key.tabbable tabbable
-        , A11y_Aria.hidden (not tabbable)
-        , Attr.target "_blank"
-        , lang
+        ([ Attr.class "lia-btn lia-btn--transparent lia-btn--tag "
+         , Attr.href url
+         , A11y_Key.tabbable tabbable
+         , A11y_Aria.hidden (not tabbable)
+         , lang
             |> Trans.confEdit
             |> Attr.title
-        ]
+         ]
+            ++ newTab
+        )
         [ icon "icon-edit" []
         , Html.span
             [ Attr.style "margin-inline-start" "1rem"

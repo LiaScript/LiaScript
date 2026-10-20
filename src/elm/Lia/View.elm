@@ -30,7 +30,7 @@ import Lia.Sync.Types as Sync_
 import Lia.Sync.Update as SyncUpdate
 import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
-import Lia.Utils exposing (deactivate, modal)
+import Lia.Utils exposing (deactivate, modal, newTab, newTabHint)
 import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 import Session exposing (Screen)
@@ -64,6 +64,7 @@ view screen hasIndex model =
                 ]
             )
             [ Html.text (Trans.baseSkipNav model.translation) ]
+            :: newTabHint model.translation
             :: viewIndex modalIsActive hasIndex model
             :: viewSlide modalIsActive screen model
         )
@@ -883,12 +884,10 @@ audioRecordings src =
 
 responsiveVoiceTTSText : List (Html msg)
 responsiveVoiceTTSText =
-    [ Html.a [ Attr.class "lia-link", Attr.href "https://responsivevoice.org", Attr.target "_blank" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
+    [ Html.a (Attr.class "lia-link" :: Attr.href "https://responsivevoice.org" :: newTab) [ Html.text "ResponsiveVoice-NonCommercial" ]
     , Html.text " licensed under "
     , Html.a
-        [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/"
-        , Attr.target "_blank"
-        ]
+        (Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/" :: newTab)
         [ Html.img
             [ Attr.title "ResponsiveVoice Text To Speech"
             , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"
