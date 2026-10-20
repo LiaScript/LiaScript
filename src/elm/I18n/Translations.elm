@@ -19063,3 +19063,33 @@ chatSend lang =
         _ ->
             "Send message"
 
+
+infoOffline : Lang -> String
+infoOffline lang =
+    case lang of
+        De ->
+            "Medien für offline herunterladen"
+
+        _ ->
+            "Download media for offline use"
+
+
+infoOfflineFailed : Lang -> String
+infoOfflineFailed lang =
+    case lang of
+        De ->
+            "fehlgeschlagen"
+
+        _ ->
+            "failed"
+
+
+infoOfflineStatus : Lang -> String
+infoOfflineStatus lang =
+    case lang of
+        De ->
+            "Medien offline"
+
+        _ ->
+            "Media offline"
+

@@ -5,6 +5,7 @@ import { Connector } from '../../connectors/Base/index'
 import { Settings } from '../../connectors/Base/settings'
 import TTS from './TTS'
 import Script from './Script'
+import { offlineOpened } from './Resource'
 
 var connector: Connector | null = null
 var elmSend: Lia.Send | null
@@ -114,6 +115,8 @@ const Service = {
         if (isPersistent) {
           connector.open(param.readme, param.version, param.section_active)
         }
+
+        offlineOpened(param.readme)
 
         if (param.definition.onload !== '') {
           // adding the semaphore to delay the execution of other scripts

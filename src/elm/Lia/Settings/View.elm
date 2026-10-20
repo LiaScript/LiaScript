@@ -13,6 +13,7 @@ module Lia.Settings.View exposing
     , menuShare
     , menuTranslations
     , qrCodeView
+    , viewOfflineStatus
     )
 
 import Accessibility.Aria as A11y_Aria
@@ -500,9 +501,10 @@ viewInformation :
     -> Lang
     -> Bool
     -> Maybe String
+    -> Bool
     -> Definition
     -> List (Html Msg)
-viewInformation grouping lang tabbable repositoryURL definition =
+viewInformation grouping lang tabbable repositoryURL hasIndex definition =
     [ case ( Dict.get "repository" definition.macro, repositoryURL ) of
         ( Just url, _ ) ->
             viewRepository url
@@ -558,7 +560,76 @@ viewInformation grouping lang tabbable repositoryURL definition =
               else
                 Html.text ""
             ]
+        -- the offline media belong to the index, without one (SCORM, xAPI, ...)
+        -- the course is managed by the LMS
+        |> CList.addWhen (viewOffline lang (tabbable && hasIndex))
         |> List.map (Html.div (grouping [ Attr.tabindex -1, Attr.style "user-select" "text" ]))
+
+
+{-| Opt-in to store all media of the course for offline use, see `Lia.Update`.
+-}
+viewOffline : Lang -> Bool -> Maybe (List (Html Msg))
+viewOffline lang tabbable =
+    if tabbable then
+        Just
+            [ Html.button
+                [ Attr.class "lia-btn lia-btn--transparent"
+                , onClick SaveOffline
+                , Attr.attribute "data-group-id" "information"
+                , Attr.style "width" "100%"
+                ]
+                [ Html.i [ A11y_Aria.hidden True, Attr.class "lia-btn__icon icon icon-download" ] []
+                , Html.span [ Attr.class "lia-btn__text" ] [ Html.text <| Trans.infoOffline lang ]
+                ]
+            ]
+
+    else
+        Nothing
+
+
+{-| Progress of "save course offline", shown independent of the settings menu,
+since the course card starts it without opening the menu.
+-}
+viewOfflineStatus : Lang -> Maybe { slides : Int, total : Int, failed : Int } -> Html msg
+viewOfflineStatus lang offline =
+    Html.div
+        [ A11y_Role.status
+        , Attr.style "position" "fixed"
+        , Attr.style "bottom" "3.5rem" -- above the slide navigation on phones
+        , Attr.style "right" "1rem"
+        , Attr.style "z-index" "1000"
+        ]
+        [ case offline of
+            Just { slides, total, failed } ->
+                Html.div
+                    [ Attr.style "padding" "0.5rem 1rem"
+                    , Attr.style "background" "rgb(var(--color-background))"
+                    , Attr.style "color" "rgb(var(--color-text))"
+                    , Attr.style "border" "1px solid rgb(var(--color-border))"
+                    , Attr.style "border-radius" "0.5rem"
+                    , Attr.style "box-shadow" "0 2px 8px rgba(0, 0, 0, 0.2)"
+                    ]
+                    [ Html.i [ A11y_Aria.hidden True, Attr.class "icon icon-download" ] []
+                    , Html.text <|
+                        " "
+                            ++ Trans.infoOfflineStatus lang
+                            ++ ": "
+                            ++ String.fromInt slides
+                            ++ " / "
+                            ++ String.fromInt total
+                            ++ " "
+                            ++ Trans.modeSlides lang
+                            ++ (if failed > 0 then
+                                    ", " ++ String.fromInt failed ++ " " ++ Trans.infoOfflineFailed lang
+
+                                else
+                                    ""
+                               )
+                    ]
+
+            Nothing ->
+                Html.text ""
+        ]
 
 
 viewRepository : String -> List (Html msg)
@@ -1094,7 +1165,7 @@ menuInformation repositoryURL definition lang tabbable settings =
         , title = Trans.confInformation lang
         , attributes = []
         }
-    , viewInformation grouping lang tabbable repositoryURL definition
+    , viewInformation grouping lang tabbable repositoryURL settings.hasIndex definition
         |> submenu ShowInformation grouping (settings.action == Just ShowInformation)
     ]
 

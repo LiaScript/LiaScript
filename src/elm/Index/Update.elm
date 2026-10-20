@@ -14,6 +14,7 @@ import Index.View.Popup as Popup
 import Json.Decode as JD
 import Lia.Definition.Json.Decode as Definition
 import Lia.Markdown.Inline.Json.Decode as Inline
+import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
 import Lia.Utils exposing (scheduleFocus)
@@ -22,6 +23,7 @@ import List.Extra
 import Service.Console
 import Service.Database
 import Service.Event exposing (Event)
+import Service.Resource
 import Service.Share
 
 
@@ -36,6 +38,7 @@ type Msg
     | Handle Event
     | Activate String (Maybe String)
     | LoadCourse String
+    | SaveOffline String
     | UpdateSettings Settings.Msg
     | Modal (Maybe Modal)
     | MasonryMsg Masonry.Msg
@@ -245,6 +248,13 @@ update msg settings model =
 
             LoadCourse url ->
                 ( model, Nav.load url, [] )
+
+            -- opens the course like `Base.href`, it gets stored after loading
+            SaveOffline courseID ->
+                ( model
+                , Cmd.none
+                , [ Service.Resource.offlineOpen { url = courseID, href = "./?" ++ link courseID } ]
+                )
 
             Modal modal ->
                 ( { model
