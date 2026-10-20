@@ -44,6 +44,21 @@ GLOBALS.initGlobals()
 window.LIA.injectResposivevoice = TTS.inject
 window.LIA.narrator = Narrator.api
 
+// Browsers show the focus ring of text fields also after a click. For .lia-input
+// it shall only appear on keyboard focus, see _elements.input.scss. An attribute,
+// because the settings overwrite the className of <html>.
+let mouseFocus = false
+document.addEventListener('mousedown', () => (mouseFocus = true), true)
+document.addEventListener('keydown', () => (mouseFocus = false), true)
+document.addEventListener(
+  'focusin',
+  () =>
+    mouseFocus
+      ? document.documentElement.setAttribute('data-mouse-focus', '')
+      : document.documentElement.removeAttribute('data-mouse-focus'),
+  true
+)
+
 if (typeof queueMicrotask !== 'function') {
   window.queueMicrotask = function (callback) {
     Promise.resolve().then(callback)

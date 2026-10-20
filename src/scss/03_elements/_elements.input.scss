@@ -12,6 +12,11 @@
     opacity: 0.8;
   }
 
+  // no focus ring after a click, only on keyboard focus (see liascript/index.ts)
+  html[data-mouse-focus] &:focus-visible {
+    outline: none;
+  }
+
   &.is-failure {
     border-color: rgb(var(--color-failure));
   }
