@@ -8,7 +8,7 @@ module Index.Update exposing
 
 import Browser.Navigation as Nav
 import Dict
-import Index.Model exposing (Action(..), Course, Modal, Model, Release)
+import Index.Model exposing (Action(..), Course, Modal, Model, Release, cardID, urlInputID)
 import Index.Version as Version
 import Index.View.Popup as Popup
 import Json.Decode as JD
@@ -107,12 +107,30 @@ update msg settings model =
 
                     ( masonry, cmd ) =
                         Masonry.init (Just "card") courses
+
+                    -- the focus moves to the next card, the previous one or
+                    -- the url input, if there is no card left
+                    target =
+                        case List.Extra.splitWhen (.id >> (==) courseID) model.courses of
+                            Just ( before, _ :: after ) ->
+                                (case after of
+                                    next :: _ ->
+                                        Just next
+
+                                    [] ->
+                                        List.Extra.last before
+                                )
+                                    |> Maybe.map (.id >> cardID)
+                                    |> Maybe.withDefault urlInputID
+
+                            _ ->
+                                urlInputID
                 in
                 ( { model
                     | courses = courses
                     , masonry = masonry
                   }
-                , Cmd.map MasonryMsg cmd
+                , Cmd.batch [ Cmd.map MasonryMsg cmd, Lia.Utils.focus None target ]
                 , [ Service.Database.index_delete courseID ]
                 )
 

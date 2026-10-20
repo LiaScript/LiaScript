@@ -8,7 +8,7 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import I18n.Translations exposing (Lang(..))
-import Index.Model exposing (Action(..), Course, Release)
+import Index.Model exposing (Action(..), Course, Release, cardID)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
 import Index.View.Popup as Popup
@@ -31,6 +31,10 @@ article hasShareAPI course { title, definition } =
     Html.article
         [ Attr.class "lia-card"
         , A11y_Aria.label (stringify title)
+
+        -- focusable by script only, see the deletion of a course
+        , Attr.id (cardID course.id)
+        , Attr.tabindex -1
         ]
         [ versions course
         , definition.macro

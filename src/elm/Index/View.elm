@@ -5,7 +5,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onInput)
 import I18n.Translations exposing (Lang(..))
-import Index.Model exposing (Course, Modal(..), Model)
+import Index.Model exposing (Course, Modal(..), Model, urlInputID)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
 import Index.View.Card exposing (card)
@@ -102,6 +102,7 @@ searchBar url =
             , onInput Input
             , Attr.value url
             , Attr.placeholder "course-url"
+            , Attr.id urlInputID
             , Attr.class "lia-input border-highlight max-w-50 mr-1 mb-1"
             ]
             []
