@@ -6,10 +6,6 @@ img {
   max-height: 80vh;
 }
 
-audio {
-  max-width: 100%;
-}
-
 figure {
   margin-block-end: 2rem;
 
@@ -21,6 +17,7 @@ figure {
 }
 
 // also content with a fixed width, set by the author, fits small screens
+audio,
 .lia-figure__media > * {
   max-width: 100%;
 }

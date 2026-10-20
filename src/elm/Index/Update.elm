@@ -35,7 +35,6 @@ type Msg
     | Share { title : String, text : String, url : String, image : Maybe String }
     | Handle Event
     | Activate String (Maybe String)
-    | NoOp
     | LoadCourse String
     | UpdateSettings Settings.Msg
     | Modal (Maybe Modal)
@@ -135,27 +134,13 @@ update msg settings model =
                 )
 
             PopupClose ->
-                ( { model
-                    | masonry =
-                        Masonry.map
-                            (\course ->
-                                { course | popup = Nothing }
-                            )
-                            model.masonry
-                  }
+                ( closePopups model
                 , Cmd.none
                 , []
                 )
 
             PopupAbort trigger ->
-                ( { model
-                    | masonry =
-                        Masonry.map
-                            (\course ->
-                                { course | popup = Nothing }
-                            )
-                            model.masonry
-                  }
+                ( closePopups model
                 , Lia.Utils.focus None trigger
                 , []
                 )
@@ -172,12 +157,7 @@ update msg settings model =
                 )
 
             Reset True courseID version ->
-                ( { model
-                    | masonry =
-                        Masonry.map
-                            (mapPopup Popup_Reset "")
-                            model.masonry
-                  }
+                ( closePopups model
                 , Lia.Utils.focus None (Popup.triggerID "reset" courseID)
                 , [ Service.Database.index_reset
                         { url = courseID
@@ -277,7 +257,7 @@ update msg settings model =
                             _ ->
                                 Nothing
                   }
-                , scheduleFocus Nothing NoOp "lia-modal-focus"
+                , scheduleFocus Nothing None "lia-modal-focus"
                 , []
                 )
 
@@ -289,6 +269,11 @@ update msg settings model =
 
             _ ->
                 ( model, Cmd.none, [] )
+
+
+closePopups : Model -> Model
+closePopups model =
+    { model | masonry = Masonry.map (\course -> { course | popup = Nothing }) model.masonry }
 
 
 mapPopup : Action -> String -> Course -> Course

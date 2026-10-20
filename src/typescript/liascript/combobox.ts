@@ -19,10 +19,7 @@ function getOptions(combobox: HTMLElement): HTMLElement[] {
 }
 
 function setActive(combobox: HTMLElement, options: HTMLElement[], index: number) {
-  options.forEach((option, i) => {
-    if (i === index) option.classList.add(ACTIVE)
-    else option.classList.remove(ACTIVE)
-  })
+  options.forEach((option, i) => option.classList.toggle(ACTIVE, i === index))
 
   const option = options[index]
 
@@ -135,15 +132,12 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
         break
 
       case 'Escape':
-        combobox.click()
-        setActive(combobox, options, -1)
-        break
-
       case 'Tab':
-        // close, but let the focus move on
         combobox.click()
         setActive(combobox, options, -1)
-        return
+        // Tab closes, but lets the focus move on
+        if (event.key === 'Tab') return
+        break
 
       default:
         return

@@ -25,12 +25,12 @@ view base open class quizId quiz state rendered =
     case ( quiz.solution, state ) of
         ( SingleChoice _, SingleChoice list ) ->
             ( [ A11y_Role.radioGroup ]
-            , List.map2 (option base "lia-radio" "radio" open class quizId) list (List.indexedMap Tuple.pair rendered)
+            , List.map2 (option base "radio" open class quizId) list (List.indexedMap Tuple.pair rendered)
             )
 
         ( MultipleChoice _, MultipleChoice list ) ->
             ( [ A11y_Role.group ]
-            , List.map2 (option base "lia-checkbox" "checkbox" open class quizId) list (List.indexedMap Tuple.pair rendered)
+            , List.map2 (option base "checkbox" open class quizId) list (List.indexedMap Tuple.pair rendered)
             )
 
         _ ->
@@ -41,12 +41,12 @@ view base open class quizId quiz state rendered =
 clickable if the quiz is `open`. All inputs of a quiz share the name `base`,
 thus radio buttons form a group, which can be navigated with arrow keys.
 -}
-option : String -> String -> String -> Bool -> String -> Int -> Bool -> ( Int, List (Html Main.Msg) ) -> Html Main.Msg
-option base inputClass inputType open colorClass quizId checked ( id, body ) =
+option : String -> String -> Bool -> String -> Int -> Bool -> ( Int, List (Html Main.Msg) ) -> Html Main.Msg
+option base inputType open colorClass quizId checked ( id, body ) =
     labeledOption (base ++ "-option-" ++ String.fromInt id)
         (\label ->
             Html.input
-                [ Attr.class inputClass
+                [ Attr.class ("lia-" ++ inputType)
                 , Attr.class colorClass
                 , Attr.type_ inputType
                 , Attr.name base

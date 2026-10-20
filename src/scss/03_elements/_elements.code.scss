@@ -135,36 +135,27 @@
     z-index: 10;
   }
 
-  &__copy {
-    top: 0.1rem;
-    font-size: 2rem;
-    position: absolute;
-    right: 1.5rem;
-    z-index: 90;
-    padding: 0rem 0.25rem;
-    color: var(--editor-icon);
-
-    &:hover {
-      top: 0;
-      font-size: 2.2rem;
-
-      // background-color: rgb(var(--color-background), 0.5) !important;
-    }
-  }
-
+  &__copy,
   &__copy--inverted {
     top: 0.1rem;
     font-size: 2rem;
     right: 1.5rem;
     z-index: 90;
     padding: 0rem 0.25rem;
-    color: rgb(var(--lia-white));
 
     &:hover {
       top: 0;
       font-size: 2.2rem;
-      //background-color: rgb(var(--color-highlight-dark), 0.5) !important;
     }
+  }
+
+  &__copy {
+    position: absolute;
+    color: var(--editor-icon);
+  }
+
+  &__copy--inverted {
+    color: rgb(var(--lia-white));
   }
 }
 

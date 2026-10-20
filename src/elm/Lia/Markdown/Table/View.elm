@@ -6,6 +6,7 @@ module Lia.Markdown.Table.View exposing (view)
 
 import Accessibility.Aria as A11y_Aria
 import Array
+import Conditional.List as CList
 import Const
 import Dict
 import Html exposing (Html)
@@ -563,13 +564,10 @@ viewTable sticky attr body =
             ]
         ]
         [ Html.table (Param.annotation "lia-table" attr)
-            (case Param.get "data-title" attr of
-                -- names the table for screen readers, it is not shown
-                Just title ->
-                    Html.caption [ Attr.class "hidden-visually" ] [ Html.text title ] :: body
-
-                Nothing ->
-                    body
+            -- names the table for screen readers, it is not shown
+            (CList.addWhen
+                (Param.get "data-title" attr |> Maybe.map (\title -> Html.caption [ Attr.class "hidden-visually" ] [ Html.text title ]))
+                body
             )
         ]
 

@@ -129,11 +129,9 @@ input[type='search']::-webkit-search-results-decoration {
   }
 
   // the bright state colors of the dark mode need a dark check mark
-  &.is-success:checked,
-  &.is-failure:checked {
-    &:after {
-      color: rgb(var(--color-background));
-    }
+  &.is-success:checked:after,
+  &.is-failure:checked:after {
+    color: rgb(var(--color-background));
   }
 
   &.is-turquoise {

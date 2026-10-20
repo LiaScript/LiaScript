@@ -106,11 +106,18 @@ viewSettings lang tabbable width settings =
     , divider
     , viewFullscreen grouping lang tabbable settings.fullscreen
     , divider
-    , viewTooltips grouping lang tabbable width settings.tooltips
+    , if width >= Const.tooltipBreakpoint then
+        checkbox grouping tabbable Tooltips settings.tooltips (Trans.confTooltip lang)
+
+      else
+        Html.text ""
     , divider
-    , viewDecals grouping lang tabbable settings.decals
+
+    -- do not rely on color alone (class `lia-decals` of the html): patterns in
+    -- charts, and borders of quiz inputs, solid if correct, dashed if wrong
+    , checkbox grouping tabbable Decals settings.decals (Trans.confDecals lang)
     , divider
-    , viewVideoComment grouping lang tabbable settings.hideVideoComments
+    , checkbox grouping tabbable VideoComments settings.hideVideoComments (Trans.commentHide lang)
     , divider
     , viewTTSSettings grouping lang tabbable settings.audio settings.tts
     ]
@@ -289,35 +296,10 @@ viewSizing grouping lang tabbable size =
         ]
 
 
-viewTooltips : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Int -> Bool -> Html Msg
-viewTooltips grouping lang tabbable width enabled =
-    if width >= Const.tooltipBreakpoint then
-        Html.label
-            [ Attr.class "lia-label"
-            , A11y_Aria.hidden (not tabbable)
-            ]
-            [ Html.input
-                (grouping
-                    [ Attr.class "lia-checkbox"
-                    , Attr.type_ "checkbox"
-                    , Attr.checked enabled
-                    , onClick (Toggle Tooltips)
-                    , A11y_Key.tabbable tabbable
-                    ]
-                )
-                []
-            , Html.text (Trans.confTooltip lang)
-            ]
-
-    else
-        Html.text ""
-
-
-{-| Do not rely on color alone (class `lia-decals` of the html): patterns in
-charts, and borders of quiz inputs, solid if correct, dashed if wrong.
+{-| A labeled checkbox that toggles a setting.
 -}
-viewDecals : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Bool -> Html Msg
-viewDecals grouping lang tabbable enabled =
+checkbox : (List (Attribute Msg) -> List (Attribute Msg)) -> Bool -> Toggle -> Bool -> String -> Html Msg
+checkbox grouping tabbable toggle enabled text =
     Html.label
         [ Attr.class "lia-label"
         , A11y_Aria.hidden (not tabbable)
@@ -327,32 +309,12 @@ viewDecals grouping lang tabbable enabled =
                 [ Attr.class "lia-checkbox"
                 , Attr.type_ "checkbox"
                 , Attr.checked enabled
-                , onClick (Toggle Decals)
+                , onClick (Toggle toggle)
                 , A11y_Key.tabbable tabbable
                 ]
             )
             []
-        , Html.text (Trans.confDecals lang)
-        ]
-
-
-viewVideoComment : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Bool -> Html Msg
-viewVideoComment grouping lang tabbable enabled =
-    Html.label
-        [ Attr.class "lia-label"
-        , A11y_Aria.hidden (not tabbable)
-        ]
-        [ Html.input
-            (grouping
-                [ Attr.class "lia-checkbox"
-                , Attr.type_ "checkbox"
-                , Attr.checked enabled
-                , onClick (Toggle VideoComments)
-                , A11y_Key.tabbable tabbable
-                ]
-            )
-            []
-        , Html.text (Trans.commentHide lang)
+        , Html.text text
         ]
 
 
@@ -628,11 +590,7 @@ submenu : Action -> (List (Attribute Msg) -> List (Attribute Msg)) -> Bool -> Li
 submenu forAction grouping isActive =
     [ Attr.class "lia-support-menu__submenu flow"
     , Attr.id (submenuID forAction)
-    , if isActive then
-        Attr.class "active"
-
-      else
-        Attr.class ""
+    , Attr.classList [ ( "active", isActive ) ]
     , closeOnEscape forAction isActive
     ]
         |> grouping

@@ -68,7 +68,7 @@ customElements.define(
 
       const elements = Array.prototype.filter.call(
         this.querySelectorAll(FOCUSABLE),
-        (e: HTMLButtonElement) => !e.disabled && e.getClientRects().length > 0
+        (e: HTMLElement) => e.getClientRects().length > 0
       ) as HTMLElement[]
 
       event.preventDefault()

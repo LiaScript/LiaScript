@@ -56,18 +56,6 @@ view :
     }
     -> Html Msg
 view { lang, theme, model, code, sync, cursors } =
-    let
-        copied =
-            model.copied
-                |> Maybe.andThen
-                    (\( project, fileID ) ->
-                        if project == code then
-                            Just fileID
-
-                        else
-                            Nothing
-                    )
-    in
     case code of
         Highlight id ->
             Array.get id model.highlight
@@ -81,7 +69,7 @@ view { lang, theme, model, code, sync, cursors } =
                             , errors = always JE.null
                             , sync = Nothing
                             , cursors = []
-                            , copied = copied
+                            , copied = model.copied
                             }
                             project
                             |> CList.attachIf (not <| Log.isEmpty project.log)
@@ -122,7 +110,7 @@ view { lang, theme, model, code, sync, cursors } =
                                 else
                                     Nothing
                             , cursors = cursors
-                            , copied = copied
+                            , copied = model.copied
                             }
                             project
                             ++ [ viewControl
@@ -192,7 +180,7 @@ type alias Config =
     , errors : Int -> JE.Value
     , sync : Maybe Sync
     , cursors : List Sync.Cursor
-    , copied : Maybe Int
+    , copied : Maybe ( Code, Int )
     }
 
 
@@ -229,7 +217,7 @@ viewFile config fileID file attr =
                 }
 
         copy inverted =
-            copyToClipboard config.lang inverted (Params.isSet "data-rtl" attr) (config.copied == Just fileID) config.code fileID
+            copyToClipboard config.lang inverted (Params.isSet "data-rtl" attr) (config.copied == Just ( config.code, fileID )) config.code fileID
 
         toggleTitle visible =
             if visible then
@@ -357,11 +345,13 @@ copyToClipboard lang inverted rtl copied code fileID =
             ]
         )
     , Html.span [ A11y_Role.status, Attr.class "hidden-visually" ]
-        [ if copied then
-            Html.text (Translations.codeCopied lang)
+        [ Html.text
+            (if copied then
+                Translations.codeCopied lang
 
-          else
-            Html.text ""
+             else
+                ""
+            )
         ]
     ]
 

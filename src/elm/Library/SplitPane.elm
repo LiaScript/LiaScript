@@ -87,7 +87,7 @@ update msg (State state) =
                 }
 
         ( _, SplitterSet position ) ->
-            State { state | position = position |> max 0.1 |> min 0.9 }
+            State { state | position = clamp 0.1 0.9 position }
 
         _ ->
             State state

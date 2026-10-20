@@ -17,6 +17,7 @@ module Lia.Markdown.Code.Log exposing
 -}
 
 import Array exposing (Array)
+import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as JD
@@ -130,14 +131,9 @@ viewText : String -> Maybe String -> String -> Html msg
 viewText class label text =
     Html.div
         [ Attr.class class ]
-        (case label of
-            Just level ->
-                [ Html.span [ Attr.class "hidden-visually" ] [ Html.text (level ++ ": ") ]
-                , Html.text text
-                ]
-
-            Nothing ->
-                [ Html.text text ]
+        (CList.addWhen
+            (Maybe.map (\level -> Html.span [ Attr.class "hidden-visually" ] [ Html.text (level ++ ": ") ]) label)
+            [ Html.text text ]
         )
 
 

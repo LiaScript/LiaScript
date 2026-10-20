@@ -132,23 +132,15 @@ inline config attr e body =
 
 hiddenSpan : Bool -> Bool -> Bool -> Parameters -> List (Html msg) -> Html msg
 hiddenSpan announce hide speaking attr =
-    let
-        alert =
-            if announce then
-                (::) A11y_Live.polite >> (::) A11y_Role.alert
-
-            else
-                identity
-    in
     Html.span
         (if hide then
             annotation "lia-effect--inline hide" attr
 
          else if speaking then
-            alert (annotation "lia-effect--inline lia-effect--speaking" attr)
+            CList.appendIf announce [ A11y_Role.alert, A11y_Live.polite ] (annotation "lia-effect--inline lia-effect--speaking" attr)
 
          else
-            alert (annotation "lia-effect--inline" attr)
+            CList.appendIf announce [ A11y_Role.alert, A11y_Live.polite ] (annotation "lia-effect--inline" attr)
         )
 
 

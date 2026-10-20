@@ -599,20 +599,18 @@ viewRow config base checkbox checked msg submitted vars row statement =
 
 input : Bool -> Msg sub -> Bool -> Bool -> List (Html.Attribute (Msg sub)) -> Html (Msg sub)
 input checkbox msg checked submitted attr =
+    let
+        type_ =
+            if checkbox then
+                "checkbox"
+
+            else
+                "radio"
+    in
     Html.input
         (List.append attr
-            [ Attr.class <|
-                if checkbox then
-                    "lia-checkbox"
-
-                else
-                    "lia-radio"
-            , Attr.type_ <|
-                if checkbox then
-                    "checkbox"
-
-                else
-                    "radio"
+            [ Attr.class ("lia-" ++ type_)
+            , Attr.type_ type_
             , if submitted then
                 Attr.disabled True
 

@@ -84,11 +84,11 @@ tr base open class partiallySolved id state =
     ( case state of
         Vector.SingleChoice list ->
             list
-                |> List.indexedMap (cell "lia-radio" "radio" input)
+                |> List.indexedMap (cell "radio" input)
 
         Vector.MultipleChoice list ->
             list
-                |> List.indexedMap (cell "lia-checkbox" "checkbox" input)
+                |> List.indexedMap (cell "checkbox" input)
     , ( rowID, partialSolution )
     )
 
@@ -97,7 +97,6 @@ tr base open class partiallySolved id state =
 -}
 cell :
     String
-    -> String
     ->
         { base : String
         , rowID : String
@@ -109,10 +108,10 @@ cell :
     -> Int
     -> Bool
     -> Html (Msg sub)
-cell inputClass inputType { base, rowID, open, colorClass, invalid, row } column value =
+cell inputType { base, rowID, open, colorClass, invalid, row } column value =
     Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
         [ Html.input
-            [ Attr.class inputClass
+            [ Attr.class ("lia-" ++ inputType)
             , Attr.class colorClass
             , Attr.type_ inputType
             , Attr.name rowID

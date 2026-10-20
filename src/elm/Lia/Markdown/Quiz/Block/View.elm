@@ -3,7 +3,6 @@ module Lia.Markdown.Quiz.Block.View exposing (view)
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
-import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -16,7 +15,7 @@ import Lia.Markdown.Inline.View exposing (dropHere, dropZoneLabel, viewer)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Utils exposing (combobox, deactivate, dropdownList, icon, onEnter, shuffle)
+import Lia.Utils exposing (combobox, dropdownList, icon, onEnter, shuffle)
 import List.Extra
 
 
