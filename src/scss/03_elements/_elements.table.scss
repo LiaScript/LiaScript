@@ -19,11 +19,21 @@
         position: sticky;
         z-index: 3;
 
-        th {
+        th,
+        td {
           position: -webkit-sticky;
           position: sticky;
           top: 0;
           z-index: 1;
+        }
+
+        // second header row of a two-row (e.g. survey-matrix) head: stick
+        // below the first row instead of overlapping it at top: 0.
+        // ponytail: assumes the first row is a single line of text; if it
+        // wraps to multiple lines this offset undershoots and needs a
+        // measured/JS value instead.
+        .lia-table__head-row--sub th {
+          top: calc(1.47em + 2px);
         }
       }
 
@@ -40,8 +50,13 @@
             td:first-child:before {
               background-color: rgb(var(--lia-grey-lighter));
 
+              // opaque, the cell below already has the stripe
               @at-root html.lia-variant-dark & {
-                background-color: rgba(var(--lia-grey), 0.3);
+                background: linear-gradient(
+                    rgba(var(--lia-grey), 0.15),
+                    rgba(var(--lia-grey), 0.15)
+                  )
+                  rgb(var(--color-background));
               }
             }
 
@@ -59,7 +74,8 @@
       }
 
       &.has-last-col-sticky {
-        .lia-table__head th:last-child {
+        .lia-table__head th:last-child,
+        .lia-table__head td:last-child {
           right: 0;
           position: -webkit-sticky;
           position: sticky;
@@ -68,16 +84,23 @@
 
         .is-alternating {
           .lia-table__row:nth-child(2n) {
-            td:last-child:before {
+            td:last-child:before,
+            th:last-child:before {
               background-color: rgb(var(--lia-grey-lighter));
 
+              // opaque, the cell below already has the stripe
               @at-root html.lia-variant-dark & {
-                background-color: rgba(var(--lia-grey), 0.3);
+                background: linear-gradient(
+                    rgba(var(--lia-grey), 0.15),
+                    rgba(var(--lia-grey), 0.15)
+                  )
+                  rgb(var(--color-background));
               }
             }
 
             &:hover {
-              td:last-child:before {
+              td:last-child:before,
+              th:last-child:before {
                 background-color: rgba(var(--color-highlight), 0.1);
 
                 @at-root html.lia-variant-dark & {
@@ -173,7 +196,8 @@
         }
       }
 
-      .lia-table__row:hover > td:last-child::before {
+      .lia-table__row:hover > td:last-child::before,
+      .lia-table__row:hover > th:last-child::before {
         background-color: rgba(var(--color-highlight), 0.1);
       }
     }
@@ -182,28 +206,34 @@
   &__head {
     border-block-end: settings.$global-border;
 
-    th {
+    th,
+    td {
       background-color: rgb(var(--color-background));
     }
   }
 
+  // th: row headers, e.g. the statements of a survey-matrix
   &__row {
-    td {
+    td,
+    th {
       background-color: rgb(var(--color-background));
     }
 
-    &:first-of-type > td {
-      border-block-start: 0;
+    &:first-of-type > td,
+    &:first-of-type > th {
+      border-block-start: settings.$global-border;
     }
 
-    &:last-child > td {
+    &:last-child > td,
+    &:last-child > th {
       border-block-end: settings.$global-border;
     }
 
     &:hover {
       background-color: rgba(var(--color-highlight), 0.05);
 
-      > td {
+      > td,
+      > th {
         background-color: rgba(var(--color-highlight), 0.05);
       }
     }
@@ -213,6 +243,7 @@
     position: relative;
     border-inline-start: settings.$global-border;
     border-inline-start: settings.$global-border;
+    border-block-start: settings.$global-border;
     border-block-end: settings.$global-border;
     border-inline-end: 0;
     padding: 1.3rem 3.2rem 1.3rem 1.6rem;
@@ -268,19 +299,34 @@
     }
   }
 
+  &.is-compact {
+    .lia-table__header,
+    .lia-table__data {
+      min-width: auto;
+      // higher specificity than the base padding rule above, so this wins
+      // without needing `!important` (which an inline Elm `style` can't
+      // carry anyway -- the two-row sticky matrix header's offset depends
+      // on this row height actually being this small).
+      padding: 0px 5px;
+    }
+  }
+
   &.is-alternating {
     .lia-table__row:nth-child(2n) {
-      td {
+      td,
+      th {
         background-color: rgba(var(--lia-grey-lighter));
 
         @at-root html.lia-variant-dark & {
-          background-color: rgba(var(--lia-grey), 0.3);
+          background-color: rgba(var(--lia-grey), 0.15);
         }
       }
 
       &:hover {
         td,
-        td:last-child:before {
+        th,
+        td:last-child:before,
+        th:last-child:before {
           background-color: rgba(var(--color-highlight), 0.05);
 
           @at-root html.lia-variant-dark & {

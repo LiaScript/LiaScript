@@ -6,19 +6,18 @@ module Lia.Markdown.Effect.Update exposing
     , init
     , next
     , previous
-    , ttsReplay
     , update
     , updateSub
     )
 
+{-| Stepping through the animations of a section, which runs the scripts of
+the new step and reads its comments out loud, and the playback of effects.
+-}
+
 import Browser.Dom as Dom
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
-import Lia.Markdown.Effect.Model
-    exposing
-        ( Model
-        , current_comment
-        )
+import Lia.Markdown.Effect.Model exposing (Model, current_comment)
 import Lia.Markdown.Effect.Script.Types as Script_ exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Section exposing (SubSection)
@@ -30,109 +29,96 @@ import Service.TTS
 import Task
 
 
+{-| -}
 type Msg sub
     = Init Bool
     | Next
     | Previous
     | Send (List Event)
-    | Mute Int
     | Rendered Bool Dom.Viewport
     | Handle Event
     | Script (Script_.Msg sub)
 
 
-updateSub :
+{-| How scripts update and handle events of their sub-sections.
+-}
+type alias Main sub =
     { update : Scripts SubSection -> sub -> SubSection -> Return SubSection sub sub
     , handle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection sub sub
     , globals : Maybe Definition
     }
-    -> Script_.Msg sub
-    -> Model SubSection
-    -> Return (Model SubSection) (Msg sub) sub
+
+
+{-| Update the scripts of a sub-section, which has no sound.
+-}
+updateSub : Main sub -> Script_.Msg sub -> Model SubSection -> Return (Model SubSection) (Msg sub) sub
 updateSub main msg =
     update main True (Script msg)
 
 
-update :
-    { update : Scripts SubSection -> sub -> SubSection -> Return SubSection sub sub
-    , handle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection sub sub
-    , globals : Maybe Definition
-    }
-    -> Bool
-    -> Msg sub
-    -> Model SubSection
-    -> Return (Model SubSection) (Msg sub) sub
+{-| `sound` defines whether comments are read out loud. Scripts that get
+executed are marked as running.
+-}
+update : Main sub -> Bool -> Msg sub -> Model SubSection -> Return (Model SubSection) (Msg sub) sub
 update main sound msg model =
     markRunning <|
         case msg of
             Init run_all_javascript ->
+                -- wait until the section is rendered, before running its scripts
                 model
                     |> Return.val
                     |> Return.cmd (Task.perform (Rendered run_all_javascript) Dom.getViewport)
 
             Next ->
                 if has_next model then
-                    { model | visible = model.visible + 1 }
-                        |> execute main sound False 0
+                    execute main sound False { model | visible = model.visible + 1 }
 
                 else
                     Return.val model
 
             Previous ->
                 if has_previous model then
-                    { model | visible = model.visible - 1 }
-                        |> execute main sound False 0
+                    execute main sound False { model | visible = model.visible - 1 }
 
                 else
                     Return.val model
 
-            Mute id ->
-                { model | speaking = Nothing }
-                    |> Return.val
-                    |> Return.batchEvent (Service.TTS.cancel |> Event.pushWithId "playback" id)
-
-            Send event ->
-                let
-                    events =
-                        Service.Slide.scrollIntoView "focusedToc" 500
-                            :: Service.Slide.scrollIntoView "focused" 750
-                            :: Service.Slide.scrollIntoView "lia-notes-active" 500
-                            :: event
-                in
+            Send events ->
                 model
                     |> Return.val
                     |> Return.batchEvents
-                        (case current_comment model of
+                        ((case current_comment model of
                             Just id ->
                                 if sound then
-                                    Service.TTS.readFrom id :: events
+                                    [ Service.TTS.readFrom id ]
 
                                 else
-                                    events
+                                    []
 
-                            _ ->
-                                Service.TTS.cancel :: events
+                            Nothing ->
+                                [ Service.TTS.cancel ]
+                         )
+                            ++ Service.Slide.scrollIntoView "focusedToc" 500
+                            :: Service.Slide.scrollIntoView "focused" 750
+                            :: Service.Slide.scrollIntoView "lia-notes-active" 500
+                            :: events
                         )
 
             Rendered run_all_javascript _ ->
-                execute main sound run_all_javascript 0 model
+                execute main sound run_all_javascript model
 
             Script childMsg ->
-                model.javascript
-                    |> Script.update main childMsg
-                    |> Return.mapValCmd (\v -> { model | javascript = v }) Script
+                script main childMsg model
 
             Handle event ->
                 case Event.destructure event of
-                    ( Nothing, _, ( cmd, param ) ) ->
+                    ( Nothing, _, _ ) ->
                         case Service.TTS.decode event of
                             Service.TTS.Start ->
-                                { model | speaking = Just -1 }
-                                    |> Return.val
+                                Return.val { model | speaking = Just -1 }
 
                             Service.TTS.Stop ->
-                                { model | speaking = Nothing }
-                                    |> Return.val
+                                Return.val { model | speaking = Nothing }
 
                             Service.TTS.Error info ->
                                 model
@@ -143,109 +129,108 @@ update main sound msg model =
                                 Return.val model
 
                     ( Just "playback", id, ( "start", _ ) ) ->
-                        Return.val { model | speaking = Just id }
+                        Return.val { model | speaking = Just id, paused = Nothing }
 
                     ( Just "playback", _, ( "stop", _ ) ) ->
-                        Return.val { model | speaking = Nothing }
+                        Return.val { model | speaking = Nothing, paused = Nothing }
+
+                    ( Just "playback", id, ( "paused", _ ) ) ->
+                        Return.val { model | paused = Just id }
 
                     ( Just "playback", _, ( "error", _ ) ) ->
-                        { model | speaking = Nothing }
+                        { model | speaking = Nothing, paused = Nothing }
                             |> Return.val
                             |> Return.batchEvent (Service.Console.warn "effects: local playback error")
 
                     _ ->
-                        model.javascript
-                            |> Script.update main (Script_.Handle event)
-                            |> Return.mapValCmd (\v -> { model | javascript = v }) Script
+                        script main (Script_.Handle event) model
 
 
+script : Main sub -> Script_.Msg sub -> Model SubSection -> Return (Model SubSection) (Msg sub) sub
+script main msg model =
+    model.javascript
+        |> Script.update main msg
+        |> Return.mapValCmd (\v -> { model | javascript = v }) Script
+
+
+{-| Mark all scripts as running, for which an `exec` event is sent (events of
+LiaScript results are tracked through `"sub"` and belong to their scripts).
+-}
 markRunning : Return (Model a) (Msg sub) sub -> Return (Model a) (Msg sub) sub
 markRunning return =
-    return
-        |> Return.mapVal
-            (\model ->
-                { model
-                    | javascript =
-                        List.foldl
-                            (\e js ->
-                                case ( Event.id e, e.message.cmd ) of
-                                    ( Just id, "exec" ) ->
-                                        if id < 0 then
-                                            js
-
-                                        else
-                                            Script.setRunning id True js
-
-                                    _ ->
+    Return.mapVal
+        (\model ->
+            { model
+                | javascript =
+                    List.foldl
+                        (\e js ->
+                            case ( Event.poi e, e.message.cmd ) of
+                                ( Just ( "script", id ), "exec" ) ->
+                                    if id < 0 then
                                         js
-                            )
-                            model.javascript
-                            return.events
-                }
-            )
 
+                                    else
+                                        Script.setRunning id True js
 
-execute :
-    { update : Scripts SubSection -> sub -> SubSection -> Return SubSection sub sub
-    , handle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection sub sub
-    , globals : Maybe Definition
-    }
-    -> Bool
-    -> Bool
-    -> Int
-    -> Model SubSection
-    -> Return (Model SubSection) (Msg sub) sub
-execute main sound run_all delay model =
-    let
-        javascript =
-            if run_all then
-                Script.getAll model.javascript
-
-            else
-                Script.getVisible model.visible model.javascript
-    in
-    update main
-        sound
-        (javascript
-            |> List.map (Script.execute delay)
-            |> List.reverse
-            |> Send
+                                _ ->
+                                    js
+                        )
+                        model.javascript
+                        return.events
+            }
         )
-        model
+        return
 
 
+{-| Run the scripts of the current animation step (or all of them), scroll to
+the new step and read its comments.
+-}
+execute : Main sub -> Bool -> Bool -> Model SubSection -> Return (Model SubSection) (Msg sub) sub
+execute main sound run_all model =
+    (if run_all then
+        Script.getAll model.javascript
+
+     else
+        Script.getVisible model.visible model.javascript
+    )
+        |> List.map (Script.execute 0)
+        |> List.reverse
+        |> Send
+        |> (\msg -> update main sound msg model)
+
+
+{-| -}
 has_next : Model a -> Bool
 has_next model =
     model.visible < model.effects
 
 
+{-| -}
 has_previous : Model a -> Bool
 has_previous model =
     model.visible > 0
 
 
+{-| Start the animations of a section, `True` runs all of its scripts.
+-}
 init : Bool -> Msg sub
-init run_all_javascript =
-    Init run_all_javascript
+init =
+    Init
 
 
+{-| -}
 next : Msg sub
 next =
     Next
 
 
+{-| -}
 previous : Msg sub
 previous =
     Previous
 
 
+{-| -}
 handle : Event -> Msg sub
 handle =
     Handle
-
-
-ttsReplay : Model SubSection -> Maybe Event
-ttsReplay model =
-    model
-        |> current_comment
-        |> Maybe.map Service.TTS.readFrom

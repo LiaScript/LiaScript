@@ -3,22 +3,136 @@ import '../types/responsiveVoice'
 import LANGUAGE_FALLBACKS, {
   LEGACY_LANGUAGE_MAP,
 } from './helper/language-fallbacks'
+import { detectGender } from './helper/voice-gender'
+import * as Narrator from './Narrator'
+import {
+  CommentMediaController,
+  createControllers,
+  parseTimeFragment,
+} from './comment-media'
 
 // @ts-ignore
 import EasySpeech from 'easy-speech/dist/EasySpeech'
-
-enum Gender {
-  Female,
-  Male,
-  Unknown,
-}
 
 var useBrowserTTS: null | boolean = null
 var browserVoices: Record<string, SpeechSynthesisVoice> = {}
 
 var firstSpeak = true
 
+// the delayed read of the current slide, only the latest one may start
+var readTimer: ReturnType<typeof setTimeout> | undefined
+
 var elmSend: Lia.Send | null
+
+// Chrome/Safari bug: resume() fires 'end' instead of continuing — re-speak on resume.
+// browserTTSIntentionalPause flags an explicit user pause so 'end' triggers re-speak.
+type BrowserTTSSpeakArgs = {
+  text: string
+  voice: SpeechSynthesisVoice
+  options: { rate: number; pitch: number }
+  handlers: { onStart: () => void; onStop: () => void; onError: (e: any) => void }
+} | null
+
+var browserTTSSpeakArgs: BrowserTTSSpeakArgs = null
+var browserTTSIntentionalPause = false
+
+// Tracks the current responsiveVoice speak call to enable re-speak on resume failure.
+type ResponsiveVoiceSpeakArgs = {
+  text: string
+  voice: string
+  options: { rate: number; pitch: number }
+  handlers: { onStart: () => void; onStop: () => void; onError: (e: any) => void }
+} | null
+
+var responsiveVoiceSpeakArgs: ResponsiveVoiceSpeakArgs = null
+
+// For tracking active audio/video media to enable pause/resume and progress updates.
+// Audio recordings are tracked as `media`, comment videos (direct files and
+// embeds such as YouTube) as `controller`.
+type ActiveMediaState = {
+  media: HTMLMediaElement | null
+  controller: CommentMediaController | null
+  event: Lia.Event | null
+  progressInterval: ReturnType<typeof setInterval> | null
+}
+
+var activeMedia: ActiveMediaState = {
+  media: null,
+  controller: null,
+  event: null,
+  progressInterval: null,
+}
+
+// Controllers built for the current comment's videos.
+var commentControllers: CommentMediaController[] = []
+
+function destroyCommentControllers() {
+  for (const c of commentControllers) {
+    try {
+      c.destroy()
+    } catch (e) {}
+  }
+  commentControllers = []
+}
+
+function stopProgressInterval() {
+  if (activeMedia.progressInterval !== null) {
+    clearInterval(activeMedia.progressInterval)
+    activeMedia.progressInterval = null
+  }
+}
+
+function clearMediaState() {
+  stopProgressInterval()
+  activeMedia.media = null
+  activeMedia.controller = null
+  activeMedia.event = null
+}
+
+function startProgressInterval(event: Lia.Event) {
+  stopProgressInterval()
+  let lastTime = -1
+  let playStart: number | null = null
+  activeMedia.progressInterval = setInterval(() => {
+    const controller = activeMedia.controller
+    const media = activeMedia.media
+
+    let paused: boolean
+    let t: number
+    let duration: number | null
+
+    if (controller) {
+      if (!controller.capabilities.duration) return
+      paused = controller.isPaused()
+      t = controller.getCurrentTime()
+      duration = controller.getDuration()
+    } else if (media) {
+      paused = media.paused
+      t = media.currentTime
+      duration = isFinite(media.duration) && media.duration > 0 ? media.duration : null
+    } else {
+      playStart = null
+      return
+    }
+
+    if (paused) {
+      playStart = null
+      return
+    }
+
+    // If duration is not available, estimate total time as current time + 10s, and adjust dynamically as current time advances.
+    const total = duration !== null
+      ? duration
+      : (() => {
+          if (playStart === null) playStart = Date.now()
+          return (Date.now() - playStart) / 1000 + t + 10
+        })()
+    if (t !== lastTime) {
+      lastTime = t
+      sendResponse(event, 'progress', JSON.stringify({ current: t, total }))
+    }
+  }, 250)
+}
 
 const SETTINGS = 'settings'
 
@@ -33,6 +147,15 @@ export const Service = {
   init: function (elmSend_: Lia.Send) {
     elmSend = elmSend_
 
+    Narrator.init((tag: string | null) =>
+      sendReply({
+        reply: true,
+        track: [[SETTINGS, 0]],
+        service: 'tts',
+        message: { cmd: 'avatar', param: tag },
+      })
+    )
+
     setTimeout(function () {
       firstSpeak = false
       if (window.responsiveVoice) {
@@ -40,9 +163,9 @@ export const Service = {
       }
 
       window.LIA.playback = function (event: Lia.Event) {
-        playback(event)
+        Service.handle(event)
       }
-    }, 2000)
+    }, 1234)
 
     this.easySpeechSettings = EasySpeech.detect()
 
@@ -86,9 +209,12 @@ export const Service = {
           return
         }
 
+        // stop the old text now, otherwise it continues until the new one starts
+        cancel()
+
         const timeout = event.message.param.endsWith('-0') ? 2000 : 500
 
-        setTimeout(function () {
+        readTimer = setTimeout(function () {
           read(event)
         }, timeout)
         break
@@ -96,6 +222,98 @@ export const Service = {
 
       case 'playback': {
         playback(event)
+        break
+      }
+
+      case 'pause': {
+        // A comment video and the TTS narration can run at the same time
+        // (translation mode plays a muted video while TTS speaks the
+        // translation), so both are paused.
+        let paused = false
+
+        if (activeMedia.controller && !activeMedia.controller.isPaused()) {
+          activeMedia.controller.pause()
+          stopProgressInterval()
+          paused = true
+        } else if (activeMedia.media && !activeMedia.media.paused) {
+          activeMedia.media.pause()
+          stopProgressInterval()
+          paused = true
+        }
+
+        if (pauseTTSEngine()) {
+          paused = true
+        }
+
+        if (paused) {
+          sendResponse(activeMedia.event ?? event, 'paused', null)
+        }
+        break
+      }
+
+      case 'resume': {
+        // Mirror of pause: resume the comment video and the TTS narration
+        let resumed = false
+        const media = activeMedia.controller || activeMedia.media
+
+        if (
+          media &&
+          (activeMedia.controller
+            ? activeMedia.controller.isPaused()
+            : activeMedia.media!.paused) &&
+          activeMedia.event
+        ) {
+          media.play().catch((e: any) => {
+            if (e?.name !== 'AbortError') {
+              console.warn('Failed to resume media:', e?.message ?? e)
+            }
+          })
+          startProgressInterval(activeMedia.event)
+          resumed = true
+        }
+
+        if (resumeTTSEngine()) {
+          resumed = true
+        }
+
+        if (resumed) {
+          sendResponse(activeMedia.event ?? event, 'start', null)
+        }
+        break
+      }
+
+      case 'seek': {
+        const seekTo = parseFloat(event.message.param)
+        if (
+          !isNaN(seekTo) &&
+          activeMedia.controller &&
+          activeMedia.controller.capabilities.seek &&
+          activeMedia.event
+        ) {
+          const controller = activeMedia.controller
+          stopProgressInterval()
+          controller.seek(seekTo)
+          const total = controller.getDuration()
+          sendResponse(
+            activeMedia.event,
+            'progress',
+            JSON.stringify({ current: seekTo, total: total ?? seekTo + 10 })
+          )
+          if (!controller.isPaused()) {
+            startProgressInterval(activeMedia.event)
+          }
+        } else if (!isNaN(seekTo) && activeMedia.media && activeMedia.event) {
+          stopProgressInterval()
+          activeMedia.media.currentTime = seekTo
+          sendResponse(
+            activeMedia.event,
+            'progress',
+            JSON.stringify({ current: seekTo, total: activeMedia.media.duration })
+          )
+          if (!activeMedia.media.paused) {
+            startProgressInterval(activeMedia.event)
+          }
+        }
         break
       }
 
@@ -117,41 +335,99 @@ function playback(event: Lia.Event) {
   const options = getAudioSettings(text)
 
   if (typeof text !== 'string') {
-    text = innerText(text)
+    text = innerText(text, lang)
   }
 
+  Narrator.begin(event, { source: 'tts', text, voice, lang })
   speak(text, voice, lang, options, event)
 }
 
-function innerText(node) {
+function innerText(node, lang = 'en') {
   if (node.nodeType === Node.TEXT_NODE) {
-    // If the child node is a text node, append its text content
     return node.textContent
-  } else if (node.tagName === 'INPUT') {
-    // If the child node is an input element, append its value
-    return node.value
-  } else if (
-    node.classList.contains('lia-effect__circle') ||
-    node.classList.contains('lia-quiz-multi')
-  ) {
+  } else if (node.nodeType !== Node.ELEMENT_NODE || node.tagName === 'BUTTON') {
     return ''
+  } else if (node.tagName === 'INPUT') {
+    // Text inputs are read by their value, checkboxes and radios would be "on"
+    return node.type === 'checkbox' || node.type === 'radio' ? '' : node.value
+  } else if (node.tagName === 'LIA-FORMULA' && node.speech) {
+    // the formula is rendered in a shadow root, it is read in the language of
+    // the voice, which might differ from the course
+    return ' ' + node.speech(lang) + ' '
+  }
+
+  const display = window.getComputedStyle(node).display
+
+  if (display === 'none' || node.classList.contains('lia-effect__circle')) {
+    return ''
+  }
+
+  const read = (n: Node) => innerText(n, lang)
+  const all = (selector: string) =>
+    Array.from(node.querySelectorAll(selector)) as HTMLElement[]
+
+  // Quizzes, surveys and tasks are read as lists: "green, blue or red",
+  // checkboxes as "milk and bread", the buttons at the end "check or resolve"
+  if (
+    node.classList.contains('lia-quiz__answers') &&
+    node.querySelector(':scope > .lia-label')
+  ) {
+    return list(
+      all(':scope > .lia-label').map(read),
+      node.querySelector('input[type=checkbox]')
+        ? 'conjunction'
+        : 'disjunction',
+      lang
+    )
   } else if (node.classList.contains('lia-dropdown')) {
-    node = node.childNodes[0]
+    return list(all('.lia-dropdown__option').map(read), 'disjunction', lang)
+  } else if (node.classList.contains('lia-survey-matrix')) {
+    const columns = list(all('th').map(read), 'disjunction', lang)
+    return all('tr')
+      .map(row => trim(read(row)) + ': ' + columns)
+      .join('')
+  } else if (node.classList.contains('lia-quiz__control')) {
+    return list(
+      all('button').map(b => b.innerText.trim() || b.title),
+      'disjunction',
+      lang
+    )
   }
 
   let text = ''
+  node.childNodes.forEach((n: Node) => {
+    text += read(n)
+  })
 
-  try {
-    if (window.getComputedStyle(node).display !== 'none') {
-      node.childNodes.forEach((n: Node) => {
-        text += innerText(n)
-      })
-    }
-  } catch (e: any) {
-    console.warn('TTS: could not read innerText -->', e.message)
+  // Block elements (paragraphs, options, list items, table cells) get a
+  // pause, otherwise "vier" and "fünf" would be read as "vierfünf"
+  if (!display.startsWith('inline') && text.trim()) {
+    text = text.trimEnd()
+    text += /[.!?:;,]$/.test(text) ? ' ' : '. '
   }
 
   return text
+}
+
+function trim(text: string) {
+  return text.trim().replace(/[.,;:]$/, '')
+}
+
+function list(
+  items: string[],
+  type: 'conjunction' | 'disjunction',
+  lang: string
+) {
+  items = items.map(trim).filter(item => item)
+
+  if (items.length === 0) return ''
+
+  try {
+    return new (Intl as any).ListFormat(lang, { type }).format(items) + '. '
+  } catch (e) {
+    // Intl.ListFormat is not available on older browsers (KaiOS)
+    return items.join(', ') + '. '
+  }
 }
 
 function getAudioSettings(element: HTMLElement | Element) {
@@ -172,15 +448,39 @@ function getAudioSettings(element: HTMLElement | Element) {
   return options
 }
 
+/**
+ * Resolve a comment-video controller's duration, waiting briefly for HTML media
+ * metadata to load. Falls back to 0 if the duration never appears in time.
+ */
+function probeDuration(controller: CommentMediaController): Promise<number> {
+  const immediate = controller.getDuration()
+  if (immediate !== null) return Promise.resolve(immediate)
+
+  return new Promise<number>(resolve => {
+    const startedAt = Date.now()
+    const poll = setInterval(() => {
+      const d = controller.getDuration()
+      if (d !== null) {
+        clearInterval(poll)
+        resolve(d)
+      } else if (Date.now() - startedAt > 3000) {
+        clearInterval(poll)
+        resolve(0)
+      }
+    }, 100)
+  })
+}
+
 function read(event: Lia.Event) {
-  cancel()
+  // the class name of the comments, before it gets overwritten by a response
+  const id: string = event.message.param
 
   let element = document.getElementsByClassName(event.message.param)
 
   if (element.length) {
     let voice = element[0].getAttribute('data-voice') || 'default'
     let lang = element[0].getAttribute('data-lang') || 'en'
-    let translation = (element[0].getAttribute('translate') || 'no') === 'yes'
+    let translation = (element[0].getAttribute('data-translated') || 'no') === 'yes'
 
     const options = getAudioSettings(element[0])
 
@@ -188,7 +488,10 @@ function read(event: Lia.Event) {
     let text = ''
 
     for (let i = 0; i < element.length; i++) {
-      text += (element[i] as HTMLElement).innerText || element[i].textContent
+      // the comment of a foreign narrator is display: none, its children not
+      element[i].childNodes.forEach((n: Node) => {
+        text += innerText(n, lang)
+      })
 
       let audioUrl = element[i].getAttribute('data-file') || null
 
@@ -202,314 +505,241 @@ function read(event: Lia.Event) {
     text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
 
     const player: any = document.getElementById(VIDEO)
-    const videos: HTMLVideoElement[] =
-      (Array.from(player?.children as unknown[]) as HTMLVideoElement[]) || []
+    const controllers: CommentMediaController[] = player
+      ? createControllers(player)
+      : []
+    commentControllers = controllers
 
-    if (videos.length > 0 && player) {
+    const narrator = {
+      id,
+      elements: Array.from(element) as HTMLElement[],
+      text,
+      voice,
+      lang,
+      translated: translation,
+    }
+
+    if (controllers.length > 0) {
+      Narrator.begin(event, { ...narrator, source: 'video' })
+
       let currentIndex = 0
       let isEnding = false
-      let ttsFinished = !translation // If no translation needed, mark TTS as finished
+      let ttsFinished = !translation
 
-      // Send initial start response
       sendResponse(event, 'start')
 
-      // Handle translation mode differently
-      if (translation && text.trim() !== '') {
-        // For translation mode, preload videos to get their durations
-        Promise.all(
-          videos.map(video => {
-            return new Promise<number>(resolve => {
-              // If video is already loaded with duration
-              if (video.readyState >= 2 && video.duration) {
-                resolve(video.duration)
-                return
-              }
+      const makeVideoHandlers = () => ({
+        onStart: () => playNextVideo(),
+        onStop: () => {
+          ttsFinished = true
+          const current = controllers[currentIndex]
+          if (current && !current.isPaused()) {
+            current.pause()
+            currentIndex = controllers.length
+            isEnding = true
+          }
+          if (isEnding || currentIndex >= controllers.length) {
+            sendResponse(event, 'stop')
+          } else {
+            isEnding = true
+          }
+        },
+        onError: (err: any) => {
+          console.warn('TTS translation error:', err)
+          ttsFinished = true
+          if (controllers[currentIndex]?.getCurrentTime() === 0) playNextVideo()
+          if (currentIndex >= controllers.length && isEnding) sendResponse(event, 'stop')
+        },
+      })
 
-              // Otherwise wait for metadata to load
-              const handleLoaded = () => {
-                video.removeEventListener('loadedmetadata', handleLoaded)
-                resolve(video.duration)
-              }
-              video.addEventListener('loadedmetadata', handleLoaded)
+      // Rate-matching stretches a muted video to fit the translated narration,
+      // which needs the video duration up front. Only HTML media preloads its
+      // duration without playing; embeds (e.g. YouTube) can't report it until
+      // they start, so they skip rate-match and just play alongside the TTS.
+      const canRateMatch = controllers.every(c => c.isHtmlMedia)
 
-              // Set source if not already
-              if (!video.src && video.querySelector('source')) {
-                video.load()
-              }
-            })
-          })
-        )
+      if (translation && text.trim() !== '' && canRateMatch) {
+        Promise.all(controllers.map(probeDuration))
           .then(durations => {
-            // Calculate total video duration
-            const totalVideoDuration = durations.reduce(
-              (total, duration) => total + duration,
-              0
-            )
-
-            // Estimate TTS duration based on text length and speech rate
-            const estimatedTTSDuration = estimateTTSDuration(
-              text,
-              lang,
-              options.rate
-            )
-
-            // Calculate adjusted playback rate if video is shorter than TTS
-            const originalRate = options.rate
-            if (totalVideoDuration < estimatedTTSDuration) {
-              // Calculate rate to match durations, with a minimum threshold
-              const MIN_RATE = 0.5 // Most browsers support down to 0.5x speed
+            const totalVideoDuration = durations.reduce((a, b) => a + b, 0)
+            const estimatedTTSDuration = estimateTTSDuration(text, lang, options.rate)
+            const MIN_RATE = 0.5
+            if (totalVideoDuration > 0 && totalVideoDuration < estimatedTTSDuration) {
               options.videoRate = Math.max(
                 MIN_RATE,
-                (totalVideoDuration / estimatedTTSDuration) * originalRate
+                (totalVideoDuration / estimatedTTSDuration) * options.rate
               )
-              console.log(
-                `Adjusting video playback rate to ${options.videoRate} to match estimated TTS duration`
-              )
+              console.log(`Adjusting video playback rate to ${options.videoRate}`)
             } else {
-              options.videoRate = originalRate
+              options.videoRate = options.rate
             }
-
-            // Start TTS with custom handlers
-            speak(text, voice, lang, options, {
-              ...event,
-              message: {
-                ...event.message,
-                cmd: event.message.cmd,
-              },
-              handlers: {
-                onStart: () => {
-                  // Start video when TTS begins speaking
-                  playNext()
-                },
-                onStop: () => {
-                  ttsFinished = true
-
-                  // Stop the currently playing video when TTS finishes
-                  if (currentIndex < videos.length) {
-                    const currentVideo = videos[currentIndex]
-                    if (!currentVideo.paused) {
-                      currentVideo.pause()
-
-                      // Trigger the end of video processing
-                      currentIndex = videos.length
-                      isEnding = true
-                    }
-                  }
-
-                  // Send stop response
-                  if (isEnding || currentIndex >= videos.length) {
-                    sendResponse(event, 'stop')
-                  } else {
-                    // Mark as ending to prepare for stop response
-                    isEnding = true
-                  }
-                },
-                onError: error => {
-                  console.warn('TTS translation error:', error)
-                  ttsFinished = true
-                  if (!videos[currentIndex]?.played.length) {
-                    playNext()
-                  }
-                  if (currentIndex >= videos.length && isEnding) {
-                    sendResponse(event, 'stop')
-                  }
-                },
-              },
-            })
+            speak(text, voice, lang, options, { ...event, handlers: makeVideoHandlers() })
           })
-          .catch(error => {
-            console.warn('Error calculating video durations:', error)
-            // Fall back to original behavior if duration calculation fails
-            speak(text, voice, lang, options, {
-              ...event,
-              message: { ...event.message, cmd: event.message.cmd },
-              handlers: {
-                onStart: () => playNext(),
-                onStop: () => {
-                  ttsFinished = true
-
-                  // Stop the currently playing video when TTS finishes
-                  if (currentIndex < videos.length) {
-                    const currentVideo = videos[currentIndex]
-                    if (!currentVideo.paused) {
-                      currentVideo.pause()
-
-                      // Trigger the end of video processing
-                      currentIndex = videos.length
-                      isEnding = true
-                    }
-                  }
-
-                  // Send stop response
-                  if (isEnding || currentIndex >= videos.length) {
-                    sendResponse(event, 'stop')
-                  } else {
-                    // Mark as ending to prepare for stop response
-                    isEnding = true
-                  }
-                },
-                onError: error => {
-                  console.warn('TTS translation error:', error)
-                  ttsFinished = true
-                  if (!videos[currentIndex]?.played.length) playNext()
-                  if (currentIndex >= videos.length && isEnding)
-                    sendResponse(event, 'stop')
-                },
-              },
-            })
+          .catch(err => {
+            console.warn('Error calculating video durations:', err)
+            speak(text, voice, lang, options, { ...event, handlers: makeVideoHandlers() })
           })
+      } else if (translation && text.trim() !== '') {
+        options.videoRate = options.rate
+        speak(text, voice, lang, options, { ...event, handlers: makeVideoHandlers() })
       } else {
-        // For non-translation mode, play the video immediately with original audio
-        playNext()
+        playNextVideo()
       }
 
-      async function playNext() {
-        if (currentIndex >= videos.length) {
+      function playNextVideo() {
+        if (currentIndex >= controllers.length) {
           if (!isEnding) {
             isEnding = true
             if (ttsFinished) {
+              clearMediaState()
               sendResponse(event, 'stop')
             }
           }
           return
         }
 
-        const video = videos[currentIndex]
+        const controller = controllers[currentIndex]
 
-        // Parse time fragment from video URL
-        const timeFragment = parseTimeFragment(video.src)
-
-        // Set up event to handle end time if specified
-        if (timeFragment.end !== null) {
-          const checkTimeUpdate = () => {
-            if (video.currentTime >= timeFragment.end!) {
-              video.pause()
-              video.removeEventListener('timeupdate', checkTimeUpdate)
-              video.onended!({} as Event)
-            }
-          }
-          video.addEventListener('timeupdate', checkTimeUpdate)
-        }
-
-        video.onended = () => {
+        controller.onEnded(() => {
           currentIndex++
-          playNext()
+          playNextVideo()
+        })
+        controller.onError((e: any) => {
+          if (e?.name !== 'AbortError') {
+            console.warn('Failed to play video:', e?.message ?? e)
+          }
+        })
+
+        if (controller.capabilities.rate) {
+          controller.setPlaybackRate(
+            translation && options.videoRate ? options.videoRate : options.rate
+          )
+        }
+        if (controller.capabilities.mute) {
+          controller.setMuted(translation)
+        }
+        controller.setVisible(true)
+        if (currentIndex > 0) controllers[currentIndex - 1].setVisible(false)
+
+        // Background-frame preview only applies to real <video> elements.
+        if (controller.mediaElement) {
+          storeBackgroundVideo(player, controller.mediaElement as HTMLVideoElement)
         }
 
-        // Set start time if specified, otherwise reset to beginning
-        if (timeFragment.start !== null) {
-          video.currentTime = timeFragment.start
-        } else if (video.currentTime !== 0) {
-          video.currentTime = 0
+        activeMedia.controller = controller
+        Narrator.setMedia(controller.mediaElement)
+        activeMedia.event = event
+        startProgressInterval(event)
+
+        const duration = controller.getDuration()
+        if (duration !== null) {
+          sendResponse(
+            event,
+            'progress',
+            JSON.stringify({ current: controller.getCurrentTime(), total: duration })
+          )
         }
 
-        video.preservesPitch = true
-        // Use possibly adjusted video rate in translation mode
-        video.playbackRate =
-          translation && options.videoRate ? options.videoRate : options.rate
-
-        // Set muted state based on translation flag
-        video.muted = translation
-
-        video.style.display = 'block'
-        if (currentIndex > 0) {
-          videos[currentIndex - 1].style.display = 'none'
-        }
-
-        // Always store the background video
-        storeBackgroundVideo(player, video)
-
-        // Play the video
-        const response = video.play()
-        if (response && typeof response.then === 'function') {
-          response.catch(e => {
-            console.warn('Failed to play video:', e.message)
-          })
-        }
+        controller.play().catch((e: any) => {
+          if (e?.name !== 'AbortError') {
+            console.warn('Failed to play video:', e?.message ?? e)
+          }
+        })
       }
     } else if (hasAudioURLs) {
-      let audioUrls: HTMLMediaElement[] = Array.from(
-        document.getElementsByClassName(
-          AUDIO
-        ) as HTMLCollectionOf<HTMLMediaElement>
+      Narrator.begin(event, { ...narrator, source: 'audio' })
+
+      const audioUrls: HTMLMediaElement[] = Array.from(
+        document.getElementsByClassName(AUDIO) as HTMLCollectionOf<HTMLMediaElement>
       )
       let currentIndex = 0
 
-      async function playNext() {
+      function playNextAudio() {
         if (currentIndex >= audioUrls.length) {
+          clearMediaState()
           sendResponse(event, 'stop')
           return
         }
 
         const audio = audioUrls[currentIndex]
         const source = audio.firstChild as HTMLSourceElement
-
-        // Parse time fragment from audio URL
         const timeFragment = parseTimeFragment(source.src)
 
-        // Set up event to handle end time if specified
         if (timeFragment.end !== null) {
           const checkTimeUpdate = () => {
             if (audio.currentTime >= timeFragment.end!) {
               audio.pause()
               audio.removeEventListener('timeupdate', checkTimeUpdate)
-              audio.onended!({} as Event) // Trigger the onended event manually
+              audio.onended!({} as Event)
             }
           }
           audio.addEventListener('timeupdate', checkTimeUpdate)
         }
 
-        const error = (error: string) => {
-          console.warn('TTS failed to play ->', '' + error, source.src)
-
+        const onError = (err: string) => {
+          console.warn('TTS failed to play ->', err, source.src)
           if (source.src.startsWith('blob:')) {
             currentIndex++
-            playNext()
+            playNextAudio()
             return
           }
-
           audio.pause()
-
           if (window.LIA.fetchError) {
-            window.LIA.fetchError(
-              'audio',
-              source.src.replace(window.location.origin, '')
-            )
+            window.LIA.fetchError('audio', source.src.replace(window.location.origin, ''))
             return
           }
-
           currentIndex++
-          playNext()
+          playNextAudio()
         }
 
         audio.onended = () => {
           audio.currentTime = 0
           currentIndex++
-          playNext()
+          if (currentIndex < audioUrls.length) {
+            activeMedia.media = audioUrls[currentIndex]
+          } else {
+            clearMediaState()
+          }
+          playNextAudio()
         }
 
-        // Set start time if specified
         if (timeFragment.start !== null) {
           audio.currentTime = timeFragment.start
         } else if (audio.currentTime > 0) {
-          // Your existing logic for resetting audio
           audio.innerHTML = source.outerHTML
         }
 
         audio.preservesPitch = true
         audio.playbackRate = options.rate
-        const response = audio.play()
+        activeMedia.media = audio
+        Narrator.setMedia(audio)
+        activeMedia.event = event
 
+        const sendInitialProgress = () => {
+          if (audio.duration > 0) {
+            sendResponse(
+              event,
+              'progress',
+              JSON.stringify({ current: audio.currentTime, total: audio.duration })
+            )
+          }
+        }
+
+        const response = audio.play()
         if (response !== undefined) {
-          response.catch(e => error(e.message))
+          response
+            .then(sendInitialProgress)
+            .catch(e => onError(e.message))
         } else {
-          error("resource couldn't be played")
+          onError("resource couldn't be played")
         }
       }
 
       sendResponse(event, 'start')
-      playNext()
+      startProgressInterval(event)
+      playNextAudio()
     } else if (text !== '' && element[0] !== undefined) {
+      Narrator.begin(event, { ...narrator, source: 'tts' })
       speak(text, voice, lang, options, event)
     }
   }
@@ -553,7 +783,71 @@ export function inject(key: string) {
   }
 }
 
+/**
+ * Pause whichever TTS engine is currently speaking (responsiveVoice or the
+ * browser speechSynthesis). Returns true if a speaking engine was paused.
+ */
+function pauseTTSEngine(): boolean {
+  if (window.responsiveVoice && responsiveVoiceSpeakArgs && window.responsiveVoice.isPlaying()) {
+    try {
+      window.responsiveVoice.pause()
+      return true
+    } catch (e) {
+      console.warn('Failed to pause responsiveVoice:', e)
+    }
+  } else if (window.speechSynthesis && window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+    try {
+      browserTTSIntentionalPause = true
+      EasySpeech.pause()
+      return true
+    } catch (e) {
+      browserTTSIntentionalPause = false
+      console.warn('Failed to pause browser TTS:', e)
+    }
+  }
+  return false
+}
+
+/**
+ * Resume whichever TTS engine was paused. Returns true if an engine was resumed.
+ */
+function resumeTTSEngine(): boolean {
+  if (window.responsiveVoice && responsiveVoiceSpeakArgs) {
+    try {
+      window.responsiveVoice.resume()
+    } catch (e) {
+      // resume() failed — re-speak from scratch as last resort
+      const args = responsiveVoiceSpeakArgs
+      if (args) responsiveSpeak(args.text, args.voice, args.options, args.handlers)
+      console.warn('Failed to resume responsiveVoice, re-speaking:', e)
+    }
+    return true
+  } else if (browserTTSSpeakArgs && (window.speechSynthesis?.paused || browserTTSIntentionalPause)) {
+    try {
+      EasySpeech.resume()
+      // If we reach here, resume() did not fire 'end' synchronously — clear
+      // the flag so any future natural 'end' is treated as real completion.
+      browserTTSIntentionalPause = false
+    } catch (e) {
+      browserTTSIntentionalPause = false
+      // resume() threw — re-speak from scratch as last resort
+      const args = browserTTSSpeakArgs
+      if (args) easySpeak(args.text, args.voice, args.options, args.handlers)
+      console.warn('Failed to resume browser TTS, re-speaking:', e)
+    }
+    return true
+  }
+  return false
+}
+
 function cancel() {
+  // a read that is still waiting would start after switching slides
+  clearTimeout(readTimer)
+  Narrator.stop()
+  browserTTSSpeakArgs = null
+  browserTTSIntentionalPause = false
+  clearMediaState()
+
   try {
     const audioRecordings = document.getElementsByClassName(
       AUDIO
@@ -567,13 +861,21 @@ function cancel() {
     console.warn('TTS failed to cancel audioRecordings', e.message)
   }
 
+  // Tear down embed players (YouTube iframes, ...) created for comment videos.
+  destroyCommentControllers()
+
   try {
     const player: any = document.getElementById(VIDEO)
-    const videos: HTMLMediaElement[] =
-      (Array.from(player?.children as unknown[]) as HTMLMediaElement[]) || []
+    // Reset only real <video> children, embed placeholders are owned by their
+    // (now destroyed) controllers.
+    const videos: HTMLMediaElement[] = Array.from(
+      player?.querySelectorAll('video') ?? []
+    )
 
     for (let i = 0; i < videos.length; i++) {
       videos[i].pause()
+      videos[i].currentTime = 0
+      videos[i].load()
     }
   } catch (e: any) {
     console.warn('TTS failed to cancel videoRecordings', e.message)
@@ -586,7 +888,22 @@ function cancel() {
   if (window.responsiveVoice) {
     window.responsiveVoice.cancel()
   }
+  responsiveVoiceSpeakArgs = null
 }
+
+// Emojis would be read aloud as "smiling face", ©, ® and ™ are kept. Built at
+// runtime, a \p{…} literal is a syntax error on old browsers (Gecko < 78),
+// there emojis are still read aloud.
+const EMOJI: RegExp | null = (() => {
+  try {
+    return new RegExp(
+      '(?![\\u00A9\\u00AE\\u2122])\\p{Extended_Pictographic}|\\p{Emoji_Modifier}|\\p{Regional_Indicator}|[\\u200D\\uFE0F\\u20E3]',
+      'gu'
+    )
+  } catch (e) {
+    return null
+  }
+})()
 
 function speak(
   text: string,
@@ -605,10 +922,14 @@ function speak(
     }
   }
 ) {
+  // replaced by spaces of the same length, boundary offsets stay valid
+  if (EMOJI) text = text.replace(EMOJI, m => ' '.repeat(m.length))
+
   const customHandlers = event.handlers || {
     onStart: () => sendResponse(event, 'start'),
     onStop: () => sendResponse(event, 'stop'),
     onError: e => {
+      if (e?.error === 'interrupted' || e?.error === 'canceled') return
       sendResponse(event, 'error', e.toString())
       console.warn('TTS playback failed:', e.toString())
     },
@@ -651,22 +972,35 @@ function speak(
 function easySpeak(
   text: string,
   syncVoice: SpeechSynthesisVoice,
-  options: {
-    rate: number
-    pitch: number
-  },
-  handlers: {
-    onStart: () => void
-    onStop: () => void
-    onError: (error: any) => void
-  }
+  options: { rate: number; pitch: number },
+  handlers: { onStart: () => void; onStop: () => void; onError: (error: any) => void }
 ) {
+  browserTTSSpeakArgs = { text, voice: syncVoice, options, handlers }
+  browserTTSIntentionalPause = false
+
   EasySpeech.speak({
-    text: text,
+    text,
     voice: syncVoice,
     start: handlers.onStart,
-    end: handlers.onStop,
-    error: handlers.onError,
+    end: () => {
+      if (browserTTSIntentionalPause) {
+        // Chrome/Safari fired 'end' due to resume() bug — re-speak from scratch
+        browserTTSIntentionalPause = false
+        easySpeak(text, syncVoice, options, handlers)
+      } else {
+        browserTTSSpeakArgs = null
+        handlers.onStop()
+      }
+    },
+    error: (e: any) => {
+      if (e?.error === 'interrupted' || e?.error === 'canceled') return
+      browserTTSSpeakArgs = null
+      browserTTSIntentionalPause = false
+      handlers.onError(e)
+    },
+    boundary: (e: SpeechSynthesisEvent) => {
+      Narrator.boundary(e.charIndex, e.charLength)
+    },
     pitch: options.pitch,
     rate: options.rate,
   })
@@ -682,14 +1016,22 @@ function responsiveSpeak(
     onError: (error: any) => void
   }
 ) {
-  if (window.responsiveVoice)
+  if (window.responsiveVoice) {
+    responsiveVoiceSpeakArgs = { text, voice, options, handlers }
     window.responsiveVoice.speak(text, voice, {
       onstart: handlers.onStart,
-      onend: handlers.onStop,
-      onerror: handlers.onError,
+      onend: () => {
+        responsiveVoiceSpeakArgs = null
+        handlers.onStop()
+      },
+      onerror: (e: any) => {
+        responsiveVoiceSpeakArgs = null
+        handlers.onError(e)
+      },
       pitch: options.pitch,
       rate: options.rate,
     })
+  }
 }
 
 function sendResponse(
@@ -699,6 +1041,7 @@ function sendResponse(
 ) {
   event.message.cmd = cmd
   event.message.param = param
+  Narrator.response(event, cmd, param)
   sendReply(event)
 }
 
@@ -760,14 +1103,11 @@ function scoreVoice(
     score = 700 - idx * 25
   }
 
+  // a voice of unknown gender is preferred to one of the wrong gender
   const reqGender = detectGender(requestedVoiceName)
-  const voiceGender = detectGender(`${voice.name} ${voice.voiceURI}`)
-  if (
-    reqGender !== Gender.Unknown &&
-    voiceGender !== Gender.Unknown &&
-    reqGender === voiceGender
-  ) {
-    score += 10
+  const voiceGender = detectGender(voice.name, voice.voiceURI)
+  if (reqGender !== 'unknown' && voiceGender !== 'unknown') {
+    score += reqGender === voiceGender ? 10 : -10
   }
   const wanted = requestedVoiceName.trim().toLowerCase()
   const actual = `${voice.name} ${voice.voiceURI}`.trim().toLowerCase()
@@ -813,7 +1153,7 @@ function getVoice(lang: string, voice: string) {
       lang: v.lang,
       normalizedLang: baseLang(v.lang),
       score,
-      gender: Gender[detectGender(`${v.name} ${v.voiceURI}`)],
+      gender: detectGender(v.name, v.voiceURI),
       default: v.default,
     })
 
@@ -837,49 +1177,14 @@ function getVoice(lang: string, voice: string) {
   return bestFit
 }
 
-function detectGender(voice: string) {
-  // Check explicit gender indicators first
-  if (voice.match(/female/i)) {
-    return Gender.Female
-  }
-
-  if (voice.match(/male/i)) {
-    return Gender.Male
-  }
-
-  // iOS/Safari male voices
-  const maleVoices =
-    /\b(Albert|Daniel|Eddy|Fred|Grandpa|Jacques|Junior|Maged|Ralph|Reed|Rishi|Rocko|Thomas|Zarvox|Xander)\b/i
-  if (voice.match(maleVoices)) {
-    return Gender.Male
-  }
-
-  // iOS/Safari female voices - comprehensive list
-  const femaleVoices =
-    /\b(Alice|Alva|Amelie|Amira|Anna|Carmit|Damayanti|Daria|Ellen|Grandma|Ioana|Joana|Kanya|Karen|Kathy|Kyoko|Lana|Laura|Lekha|Lesya|Linh|Luciana|Mariska|Meijia|Melina|Milena|Moira|Monica|Montserrat|Nora|Paulina|Princess|Samantha|Sandy|Sara|Satu|Shelley|Tessa|Tina|Tingting|Yelda|Yuna|Zosia|Zuzana)\b/i
-  if (voice.match(femaleVoices)) {
-    return Gender.Female
-  }
-
-  // Additional generic gender detection for other voices
-  if (voice.match(/\b(man|boy|guy|sir|mr\.?|he|him)\b/i)) {
-    return Gender.Male
-  }
-
-  if (voice.match(/\b(woman|girl|lady|ms\.?|mrs\.?|miss|she|her)\b/i)) {
-    return Gender.Female
-  }
-
-  // Neutral or non-human voices: Bahh, Bells, Flo, Sinji, Trinoids
-  return Gender.Unknown
-}
-
 function storeBackgroundVideo(player: HTMLElement, video: HTMLVideoElement) {
   try {
     const background = video.cloneNode(true) as HTMLVideoElement
 
-    background.addEventListener('loadedmetadata', () => {
-      background.currentTime = background.duration
+    background.addEventListener('durationchange', () => {
+      if (isFinite(background.duration) && background.duration > 0) {
+        background.currentTime = background.duration
+      }
     })
 
     background.id = 'tts-video-preview'
@@ -901,37 +1206,6 @@ function storeBackgroundVideo(player: HTMLElement, video: HTMLVideoElement) {
   } catch (e: any) {
     console.warn('TTS failed to draw video frame ->', e.message)
   }
-}
-
-function parseTimeFragment(url: string): {
-  start: number | null
-  end: number | null
-} {
-  const result: { start: number | null; end: number | null } = {
-    start: null,
-    end: null,
-  }
-
-  try {
-    // Extract time fragment if it exists
-    const hashIndex = url.indexOf('#t=')
-    if (hashIndex !== -1) {
-      const timeValue = url.substring(hashIndex + 3)
-      const timeParts = timeValue.split(',')
-
-      if (timeParts[0]) {
-        result.start = parseFloat(timeParts[0])
-      }
-
-      if (timeParts[1]) {
-        result.end = parseFloat(timeParts[1])
-      }
-    }
-  } catch (e) {
-    console.warn('Failed to parse time fragment:', e)
-  }
-
-  return result
 }
 
 /**

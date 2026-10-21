@@ -6,6 +6,15 @@ module Lia.Markdown.Survey.Json exposing
     , toVector
     )
 
+{-| JSON encoding of surveys (as part of the exported Markdown) and of the
+survey states, which are stored and shared within a classroom.
+
+The state keys `"SingleChoice"` and `"SingleChoiceMatrix"` are used for
+checkboxes (`True`) and `"MultipleChoice"`/`"MultipleChoiceMatrix"` for radio
+buttons. The names are swapped, but they are kept for stored data.
+
+-}
+
 import Conditional.List as CList
 import Dict exposing (Dict)
 import Json.Decode as JD
@@ -18,28 +27,26 @@ import Lia.Markdown.Survey.Types
         , Survey
         , Type(..)
         , Vector
+        , initOptions
         )
 
 
-encode : Survey -> JE.Value
-encode survey =
-    JE.object <|
+{-| Encode the survey definition, `encoder` is used for the bodies of the
+`Vector` options.
+-}
+encode : (body -> JE.Value) -> Survey body -> JE.Value
+encode encoder survey =
+    JE.object
         [ ( "id", JE.int survey.id )
         , case survey.survey of
             Text i ->
-                ( "Text"
-                , JE.int i
-                )
+                ( "Text", JE.int i )
 
             Select elements ->
-                ( "Select"
-                , JE.list Inline.encode elements
-                )
+                ( "Select", JE.list Inline.encode elements )
 
             DragAndDrop elements ->
-                ( "Drop"
-                , JE.list Inline.encode elements
-                )
+                ( "Drop", JE.list Inline.encode elements )
 
             Vector bool options _ ->
                 ( "Vector"
@@ -47,7 +54,7 @@ encode survey =
                     [ ( "bool", JE.bool bool )
                     , ( "options"
                       , options
-                            |> List.map (Tuple.mapSecond Inline.encode)
+                            |> List.map (Tuple.mapSecond (JE.list encoder))
                             |> JE.object
                       )
                     ]
@@ -65,76 +72,71 @@ encode survey =
         ]
 
 
+{-| Encode the states of all surveys of a section, to be stored.
+-}
 fromVector : Vector -> JE.Value
 fromVector =
     JE.array fromElement
 
 
+{-| Only the user's input is stored, the options and scripts are defined by
+the course.
+-}
 fromElement : Element -> JE.Value
 fromElement element =
     [ ( "submitted", JE.bool element.submitted )
     , ( "state", fromState element.state )
     ]
-        |> CList.addWhen (fromError element.errorMsg)
+        |> CList.addWhen (Maybe.map (JE.string >> Tuple.pair "errorMessage") element.errorMsg)
         |> JE.object
 
 
-fromError : Maybe String -> Maybe ( String, JE.Value )
-fromError =
-    Maybe.map (JE.string >> Tuple.pair "errorMessage")
-
-
+{-| Encode a state as an object with a single key, which defines its type. The
+open dropdown and the drag state are not encoded.
+-}
 fromState : State -> JE.Value
 fromState state =
-    JE.object <|
-        case state of
+    JE.object
+        [ case state of
             Text_State str ->
-                [ ( "Text"
-                  , JE.string str
-                  )
-                ]
+                ( "Text", JE.string str )
 
             Select_State _ i ->
-                [ ( "Select"
-                  , JE.int i
-                  )
-                ]
+                ( "Select", JE.int i )
 
             DragAndDrop_State _ _ i ->
-                [ ( "Drop"
-                  , JE.int i
-                  )
-                ]
+                ( "Drop", JE.int i )
 
-            Vector_State single vector ->
-                [ ( if single then
-                        "SingleChoice"
+            Vector_State checkbox vector ->
+                ( if checkbox then
+                    "SingleChoice"
 
-                    else
-                        "MultipleChoice"
-                  , dict2json vector
-                  )
-                ]
+                  else
+                    "MultipleChoice"
+                , fromDict vector
+                )
 
-            Matrix_State single matrix ->
-                [ ( if single then
-                        "SingleChoiceMatrix"
+            Matrix_State checkbox matrix ->
+                ( if checkbox then
+                    "SingleChoiceMatrix"
 
-                    else
-                        "MultipleChoiceMatrix"
-                  , JE.array dict2json matrix
-                  )
-                ]
+                  else
+                    "MultipleChoiceMatrix"
+                , JE.array fromDict matrix
+                )
+        ]
 
 
-dict2json : Dict String Bool -> JE.Value
-dict2json dict =
-    dict
-        |> Dict.toList
-        |> List.map (\( s, b ) -> ( s, JE.bool b ))
-        |> JE.object
+fromDict : Dict String Bool -> JE.Value
+fromDict =
+    Dict.toList
+        >> List.map (Tuple.mapSecond JE.bool)
+        >> JE.object
 
 
+{-| Decode a stored vector, it has to be merged with the parsed one (see
+`Survey.Update`), since the options and scripts are missing.
+-}
 toVector : JD.Value -> Result JD.Error Vector
 toVector =
     JD.decodeValue (JD.array toElement)
@@ -142,13 +144,22 @@ toVector =
 
 toElement : JD.Decoder Element
 toElement =
-    JD.map4 Element
+    JD.map3
+        (\submitted state errorMsg ->
+            { submitted = submitted
+            , state = state
+            , errorMsg = errorMsg
+            , scriptID = Nothing
+            , opt = initOptions
+            }
+        )
         (JD.field "submitted" JD.bool)
         (JD.field "state" toState)
         (JD.maybe (JD.field "errorMessage" JD.string))
-        (JD.succeed Nothing)
 
 
+{-| Decode a state encoded by `fromState`.
+-}
 toState : JD.Decoder State
 toState =
     JD.oneOf
@@ -163,7 +174,7 @@ toState =
         , JD.field "MultipleChoice" (JD.dict JD.bool)
             |> JD.map (Vector_State False)
         , JD.field "SingleChoiceMatrix" (JD.array (JD.dict JD.bool))
-            |> JD.map (Matrix_State False)
-        , JD.field "MultipleChoiceMatrix" (JD.array (JD.dict JD.bool))
             |> JD.map (Matrix_State True)
+        , JD.field "MultipleChoiceMatrix" (JD.array (JD.dict JD.bool))
+            |> JD.map (Matrix_State False)
         ]

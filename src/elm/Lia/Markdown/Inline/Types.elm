@@ -12,10 +12,15 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 
 
+{-| A line of text.
+-}
 type alias Inlines =
     List Inline
 
 
+{-| All inline elements, every element can have annotations `Parameters`
+(HTML attributes).
+-}
 type Inline
     = Chars String Parameters
     | Symbol String Parameters
@@ -32,9 +37,13 @@ type Inline
     | Script Int Parameters
     | IHTML (Node Inline) Parameters
     | Container Inlines Parameters
-    | Quiz ( String, Int ) Parameters -- (lenght, id)
+    | Quiz ( String, Int ) Parameters -- (width, id)
 
 
+{-| Links and media, most of them have an alternative text, a url, and an
+optional title. For audio and movies the `Bool` defines whether the url
+refers to an embeddable player (`iframe`) or to a media file.
+-}
 type Reference
     = Link Inlines String (Maybe Inlines)
     | Mail Inlines String (Maybe Inlines)
@@ -47,6 +56,8 @@ type Reference
     | QR_Link String (Maybe Inlines)
 
 
+{-| Split an inline HTML element into its tag name, attributes, and content.
+-}
 htmlBlock : Inline -> Maybe ( String, List ( String, String ), List Inline )
 htmlBlock inline =
     case inline of
@@ -57,38 +68,39 @@ htmlBlock inline =
             Nothing
 
 
+{-| Images, movies, audio, qr-codes, and embeds are rendered as figures.
+-}
 mediaBlock : Inline -> Bool
 mediaBlock inline =
     case inline of
-        Ref ref _ ->
-            case ref of
-                Image _ _ _ ->
-                    True
+        Ref (Image _ _ _) _ ->
+            True
 
-                Movie _ _ _ ->
-                    True
+        Ref (Movie _ _ _) _ ->
+            True
 
-                Audio _ _ _ ->
-                    True
+        Ref (Audio _ _ _) _ ->
+            True
 
-                QR_Link _ _ ->
-                    True
+        Ref (QR_Link _ _) _ ->
+            True
 
-                Embed _ _ _ ->
-                    True
-
-                _ ->
-                    False
+        Ref (Embed _ _ _) _ ->
+            True
 
         _ ->
             False
 
 
+{-| Merge neighboring characters without annotations.
+-}
 combine : Inlines -> Inlines
 combine list =
     combineHelper list []
 
 
+{-| **@private:** Tail recursive helper of `combine`.
+-}
 combineHelper : Inlines -> Inlines -> Inlines
 combineHelper input output =
     case ( input, output ) of

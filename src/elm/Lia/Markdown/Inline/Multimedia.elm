@@ -1,6 +1,7 @@
 module Lia.Markdown.Inline.Multimedia exposing
     ( audio
     , movie
+    , providerOf
     , website
     )
 
@@ -8,12 +9,18 @@ import Lia.Parser.PatReplace exposing (replace)
 import Lia.Parser.UrlPattern.Generic exposing (root)
 
 
+{-| The YouTube player, used to add the language.
+-}
+website : { youtube : String }
 website =
     { youtube = "https://www.youtube-nocookie.com/embed/"
     }
 
 
-{-| <http://embedcodedailymotion.blogspot.com/2016/05/dailymotion-embed-generator-tdborder.html>
+{-| Turn video URLs of known platforms into URLs of their embeddable players,
+the result is `( True, url )` if it is a player.
+
+<http://embedcodedailymotion.blogspot.com/2016/05/dailymotion-embed-generator-tdborder.html>
 
 <https://developers.google.com/youtube/player_parameters>
 
@@ -56,6 +63,27 @@ movie =
         |> replace
 
 
+{-| The platform of an embed URL created by `movie`, it selects the player
+adapter for comment videos in TTS.ts. Unknown platforms are `"generic"`.
+-}
+providerOf : String -> String
+providerOf url =
+    [ ( "youtube", "youtube" )
+    , ( "vimeo", "vimeo.com" )
+    , ( "dailymotion", "dailymotion.com" )
+    , ( "peertube", "peertube.tv" )
+    , ( "teachertube", "teachertube.com" )
+    , ( "tu-freiberg", "video.tu-freiberg.de" )
+    ]
+        |> List.filter (\( _, host ) -> String.contains host url)
+        |> List.head
+        |> Maybe.map Tuple.first
+        |> Maybe.withDefault "generic"
+
+
+{-| Turn audio URLs of known platforms into URLs of their embeddable
+players, the result is `( True, url )` if it is a player.
+-}
 audio : String -> ( Bool, String )
 audio =
     [ { by =

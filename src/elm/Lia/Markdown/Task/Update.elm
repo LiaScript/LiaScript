@@ -5,6 +5,7 @@ module Lia.Markdown.Task.Update exposing
     )
 
 import Array
+import Helper.Array as Array
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Update exposing (init, merge)
@@ -41,41 +42,18 @@ update sectionID scripts msg vector =
     case msg of
         -- simple toggle
         Toggle x y ->
-            case
-                vector
-                    |> Array.get x
-                    |> Maybe.map (toggle y)
-            of
+            case Array.get x vector of
                 Just element ->
-                    case element.scriptID of
-                        Nothing ->
-                            vector
-                                |> Array.set x element
-                                |> Return.val
-                                |> store sectionID
+                    let
+                        toggled =
+                            { element | state = Array.update y not element.state }
+                    in
+                    vector
+                        |> Array.set x toggled
+                        |> Return.val
+                        |> Return.batchEvent (eval scripts x toggled)
+                        |> store sectionID
 
-                        Just scriptID ->
-                            vector
-                                |> Array.set x element
-                                |> Return.val
-                                |> Return.batchEvent
-                                    (case
-                                        scripts
-                                            |> Array.get scriptID
-                                            |> Maybe.map .script
-                                     of
-                                        Nothing ->
-                                            Event.none
-
-                                        Just code ->
-                                            [ toString element ]
-                                                |> Service.Script.eval code (outputs scripts)
-                                                |> Event.pushWithId "eval" x
-                                    )
-                                |> store sectionID
-
-                -- TODO:
-                --|> Return.script (execute id state)
                 Nothing ->
                     Return.val vector
 
@@ -112,18 +90,19 @@ update sectionID scripts msg vector =
                     Return.val vector
 
 
-toggle : Int -> Element -> Element
-toggle y element =
-    { element
-        | state =
-            Array.set y
-                (element.state
-                    |> Array.get y
-                    |> Maybe.map not
-                    |> Maybe.withDefault False
-                )
-                element.state
-    }
+{-| **@private:** Run the optional script attached to a task list with its new
+state, `Event.none` if there is none (dropped by `Return.batchEvent`).
+-}
+eval : Scripts a -> Int -> Element -> Event
+eval scripts x element =
+    case Maybe.andThen (\id -> Array.get id scripts) element.scriptID of
+        Just { script } ->
+            [ toString element ]
+                |> Service.Script.eval script (outputs scripts)
+                |> Event.pushWithId "eval" x
+
+        Nothing ->
+            Event.none
 
 
 {-| Create a store event, that will store the state of the task persistently

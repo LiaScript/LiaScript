@@ -1,5 +1,6 @@
 module Lia.Markdown.Inline.Stringify exposing
-    ( stringify
+    ( Config
+    , stringify
     , stringify_
     )
 
@@ -13,6 +14,23 @@ import Lia.Markdown.Quiz.Multi.Types as Input
 import Lia.Utils as Utils
 
 
+{-| The config of `stringify_`, effects that are not visible, script
+results, and quiz inputs are taken into account.
+-}
+type alias Config config input a =
+    { config
+        | scripts : Scripts a
+        , visible : Maybe Int
+        , input :
+            { input
+                | state : Input.State
+                , options : Array (List Inlines)
+            }
+    }
+
+
+{-| Turn inlines into plain text.
+-}
 stringify : Inlines -> String
 stringify =
     stringify_
@@ -22,35 +40,17 @@ stringify =
         }
 
 
-stringify_ :
-    { config
-        | scripts : Scripts a
-        , visible : Maybe Int
-        , input :
-            { x
-                | state : Input.State
-                , options : Array (List Inlines)
-            }
-    }
-    -> Inlines
-    -> String
+{-| Turn inlines into plain text, see `Config`.
+-}
+stringify_ : Config config input a -> Inlines -> String
 stringify_ config =
     List.map (inline2string config)
         >> String.concat
 
 
-inline2string :
-    { config
-        | scripts : Scripts a
-        , visible : Maybe Int
-        , input :
-            { x
-                | state : Input.State
-                , options : Array (List Inlines)
-            }
-    }
-    -> Inline
-    -> String
+{-| **@private:** Symbols and footnote marks are ignored.
+-}
+inline2string : Config config input a -> Inline -> String
 inline2string config inline =
     case inline of
         Chars str _ ->
@@ -82,6 +82,9 @@ inline2string config inline =
 
         IHTML (HTML.Node _ _ x) _ ->
             stringify_ config x
+
+        IHTML (HTML.InnerHtml "<br>") _ ->
+            " "
 
         Container x _ ->
             stringify_ config x
@@ -123,18 +126,9 @@ inline2string config inline =
             ""
 
 
-ref2string :
-    { config
-        | scripts : Scripts a
-        , visible : Maybe Int
-        , input :
-            { x
-                | state : Input.State
-                , options : Array (List Inlines)
-            }
-    }
-    -> Reference
-    -> String
+{-| **@private:** The alternative text of a reference.
+-}
+ref2string : Config config input a -> Reference -> String
 ref2string config ref =
     case ref of
         Movie alt _ _ ->

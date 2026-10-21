@@ -1,8 +1,8 @@
 module Lia.Markdown.Quiz.Vector.Parser exposing
-    ( checkButton
+    ( blockGroup
+    , checkButton
     , either
     , group
-    , groupBy
     , parse
     , radioButton
     )
@@ -11,19 +11,27 @@ import Combine
     exposing
         ( Parser
         , andMap
+        , andThen
         , ignore
         , keep
+        , lookAhead
+        , many
         , many1
         , map
         , maybe
         , onsuccess
         , or
         , regex
+        , sepBy1
         , string
+        , succeed
+        , withColumn
+        , withState
         )
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Vector.Types exposing (Quiz, State(..))
+import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
@@ -45,28 +53,157 @@ contain a `radioButton` or `checkButton` notation:
     [[x]] this one is also checked
     """"
 
+Each option's content is no longer limited to a single line of inline text, it may
+contain full Markdown-block content (multiple paragraphs, code blocks, nested lists,
+...), indented by 4 spaces relative to the option's marker - exactly like Task-list
+items.
+
 -}
-parse : Parser Context Quiz
-parse =
+parse : Parser Context Markdown.Block -> Parser Context (Quiz Markdown.Block)
+parse blocks =
     or
         (radioButton
-            |> group
+            |> blockGroup blocks
             |> map (toQuiz SingleChoice)
         )
         (checkButton
-            |> group
+            |> blockGroup blocks
             |> map (toQuiz MultipleChoice)
         )
 
 
-{-| Parse an ASCII like radio-button "(X|x)" | "[ ]". The result is either
+{-| This is the block-based counterpart of `group`: instead of a single `Inlines`
+line, each entry's content is zero-or-more full Markdown `Block`s, indented by 4
+spaces relative to the entry's marker. The provided `button`-parser is used to parse
+the part within the starting brackets, exactly as in `group` (i.e. it can just as
+well be a fixed literal like `string "[?]"`, as used by `Quiz.Parser.hints`).
+
+A leading blank line before the first entry is tolerated: unlike `Vector.parse`
+itself (reached through `Lia.Markdown.Parser.blocks`'s own `whitespace`-eating
+dispatch, which already strips any such blank line before this parser even
+starts), `Quiz.Parser.hints` is called directly, right after a quiz's own type
+has been parsed, with no such step in between - so a hint block separated from
+the preceding option list by a blank line needs `blockGroup` to skip it itself.
+
+-}
+blockGroup : Parser Context Markdown.Block -> Parser Context a -> Parser Context ( List a, List Markdown.Blocks )
+blockGroup blocks button =
+    (many newlineWithIndentation |> keep (item blocks button))
+        |> sepBy1 separator
+        |> map List.unzip
+
+
+{-| **@private:** Parse a single entry: its marker (optional `-`/`+`/`*` prefix,
+`button`-content within brackets), followed by its (possibly multi-block) content,
+indented relative to the marker.
+
+The required continuation indent is measured _dynamically_, as the exact
+physical column right after this entry's marker, minus however much of that
+is already accounted for by the currently-active `Indent` stack (e.g. an
+enclosing list's/blockquote's own pushed level) - so nested content must line
+up directly under the marker's own text, exactly like a Task-list item, while
+never double-counting an ancestor's contribution and never under-counting a
+shared leading whitespace this entry's group happens to carry (e.g. when the
+whole group is visually offset under a preceding question) that never made it
+onto the stack anywhere. The two failure modes this specifically guards
+against: (1) an absolute column on its own double-counts already-active
+indentation (an option one level inside a list would require the list's own
+width twice); (2) a _marker-width-only_ measurement (ignoring the current
+absolute column entirely) works for constructs reached through
+`Lia.Markdown.Parser.blocks`'s own dispatch, which already strips ambient
+indentation before this parser ever runs - but breaks for `Quiz.Parser.hints`,
+which calls this same `item` directly, with no such stripping step in
+between, silently baking a still-unconsumed ancestor prefix into what should
+have been just the marker's own width.
+
+-}
+item : Parser Context Markdown.Block -> Parser Context a -> Parser Context ( a, Markdown.Blocks )
+item blocks button =
+    regex "[ \t]*"
+        |> keep
+            (marker button
+                |> andThen
+                    (\result ->
+                        withColumn
+                            (\after ->
+                                withState
+                                    (\state ->
+                                        let
+                                            active =
+                                                state.indentation
+                                                    |> String.concat
+                                                    |> String.length
+                                        in
+                                        Indent.push (String.repeat (after - active) " ")
+                                            |> ignore emptyMarkerLine
+                                            |> keep (sepBy1 (many newlineWithIndentation) blocks)
+                                            |> map (Tuple.pair result)
+                                            |> ignore Indent.pop
+                                    )
+                            )
+                    )
+            )
+
+
+{-| **@private:** If the marker's own line has no further content (nothing but
+optional trailing whitespace before the newline), the "skip the indentation
+check for same-line content" privilege armed by `Indent.push` must not
+silently extend across a following blank line to whatever block happens to
+come next, regardless of its actual indentation - force a real indentation
+check for the option's first content block in that case, by consuming the
+still-armed skip via a no-op `Indent.check` right here, while we still know
+we're at the end of the marker's line.
+-}
+emptyMarkerLine : Parser Context ()
+emptyMarkerLine =
+    lookAhead (maybe (regex "[ \t]*\n"))
+        |> andThen
+            (\match ->
+                case match of
+                    Just _ ->
+                        Indent.check
+
+                    Nothing ->
+                        succeed ()
+            )
+
+
+{-| **@private:** Parse the `[...]`/`- [...]` marker of a single entry, returning the
+`button`-parser's result.
+-}
+marker : Parser Context a -> Parser Context a
+marker button =
+    regex "(?:(\\-|\\+|\\*)[ \t]?)?\\["
+        |> keep button
+        |> ignore (string "]")
+        |> ignore spaces
+
+
+{-| **@private:** Separates consecutive entries, re-checking the indentation of the
+surrounding context before the next entry's marker.
+-}
+separator : Parser Context (List ())
+separator =
+    many newlineWithIndentation
+        |> ignore Indent.check
+
+
+{-| **private:** An empty line within the current indentation.
+-}
+newlineWithIndentation : Parser Context ()
+newlineWithIndentation =
+    Indent.maybeCheck
+        |> ignore newline
+
+
+{-| Parse an ASCII like radio-button "(X|x)" | "( )". The result is either
 `True` or `False`, if the button is checked or not.
 
-    parse checkButton "(X)" == Ok True
+    parse radioButton "(X)" == Ok True
 
-    parse checkButton "(x)" == Ok True
+    parse radioButton "(x)" == Ok True
 
-    parse checkButton "( )" == Ok False
+    parse radioButton "( )" == Ok False
 
 -}
 radioButton : Parser Context Bool
@@ -88,52 +225,31 @@ checkButton =
     either "\\[[xX]\\]" "[ ]"
 
 
-{-| This parser can be used for some kind of enumerations that start with a
-certain pattern (i.e. `[X]` or `[ ]`), which is then followed by a `Inlines`:
-
-    parse
-        (groupBy (string "- [")
-            (string "]")
-            (or
-                (string "X" |> onsuccess True)
-                (string " " |> onsuccess False)
-            )
-        )
-        """- [ ] task not checked
-        - [X] task checked
-        """
-    == Ok [(False, [...]), (True, [...])]
-
--}
-groupBy : Parser Context x -> Parser Context y -> Parser Context a -> Parser Context (List ( a, Inlines ))
-groupBy begin end parser =
-    maybe Indent.check
-        |> ignore spaces
-        |> ignore begin
-        |> keep parser
-        |> map Tuple.pair
-        |> ignore end
-        |> ignore spaces
-        |> andMap line
-        |> ignore newline
-        |> many1
-
-
 {-| This defines the basic Quiz-group, that are identified by starting brackets
-that are followed by some Markdown inline elements. The provided
-parser-parameter is used to parse the part within the starting brackets.
+that are followed by some Markdown inline elements, one entry per line. The
+provided parser-parameter is used to parse the part within the starting
+brackets.
 
     parse (group checkButton)
         """[[X]] is __checked__
         [[ ]] **not checked**
         """
-    == Ok [(True, [...]), (False, [...])]
+    == Ok ( [ True, False ], [ [...], [...] ] )
 
 -}
 group : Parser Context a -> Parser Context ( List a, List Inlines )
-group =
-    groupBy (regex "(?:(\\-|\\+|\\*)[ \t]?)?\\[") (string "]")
-        >> map List.unzip
+group parser =
+    maybe Indent.check
+        |> ignore spaces
+        |> ignore (regex "(?:(\\-|\\+|\\*)[ \t]?)?\\[")
+        |> keep parser
+        |> map Tuple.pair
+        |> ignore (string "]")
+        |> ignore spaces
+        |> andMap line
+        |> ignore newline
+        |> many1
+        |> map List.unzip
 
 
 {-| This parser requires two patterns that in either `True` or `False`. The
@@ -160,9 +276,10 @@ either true false =
         (regex true |> onsuccess True)
 
 
-{-| Transforms a list of options `(List Bool, List Inlines)` into a Vector-Quiz.
+{-| Transforms a list of options `(List Bool, List Markdown.Blocks)` into a
+Vector-Quiz.
 -}
-toQuiz : (List Bool -> State) -> ( List Bool, List Inlines ) -> Quiz
-toQuiz fn ( booleans, inlines ) =
+toQuiz : (List Bool -> State) -> ( List Bool, List Markdown.Blocks ) -> Quiz Markdown.Block
+toQuiz fn ( booleans, options ) =
     fn booleans
-        |> Quiz inlines
+        |> Quiz options

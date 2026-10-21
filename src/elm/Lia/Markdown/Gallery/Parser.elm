@@ -16,6 +16,7 @@ import Combine
         , withState
         )
 import Combine.Char exposing (newline)
+import Helper.List as List
 import Lia.Markdown.Gallery.Types exposing (Gallery)
 import Lia.Markdown.Inline.Parser exposing (mediaReference)
 import Lia.Parser.Context exposing (Context)
@@ -31,7 +32,7 @@ parse =
         |> map List.concat
         |> andThen
             (\list ->
-                if List.length list > 1 then
+                if not (List.isEmptyOrSingleton list) then
                     modify_State (Gallery list)
 
                 else

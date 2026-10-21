@@ -1,3 +1,6 @@
+// has to come first, dependencies use `globalThis` on import
+import './globalThis'
+
 // @ts-ignore
 import { Elm } from '../../elm/Main.elm'
 
@@ -10,7 +13,10 @@ import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only.js'
 
 import { Connector } from '../connectors/Base/index'
 
-import * as TOOLTIP from '../webcomponents/tooltip/index'
+import '../webcomponents/tooltip/index'
+import '../webcomponents/modal'
+import './combobox'
+import './matrix'
 
 // Services
 import Console from './service/Console'
@@ -21,8 +27,11 @@ import Script from './service/Script'
 import Share from './service/Share'
 import Slide from './service/Slide'
 import Swipe from './service/Swipe'
+// polyfill: turns touch gestures into HTML5 drag & drop events (Drop quizzes / surveys)
+import { enableDragDropTouch } from '@dragdroptouch/drag-drop-touch'
 import Sync from './service/Sync'
 import * as TTS from './service/TTS'
+import * as Narrator from './service/Narrator'
 import Translate from './service/Translate'
 import Zip from './service/Zip'
 import Torrent from './service/Torrent'
@@ -34,6 +43,22 @@ import * as GLOBALS from './init'
 // TODO: CHECK window.LIA.defaultCourse functionality
 GLOBALS.initGlobals()
 window.LIA.injectResposivevoice = TTS.inject
+window.LIA.narrator = Narrator.api
+
+// Browsers show the focus ring of text fields also after a click. For .lia-input
+// it shall only appear on keyboard focus, see _elements.input.scss. An attribute,
+// because the settings overwrite the className of <html>.
+let mouseFocus = false
+document.addEventListener('mousedown', () => (mouseFocus = true), true)
+document.addEventListener('keydown', () => (mouseFocus = false), true)
+document.addEventListener(
+  'focusin',
+  () =>
+    mouseFocus
+      ? document.documentElement.setAttribute('data-mouse-focus', '')
+      : document.documentElement.removeAttribute('data-mouse-focus'),
+  true
+)
 
 if (typeof queueMicrotask !== 'function') {
   window.queueMicrotask = function (callback) {
@@ -177,9 +202,6 @@ export class LiaScript {
         },
       })
     }
-
-    // Attach a tooltip-div to the end of the DOM
-    TOOLTIP.initTooltip()
   }
 
   reset() {
@@ -206,9 +228,13 @@ export class LiaScript {
     TTS.Service.init(elmSend)
     Script.init(elmSend)
     Swipe.init(elem, elmSend)
+    // press-hold mode: a quick swipe over a draggable element must scroll,
+    // only a long press starts a drag & drop (see LiaScript/LiaScript#315)
+    enableDragDropTouch(elem, document, { isPressHoldMode: true })
     Translate.init(elmSend)
-    Sync.init(elmSend)
+    Sync.init(elmSend, Database)
     Zip.init(elmSend)
+    Resource.init(elmSend)
     Torrent.init(elmSend, Database)
     Nostr.init(elmSend)
 

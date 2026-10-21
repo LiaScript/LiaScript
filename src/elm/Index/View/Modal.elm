@@ -7,6 +7,7 @@ module Index.View.Modal exposing
 
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
+import I18n.Translations exposing (Lang(..))
 import Index.Model exposing (Modal(..))
 import Index.Update exposing (Msg(..))
 import Lia.Utils exposing (btn, modal)
@@ -14,7 +15,8 @@ import Lia.Utils exposing (btn, modal)
 
 files : Maybe String -> Html Msg
 files error =
-    modal (Modal Nothing)
+    modal En True
+        (Modal Nothing)
         Nothing
         [ Html.div
             [ Attr.style "max-width" "800px"
@@ -73,7 +75,8 @@ btn_files_import =
 
 directory : Maybe String -> Html Msg
 directory error =
-    modal (Modal Nothing)
+    modal En True
+        (Modal Nothing)
         Nothing
         [ Html.div
             [ Attr.style "max-width" "800px"

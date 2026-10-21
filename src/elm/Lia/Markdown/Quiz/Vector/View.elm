@@ -4,74 +4,60 @@ import Accessibility.Role as A11y_Role
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Lia.Markdown.Inline.Config exposing (Config)
-import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Markdown.Quiz.Update as QuizUpdate
 import Lia.Markdown.Quiz.Vector.Types exposing (Quiz, State(..))
-import Lia.Markdown.Quiz.Vector.Update exposing (Msg(..))
+import Lia.Markdown.Quiz.Vector.Update as VectorUpdate
+import Lia.Markdown.Update as Main
+import Lia.Utils exposing (labeledOption)
 
 
-view : Config sub -> Bool -> String -> Quiz -> State -> ( List (Attribute msg), List (Html (Msg sub)) )
-view config open class quiz state =
+{-| Render the current Vector-Quiz options, based on its state. The content of
+every option is rendered by the caller (`Lia.Markdown.View`, which recursively
+renders nested `Block` content via `viewBlocks`) and passed in as `rendered`,
+one `List (Html Main.Msg)` per option - exactly as with Task-list items.
+
+Returns the attributes for the surrounding container (its role) and the
+options.
+
+-}
+view : String -> Bool -> String -> Int -> Quiz body -> State -> List (List (Html Main.Msg)) -> ( List (Attribute Main.Msg), List (Html Main.Msg) )
+view base open class quizId quiz state rendered =
     case ( quiz.solution, state ) of
         ( SingleChoice _, SingleChoice list ) ->
-            ( [ A11y_Role.radioGroup ], table (radio config open class) quiz.options list )
+            ( [ A11y_Role.radioGroup ]
+            , List.map2 (option base "radio" open class quizId) list (List.indexedMap Tuple.pair rendered)
+            )
 
         ( MultipleChoice _, MultipleChoice list ) ->
-            ( [ A11y_Role.list ], table (check config open class) quiz.options list )
+            ( [ A11y_Role.group ]
+            , List.map2 (option base "checkbox" open class quizId) list (List.indexedMap Tuple.pair rendered)
+            )
 
         _ ->
             ( [], [] )
 
 
-table : (Bool -> ( Int, Inlines ) -> Html (Msg sub)) -> List Inlines -> List Bool -> List (Html (Msg sub))
-table fn inlines bool =
-    inlines
-        |> List.indexedMap Tuple.pair
-        |> List.map2 fn bool
+{-| **private:** A radio button or check box with its content `body`, only
+clickable if the quiz is `open`. All inputs of a quiz share the name `base`,
+thus radio buttons form a group, which can be navigated with arrow keys.
+-}
+option : String -> String -> Bool -> String -> Int -> Bool -> ( Int, List (Html Main.Msg) ) -> Html Main.Msg
+option base inputType open colorClass quizId checked ( id, body ) =
+    labeledOption (base ++ "-option-" ++ String.fromInt id)
+        (\label ->
+            Html.input
+                [ Attr.class ("lia-" ++ inputType)
+                , Attr.class colorClass
+                , Attr.type_ inputType
+                , Attr.name base
+                , Attr.checked checked
+                , label
+                , if open then
+                    onClick (Main.UpdateQuiz (QuizUpdate.Vector_Update quizId (VectorUpdate.Toggle id)))
 
-
-check : Config sub -> Bool -> String -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
-check config open colorClass checked ( id, line ) =
-    Html.label [ Attr.class "lia-label", A11y_Role.listItem ]
-        [ Html.input
-            [ Attr.class "lia-checkbox"
-            , Attr.class colorClass
-            , Attr.type_ "checkbox"
-            , Attr.checked checked
-            , A11y_Role.checkBox
-            , if open then
-                onClick (Toggle id)
-
-              else
-                Attr.disabled True
-            ]
-            []
-        , line
-            |> viewer config
-            |> Html.span []
-            |> Html.map Script
-        ]
-
-
-radio : Config sub -> Bool -> String -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
-radio config open colorClass checked ( id, line ) =
-    Html.label [ Attr.class "lia-label", A11y_Role.listItem ]
-        [ Html.input
-            [ Attr.class "lia-radio"
-            , Attr.class colorClass
-            , Attr.type_ "radio"
-            , Attr.checked checked
-            , A11y_Role.radio
-            , if open then
-                onClick (Toggle id)
-
-              else
-                Attr.disabled True
-            ]
-            []
-        , line
-            |> viewer config
-            |> Html.span []
-            |> Html.map Script
-        ]
+                  else
+                    Attr.disabled True
+                ]
+                []
+        )
+        body

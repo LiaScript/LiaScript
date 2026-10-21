@@ -21,9 +21,12 @@ import Combine.Char exposing (anyChar)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
-import Regex
 
 
+{-| A block quiz on its own line: a text input `[[solution]]`, a selection
+`[[ wrong | (right) ]]` or a drop `[->[ wrong | (right) ]]`. `parse_inlines`
+parses the options.
+-}
 parse : (Context -> String -> opt) -> Parser Context (Quiz opt)
 parse parse_inlines =
     spaces
@@ -32,29 +35,32 @@ parse parse_inlines =
         |> map Tuple.second
 
 
+{-| An input within a line, also used by gap-texts. The `Int` is the length of
+its content, which defines the width of the input field.
+-}
 pattern : (Context -> String -> opt) -> Parser Context ( Int, Quiz opt )
 pattern parse_inlines =
     or
-        (string "[["
-            |> keep (string1Till (string "]]"))
-            |> map
-                (\s context ->
-                    split parse_inlines s context
-                        |> map (Tuple.pair (String.length s))
-                )
-            |> andThen withState
-        )
-        (string "[->["
-            |> keep (string1Till (string "]]"))
-            |> map
-                (\s context ->
-                    splitDrop parse_inlines s context
-                        |> map (Tuple.pair (String.length s))
-                )
-            |> andThen withState
-        )
+        (brackets "[[" (split parse_inlines))
+        (brackets "[->[" (splitDrop parse_inlines))
 
 
+{-| **private:** Pass the content between `begin` and `]]` to `fn`. The length
+counts capitals as 1.5 characters, since they are wider than the average (`ch`).
+-}
+brackets : String -> (String -> Context -> Parser Context (Quiz opt)) -> Parser Context ( Int, Quiz opt )
+brackets begin fn =
+    string begin
+        |> keep (string1Till (string "]]"))
+        |> andThen
+            (\s ->
+                withState (fn s)
+                    |> map (Tuple.pair (String.length s + String.length (String.filter Char.isUpper s) // 2))
+            )
+
+
+{-| **private:** At least one character up to `end`, `\\]` is unescaped.
+-}
 string1Till : Parser s p -> Parser s String
 string1Till =
     many1Till
@@ -65,17 +71,28 @@ string1Till =
         >> map String.fromList
 
 
+{-| **private:** Split the options at every `|` that is not escaped. Without a
+regex lookbehind, old browsers (Gecko 48, KaiOS) do not support it.
+-}
 splitAtUnescapedPipe : String -> List String
-splitAtUnescapedPipe input =
-    let
-        -- This regex matches a pipe that's not preceded by a backslash
-        regex =
-            Maybe.withDefault Regex.never <|
-                Regex.fromString "(?<!\\\\)\\|"
-    in
-    input
-        |> Regex.split regex
-        |> List.map (String.replace "\\|" "|")
+splitAtUnescapedPipe =
+    String.split "|"
+        >> List.foldl
+            (\part parts ->
+                case parts of
+                    previous :: rest ->
+                        if String.endsWith "\\" previous then
+                            (previous ++ "|" ++ part) :: rest
+
+                        else
+                            part :: parts
+
+                    [] ->
+                        [ part ]
+            )
+            []
+        >> List.reverse
+        >> List.map (String.replace "\\|" "|")
 
 
 unescapeString : String -> String
@@ -89,6 +106,9 @@ unescapeString input =
         |> String.replace "\\@" "@"
 
 
+{-| **private:** A single option is a text input with this solution (`?`, `!`
+and empty are reserved for other constructs), multiple options are a selection.
+-}
 split : (Context -> String -> opt) -> String -> Context -> Parser Context (Quiz opt)
 split parse_inlines str state =
     case splitAtUnescapedPipe str of
@@ -113,12 +133,14 @@ split parse_inlines str state =
         options ->
             options
                 |> List.indexedMap (check parse_inlines state)
-                |> toSelect
+                |> toQuiz (Select False)
 
 
+{-| **private:** The options of a drop, a single option is always correct.
+-}
 splitDrop : (Context -> String -> opt) -> String -> Context -> Parser Context (Quiz opt)
 splitDrop parse_inlines str state =
-    case splitAtUnescapedPipe str of
+    (case splitAtUnescapedPipe str of
         [ solution ] ->
             let
                 option =
@@ -130,15 +152,17 @@ splitDrop parse_inlines str state =
               else
                 "(" ++ option ++ ")"
             ]
-                |> List.indexedMap (check parse_inlines state)
-                |> toDrop
 
         options ->
             options
-                |> List.indexedMap (check parse_inlines state)
-                |> toDrop
+    )
+        |> List.indexedMap (check parse_inlines state)
+        |> toQuiz (Drop False False)
 
 
+{-| **private:** Parse an option, correct options `(...)` keep their `id`,
+wrong ones get `-1`.
+-}
 check : (Context -> String -> opt) -> Context -> Int -> String -> ( Int, opt )
 check parse_inlines state id str =
     let
@@ -166,21 +190,13 @@ check parse_inlines state id str =
         )
 
 
-toSelect : List ( Int, opt ) -> Parser Context (Quiz opt)
-toSelect list =
+{-| **private:** The `state` holds the ids of all correct options.
+-}
+toQuiz : (List Int -> State) -> List ( Int, opt ) -> Parser Context (Quiz opt)
+toQuiz state list =
     list
-        |> List.filter (Tuple.first >> (<=) 0)
         |> List.map Tuple.first
-        |> Select False
-        |> Quiz (List.map Tuple.second list)
-        |> succeed
-
-
-toDrop : List ( Int, opt ) -> Parser Context (Quiz opt)
-toDrop list =
-    list
-        |> List.filter (Tuple.first >> (<=) 0)
-        |> List.map Tuple.first
-        |> Drop False False
+        |> List.filter ((<=) 0)
+        |> state
         |> Quiz (List.map Tuple.second list)
         |> succeed

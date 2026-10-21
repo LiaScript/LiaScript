@@ -13,8 +13,11 @@ module Lia.Markdown.Code.Log exposing
     , view
     )
 
-import Accessibility.Aria as A11y_Aria
+{-| The terminal output of a code project.
+-}
+
 import Array exposing (Array)
+import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as JD
@@ -38,6 +41,9 @@ type alias Message =
     }
 
 
+{-| `ok` and `details` (editor annotations per file) come from the last
+evaluation. `level` is stored but never changed.
+-}
 type alias Log =
     { ok : Bool
     , level : Level
@@ -46,6 +52,8 @@ type alias Log =
     }
 
 
+{-| Level names as sent by JavaScript (`console.log`, `console.warn`, ...).
+-}
 fromString : String -> Maybe Level
 fromString level =
     case level of
@@ -81,28 +89,28 @@ isEmpty =
     .messages >> Array.isEmpty
 
 
+{-| Every message keyed by its text, for `Html.Keyed`.
+-}
 view : Log -> List ( String, Html msg )
-view log =
-    log.messages
-        |> Array.toList
-        |> List.map view_message
+view =
+    .messages >> Array.toList >> List.map viewMessage
 
 
-view_message : Message -> ( String, Html msg )
-view_message { level, text } =
+viewMessage : Message -> ( String, Html msg )
+viewMessage { level, text } =
     ( text
     , case level of
         Debug ->
-            viewLog { class = "text-debug", str = text, label = "debug" }
+            viewText "text-debug" Nothing text
 
         Info ->
-            viewLog { class = "text-info", str = text, label = "info" }
+            viewText "text-info" Nothing text
 
         Warn ->
-            viewLog { class = "text-warning", str = text, label = "warning" }
+            viewText "text-warning" (Just "warning") text
 
         Error ->
-            viewLog { class = "text-error", str = text, label = "error" }
+            viewText "text-error" (Just "error") text
 
         HTML ->
             Html.div
@@ -112,41 +120,41 @@ view_message { level, text } =
                 []
 
         Stream ->
-            viewLog { class = "text-info", str = text, label = "info" }
+            viewText "text-info" Nothing text
     )
 
 
-viewLog : { class : String, str : String, label : String } -> Html msg
-viewLog { class, str, label } =
+{-| Warnings and errors are not only shown by their color, their level is also
+read out.
+-}
+viewText : String -> Maybe String -> String -> Html msg
+viewText class label text =
     Html.div
-        [ Attr.class class
-        , A11y_Aria.label label
-        ]
-        [ Html.text str
-        ]
+        [ Attr.class class ]
+        (CList.addWhen
+            (Maybe.map (\level -> Html.span [ Attr.class "hidden-visually" ] [ Html.text (level ++ ": ") ]) label)
+            [ Html.text text ]
+        )
 
 
+{-| Append a message, a `Stream` message continues a preceding `Stream`
+message. Only the last 249 messages are kept.
+-}
 add : Level -> String -> Log -> Log
-add level str log =
+add level text log =
     { log
         | messages =
             crop <|
-                case level of
-                    Stream ->
-                        case array_getLast log.messages of
-                            Just message ->
-                                if message.level == Stream then
-                                    log.messages
-                                        |> array_setLast (Message level (message.text ++ str))
+                case ( level, array_getLast log.messages ) of
+                    ( Stream, Just last ) ->
+                        if last.level == Stream then
+                            array_setLast (Message Stream (last.text ++ text)) log.messages
 
-                                else
-                                    Array.push (Message level str) log.messages
-
-                            _ ->
-                                Array.push (Message level str) log.messages
+                        else
+                            Array.push (Message level text) log.messages
 
                     _ ->
-                        Array.push (Message level str) log.messages
+                        Array.push (Message level text) log.messages
     }
 
 
@@ -159,41 +167,41 @@ crop messages =
         Array.slice 1 250 messages
 
 
+{-| Add the result of an evaluation as info or error and take over its
+`ok` and `details`.
+-}
 add_Eval : Eval -> Log -> Log
 add_Eval eval log =
-    (if eval.ok then
-        add Info eval.result
+    add
+        (if eval.ok then
+            Info
 
-     else
-        add Error eval.result
-    )
-    <|
+         else
+            Error
+        )
+        eval.result
         { log | ok = eval.ok, details = eval.details }
+
+
+{-| The number of line breaks within all messages.
+-}
+length : Array Message -> Int
+length =
+    Array.foldl (\message sum -> sum + List.length (String.indexes "\n" message.text)) 0
 
 
 encode : Log -> JE.Value
 encode log =
     JE.object
         [ ( "ok", JE.bool log.ok )
-        , ( "level", encLevel log.level )
-        , ( "messages", JE.array encMessage log.messages )
+        , ( "level", encodeLevel log.level )
+        , ( "messages", JE.array encodeMessage log.messages )
         , ( "details", JE.list identity log.details )
         ]
 
 
-length : Array Message -> Int
-length =
-    Array.map len
-        >> Array.foldl (+) 0
-
-
-len : Message -> Int
-len =
-    .text >> String.indexes "\n" >> List.length
-
-
-encLevel : Level -> JE.Value
-encLevel level =
+encodeLevel : Level -> JE.Value
+encodeLevel level =
     JE.int <|
         case level of
             Debug ->
@@ -215,10 +223,10 @@ encLevel level =
                 4
 
 
-encMessage : Message -> JE.Value
-encMessage { level, text } =
+encodeMessage : Message -> JE.Value
+encodeMessage { level, text } =
     JE.object
-        [ ( "level", encLevel level )
+        [ ( "level", encodeLevel level )
         , ( "text", JE.string text )
         ]
 
@@ -227,13 +235,15 @@ decoder : JD.Decoder Log
 decoder =
     JD.map4 Log
         (JD.field "ok" JD.bool)
-        (JD.field "level" decLevel)
-        (JD.field "messages" (JD.array decMessage))
+        (JD.field "level" decodeLevel)
+        (JD.field "messages" (JD.array decodeMessage))
         (JD.field "details" (JD.list JD.value))
 
 
-decLevel : JD.Decoder Level
-decLevel =
+{-| Inverse of `encodeLevel`, unknown numbers become `Debug`.
+-}
+decodeLevel : JD.Decoder Level
+decodeLevel =
     JD.int
         |> JD.map
             (\int ->
@@ -258,8 +268,8 @@ decLevel =
             )
 
 
-decMessage : JD.Decoder Message
-decMessage =
+decodeMessage : JD.Decoder Message
+decodeMessage =
     JD.map2 Message
-        (JD.field "level" decLevel)
+        (JD.field "level" decodeLevel)
         (JD.field "text" JD.string)

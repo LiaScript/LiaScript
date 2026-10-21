@@ -1,16 +1,22 @@
 module Lia.Utils exposing
     ( array_getLast
     , array_setLast
-    , blockKeydown
     , btn
     , btnIcon
     , checkFalse
     , checkPersistency
     , deactivate
     , focus
+    , formatDate
     , get
     , icon
+    , labeledOption
+    , identicon
+    , combobox
+    , dropdownList
     , modal
+    , newTab
+    , newTabHint
     , noTranslate
     , onEnter
     , onKeyDown
@@ -22,6 +28,7 @@ module Lia.Utils exposing
     , urlBasePath
     , urlDecodeIfEncoded
     , urlQuery
+    , viewIdenticon
     )
 
 import Accessibility.Aria as A11y_Aria
@@ -31,12 +38,14 @@ import Array exposing (Array)
 import Browser.Dom as Dom
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
+import I18n.Translations exposing (Lang, baseCloseDialog, baseNewTab)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
 import List.Extra
 import Process
 import Task
+import Time
 import Url
 
 
@@ -57,60 +66,37 @@ toEscapeString str =
         |> String.replace "${" "\\${"
 
 
+{-| Pass the key code of every key down and stop its propagation.
+-}
 onKeyDown : (Int -> msg) -> Html.Attribute msg
 onKeyDown tagger =
     Event.stopPropagationOn "keydown"
         (JD.map (\x -> ( x, True )) (JD.map tagger Event.keyCode))
 
 
-{-| Avoid event bubbling. Especially key-press left or right should be handled
-by some elements itself and not result in a section-switch. Thus, on global
-scale the left and right arrow keys should be used in slide-navigation, but
-locally it must be suppressed in text inputs, search fields, etc.
--}
-blockKeydown : msg -> Html.Attribute msg
-blockKeydown =
-    stopPropagationOn "keydown"
-
-
-stopPropagationOn : String -> msg -> Html.Attribute msg
-stopPropagationOn name msg =
-    Event.stopPropagationOn name (JD.succeed ( msg, True ))
-
-
-{-| Get the ith element of a list:
+{-| Get the ith element of a list, a negative index returns the first one:
 
     get 2 [ 1, 2, 3, 4, 5 ] == Just 3
 
 -}
 get : Int -> List x -> Maybe x
-get i list =
-    case list of
-        [] ->
-            Nothing
-
-        r :: rs ->
-            if i <= 0 then
-                Just r
-
-            else
-                get (i - 1) rs
+get i =
+    List.drop i >> List.head
 
 
-isEnter : msg -> Int -> JD.Decoder msg
-isEnter msg code =
-    if code == 13 then
-        JD.succeed msg
-
-    else
-        JD.fail "not ENTER"
-
-
-{-| Release a message if the user hits enter.
+{-| Release a message if the user releases the Enter key.
 -}
 onEnter : msg -> Html.Attribute msg
 onEnter msg =
-    JD.andThen (isEnter msg) Event.keyCode
+    Event.keyCode
+        |> JD.andThen
+            (\code ->
+                if code == 13 then
+                    JD.succeed msg
+
+                else
+                    JD.fail "not ENTER"
+            )
         |> Event.on "keyup"
 
 
@@ -146,18 +132,27 @@ btn :
     -> Html msg
 btn { title, tabbable, msg } =
     List.append
-        [ Attr.class "lia-btn"
-        , msg
-            |> Maybe.map Event.onClick
-            |> Maybe.withDefault (Attr.disabled True)
-        , A11y_Key.tabbable tabbable
-        , A11y_Aria.hidden (not tabbable)
-        , if String.isEmpty title then
-            Attr.class ""
+        (Attr.class "lia-btn"
+            :: (case msg of
+                    Just onClick ->
+                        [ Event.onClick onClick ]
 
-          else
-            Attr.title title
-        ]
+                    Nothing ->
+                        -- not `disabled`, which would drop the focus, if it
+                        -- was the focused button that got deactivated
+                        [ A11y_Aria.disabled True
+                        , Attr.class "lia-btn--disabled is-disabled"
+                        ]
+               )
+            ++ [ A11y_Key.tabbable tabbable
+               , A11y_Aria.hidden (not tabbable)
+               , if String.isEmpty title then
+                    Attr.class ""
+
+                 else
+                    Attr.title title
+               ]
+        )
         >> Html.button
 
 
@@ -176,11 +171,15 @@ icon class attributes =
         []
 
 
+{-| Move the focus to the element with the given id.
+-}
 focus : msg -> String -> Cmd msg
 focus msg =
     Dom.focus >> Task.attempt (always msg)
 
 
+{-| Move the focus after a delay in milliseconds (default 500).
+-}
 scheduleFocus : Maybe Float -> msg -> String -> Cmd msg
 scheduleFocus delay msg elementID =
     Process.sleep (Maybe.withDefault 500 delay)
@@ -190,9 +189,10 @@ scheduleFocus delay msg elementID =
 
 {-| Create custom modals, which overlay the entire view.
 -}
-modal : msg -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
-modal msgClose controls content =
-    Html.div
+modal : Lang -> Bool -> msg -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
+modal lang activeBorder msgClose controls content =
+    -- the custom element moves the focus in and out, see webcomponents/modal.ts
+    Html.node "lia-modal"
         [ Attr.class "lia-modal"
         , A11y_Aria.modal True
         , A11y_Role.dialog
@@ -204,11 +204,10 @@ modal msgClose controls content =
                     { icon = "icon-close"
                     , msg = Just msgClose
                     , tabbable = True
-                    , title = "close modal"
+                    , title = baseCloseDialog lang
                     }
                     [ Attr.class "lia-btn--transparent"
                     , Attr.id "lia-modal__close"
-                    , A11y_Key.onKeyDown [ A11y_Key.escape msgClose ]
                     ]
                 ]
             , content
@@ -219,7 +218,11 @@ modal msgClose controls content =
             ]
         , Html.div
             [ Attr.class "lia-modal__outer"
-            , Event.onClick msgClose
+            , if activeBorder then
+                Event.onClick msgClose
+
+              else
+                Attr.class ""
             ]
             []
         ]
@@ -236,11 +239,13 @@ deactivate true attr =
         attr
 
 
+{-| -}
 array_getLast : Array a -> Maybe a
 array_getLast array =
     Array.get (Array.length array - 1) array
 
 
+{-| -}
 array_setLast : a -> Array a -> Array a
 array_setLast a array =
     Array.set (Array.length array - 1) a array
@@ -269,22 +274,19 @@ string2Color : Int -> String -> String
 string2Color maxValue url =
     url
         |> String.toList
-        |> List.map Char.toCode
-        |> List.Extra.greedyGroupsOf 3
+        -- the character codes are summed up alternately in r, g, and b
+        |> List.indexedMap (\i char -> ( modBy 3 i, Char.toCode char ))
         |> List.foldl
-            (\rgb ( r, g, b ) ->
-                case rgb of
-                    [ r_, g_, b_ ] ->
-                        ( r + r_, g + g_, b + b_ )
+            (\( channel, code ) ( r, g, b ) ->
+                case channel of
+                    0 ->
+                        ( r + code, g, b )
 
-                    [ r_, g_ ] ->
-                        ( r_ + r, g_ + g, b )
-
-                    [ r_ ] ->
-                        ( r_ + r, g, b )
+                    1 ->
+                        ( r, g + code, b )
 
                     _ ->
-                        ( r, g, b )
+                        ( r, g, b + code )
             )
             ( 11111, 99, 12 )
         |> (\( r, g, b ) ->
@@ -298,6 +300,128 @@ string2Color maxValue url =
            )
 
 
+{-| A curated set of neutral, inoffensive emoji (animals, plants, food,
+everyday objects) used by `identicon`. Deliberately excludes anything that
+could read as rude, violent, or otherwise inappropriate for a classroom.
+-}
+identiconSymbols : Array String
+identiconSymbols =
+    Array.fromList
+        [ "🐶"
+        , "🐱"
+        , "🦊"
+        , "🦁"
+        , "🐯"
+        , "🐼"
+        , "🐨"
+        , "🐰"
+        , "🐧"
+        , "🐦"
+        , "🦅"
+        , "🦄"
+        , "🐬"
+        , "🐳"
+        , "🦋"
+        , "🐞"
+        , "🐝"
+        , "🐢"
+        , "🦔"
+        , "🦒"
+        , "🦖"
+        , "🦕"
+        , "🌹"
+        , "🌻"
+        , "🌵"
+        , "🍀"
+        , "☀️"
+        , "🌙"
+        , "⭐"
+        , "🪐"
+        , "❄️"
+        , "🌊"
+        , "🍎"
+        , "🍓"
+        , "⚽"
+        , "🏀"
+        , "🏈"
+        , "🏓"
+        , "🛹"
+        , "🎿"
+        , "🏆"
+        , "🥇"
+        , "🎵"
+        , "🎸"
+        , "🎹"
+        , "🎧"
+        , "🎤"
+        , "🎨"
+        , "📷"
+        , "🎮"
+        , "🎁"
+        , "🎈"
+        , "🎉"
+        , "🎯"
+        , "🧸"
+        , "🏎️"
+        , "🚲"
+        , "✈️"
+        , "⛵"
+        , "💻"
+        , "📱"
+        , "⌚"
+        , "💡"
+        , "🔭"
+        , "🔬"
+        , "📚"
+        , "✏️"
+        , "🎒"
+        , "💎"
+        , "👑"
+        , "🕶️"
+        , "👟"
+        , "🎓"
+        , "🔑"
+        ]
+
+
+{-| A small, deterministic per-user "avatar" derived only from a string
+(typically a peer id): a `string2Color` background plus a symbol picked from
+`identiconSymbols`. The same id always yields the same result on every
+client, with no coordination needed -- useful to visually tell two users
+with the same display name apart.
+-}
+identicon : String -> { color : String, symbol : String }
+identicon id =
+    { color = string2Color 180 id
+    , symbol =
+        id
+            |> String.foldl (\c acc -> acc + Char.toCode c) 0
+            |> modBy (Array.length identiconSymbols)
+            |> (\i -> Array.get i identiconSymbols)
+            |> Maybe.withDefault "❔"
+    }
+
+
+{-| Render the `identicon` for a given id as "<emoji> <colored diamond>".
+Emoji glyphs are drawn by the platform's color emoji font and ignore CSS
+`color`, so only the diamond actually carries the `string2Color` hue -- the
+emoji contributes shape, the diamond contributes color. Marked
+`aria-hidden`, since it is a purely visual disambiguation aid -- the
+adjacent name text already carries the accessible label.
+-}
+viewIdenticon : String -> Html msg
+viewIdenticon id =
+    let
+        { color, symbol } =
+            identicon id
+    in
+    Html.span
+        [ Attr.attribute "aria-hidden" "true" ]
+        [ Html.span [ Attr.style "color" color ] [ Html.text " ◆" ]
+        , Html.text symbol
+        ]
+
+
 {-| Return rounded percentage up to two digits.
 
     percentage 3.14159 1 == 31.83
@@ -308,23 +432,16 @@ percentage total i =
     toFloat (round ((10000.0 * toFloat i) / total)) / 100.0
 
 
+{-| Is a macro value not switched off? `0`, `false`, `off` and `disable` (or
+words starting with them, ignoring the case) switch it off.
+-}
 checkFalse : String -> Bool
 checkFalse string =
-    case string |> String.trim |> String.toLower |> String.toList of
-        [ '0' ] ->
-            False
-
-        'f' :: 'a' :: 'l' :: 's' :: 'e' :: _ ->
-            False
-
-        'o' :: 'f' :: 'f' :: _ ->
-            False
-
-        'd' :: 'i' :: 's' :: 'a' :: 'b' :: 'l' :: 'e' :: _ ->
-            False
-
-        _ ->
-            True
+    let
+        value =
+            string |> String.trim |> String.toLower
+    in
+    not (value == "0" || List.any (\prefix -> String.startsWith prefix value) [ "false", "off", "disable" ])
 
 
 {-| Will check any dict for the persistent macro.
@@ -354,6 +471,8 @@ urlBasePath =
             )
 
 
+{-| The part after the last `?`, if there is one.
+-}
 urlQuery : String -> Maybe String
 urlQuery =
     String.split "?"
@@ -361,6 +480,9 @@ urlQuery =
         >> Maybe.andThen List.Extra.last
 
 
+{-| Reorder the rows by sorting them along a random order (rows without an
+order are dropped).
+-}
 shuffle : Maybe (List Int) -> List x -> List x
 shuffle randomize rows =
     case randomize of
@@ -374,11 +496,15 @@ shuffle randomize rows =
                 |> List.map Tuple.second
 
 
+{-| A course URL as it is passed in the query: percent decoded if it starts
+with `http` but contains no `://`. Parameters that the VS Code Simple Browser
+appends are cut off, `Nothing` if there is nothing else.
+-}
 urlDecodeIfEncoded : String -> Maybe String
 urlDecodeIfEncoded input =
     let
         decoded =
-            if String.startsWith "http" input then
+            if String.startsWith "http" input && not (String.contains "://" input) then
                 Url.percentDecode input
                     |> Maybe.withDefault input
 
@@ -417,8 +543,7 @@ cleanupVscodeSimpleBrowserUrl url =
                 firstIndex =
                     needles
                         |> List.filterMap (\n -> String.indexes n s |> List.head)
-                        |> List.sort
-                        |> List.head
+                        |> List.minimum
             in
             case firstIndex of
                 Nothing ->
@@ -445,3 +570,95 @@ cleanupVscodeSimpleBrowserUrl url =
 
             else
                 url
+
+
+{-| Format an epoch-millisecond timestamp as `DD.MM.YYYY HH:MM`, in UTC (no
+user-local timezone is plumbed through the app anywhere yet).
+-}
+formatDate : Int -> String
+formatDate ms =
+    let
+        posix =
+            Time.millisToPosix ms
+
+        pad n =
+            n |> String.fromInt |> String.padLeft 2 '0'
+
+        month =
+            [ Time.Jan, Time.Feb, Time.Mar, Time.Apr, Time.May, Time.Jun, Time.Jul, Time.Aug, Time.Sep, Time.Oct, Time.Nov, Time.Dec ]
+                |> List.Extra.elemIndex (Time.toMonth Time.utc posix)
+                |> Maybe.withDefault 0
+                |> (+) 1
+    in
+    pad (Time.toDay Time.utc posix)
+        ++ "."
+        ++ pad month
+        ++ "."
+        ++ String.fromInt (Time.toYear Time.utc posix)
+        ++ " "
+        ++ pad (Time.toHour Time.utc posix)
+        ++ ":"
+        ++ pad (Time.toMinute Time.utc posix)
+
+
+{-| An option of a quiz, survey or task list: the `input` is named by the
+content with the `id` via `aria-labelledby`. The content is no `label`, since
+it might contain images or scripts, which must not toggle the input.
+-}
+labeledOption : String -> (Attribute a -> Html msg) -> List (Html msg) -> Html msg
+labeledOption id input body =
+    Html.div [ Attr.class "lia-label lia-label--top" ]
+        [ input (A11y_Aria.labelledBy id)
+        , Html.div [ Attr.id id, Attr.style "width" "100%" ] body
+        ]
+
+
+{-| The focusable element of a dropdown (select-only combobox), named by
+`label`, the keyboard is handled by `typescript/liascript/combobox.ts`.
+-}
+combobox : String -> Bool -> Bool -> Attribute msg -> List (Attribute msg)
+combobox listID open disabled label =
+    [ Attr.class "lia-dropdown__selected"
+    , Attr.tabindex 0
+    , A11y_Role.comboBox
+    , A11y_Aria.expanded open
+    , A11y_Aria.hasListBoxPopUp
+    , A11y_Aria.controls [ listID ]
+    , label
+    , A11y_Aria.disabled disabled
+    ]
+
+
+{-| The list of a dropdown, it is removed from the accessibility tree while it
+is closed, otherwise the options would be read as the value of the combobox.
+-}
+dropdownList : String -> Bool -> List (Attribute msg) -> List (Attribute msg)
+dropdownList listID open attributes =
+    Attr.id listID
+        :: A11y_Role.listBox
+        :: (if open then
+                attributes
+
+            else
+                A11y_Aria.hidden True :: Attr.attribute "inert" "" :: attributes
+           )
+
+
+{-| Attributes of a link that opens in a new tab, the hint (`newTabHint`) is
+read as its description.
+-}
+newTab : List (Attribute msg)
+newTab =
+    [ Attr.target "_blank", A11y_Aria.describedBy [ newTabID ] ]
+
+
+{-| The hidden hint "opens in a new tab", it exists once in the course view.
+-}
+newTabHint : Lang -> Html msg
+newTabHint lang =
+    Html.span [ Attr.id newTabID, Attr.hidden True ] [ Html.text (baseNewTab lang) ]
+
+
+newTabID : String
+newTabID =
+    "lia-new-tab"

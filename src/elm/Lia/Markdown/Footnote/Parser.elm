@@ -13,11 +13,12 @@ import Combine
         , map
         , maybe
         , modifyState
+        , onsuccess
         , string
         , succeed
         , withState
         )
-import Lia.Markdown.Footnote.Model as Model
+import Dict
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Types as Markdown
@@ -26,6 +27,9 @@ import Lia.Parser.Helper exposing (stringTill)
 import Lia.Parser.Indentation as Indent
 
 
+{-| A footnote mark `[^key]`, or `[^key](text)` which also defines the footnote
+inline, the text is parsed with the given inline parser.
+-}
 inline : (Context -> String -> Inlines) -> Parser Context (Parameters -> Inline)
 inline parser =
     string "[^"
@@ -42,6 +46,10 @@ inline parser =
         |> andThen store
 
 
+{-| A footnote definition `[^key]: ...`, its body consists of all following
+blocks indented by at least two spaces. It is only stored in the state, no
+block is returned.
+-}
 block : Parser Context Markdown.Blocks -> Parser Context ()
 block p =
     string "[^"
@@ -49,23 +57,20 @@ block p =
         |> map Tuple.pair
         |> ignore (Indent.push "[ ]{2,}")
         |> andMap p
-        |> andThen add_footnote
+        |> andThen add
 
 
 store : ( String, Maybe Inlines ) -> Parser Context (Parameters -> Inline)
-store ( key, val ) =
-    case val of
-        Just v ->
-            add_footnote
-                ( key
-                , [ Markdown.Paragraph [] v ]
-                )
-                |> keep (succeed (FootnoteMark key))
+store ( key, text ) =
+    case text of
+        Just inlines ->
+            add ( key, [ Markdown.Paragraph [] inlines ] )
+                |> onsuccess (FootnoteMark key)
 
-        _ ->
+        Nothing ->
             succeed (FootnoteMark key)
 
 
-add_footnote : ( String, Markdown.Blocks ) -> Parser Context ()
-add_footnote ( key, val ) =
-    modifyState (\s -> { s | footnotes = Model.insert key val s.footnotes })
+add : ( String, Markdown.Blocks ) -> Parser Context ()
+add ( key, body ) =
+    modifyState (\s -> { s | footnotes = Dict.insert key body s.footnotes })

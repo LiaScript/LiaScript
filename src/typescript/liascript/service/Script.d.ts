@@ -25,4 +25,6 @@ export type SendExec = {
   clear: () => void
   html: (msg: string) => void
   liascript: (msg: string) => void
+  register: (name: string, fn: any) => void
+  dispatch: (name: string, data: any) => void
 }

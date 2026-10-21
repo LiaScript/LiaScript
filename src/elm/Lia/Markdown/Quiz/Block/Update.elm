@@ -11,6 +11,10 @@ import Return exposing (Return)
 import Task
 
 
+{-| `Toggle` opens and closes a dropdown, `Choose` selects an option. The `Drop`
+messages implement drag and drop as well as click and drop (`DropSource` and
+`DropTarget`). `Submit` (enter) checks the quiz, `None` does nothing.
+-}
 type Msg sub
     = Toggle
     | Choose Int
@@ -22,9 +26,11 @@ type Msg sub
     | DropExit
     | DropTarget
     | DropSource Int
+    | Submit
     | None
 
 
+{-| -}
 update : Msg sub -> State -> Return State (Msg sub) sub
 update msg state =
     case ( msg, state ) of
@@ -54,7 +60,8 @@ update msg state =
                 if highlight then
                     Drop False False [ id ]
 
-                else if not highlight && [ id ] == value then
+                else if [ id ] == value then
+                    -- dragged out of the drop zone
                     Drop False False []
 
                 else
@@ -89,6 +96,9 @@ update msg state =
                 |> Return.val
 
 
+{-| The input as passed to a checking script, the selected option is passed as
+index (`-1` if none). Texts are quoted `withQuotes`, as within a gap-text.
+-}
 toString : Bool -> State -> String
 toString withQuotes state =
     case state of

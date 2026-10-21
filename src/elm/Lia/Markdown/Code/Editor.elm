@@ -1,39 +1,32 @@
 module Lia.Markdown.Code.Editor exposing
     ( Cursor
-    , Event
-    , addKeyBinding
+    , aceOptions
     , annotations
-    , blockUpdate
     , catchCursorUpdates
-    , cursorPosition
     , decodeCursor
     , editor
     , emptyCursor
     , enableBasicAutocompletion
-    , enableKeyboardAccessibility
     , enableLiveAutocompletion
     , enableSnippets
-    , encode
-    , extensions
     , firstLineNumber
     , focusing
     , fontSize
     , highlightActiveLine
     , keyBindings
+    , label
     , marker
     , maxLines
     , mode
-    , onBlur
     , onChange
     , onChangeCursor
-    , onChangeCursor2
+    , onChangeCursorValue
     , onChangeEvent
-    , onChangeEvent2
     , onCtrlEnter
-    , onFocus
     , onKeyBinding
     , readOnly
-    , removeKeyBinding
+    , rtl
+    , rtlText
     , setCursors
     , showCursor
     , showGutter
@@ -41,12 +34,15 @@ module Lia.Markdown.Code.Editor exposing
     , tabSize
     , theme
     , useSoftTabs
-    , useWrapMode
     , value
     , valueAndCursor
     )
 
-import Array exposing (Array)
+{-| Elm interface of the `lia-editor` web component (Ace editor, see
+`src/typescript/webcomponents/editor.ts`). Settings are passed as DOM
+properties, the editor reports back via custom events.
+-}
+
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events
@@ -54,13 +50,8 @@ import Json.Decode as JD
 import Json.Encode as JE
 
 
-type alias Event =
-    { action : String
-    , index : Int
-    , content : String
-    }
-
-
+{-| Cursor position and selection (`[startRow, startColumn, endRow, endColumn]`).
+-}
 type alias Cursor =
     { position :
         { row : Int
@@ -77,20 +68,6 @@ emptyCursor =
     }
 
 
-encode : Array Event -> JE.Value
-encode =
-    JE.array encode_
-
-
-encode_ : Event -> JE.Value
-encode_ { action, index, content } =
-    JE.object
-        [ ( "action", JE.string action )
-        , ( "index", JE.int index )
-        , ( "content", JE.string content )
-        ]
-
-
 decodeCursor : JD.Decoder Cursor
 decodeCursor =
     JD.map2 Cursor
@@ -103,6 +80,8 @@ decodeCursor =
         (JD.field "selection" (JD.list JD.int))
 
 
+{-| The editor element, always displayed as block.
+-}
 editor : List (Html.Attribute msg) -> List (Html msg) -> Html msg
 editor attr =
     Attr.style "display" "block"
@@ -110,6 +89,8 @@ editor attr =
         |> Html.node "lia-editor"
 
 
+{-| The complete new content after every change.
+-}
 onChange : (String -> msg) -> Html.Attribute msg
 onChange msg =
     JD.string
@@ -118,25 +99,12 @@ onChange msg =
         |> Html.Events.on "editorUpdate"
 
 
-blockUpdate : Bool -> Html.Attribute msg
-blockUpdate =
-    boolean "blockUpdate"
-
-
-onChangeEvent : (Array Event -> msg) -> Html.Attribute msg
+{-| The single changes (Ace deltas, not decoded) for synchronizing with
+others, the editor fires them instead of `onChange` when it catches cursor
+updates.
+-}
+onChangeEvent : (JD.Value -> msg) -> Html.Attribute msg
 onChangeEvent msg =
-    JD.map3 Event
-        (JD.field "action" JD.string)
-        (JD.field "index" JD.int)
-        (JD.field "content" JD.string)
-        |> JD.array
-        |> JD.at [ "detail" ]
-        |> JD.map msg
-        |> Html.Events.on "editorUpdateEvent"
-
-
-onChangeEvent2 : (JD.Value -> msg) -> Html.Attribute msg
-onChangeEvent2 msg =
     JD.value
         |> JD.at [ "detail" ]
         |> JD.map msg
@@ -144,13 +112,15 @@ onChangeEvent2 msg =
 
 
 {-| This attribute has to be set to true, to instruct the editor to send cursor updates.
-Otherwise, the `onChangeCursor` and 'onChangeCursor2' will remain silent.
+Otherwise, `onChangeCursor` and `onChangeCursorValue` remain silent.
 -}
 catchCursorUpdates : Bool -> Html.Attribute msg
 catchCursorUpdates =
     boolean "catchCursorUpdates"
 
 
+{-| Cursor movements, decoded.
+-}
 onChangeCursor : (Cursor -> msg) -> Html.Attribute msg
 onChangeCursor msg =
     decodeCursor
@@ -159,23 +129,17 @@ onChangeCursor msg =
         |> Html.Events.on "editorUpdateCursor"
 
 
-{-| Catch the updated of cursor movements, which for simplicity are not decoded.
-
-    `Cursor --> {row: Int, column: Int}
-
+{-| Cursor movements, not decoded, to be passed on to others.
 -}
-onChangeCursor2 : (JD.Value -> msg) -> Html.Attribute msg
-onChangeCursor2 msg =
+onChangeCursorValue : (JD.Value -> msg) -> Html.Attribute msg
+onChangeCursorValue msg =
     JD.value
         |> JD.at [ "detail" ]
         |> JD.map msg
         |> Html.Events.on "editorUpdateCursor"
 
 
-{-| Catch the updated of cursor movements, which for simplicity are not decoded.
-
-    `Cursor --> {row: Int, column: Int}
-
+{-| Ctrl-Enter (Command-Enter on Mac) was pressed.
 -}
 onCtrlEnter : msg -> Html.Attribute msg
 onCtrlEnter msg =
@@ -183,7 +147,9 @@ onCtrlEnter msg =
         |> Html.Events.on "editorCtrlEnter"
 
 
-setCursors : List { cursor | id : String, color : String, state : Cursor } -> Html.Attribute msg
+{-| Show the cursors of other users.
+-}
+setCursors : List { cursor | id : String, color : String, state : Cursor, name : String } -> Html.Attribute msg
 setCursors =
     JE.list
         (\cursor ->
@@ -197,39 +163,10 @@ setCursors =
                         ]
                   )
                 , ( "selection", JE.list JE.int cursor.state.selection )
+                , ( "name", JE.string cursor.name )
                 ]
         )
         >> Attr.property "cursors"
-
-
-onFocus : msg -> Html.Attribute msg
-onFocus msg =
-    JD.bool
-        |> JD.at [ "target", "focusing" ]
-        |> JD.andThen
-            (\b ->
-                if b then
-                    JD.succeed msg
-
-                else
-                    JD.fail "no focus"
-            )
-        |> Html.Events.on "editorFocus"
-
-
-onBlur : msg -> Html.Attribute msg
-onBlur msg =
-    JD.bool
-        |> JD.at [ "target", "focusing" ]
-        |> JD.andThen
-            (\b ->
-                if b then
-                    JD.fail "no blur"
-
-                else
-                    JD.succeed msg
-            )
-        |> Html.Events.on "editorFocus"
 
 
 value : String -> Html.Attribute msg
@@ -237,6 +174,8 @@ value =
     JE.string >> Attr.property "value"
 
 
+{-| Set the content and move the cursor to `pos`.
+-}
 valueAndCursor : String -> { row : Int, column : Int } -> Html.Attribute msg
 valueAndCursor str pos =
     JE.list identity
@@ -259,6 +198,13 @@ mode =
     JE.string >> Attr.property "mode"
 
 
+{-| The name of the editor for screen readers, Ace adds the cursor position.
+-}
+label : String -> Html.Attribute msg
+label =
+    Attr.attribute "data-label"
+
+
 theme : String -> Html.Attribute msg
 theme =
     JE.string >> Attr.property "theme"
@@ -274,6 +220,8 @@ fontSize =
     JE.string >> Attr.property "fontSize"
 
 
+{-| Highlighted ranges, see `data-marker` in the documentation.
+-}
 marker : String -> Html.Attribute msg
 marker =
     JE.string >> Attr.property "marker"
@@ -299,11 +247,6 @@ highlightActiveLine =
     boolean "highlightActiveLine"
 
 
-enableKeyboardAccessibility : Bool -> Html.Attribute msg
-enableKeyboardAccessibility =
-    boolean "enableKeyboardAccessibility"
-
-
 showGutter : Bool -> Html.Attribute msg
 showGutter =
     boolean "showGutter"
@@ -314,19 +257,26 @@ showPrintMargin =
     boolean "showPrintMargin"
 
 
+{-| The editor grows up to this number of lines, `-1` means no limit.
+-}
 maxLines : Int -> Html.Attribute msg
 maxLines =
     JE.int >> Attr.property "maxLines"
 
 
+{-| Error/warning annotations of the gutter, as sent by the evaluation.
+-}
 annotations : JE.Value -> Html.Attribute msg
 annotations =
     Attr.property "annotations"
 
 
-useWrapMode : Bool -> Html.Attribute msg
-useWrapMode =
-    boolean "useWrapMode"
+{-| Additional ace options defined by the course author, e.g.
+`data-ace-options="spellcheck hardWrap tabSize=8"`, see `editor.ts`.
+-}
+aceOptions : String -> Html.Attribute msg
+aceOptions =
+    JE.string >> Attr.property "aceOptions"
 
 
 enableBasicAutocompletion : Bool -> Html.Attribute msg
@@ -344,9 +294,18 @@ enableSnippets =
     boolean "enableSnippets"
 
 
-extensions : List String -> Html.Attribute msg
-extensions =
-    JE.list JE.string >> Attr.property "extensions"
+{-| Set the text direction to right-to-left. This is needed for languages like Arabic or Hebrew.
+-}
+rtl : Bool -> Html.Attribute msg
+rtl =
+    boolean "rtl"
+
+
+{-| Auto-detect RTL text direction based on the content of the editor. This is needed for languages like Arabic or Hebrew.
+-}
+rtlText : Bool -> Html.Attribute msg
+rtlText =
+    boolean "rtlText"
 
 
 boolean : String -> Bool -> Html.Attribute msg
@@ -354,17 +313,20 @@ boolean prop =
     JE.bool >> Attr.property prop
 
 
+{-| Focus the editor when it is created.
+-}
 focusing : Html.Attribute msg
 focusing =
     boolean "focusing" True
 
 
-{-| Set multiple key bindings at once
-Example:
-keyBindings
-[ ( "execute", { win = "Ctrl-Enter", mac = "Command-Enter" }, "editorExecute" )
-, ( "save", { win = "Ctrl-S", mac = "Command-S" }, "editorSave" )
-]
+{-| Bind keys to custom events, which can be caught with `onKeyBinding`:
+
+    keyBindings
+        [ ( "execute", { win = "Ctrl-Enter", mac = "Command-Enter" }, "editorExecute" )
+        , ( "save", { win = "Ctrl-S", mac = "Command-S" }, "editorSave" )
+        ]
+
 -}
 keyBindings : List ( String, { win : String, mac : String }, String ) -> Html.Attribute msg
 keyBindings bindings =
@@ -387,43 +349,9 @@ keyBindings bindings =
         |> Attr.property "keyBindings"
 
 
-{-| Add a single key binding
--}
-addKeyBinding : String -> { win : String, mac : String } -> String -> Html.Attribute msg
-addKeyBinding name bindKey eventName =
-    JE.object
-        [ ( "name", JE.string name )
-        , ( "bindKey"
-          , JE.object
-                [ ( "win", JE.string bindKey.win )
-                , ( "mac", JE.string bindKey.mac )
-                ]
-          )
-        , ( "eventName", JE.string eventName )
-        ]
-        |> Attr.property "addKeyBindingProp"
-
-
-{-| Remove a key binding by name
--}
-removeKeyBinding : String -> Html.Attribute msg
-removeKeyBinding name =
-    JE.string name
-        |> Attr.property "removeKeyBindingProp"
-
-
-{-| Listen for custom key binding events
+{-| Listen for a custom key binding event.
 -}
 onKeyBinding : String -> msg -> Html.Attribute msg
 onKeyBinding eventName msg =
     JD.succeed msg
         |> Html.Events.on eventName
-
-
-cursorPosition : { row : Int, column : Int } -> Html.Attribute msg
-cursorPosition { row, column } =
-    JE.object
-        [ ( "row", JE.int row )
-        , ( "column", JE.int column )
-        ]
-        |> Attr.property "cursorPos"

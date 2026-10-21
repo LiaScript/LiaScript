@@ -4,6 +4,12 @@ module Lia.Markdown.Effect.View exposing
     , state
     )
 
+{-| Effects are rendered with their animation step as a circle and/or with
+playback buttons. In textbook mode (`config.visible == Nothing`) everything
+is shown, in presentation and slides mode only the effects of the current
+animation step.
+-}
+
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Live as A11y_Live
@@ -11,311 +17,275 @@ import Accessibility.Role as A11y_Role
 import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick)
+import I18n.Translations as Translations
 import Json.Encode as JE
 import Lia.Markdown.Effect.Model exposing (Model)
 import Lia.Markdown.Effect.Types exposing (Class(..), Effect, class, isIn)
-import Lia.Markdown.Effect.Update as E
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Types exposing (Block)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Voice as Voice
-import Service.Event as Event
+import Service.Event as Event exposing (Event)
 import Service.TTS
 
 
-circle_ : Int -> Html msg
-circle_ =
-    number
-        >> Html.text
-        >> List.singleton
-        >> Html.span [ Attr.class "lia-effect__circle lia-effect__circle--inline" ]
-
-
-number : Int -> String
-number i =
-    "\u{200A}" ++ String.fromInt i ++ "\u{200A}"
-
-
+{-| A block effect with its `body`.
+-}
 block : Config sub -> Model a -> Parameters -> Effect Block -> List (Html Msg) -> Html Msg
 block config model attr e body =
-    if config.visible == Nothing then
-        case class e of
-            Animation ->
-                Html.div [ Attr.class "lia-effect" ] <|
-                    [ circle e.begin
+    let
+        playbackFloat textbook =
+            (::) (block_playback config e)
+                >> Html.div
+                    [ Attr.classList
+                        [ ( "lia-effect", textbook )
+                        , ( "lia-effect--playback-float", True )
+                        , ( "lia-effect--speaking", config.speaking == Just e.id )
+                        ]
+                    ]
+
+        animated =
+            Html.div
+                (attr
+                    |> annotation "lia-effect__content"
+                    |> CList.addIf (e.begin == model.visible) (Attr.id "focused")
+                )
+                body
+
+        visible =
+            isIn (Just model.visible) e
+    in
+    case ( config.visible, class e ) of
+        ( _, PlayBack ) ->
+            playbackFloat (config.visible == Nothing)
+                [ Html.div (annotation "lia-effect__playback-content" attr) body ]
+
+        ( Nothing, Animation ) ->
+            Html.div [ Attr.class "lia-effect" ]
+                [ circle "lia-effect__circle" e.begin
+                , Html.div (toAttribute attr) body
+                ]
+
+        ( Nothing, PlayBackAnimation ) ->
+            playbackFloat True
+                [ Html.div [ Attr.class "lia-effect__playback-content" ]
+                    [ circle "lia-effect__circle" e.begin
                     , Html.div (toAttribute attr) body
                     ]
+                ]
 
-            PlayBack ->
-                Html.div
-                    [ Attr.classList
-                        [ ( "lia-effect", True )
-                        , ( "lia-effect--playback-float", True )
-                        , ( "lia-effect--speaking", config.speaking == Just e.id )
-                        ]
-                    ]
-                <|
-                    [ block_playback config e
-                    , Html.div (annotation "lia-effect__playback-content" attr) body
+        ( Just _, Animation ) ->
+            if visible then
+                Html.div [ Attr.class "lia-effect", A11y_Live.polite, A11y_Role.alert ]
+                    [ circle "lia-effect__circle" e.begin
+                    , animated
                     ]
 
-            PlayBackAnimation ->
-                Html.div
-                    [ Attr.classList
-                        [ ( "lia-effect", True )
-                        , ( "lia-effect--playback-float", True )
-                        , ( "lia-effect--speaking", config.speaking == Just e.id )
+            else
+                Html.text ""
+
+        ( Just _, PlayBackAnimation ) ->
+            Html.div [ Attr.hidden (not visible) ]
+                [ playbackFloat False
+                    [ Html.div [ Attr.class "lia-effect lia-effect__playback-content", A11y_Live.polite, A11y_Role.alert ]
+                        [ circle "lia-effect__circle" e.begin
+                        , animated
                         ]
                     ]
-                <|
-                    [ block_playback config e
-                    , Html.div [ Attr.class "lia-effect__playback-content" ]
-                        [ circle e.begin
-                        , Html.div (toAttribute attr) body
-                        ]
-                    ]
-
-    else
-        let
-            visible =
-                isIn (Just model.visible) e
-        in
-        case class e of
-            Animation ->
-                if not visible then
-                    Html.text ""
-
-                else
-                    Html.div [ Attr.class "lia-effect", A11y_Live.polite, A11y_Role.alert ] <|
-                        [ circle e.begin
-                        , Html.div
-                            (attr
-                                |> annotation "lia-effect__content"
-                                |> CList.addIf (e.begin == model.visible) (Attr.id "focused")
-                            )
-                            body
-                        ]
-
-            PlayBack ->
-                Html.div
-                    [ Attr.classList
-                        [ ( "lia-effect--playback-float", True )
-                        , ( "lia-effect--speaking", config.speaking == Just e.id )
-                        ]
-                    ]
-                <|
-                    [ block_playback config e
-                    , Html.div (annotation "lia-effect__playback-content" attr) body
-                    ]
-
-            PlayBackAnimation ->
-                Html.div [ Attr.hidden (not visible) ] <|
-                    [ Html.div
-                        [ Attr.classList
-                            [ ( "lia-effect--playback-float", True )
-                            , ( "lia-effect--speaking", config.speaking == Just e.id )
-                            ]
-                        ]
-                      <|
-                        [ block_playback config e
-                        , Html.div [ Attr.class "lia-effect lia-effect__playback-content", A11y_Live.polite, A11y_Role.alert ]
-                            [ circle e.begin
-                            , Html.div
-                                (attr
-                                    |> annotation "lia-effect__content"
-                                    |> CList.addIf (e.begin == model.visible) (Attr.id "focused")
-                                )
-                                body
-                            ]
-                        ]
-                    ]
+                ]
 
 
+{-| An inline effect with its `body`, invisible effects are hidden by CSS.
+-}
 inline : Config sub -> Parameters -> Effect Inline -> List (Html msg) -> Html msg
 inline config attr e body =
-    if config.visible == Nothing then
-        hiddenSpan False (config.speaking == Just e.id) attr <|
-            case class e of
-                Animation ->
-                    circle_ e.begin :: Html.text " " :: body
+    let
+        hide =
+            not (isIn config.visible e)
 
-                PlayBack ->
-                    [ inline_playback config e
-                        :: body
-                        |> Html.label []
-                    ]
+        speaking =
+            config.speaking == Just e.id
 
-                PlayBackAnimation ->
-                    [ circle_ e.begin
-                    , inline_playback config e
-                        :: body
-                        |> Html.label []
-                    ]
+        label =
+            Html.label [] (inline_playback config e :: body)
 
-    else
-        case class e of
-            Animation ->
-                circle_ e.begin
-                    :: Html.text " "
-                    :: body
-                    |> hiddenSpan (not <| isIn config.visible e) False attr
+        -- new animation steps are only announced in presentation and slides
+        announce =
+            config.visible /= Nothing
+    in
+    case class e of
+        Animation ->
+            -- only marked as speaking in textbook mode
+            circle "lia-effect__circle lia-effect__circle--inline" e.begin
+                :: Html.text " "
+                :: body
+                |> hiddenSpan announce hide (speaking && config.visible == Nothing) attr
 
-            PlayBack ->
-                [ inline_playback config e
-                    :: body
-                    |> Html.label []
-                ]
-                    |> hiddenSpan False (config.speaking == Just e.id) attr
+        PlayBack ->
+            hiddenSpan announce False speaking attr [ label ]
 
-            PlayBackAnimation ->
-                [ circle_ e.begin
-                , inline_playback config e
-                    :: body
-                    |> Html.label []
-                ]
-                    |> hiddenSpan (not <| isIn config.visible e) (config.speaking == Just e.id) attr
+        PlayBackAnimation ->
+            hiddenSpan announce hide speaking attr [ circle "lia-effect__circle lia-effect__circle--inline" e.begin, label ]
 
 
-hiddenSpan : Bool -> Bool -> Parameters -> List (Html msg) -> Html msg
-hiddenSpan hide speaking attr =
+hiddenSpan : Bool -> Bool -> Bool -> Parameters -> List (Html msg) -> Html msg
+hiddenSpan announce hide speaking attr =
     Html.span
         (if hide then
             annotation "lia-effect--inline hide" attr
 
-         else
-            let
-                className =
-                    if speaking then
-                        "lia-effect--inline lia-effect--speaking"
+         else if speaking then
+            CList.appendIf announce [ A11y_Role.alert, A11y_Live.polite ] (annotation "lia-effect--inline lia-effect--speaking" attr)
 
-                    else
-                        "lia-effect--inline"
-            in
-            A11y_Live.polite :: A11y_Role.alert :: annotation className attr
+         else
+            CList.appendIf announce [ A11y_Role.alert, A11y_Live.polite ] (annotation "lia-effect--inline" attr)
         )
 
 
+{-| Play/stop and pause/resume buttons of a block effect. The text to read out
+is the content next to the buttons.
+-}
 block_playback : Config sub -> Effect Block -> Html Msg
 block_playback config e =
-    if config.speaking == Just e.id then
-        Html.button
-            [ Attr.class "lia-btn text-highlight icon icon-stop-circle"
-            , A11y_Key.tabbable True
-            , e.id
-                |> E.Mute
-                |> UpdateEffect True
-                |> onClick
-            , A11y_Aria.label "Stop playback"
+    let
+        isPaused =
+            config.paused == Just e.id
+
+        isActive =
+            isPaused || config.speaking == Just e.id
+
+        onclick =
+            onPlayback config e "this.parentNode.parentNode.childNodes[1]"
+    in
+    Html.div [ Attr.class "lia-effect__playback-controls" ]
+        [ button
+            [ A11y_Key.tabbable True
+            , onclick (playOrStop config e isActive)
             ]
+            (if isActive then
+                Translations.baseStop config.lang
+
+             else
+                Translations.basePlay config.lang
+            )
+            (if isActive then
+                "icon-stop"
+
+             else
+                "icon-play"
+            )
             []
+        , button
+            [ A11y_Key.tabbable isActive
+            , Attr.disabled (not isActive)
+            , onclick
+                (if isPaused then
+                    Service.TTS.resume
+
+                 else
+                    Service.TTS.pause
+                )
+            ]
+            (if isPaused then
+                Translations.ttsResume config.lang
+
+             else
+                Translations.ttsPause config.lang
+            )
+            (if isPaused then
+                "icon-play"
+
+             else
+                "icon-pause"
+            )
+            []
+        ]
+
+
+{-| Play/stop button of an inline effect, which reads out its label.
+-}
+inline_playback : Config sub -> Effect Inline -> Html msg
+inline_playback config e =
+    let
+        isActive =
+            config.speaking == Just e.id
+    in
+    button
+        [ A11y_Key.tabbable True
+        , onPlayback config e "this.labels[0]" (playOrStop config e isActive)
+        ]
+        (if isActive then
+            Translations.baseStop config.lang
+
+         else
+            Translations.basePlay config.lang
+        )
+        (if isActive then
+            "icon-stop-circle"
+
+         else
+            "icon-play-circle"
+        )
+        [ Attr.style "padding" "0", Attr.style "margin" "0 5px 0 5px" ]
+
+
+{-| A transparent icon button, `style` comes after the title.
+-}
+button : List (Html.Attribute msg) -> String -> String -> List (Html.Attribute msg) -> Html msg
+button attr title icon style =
+    Html.button
+        (Attr.class "lia-btn lia-btn--transparent" :: attr ++ Attr.title title :: style)
+        [ Html.span [ Attr.class ("lia-btn__icon icon " ++ icon) ] [] ]
+
+
+{-| Stop an active playback or start reading with the voice of the effect,
+which might be replaced by a voice of the translated language.
+-}
+playOrStop : Config sub -> Effect x -> Bool -> Event
+playOrStop config e isActive =
+    if isActive then
+        Service.TTS.cancel
 
     else
         case config.translations |> Maybe.andThen (Voice.getVoiceFor e.voice) of
+            Just { lang, name } ->
+                Service.TTS.playback { voice = name, lang = lang, text = "XXX" }
+
             Nothing ->
-                Html.button
-                    [ Attr.class "lia-btn text-highlight icon icon-play-circle"
-                    , A11y_Key.tabbable True
-                    , playBackAttr e.id
-                        e.voice
-                        (e.voice
-                            |> Voice.getLang
-                            |> Maybe.withDefault "en"
-                        )
-                        config.slide
-                        "this.parentNode.childNodes[1]"
-                    , A11y_Aria.label "Start playback"
-                    ]
-                    []
-
-            Just { translated, lang, name } ->
-                Html.button
-                    [ Attr.class "lia-btn text-highlight icon icon-play-circle"
-                    , A11y_Key.tabbable True
-                    , playBackAttr e.id name lang config.slide "this.parentNode.childNodes[1]"
-                    , A11y_Aria.label "Start playback"
-                    ]
-                    []
+                Service.TTS.playback
+                    { voice = e.voice
+                    , lang = e.voice |> Voice.getLang |> Maybe.withDefault "en"
+                    , text = "XXX"
+                    }
 
 
-playBackAttr : Int -> String -> String -> Int -> String -> Html.Attribute msg
-playBackAttr id voice lang section command =
-    Service.TTS.playback { voice = voice, lang = lang, text = "XXX" }
-        |> Event.pushWithId "playback" id
-        |> Event.pushWithId "effect" section
+{-| An `onclick` that passes a playback `event` of the effect to
+`window.LIA.playback`. The text to read out is only known in the browser,
+the placeholder `"XXX"` is replaced by the JavaScript expression `text`.
+-}
+onPlayback : Config sub -> Effect x -> String -> Event -> Html.Attribute msg
+onPlayback config e text event =
+    event
+        |> Event.pushWithId "playback" e.id
+        |> Event.pushWithId "effect" config.slide
         |> Event.encode
         |> JE.encode 0
-        |> String.replace "\"XXX\"" command
-        |> (\event -> "window.LIA.playback(" ++ event ++ ")")
+        |> String.replace "\"XXX\"" text
+        |> (\json -> "window.LIA.playback(" ++ json ++ ")")
         |> Attr.attribute "onclick"
 
 
-inline_playback : Config sub -> Effect Inline -> Html msg
-inline_playback config e =
-    if config.speaking == Just e.id then
-        Html.button
-            [ Attr.class "lia-btn lia-btn--transparent icon icon-stop-circle"
-            , Service.TTS.cancel
-                |> Event.pushWithId "playback" e.id
-                |> Event.pushWithId "effect" config.slide
-                |> Event.encode
-                |> JE.encode 0
-                |> (\event -> "window.LIA.playback(" ++ event ++ ")")
-                |> Attr.attribute "onclick"
-            , A11y_Key.tabbable True
-            , A11y_Aria.label "Stop playback of phrase"
-            , Attr.style "padding" "0"
-            , Attr.style "margin" "0 5px 0 5px"
-            ]
-            []
-
-    else
-        case config.translations |> Maybe.andThen (Voice.getVoiceFor e.voice) of
-            Nothing ->
-                Html.button
-                    [ Attr.class "lia-btn icon icon-play-circle"
-                    , playBackAttr
-                        e.id
-                        e.voice
-                        (e.voice
-                            |> Voice.getLang
-                            |> Maybe.withDefault "en"
-                        )
-                        config.slide
-                        "this.labels[0]"
-                    , A11y_Key.tabbable True
-                    , A11y_Aria.label "Start playback of phrase"
-                    , Attr.style "padding" "0"
-                    , Attr.style "margin" "0 5px 0 5px"
-                    ]
-                    []
-
-            Just { translated, lang, name } ->
-                Html.button
-                    [ Attr.class "lia-btn lia-btn--transparent icon icon-play-circle"
-                    , playBackAttr
-                        e.id
-                        name
-                        lang
-                        config.slide
-                        "this.labels[0]"
-                    , A11y_Key.tabbable True
-                    , A11y_Aria.label "Start playback of phrase"
-                    , Attr.style "padding" "0"
-                    , Attr.style "margin" "0 5px 0 5px"
-                    ]
-                    []
+{-| The number only shows the step, a screen reader reads the content.
+-}
+circle : String -> Int -> Html msg
+circle className i =
+    Html.span [ Attr.class className, A11y_Aria.hidden True ] [ Html.text ("\u{200A}" ++ String.fromInt i ++ "\u{200A}") ]
 
 
-circle : Int -> Html msg
-circle id =
-    Html.span
-        [ Attr.class "lia-effect__circle" ]
-        [ Html.text (number id) ]
-
-
+{-| The animation progress `" (visible/effects)"`, empty without effects.
+-}
 state : Model a -> String
 state model =
     if model.effects == 0 then

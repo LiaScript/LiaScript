@@ -8,7 +8,7 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import I18n.Translations exposing (Lang(..))
-import Index.Model exposing (Action(..), Course, Release)
+import Index.Model exposing (Action(..), Course, Release, cardID)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
 import Index.View.Popup as Popup
@@ -31,6 +31,10 @@ article hasShareAPI course { title, definition } =
     Html.article
         [ Attr.class "lia-card"
         , A11y_Aria.label (stringify title)
+
+        -- focusable by script only, see the deletion of a course
+        , Attr.id (cardID course.id)
+        , Attr.tabindex -1
         ]
         [ versions course
         , definition.macro
@@ -155,8 +159,8 @@ body comment =
         |> Html.p [ Attr.class "lia-card__body" ]
 
 
-popup : Action -> Maybe Action -> Msg -> Html Msg
-popup action open msg =
+popup : Action -> Maybe Action -> String -> Msg -> Html Msg
+popup action open courseID msg =
     case ( action, open ) of
         ( Popup_Delete, Just Popup_Delete ) ->
             Popup.view
@@ -168,6 +172,7 @@ popup action open msg =
                     , text = "Delete"
                     }
                 , escape = PopupClose
+                , abort = PopupAbort (Popup.triggerID "delete" courseID)
                 }
 
         ( Popup_Reset, Just Popup_Reset ) ->
@@ -181,6 +186,7 @@ popup action open msg =
                     , text = "Reset"
                     }
                 , escape = PopupClose
+                , abort = PopupAbort (Popup.triggerID "reset" courseID)
                 }
 
         _ ->
@@ -194,22 +200,26 @@ controls hasShareAPI title definition course =
         , A11y_Role.group
         , A11y_Aria.label "Course actions"
         ]
-        [ popup Popup_Delete course.popup (Delete True course.id)
-        , popup Popup_Reset course.popup (Reset True course.id course.active)
+        [ popup Popup_Delete course.popup course.id (Delete True course.id)
+        , popup Popup_Reset course.popup course.id (Reset True course.id course.active)
         , btnIcon
             { msg = Just <| Delete False course.id
             , title = "Delete this course"
             , tabbable = True
             , icon = "icon-trash"
             }
-            [ Attr.class "lia-btn--tag lia-btn--transparent text-red-dark border-red-dark px-1" ]
+            [ Attr.class "lia-btn--tag lia-btn--transparent text-red-dark border-red-dark px-1"
+            , Attr.id (Popup.triggerID "delete" course.id)
+            ]
         , btnIcon
             { msg = Just <| Reset False course.id course.active
             , title = "Reset all stored states (quizzes, tasks, surveys, codes)"
             , tabbable = True
             , icon = "icon-refresh"
             }
-            [ Attr.class "lia-btn--tag lia-btn--transparent text-yellow-dark border-yellow-dark px-1" ]
+            [ Attr.class "lia-btn--tag lia-btn--transparent text-yellow-dark border-yellow-dark px-1"
+            , Attr.id (Popup.triggerID "reset" course.id)
+            ]
         , if hasShareAPI then
             btnIcon
                 { msg =
@@ -246,6 +256,13 @@ controls hasShareAPI title definition course =
                 , icon = "icon-copy"
                 }
                 [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise" ]
+        , btnIcon
+            { msg = Just <| SaveOffline course.id
+            , title = "Download media for offline use (images, audio and video)"
+            , tabbable = True
+            , icon = "icon-download"
+            }
+            [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise" ]
         , Html.a
             [ Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise"
             , Attr.href <| "mailto:" ++ definition.email
@@ -307,4 +324,4 @@ get_active course =
 
 inlines : Inlines -> List (Html Msg)
 inlines =
-    List.map (Inline.view_inf Array.empty En False False Nothing Nothing Nothing >> Html.map (always NoOp))
+    List.map (Inline.view_inf Array.empty En False False Nothing Nothing Nothing >> Html.map (always None))

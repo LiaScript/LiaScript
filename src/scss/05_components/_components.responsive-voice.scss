@@ -1,42 +1,88 @@
 @use '../00_settings/settings.global';
 @use '../01_tools/tools.breakpoints';
+@use '../01_tools/tools.color' as color;
 
-$responsive-voice-hight: 7rem;
+$responsive-voice-hight: 5rem;
 
 .lia-responsive-voice {
-  align-items: flex-start;
+  align-items: center;
   background-color: rgb(var(--lia-grey-light));
   color: rgb(var(--color-highlight));
   display: flex;
   flex-direction: column;
   //min-height: 6rem;
   justify-content: center;
-  padding: 2rem;
+  //padding: 2rem;
   width: 100%;
 
   &__control {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
+    gap: 1rem;
+  }
 
-    @include tools.breakpoint('xs') {
-      justify-content: flex-start;
-      width: auto;
+  &__playgroup {
+    display: flex;
+    align-items: center;
+    padding-inline: 0.5rem;
+
+    & > * {
+      border: 1px solid rgb(var(--lia-grey));
+      border-radius: 0;
+      height: 2.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:not(:disabled):not([aria-disabled='true']) {
+        border-color: var(--color-accent);
+      }
     }
+
+    & > *:first-child {
+      border-start-start-radius: 2rem;
+      border-end-start-radius: 2rem;
+
+      .lia-btn__icon {
+        margin-inline: -0.1rem -0.4rem;
+      }
+    }
+
+    & > *:last-child {
+      border-start-end-radius: 2rem;
+      border-end-end-radius: 2rem;
+      margin-inline-start: -1px;
+
+      .lia-btn__icon {
+        margin-inline: -0.4rem -0.1rem;
+      }
+    }
+
+    & > *:first-child:not(:disabled):not([aria-disabled='true']) + * {
+      border-inline-start-color: var(--color-accent);
+    }
+  }
+
+  &__center {
+    position: relative;
+    display: flex;
+    align-items: center;
   }
 
   &__info {
     text-align: center;
   }
 
+  // no highlight is readable on anthracite in every theme
   @at-root html.lia-variant-dark & {
     background-color: rgb(var(--lia-anthracite));
+    color: rgb(var(--lia-white));
+    @include color.dark-accent-on-anthracite;
   }
 
   @include tools.breakpoint('xs') {
     align-items: center;
-    height: 7rem;
+    height: 5rem;
     flex-direction: row;
     padding: 0;
   }
@@ -44,5 +90,19 @@ $responsive-voice-hight: 7rem;
   @include tools.breakpoint('md') {
     border-start-start-radius: settings.$global-radius;
     border-start-end-radius: settings.$global-radius;
+  }
+}
+
+.lia-tts-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+.lia-tts-progress__slider {
+  width: 100%;
+
+  &:disabled {
+    opacity: 0.4;
   }
 }

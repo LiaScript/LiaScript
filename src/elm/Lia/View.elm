@@ -8,9 +8,10 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick)
+import Html.Events exposing (on, onClick)
 import Html.Keyed as Keyed
 import I18n.Translations as Trans exposing (Lang)
+import Json.Decode as JD
 import Lia.Chat.View as Chat
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
@@ -22,13 +23,14 @@ import Lia.Markdown.Inline.View exposing (audio, onError, view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Section exposing (Section, SubSection)
-import Lia.Settings.Types exposing (Mode(..), Settings, TTS)
+import Lia.Settings.Types exposing (Mode(..), PlaybackState(..), Settings, TTS)
 import Lia.Settings.Update as Settings_
 import Lia.Settings.View as Settings
 import Lia.Sync.Types as Sync_
+import Lia.Sync.Update as SyncUpdate
 import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
-import Lia.Utils exposing (deactivate, modal)
+import Lia.Utils exposing (deactivate, modal, newTab, newTabHint)
 import Library.Overlay as Overlay
 import Library.SplitPane as SplitPane
 import Session exposing (Screen)
@@ -61,9 +63,11 @@ view screen hasIndex model =
                     |> Attr.href
                 ]
             )
-            [ Html.text "skip navigation" ]
+            [ Html.text (Trans.baseSkipNav model.translation) ]
+            :: newTabHint model.translation
             :: viewIndex modalIsActive hasIndex model
             :: viewSlide modalIsActive screen model
+            ++ [ Settings.viewOfflineStatus model.translation model.settings.offline ]
         )
 
 
@@ -83,13 +87,14 @@ viewIndex modalIsActive hasIndex model =
                 else
                     "lia-toc--closed"
             , A11y_Landmark.navigation
+            , A11y_Aria.label (Trans.baseToc model.translation)
             ]
         )
         [ Settings.btnIndex
             model.translation
             model.settings.table_of_contents
             |> Html.map UpdateSettings
-        , model.index_model
+        , model.index_model.search
             |> Index.search
                 model.translation
                 model.settings.table_of_contents
@@ -105,12 +110,12 @@ viewIndex modalIsActive hasIndex model =
                 model.settings.table_of_contents
                 model.section_active
                 Script
+                UpdateIndex
+                model.index_model
             |> Html.div
                 [ Attr.class "lia-toc__content"
                 , A11y_Key.tabbable False
                 ]
-
-        --|> Html.map Script
         , if hasIndex then
             Html.div [ Attr.class "lia-toc__bottom" ]
                 [ Index.bottom
@@ -121,21 +126,6 @@ viewIndex modalIsActive hasIndex model =
 
           else
             Html.text ""
-
-        -- , model
-        --     |> get_active_section
-        --     |> Maybe.andThen .definition
-        --     |> Maybe.withDefault model.definition
-        --     |> Settings.view model.settings
-        --         model.url
-        --         model.origin
-        --         model.translation
-        --         (if hasShareAPI then
-        --             Just <| share model.title (stringify model.definition.comment) model.url
-        --          else
-        --             Nothing
-        --         )
-        --     |> Html.map UpdateSettings
         ]
 
 
@@ -146,17 +136,25 @@ viewSlide : Bool -> Screen -> Model -> List (Html Msg)
 viewSlide modalIsActive screen model =
     case get_active_section model of
         Just section ->
-            [ Html.div (deactivate modalIsActive [ Attr.class "lia-slide" ])
-                [ slideTopBar
-                    model.langCode
-                    model.translation
-                    screen
-                    model.url
-                    model.repositoryUrl
-                    model.settings
+            [ Html.div
+                (deactivate modalIsActive
+                    [ Attr.class "lia-slide"
+
+                    -- share of the course pane, places the footer buttons next to the chat
+                    , Attr.attribute "style" <|
+                        "--lia-pane-first: "
+                            ++ (if panes screen model == SplitPane.Both then
+                                    String.fromFloat (SplitPane.share model.pane)
+
+                                else
+                                    "1"
+                               )
+                    ]
+                )
+                [ slideTopBar screen
+                    model
                     (Definition.merge model.definition section.definition)
                     (viewProgress model section.effect_model)
-                    model.sync
                 , viewPanes screen model
                 , slideBottom
                     { lang = model.translation
@@ -164,6 +162,7 @@ viewSlide modalIsActive screen model =
                     , settings = model.settings
                     , slide = model.section_active
                     , effects = section.effect_model
+                    , translated = model.langCodeOriginal /= model.langCode
                     }
                 ]
             , slideA11y
@@ -174,13 +173,14 @@ viewSlide modalIsActive screen model =
                 , mode = model.settings.mode
                 , formulas = model.definition.formulas
                 , media = model.media
-                , effect = section.effect_model
+                , effect = Markdown.hideUnsolvedComments section
                 , id = model.section_active
                 , modalIsActive = modalIsActive
                 }
             , viewVideoComment
                 { active = model.settings.sound
                 , hide = model.settings.hideVideoComments || model.settings.mode == Textbook
+                , avatar = model.settings.tts.avatar
                 }
                 model.overlayVideo
                 section.effect_model
@@ -189,45 +189,52 @@ viewSlide modalIsActive screen model =
 
         Nothing ->
             [ Html.div [ Attr.class "lia-slide" ]
-                [ slideTopBar
-                    model.langCode
-                    model.translation
-                    screen
-                    model.url
-                    model.repositoryUrl
-                    model.settings
-                    model.definition
-                    "0px"
-                    model.sync
+                [ slideTopBar screen model model.definition "0px"
                 , Html.text "Ups, something went wrong"
                 ]
             ]
 
 
+{-| **@private:** The progress bar width (CSS), in Textbook mode per section,
+otherwise the share of the current section is split by its animation steps.
+-}
 viewProgress : Model -> Effect.Model SubSection -> String
 viewProgress model effect_model =
     let
-        toPercent val array =
-            (toFloat val * 100.0) / toFloat (Array.length array)
-
-        percent =
-            case model.settings.mode of
-                Textbook ->
-                    toPercent
-                        (model.section_active + 1)
-                        model.sections
-
-                _ ->
-                    let
-                        onePercent =
-                            (toPercent 1 model.sections / toFloat (effect_model.effects + 1)) * toFloat (effect_model.visible + 1)
-                    in
-                    onePercent
-                        + toPercent
-                            model.section_active
-                            model.sections
+        toPercent val =
+            (toFloat val * 100.0) / toFloat (Array.length model.sections)
     in
-    String.fromFloat percent ++ "%"
+    (case model.settings.mode of
+        Textbook ->
+            toPercent (model.section_active + 1)
+
+        _ ->
+            (toPercent 1 / toFloat (effect_model.effects + 1))
+                * toFloat (effect_model.visible + 1)
+                + toPercent model.section_active
+    )
+        |> String.fromFloat
+        |> (\percent -> percent ++ "%")
+
+
+{-| **@private:** Which panes are shown, the chat only if connected and opened.
+-}
+panes : Screen -> Model -> SplitPane.Visible
+panes screen model =
+    case
+        ( model.settings.chat.show
+        , Sync_.isConnected model.sync.state
+        , screen.width > Const.globalBreakpoints.sm
+        )
+    of
+        ( True, True, True ) ->
+            SplitPane.Both
+
+        ( True, True, False ) ->
+            SplitPane.OnlySecond
+
+        _ ->
+            SplitPane.OnlyFirst
 
 
 viewPanes : Screen -> Model -> Html Msg
@@ -235,48 +242,28 @@ viewPanes screen model =
     Html.div
         [ Attr.class "lia-slide__container"
         ]
-        [ SplitPane.view
-            (case
-                ( model.settings.chat.show
-                , Sync_.isConnected model.sync.state
-                , screen.width > Const.globalBreakpoints.sm
-                )
-             of
-                ( True, True, True ) ->
-                    SplitPane.Both
-
-                ( True, True, False ) ->
-                    SplitPane.OnlySecond
-
-                _ ->
-                    SplitPane.OnlyFirst
-            )
-            viewConfig
+        [ SplitPane.view (Trans.baseResize model.translation)
+            (panes screen model)
+            Pane
             (model.sections
                 |> Array.toIndexedList
                 |> List.map (showSection model screen)
-                |> Html.div
-                    [ Attr.style "width" "100%"
-                    , Attr.style "overflow-y" "auto"
-                    , Attr.style "display" "flex"
-                    , Attr.style "justify-content" "center"
-                    , Attr.class "lia-slide__container"
-                    , Attr.style "margin-block-start" "0px"
-                    ]
+                |> Html.div [ Attr.class "lia-slide__container" ]
             )
-            (Chat.view model.translation (initConfig screen model) model.chat
+            (Chat.view model.translation
+                model.settings.light
+                (initConfig screen model)
+                (if Sync_.isRoot model.sync then
+                    model.sync.peersHistory
+
+                 else
+                    model.sync.peers
+                )
+                model.chat
                 |> Html.map UpdateChat
             )
             model.pane
         ]
-
-
-viewConfig : SplitPane.ViewConfig Msg
-viewConfig =
-    SplitPane.createViewConfig
-        { toMsg = Pane
-        , customSplitter = Nothing
-        }
 
 
 initConfig : Screen -> Model -> Section -> Config sub
@@ -294,16 +281,27 @@ initConfig screen model =
 
 showSection : Model -> Screen -> ( Int, Section ) -> Html Msg
 showSection model screen ( id, section ) =
-    initConfig screen model section
-        |> Markdown.view (model.section_active /= id) (Maybe.withDefault model.persistent section.persistent)
-        |> Html.map UpdateMarkdown
+    let
+        hidden =
+            model.section_active /= id
+
+        persistent =
+            Maybe.withDefault model.persistent section.persistent
+    in
+    if hidden && not persistent && section.error == Nothing then
+        Markdown.viewHidden
+
+    else
+        initConfig screen model section
+            |> Markdown.view hidden persistent
+            |> Html.map UpdateMarkdown
 
 
 {-| **@private:** used to display the text2speech output settings and spoken
 comments in text, depending on the currently applied rendering mode.
 -}
-slideBottom : { lang : Lang, tiny : Bool, settings : Settings, slide : Int, effects : Effect.Model SubSection } -> Html Msg
-slideBottom { lang, tiny, settings, slide, effects } =
+slideBottom : { lang : Lang, tiny : Bool, settings : Settings, slide : Int, effects : Effect.Model SubSection, translated : Bool } -> Html Msg
+slideBottom { lang, tiny, settings, slide, effects, translated } =
     Html.footer
         [ Attr.class "lia-slide__footer" ]
         [ slideNavigation lang settings.mode slide effects
@@ -315,9 +313,29 @@ slideBottom { lang, tiny, settings, slide, effects } =
                 let
                     sound =
                         settings.sound && Effect.hasComments effects
+
+                    -- translations are spoken by TTS, the recordings are muted
+                    recordings =
+                        if translated then
+                            []
+
+                        else
+                            Effect.getAudioRecordings effects ++ Effect.getVideoRecordings effects
+
+                    embeds =
+                        if translated then
+                            []
+
+                        else
+                            Effect.getEmbedVideoRecordings effects
+
+                    -- only YouTube and Vimeo report their progress and can be paused
+                    controllable =
+                        List.all (\embed -> embed.provider == "youtube" || embed.provider == "vimeo") embeds
                 in
                 Html.div
                     [ Attr.class "lia-responsive-voice"
+                    , Attr.classList [ ( "lia-responsive-voice--silent", not sound ) ]
                     , if tiny then
                         Attr.style "padding" "0px"
 
@@ -325,14 +343,26 @@ slideBottom { lang, tiny, settings, slide, effects } =
                         Attr.class ""
                     ]
                     [ Html.div [ Attr.class "lia-responsive-voice__control" ]
-                        [ btnReplay lang sound settings
-                        , responsiveVoice
-                            { lang = lang
-                            , tiny = tiny
-                            , show = sound
-                            , tts = settings.tts
-                            , audio = Effect.getAudioRecordings effects
-                            }
+                        [ Html.div
+                            [ Attr.class "lia-responsive-voice__playgroup" ]
+                            [ btnReplay lang sound settings
+                            , if controllable then
+                                btnPause lang sound settings
+
+                              else
+                                Html.text ""
+                            ]
+                        , Html.div [ Attr.class "lia-responsive-voice__center" ]
+                            [ audioProgressSlider lang sound (not (List.isEmpty recordings) || (controllable && not (List.isEmpty embeds))) settings
+                            , responsiveVoice
+                                { lang = lang
+                                , tiny = tiny
+                                , show = sound
+                                , tts = settings.tts
+                                , audio = recordings
+                                , embedded = not (List.isEmpty embeds)
+                                }
+                            ]
                         , btnStop lang settings
                         ]
                     ]
@@ -341,9 +371,13 @@ slideBottom { lang, tiny, settings, slide, effects } =
 
 btnReplay : Lang -> Bool -> Settings -> Html Msg
 btnReplay lang soundEnabled settings =
+    let
+        isActive =
+            settings.playback /= Idle
+    in
     Lia.Utils.btnIcon
         { title =
-            if settings.speaking then
+            if isActive then
                 Trans.baseStop lang
 
             else
@@ -351,19 +385,139 @@ btnReplay lang soundEnabled settings =
         , tabbable = settings.sound
         , msg =
             if soundEnabled && settings.sound then
-                Just (TTSReplay (not settings.speaking))
+                Just (TTSReplay (not isActive))
 
             else
                 Nothing
         , icon =
-            if settings.speaking then
-                "icon-stop-circle"
+            if isActive then
+                "icon-stop"
 
             else
-                "icon-play-circle"
+                "icon-play"
         }
-        [ Attr.id "lia-btn-sound"
-        , Attr.class "lia-btn--transparent lia-responsive-voice__play"
+        [ Attr.class "lia-btn--transparent lia-responsive-voice__play " ]
+
+
+btnPause : Lang -> Bool -> Settings -> Html Msg
+btnPause lang soundEnabled settings =
+    let
+        isPaused =
+            case settings.playback of
+                Paused ->
+                    True
+
+                PausedWithProgress _ ->
+                    True
+
+                SeekingFromPaused _ ->
+                    True
+
+                _ ->
+                    False
+
+        enabled =
+            soundEnabled && settings.sound && settings.playback /= Idle
+    in
+    Lia.Utils.btnIcon
+        { title =
+            if isPaused then
+                Trans.ttsResume lang
+
+            else
+                Trans.ttsPause lang
+        , tabbable = enabled
+        , msg =
+            if not enabled then
+                Nothing
+
+            else if isPaused then
+                Just TTSResume
+
+            else
+                Just TTSPause
+        , icon =
+            if isPaused then
+                "icon-play"
+
+            else
+                "icon-pause"
+        }
+        [ Attr.class "lia-btn--transparent"
+        , Attr.disabled (not enabled)
+        ]
+
+
+audioProgressSlider : Lang -> Bool -> Bool -> Settings -> Html Msg
+audioProgressSlider lang soundEnabled hasRecordings settings =
+    let
+        ( progress, isSeeking ) =
+            case settings.playback of
+                SpeakingWithProgress p ->
+                    ( Just p, False )
+
+                PausedWithProgress p ->
+                    ( Just p, False )
+
+                SeekingFromPlaying p ->
+                    ( Just p, True )
+
+                SeekingFromPaused p ->
+                    ( Just p, True )
+
+                _ ->
+                    ( Nothing, False )
+
+        ( current, total ) =
+            progress
+                |> Maybe.map (\p -> ( p.current, p.total ))
+                |> Maybe.withDefault ( 0, 1 )
+
+        visible =
+            soundEnabled && settings.sound && progress /= Nothing && total > 0
+    in
+    Html.div
+        [ Attr.class "lia-tts-progress"
+        , Attr.style "display"
+            (if hasRecordings && settings.sound then
+                "flex"
+
+             else
+                "none"
+            )
+        ]
+        [ Html.input
+            ([ Attr.type_ "range"
+             , Attr.disabled (not visible)
+             , Attr.min "0"
+             , Attr.max (String.fromFloat total)
+             , Attr.step "0.1"
+             , Attr.class "lia-tts-progress__slider"
+             , A11y_Aria.label (Trans.ttsPosition lang)
+             , Attr.attribute "aria-valuetext" (minutes current ++ " " ++ Trans.ttsOf lang ++ " " ++ minutes total)
+             , on "mousedown" (JD.succeed TTSStartSeeking)
+             , on "touchstart" (JD.succeed TTSStartSeeking)
+             , on "change"
+                (JD.map
+                    (\s ->
+                        case String.toFloat s of
+                            Just seconds ->
+                                TTSSeek seconds
+
+                            Nothing ->
+                                TTSSeek current
+                    )
+                    (JD.at [ "target", "value" ] JD.string)
+                )
+             ]
+                ++ (if isSeeking then
+                        []
+
+                    else
+                        [ Attr.value (String.fromFloat current) ]
+                   )
+            )
+            []
         ]
 
 
@@ -425,6 +579,7 @@ slideA11y { lang, light, tooltips, translations, mode, formulas, media, effect, 
                                                     )
                                                 |> Html.p
                                                     ({ hidden = False
+                                                     , ariaHidden = False
                                                      , translations = Just translations
                                                      , id = counter
                                                      , narrator = narrator
@@ -440,10 +595,13 @@ slideA11y { lang, light, tooltips, translations, mode, formulas, media, effect, 
                                 )
                             |> Maybe.withDefault []
                             |> (::)
-                                (Html.a
-                                    [ Attr.class "hide-lg-down"
+                                -- jumps to the step, named "Step 1 of 4"
+                                (Html.button
+                                    [ Attr.class "lia-notes__step hide-lg-down"
                                     , counter |> JumpToFragment |> onClick
-                                    , Attr.href "#"
+                                    , [ Trans.baseStep lang, String.fromInt counter, Trans.ttsOf lang, String.fromInt effect.effects ]
+                                        |> String.join " "
+                                        |> A11y_Aria.label
                                     ]
                                     [ Html.small
                                         [ Attr.class "lia-notes__counter" ]
@@ -455,26 +613,16 @@ slideA11y { lang, light, tooltips, translations, mode, formulas, media, effect, 
                                     ]
                                 )
                             |> Html.div
-                                [ Attr.class
-                                    ("lia-notes__content"
-                                        ++ (if active then
-                                                " active"
+                                (if active then
+                                    -- an attribute, Elm would only empty an id property
+                                    [ Attr.class "lia-notes__content active", Attr.attribute "id" "lia-notes-active" ]
 
-                                            else
-                                                " hide-lg-down"
-                                           )
-                                    )
-                                , Attr.id
-                                    (if active then
-                                        "lia-notes-active"
-
-                                     else
-                                        ""
-                                    )
-                                ]
+                                 else
+                                    [ Attr.class "lia-notes__content hide-lg-down" ]
+                                )
                             |> Tuple.pair (String.fromInt id ++ "-/-" ++ String.fromInt counter)
                     )
-                |> Keyed.node "aside" (deactivate modalIsActive [ Attr.class "lia-notes", Attr.tabindex -1 ])
+                |> Keyed.node "aside" (deactivate modalIsActive [ Attr.class "lia-notes", Attr.tabindex -1, A11y_Aria.label (Trans.commentSidebar lang) ])
 
         _ ->
             Html.text ""
@@ -513,29 +661,29 @@ navButton title id class msg =
 6.  `state`: fragments, if animations are active, not visible in textbook mode
 
 -}
-slideTopBar : String -> Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> String -> Sync_.Settings -> Html Msg
-slideTopBar languageCode lang screen url repositoryURL settings def progress sync =
+slideTopBar : Screen -> Model -> Definition -> String -> Html Msg
+slideTopBar screen model def progress =
     Settings.header
-        { online = Sync_.isConnected sync.state
-        , lang = lang
+        { online = Sync_.isConnected model.sync.state
+        , lang = model.translation
         , screen = screen
-        , settings = settings
+        , settings = model.settings
         , logo = Definition.getIcon def
         , buttons =
             List.concat
-                [ [ ( Settings.menuChat, "chat" )
-                  , ( Settings.menuMode, "mode" )
-                  , ( Settings.menuSettings screen.width, "settings" )
-                  , ( Settings.menuTranslations languageCode def, "lang" )
+                [ [ Settings.menu "chat" Settings.menuChat
+                  , Settings.menu "mode" Settings.menuMode
+                  , Settings.menu1 "settings" Settings.menuSettings screen.width
+                  , Settings.menu2 "lang" Settings.menuTranslations model.langCode def
                   ]
-                , case settings.edit of
+                , case model.settings.edit of
                     Nothing ->
                         []
 
                     Just editURL ->
-                        [ ( Settings.menuEdit editURL, "edit" ) ]
-                , [ ( Settings.menuShare url sync, "share" )
-                  , ( Settings.menuInformation repositoryURL def, "info" )
+                        [ Settings.menu1 "edit" Settings.menuEdit editURL ]
+                , [ Settings.menu2 "share" Settings.menuShare model.url model.sync
+                  , Settings.menu2 "info" Settings.menuInformation model.repositoryUrl def
                   ]
                 ]
         , progress = progress
@@ -546,55 +694,35 @@ slideTopBar languageCode lang screen url repositoryURL settings def progress syn
 
 slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
-    Html.div [ Attr.class "lia-pagination" ]
+    Html.nav [ Attr.class "lia-pagination", A11y_Aria.label (Trans.baseSlideNavigation lang) ]
         [ Html.div [ Attr.class "lia-pagination__content" ]
             [ navButton (Trans.baseNext lang) "lia-btn-next" "icon-arrow-right" NextSection
             , Html.span
                 [ Attr.class "lia-pagination__current" ]
-                [ Html.text (String.fromInt (slide + 1))
-                , Html.span [ Attr.class "font-400" ]
-                    [ Html.text <|
-                        case mode of
-                            Textbook ->
-                                ""
+                [ hiddenText (Trans.baseSlide lang ++ " ")
+                , Html.text (String.fromInt (slide + 1))
+                , Html.span [ Attr.class "font-400" ] <|
+                    case mode of
+                        Textbook ->
+                            []
 
-                            _ ->
-                                state effect
-                    ]
+                        _ ->
+                            case state effect of
+                                "" ->
+                                    []
+
+                                steps ->
+                                    [ hiddenText (", " ++ Trans.baseStep lang ++ " ")
+                                    , Html.text steps
+                                    ]
                 ]
             , navButton (Trans.basePrev lang) "lia-btn-prev" "icon-arrow-left" PrevSection
             ]
         ]
 
 
-
--- , Html.span [ Attr.class "lia-spacer", Attr.id "lia-spacer-left" ] []
--- , navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" PrevSection
--- , Html.span [ Attr.class "lia-labeled lia-left", Attr.id "lia-label-section" ]
---     [ Html.span
---         [ Attr.class "lia-label"
---         , if speaking then
---             Attr.style "text-decoration" "underline"
---           else
---             Attr.style "" ""
---         ]
---         [ Html.text (String.fromInt (section_active + 1))
---         , Html.text <|
---             case mode of
---                 Textbook ->
---                     ""
---                 _ ->
---                     state
---         ]
---     ]
--- , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" NextSection
--- , Html.span [ Attr.class "lia-spacer", Attr.id "lia-spacer-right" ] []
--- , Html.map UpdateSettings <| Settings.switch_button_mode lang mode
--- ]
-
-
-responsiveVoice : { lang : Lang, tiny : Bool, show : Bool, tts : TTS, audio : List String } -> Html msg
-responsiveVoice { lang, tiny, show, tts, audio } =
+responsiveVoice : { lang : Lang, tiny : Bool, show : Bool, tts : TTS, audio : List String, embedded : Bool } -> Html msg
+responsiveVoice { lang, tiny, show, tts, audio, embedded } =
     Html.small
         [ Attr.class "lia-responsive-voice__info notranslate"
         , Attr.attribute "translate" "no"
@@ -611,51 +739,118 @@ responsiveVoice { lang, tiny, show, tts, audio } =
             else
                 "80%"
         ]
-        (appendAudioFragments audio <|
-            case ( tts.isBrowserSupported, tts.isResponsiveVoiceSupported, tts.preferBrowser ) of
-                ( True, False, _ ) ->
-                    [ browserTTSText lang ]
+        (appendAudioFragments audio embedded <|
+            if tts.isBrowserSupported && (tts.preferBrowser || not tts.isResponsiveVoiceSupported) then
+                [ Html.text (Trans.ttsUsingBrowser lang) ]
 
-                ( False, True, _ ) ->
-                    responsiveVoiceTTSText
+            else if tts.isResponsiveVoiceSupported then
+                responsiveVoiceTTSText
 
-                ( True, True, True ) ->
-                    [ browserTTSText lang ]
-
-                ( True, True, False ) ->
-                    responsiveVoiceTTSText
-
-                ( False, False, _ ) ->
-                    [ noTTSText lang ]
+            else
+                [ Html.text (Trans.ttsUnsupported lang) ]
         )
 
 
-appendAudioFragments : List String -> List (Html msg) -> List (Html msg)
-appendAudioFragments audio info =
+{-| Recordings replace the TTS, so its info is hidden, also for embedded videos.
+-}
+appendAudioFragments : List String -> Bool -> List (Html msg) -> List (Html msg)
+appendAudioFragments audio embedded info =
     if List.isEmpty audio then
-        info
+        if embedded then
+            [ Html.span [ Attr.style "visibility" "hidden" ] info ]
+
+        else
+            info
 
     else
         Html.span [ Attr.style "visibility" "hidden" ] info
             :: List.map audioRecordings audio
 
 
-viewVideoComment : { active : Bool, hide : Bool } -> Overlay.Model -> Effect.Model SubSection -> Html Msg
+{-| The draggable overlay for narrator comments. It shows the video recordings
+of the current animation step. If there are none, but a template has
+registered a narrator avatar (`window.LIA.narrator.registerAvatar`), the
+custom element of that avatar is shown instead, together with the narrator
+and the `data-*` annotations of the current comments as attributes. Videos
+always take precedence over the avatar.
+
+Embedded videos (YouTube, Vimeo, ...) are only placeholders, the player
+adapters in TTS.ts (`comment-media`) inject and control the iframes.
+-}
+viewVideoComment : { active : Bool, hide : Bool, avatar : Maybe String } -> Overlay.Model -> Effect.Model SubSection -> Html Msg
 viewVideoComment comments overlay effects =
     let
-        urls =
+        ( urls, embeds ) =
             if comments.active then
-                Effect.getVideoRecordings effects
+                ( Effect.getVideoRecordings effects, Effect.getEmbedVideoRecordings effects )
 
             else
-                []
+                ( [], [] )
 
         videos =
             String.join "," urls
 
+        avatar =
+            if comments.active && List.isEmpty urls && List.isEmpty embeds then
+                Maybe.map2 Tuple.pair comments.avatar (Effect.current_narrator effects)
+
+            else
+                Nothing
+
         hide =
-            String.isEmpty videos
+            String.isEmpty videos && List.isEmpty embeds && avatar == Nothing
+
+        -- TeacherTube and TU-Freiberg have no autoplay API, users have to
+        -- click their play buttons
+        nativeClicks =
+            List.any (\embed -> embed.provider == "teachertube" || embed.provider == "tu-freiberg") embeds
     in
+    case avatar of
+        Just ( tag, ( narrator, attr ) ) ->
+            Html.node tag
+                (Attr.id "lia-tts-avatar"
+                    :: Attr.attribute "data-voice" narrator
+                    :: Attr.attribute "data-step" (String.fromInt effects.visible)
+                    -- stacked above a leftover video preview frame
+                    -- (cf. storeBackgroundVideo in TTS.ts), but below the
+                    -- drag and resize handles of the overlay
+                    :: Attr.style "display" "block"
+                    :: Attr.style "position" "absolute"
+                    :: Attr.style "top" "0"
+                    :: Attr.style "left" "0"
+                    :: Attr.style "width" "100%"
+                    :: Attr.style "height" "100%"
+                    :: toAttribute attr
+                )
+                []
+                |> viewCommentOverlay comments hide False overlay
+
+        Nothing ->
+            (viewVideos hide urls ++ List.map viewEmbed embeds)
+                |> Html.div
+                    [ Attr.id "lia-tts-videos"
+                    , Attr.style "width" "100%"
+                    , Attr.style "height" "100%"
+                    , Attr.attribute "data-urls" videos
+                    ]
+                |> viewCommentOverlay comments hide nativeClicks overlay
+
+
+viewCommentOverlay : { comments | active : Bool, hide : Bool } -> Bool -> Bool -> Overlay.Model -> Html Msg -> Html Msg
+viewCommentOverlay comments hide nativeClicks overlay =
+    Overlay.view nativeClicks
+        (if hide || not comments.active || comments.hide then
+            [ Attr.style "display" "none" ]
+
+         else
+            [ Attr.class "fade-in" ]
+        )
+        overlay
+        >> Html.map UpdateOverlay
+
+
+viewVideos : Bool -> List String -> List (Html Msg)
+viewVideos hide urls =
     urls
         |> List.map
             (\url ->
@@ -683,21 +878,20 @@ viewVideoComment comments overlay effects =
                     ]
                     []
             )
-        |> Html.div
-            [ Attr.id "lia-tts-videos"
-            , Attr.style "width" "100%"
-            , Attr.style "height" "100%"
-            , Attr.attribute "data-urls" videos
-            ]
-        |> Overlay.view
-            (if hide || not comments.active || comments.hide then
-                [ Attr.style "display" "none" ]
 
-             else
-                [ Attr.class "fade-in" ]
-            )
-            overlay
-        |> Html.map UpdateOverlay
+
+viewEmbed : Effect.EmbedVideo -> Html Msg
+viewEmbed embed =
+    Html.div
+        [ Attr.class "lia-tts-embed"
+        , Attr.style "width" "100%"
+        , Attr.style "height" "100%"
+        , Attr.style "display" "none"
+        , Attr.style "position" "absolute"
+        , Attr.attribute "data-embed-provider" embed.provider
+        , Attr.attribute "data-embed-url" embed.url
+        ]
+        []
 
 
 audioRecordings : String -> Html msg
@@ -710,24 +904,12 @@ audioRecordings src =
         }
 
 
-noTTSText : Lang -> Html msg
-noTTSText =
-    Trans.ttsUnsupported >> Html.text
-
-
-browserTTSText : Lang -> Html msg
-browserTTSText =
-    Trans.ttsUsingBrowser >> Html.text
-
-
 responsiveVoiceTTSText : List (Html msg)
 responsiveVoiceTTSText =
-    [ Html.a [ Attr.class "lia-link", Attr.href "https://responsivevoice.org", Attr.target "_blank" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
+    [ Html.a (Attr.class "lia-link" :: Attr.href "https://responsivevoice.org" :: newTab) [ Html.text "ResponsiveVoice-NonCommercial" ]
     , Html.text " licensed under "
     , Html.a
-        [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/"
-        , Attr.target "_blank"
-        ]
+        (Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/" :: newTab)
         [ Html.img
             [ Attr.title "ResponsiveVoice Text To Speech"
             , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"
@@ -740,20 +922,29 @@ responsiveVoiceTTSText =
     ]
 
 
+{-| **@private:** A modal (classroom, zoomed image, QR-code) is open, see
+`showModal`, everything else gets deactivated.
+-}
 isHidden : Model -> Bool
 isHidden model =
-    case ( model.settings.sync, model.modal, model.settings.showQRCode ) of
-        ( Just True, _, _ ) ->
-            True
+    model.settings.sync == Just True || model.modal /= Nothing || model.settings.showQRCode
 
-        ( _, Just _, _ ) ->
-            True
 
-        ( _, _, True ) ->
-            True
+{-| The Classroom modal's close ("×") button: on the backend/connect
+sub-page it steps back to the overview instead of closing the whole
+modal - only closes for real once already on the overview. But once
+actually connected to a classroom, "back to overview" would reset the
+room/password fields and rewrite the URL out from under the live
+session - so a connected user always just closes the modal instead.
+-}
+syncCloseMsg : Sync_.Settings -> Msg
+syncCloseMsg sync =
+    case ( Sync_.isConnected sync.state, sync.sync.select ) of
+        ( False, Just _ ) ->
+            UpdateSync (SyncUpdate.Backend (SyncUpdate.Select Nothing))
 
         _ ->
-            False
+            UpdateSettings (Settings_.Toggle Settings_.Sync)
 
 
 showModal : Model -> Html Msg
@@ -764,10 +955,11 @@ showModal model =
                 |> Sync.view
                 |> Html.map UpdateSync
                 |> List.singleton
-                |> modal (UpdateSettings (Settings_.Toggle Settings_.Sync)) Nothing
+                |> modal model.translation False (syncCloseMsg model.sync) Nothing
 
         ( _, Just url, _ ) ->
-            modal (Media ( "", Nothing, Nothing ))
+            modal model.translation True
+                (Media ( "", Nothing, Nothing ))
                 Nothing
                 [ Html.figure
                     [ Attr.class "lia-figure"
@@ -792,7 +984,7 @@ showModal model =
                 ]
 
         ( _, _, True ) ->
-            modal
+            modal model.translation True
                 (UpdateSettings (Settings_.Toggle Settings_.QRCode))
                 Nothing
                 [ Html.div
@@ -803,10 +995,28 @@ showModal model =
                     , Attr.style "margin-block-start" "calc(100vh * 0.08)"
                     ]
                     [ model.url
-                        |> Settings.qrCodeView model.translation True True Nothing
+                        |> Settings.qrCodeView model.translation True True False
                         |> Html.map UpdateSettings
                     ]
                 ]
 
         _ ->
             Html.text ""
+
+
+{-| **@private:** Text, that is only read by screen readers.
+-}
+hiddenText : String -> Html msg
+hiddenText =
+    Html.text >> List.singleton >> Html.span [ Attr.class "hidden-visually" ]
+
+
+{-| **@private:** Seconds as "m:ss".
+-}
+minutes : Float -> String
+minutes seconds =
+    let
+        s =
+            round seconds
+    in
+    String.fromInt (s // 60) ++ ":" ++ String.padLeft 2 '0' (String.fromInt (modBy 60 s))

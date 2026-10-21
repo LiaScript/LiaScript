@@ -1,11 +1,15 @@
 import * as Base from '../Base/index'
 import { SimplePeerTransport } from '../../../../node_modules/y-generic/dist/providers/simple-peer/index'
+import { ConferenceTransport } from '../../../../node_modules/y-generic/dist/providers/conference/index'
 import { GenericProvider } from 'y-generic'
+import { wrapTransport } from '../Base/security'
+import { Crypto } from '../Crypto'
 
 export class Sync extends Base.Sync {
   private transport?: SimplePeerTransport
   private signaling?: string[]
   private iceServers?: any[]
+  private conference: boolean = false
   private syncFallbackTimer: ReturnType<typeof setTimeout> | null = null
 
   destroy() {
@@ -21,16 +25,24 @@ export class Sync extends Base.Sync {
     course: string
     room: string
     password?: string
-    config?: { signaling?: string; iceServers?: string }
+    config?: { signaling?: string; iceServers?: string; conference?: boolean }
+    name: string
+    mode: number
   }) {
     super.connect(data)
 
+    this.conference = data.config?.conference || false
+
     this.signaling = data.config?.signaling
-      ? data.config.signaling
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean)
-      : undefined
+      ?.split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+
+    if (!this.signaling?.length) {
+      this.signaling = process.env.WEBRTC_SIGNALING_SERVERS
+        ? JSON.parse(process.env.WEBRTC_SIGNALING_SERVERS)
+        : undefined
+    }
 
     if (!this.signaling || this.signaling.length === 0) {
       return this.sendDisconnectError(
@@ -38,21 +50,24 @@ export class Sync extends Base.Sync {
       )
     }
 
-    if (data.config?.iceServers) {
+    const iceServersRaw = data.config?.iceServers || process.env.WEBRTC_ICE_SERVERS
+    if (iceServersRaw) {
       try {
-        this.iceServers = JSON.parse(data.config.iceServers)
+        this.iceServers = JSON.parse(iceServersRaw)
       } catch {
-        console.warn(
-          'SimplePeer: invalid iceServers JSON, ignoring:',
-          data.config.iceServers,
-        )
+        console.warn('SimplePeer: invalid iceServers JSON, ignoring:', iceServersRaw)
       }
     }
 
-    if (window['SimplePeer']) {
+    const urls: string[] = []
+    if (!window['SimplePeer'])
+      urls.push('//unpkg.com/simple-peer@9.11.1/simplepeer.min.js')
+    if (this.password && !window['SimpleCrypto']) urls.push(Crypto.url)
+
+    if (urls.length === 0) {
       this.init(true)
     } else {
-      this.load(['//unpkg.com/simple-peer@9.11.1/simplepeer.min.js'], this)
+      this.load(urls, this)
     }
   }
 
@@ -60,7 +75,11 @@ export class Sync extends Base.Sync {
     const raw = this.uniqueID()
 
     if (ok && window['SimplePeer'] && raw) {
-      hashID(raw).then((id) => {
+      if (this.password) Crypto.init(this.password)
+
+      // A conference room speaks another wire format: keep it on a topic of
+      // its own, so a peer that joins without the flag cannot break it.
+      hashID(this.conference ? raw + '|conference' : raw).then((id) => {
         const stun =
           this.iceServers ?? JSON.parse(process.env.STUN_SERVER || 'null')
 
@@ -68,12 +87,24 @@ export class Sync extends Base.Sync {
           peer: window['SimplePeer'],
           ...(this.signaling ? { signaling: this.signaling } : {}),
           ...(stun ? { iceServers: stun } : {}),
-          ...(this.password ? { password: this.password } : {}),
         })
 
-        this.provider = new GenericProvider(this.db.doc, this.transport)
+        // Conference mode: a partial mesh (ln(N) links per peer) relayed as
+        // if it were a full one, for rooms that would not fit into N-1
+        // RTCPeerConnections per browser. Changes the wire format - every
+        // peer of the room has to use it, which the room URL takes care of.
+        const transport = this.conference
+          ? new ConferenceTransport(this.transport, {
+              expectedPeers: CONFERENCE_EXPECTED_PEERS,
+            })
+          : this.transport
 
-        this.db.setAwareness(this.provider.awareness)
+        this.provider = new GenericProvider(
+          this.db.doc,
+          wrapTransport(transport, this.password),
+        )
+
+        this.db.setAwareness(this.provider.awareness, this.name)
 
         let syncedOnce = false
 
@@ -112,6 +143,7 @@ export class Sync extends Base.Sync {
 
         this.provider.connect({
           room: id,
+          waitFor: this.persistReady,
           ...(this.password ? { password: this.password } : {}),
         } as any)
       })
@@ -132,6 +164,10 @@ export class Sync extends Base.Sync {
     }
   }
 }
+
+/** Only a hint for the dial rule: too large costs a small room a second hop,
+ * too small costs a large room links - neither breaks it. */
+const CONFERENCE_EXPECTED_PEERS = 100
 
 async function hashID(id: string): Promise<string> {
   const encoded = new TextEncoder().encode(id)

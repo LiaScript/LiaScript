@@ -1,5 +1,5 @@
 .lia-dropdown {
-  border: 1px solid rgb(var(--color-highlight));
+  border: 1px solid var(--color-accent);
   display: inline-block;
   cursor: pointer;
   overflow: hidden;
@@ -14,7 +14,10 @@
 
     .icon {
       font-size: 2rem;
-      margin-inline-start: 2rem;
+      // pushes the chevron flush to the right edge regardless of whether
+      // the preceding selected-value content is wrapped in a `span` (the
+      // `margin-inline-end: auto` above only fires for that case)
+      margin-inline-start: auto;
     }
   }
 
@@ -43,15 +46,22 @@
     }
   }
 
+  // the active option while navigating with the keyboard, see combobox.ts
+  [role='option'].is-active {
+    background-color: rgba(var(--color-highlight), 0.1);
+    outline: 2px solid rgb(var(--color-highlight));
+    outline-offset: -2px;
+  }
+
   &.is-disabled {
     border-color: rgb(var(--lia-grey));
   }
 
   &.is-failure {
-    border-color: rgb(var(--lia-red));
+    border-color: rgb(var(--color-failure));
   }
 
   &.is-success {
-    border-color: rgb(var(--lia-success));
+    border-color: rgb(var(--color-success));
   }
 }

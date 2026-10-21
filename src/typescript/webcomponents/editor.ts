@@ -1,6 +1,23 @@
 // @ts-ignore
 import ace from 'ace-builds/src-min-noconflict/ace'
+import "ace-builds/src-noconflict/ext-rtl";
 import * as EDITOR from './editor-modes'
+
+// ACE bug: without ResizeObserver (KaiOS, Gecko 48) the font polling loop
+// reschedules itself without storing the new timer, so destroy() cannot stop
+// it and keeps every editor alive and measuring every 500ms.
+const FontMetrics = ace.require('ace/layer/font_metrics').FontMetrics
+const aceEvent = ace.require('ace/lib/event')
+const preventParentScroll = ace.require('ace/lib/scroll').preventParentScroll
+FontMetrics.prototype.$pollSizeChanges = function () {
+  if (this.$pollSizeChangesTimer || this.$observer)
+    return this.$pollSizeChangesTimer
+  const poll = () => {
+    this.checkForSizeChanges()
+    this.$pollSizeChangesTimer = aceEvent.onIdle(poll, 500)
+  }
+  return (this.$pollSizeChangesTimer = aceEvent.onIdle(poll, 500))
+}
 
 import * as AceCollabExt from '@convergencelabs/ace-collab-ext'
 import '@convergencelabs/ace-collab-ext/dist/css/ace-collab-ext.min.css'
@@ -23,6 +40,7 @@ type Cursor = {
   color: string
   position: Position
   selection: Selection
+  name: string
 }
 
 function markerStyle(name: string): string {
@@ -124,6 +142,61 @@ function debounce(cb: (_: any) => void, delay: number = 1000) {
 }
 */
 
+// ace options that are unknown to ace until their extension is loaded
+const EXTENSION: { [option: string]: string } = {
+  enableBasicAutocompletion: 'language_tools',
+  enableLiveAutocompletion: 'language_tools',
+  enableSnippets: 'language_tools',
+  enableInlineAutocompletion: 'inline_autocomplete',
+  hardWrap: 'hardwrap',
+  spellcheck: 'spellcheck',
+  useElasticTabstops: 'elastic_tabstops_lite',
+}
+
+const extensions: { [name: string]: Promise<void> } = {}
+
+// Extensions are not bundled, ace loads them from the static ace files
+// (basePath). An extension is only loaded if one of its options is enabled,
+// options of extensions that are not loaded are dropped.
+function withExtensions(options: { [option: string]: any }) {
+  const loads: Promise<void>[] = []
+
+  for (const option in options) {
+    const ext = EXTENSION[option]
+    if (ext && options[option] && !extensions[ext]) {
+      extensions[ext] = new Promise((resolve) =>
+        ace.config.loadModule('ace/ext/' + ext, () => resolve())
+      )
+    }
+    if (ext && extensions[ext]) loads.push(extensions[ext])
+  }
+
+  return Promise.all(loads).then(() => {
+    const known: { [option: string]: any } = {}
+    for (const option in options) {
+      if (!EXTENSION[option] || extensions[EXTENSION[option]])
+        known[option] = options[option]
+    }
+    return known
+  })
+}
+
+// "spellcheck hardWrap=80, tabSize=8" -> { spellcheck: true, hardWrap: 80, tabSize: 8 }
+function parseOptions(value: string) {
+  const options: { [option: string]: any } = {}
+
+  for (const entry of value.split(/[\s,]+/).filter(Boolean)) {
+    const [name, val] = entry.split('=')
+    try {
+      options[name] = val === undefined ? true : JSON.parse(val)
+    } catch (e) {
+      options[name] = val
+    }
+  }
+
+  return options
+}
+
 customElements.define(
   'lia-editor',
   class extends HTMLElement {
@@ -157,7 +230,6 @@ customElements.define(
       readOnly: boolean
       showCursor: boolean
       showGutter: boolean
-      extensions: string[]
       maxLines: number
       marker: string
       minLines: number
@@ -165,6 +237,12 @@ customElements.define(
       fontSize: string
       fontFamily: string
       enableKeyboardAccessibility: boolean
+      enableBasicAutocompletion: boolean
+      enableLiveAutocompletion: boolean
+      enableSnippets: boolean
+      aceOptions: string
+      rtl: boolean
+      rtlText: boolean
     }
 
     constructor() {
@@ -197,7 +275,6 @@ customElements.define(
         readOnly: false,
         showCursor: true,
         showGutter: true,
-        extensions: [],
         maxLines: Infinity,
         marker: '',
         minLines: 1,
@@ -205,6 +282,12 @@ customElements.define(
         fontSize: '1.5rem',
         fontFamily: 'var(--global-font-mono,)',
         enableKeyboardAccessibility: true,
+        enableBasicAutocompletion: false,
+        enableLiveAutocompletion: false,
+        enableSnippets: false,
+        aceOptions: '',
+        rtl: false,
+        rtlText: false,
       }
 
       let markers = {
@@ -226,8 +309,6 @@ customElements.define(
     }
 
     connectedCallback() {
-      this.setExtension()
-
       this._editor = ace.edit(this, {
         value: this.model.value,
         theme: 'ace/theme/' + this.model.theme,
@@ -244,6 +325,16 @@ customElements.define(
         fontSize: this.model.fontSize,
         fontFamily: this.model.fontFamily,
         enableKeyboardAccessibility: this.model.enableKeyboardAccessibility,
+        rtl: this.model.rtl,
+        rtlText: this.model.rtlText,
+      })
+
+      // the author's options come last and can overwrite the defaults
+      this.setOptions({
+        enableBasicAutocompletion: this.model.enableBasicAutocompletion,
+        enableLiveAutocompletion: this.model.enableLiveAutocompletion,
+        enableSnippets: this.model.enableSnippets,
+        ...parseOptions(this.model.aceOptions),
       })
 
       if (!this.model.showCursor) {
@@ -255,8 +346,6 @@ customElements.define(
       this._editor.getSession().setUseWrapMode(this.model.useWrapMode)
 
       this._editor.setAutoScrollEditorIntoView(true)
-
-      const input = this._editor.textInput.getElement()
 
       const dispatchUpdateEvent = throttle(
         (
@@ -279,7 +368,17 @@ customElements.define(
         }
       )
 
-      input.setAttribute('role', 'application')
+      // Ace overwrites the textarea's aria-label on every focus, with
+      // keyboard accessibility enabled it prefixes this label instead
+      this._editor.setOption(
+        'textInputAriaLabel',
+        this.getAttribute('data-label') ||
+          (this.model.readOnly ? 'Code-block' : 'Code-editor') +
+            ' in ' +
+            this.model.mode +
+            ' mode'
+      )
+
       if (!this.model.readOnly) {
         const runDispatch = (event: any) => {
           if (this._blockEvents) {
@@ -329,16 +428,6 @@ customElements.define(
 
         // Apply any configured key bindings
         this.applyKeyBindings()
-
-        input.setAttribute(
-          'aria-label',
-          'Code-editor in ' + this.model.mode + ' mode'
-        )
-      } else {
-        input.setAttribute(
-          'aria-label',
-          'Code-block in ' + this.model.mode + ' mode'
-        )
       }
 
       let self = this
@@ -361,7 +450,21 @@ customElements.define(
     }
 
     disconnectedCallback() {
-      // todo
+      const editor = this._editor
+      if (!editor) return
+
+      // ACE never removes these module-level listeners, the ShadyDOM polyfill
+      // (KaiOS) stores every target on the function and keeps the editor alive
+      editor.$mouseHandler?.$tooltip
+        ?.getElement()
+        .removeEventListener('wheel', preventParentScroll)
+      for (const bar of [editor.renderer.scrollBarV, editor.renderer.scrollBarH])
+        bar?.element.removeEventListener('mousedown', aceEvent.preventDefault)
+
+      // frees the worker, timers and listeners, a reconnect creates a new
+      // editor from model.value
+      editor.destroy()
+      this._editor = undefined
     }
 
     setOption(option: string, value: any) {
@@ -409,30 +512,6 @@ customElements.define(
       }
     }
 
-    get extensions() {
-      return this.model.extensions
-    }
-
-    set extensions(values) {
-      if (this.model.extensions === values) return
-
-      this.model.extensions = values
-
-      if (!this._editor) return
-
-      this.setExtension()
-    }
-
-    setExtension() {
-      for (const ext in this.model.extensions) {
-        try {
-          ace.require('ace/ext/' + ext)
-        } catch (e) {
-          console.log('Problem Ace: require ', ext, ' => ', e.toString())
-        }
-      }
-    }
-
     get fontSize() {
       return this.model.fontSize
     }
@@ -452,6 +531,79 @@ customElements.define(
       if (this.model.enableKeyboardAccessibility !== value) {
         this.model.enableKeyboardAccessibility = value
         this.setOption('enableKeyboardAccessibility', value)
+      }
+    }
+
+    get enableBasicAutocompletion() {
+      return this.model.enableBasicAutocompletion
+    }
+
+    set enableBasicAutocompletion(value: boolean) {
+      if (this.model.enableBasicAutocompletion !== value) {
+        this.model.enableBasicAutocompletion = value
+        this.setOptions({ enableBasicAutocompletion: value })
+      }
+    }
+
+    get enableLiveAutocompletion() {
+      return this.model.enableLiveAutocompletion
+    }
+
+    set enableLiveAutocompletion(value: boolean) {
+      if (this.model.enableLiveAutocompletion !== value) {
+        this.model.enableLiveAutocompletion = value
+        this.setOptions({ enableLiveAutocompletion: value })
+      }
+    }
+
+    get enableSnippets() {
+      return this.model.enableSnippets
+    }
+
+    set enableSnippets(value: boolean) {
+      if (this.model.enableSnippets !== value) {
+        this.model.enableSnippets = value
+        this.setOptions({ enableSnippets: value })
+      }
+    }
+
+    // options that might require an extension, see EXTENSION
+    setOptions(options: { [option: string]: any }) {
+      if (!this._editor) return
+
+      withExtensions(options).then((known) => this._editor.setOptions(known))
+    }
+
+    get aceOptions() {
+      return this.model.aceOptions
+    }
+
+    set aceOptions(value: string) {
+      if (this.model.aceOptions !== value) {
+        this.model.aceOptions = value
+        this.setOptions(parseOptions(value))
+      }
+    }
+
+    get rtl() {
+      return this.model.rtl
+    }
+
+    set rtl(value: boolean) {
+      if (this.model.rtl !== value) {
+        this.model.rtl = value
+        this.setOption('rtl', value)
+      }
+    }
+
+    get rtlText() {
+      return this.model.rtlText
+    }
+
+    set rtlText(value: boolean) {
+      if (this.model.rtlText !== value) {
+        this.model.rtlText = value
+        this.setOption('rtlText', value)
       }
     }
 
@@ -740,8 +892,8 @@ customElements.define(
             session
           )
 
-          for (let { id, color, position } of this._cursors) {
-            this.cursorManager.addCursor(id, '', color, position)
+          for (let { id, name, color, position } of this._cursors) {
+            this.cursorManager.addCursor(id, name, color, position)
           }
         }
       } else {
@@ -773,34 +925,46 @@ customElements.define(
               this.cursorManager.removeCursor(oldCursor.id)
               try {
                 this.selectManager.clearSelection(oldCursor.id)
-              } catch (e) {}
+              } catch (e) { }
               try {
                 this.selectManager.removeSelection(oldCursor.id)
-              } catch (e) {}
+              } catch (e) { }
             }
           }
 
           for (let newCursor of value) {
-            let add = true
+            const oldCursor = this._cursors.find((c) => c.id == newCursor.id)
 
-            for (let oldCursor of this._cursors) {
-              if (oldCursor.id == newCursor.id) {
-                add = false
-                break
-              }
-            }
-
-            if (add) {
+            if (!oldCursor) {
               this.cursorManager.addCursor(
                 newCursor.id,
-                '',
+                newCursor.name,
                 newCursor.color,
                 newCursor.position
               )
 
               this.selectManager.addSelection(
                 newCursor.id,
-                '',
+                newCursor.name,
+                newCursor.color,
+                this.toRange(newCursor.selection)
+              )
+            } else if (oldCursor.name !== newCursor.name) {
+              // The library has no setLabel — remove and re-add to update the name
+              this.cursorManager.removeCursor(newCursor.id)
+              try { this.selectManager.clearSelection(newCursor.id) } catch (e) { }
+              try { this.selectManager.removeSelection(newCursor.id) } catch (e) { }
+
+              this.cursorManager.addCursor(
+                newCursor.id,
+                newCursor.name,
+                newCursor.color,
+                newCursor.position
+              )
+
+              this.selectManager.addSelection(
+                newCursor.id,
+                newCursor.name,
                 newCursor.color,
                 this.toRange(newCursor.selection)
               )
@@ -808,7 +972,7 @@ customElements.define(
               this.cursorManager.setCursor(newCursor.id, newCursor.position)
               try {
                 this.selectManager.clearSelection(newCursor.id)
-              } catch (e) {}
+              } catch (e) { }
               this.selectManager.setSelection(
                 newCursor.id,
                 this.toRange(newCursor.selection)
@@ -891,13 +1055,13 @@ customElements.define(
         // focus the editor so the move is visible
         try {
           this._editor.focus()
-        } catch (e) {}
+        } catch (e) { }
 
         // move cursor and clear any selection
         this._editor.moveCursorToPosition(position)
         try {
           this._editor.clearSelection()
-        } catch (e) {}
+        } catch (e) { }
       } catch (e) {
         // swallow errors; best-effort cursor move
       }
@@ -950,12 +1114,12 @@ customElements.define(
                 try {
                   const line = editor.getSession().getLine(newRow) || ''
                   newCol = Math.min(newCol, line.length)
-                } catch (e) {}
+                } catch (e) { }
                 editor.moveCursorToPosition({ row: newRow, column: newCol })
                 try {
                   editor.clearSelection()
-                } catch (e) {}
-              } catch (e) {}
+                } catch (e) { }
+              } catch (e) { }
             } else if (/Down/i.test(keyDesc)) {
               try {
                 const cur = editor.getCursorPosition()
@@ -965,12 +1129,12 @@ customElements.define(
                 try {
                   const line = editor.getSession().getLine(newRow) || ''
                   newCol = Math.min(newCol, line.length)
-                } catch (e) {}
+                } catch (e) { }
                 editor.moveCursorToPosition({ row: newRow, column: newCol })
                 try {
                   editor.clearSelection()
-                } catch (e) {}
-              } catch (e) {}
+                } catch (e) { }
+              } catch (e) { }
             }
           },
           readOnly: false,
@@ -1037,7 +1201,7 @@ customElements.define(
             if (/Enter/i.test(keyDesc)) {
               try {
                 editor.insert('\n')
-              } catch (e) {}
+              } catch (e) { }
             } else if (/Up/i.test(keyDesc)) {
               try {
                 const cur = editor.getCursorPosition()
@@ -1046,12 +1210,12 @@ customElements.define(
                 try {
                   const line = editor.getSession().getLine(newRow) || ''
                   newCol = Math.min(newCol, line.length)
-                } catch (e) {}
+                } catch (e) { }
                 editor.moveCursorToPosition({ row: newRow, column: newCol })
                 try {
                   editor.clearSelection()
-                } catch (e) {}
-              } catch (e) {}
+                } catch (e) { }
+              } catch (e) { }
             } else if (/Down/i.test(keyDesc)) {
               try {
                 const cur = editor.getCursorPosition()
@@ -1061,12 +1225,12 @@ customElements.define(
                 try {
                   const line = editor.getSession().getLine(newRow) || ''
                   newCol = Math.min(newCol, line.length)
-                } catch (e) {}
+                } catch (e) { }
                 editor.moveCursorToPosition({ row: newRow, column: newCol })
                 try {
                   editor.clearSelection()
-                } catch (e) {}
-              } catch (e) {}
+                } catch (e) { }
+              } catch (e) { }
             }
           },
           readOnly: false,

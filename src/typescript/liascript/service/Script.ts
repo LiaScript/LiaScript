@@ -126,6 +126,17 @@ export class LiaEvents {
 
 var eventHandler = new LiaEvents()
 
+// Named events, shared by code blocks (`eval`) and `<script>` tags (`exec`):
+// `send.register("name", fn)` and `send.dispatch("name", data)`.
+const events = {
+  register: (name: string, fn: any) => {
+    eventHandler.register(name, fn)
+  },
+  dispatch: (name: string, data: any) => {
+    eventHandler.dispatch(name, data)
+  },
+}
+
 // This var is used to store the ID of a setTimeout, to prevent it from being
 // called multiple times.
 var delayID: any = null
@@ -249,12 +260,7 @@ function liaEval(event: Lia.Event) {
     handle: (name: string, fn: any) => {
       eventHandler.register_input(event.track, name, fn)
     },
-    register: (name: string, fn: any) => {
-      eventHandler.register(name, fn)
-    },
-    dispatch: (name: string, data: any) => {
-      eventHandler.dispatch(name, data)
-    },
+    ...events,
   })
 }
 
@@ -391,6 +397,7 @@ function liaExecCode(event: Lia.Event) {
       liascript: (msg: string) => {
         execute_response(event)('LIASCRIPT: ' + msg)
       },
+      ...events,
     }
 
     const fetch = window.LIA.fetch
@@ -402,7 +409,8 @@ function liaExecCode(event: Lia.Event) {
       if (window.LIA.debug) {
         evalError('exec', event.message.param.code, e)
       }
-      send.lia(e.message, false, [])
+      // the name tells that it is an error, a thrown string has no message
+      send.lia(String(e), false, [])
     }
   }, event.message.param.delay)
 }

@@ -5,17 +5,15 @@ module Lia.Markdown.Effect.Script.Types exposing
     , Scripts
     , Stdout(..)
     , count
-    , filterMap
-    , get
-    , isError
     , outputs
     , push
-    , replaceInputs
-    , scriptChildren
-    , set
     , text
-    , updateChildren
     )
+
+{-| Inline `<script>` elements of a section. Every script is stored with its
+index in the section's `Scripts` array, which is also the id used by the
+`Script` inline and in the event track (`("script", id)`).
+-}
 
 import Array exposing (Array)
 import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
@@ -23,13 +21,23 @@ import Lia.Markdown.Effect.Script.Intl as Intl exposing (Intl)
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
 import Regex
 import Service.Event exposing (Event)
-import Service.Script
 
 
+{-| All scripts of a section, `a` is the type of a nested LiaScript result
+(`SubSection`, see `IFrame`).
+-}
 type alias Scripts a =
     Array (Script a)
 
 
+{-| The last result of a script:
+
+  - `Text`: plain text, formatted via `Intl` if `format` is set
+  - `HTML`: the result started with `HTML:` and is inserted as markup
+  - `IFrame`: the result started with `LIASCRIPT:` and was parsed as LiaScript
+  - `Error`: the script failed or `LIASCRIPT:` could not be parsed
+
+-}
 type Stdout a
     = Error String
     | Text String
@@ -51,25 +59,22 @@ type Msg sub
     | NoOp
     | Handle Event
     | Delay Float (Msg sub)
+    | Batch (List (Msg sub))
     | Sub Int sub
 
 
+{-| Defined by the attribute `modify`: can the code be edited by a double click
+on the result? `Partially` only allows to edit the part between the first two
+appearances of the given separator.
+-}
 type Modifiable
     = Yes
     | No
     | Partially String
 
 
-isError : Stdout a -> Bool
-isError stdout =
-    case stdout of
-        Error _ ->
-            True
-
-        _ ->
-            False
-
-
+{-| The text result of a script, used to turn a script into a string.
+-}
 text : Stdout a -> Maybe String
 text stdout =
     case stdout of
@@ -83,69 +88,73 @@ text stdout =
 type alias Script a =
     { effect_id : Int
     , script : String
-    , updated : Bool -- use this for preventing closing
+    , updated : Bool -- the input was changed, do not close it on Activate
     , running : Bool
-    , block : Bool -- this indicates script execution is triggered by an external handler
-    , update : Bool
+    , block : Bool -- the script is only executed by an external handler (quiz, survey, task)
+    , update : Bool -- rerun the script after the current run, its input or a subscribed output changed
     , runOnce : Bool
     , modify : Modifiable
     , highlighting : String
     , edit : Bool
     , result : Maybe (Stdout a)
-    , output : Maybe String
-    , inputs : List String
+    , output : Maybe String -- the topic this script publishes its result on
+    , inputs : List String -- the topics this script is subscribed to via @input(`topic`)
     , counter : Int
     , input : Input
     , intl : Maybe Intl
     , worker : Bool
+    , solution : Maybe String -- only executed, when this quiz/survey solution gets visible
     }
 
 
-input : Regex.Regex
-input =
+{-| Matches subscriptions to other scripts, i.e. ``@input(`topic`)``.
+-}
+inputTopic : Regex.Regex
+inputTopic =
     Maybe.withDefault Regex.never <|
         Regex.fromString "@input\\(`([^`]+)`\\)"
 
 
 modifications : Parameters -> Modifiable
 modifications params =
-    let
-        pattern =
-            Attr.get "modify" params
-    in
-    case
-        Maybe.map (String.trim >> String.toLower) pattern
-    of
+    case Attr.get "modify" params of
         Nothing ->
             Yes
 
-        Just "true" ->
-            Yes
+        Just pattern ->
+            case pattern |> String.trim |> String.toLower of
+                "true" ->
+                    Yes
 
-        Just "1" ->
-            Yes
+                "1" ->
+                    Yes
 
-        Just "" ->
-            Yes
+                "" ->
+                    Yes
 
-        Just "false" ->
-            No
+                "false" ->
+                    No
 
-        Just "0" ->
-            No
+                "0" ->
+                    No
 
-        Just _ ->
-            pattern
-                |> Maybe.map (String.replace "\\n" "\n" >> String.replace "\\t" "\t" >> Partially)
-                |> Maybe.withDefault No
+                _ ->
+                    pattern
+                        |> String.replace "\\n" "\n"
+                        |> String.replace "\\t" "\t"
+                        |> Partially
 
 
+{-| Append a new script with the language `lang` (default locale for `Intl`),
+the effect id it is bound to, the attributes of the `<script>` tag and its
+code.
+-}
 push : String -> Int -> Parameters -> String -> Scripts a -> Scripts a
-push lang id params script javascript =
+push lang id params script =
     Array.push
         { effect_id = id
         , script = script
-        , updated = False -- use this for preventing closing
+        , updated = False
         , running = False
         , block = Attr.isSet "block" params
         , update = False
@@ -164,109 +173,35 @@ push lang id params script javascript =
         , output = Attr.get "output" params
         , inputs =
             script
-                |> Regex.find input
-                |> List.concatMap .submatches
-                |> List.filterMap identity
+                |> Regex.find inputTopic
+                |> List.filterMap (.submatches >> List.head >> Maybe.andThen identity)
         , counter = 0
         , input = Input.from params
         , intl = Intl.from lang params
         , worker = Attr.isSet "worker" params
+        , solution = Nothing
         }
-        javascript
 
 
+{-| Index of the last script, `-1` if there is none.
+-}
 count : Scripts a -> Int
 count =
     Array.length >> (+) -1
 
 
-filterMap : (Script a -> Bool) -> (Script a -> x) -> Scripts a -> List ( Int, x )
-filterMap filter map =
-    Array.toIndexedList
-        >> List.filter (Tuple.second >> filter)
-        >> List.map (Tuple.mapSecond map)
-
-
+{-| All published text results as `(topic, result)`, these replace the
+``@input(`topic`)`` macros of subscribed scripts and code blocks.
+-}
 outputs : Scripts a -> List ( String, String )
 outputs =
-    Array.toList
-        >> List.filterMap
-            (\js ->
-                case ( js.output, js.result ) of
-                    ( Just output, Just (Text result) ) ->
-                        Just ( output, result )
+    Array.foldr
+        (\js list ->
+            case ( js.output, js.result ) of
+                ( Just output, Just (Text result) ) ->
+                    ( output, result ) :: list
 
-                    _ ->
-                        Nothing
-            )
-
-
-replaceInputs : Scripts a -> List { id : Int, worker : Bool, script : String, input_ : Maybe String } -> List ( Int, Bool, String )
-replaceInputs javascript =
-    let
-        inputs =
-            outputs javascript
-    in
-    List.map
-        (\{ id, worker, script, input_ } ->
-            ( id
-            , worker
-            , inputs
-                |> List.foldl Service.Script.replace_inputKey script
-                |> (\code ->
-                        case input_ of
-                            Just str ->
-                                Service.Script.replace_input str code
-
-                            Nothing ->
-                                code
-                   )
-            )
+                _ ->
+                    list
         )
-
-
-updateChildren : String -> Scripts a -> Scripts a
-updateChildren output =
-    Array.map
-        (\js ->
-            if js.running && List.member output js.inputs then
-                { js | update = True }
-
-            else
-                js
-        )
-
-
-scriptChildren : String -> Scripts a -> List ( Int, Bool, String )
-scriptChildren output javascript =
-    javascript
-        |> Array.toIndexedList
-        |> List.filterMap
-            (\( i, js ) ->
-                if not js.running && not js.block && List.member output js.inputs then
-                    Just
-                        { id = i
-                        , worker = js.worker
-                        , script = js.script
-                        , input_ = Input.getValue js.input
-                        }
-
-                else
-                    Nothing
-            )
-        |> replaceInputs javascript
-
-
-get : (Script a -> x) -> Int -> Scripts a -> Maybe x
-get fn id =
-    Array.get id >> Maybe.map fn
-
-
-set : Int -> (Script a -> Script a) -> Scripts a -> Scripts a
-set idx fn javascript =
-    case Array.get idx javascript of
-        Just js ->
-            Array.set idx (fn js) javascript
-
-        _ ->
-            javascript
+        []

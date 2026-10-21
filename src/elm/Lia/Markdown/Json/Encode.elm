@@ -1,9 +1,7 @@
-module Lia.Markdown.Json.Encode exposing (encBlock, encode, htmlEncode, ol)
+module Lia.Markdown.Json.Encode exposing (encode)
 
 import Json.Encode as JE
-import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Json as HTML
-import Lia.Markdown.HTML.Types exposing (Node)
 import Lia.Markdown.Inline.Json.Encode as Inline
 import Lia.Markdown.Quiz.Json as Quiz
 import Lia.Markdown.Survey.Json as Survey
@@ -12,9 +10,26 @@ import Lia.Markdown.Task.Json as Task
 import Lia.Markdown.Types exposing (Block(..), Blocks)
 
 
+{-| Encode the blocks of a section, used for exports, sharing and the editor.
+Charts, code blocks, comments and ASCII drawings are encoded as `null`, only
+their annotations are kept.
+-}
 encode : Blocks -> JE.Value
 encode =
     JE.list encBlock
+
+
+encSolution : Maybe ( Blocks, Int ) -> JE.Value
+encSolution solution =
+    case solution of
+        Nothing ->
+            JE.null
+
+        Just ( blocks, hidden_effects ) ->
+            JE.object
+                [ ( "hidden_effects", JE.int hidden_effects )
+                , ( "blocks", encode blocks )
+                ]
 
 
 encBlock : Block -> JE.Value
@@ -29,7 +44,7 @@ encBlock b =
                 [ ( "HLine", JE.null ) ]
                     |> HTML.maybeEncParameters a
 
-            Quote a alert blocks ->
+            Quote a _ blocks ->
                 [ ( "Quote", encode blocks ) ]
                     |> HTML.maybeEncParameters a
 
@@ -38,7 +53,7 @@ encBlock b =
                     |> HTML.maybeEncParameters a
 
             OrderedList a list ->
-                [ ( "OrderedList", JE.list ol list ) ]
+                [ ( "OrderedList", JE.list (\( value, blocks ) -> JE.object [ ( value, encode blocks ) ]) list ) ]
                     |> HTML.maybeEncParameters a
 
             Header a ( level, elements ) ->
@@ -55,27 +70,19 @@ encBlock b =
                 [ ( "Problem", Inline.encode elements ) ]
 
             Quiz a quiz solution ->
-                [ ( "Quiz", Quiz.encode quiz )
-                , ( "solution"
-                  , case solution of
-                        Nothing ->
-                            JE.null
-
-                        Just ( blocks, hidden_effects ) ->
-                            JE.object
-                                [ ( "hidden_effects", JE.int hidden_effects )
-                                , ( "blocks", encode blocks )
-                                ]
-                  )
+                [ ( "Quiz", Quiz.encode encBlock quiz )
+                , ( "solution", encSolution solution )
                 ]
                     |> HTML.maybeEncParameters a
 
-            Survey a survey ->
-                [ ( "Survey", Survey.encode survey ) ]
+            Survey a survey solution ->
+                [ ( "Survey", Survey.encode encBlock survey )
+                , ( "solution", encSolution solution )
+                ]
                     |> HTML.maybeEncParameters a
 
             Task a tasks ->
-                [ ( "Task", Task.encode tasks ) ]
+                [ ( "Task", Task.encode encBlock tasks ) ]
                     |> HTML.maybeEncParameters a
 
             Gallery a { media, id } ->
@@ -93,11 +100,7 @@ encBlock b =
                   , JE.object
                         [ ( "id", JE.int eBlock.id )
                         , ( "begin", JE.int eBlock.begin )
-                        , ( "end"
-                          , eBlock.end
-                                |> Maybe.map JE.int
-                                |> Maybe.withDefault JE.null
-                          )
+                        , ( "end", eBlock.end |> Maybe.map JE.int |> Maybe.withDefault JE.null )
                         , ( "content", encode eBlock.content )
                         , ( "playback", JE.bool eBlock.playback )
                         , ( "voice", JE.string eBlock.voice )
@@ -125,18 +128,8 @@ encBlock b =
                     |> HTML.maybeEncParameters a
 
             HTML a node ->
-                htmlEncode a node
+                [ HTML.encode encBlock node ]
+                    |> HTML.maybeEncParameters a
 
             HtmlComment ->
                 []
-
-
-htmlEncode : Parameters -> Node Block -> List ( String, JE.Value )
-htmlEncode a node =
-    [ HTML.encode encBlock node ]
-        |> HTML.maybeEncParameters a
-
-
-ol : ( String, Blocks ) -> JE.Value
-ol ( id, blocks ) =
-    JE.object [ ( id, encode blocks ) ]

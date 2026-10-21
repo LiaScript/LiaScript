@@ -24,23 +24,26 @@ import Combine
         , succeed
         , withState
         )
+import Helper.Array as Array
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.Script.Input as Input
+import Lia.Markdown.Effect.Script.Types exposing (Script)
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (eScript, parse_inlines)
-import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Block.Parser as Block
 import Lia.Markdown.Quiz.Matrix.Parser as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types
     exposing
-        ( Options
+        ( Hints
+        , Options
         , Quiz
         , Type(..)
         , initState
         )
 import Lia.Markdown.Quiz.Vector.Parser as Vector
+import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context as Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
@@ -50,78 +53,76 @@ import Lia.Utils as Utils
 import PseudoRandom
 
 
-parse : Parameters -> Parser Context (Quiz x)
-parse attr =
+{-| Parse a quiz with the `attr` of its preceding HTML comment. `blocks` is the
+parser for nested Markdown (options of choice quizzes and hints). The order
+matters, a matrix header looks like a single option.
+-}
+parse : Parser Context Markdown.Block -> Parameters -> Parser Context (Quiz Markdown.Block)
+parse blocks attr =
     [ map Matrix_Type Matrix.parse
-    , map Vector_Type Vector.parse
+    , map Vector_Type (Vector.parse blocks)
     , onsuccess Generic_Type generic
     , map Block_Type (Block.parse parse_inlines)
     ]
         |> choice
-        |> andThen adds
+        |> andThen (adds blocks)
         |> andThen (modify_State Nothing attr)
 
 
-gapText scriptID attr block =
+{-| A paragraph with inputs (`[[...]]`) becomes a gap-text quiz. The inputs
+have been collected by the inline parser (`Input.pop`), `scriptID` is a script
+that directly follows the paragraph.
+-}
+gapText : Parser Context Markdown.Block -> Maybe Int -> Parameters -> Markdown.Block -> Parser Context (Quiz Markdown.Block)
+gapText blocks scriptID attr block =
     Input.pop
         |> map (\q -> { q | elements = [ block ] })
         |> map Multi_Type
-        |> andThen adds
+        |> andThen (adds blocks)
         |> andThen (modify_State scriptID attr)
 
 
-randomize :
-    Type x
-    -> Int
-    -> Maybe (List Int)
+{-| **private:** A random order of all options (`data-randomize`), a gap-text
+shuffles the options of all its inputs as one sequence.
+-}
+randomize : Type x -> Int -> Maybe (List Int)
 randomize typeOf seed =
-    case typeOf of
-        Vector_Type vec ->
-            Just
-                (PseudoRandom.integerSequence
-                    (List.length vec.options)
-                    seed
-                )
+    Maybe.map (\n -> PseudoRandom.integerSequence n seed) <|
+        case typeOf of
+            Vector_Type vec ->
+                Just (List.length vec.options)
 
-        Matrix_Type vec ->
-            Just
-                (PseudoRandom.integerSequence
-                    (List.length vec.options)
-                    seed
-                )
+            Matrix_Type vec ->
+                Just (List.length vec.options)
 
-        Block_Type vec ->
-            Just
-                (PseudoRandom.integerSequence
-                    (List.length vec.options)
-                    seed
-                )
+            Block_Type vec ->
+                Just (List.length vec.options)
 
-        Multi_Type vec ->
-            Just
-                (PseudoRandom.integerSequence
-                    (vec.options
-                        |> Array.map List.length
-                        |> Array.foldl (+) 0
-                    )
-                    seed
-                )
+            Multi_Type vec ->
+                Just (Array.foldl (List.length >> (+)) 0 vec.options)
 
-        _ ->
-            Nothing
+            Generic_Type ->
+                Nothing
 
 
-adds : Type x -> Parser Context (Quiz x)
-adds type_ =
+{-| **private:** Add the `id` and the hints to the quiz type.
+-}
+adds : Parser Context Markdown.Block -> Type Markdown.Block -> Parser Context (Quiz Markdown.Block)
+adds blocks type_ =
     map (Quiz type_) get_counter
-        |> andMap hints
+        |> andMap (hints blocks)
 
 
+{-| **private:** The `id` of the next quiz.
+-}
 get_counter : Parser Context Int
 get_counter =
     withState (.quiz_vector >> Array.length >> succeed)
 
 
+{-| **private:** A quiz without input `[[!]]`, it is solved by a script or by
+the solution button.
+-}
 generic : Parser Context ()
 generic =
     maybe Indent.check
@@ -131,14 +132,20 @@ generic =
         |> skip
 
 
-hints : Parser Context (List Inlines)
-hints =
-    string "[?]"
-        |> Vector.group
+{-| **private:** Hints are a list of `[[?]]` entries below the quiz.
+-}
+hints : Parser Context Markdown.Block -> Parser Context (Hints Markdown.Block)
+hints blocks =
+    Indent.maybeCheck
+        |> keep (Vector.blockGroup blocks (string "[?]"))
         |> map Tuple.second
         |> optional []
 
 
+{-| **private:** Add the initial state of the quiz to the `quiz_vector`. The
+checking script is either the one following a gap-text (`scriptID`) or the one
+following the quiz, which is hidden.
+-}
 modify_State : Maybe Int -> Parameters -> Quiz x -> Parser Context (Quiz x)
 modify_State scriptID attr q =
     let
@@ -152,11 +159,12 @@ modify_State scriptID attr q =
                         , hint = 0
                         , error_msg = ""
                         , scriptID =
-                            if scriptID /= Nothing then
-                                scriptID
+                            case scriptID of
+                                Just _ ->
+                                    scriptID
 
-                            else
-                                id
+                                Nothing ->
+                                    id
                         , opt = getOptions s q.quiz seed attr
                         , partiallySolved = Array.empty
                         , deactivated = False
@@ -175,30 +183,37 @@ modify_State scriptID attr q =
         |> keep (succeed q)
 
 
+{-| **private:** A checking script is not rendered, it only runs on checks.
+-}
 setScriptToHidden : Effect.Model SubSection -> Int -> Effect.Model SubSection
 setScriptToHidden effect_model scriptID =
-    case Array.get scriptID effect_model.javascript of
-        Just js ->
-            let
-                input =
-                    js.input
-            in
-            { effect_model
-                | javascript =
-                    effect_model.javascript
-                        |> Array.set scriptID
-                            { js
-                                | block = True
-                                , input = { input | type_ = Just Input.Hidden_ }
-                            }
-            }
-
-        Nothing ->
-            effect_model
+    { effect_model
+        | javascript =
+            Array.update scriptID hide effect_model.javascript
+    }
 
 
+{-| **private:** Render a script as hidden block.
+-}
+hide : Script SubSection -> Script SubSection
+hide js =
+    let
+        input =
+            js.input
+    in
+    { js | block = True, input = { input | type_ = Just Input.Hidden_ } }
+
+
+{-| **private:** Read the `Options` from the `data-*` attributes.
+-}
 getOptions : Context -> Type x -> Int -> Parameters -> Options
 getOptions state quiz seed attr =
+    let
+        text name =
+            attr
+                |> Attributes.get name
+                |> Maybe.map (parse_inlines state)
+    in
     { randomize =
         if Attributes.isSet "data-randomize" attr then
             randomize quiz seed
@@ -226,12 +241,16 @@ getOptions state quiz seed attr =
     , showPartialSolution =
         Attributes.isSet "data-show-partial-solution" attr
             || Attributes.isSet "data-show-partials" attr
-    , text_solved = attr |> Attributes.get "data-text-solved" |> Maybe.map (parse_inlines state)
-    , text_failed = attr |> Attributes.get "data-text-failed" |> Maybe.map (parse_inlines state)
-    , text_resolved = attr |> Attributes.get "data-text-resolved" |> Maybe.map (parse_inlines state)
+    , text_solved = text "data-text-solved"
+    , text_failed = text "data-text-failed"
+    , text_resolved = text "data-text-resolved"
     }
 
 
+{-| **private:** The number of trials before a button appears: a number of
+trials, `off` (`false`, `disable`, ...) hides it, every other value (`on`)
+shows it immediately.
+-}
 revealAt : String -> Int
 revealAt value =
     case String.toInt value of
@@ -246,6 +265,8 @@ revealAt value =
                 100000
 
 
+{-| An optional script that follows a quiz, survey or task and checks it.
+-}
 maybeJS : Parser Context (Maybe Int)
 maybeJS =
     macro

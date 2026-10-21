@@ -4,6 +4,180 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 20/10/2026
+
+- feat: accessible table of contents – a collapsible navigation tree (APG treeview) with a single tab stop, Up/Down/Home/End move between the entries, Right/Left open and close sections (mirrored for rtl); the two upper levels are shown by default and the branch of the current section is opened, while searching all matches are shown
+- feat: the search in the table of contents tolerates one typo per word (words with 4 or more characters)
+- feat: all dropdowns (gap texts, selection quizzes, select surveys, classroom backend) are select-only comboboxes with full keyboard support (arrows, Home, End, Enter, Space, Escape, Tab)
+- feat: keyboard – arrow keys move between the cells of matrix quizzes and surveys, switch the media of an open gallery, move the splitter between course and chat; images with an alt text are zoomed with Enter or Space
+- feat: do not rely on color alone – a new setting adds patterns to chart series, checked quiz inputs show solid (correct) or dashed (wrong) borders
+- feat: links that open in a new tab say so to screen readers
+- feat: the copy button of code blocks confirms the copy, visually and to screen readers
+- feat: icons with a uniform stroke width, new word cloud icon
+- improve: readable colors (WCAG AA) in all themes in light and dark mode, for quiz states, borders, links, focus rings, notes, the TTS bar and the table of contents
+- improve: focus handling – modals move the focus to their close button, keep Tab inside and return the focus to their opener; Escape closes toolbar panels; deactivated buttons of quizzes, surveys and code stay focusable and greyed out; text fields show their focus ring only on keyboard focus; surveys, course popups and deleted course cards no longer drop the focus to the page
+- improve: screen readers – live regions only announce what changes (quiz feedback, terminal, chat, search results, animation steps) instead of whole slides; names and roles for quiz, survey and task options, matrix inputs (row and column), gaps and drop zones (with a keyboard hint), code editors and read-only code, charts, sort buttons, footnotes, media, gallery, QR codes, link previews, the comments sidebar, the slide navigation and the toolbar (disclosure buttons instead of menus)
+- improve: the system setting "reduce motion" stops all animations, also those of course authors
+- improve: audio, figures and script inputs reflow at 320px without horizontal scrolling
+- improve: translations – all languages complete with native language names, 39 languages revised, Simplified Chinese for `zh`, the remaining English texts of the course view translated
+- fix: arrow keys switched slides while used by a slider, select, radio group or text field, or together with Alt (browser back)
+- fix: Enter on the abort button of the confirm popup deleted or reset the course or classroom
+- fix: swiping within a gallery or a wide table changed the slide
+- fix: YouTube got the language name instead of its code, captions follow the language of a translated course
+- fix: quizzes – hints below the controls in matrix quizzes, drop zones overflowed, gaps too narrow for their solution
+- fix: script errors name their kind (e.g. `ReferenceError: x is not defined`), thrown strings were not shown
+- fix: links in formulas were not reachable for screen readers, pages without a course had no language
+- fix: preview-lia modified cached meta data, broken logo on revisits
+- fix: header – the edit link and the language code match the other menu buttons
+- test: snapshots and tests adapted to the accessible markup
+- chore: `npm run translate` generates `src/elm/I18n/Translations.elm` again
+
+
+## [2.2.2] - 13/10/2026
+
+- fix: chat – answering a quiz, survey or code block scrolled up to the one of an older message (the ids repeat in every message, the reveal now takes the one next to the click)
+
+
+## [2.2.1] - 13/10/2026
+
+- feat: standalone LiaScript chat for embedding (`<lia-chat>`, API via `postMessage`: add, define, clear, load, export), messages are rendered as LiaScript sections with a shared header (import, script, macros, `@onload`, `@style`), states of code, quizzes, surveys and tasks can be exported and loaded; `build:chat`/`watch:chat`, see `docs/CHAT.md`
+- feat: formulas are read out loud in English and German in the language of the voice, like people read maths ("e hoch i pi", "d y nach d x", "H 2 O"), with decimal marks, fractions, roots, units, matrices, cases and mhchem
+- fix: formulas were missing in narrator comments and got a stray period in playback blocks, an `aria-label` of the author reaches the formula, also in presentation comments, which lost the course macros
+- fix: Google Translate – the translated text flickered back to the original on every click or while reading out loud (patched Elm VirtualDom redrew untouched translated nodes)
+- fix: link tooltips only preview http(s) links
+- test: formula speech, run with `node --test tests/formula-a11y/`
+
+
+## [2.2.0] - 12/10/2026
+
+- feat: narrator hook `window.LIA.narrator` for templates; `lia-narrator` events on `window` report start, stop, pause, resume, word boundaries, progress and media changes of the narrator comments, with the source (`tts`, `audio`, `video`), the comment elements, voice, language and the playing media element; `LIA.narrator.state` holds the current state
+- feat: narrator avatars, `LIA.narrator.registerAvatar('my-avatar')` registers a custom element that is shown in the draggable overlay of the video comments for every animation step with comments but without a video; it gets `data-voice`, `data-step` and all `data-*` annotations of the comments (e.g. `<!-- data-speaker="anna" -->` in front of `--{{1}}--`) as attributes; videos always take precedence
+- feat: word clouds for tables via `data-type="wordcloud"`, one cloud per row with a shared font scale, works with `data-transpose` and effects
+- feat: surveys accept a `*****` solution block like quizzes, shown and read out loud once the survey has been submitted
+- feat: inline `<script>` tags can use `send.register`/`send.dispatch` like code blocks, a listening script updates its result without being executed again
+- feat: LiaScript results (`LIASCRIPT:`) within LiaScript results at any depth, their scripts, quizzes, surveys and code blocks use the scripts of the result
+- feat: KaiOS keypad navigation – 4/6 change slides, 2/8 scroll, `*` toggles the table of contents, `#` goes home
+- improve: table diagrams are guessed by their numeric columns (truth tables ignored, dates as line plots, adjacency matrices as heat maps), the guess now matches an explicit `data-type` in 192 of 225 course tables (before 37)
+- improve: comments in quiz solutions are hidden and read out loud only once the quiz is solved, scripts in solution blocks run once the solution gets visible
+- improve: text-to-speech reads quizzes, surveys and tasks as natural lists ("blue or red") instead of "on" for every checkbox, faster first speech, pending reads are cancelled when switching slides quickly
+- improve: feedback, solutions and hints of quizzes and surveys are scrolled into view, opened details are revealed
+- improve: header and footer stay visible on mobile (dynamic viewport height)
+- improve: footnotes are rendered as a description list instead of a layout table, visible border in dark mode
+- improve: attribute names of code blocks match case-insensitively (e.g. `data-tabSize`)
+- improve: performance – tables stringify cells only for sorting, lazy table diagrams, linear transpose, faster definition header parsing, named character references no longer built on start
+- fix: memory leaks of code editors and course previews (KaiOS: 906 → 455 MB after two laps through the docs)
+- fix: exponential backtracking in `<script>` bodies with unclosed strings (froze the course), scripts split at `</` in regular expressions, comments or nested template strings
+- fix: exponential HTML parsing of unclosed tags (e.g. C# generics `List<T>`)
+- fix: macros – `@10` was replaced as `@1` followed by `0`, unknown `@name` in a parameter stopped the expansion, `@@` debug boxes are shown unparsed
+- fix: code blocks – fences within a line, local editor after leaving the classroom, editable highlighted blocks changed the executable project with the same index, terminal history after Enter
+- fix: surveys – restored matrices swapped checkboxes and radio buttons, options lost on restore, scripts of only the last element run after restore, own seed for every randomized survey
+- fix: quizzes – matrix headers with `+`/`*`, selections became text inputs on KaiOS, bracketed script results counted as solved, inline drop quizzes could not be restored
+- fix: script reset button executed the script twice and had no accessible name
+- fix: arrow keys in the search field of the table of contents switched slides
+- fix: classroom backend dropdown could be opened via keyboard while connected, relay lists and links in the classroom dialog
+- fix: SVG `foreignObject`s rendered in reverse order, relative URLs in upper case attributes, footnote keys with quotes or backslashes
+- fix: tables – `aria-sort`, empty `data-xlim`/`data-ylim`, case of `data-orientation`
+- fix: bottom padding/margin of slide content, split pane on fractional pointer coordinates and after showing both panes
+- fix: aria-label of the narrator overlay announces the current mode, unique id for the chat toggler, share icon labelled as share
+- fix: text-to-speech failed, if there was no element `#lia-tts-videos`
+- test: characterization tests for all refactored modules (Effect, Script, Macro, Quiz, Survey, Code, Definition, Parser, Markdown, Index, Voice, Utils, Settings, Sync, Library)
+- chore: elm-svgbob 5.0.8 with new ASCII art methods and fixes
+
+
+## [2.1.2] - 07/10/2026
+
+- fix: text-to-speech picked voices of the wrong gender, e.g. Piper voices via speech-dispatcher in Firefox; gender is now detected for Apple, Microsoft, Google/ChromeOS, Android, espeak-ng, Piper and RHVoice voices, and a voice of the wrong gender ranks below one of unknown gender
+- fix: language codes appended to Firefox voice URIs (`?he`, `?mr`, `?ms`) were read as gender words
+- test: voice test data with gender (5329 voices from Apple, Microsoft, Google, Android, ChromeOS, speech-dispatcher, Piper and MMS), run with `node --test tests/tts-voices/`
+
+
+## [2.1.1] - 07/10/2026
+
+- feat: code blocks accept `data-ace-options` (e.g. `data-ace-options="spellcheck hardWrap=80, tabSize=8"`), required ace extensions are loaded on demand
+- fix: autocompletion and snippets in the code editor were never enabled
+- fix: app stuck on the loading screen on KaiOS 2.x (`globalThis` in drag & drop touch polyfill)
+- fix: service worker errors on legacy browsers, only registered where module bundles are loaded
+- fix: classroom opened from a URL (reload, bookmark, history) keeps using its local cache
+- fix: oEmbed provider matching (27 endpoint schemas never matched), aspect ratio of embeds, photo embeds, slow proxy fallback with timeout
+- fix: link tooltips – XSS, hover state, stuck loading cursor, proxy only on CORS errors
+- improve: quizzes with text input are checked on Enter
+- improve: rendering performance – lazy rendering of ASCII diagrams, QR codes, table of contents, top bar menus and hidden sections; quizzes labelled by id instead of an MD5 hash per frame
+- improve: parser performance – early skipping of macros, annotations, scripts and references, setext headers only tried if an underline can follow, inline parser built only once
+- test: HTML snapshot and characterization tests for gallery, tasks, sessions, URL resolution, sync decoding and identicons
+- chore: parser-combinators 7.1.0, updated oEmbed provider list
+
+
+## [2.1.0] - 29/09/2026
+
+- feat: surveys can be shuffled via `data-randomize`
+- feat: surveys accept `data-updates-allowed` (short: `data-updates`, `data-update`) so answers can be changed after submitting
+- feat: surveys accept `data-incompleteness-allowed` (short: `data-incompleteness`, `data-incomplete`) so partially answered surveys can be submitted
+- feat: conference mode for the SimplePeer classroom backend, for larger groups than a full mesh can handle
+- feat: experimental `agent:` URL protocol
+- fix: classrooms missing updates
+- fix: reconstruction of the first slide's state
+- fix: Nostr persistence in password rooms, one snapshot per device and room instead of one per session
+- fix: Ably persistence (y-generic upgrade)
+- fix: touch scrolling (e.g. in the table of contents) blocked by the drag & drop touch polyfill, drag & drop now starts on press-hold
+- fix: blocking mode and light-mode definition
+- improve: survey error messages, now translated
+- improve: classroom backends show information on supported user counts, better ordering of backends
+- improve: new default servers – GunDB (`gun.rig.airfaas.com`) and Nostr relay `relay.edufeed.org`
+- chore: y-generic upgrades (v1.9.8), npm allow-scripts added
+
+
+## [2.0.1] - 18/09/2026
+
+- fix: classroom details table lists every peer that answered, answers are re-read once their keys become readable
+- fix: Nostr relay pool reconnects after a dropped socket
+- fix: drag & drop quizzes
+- fix: code terminal and slides scroll properly into view when output appears
+- fix: chart drawing in dark mode
+- fix: formula a11y strings for arrays and `\tag`
+- fix: CSS content spacing in classrooms with chat
+- improve: room persistency is now explicit, owner token hash is read-only when opened from a link
+- improve: initial terminal spacing
+- chore: npm upgrades (y-generic, browserslist, js-yaml)
+
+## [2.0.0] - 09/09/2026
+
+- feat: Classrooms 2.0 – persistent classrooms (saved list, offline/local backend, Dexie-backed Yjs cache), ownership tokens, password protection, configuration blocking, named rooms, summary/details views, network graph, quiz scores and surveys in classroom mode
+- feat: new sync backends Ably and Nostr (with persistence), default WebSocket/PubNub servers, ICE/signalling servers for PeerJS and SimplePeer, end-to-end encrypted peer traffic
+- feat: quizzes, hints and task lists now accept multiple Markdown blocks (breaking: stricter indentation for multi-block quizzes)
+- feat: native GitLab support incl. sub-groups and gitlab.opencode.de, additional URL protocols (sms, geo, ...)
+- improve: unicode identifiers, table/task-list styling, Arabic TTS buttons and translations, elm-patch performance
+- test: large new Elm parser test suite for quizzes, surveys, lists, tables and sync
+- chore: npm upgrades (katex, y-generic, elm-optimize-level-2, caniuse-lite)
+
+## [1.1.0] - 08/07/2026
+
+- feat: RTL support for the code editor
+- fix: re-derive edit/sharing/classroom/persistent settings when restoring a cached course
+- fix: TTS video-overlay triggered even without an active translation
+- fix: overlay could not exit follow/resize mode on Chrome
+- fix: keep translations menu open when selecting a Google Translate option in Chrome
+- fix: voice translation for TTS
+- fix: CSS for classroom summary tables and table upper border
+- improve: copyToClipboard for RTL
+- hotfix: reloading `@style` properly from cache
+- chore: npm dependency updates (js-yaml, immutable, fast-uri, babel plugin-transform-modules-systemjs, serialize-javascript, workbox-cli, ip-address, socks)
+
+## [1.0.10] - 01/06/2026
+
+- improve: audio for tts & fixes on small screens.
+- feat: webtorrent sharing now supports zip-files too.
+
+## [1.0.9] - 20/05/2026
+
+- improve audio control with an additional pause functionality for long text and video comments.
+- fix: z-index for tts video comments
+- fix: SCORM detection algorithms for scorm-cloud
+
+## [1.0.8] - 12/05/2026
+
+- fix: multiple script execution bug fixes
+- removed default english lang from html, only the LiaScript settings define the document language
+
 ## [1.0.7] - 29/04/2026
 
 - feat: Alerts now support both GitHub and GitLab syntax.

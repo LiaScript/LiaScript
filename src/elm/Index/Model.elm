@@ -4,8 +4,10 @@ module Index.Model exposing
     , Modal(..)
     , Model
     , Release
+    , cardID
     , init
     , reset_modal
+    , urlInputID
     )
 
 import Dict exposing (Dict)
@@ -36,7 +38,7 @@ init =
     , initialized = False
     , modal = Nothing
     , error = Nothing
-    , masonry = Masonry.empty (Just "example-id")
+    , masonry = Masonry.empty
     }
 
 
@@ -63,3 +65,19 @@ type alias Release =
     { title : Inlines
     , definition : Definition
     }
+
+
+{-| Id of the card of a course, it gets the focus when the card before it got
+deleted.
+-}
+cardID : String -> String
+cardID =
+    (++) "lia-card-"
+
+
+{-| Id of the input for a course url, it gets the focus when the last card got
+deleted.
+-}
+urlInputID : String
+urlInputID =
+    "lia-course-url"

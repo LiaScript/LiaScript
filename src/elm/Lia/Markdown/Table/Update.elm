@@ -5,6 +5,7 @@ module Lia.Markdown.Table.Update exposing
     )
 
 import Array
+import Helper.Array as Array
 import Lia.Markdown.Table.Types exposing (State, Vector)
 import Return exposing (Return)
 import Service.Event exposing (Event)
@@ -26,20 +27,21 @@ handle =
 
 update : Msg sub -> Vector -> Return Vector msg sub
 update msg vector =
-    case msg of
-        Sort id col ->
-            sort id vector col
+    Return.val <|
+        case msg of
+            Sort id column ->
+                Array.update id (updateSort column) vector
 
-        Toggle id ->
-            toggle id vector
+            Toggle id ->
+                Array.update id (\state -> { state | diagram = not state.diagram }) vector
 
-        Handle _ ->
-            Return.val vector
-
-        NoOp ->
-            Return.val vector
+            _ ->
+                vector
 
 
+{-| Clicking a column header cycles through ascending, descending and
+unsorted.
+-}
 updateSort : Int -> State -> State
 updateSort column state =
     if state.column /= column then
@@ -50,21 +52,3 @@ updateSort column state =
 
     else
         { state | column = -1 }
-
-
-toggle : Int -> Vector -> Return Vector msg sub
-toggle id vector =
-    vector
-        |> Array.get id
-        |> Maybe.map (\state -> Array.set id { state | diagram = not state.diagram } vector)
-        |> Maybe.withDefault vector
-        |> Return.val
-
-
-sort : Int -> Vector -> Int -> Return Vector msg sub
-sort id vector col =
-    vector
-        |> Array.get id
-        |> Maybe.map (\state -> Array.set id (updateSort col state) vector)
-        |> Maybe.withDefault vector
-        |> Return.val

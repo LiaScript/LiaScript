@@ -1,5 +1,5 @@
 import katex from 'katex'
-import renderA11yString from './render-a11y-strings'
+import renderA11yString from './a11y/index.ts'
 import 'katex/contrib/mhchem/mhchem.js'
 
 var katexStyles: null | string = null
@@ -34,7 +34,8 @@ customElements.define(
       shadowRoot.appendChild(this.span)
       this.appendChild(this.label)
 
-      this.formula_ = this.getAttribute('formula') || ''
+      // Elm sets the formula as a property, before the element is connected
+      this.formula_ = this.getAttribute('formula') || this.formula_
 
       const macros = this.getAttribute('macros')
 
@@ -96,19 +97,42 @@ customElements.define(
       return false
     }
 
+    // somehow the renderer cannot use internal and external macros,
+    // which will result in an un-catchable error.
+    // if there is no internal macro definition, then the external macros are added
+    courseMacros(): { [keys: string]: string } | undefined {
+      const match = this.formula_.match(
+        /\\(gdef)|(xdef)|(global\\def)(global\\edef)|(global\\let)|(global\\futurelet)\\/g
+      )
+      if (match === null && Object.keys(this.macros_).length > 0) {
+        return this.macros_
+      }
+    }
+
+    // The text to read out, the TTS asks for it in the language of its voice
+    speech(lang: string = document.documentElement.lang): string {
+      const label = this.getAttribute('aria-label')
+      if (label !== null) return label
+
+      try {
+        return renderA11yString(
+          this.formula_,
+          // a copy, \gdef in the formula would change the course macros
+          { displayMode: this.displayMode(), macros: { ...this.courseMacros() } },
+          lang
+        )
+      } catch (e) {
+        console.warn(
+          'formula: render a11y ->',
+          e instanceof Error ? e.message : String(e)
+        )
+        return this.formula_
+      }
+    }
+
     render() {
       if (this.formula_ && this.span) {
-        let macros: { [keys: string]: string } | undefined = undefined
-
-        // somehow the renderer cannot use internal and external macros,
-        // which will result in an un-catchable error.
-        // if there is no internal macro definition, then the external macros are added
-        const match = this.formula_.match(
-          /\\(gdef)|(xdef)|(global\\def)(global\\edef)|(global\\let)|(global\\futurelet)\\/g
-        )
-        if (match === null && Object.keys(this.macros_).length > 0) {
-          macros = this.macros_
-        }
+        const macros = this.courseMacros()
 
         try {
           katex.render(this.formula_, this.span, {
@@ -123,24 +147,66 @@ customElements.define(
           console.warn('formula: render ->', e.message)
         }
 
-        this.span.setAttribute('role', 'math')
+        // the generated description or the aria-label of the author
+        const label = this.speech()
+        this.label.textContent = label
 
-        if (this.getAttribute('aria-label') === null) {
-          let label = this.formula_
-
-          try {
-            label = renderA11yString(label)
-          } catch (e) {
-            console.warn(
-              'formula: render a11y ->',
-              e instanceof Error ? e.message : String(e)
-            )
-          }
-
+        // role=math makes links (\href, \url) presentational, and KaTeX hides
+        // the visible formula, thus only formulas without links get the role
+        if (this.span.querySelector('.katex-html a') === null) {
+          this.span.setAttribute('role', 'math')
           this.span.setAttribute('aria-label', label)
-          this.label.innerHTML = label
+        } else {
+          this.span.removeAttribute('role')
+          this.span.removeAttribute('aria-label')
+          this.exposeLinks(label)
+        }
+
+        // descriptions are generated in English and German only, others fall
+        // back to English, which must not be read with another pronunciation
+        const lang = (document.documentElement.lang || 'en').slice(0, 2)
+        if (this.getAttribute('aria-label') === null && lang !== 'en' && lang !== 'de') {
+          this.span.setAttribute('lang', 'en')
+        } else {
+          this.span.removeAttribute('lang')
         }
       }
+    }
+
+    // the description as visually hidden text, followed by the links of the
+    // visible formula, everything else of it stays hidden
+    exposeLinks(label: string) {
+      const text = document.createElement('span')
+      text.textContent = label
+      text.setAttribute(
+        'style',
+        'position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap'
+      )
+      this.span.prepend(text)
+
+      this.span
+        .querySelectorAll('.katex-mathml')
+        .forEach((e) => e.setAttribute('aria-hidden', 'true'))
+
+      const hide = (e: Element) => {
+        e.removeAttribute('aria-hidden')
+        for (const child of Array.from(e.children)) {
+          if (child.tagName === 'A') {
+            child.setAttribute(
+              'aria-label',
+              // KaTeX inserts zero-width spaces, e.g. within \KaTeX
+              child.textContent?.replace(/​/g, '').trim() ||
+                child.getAttribute('href') ||
+                ''
+            )
+          } else if (child.querySelector('a')) {
+            hide(child)
+          } else {
+            child.setAttribute('aria-hidden', 'true')
+          }
+        }
+      }
+      this.span.querySelectorAll('.katex-html').forEach(hide)
     }
 
     get formula() {

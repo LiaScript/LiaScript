@@ -1,48 +1,16 @@
 module Library.SplitPane exposing
-    ( view, createViewConfig
-    , update, subscriptions
-    , State, init, configureSplitter, orientation, draggable
-    , percentage, px
-    , Msg, Orientation(..), SizeUnit(..), ViewConfig, UpdateConfig, CustomSplitter, HtmlDetails
-    , customUpdate, createUpdateConfig, createCustomSplitter
-    , Visible(..)
+    ( State, init, share
+    , Msg, update, subscriptions
+    , Visible(..), view
     )
 
-{-| This is a split pane view library. Can be used to split views into multiple parts with a splitter between them.
+{-| Two panes side by side with a draggable splitter between them, a trimmed
+down version of [elm-split-pane](https://github.com/doodledood/elm-split-pane):
+horizontal only, the splitter position is a share of the width between 0 and 1.
 
-Check out the [examples] to see how it works.
-
-[examples]: https://github.com/doodledood/elm-split-pane/tree/master/examples
-
-
-# View
-
-@docs view, createViewConfig
-
-
-# Update
-
-@docs update, subscriptions
-
-
-# State
-
-@docs State, init, configureSplitter, orientation, draggable
-
-
-# Helpers
-
-@docs percentage, px
-
-
-# Definitions
-
-@docs Msg, Orientation, SizeUnit, ViewConfig, UpdateConfig, CustomSplitter, HtmlDetails
-
-
-# Customization
-
-@docs customUpdate, createUpdateConfig, createCustomSplitter
+@docs State, init, share
+@docs Msg, update, subscriptions
+@docs Visible, view
 
 -}
 
@@ -50,794 +18,289 @@ import Browser.Events
 import Html exposing (Attribute, Html, div, span)
 import Html.Attributes exposing (class, style)
 import Html.Events
-import Json.Decode as D exposing (at, field)
-import Json.Encode exposing (encode, float, int)
-import Library.SplitPane.Bound
-    exposing
-        ( Bounded
-        , createBound
-        , createBounded
-        , getValue
-        , updateValue
-        )
+import Json.Decode as JD
 
 
 
 -- MODEL
 
 
-{-| Size unit for setting slider - either percentage value between 0.0 and 1.0 or pixel value (> 0)
+{-| The splitter position as a share of the width and, while the splitter is
+dragged, the width of the container and the last x-coordinate of the pointer.
 -}
-type SizeUnit
-    = Percentage (Bounded Float)
-    | Px (Bounded Int)
+type State
+    = State
+        { position : Float
+        , drag : Maybe { width : Int, x : Int }
+        }
 
 
-{-| Orientation of pane.
+{-| The splitter position, the share of the width of the first pane.
 -}
-type Orientation
-    = Horizontal
-    | Vertical
+share : State -> Float
+share (State state) =
+    state.position
 
 
+{-| Which of the two panes are shown, only `Both` shows the splitter.
+-}
 type Visible
     = Both
     | OnlyFirst
     | OnlySecond
 
 
-{-| Keeps dimensions of pane.
+{-| Both panes get half of the width.
 -}
-type alias PaneDOMInfo =
-    { width : Int
-    , height : Int
-    }
-
-
-{-| Keep relevant information for the drag operations.
--}
-type alias DragInfo =
-    { paneInfo : PaneDOMInfo
-    , anchor : Position
-    }
-
-
-{-| Drag state information.
--}
-type DragState
-    = Draggable (Maybe DragInfo)
-    | NotDraggable
-
-
-{-| Tracks state of pane.
--}
-type State
-    = State
-        { orientation : Orientation
-        , splitterPosition : SizeUnit
-        , dragState : DragState
-        }
-
-
-{-| Internal messages.
--}
-type Msg
-    = SplitterClick DOMInfo
-    | SplitterMove Position
-    | SplitterLeftAlone Position
-
-
-{-| Describes a mouse/touch position
--}
-type alias Position =
-    { x : Int
-    , y : Int
-    }
-
-
-{-| Sets whether the pane is draggable or not
--}
-draggable : Bool -> State -> State
-draggable isDraggable (State state) =
-    State
-        { state
-            | dragState =
-                if isDraggable then
-                    Draggable Nothing
-
-                else
-                    NotDraggable
-        }
-
-
-{-| Changes orientation of the pane.
--}
-orientation : Orientation -> State -> State
-orientation ori (State state) =
-    State { state | orientation = ori }
-
-
-{-| Change the splitter position and limit
--}
-configureSplitter : SizeUnit -> State -> State
-configureSplitter newPosition (State state) =
-    State
-        { state
-            | splitterPosition = newPosition
-        }
-
-
-{-| Creates a percentage size unit from a float
--}
-percentage : Float -> Maybe ( Float, Float ) -> SizeUnit
-percentage x bound =
-    let
-        newBound =
-            case bound of
-                Just ( lower, upper ) ->
-                    createBound lower upper
-
-                Nothing ->
-                    createBound 0.0 1.0
-    in
-    Percentage <| createBounded x newBound
-
-
-{-| Creates a pixel size unit from an int
--}
-px : Int -> Maybe ( Int, Int ) -> SizeUnit
-px x bound =
-    let
-        newBound =
-            case bound of
-                Just ( lower, upper ) ->
-                    createBound lower upper
-
-                Nothing ->
-                    createBound 0 9999999999
-    in
-    Px <| createBounded x newBound
-
-
-
--- INIT
-
-
-{-| Initialize a new model.
-
-        init Horizontal
-
--}
-init : Orientation -> State
-init o =
-    State
-        { orientation = o
-        , splitterPosition = percentage 0.5 Nothing
-        , dragState = Draggable Nothing
-        }
+init : State
+init =
+    State { position = 0.5, drag = Nothing }
 
 
 
 -- UPDATE
 
 
-domInfoToPosition : DOMInfo -> Position
-domInfoToPosition { x, y, touchX, touchY } =
-    case ( ( x, y ), ( touchX, touchY ) ) of
-        ( _, ( Just posX, Just posY ) ) ->
-            { x = posX, y = posY }
-
-        ( ( Just posX, Just posY ), _ ) ->
-            { x = posX, y = posY }
-
-        _ ->
-            { x = 0, y = 0 }
-
-
-{-| Configuration for updates.
+{-| Internal messages.
 -}
-type UpdateConfig msg
-    = UpdateConfig
-        { onResize : SizeUnit -> Maybe msg
-        , onResizeStarted : Maybe msg
-        , onResizeEnded : Maybe msg
-        }
+type Msg
+    = SplitterClick { x : Maybe Int, width : Int }
+    | SplitterMove Int
+    | SplitterLeftAlone
+    | SplitterSet Float
 
 
-{-| Creates the update configuration.
-Gives you the option to respond to various things that happen.
-
-    For example:
-    - Draw a different view when the pane is resized:
-
-        updateConfig
-            { onResize (\p -> Just (SwitchViews p))
-            , onResizeStarted Nothing
-            , onResizeEnded Nothing
-            }
-
--}
-createUpdateConfig :
-    { onResize : SizeUnit -> Maybe msg
-    , onResizeStarted : Maybe msg
-    , onResizeEnded : Maybe msg
-    }
-    -> UpdateConfig msg
-createUpdateConfig config =
-    UpdateConfig config
-
-
-{-| Updates internal model.
+{-| Start, follow and end dragging the splitter.
 -}
 update : Msg -> State -> State
-update msg model =
-    let
-        ( updatedModel, _ ) =
-            customUpdate
-                (createUpdateConfig
-                    { onResize = \_ -> Nothing
-                    , onResizeStarted = Nothing
-                    , onResizeEnded = Nothing
-                    }
-                )
-                msg
-                model
-    in
-    updatedModel
+update msg (State state) =
+    case ( state.drag, msg ) of
+        ( Nothing, SplitterClick { x, width } ) ->
+            State { state | drag = Just { width = width, x = Maybe.withDefault (width // 2) x } }
 
+        ( Just _, SplitterLeftAlone ) ->
+            State { state | drag = Nothing }
 
-{-| Updates internal model using custom configuration.
--}
-customUpdate : UpdateConfig msg -> Msg -> State -> ( State, Maybe msg )
-customUpdate (UpdateConfig updateConfig) msg (State state) =
-    case ( state.dragState, msg ) of
-        ( Draggable Nothing, SplitterClick pos ) ->
-            ( State
-                { state
-                    | dragState =
-                        Draggable <|
-                            Just
-                                { paneInfo =
-                                    { width = pos.parentWidth
-                                    , height = pos.parentHeight
-                                    }
-                                , anchor =
-                                    { x = Maybe.withDefault (pos.parentWidth // 2) pos.x
-                                    , y = Maybe.withDefault 0 pos.y
-                                    }
-                                }
+        ( Just { width, x }, SplitterMove newX ) ->
+            State
+                { position =
+                    -- not `clamp`, it turns NaN (width 0) into 1 instead of 0
+                    state.position
+                        + toFloat (newX - x)
+                        / toFloat width
+                        |> max 0
+                        |> min 1
+                , drag = Just { width = width, x = newX }
                 }
-            , updateConfig.onResizeStarted
-            )
 
-        ( Draggable (Just _), SplitterLeftAlone _ ) ->
-            ( State { state | dragState = Draggable Nothing }
-            , updateConfig.onResizeEnded
-            )
-
-        ( Draggable (Just { paneInfo, anchor }), SplitterMove newRequestedPosition ) ->
-            let
-                step =
-                    { x = newRequestedPosition.x - anchor.x
-                    , y = newRequestedPosition.y - anchor.y
-                    }
-
-                newSplitterPosition =
-                    resize state.orientation state.splitterPosition step paneInfo.width paneInfo.height
-            in
-            ( State
-                { state
-                    | splitterPosition = newSplitterPosition
-                    , dragState =
-                        Draggable <|
-                            Just
-                                { paneInfo =
-                                    { width = paneInfo.width
-                                    , height = paneInfo.height
-                                    }
-                                , anchor =
-                                    { x = newRequestedPosition.x
-                                    , y = newRequestedPosition.y
-                                    }
-                                }
-                }
-            , updateConfig.onResize newSplitterPosition
-            )
+        ( _, SplitterSet position ) ->
+            State { state | position = clamp 0.1 0.9 position }
 
         _ ->
-            ( State state, Nothing )
+            State state
 
 
-resize : Orientation -> SizeUnit -> Position -> Int -> Int -> SizeUnit
-resize ori splitterPosition step paneWidth paneHeight =
-    case ori of
-        Horizontal ->
-            case splitterPosition of
-                Px p ->
-                    Px <| updateValue (\v -> v + step.x) p
+{-| Mouse moves and releases are tracked on the whole document while dragging.
+-}
+subscriptions : State -> Sub Msg
+subscriptions (State state) =
+    case state.drag of
+        Just _ ->
+            Sub.batch
+                [ Browser.Events.onMouseMove (JD.map SplitterMove (pair "pageX" "pageY"))
+                , Browser.Events.onMouseUp (JD.map (always SplitterLeftAlone) (pair "pageX" "pageY"))
+                ]
 
-                Percentage p ->
-                    Percentage <| updateValue (\v -> v + toFloat step.x / toFloat paneWidth) p
-
-        Vertical ->
-            case splitterPosition of
-                Px p ->
-                    Px <| updateValue (\v -> v + step.y) p
-
-                Percentage p ->
-                    Percentage <| updateValue (\v -> v + toFloat step.y / toFloat paneHeight) p
+        Nothing ->
+            Sub.none
 
 
 
 -- VIEW
 
 
-{-| Lets you specify attributes such as style and children for the splitter element
+{-| Render the two panes and the splitter, `toMsg` wraps the splitter events,
+`label` names the splitter for screen readers.
 -}
-type alias HtmlDetails msg =
-    { attributes : List (Attribute msg)
-    , children : List (Html msg)
-    }
-
-
-{-| Describes a custom splitter
--}
-type CustomSplitter msg
-    = CustomSplitter (Html msg)
-
-
-createDefaultSplitterDetails : Visible -> Orientation -> DragState -> HtmlDetails msg
-createDefaultSplitterDetails visible ori dragState =
-    case ori of
-        Horizontal ->
-            { attributes = defaultHorizontalSplitterStyle visible dragState
-            , children = []
-            }
-
-        Vertical ->
-            { attributes = defaultVerticalSplitterStyle visible dragState
-            , children = []
-            }
-
-
-{-| Creates a custom splitter.
-
-        myCustomSplitter : CustomSplitter Msg
-        myCustomSplitter =
-            createCustomSplitter PaneMsg
-                { attributes =
-                    [ style
-                        [ ( "width", "20px" )
-                        , ( "height", "20px" )
-                        ]
-                    ]
-                , children =
-                    []
-                }
-
--}
-createCustomSplitter :
-    (Msg -> msg)
-    -> HtmlDetails msg
-    -> CustomSplitter msg
-createCustomSplitter toMsg details =
-    CustomSplitter <|
-        span
-            (onMouseDown toMsg :: onTouchStart toMsg :: onTouchEnd toMsg :: onTouchMove toMsg :: onTouchCancel toMsg :: details.attributes)
-            details.children
-
-
-{-| Configuration for the view.
--}
-type ViewConfig msg
-    = ViewConfig
-        { toMsg : Msg -> msg
-        , splitter : Maybe (CustomSplitter msg)
-        }
-
-
-{-| Creates a configuration for the view.
--}
-createViewConfig :
-    { toMsg : Msg -> msg
-    , customSplitter : Maybe (CustomSplitter msg)
-    }
-    -> ViewConfig msg
-createViewConfig { toMsg, customSplitter } =
-    ViewConfig
-        { toMsg = toMsg
-        , splitter = customSplitter
-        }
-
-
-{-| Creates a view.
-
-        view : Model -> Html Msg
-        view =
-            SplitPane.view viewConfig firstView secondView
-
-
-        viewConfig : ViewConfig Msg
-        viewConfig =
-            createViewConfig
-                { toMsg = PaneMsg
-                , customSplitter = Nothing
-                }
-
-        firstView : Html a
-        firstView =
-            img [ src "http://4.bp.blogspot.com/-s3sIvuCfg4o/VP-82RkCOGI/AAAAAAAALSY/509obByLvNw/s1600/baby-cat-wallpaper.jpg" ] []
-
-
-        secondView : Html a
-        secondView =
-            img [ src "http://2.bp.blogspot.com/-pATX0YgNSFs/VP-82AQKcuI/AAAAAAAALSU/Vet9e7Qsjjw/s1600/Cat-hd-wallpapers.jpg" ] []
-
--}
-view : Visible -> ViewConfig msg -> Html msg -> Html msg -> State -> Html msg
-view visible (ViewConfig viewConfig) firstView secondView (State state) =
+view : String -> Visible -> (Msg -> msg) -> Html msg -> Html msg -> State -> Html msg
+view label visible toMsg firstView secondView (State state) =
     div
-        (class "pane-container" :: paneContainerStyle visible state.orientation)
+        [ class "pane-container"
+        , style "overflow" "hidden"
+        , style "display" <|
+            if visible == Both then
+                "flex"
+
+            else
+                "block"
+        , style "flexDirection" "row"
+        , style "justifyContent" "center"
+        , style "alignItems" "center"
+        , style "width" "100%"
+        , style "height" "100%"
+        , style "boxSizing" "border-box"
+        ]
         [ div
             (class "pane-first-view"
-                :: firstChildViewStyle visible (State state)
+                :: paneStyle (visible /= OnlySecond)
+                    (if visible == Both then
+                        String.fromFloat state.position
+
+                     else
+                        "1 1 0%"
+                    )
             )
             [ firstView ]
-        , getConcreteSplitter visible viewConfig state.orientation state.dragState
+        , viewSplitter label visible state.position |> Html.map toMsg
         , div
             (class "pane-second-view"
-                :: secondChildViewStyle visible (State state)
+                :: paneStyle (visible /= OnlyFirst)
+                    (if visible == OnlySecond then
+                        "1 1 0%"
+
+                     else
+                        String.fromFloat (1 - state.position)
+                    )
             )
             [ secondView ]
         ]
 
 
-getConcreteSplitter :
-    Visible
-    ->
-        { toMsg : Msg -> msg
-        , splitter : Maybe (CustomSplitter msg)
-        }
-    -> Orientation
-    -> DragState
-    -> Html msg
-getConcreteSplitter visible viewConfig ori dragState =
-    case viewConfig.splitter of
-        Just (CustomSplitter splitter) ->
-            splitter
-
-        Nothing ->
-            case
-                createDefaultSplitterDetails visible ori dragState
-                    |> createCustomSplitter viewConfig.toMsg
-            of
-                CustomSplitter defaultSplitter ->
-                    defaultSplitter
-
-
-
--- STYLES
-
-
-paneContainerStyle : Visible -> Orientation -> List (Attribute a)
-paneContainerStyle display ori =
-    [ style "overflow" "hidden"
-    , style "display" <|
-        if display == Both then
+{-| **@private:** Style of a pane with its `flex` value.
+-}
+paneStyle : Bool -> String -> List (Attribute msg)
+paneStyle visible flex =
+    [ style "display" <|
+        if visible then
             "flex"
 
         else
-            "blocknone"
-    , style "flexDirection" <|
-        case ori of
-            Horizontal ->
-                "row"
-
-            Vertical ->
-                "column"
-    , style "justifyContent" "center"
-    , style "alignItems" "center"
+            "none"
+    , style "flex" flex
     , style "width" "100%"
     , style "height" "100%"
+    , style "overflow" "hidden"
     , style "boxSizing" "border-box"
+    , style "position" "relative"
     ]
 
 
-firstChildViewStyle : Visible -> State -> List (Attribute a)
-firstChildViewStyle display (State state) =
-    case state.splitterPosition of
-        Px p ->
-            let
-                v =
-                    (encode 0 <| int <| getValue p) ++ "px"
-            in
-            case state.orientation of
-                Horizontal ->
-                    [ style "display" <|
-                        if display == Both || display == OnlyFirst then
-                            "flex"
+{-| **@private:** The splitter, hidden unless both panes are shown. It can be
+moved with the arrow keys too, Home and End move it to the borders.
+-}
+viewSplitter : String -> Visible -> Float -> Html Msg
+viewSplitter label visible position =
+    span
+        ([ on "mousedown" False click
+         , Html.Attributes.attribute "role" "separator"
+         , Html.Attributes.attribute "aria-orientation" "vertical"
+         , Html.Attributes.attribute "aria-label" label
+         , Html.Attributes.attribute "aria-valuemin" "10"
+         , Html.Attributes.attribute "aria-valuemax" "90"
+         , Html.Attributes.attribute "aria-valuenow" (String.fromInt (round (position * 100)))
+         , Html.Attributes.tabindex
+            (if visible == Both then
+                0
 
-                        else
-                            "none"
-                    , style "width" <|
-                        if display == Both || display == OnlyFirst then
-                            v
+             else
+                -1
+            )
+         , JD.field "key" JD.string
+            |> JD.andThen
+                (\key ->
+                    case key of
+                        "ArrowLeft" ->
+                            JD.succeed ( SplitterSet (position - 0.05), True )
 
-                        else
-                            "0"
-                    , style "height" "100%"
-                    , style "overflow" "hidden"
-                    , style "boxSizing" "border-box"
-                    , style "position" "relative"
-                    ]
+                        "ArrowRight" ->
+                            JD.succeed ( SplitterSet (position + 0.05), True )
 
-                Vertical ->
-                    [ style "display" <|
-                        if display /= OnlySecond then
-                            "flex"
+                        "Home" ->
+                            JD.succeed ( SplitterSet 0.1, True )
 
-                        else
-                            "none"
-                    , style "width" "100%"
-                    , style "height" v
-                    , style "overflow" "hidden"
-                    , style "boxSizing" "border-box"
-                    , style "position" "relative"
-                    ]
+                        "End" ->
+                            JD.succeed ( SplitterSet 0.9, True )
 
-        Percentage p ->
-            [ style "display" <|
-                if display == OnlySecond then
-                    "none"
-
-                else
-                    "flex"
-            , style "flex" <|
-                if display == Both then
-                    let
-                        v =
-                            encode 0 <| float <| getValue p
-                    in
-                    v
-
-                else
-                    "1 1 0%"
-            , style "width" "100%"
-            , style "height" "100%"
-            , style "overflow" "hidden"
-            , style "boxSizing" "border-box"
-            , style "position" "relative"
-            ]
-
-
-secondChildViewStyle : Visible -> State -> List (Attribute a)
-secondChildViewStyle display (State state) =
-    case state.splitterPosition of
-        Px _ ->
-            [ style "display" <|
-                if display == OnlyFirst then
-                    "none"
+                        _ ->
+                            JD.fail "no splitter key"
+                )
+            |> Html.Events.preventDefaultOn "keydown"
+         , on "touchstart" True click
+         , on "touchend" True (JD.map (always SplitterLeftAlone) parentWidth)
+         , on "touchmove" True (JD.map2 always (JD.map SplitterMove clientX) parentWidth)
+         , on "touchcancel" True (JD.map (always SplitterLeftAlone) parentWidth)
+         , style "background" "#000"
+         , style "boxSizing" "border-box"
+         , style "opacity" ".2"
+         , style "zIndex" "1"
+         , style "webkitUserSelect" "none"
+         , style "mozUserSelect" "none"
+         , style "userSelect" "none"
+         , style "backgroundClip" "padding-box"
+         , style "width" "11px"
+         , style "height" "100%"
+         , style "margin" "0 -5px"
+         , style "borderLeft" "5px solid rgba(255, 255, 255, 0)"
+         , style "borderRight" "5px solid rgba(255, 255, 255, 0)"
+         ]
+            ++ (if visible == Both then
+                    [ style "cursor" "col-resize", style "display" "" ]
 
                 else
-                    "flex"
-            , style "flex" "1"
-            , style "width" "100%"
-            , style "height" "100%"
-            , style "overflow" "hidden"
-            , style "boxSizing" "border-box"
-            , style "position" "relative"
-            ]
-
-        Percentage p ->
-            [ style "display" <|
-                if display == OnlyFirst then
-                    "none"
-
-                else
-                    "flex"
-            , style "flex" <|
-                if display == OnlySecond then
-                    "1 1 0%"
-
-                else
-                    let
-                        v =
-                            encode 0 <| float <| 1 - getValue p
-                    in
-                    v
-            , style "width" "100%"
-            , style "height" "100%"
-            , style "overflow" "hidden"
-            , style "boxSizing" "border-box"
-            , style "position" "relative"
-            ]
-
-
-defaultVerticalSplitterStyle : Visible -> DragState -> List (Attribute a)
-defaultVerticalSplitterStyle visible dragState =
-    baseDefaultSplitterStyles
-        ++ [ style "height" "11px"
-           , style "width" "100%"
-           , style "margin" "-5px 0"
-           , style "borderTop" "5px solid rgba(255, 255, 255, 0)"
-           , style "borderBottom" "5px solid rgba(255, 255, 255, 0)"
-           ]
-        ++ (case ( visible, dragState ) of
-                ( Both, Draggable _ ) ->
-                    [ style "cursor" "row-resize" ]
-
-                _ ->
-                    []
-           )
-
-
-defaultHorizontalSplitterStyle : Visible -> DragState -> List (Attribute a)
-defaultHorizontalSplitterStyle visible dragState =
-    baseDefaultSplitterStyles
-        ++ [ style "width" "11px"
-           , style "height" "100%"
-           , style "margin" "0 -5px"
-           , style "borderLeft" "5px solid rgba(255, 255, 255, 0)"
-           , style "borderRight" "5px solid rgba(255, 255, 255, 0)"
-           ]
-        ++ (case ( visible, dragState ) of
-                ( Both, Draggable _ ) ->
-                    [ style "cursor" "col-resize"
-                    , style "display" ""
-                    ]
-
-                _ ->
                     [ style "display" "none" ]
-           )
+               )
+        )
+        []
 
 
-baseDefaultSplitterStyles : List (Attribute a)
-baseDefaultSplitterStyles =
-    [ style "width" "100%"
-    , style "background" "#000"
-    , style "boxSizing" "border-box"
-    , style "opacity" ".2"
-    , style "zIndex" "1"
-    , style "webkitUserSelect" "none"
-    , style "mozUserSelect" "none"
-    , style "userSelect" "none"
-    , style "backgroundClip" "padding-box"
-    ]
-
-
-
--- EVENT HANDLERS
-
-
-onMouseDown : (Msg -> msg) -> Attribute msg
-onMouseDown toMsg =
-    Html.Events.custom "mousedown" <|
-        D.map
-            (\d ->
-                { message =
-                    toMsg <|
-                        SplitterClick d
-                , preventDefault = True
-                , stopPropagation = False
-                }
-            )
-            domInfo
-
-
-onTouchStart : (Msg -> msg) -> Attribute msg
-onTouchStart toMsg =
-    Html.Events.custom "touchstart" <|
-        D.map
-            (\d ->
-                { message =
-                    SplitterClick d
-                        |> toMsg
-                , preventDefault = True
-                , stopPropagation = True
-                }
-            )
-            domInfo
-
-
-onTouchEnd : (Msg -> msg) -> Attribute msg
-onTouchEnd toMsg =
-    Html.Events.custom "touchend" <|
-        D.map
-            (\d ->
-                { message =
-                    domInfoToPosition d
-                        |> SplitterLeftAlone
-                        |> toMsg
-                , preventDefault = True
-                , stopPropagation = True
-                }
-            )
-            domInfo
-
-
-onTouchCancel : (Msg -> msg) -> Attribute msg
-onTouchCancel toMsg =
-    Html.Events.custom "touchcancel" <|
-        D.map
-            (\d ->
-                { message =
-                    domInfoToPosition d
-                        |> SplitterLeftAlone
-                        |> toMsg
-                , preventDefault = True
-                , stopPropagation = True
-                }
-            )
-            domInfo
-
-
-onTouchMove : (Msg -> msg) -> Attribute msg
-onTouchMove toMsg =
-    Html.Events.custom "touchmove" <|
-        D.map
-            (\d ->
-                { message =
-                    domInfoToPosition d
-                        |> SplitterMove
-                        |> toMsg
-                , preventDefault = True
-                , stopPropagation = True
-                }
-            )
-            domInfo
-
-
-{-| The position of the touch relative to the whole document. So if you are
-scrolled down a bunch, you are still getting a coordinate relative to the
-very top left corner of the _whole_ document.
+{-| **@private:** A handler that always prevents the default and only stops
+the propagation of touch events.
 -}
-type alias DOMInfo =
-    { x : Maybe Int
-    , y : Maybe Int
-    , touchX : Maybe Int
-    , touchY : Maybe Int
-    , parentWidth : Int
-    , parentHeight : Int
-    }
+on : String -> Bool -> JD.Decoder Msg -> Attribute Msg
+on event stop =
+    JD.map (\msg -> { message = msg, preventDefault = True, stopPropagation = stop })
+        >> Html.Events.custom event
 
 
-{-| The decoder used to extract a `DOMInfo` from a JavaScript touch event.
+{-| **@private:** Grab the splitter, the mouse position is the anchor (touch
+events have no top level `clientX`, they start in the middle).
 -}
-domInfo : D.Decoder DOMInfo
-domInfo =
-    D.map6 DOMInfo
-        (D.maybe (field "clientX" D.int))
-        (D.maybe (field "clientY" D.int))
-        (D.maybe (at [ "touches", "0", "clientX" ] D.int))
-        (D.maybe (at [ "touches", "0", "clientY" ] D.int))
-        (at [ "currentTarget", "parentElement", "clientWidth" ] D.int)
-        (at [ "currentTarget", "parentElement", "clientHeight" ] D.int)
+click : JD.Decoder Msg
+click =
+    JD.map2 (\x width -> SplitterClick { x = x, width = width })
+        (JD.maybe (JD.field "clientX" number))
+        parentWidth
 
 
-
--- SUBSCRIPTIONS
-
-
-{-| Subscribes to relevant events for resizing
+{-| **@private:** The x-coordinate of the first touch, or of the mouse, each
+only if x and y are numbers, otherwise 0.
 -}
-subscriptions : State -> Sub Msg
-subscriptions (State state) =
-    case state.dragState of
-        Draggable (Just _) ->
-            Sub.batch
-                [ Browser.Events.onMouseMove <|
-                    D.map SplitterMove
-                        (D.map2 Position
-                            (D.field "pageX" D.int)
-                            (D.field "pageY" D.int)
-                        )
-                , Browser.Events.onMouseUp <|
-                    D.map SplitterLeftAlone
-                        (D.map2 Position
-                            (D.field "pageX" D.int)
-                            (D.field "pageY" D.int)
-                        )
-                ]
+clientX : JD.Decoder Int
+clientX =
+    JD.oneOf
+        [ JD.at [ "touches", "0" ] (pair "clientX" "clientY")
+        , pair "clientX" "clientY"
+        , JD.succeed 0
+        ]
 
-        _ ->
-            Sub.none
+
+{-| **@private:** The value of field `x`, if field `y` is a number too.
+-}
+pair : String -> String -> JD.Decoder Int
+pair x y =
+    JD.map2 always (JD.field x number) (JD.field y number)
+
+
+{-| **@private:** Event coordinates can be fractional (zoom, touch on HiDPI
+screens), an integer decoder would drop the whole event.
+-}
+number : JD.Decoder Int
+number =
+    JD.map round JD.float
+
+
+{-| **@private:** The width of the container, which also has to report its height.
+-}
+parentWidth : JD.Decoder Int
+parentWidth =
+    JD.at [ "currentTarget", "parentElement" ] (pair "clientWidth" "clientHeight")

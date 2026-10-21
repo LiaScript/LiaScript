@@ -3,9 +3,13 @@ module Service.TTS exposing
     , abort
     , cancel
     , decode
+    , pause
     , playback
     , preferBrowser
+    , readClass
     , readFrom
+    , resume
+    , seek
     )
 
 import Json.Decode as JD
@@ -17,9 +21,12 @@ import String
 type Msg
     = Start
     | Stop
+    | Paused
+    | Progress Float Float
     | Error String
     | BrowserTTS Bool
     | ResponsiveVoiceTTS Bool
+    | Avatar (Maybe String)
 
 
 {-| Simple abort of any talking without sending a response
@@ -48,10 +55,14 @@ have to be added to the HTML element as attributes:
 -}
 readFrom : Int -> Event
 readFrom id =
-    "lia-tts-"
-        ++ String.fromInt id
-        |> JE.string
-        |> event "read"
+    readClass ("lia-tts-" ++ String.fromInt id)
+
+
+{-| Read the content of all HTML elements with the passed class.
+-}
+readClass : String -> Event
+readClass =
+    JE.string >> event "read"
 
 
 {-| Used for inline playback, the text and the voice can be passed as
@@ -65,6 +76,22 @@ playback { voice, lang, text } =
     ]
         |> JE.object
         |> event "playback"
+
+
+pause : Event
+pause =
+    event "pause" JE.null
+
+
+resume : Event
+resume =
+    event "resume" JE.null
+
+
+seek : Float -> Event
+seek seconds =
+    JE.float seconds
+        |> event "seek"
 
 
 {-| Switch tts
@@ -84,6 +111,28 @@ decode e =
 
                 "stop" ->
                     Stop
+
+                "paused" ->
+                    Paused
+
+                "progress" ->
+                    let
+                        progressDecoder =
+                            JD.map2 Tuple.pair
+                                (JD.field "current" JD.float)
+                                (JD.field "total" JD.float)
+
+                        result =
+                            JD.decodeValue (JD.string |> JD.andThen (\s -> JD.decodeString progressDecoder s |> Result.mapError JD.errorToString |> (\r -> case r of
+                                Ok v -> JD.succeed v
+                                Err err -> JD.fail err))) e.message.param
+                    in
+                    case result of
+                        Ok ( current, total ) ->
+                            Progress current total
+
+                        Err _ ->
+                            Error "progress: invalid param"
 
                 "error" ->
                     case JD.decodeValue JD.string e.message.param of
@@ -108,6 +157,14 @@ decode e =
 
                         Err _ ->
                             ResponsiveVoiceTTS False
+
+                -- an external template registered a custom element as the
+                -- narrator avatar via `window.LIA.narrator.registerAvatar`
+                "avatar" ->
+                    e.message.param
+                        |> JD.decodeValue (JD.nullable JD.string)
+                        |> Result.withDefault Nothing
+                        |> Avatar
 
                 unknown ->
                     Error <| "unknown cmd => " ++ unknown

@@ -5,6 +5,7 @@ import { Connector } from '../../connectors/Base/index'
 import { Settings } from '../../connectors/Base/settings'
 import TTS from './TTS'
 import Script from './Script'
+import { offlineOpened } from './Resource'
 
 var connector: Connector | null = null
 var elmSend: Lia.Send | null
@@ -41,6 +42,11 @@ const Service = {
     switch (event.message.cmd) {
       case 'load':
         event.message.param = await connector.load(param)
+        sendReply(event)
+        break
+
+      case 'load_all':
+        event.message.param = await connector.loadAll(param)
         sendReply(event)
         break
 
@@ -109,6 +115,8 @@ const Service = {
         if (isPersistent) {
           connector.open(param.readme, param.version, param.section_active)
         }
+
+        offlineOpened(param.readme)
 
         if (param.definition.onload !== '') {
           // adding the semaphore to delay the execution of other scripts
@@ -249,6 +257,114 @@ const Service = {
       console.warn('connector not initialized')
     }
   },
+
+  getClassrooms: async function (uidDB: string) {
+    if (connector) {
+      return connector.getClassrooms(uidDB)
+    }
+    return []
+  },
+
+  saveClassroom: async function (
+    uidDB: string,
+    entry: {
+      room: string
+      backend: string
+      password?: string
+      name?: string
+      title?: string
+      notes?: string
+      mode?: number
+      ownerTokenHash?: string
+    }
+  ) {
+    if (connector) {
+      return connector.saveClassroom(uidDB, entry)
+    }
+  },
+
+  updateClassroomMeta: async function (
+    uidDB: string,
+    room: string,
+    backend: string,
+    meta: {
+      title?: string
+      notes?: string
+      name?: string
+      owner?: boolean
+      ownerTokenHash?: string
+    }
+  ) {
+    if (connector) {
+      return connector.updateClassroomMeta(uidDB, room, backend, meta)
+    }
+  },
+
+  deleteClassroom: async function (
+    uidDB: string,
+    room: string,
+    backend: string
+  ) {
+    if (connector) {
+      return connector.deleteClassroom(uidDB, room, backend)
+    }
+  },
+
+  getYjsUpdates: async function (uidDB: string, key: string) {
+    if (connector) {
+      return connector.getYjsUpdates(uidDB, key)
+    }
+    return []
+  },
+
+  appendYjsUpdate: async function (
+    uidDB: string,
+    key: string,
+    data: Uint8Array
+  ) {
+    if (connector) {
+      return connector.appendYjsUpdate(uidDB, key, data)
+    }
+  },
+
+  replaceYjsUpdates: async function (
+    uidDB: string,
+    key: string,
+    data: Uint8Array
+  ) {
+    if (connector) {
+      return connector.replaceYjsUpdates(uidDB, key, data)
+    }
+  },
+
+  clearYjsUpdates: async function (uidDB: string, key: string) {
+    if (connector) {
+      return connector.clearYjsUpdates(uidDB, key)
+    }
+  },
+
+  compactYjsUpdates: async function (
+    uidDB: string,
+    key: string,
+    merge: (rows: Uint8Array[]) => Uint8Array | null
+  ) {
+    if (connector) {
+      return connector.compactYjsUpdates(uidDB, key, merge)
+    }
+    return null
+  },
+
+  getKey: async function (uidDB: string, id: string) {
+    if (connector) {
+      return connector.getKey(uidDB, id)
+    }
+  },
+
+  putKey: async function (uidDB: string, id: string, value: any) {
+    if (connector) {
+      return connector.putKey(uidDB, id, value)
+    }
+  },
 }
 
 /**
@@ -258,7 +374,7 @@ const Service = {
  * @param def
  * @returns a function that modifies a certain sub-entry within the database
  */
-function transaction(def: {
+export function transaction(def: {
   cmd: string
   id: number
   data: any

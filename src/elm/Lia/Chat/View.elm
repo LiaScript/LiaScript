@@ -1,9 +1,8 @@
 module Lia.Chat.View exposing (view)
 
 import Accessibility.Aria as A11y
-import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
-import Dict
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Keyed as Keyed
@@ -15,11 +14,11 @@ import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Update as Markdown
 import Lia.Markdown.View as Markdown
 import Lia.Section exposing (Section)
-import Lia.Utils exposing (btnIcon, noTranslate)
+import Lia.Utils exposing (btnIcon, formatDate, noTranslate, viewIdenticon)
 
 
-view : Lang -> (Section -> Config Markdown.Msg) -> Model -> Html Msg
-view lang config model =
+view : Lang -> Bool -> (Section -> Config Markdown.Msg) -> Dict String String -> Model -> Html Msg
+view lang lightMode config peers model =
     Html.div
         (noTranslate
             [ Attr.style "width" "100%"
@@ -32,7 +31,7 @@ view lang config model =
         )
         [ model.messages
             |> Dict.toList
-            |> List.map (viewMessage config)
+            |> List.map (viewMessage lang config peers)
             |> Keyed.node "article"
                 [ Attr.style "display" "flex"
                 , Attr.style "flex-direction" "column"
@@ -45,8 +44,10 @@ view lang config model =
                 [ Attr.style "height" "100%"
                 , Attr.style "overflow" "auto"
                 , Attr.id "lia-chat-messages"
-                , A11y_Live.livePolite
-                , A11y_Live.atomic True
+
+                -- only new messages are read out
+                , A11y_Role.log
+                , A11y.label "Chat"
                 ]
         , Html.div
             [ Attr.style "padding" "0.5rem"
@@ -69,7 +70,7 @@ view lang config model =
                 , Attr.style "z-index" "100"
                 , Attr.style "color" "#888"
                 , Attr.class "lia-btn--transparent"
-                , A11y.keyShortcuts [ "Ctrl-Enter", "Command-Enter" ]
+                , A11y.keyShortcuts [ "Control+Enter", "Meta+Enter" ]
                 ]
             , Editor.editor
                 [ Editor.onChange Input
@@ -81,36 +82,81 @@ view lang config model =
                 , Editor.showGutter False
                 , Attr.class "lia-code__input"
                 , Editor.onCtrlEnter Send
-                , A11y_Role.textBox
+                , Editor.label (Trans.chatMessage lang)
+                , Editor.theme <|
+                    "cloud9_"
+                        ++ (if lightMode then
+                                "day"
+
+                            else
+                                "night"
+                           )
                 ]
                 []
             ]
         ]
 
 
-viewMessage : (Section -> Config Markdown.Msg) -> ( String, Section ) -> ( String, Html Msg )
-viewMessage config ( id, section ) =
+viewMessage : Lang -> (Section -> Config Markdown.Msg) -> Dict String String -> ( String, { section : Section, peer : String, verified : Bool } ) -> ( String, Html Msg )
+viewMessage lang config peers ( id, message ) =
     let
         id_ =
             id
                 |> String.toInt
                 |> Maybe.withDefault -1
+
+        peerName =
+            Dict.get message.peer peers
+                |> Maybe.withDefault ""
     in
-    section
-        |> config
-        |> Config.setID id_
-        |> Markdown.viewContent
+    List.append
+        (message.section
+            |> config
+            |> Config.setID id_
+            |> Markdown.viewContent
+        )
+        [ Html.div
+            [ Attr.style "float" "right"
+            , Attr.style "color" "#888"
+            , Attr.style "font-size" "1.1rem"
+            , Attr.style "margin-top" "-1.1rem"
+            , Attr.style "text-decoration" "overline"
+            ]
+            [ Html.strong []
+                (if String.isEmpty peerName then
+                    [ Html.text (String.right 5 (formatDate id_)) ]
+
+                 else
+                    [ Html.text <| peerName ++ " "
+                    , viewIdenticon message.peer
+                    , if message.verified then
+                        Html.text ""
+
+                      else
+                        Html.span []
+                            [ Lia.Utils.icon "icon-warning"
+                                [ Attr.title (Trans.chatUnverified lang)
+                                , Attr.style "margin" "0 0.25rem"
+                                ]
+                            , Html.span [ Attr.class "hidden-visually" ] [ Html.text (Trans.chatUnverified lang) ]
+                            ]
+                    , Html.text " · "
+                    , Html.text <| String.right 5 (formatDate id_)
+                    ]
+                )
+            ]
+        ]
         |> Html.div
             [ Attr.style "margin" "0.45rem 0.5rem"
             , Attr.style "box-shadow" "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)"
             , Attr.style
                 "padding"
               <|
-                if section.effect_model.effects == 0 then
+                if message.section.effect_model.effects == 0 then
                     "1rem 1rem 0.1rem"
 
                 else
                     "1rem 1rem 0.1rem 3rem"
             ]
         |> Html.map (UpdateMarkdown id)
-        |> Tuple.pair id
+        |> Tuple.pair (id ++ message.peer)

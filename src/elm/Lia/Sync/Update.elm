@@ -1,13 +1,17 @@
 module Lia.Sync.Update exposing
     ( Msg(..)
     , SyncMsg(..)
+    , decodeEntries
     , handle
-    , isConnected
+    , synchronize
     , update
     )
 
 import Dict exposing (Dict)
+import Helper.Array as Array
+import Index.View.Popup as Popup
 import Json.Decode as JD
+import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
 import Lia.Chat.Model as Chat
 import Lia.Chat.Sync as Chat
@@ -18,30 +22,41 @@ import Lia.Markdown.Survey.Sync as Survey
 import Lia.Section as Section exposing (Sections)
 import Lia.Settings.Types as Lia
 import Lia.Settings.Update exposing (updatedChatMessages)
+import Lia.Sync.Classroom as Classroom
 import Lia.Sync.Container as Container
 import Lia.Sync.Room as Room
 import Lia.Sync.Types
     exposing
-        ( Settings
+        ( ClassroomMode(..)
+        , Settings
         , State(..)
         , decodeCursors
         , decodePeers
+        , fromClassroomMode
         , id
+        , restoreSaved
+        , toClassroomMode
         )
 import Lia.Sync.Via as Backend exposing (Backend)
+import Lia.Utils
+import List.Extra
 import Random
 import Return exposing (Return)
 import Service.Console as Console
+import Service.Database
 import Service.Event as Event exposing (Event)
 import Service.Slide
 import Service.Sync
 import Session exposing (Session)
-import Set
 
 
 type Msg
     = Room String
     | Password String
+    | Name String
+    | LocalName String
+    | LocalNote String
+    | OwnerTokenHash String
     | Backend SyncMsg
     | Connect
     | Disconnect
@@ -49,6 +64,18 @@ type Msg
     | Random_Generate
     | Random_Result String
     | EnabledScript Bool
+    | TogglePersistent
+    | LoadClassroom Classroom.Entry
+    | AskDeleteClassroom String String
+    | CancelDeleteClassroom
+    | ConfirmDeleteClassroom String String
+    | OpenNotes
+    | ClassroomMode String
+    | EditMeta Classroom.Entry { title : String, notes : String, name : String }
+    | SaveMeta Classroom.Entry
+    | TogglePasswordVisibility
+    | GenerateOwnerToken
+    | NoOp
 
 
 type SyncMsg
@@ -125,38 +152,77 @@ update session model msg =
                     synchronize model param
 
                 ( "error", param ) ->
-                    case ( JD.decodeValue JD.string param, sync.sync.select ) of
-                        ( Ok message, Just ( True, _ ) ) ->
-                            { model
-                                | sync =
-                                    { sync
-                                        | state = Disconnected
-                                        , peers = Set.empty
-                                        , error = Just message
-                                    }
+                    { model
+                        | sync =
+                            { sync
+                                | state = Disconnected
+                                , peers = Dict.empty
+                                , peersHistory = Dict.empty
+                                , error =
+                                    case ( JD.decodeValue JD.string param, sync.sync.select ) of
+                                        ( Ok message, Just ( True, _ ) ) ->
+                                            Just message
+
+                                        _ ->
+                                            Just "unknown"
                             }
+                    }
+                        |> Return.val
+
+                ( "warning", param ) ->
+                    -- Advisory only (e.g. the password-mismatch heuristic) -
+                    -- unlike "error", the connection is not actually down,
+                    -- so state/peers must stay untouched.
+                    case JD.decodeValue JD.string param of
+                        Ok message ->
+                            { model | sync = { sync | error = Just message } }
                                 |> Return.val
+
+                        Err _ ->
+                            model |> Return.val
+
+                ( "password_ok", _ ) ->
+                    -- checkPassword confirmed a match (see the Connect case,
+                    -- which withheld the actual connect event until now) -
+                    -- safe to connect for real.
+                    case sync.sync.select of
+                        Just ( True, backend ) ->
+                            model
+                                |> Return.val
+                                |> Return.batchEvent (connectEvent backend model.readme sync)
 
                         _ ->
+                            model |> Return.val
+
+                ( "owner_token", param ) ->
+                    case JD.decodeValue ownerTokenGenerated param of
+                        Ok info ->
                             { model
                                 | sync =
                                     { sync
-                                        | state = Disconnected
-                                        , peers = Set.empty
-                                        , error = Just "unknown"
+                                        | ownerToken = Just info.token
+                                        , ownerTokenHash = info.hash
                                     }
                             }
                                 |> Return.val
 
+                        Err _ ->
+                            model |> Return.val
+
                 ( "connect", param ) ->
-                    case ( JD.decodeValue JD.string param, sync.sync.select ) of
-                        ( Ok hashID, Just ( True, backend ) ) ->
+                    case ( JD.decodeValue connectAck param, sync.sync.select ) of
+                        ( Ok info, Just ( True, backend ) ) ->
                             { model
                                 | sync =
                                     { sync
-                                        | state = Connected hashID
-                                        , peers = Set.singleton hashID
+                                        | state = Connected info.id
+                                        , peers = Dict.singleton info.id sync.name
+                                        , peersHistory = Dict.singleton info.id sync.name
                                         , error = Nothing
+                                        , ownerTokenHash = info.ownerTokenHash
+                                        , pwSalt = info.pwSalt
+                                        , pwCheck = info.pwCheck
+                                        , ownerToken = info.ownerToken
                                     }
                             }
                                 |> join
@@ -166,8 +232,34 @@ update session model msg =
                                             { backend = Backend.toString True backend
                                             , course = model.readme
                                             , room = sync.room
+                                            , mode = fromClassroomMode sync.mode
+                                            , ownerTokenHash = info.ownerTokenHash
+                                            , pwSalt = info.pwSalt
+                                            , pwCheck = info.pwCheck
+
+                                            -- never re-materialize the raw
+                                            -- secret into the address bar,
+                                            -- even though `encodeRoom`
+                                            -- itself would already drop it
+                                            , ownerToken = Nothing
                                             }
                                         |> Session.update
+                                    )
+                                |> Return.batchEvent
+                                    -- readable/copyable from the saved-classrooms
+                                    -- card even without reconnecting - see
+                                    -- Classroom.Entry.ownerTokenHash. Every
+                                    -- successful connect resolves this, not only
+                                    -- the owner's.
+                                    (if sync.persistent && not (String.isEmpty info.ownerTokenHash) then
+                                        Service.Sync.markOwnerTokenHash
+                                            model.readme
+                                            sync.room
+                                            (Backend.toString True backend)
+                                            info.ownerTokenHash
+
+                                     else
+                                        Event.none
                                     )
 
                         _ ->
@@ -175,38 +267,58 @@ update session model msg =
                                 | sync =
                                     { sync
                                         | state = Disconnected
-                                        , peers = Set.empty
+                                        , peers = Dict.empty
+                                        , peersHistory = Dict.empty
                                     }
                             }
                                 |> Return.val
                                 |> Return.cmd
-                                    (session
-                                        |> Session.setQuery model.readme
-                                        |> Session.update
-                                    )
+                                    (resetUrl session model.readme)
 
                 ( "disconnect", _ ) ->
                     { model
                         | sync =
                             { sync
                                 | state = Disconnected
-                                , peers = Set.empty
+                                , peers = Dict.empty
+                                , peersHistory = Dict.empty
                                 , error = Nothing
-                                , data =
-                                    { cursor = []
-                                    , survey = Dict.empty
-                                    , quiz = Dict.empty
-                                    , code = Dict.empty
-                                    }
+                                , data = Lia.Sync.Types.disconnected.data
                             }
                         , chat = Chat.init
                     }
                         |> Return.val
                         |> Return.cmd
-                            (session
-                                |> Session.setQuery model.readme
-                                |> Session.update
-                            )
+                            (resetUrl session model.readme)
+
+                ( "classrooms", param ) ->
+                    let
+                        -- a room from the URL takes the name it was saved
+                        -- with, before the generic prefill below
+                        restored =
+                            restoreSaved
+                                { sync
+                                    | saved =
+                                        param
+                                            |> JD.decodeValue Classroom.decoder
+                                            |> Result.withDefault sync.saved
+                                }
+
+                        -- prefill "Your name" from the most recently used
+                        -- classroom, so returning users don't have to
+                        -- retype it every time they open the dialog
+                        name =
+                            if String.isEmpty restored.name then
+                                restored.saved
+                                    |> List.head
+                                    |> Maybe.andThen .name
+                                    |> Maybe.withDefault restored.name
+
+                            else
+                                restored.name
+                    in
+                    { model | sync = { restored | name = name } }
+                        |> Return.val
 
                 _ ->
                     model
@@ -220,6 +332,35 @@ update session model msg =
             { model | sync = { sync | room = str } }
                 |> Return.val
 
+        Name str ->
+            { model | sync = { sync | name = str } }
+                |> Return.val
+
+        OwnerTokenHash str ->
+            { model | sync = { sync | ownerTokenHash = str } }
+                |> Return.val
+
+        LocalName str ->
+            { model | sync = { sync | title = str } }
+                |> Return.val
+
+        LocalNote str ->
+            { model | sync = { sync | notes = str } }
+                |> Return.val
+
+        ClassroomMode mode ->
+            { model
+                | sync =
+                    { sync
+                        | mode =
+                            mode
+                                |> String.toInt
+                                |> Maybe.map toClassroomMode
+                                |> Maybe.withDefault sync.mode
+                    }
+            }
+                |> Return.val
+
         Random_Generate ->
             model
                 |> Return.val
@@ -229,6 +370,30 @@ update session model msg =
             { model | sync = { sync | room = roomName } }
                 |> Return.val
 
+        Backend (Select Nothing) ->
+            { model
+                | sync =
+                    { sync
+                        | sync = updateSync (Select Nothing) sync.sync
+                        , room = ""
+                        , password = ""
+                        , title = ""
+                        , notes = ""
+                        , mode = Shared
+                        , persistent = False
+                        , locked = False
+                        , passwordLocked = False
+                        , fromUrl = False
+                        , ownerTokenHash = ""
+                        , pwSalt = ""
+                        , pwCheck = ""
+                        , ownerToken = Nothing
+                    }
+            }
+                |> Return.val
+                |> Return.cmd
+                    (resetUrl session model.readme)
+
         Backend sub ->
             { model | sync = { sync | sync = updateSync sub sync.sync } }
                 |> Return.val
@@ -237,18 +402,168 @@ update session model msg =
             { model | sync = { sync | scriptsEnabled = not enabled } }
                 |> Return.val
 
+        TogglePersistent ->
+            { model | sync = { sync | persistent = not sync.persistent } }
+                |> Return.val
+
+        TogglePasswordVisibility ->
+            { model | sync = { sync | passwordVisible = not sync.passwordVisible } }
+                |> Return.val
+
+        GenerateOwnerToken ->
+            model
+                |> Return.val
+                |> Return.batchEvent Service.Sync.generateOwnerToken
+
+        EditMeta entry meta ->
+            let
+                update_ e =
+                    if e.room == entry.room && e.backend == entry.backend then
+                        { e
+                            | title = nonEmpty meta.title
+                            , notes = nonEmpty meta.notes
+                            , name = nonEmpty meta.name
+                        }
+
+                    else
+                        e
+
+                nonEmpty str =
+                    if String.isEmpty str then
+                        Nothing
+
+                    else
+                        Just str
+            in
+            { model | sync = { sync | saved = List.map update_ sync.saved } }
+                |> Return.val
+
+        SaveMeta entry ->
+            -- fired on blur, so the (already locally updated by `EditMeta`)
+            -- title/notes/name only get written to IndexedDB once editing
+            -- settles, not on every keystroke
+            let
+                current =
+                    sync.saved
+                        |> List.Extra.find (\e -> e.room == entry.room && e.backend == entry.backend)
+                        |> Maybe.withDefault entry
+            in
+            model
+                |> Return.val
+                |> Return.batchEvent
+                    (Service.Sync.updateClassroomMeta model.readme
+                        entry.room
+                        entry.backend
+                        { title = current.title |> Maybe.withDefault ""
+                        , notes = current.notes |> Maybe.withDefault ""
+                        , name = current.name |> Maybe.withDefault ""
+                        }
+                    )
+
+        LoadClassroom entry ->
+            case Backend.fromString entry.backend of
+                Just backend ->
+                    let
+                        innerSync =
+                            sync.sync
+                    in
+                    { model
+                        | sync =
+                            { sync
+                                | sync = { innerSync | select = Just ( True, backend ), open = False }
+                                , room = entry.room
+                                , password = entry.password |> Maybe.withDefault ""
+                                , name = entry.name |> Maybe.withDefault sync.name
+                                , title = entry.title |> Maybe.withDefault ""
+                                , notes = entry.notes |> Maybe.withDefault ""
+                                , persistent = True
+
+                                -- mode is folded into the network room identity
+                                -- (see TS Sync.uniqueID), so reconnecting has to
+                                -- reuse the same mode the classroom was saved
+                                -- under, otherwise it joins a different room and
+                                -- loses the CRDT ownership history
+                                , mode = toClassroomMode entry.mode
+                                , locked = True
+                                , passwordLocked = True
+                                , fromUrl = False
+                                , ownerTokenHash = entry.ownerTokenHash
+                                , owner = entry.owner
+                            }
+                    }
+                        |> Return.val
+
+                Nothing ->
+                    model |> Return.val
+
+        OpenNotes ->
+            let
+                innerSync =
+                    sync.sync
+            in
+            { model
+                | sync =
+                    { sync
+                        | sync = { innerSync | select = Just ( True, Backend.Local ), open = False }
+                        , room = Classroom.notesRoomName
+                        , password = ""
+                        , title = ""
+                        , notes = ""
+                        , persistent = True
+                        , locked = False
+                        , passwordLocked = False
+                        , fromUrl = False
+                    }
+            }
+                |> Return.val
+
+        AskDeleteClassroom room backend ->
+            { model | sync = { sync | deletePopup = Just ( room, backend ) } }
+                |> Return.val
+                |> Return.cmd (Lia.Utils.focus NoOp Popup.cancelID)
+
+        NoOp ->
+            Return.val model
+
+        CancelDeleteClassroom ->
+            { model | sync = { sync | deletePopup = Nothing } }
+                |> Return.val
+
+        ConfirmDeleteClassroom room backend ->
+            { model
+                | sync =
+                    { sync
+                        | deletePopup = Nothing
+                        , saved =
+                            List.filter
+                                (\entry -> entry.room /= room || entry.backend /= backend)
+                                sync.saved
+                    }
+            }
+                |> Return.val
+                |> Return.batchEvent (Service.Sync.deleteClassroom model.readme room backend)
+
         Connect ->
             case ( sync.sync.select, sync.state ) of
                 ( Just ( True, backend ), Disconnected ) ->
-                    { model | sync = { sync | state = Pending, sync = closeSelect sync.sync } }
+                    { model | sync = { sync | state = Pending, sync = updateSync (Open False) sync.sync, name = String.trim sync.name } }
                         |> Return.val
                         |> Return.batchEvent
-                            (Service.Sync.connect
-                                { backend = backend
-                                , course = model.readme
-                                , room = sync.room
-                                , password = sync.password
-                                }
+                            -- only a join brings along a pwCheck hint to
+                            -- verify against - a freshly created room has
+                            -- nothing yet to check, so it can connect right
+                            -- away. A join defers connecting until the
+                            -- "password_ok" reply above, so a wrong password
+                            -- never opens the room, not even for an instant.
+                            (if String.isEmpty sync.pwCheck then
+                                connectEvent backend model.readme sync
+
+                             else
+                                Service.Sync.checkPassword
+                                    { password = sync.password
+                                    , pwSalt = sync.pwSalt
+                                    , pwCheck = sync.pwCheck
+                                    }
                             )
 
                 _ ->
@@ -292,18 +607,37 @@ updateSync msg sync =
                     sync
 
 
-closeSelect sync =
-    { sync | open = False }
+{-| Reset the URL to the course (leaving the classroom).
+-}
+resetUrl : Session -> String -> Cmd msg
+resetUrl session readme =
+    session
+        |> Session.setQuery readme
+        |> Session.update
 
 
-isConnected : Settings -> Bool
-isConnected sync =
-    case sync.state of
-        Connected _ ->
-            True
-
-        _ ->
-            False
+{-| Build the actual `connect` event from the current sync settings - shared
+by the direct-connect path (no `pwCheck` to verify) and by the deferred path
+triggered once `checkPassword` confirms a match, see the `Connect` case and
+the `"password_ok"` reply above.
+-}
+connectEvent : Backend -> String -> Settings -> Event
+connectEvent backend course syncSettings =
+    Service.Sync.connect
+        { backend = backend
+        , course = course
+        , room = syncSettings.room
+        , password = syncSettings.password
+        , persistent = syncSettings.persistent || backend == Backend.Local
+        , name = String.trim syncSettings.name
+        , title = String.trim syncSettings.title
+        , notes = String.trim syncSettings.notes
+        , mode = fromClassroomMode syncSettings.mode
+        , ownerTokenHash = syncSettings.ownerTokenHash
+        , pwSalt = syncSettings.pwSalt
+        , pwCheck = syncSettings.pwCheck
+        , ownerToken = syncSettings.ownerToken
+        }
 
 
 join :
@@ -322,16 +656,42 @@ join :
 join model =
     case model.sync.state of
         Connected id ->
-            model
+            let
+                sync =
+                    model.sync
+            in
+            { model | sync = { sync | preloaded = True } }
                 |> Return.val
                 |> Return.batchEvent
                     (model.sections
                         |> JE.array (Section.sync id)
                         |> Service.Sync.join
                     )
+                |> Return.batchEvents
+                    (if sync.preloaded then
+                        []
+
+                     else
+                        preloadEvents
+                    )
 
         _ ->
             Return.val model
+
+
+{-| Request persisted quiz/survey answers for every section that hasn't been
+parsed yet, so a joining peer's history reaches the CRDT even for slides
+nobody has visited this session - without paying for a full-course parse.
+Instead of one `load` event per section (2×N round-trips for N sections),
+this issues exactly one bulk request per table; the reply is fanned out to
+the affected sections by `Lia.Markdown.Update.handleAll`, reusing the
+existing `Quiz.Update`/`Survey.Update` `"load"` handler for each of them.
+-}
+preloadEvents : List Event
+preloadEvents =
+    [ Service.Database.loadAll "quiz" |> Event.pushWithId "quizAll" 0
+    , Service.Database.loadAll "survey" |> Event.pushWithId "surveyAll" 0
+    ]
 
 
 synchronize :
@@ -342,6 +702,7 @@ synchronize :
         , search_index : String -> String
         , definition : Definition
         , settings : Lia.Settings
+        , readme : String
     }
     -> JD.Value
     ->
@@ -353,6 +714,7 @@ synchronize :
                 , search_index : String -> String
                 , definition : Definition
                 , settings : Lia.Settings
+                , readme : String
             }
             msg
             sub
@@ -392,7 +754,7 @@ synchronize model json =
                 ( todo, chat ) =
                     param
                         |> JD.decodeValue Chat.decoder
-                        |> Result.map (Chat.insert model.sync.scriptsEnabled model.search_index model.definition model.chat)
+                        |> Result.map (Chat.insert model.sync model.sync.scriptsEnabled model.search_index model.definition model.chat)
                         |> Result.withDefault ( [], model.chat )
             in
             { model | chat = chat, settings = updatedChatMessages model.settings }
@@ -404,108 +766,140 @@ synchronize model json =
             let
                 sync =
                     model.sync
+
+                peers =
+                    param
+                        |> JD.decodeValue decodePeers
+                        |> Result.withDefault sync.peers
             in
             { model
                 | sync =
                     { sync
-                        | peers =
-                            param
-                                |> JD.decodeValue decodePeers
-                                |> Result.map Set.fromList
-                                |> Result.withDefault sync.peers
+                        | peers = peers
+                        , peersHistory = Dict.union peers sync.peersHistory
+                    }
+            }
+                |> Return.val
+
+        Ok ( "identity", param ) ->
+            let
+                sync =
+                    model.sync
+
+                identities =
+                    param
+                        |> JD.decodeValue decodePeers
+                        |> Result.withDefault Dict.empty
+            in
+            { model
+                | sync =
+                    { sync
+                        | peersHistory = Dict.union sync.peersHistory identities
                     }
             }
                 |> Return.val
 
         Ok ( "code", param ) ->
-            case
-                param
-                    |> dataDecoder (JD.array Code.decoder)
-                    |> Result.map (dataMerge model.sync.data.code)
-            of
-                Ok dataUpdate ->
-                    let
-                        sync =
-                            model.sync
+            let
+                ( new, errors ) =
+                    decodeEntries (JD.array Code.decoder) param
 
-                        data =
-                            sync.data
-                    in
-                    { model
-                        | sync =
-                            { sync
-                                | data =
-                                    { data
-                                        | code = dataUpdate
-                                    }
+                sync =
+                    model.sync
+
+                data =
+                    sync.data
+            in
+            { model
+                | sync =
+                    { sync
+                        | data =
+                            { data
+                                | code = dataMerge data.code new
                             }
                     }
-                        |> Return.val
-
-                Err info ->
-                    model
-                        |> Return.val
-                        |> warn "decoding code" (JD.errorToString info)
+            }
+                |> Return.val
+                |> warnAll "decoding code" errors
 
         Ok ( "quiz", param ) ->
-            case
-                param
-                    |> dataDecoder (Container.decoder Quiz.decoder)
-                    |> Result.map (dataMerge model.sync.data.quiz)
-            of
-                Ok dataUpdate ->
-                    let
-                        sync =
-                            model.sync
+            let
+                ( new, errors ) =
+                    decodeEntries (Container.decoder Quiz.decoder) param
 
-                        data =
-                            sync.data
-                    in
-                    { model
-                        | sync =
-                            { sync
-                                | data =
-                                    { data
-                                        | quiz = dataUpdate
-                                    }
-                            }
-                    }
-                        |> Return.val
+                sync =
+                    model.sync
 
-                Err info ->
-                    model
-                        |> Return.val
-                        |> warn "decoding quiz" (JD.errorToString info)
+                data =
+                    sync.data
+
+                dataUpdate =
+                    dataMerge data.quiz new
+            in
+            { model
+                | sync = { sync | data = { data | quiz = dataUpdate } }
+                , sections =
+                    lockSections Quiz.lockAnswered
+                        .quiz_vector
+                        (\v s -> { s | quiz_vector = v })
+                        (id model.sync.state)
+                        dataUpdate
+                        (List.map Tuple.first new)
+                        model.sections
+            }
+                |> Return.val
+                |> warnAll "decoding quiz" errors
 
         Ok ( "survey", param ) ->
-            case
-                param
-                    |> dataDecoder (Container.decoder Survey.decoder)
-                    |> Result.map (dataMerge model.sync.data.survey)
-            of
-                Ok dataUpdate ->
+            let
+                ( new, errors ) =
+                    decodeEntries (Container.decoder Survey.decoder) param
+
+                sync =
+                    model.sync
+
+                data =
+                    sync.data
+
+                dataUpdate =
+                    dataMerge data.survey new
+            in
+            { model
+                | sync = { sync | data = { data | survey = dataUpdate } }
+                , sections =
+                    lockSections Survey.lockAnswered
+                        .survey_vector
+                        (\v s -> { s | survey_vector = v })
+                        (id model.sync.state)
+                        dataUpdate
+                        (List.map Tuple.first new)
+                        model.sections
+            }
+                |> Return.val
+                |> warnAll "decoding survey" errors
+
+        Ok ( "ownership", param ) ->
+            case JD.decodeValue JD.bool param of
+                Ok ownership ->
                     let
                         sync =
                             model.sync
-
-                        data =
-                            sync.data
                     in
-                    { model
-                        | sync =
-                            { sync
-                                | data =
-                                    { data
-                                        | survey = dataUpdate
-                                    }
-                            }
-                    }
+                    { model | sync = { sync | owner = ownership } }
                         |> Return.val
+                        |> Return.batchEvent
+                            (case ( sync.persistent, sync.sync.select ) of
+                                ( True, Just ( _, backend ) ) ->
+                                    Service.Sync.markOwner model.readme sync.room (Backend.toString True backend) ownership
+
+                                _ ->
+                                    Event.none
+                            )
 
                 Err info ->
                     model
                         |> Return.val
-                        |> warn "decoding survey" (JD.errorToString info)
+                        |> warn "decoding ownership" (JD.errorToString info)
 
         Ok ( cmd, _ ) ->
             model
@@ -523,17 +917,150 @@ warn what info =
     Return.batchEvent (Console.warn ("Sync: " ++ what ++ " -> " ++ info))
 
 
-dataDecoder : JD.Decoder data -> JD.Value -> Result JD.Error (List ( Int, data ))
-dataDecoder data =
-    JD.decodeValue
-        (JD.list
+{-| One console warning per broken entry of a partially decoded sync batch,
+see `decodeEntries` - the good entries have already been applied by then.
+-}
+warnAll : String -> List String -> Return model msg sub -> Return model msg sub
+warnAll what errors return =
+    List.foldl (warn what) return errors
+
+
+{-| Reply of the `"owner_token"` event - a freshly minted secret and its
+hash, generated together so they're correct by construction, see
+`Service.Sync.generateOwnerToken`.
+-}
+ownerTokenGenerated : JD.Decoder { token : String, hash : String }
+ownerTokenGenerated =
+    JD.map2 (\token hash -> { token = token, hash = hash })
+        (JD.field "token" JD.string)
+        (JD.field "hash" JD.string)
+
+
+{-| Ack payload of the `"connect"` event. `ownerToken` is only ever the raw
+secret we already hold by then - reported back so a plain reconnect (page
+reload, "Your classrooms") can still display/copy it even though Elm itself
+never received it via a generate action or an owner-link this time; never a
+route for one browser to learn another's secret, see `Session.Room`.
+-}
+connectAck :
+    JD.Decoder
+        { id : String
+        , ownerTokenHash : String
+        , pwSalt : String
+        , pwCheck : String
+        , ownerToken : Maybe String
+        }
+connectAck =
+    JD.succeed
+        (\id_ hash salt check token ->
+            { id = id_
+            , ownerTokenHash = hash
+            , pwSalt = salt
+            , pwCheck = check
+            , ownerToken =
+                if String.isEmpty token then
+                    Nothing
+
+                else
+                    Just token
+            }
+        )
+        |> JDP.required "id" JD.string
+        |> JDP.optional "ownerTokenHash" JD.string ""
+        |> JDP.optional "pwSalt" JD.string ""
+        |> JDP.optional "pwCheck" JD.string ""
+        |> JDP.optional "ownerToken" JD.string ""
+
+
+{-| Decode a `[{ id, data }, ...]` sync payload entry by entry. The TS side
+re-dumps _every_ section on any change (see `fireQuizSurvey` in
+`sync/Base/db.ts`), so a single undecodable entry - one stale record from an
+older client or a persisting relay is enough - must not take the whole batch
+down with it: that would silently freeze every quiz/survey summary from that
+moment on, including the user's own answers. Good entries are returned as
+before, each broken one as a message naming its position and, when known,
+its section id.
+-}
+decodeEntries : JD.Decoder data -> JD.Value -> ( List ( Int, data ), List String )
+decodeEntries data value =
+    case JD.decodeValue (JD.list JD.value) value of
+        Err info ->
+            ( [], [ JD.errorToString info ] )
+
+        Ok entries ->
+            entries
+                |> List.indexedMap (decodeEntry data)
+                |> List.foldr
+                    (\result ( oks, errs ) ->
+                        case result of
+                            Ok ok ->
+                                ( ok :: oks, errs )
+
+                            Err err ->
+                                ( oks, err :: errs )
+                    )
+                    ( [], [] )
+
+
+decodeEntry : JD.Decoder data -> Int -> JD.Value -> Result String ( Int, data )
+decodeEntry data position value =
+    let
+        describe info =
+            case JD.decodeValue (JD.field "id" JD.int) value of
+                Ok id_ ->
+                    "entry " ++ String.fromInt position ++ " (id " ++ String.fromInt id_ ++ "): " ++ info
+
+                Err _ ->
+                    "entry " ++ String.fromInt position ++ ": " ++ info
+    in
+    value
+        |> JD.decodeValue
             (JD.map2 Tuple.pair
                 (JD.field "id" JD.int)
                 (JD.field "data" data)
             )
-        )
+        |> Result.mapError (JD.errorToString >> describe)
 
 
+{-| New entries replace old ones, of equal new ones the last wins.
+-}
 dataMerge : Dict Int data -> List ( Int, data ) -> Dict Int data
 dataMerge data new =
-    List.foldl (\( key, value ) store -> Dict.insert key value store) data new
+    Dict.union (Dict.fromList new) data
+
+
+{-| A "quiz"/"survey" sync event only ever updates `model.sync.data` - the
+CRDT-wide view of who answered what. But an already-parsed section (e.g. the
+one a peer is looking at while joining the room) renders from its own local
+`quiz_vector`/`survey_vector`, which is only ever locked once, at parse time
+(see `Lia.Markdown.Quiz.Update`/`Survey.Update`, `"load"`/`"restore"`). Without
+this, a section that was already open before the classroom round-trip
+delivered its data stays stuck showing the pre-sync (unanswered) state until
+it gets reparsed (e.g. by navigating away and back). Re-apply `lockAnswered`
+to every section touched by this event, right after merging into `sync.data`.
+-}
+lockSections :
+    (Maybe String -> Dict Int (Container.Container data) -> Maybe Int -> vector -> vector)
+    -> (Section.Section -> vector)
+    -> (vector -> Section.Section -> Section.Section)
+    -> Maybe String
+    -> Dict Int (Container.Container data)
+    -> List Int
+    -> Sections
+    -> Sections
+lockSections lockAnswered getVector setVector ownId dataUpdate sectionIds sections =
+    List.foldl
+        (\sectionId ->
+            Array.update sectionId
+                (\section ->
+                    setVector
+                        (lockAnswered ownId
+                            dataUpdate
+                            (Just sectionId)
+                            (getVector section)
+                        )
+                        section
+                )
+        )
+        sections
+        sectionIds

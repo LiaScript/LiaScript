@@ -1,18 +1,25 @@
 module Lia.Sync.Types exposing
-    ( Cursor
+    ( ClassroomMode(..)
+    , Cursor
     , Data
     , Settings
     , State(..)
     , Sync
     , decodeCursors
     , decodePeers
+    , disconnected
+    , fromClassroomMode
     , get
     , id
     , init
     , initRoom
     , isConnected
+    , isRoot
     , isSupported
+    , restoreSaved
+    , roster
     , title
+    , toClassroomMode
     )
 
 import Array exposing (Array)
@@ -25,10 +32,11 @@ import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Sync as Code
 import Lia.Markdown.Quiz.Sync as Quiz
 import Lia.Markdown.Survey.Sync as Survey
+import Lia.Sync.Classroom as Classroom
 import Lia.Sync.Container as Container exposing (Container)
 import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
-import Set exposing (Set)
+import List.Extra
 
 
 type State
@@ -44,7 +52,14 @@ type alias Cursor =
     , project : Int
     , file : Int
     , state : Editor.Cursor
+    , name : String
     }
+
+
+type ClassroomMode
+    = Shared
+    | Summary
+    | Details
 
 
 type alias Data =
@@ -60,10 +75,45 @@ type alias Settings =
     , state : State
     , room : String
     , password : String
-    , peers : Set String
+    , name : String
+    , peers : Dict String String
+    , peersHistory : Dict String String
     , error : Maybe String
     , data : Data
     , scriptsEnabled : Bool
+    , persistent : Bool
+    , saved : List Classroom.Entry
+    , deletePopup : Maybe ( String, String )
+    , mode : ClassroomMode
+    , owner : Bool
+    , passwordVisible : Bool
+    , locked : Bool
+    , passwordLocked : Bool
+
+    -- true only when this room's config was decoded straight from the page
+    -- URL (`initRoom`) - hides "Infrastructure settings" entirely for a
+    -- joining participant, as opposed to someone who created/entered the
+    -- room themselves (manually, or by reconnecting to a saved classroom)
+    , fromUrl : Bool
+
+    -- owner-election security metadata, see `Session.Room` for the exact
+    -- meaning of each field - mirrored here so `Service.Sync.connect`/
+    -- `CopyOwnerLink` can read the current room's values.
+    , ownerTokenHash : String
+    , pwSalt : String
+    , pwCheck : String
+    , ownerToken : Maybe String
+
+    -- local-only labels for the saved classroom entry (not shared via URL,
+    -- unlike room/password/mode) - help re-recognize a room in the "Your
+    -- classrooms" grid independently of its actual (often generated) name
+    , title : String
+    , notes : String
+
+    -- whether the eager quiz/survey preload (unvisited sections' persisted
+    -- answers pushed into the CRDT) has already run this page load - guards
+    -- against re-running the whole preload burst on every reconnect
+    , preloaded : Bool
     }
 
 
@@ -71,6 +121,22 @@ type alias Sync =
     { support : List ( Bool, Backend )
     , select : Maybe ( Bool, Backend )
     , open : Bool
+    }
+
+
+{-| A minimal, always-disconnected/no-data classroom context, for places
+outside classroom scope (e.g. nested subsections) that still need to satisfy
+the `{ state : State, data : Data }` shape.
+-}
+disconnected : { state : State, data : Data }
+disconnected =
+    { state = Disconnected
+    , data =
+        { cursor = []
+        , survey = Dict.empty
+        , quiz = Dict.empty
+        , code = Dict.empty
+        }
     }
 
 
@@ -92,38 +158,48 @@ init supportedBackends =
     in
     { sync =
         { support =
-            [ Via.GUN { urls = Const.gunDB_ServerURL, persistent = False }
-
-            --, Via.Jitsi Const.jitsi_Domain
-            --, Via.Matrix { baseURL = "", userId = "", accessToken = "" }
-            , Via.IPFS
-            , Via.MQTT
-            , Via.NoStr
-
-            --, Via.P2PT Const.webTorrent_TrackerURLs
-            , Via.PubNub { pubKey = "", subKey = "" }
-            , Via.Torrent
-            , Via.Edrys
+            [ Via.SimplePeer { signaling = "", iceServers = "", conference = False }
             , Via.WebSocket { url = "" }
             , Via.PeerJS { host = "", port_ = "", path = "", iceServers = "" }
-            , Via.SimplePeer { signaling = "", iceServers = "" }
+            , Via.Nostr { relayUrls = Const.nostrRelayURLs, persistent = False }
+            , Via.GUN { urls = Const.gunDB_ServerURL, persistent = False }
+            , Via.Torrent { relayUrls = "", turnConfig = "" }
+            , Via.MQTT { relayUrls = "", turnConfig = "" }
+            , Via.IPFS { turnConfig = "" }
+            , Via.Ably { apiKey = "", persistent = False }
+            , Via.PubNub { pubKey = "", subKey = "" }
+            , Via.Edrys
             ]
                 |> List.map (isMember supported)
+                |> (::) ( True, Via.Local )
         , select = Nothing
         , open = False
         }
     , state = Disconnected
     , room = ""
     , password = ""
-    , peers = Set.empty
+    , name = ""
+    , peers = Dict.empty
+    , peersHistory = Dict.empty
     , error = Nothing
-    , data =
-        { cursor = []
-        , survey = Dict.empty
-        , quiz = Dict.empty
-        , code = Dict.empty
-        }
+    , data = disconnected.data
     , scriptsEnabled = False
+    , persistent = False
+    , saved = []
+    , deletePopup = Nothing
+    , mode = Shared
+    , owner = False
+    , passwordVisible = False
+    , locked = False
+    , passwordLocked = False
+    , fromUrl = False
+    , ownerTokenHash = ""
+    , pwSalt = ""
+    , pwCheck = ""
+    , ownerToken = Nothing
+    , title = ""
+    , notes = ""
+    , preloaded = False
     }
 
 
@@ -136,13 +212,15 @@ isMember list element =
         ( (Via.GUN _) :: _, Via.GUN _ ) ->
             ( True, element )
 
-        -- ( (Via.Matrix _) :: _, Via.Matrix _ ) ->
-        --     ( True, element )
         ( (Via.PubNub _) :: _, Via.PubNub _ ) ->
             ( True, element )
 
-        -- ( (Via.Jitsi _) :: _, Via.Jitsi _ ) ->
-        --     ( True, element )
+        ( (Via.Ably _) :: _, Via.Ably _ ) ->
+            ( True, element )
+
+        ( (Via.Nostr _) :: _, Via.Nostr _ ) ->
+            ( True, element )
+
         ( (Via.P2PT _) :: _, Via.P2PT _ ) ->
             ( True, element )
 
@@ -154,7 +232,18 @@ isMember list element =
                 isMember es element
 
 
-initRoom : { backend : String, course : String, room : String } -> Settings -> Settings
+initRoom :
+    { backend : String
+    , course : String
+    , room : String
+    , mode : Int
+    , ownerTokenHash : String
+    , pwSalt : String
+    , pwCheck : String
+    , ownerToken : Maybe String
+    }
+    -> Settings
+    -> Settings
 initRoom config settings =
     case Via.fromString config.backend of
         Just backend ->
@@ -165,73 +254,129 @@ initRoom config settings =
             { settings
                 | sync =
                     { sync
-                        | select =
-                            Just
-                                ( settings.sync.support
-                                    |> List.filter
-                                        (\( support, for ) ->
-                                            if Via.eq for backend then
-                                                support
-
-                                            else
-                                                False
-                                        )
-                                    |> List.head
-                                    |> Maybe.map Tuple.first
-                                    |> Maybe.withDefault False
-                                , backend
-                                )
+                        | select = Just ( isSupportedBy settings.sync.support backend, backend )
                     }
                 , room = config.room
+
+                -- the URL alone cannot tell whether this browser saved the
+                -- room, see `restoreSaved`, which turns the local cache back
+                -- on once the saved classrooms are known
+                , persistent = False
+                , mode = toClassroomMode config.mode
+                , locked = True
+                , fromUrl = True
+                , ownerTokenHash = config.ownerTokenHash
+                , pwSalt = config.pwSalt
+                , pwCheck = config.pwCheck
+                , ownerToken = config.ownerToken
             }
 
         Nothing ->
             { settings | error = Just ("Unknown Backend type: " ++ config.backend) }
 
 
-filter : Settings -> Dict String sync -> Maybe (List sync)
-filter settings container =
-    case id settings.state of
-        Just main ->
+{-| A room opened from the page URL (`initRoom`) - a reload of a connected
+classroom, a bookmark, the browser's history - is the same classroom as a
+saved one with the same room, backend and mode, so it has to continue with
+its local cache, as "Your classrooms" would. Without this, a reload in class
+or the next day's return via the URL started from an empty document and
+stopped caching: the owner saw only whoever happened to be online, until a
+peer that still held the whole document synced it back.
+-}
+restoreSaved : Settings -> Settings
+restoreSaved settings =
+    case ( settings.fromUrl, settings.state, settings.sync.select ) of
+        ( True, Disconnected, Just ( _, backend ) ) ->
+            case
+                List.Extra.find
+                    (\entry ->
+                        (entry.room == settings.room)
+                            && (entry.backend == Via.toString True backend)
+                            && (toClassroomMode entry.mode == settings.mode)
+                    )
+                    settings.saved
+            of
+                Just entry ->
+                    { settings
+                        | persistent = True
+                        , name = orSaved settings.name entry.name
+                        , password = orSaved settings.password entry.password
+                        , title = orSaved settings.title entry.title
+                        , notes = orSaved settings.notes entry.notes
+                        , owner = entry.owner
+                    }
+
+                Nothing ->
+                    settings
+
+        _ ->
+            settings
+
+
+orSaved : String -> Maybe String -> String
+orSaved current saved =
+    if String.isEmpty current then
+        Maybe.withDefault current saved
+
+    else
+        current
+
+
+{-| Check if a backend is generally usable. `Via.Local` is not part of the
+`support` list, since it is not offered within the backend-selection, but it
+never depends on any external library or configuration, thus it is always
+supported.
+-}
+isSupportedBy : List ( Bool, Backend ) -> Backend -> Bool
+isSupportedBy support backend =
+    case backend of
+        Via.Local ->
+            True
+
+        _ ->
+            support
+                |> List.filter (Tuple.second >> Via.eq backend)
+                |> List.head
+                |> Maybe.map Tuple.first
+                |> Maybe.withDefault False
+
+
+filter : Bool -> Settings -> Dict String sync -> Maybe (Dict String sync)
+filter shouldFilter settings container =
+    case ( id settings.state, shouldFilter ) of
+        ( Just main, True ) ->
             -- only show the result of a voting or quizzes if the user has also solved it ...
-            if
+            if Dict.member main container then
                 container
-                    |> Dict.keys
-                    |> List.member main
-            then
-                container
-                    |> Dict.filter (filter_ (Set.insert main settings.peers))
-                    |> Dict.values
+                    |> Dict.filter (\peer _ -> peer == main || Dict.member peer settings.peers)
                     |> Just
 
             else
                 Nothing
 
+        ( Just _, False ) ->
+            Just container
+
         _ ->
             Nothing
 
 
-get : Maybe Settings -> (Data -> Dict Int (Container sync)) -> Int -> Int -> Maybe (List sync)
+get : Maybe Settings -> (Data -> Dict Int (Container sync)) -> Int -> Int -> Maybe (Dict String sync)
 get settings selector id1 id2 =
-    settings
-        |> Maybe.andThen (.data >> selector >> Dict.get id1)
-        |> Maybe.andThen (Container.get id2 >> Maybe.map2 filter settings)
-        |> Maybe.withDefault Nothing
+    case settings of
+        Just s ->
+            if s.mode == Shared || s.owner then
+                s.data
+                    |> selector
+                    |> Dict.get id1
+                    |> Maybe.andThen (Container.get id2)
+                    |> Maybe.andThen (filter (s.mode == Shared) s)
 
+            else
+                Nothing
 
-
--- case settings |> Maybe.map (.data >> selector ) of
---     ( Just s, Just local ) ->
---         local
---             |> Container.get id_
---             |> Maybe.andThen (filter s)
---     _ ->
---         Nothing
-
-
-filter_ : Set String -> String -> sync -> Bool
-filter_ ids key _ =
-    Set.member key ids
+        Nothing ->
+            Nothing
 
 
 {-| Get the own unique user-id only if a connection was established.
@@ -262,19 +407,25 @@ title sync =
                 [ Html.text "Classroom ("
                 , icon "icon-person icon-sm" [ Attr.style "padding-inline-end" "4px" ]
                 , sync.peers
-                    |> Set.size
+                    |> Dict.size
                     |> String.fromInt
                     |> Html.text
                 , Html.text ")"
+                , Html.text <|
+                    if sync.owner && sync.mode /= Shared then
+                        " ✨"
+
+                    else
+                        ""
                 ]
 
         Pending ->
             Html.text "Classroom (pending)"
 
 
-decodePeers : JD.Decoder (List String)
+decodePeers : JD.Decoder (Dict String String)
 decodePeers =
-    JD.list JD.string
+    JD.dict (JD.maybe JD.string |> JD.map (Maybe.withDefault ""))
 
 
 decodeCursors : JD.Decoder (List Cursor)
@@ -284,10 +435,58 @@ decodeCursors =
 
 decodeCursor : JD.Decoder Cursor
 decodeCursor =
-    JD.map6 Cursor
+    JD.map7 Cursor
         (JD.field "id" JD.string)
         (JD.field "color" JD.string)
         (JD.field "section" JD.int)
         (JD.field "project" JD.int)
         (JD.field "file" JD.int)
         (JD.field "state" Editor.decodeCursor)
+        (JD.field "name" JD.string)
+
+
+fromClassroomMode : ClassroomMode -> Int
+fromClassroomMode mode =
+    case mode of
+        Shared ->
+            0
+
+        Summary ->
+            1
+
+        Details ->
+            2
+
+
+toClassroomMode : Int -> ClassroomMode
+toClassroomMode mode =
+    case mode of
+        1 ->
+            Summary
+
+        2 ->
+            Details
+
+        _ ->
+            Shared
+
+
+{-| Check if the user is the owner of Kremlin mode.
+-}
+isRoot : Settings -> Bool
+isRoot settings =
+    settings.owner && settings.mode == Details
+
+
+{-| Everyone the owner's Details table and Summary diagram have to account
+for: every peer ever seen (`peersHistory`) plus anyone who answered but is
+not (or no longer) in there. A peer who never typed a name is never written
+to the durable `identities` map (see `CRDT.setAwareness` in
+`sync/Base/db.ts`), so once it went offline - or after the owner reloaded a
+persisted room - it vanished from `peersHistory` while its answers still
+counted: more bars in the diagram than rows in the table, and a negative
+"Open" count.
+-}
+roster : { s | peersHistory : Dict String String } -> Dict String x -> Dict String String
+roster settings data =
+    Dict.union settings.peersHistory (Dict.map (\_ _ -> "") data)

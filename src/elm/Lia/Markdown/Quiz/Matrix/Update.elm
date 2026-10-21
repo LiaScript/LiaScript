@@ -1,32 +1,29 @@
 module Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..), toString, update)
 
 import Array
+import Helper.Array as Array
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Quiz.Matrix.Types exposing (State)
 import Lia.Markdown.Quiz.Vector.Update as Vector
 import Return exposing (Return)
 
 
+{-| Toggle the option in row and column, inline scripts within the headers
+and rows send `Script` messages.
+-}
 type Msg sub
     = Toggle Int Int
     | Script (Script.Msg sub)
 
 
+{-| -}
 update : Msg sub -> State -> Return State msg sub
 update msg state =
     case msg of
         Toggle row_id column_id ->
-            Return.val <|
-                case
-                    state
-                        |> Array.get row_id
-                        |> Maybe.map (Vector.toggle column_id)
-                of
-                    Just row ->
-                        Array.set row_id row state
-
-                    _ ->
-                        state
+            state
+                |> Array.update row_id (Vector.toggle column_id)
+                |> Return.val
 
         Script sub ->
             state
@@ -34,6 +31,9 @@ update msg state =
                 |> Return.script sub
 
 
+{-| The input as passed to a checking script, a list with the input of every
+row, see `Vector.toString`.
+-}
 toString : State -> String
 toString state =
     state

@@ -1,12 +1,12 @@
 module Lia.Markdown.Inline.View exposing
     ( audio
     , dropHere
-    , highlightPartialSolution
+    , dropZoneLabel
     , onError
     , reduce
-    , toScript
     , view
     , viewMedia
+    , viewDragHint
     , viewQuizDrops
     , view_inf
     , viewer
@@ -20,6 +20,7 @@ import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Keyed
+import Html.Lazy
 import I18n.Translations as Translations exposing (Lang)
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Msg exposing (Msg, Scripts)
@@ -27,7 +28,6 @@ import Lia.Markdown.Effect.Script.View as JS
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
-import Lia.Markdown.HTML.Types exposing (Node)
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Config as Config exposing (Config)
 import Lia.Markdown.Inline.Multimedia exposing (website)
@@ -36,66 +36,43 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (blockKeydown, noTranslate, shuffle)
+import Lia.Utils exposing (combobox, dropdownList, newTab, noTranslate, shuffle)
 import List.Extra
 import QRCode
 
 
-toScript : Int -> Parameters -> Inline
-toScript =
-    Script
-
-
+{-| Render a list of inlines.
+-}
 viewer : Config sub -> Inlines -> List (Html (Msg sub))
 viewer config =
     List.map (view config)
 
 
-viewRecursion : Config sub -> Inline -> Html (Msg sub)
-viewRecursion =
-    view
-
-
+{-| Render a single inline element.
+-}
 view : Config sub -> Inline -> Html (Msg sub)
 view config element =
     case element of
-        -- Short cuts without recursion
         Chars e [] ->
             Html.text e
 
-        Bold (Chars e []) attr ->
-            Html.strong (annotation "lia-bold" attr) [ Html.text e ]
-
-        Italic (Chars e []) attr ->
-            Html.em (annotation "lia-italic" attr) [ Html.text e ]
-
-        Strike (Chars e []) attr ->
-            Html.s (annotation "lia-strike" attr) [ Html.text e ]
-
-        Underline (Chars e []) attr ->
-            Html.u (annotation "lia-underline" attr) [ Html.text e ]
-
-        Superscript (Chars e []) attr ->
-            Html.sup (annotation "lia-superscript" attr) [ Html.text e ]
-
-        -- recursive elements
         Chars e attr ->
             view config (Container [ Chars e [] ] attr)
 
         Bold e attr ->
-            Html.strong (annotation "lia-bold" attr) [ viewRecursion config e ]
+            Html.strong (annotation "lia-bold" attr) [ view config e ]
 
         Italic e attr ->
-            Html.em (annotation "lia-italic" attr) [ viewRecursion config e ]
+            Html.em (annotation "lia-italic" attr) [ view config e ]
 
         Strike e attr ->
-            Html.s (annotation "lia-strike" attr) [ viewRecursion config e ]
+            Html.s (annotation "lia-strike" attr) [ view config e ]
 
         Underline e attr ->
-            Html.u (annotation "lia-underline" attr) [ viewRecursion config e ]
+            Html.u (annotation "lia-underline" attr) [ view config e ]
 
         Superscript e attr ->
-            Html.sup (annotation "lia-superscript" attr) [ viewRecursion config e ]
+            Html.sup (annotation "lia-superscript" attr) [ view config e ]
 
         Verbatim e attr ->
             Html.code
@@ -108,27 +85,26 @@ view config element =
         Ref e attr ->
             reference config e attr
 
-        Formula mode_ e [] ->
-            Html.node "lia-formula"
-                [ Attr.attribute "displayMode" mode_
-                , Attr.class "notranslate"
-                , Attr.attribute "translate" "no"
-                , e
-                    |> JE.string
-                    |> Attr.property "formula"
-                , config.formulas
-                    |> JE.dict identity JE.string
-                    |> Attr.property "macros"
-                ]
-                []
+        Formula mode_ e attr ->
+            -- an aria-label of the author is read out instead of the generated
+            -- description, all other attributes belong to a surrounding span
+            case List.partition (Tuple.first >> (==) "aria-label") attr of
+                ( label, [] ) ->
+                    viewFormula config label mode_ e
+
+                ( label, rest ) ->
+                    view config (Container [ Formula mode_ e label ] rest)
 
         Symbol e [] ->
             Html.text e
 
+        Symbol e attr ->
+            view config (Container [ Symbol e [] ] attr)
+
         FootnoteMark e attr ->
             attr
                 |> toAttribute
-                |> Footnote.inline e
+                |> Footnote.inline config.lang e
 
         Container list attr ->
             list
@@ -136,7 +112,7 @@ view config element =
                 |> Html.span (Attr.style "left" "initial" :: Attr.style "text-decoration" "inherit" :: toAttribute attr)
 
         IHTML node attr ->
-            htmlView config attr node
+            HTML.view Html.span (view config) attr node
 
         EInline e attr ->
             e.content
@@ -146,254 +122,326 @@ view config element =
         Script id attr ->
             JS.view config id attr
 
-        Symbol e attr ->
-            view config (Container [ Symbol e [] ] attr)
-
-        Formula mode_ e attr ->
-            view config (Container [ Formula mode_ e [] ] attr)
-
         Quiz input attr ->
             viewQuiz config input attr
 
 
-viewQuiz : Config sub -> ( String, Int ) -> Parameters -> Html (Msg sub)
-viewQuiz config ( length, id ) attr =
-    let
-        randomize =
-            config.input.randomize
-                |> Maybe.andThen (Array.get id)
+{-| **@private:** A formula with the macros of the course and the `aria-label`
+of the author, which is read out instead of the generated description.
+-}
+viewFormula : Config sub -> Parameters -> String -> String -> Html msg
+viewFormula config label mode_ e =
+    formula
+        ((config.formulas
+            |> JE.dict identity JE.string
+            |> Attr.property "macros"
+         )
+            :: toAttribute label
+        )
+        mode_
+        e
 
-        isPartiallyCorrect =
+
+{-| **@private:** A `lia-formula` web component, `mode_` is `"true"` for
+display mode.
+-}
+formula : List (Attribute msg) -> String -> String -> Html msg
+formula attributes mode_ e =
+    Html.node "lia-formula"
+        (Attr.attribute "displayMode" mode_
+            :: Attr.class "notranslate"
+            :: Attr.attribute "translate" "no"
+            :: Attr.property "formula" (JE.string e)
+            :: attributes
+        )
+        []
+
+
+{-| **@private:** Render the quiz input with `id`, depending on its state:
+a text input, a dropdown selection, or a drop target.
+-}
+viewQuiz : Config sub -> ( String, Int ) -> Parameters -> Html (Msg sub)
+viewQuiz config ( width, id ) attr =
+    let
+        partiallyCorrect =
             if config.input.active then
-                config.input.partiallyCorrect
-                    |> Array.get id
+                Array.get id config.input.partiallyCorrect
 
             else
                 Nothing
 
         highlight a =
-            isPartiallyCorrect
+            partiallyCorrect
                 |> Maybe.map (highlightPartialSolution a)
                 |> Maybe.withDefault a
     in
     case Array.get id config.input.state of
         Just (Text text) ->
-            Html.input
-                (attr
-                    |> toAttribute
-                    |> highlight
-                    |> List.append
-                        [ Attr.type_ "text"
-                        , Attr.class "lia-input lia-quiz__input"
-                        , Attr.style "padding" "0.2rem 0.5rem"
-                        , Attr.style "text-align" "center"
-                        , Attr.placeholder "?"
-                        , Attr.style "width" length
-                        , Attr.style "font-weight" "inherit"
-                        , Attr.style "text-decoration" "inherit"
-                        , Attr.style "font-style" "inherit"
-                        , Attr.style "vertical-align" "middle"
-                        , Attr.value text
-                        , if config.input.active then
-                            Attr.attribute "oninput" (config.input.on "input" id "this.value")
+            viewText config id width text (highlight (toAttribute attr))
 
-                          else
-                            Attr.disabled True
-                        , blockKeydown Msg.NoOp
-                        , A11y_Aria.label "quiz answer"
-                        , Attr.class <|
-                            if config.input.active then
-                                ""
-
-                            else
-                                "lia-input--disabled is-disabled"
-                        , Attr.disabled (not <| config.input.active)
-                        ]
-                )
-                []
-
-        Just (Select open [ element ]) ->
-            let
-                options =
-                    config.input.options
-                        |> Array.get id
-                        |> Maybe.withDefault []
-
-                action =
-                    if config.input.active then
-                        [ Attr.attribute "onClick" (config.input.on "toggle" id "true")
-                        , keyDownEvent (config.input.on "toggle" id "true")
-                        ]
-
-                    else
-                        [ Attr.disabled True
-                        , Attr.class "is-disabled"
-                        ]
-            in
-            Html.span
-                (attr
-                    |> toAttribute
-                    |> List.append
-                        [ Attr.class "lia-dropdown"
-                        , Attr.style "padding" "0 0.5rem"
-                        , Attr.tabindex 0
-                        , Attr.style "vertical-align"
-                            (if open then
-                                "text-top"
-
-                             else
-                                "middle"
-                            )
-                        ]
-                    |> List.append action
-                    |> highlight
-                )
-                [ Html.span
-                    [ Attr.class "lia-dropdown__selected"
-                    , A11y_Aria.hidden False
-                    , A11y_Role.button
-                    , A11y_Aria.expanded open
-                    , Attr.style "font-weight" "inherit"
-                    , Attr.style "text-decoration" "inherit"
-                    , Attr.style "font-style" "inherit"
-                    ]
-                    [ getOption config element options
-                    , Html.i
-                        [ Attr.class <|
-                            "icon"
-                                ++ (if open then
-                                        " icon-chevron-up"
-
-                                    else
-                                        " icon-chevron-down"
-                                   )
-                        , A11y_Role.button
-                        ]
-                        []
-                    ]
-                , options
-                    |> List.indexedMap (showOption config open id)
-                    |> shuffle randomize
-                    |> Html.div
-                        [ Attr.class "lia-dropdown__options"
-                        , Attr.tabindex -1
-                        , Attr.class <|
-                            if open then
-                                "is-visible"
-
-                            else
-                                "is-hidden"
-                        ]
-                ]
+        Just (Select open [ selected ]) ->
+            viewSelect config id open selected (toAttribute attr) highlight
 
         Just (Drop _ _ [ i ]) ->
-            let
-                option =
-                    config.input.options
-                        |> Array.get id
-                        |> Maybe.andThen (List.Extra.getAt i)
-            in
             Html.span
-                (List.append
-                    (attr
-                        |> toAttribute
-                        |> highlight
-                    )
-                    [ Attr.style "padding" "1rem"
-                    , Attr.style "margin" "0.25rem"
-                    , Attr.style "position" "relative"
-                    , Attr.style "border" <|
-                        case isPartiallyCorrect of
-                            Nothing ->
-                                "3px dotted #888"
-
-                            Just True ->
-                                "3px dotted green"
-
-                            Just False ->
-                                "3px dotted red"
-                    , Attr.style "border-radius" "5px"
-                    , Attr.style "display" "inline-block"
-                    , Attr.style "vertical-align" "middle"
-                    ]
+                (highlight (toAttribute attr)
+                    ++ dropStyle ("3px dotted " ++ borderColor partiallyCorrect) "5px"
                 )
-                [ option
-                    |> Maybe.map
-                        (viewer config
-                            >> Html.span []
-                        )
+                [ config.input.options
+                    |> Array.get id
+                    |> Maybe.andThen (List.Extra.getAt i)
+                    |> Maybe.map (viewer config >> Html.span [])
                     |> Maybe.withDefault (dropHere [])
                 ]
 
-        Just (Drop highlighted activated state) ->
-            let
-                ( option, uri ) =
-                    case state of
-                        [ i, j ] ->
-                            ( config.input.options
-                                |> Array.get i
-                                |> Maybe.andThen (List.Extra.getAt j)
-                            , [ i, j ]
-                                |> JE.list JE.int
-                                |> JE.encode 0
-                            )
-
-                        _ ->
-                            ( Nothing, "" )
-            in
-            Html.span
-                (List.append (toAttribute attr)
-                    [ Attr.style "padding" "1rem"
-                    , Attr.style "margin" "0.25rem"
-                    , Attr.style "position" "relative"
-                    , Attr.style "border"
-                        ((if highlighted then
-                            "5px"
-
-                          else
-                            "3px"
-                         )
-                            ++ " dotted "
-                            ++ (case isPartiallyCorrect of
-                                    Nothing ->
-                                        "#888"
-
-                                    Just True ->
-                                        "green"
-
-                                    Just False ->
-                                        "red"
-                               )
-                        )
-                    , Attr.style "background-color" "#88888822"
-                    , Attr.style "border-radius" "4px"
-                    , Attr.style "display" "inline-block"
-                    , Attr.style "vertical-align" "middle"
-                    , Attr.attribute "ondragover" (config.input.on "dragenter" id "true")
-                    , Attr.attribute "ondragleave" ("setTimeout(()=>" ++ config.input.on "dragenter" id "false" ++ ", 100)")
-                    , Attr.tabindex 0
-                    , A11y_Role.button
-                    , Attr.attribute "onclick" (config.input.on "dragtarget" id "null")
-                    , keyDownEvent (config.input.on "dragtarget" id "null")
-                    ]
-                )
-                [ option
-                    |> Maybe.map
-                        (viewer config
-                            >> Html.span
-                                [ Attr.draggable "true"
-                                , Attr.style "cursor" "pointer"
-                                , config.input.on "dragend" id uri
-                                    |> Attr.attribute "ondragend"
-                                ]
-                        )
-                    |> Maybe.withDefault (dropHere [])
-                ]
+        Just (Drop highlighted active state) ->
+            viewDropTarget config id highlighted active state partiallyCorrect (highlight [] ++ toAttribute attr)
 
         _ ->
             Html.text "todo"
 
 
+{-| **@private:** A text input.
+-}
+viewText : Config sub -> Int -> String -> String -> List (Attribute (Msg sub)) -> Html (Msg sub)
+viewText config id width text attributes =
+    Html.input
+        ([ Attr.type_ "text"
+         , Attr.class "lia-input lia-quiz__input"
+         , Attr.style "padding" "0.2rem 0.5rem"
+         , Attr.style "text-align" "center"
+         , Attr.placeholder "?"
+         , Attr.style "width" width
+         , Attr.style "font-weight" "inherit"
+         , Attr.style "text-decoration" "inherit"
+         , Attr.style "font-style" "inherit"
+         , Attr.style "vertical-align" "middle"
+         , Attr.value text
+         , if config.input.active then
+            Attr.attribute "oninput" (config.input.on "input" id "this.value")
+
+           else
+            Attr.disabled True
+         , A11y_Aria.label (Translations.quizGap config.lang ++ " " ++ String.fromInt (id + 1))
+         , Attr.class <|
+            if config.input.active then
+                ""
+
+            else
+                "lia-input--disabled is-disabled"
+         , Attr.disabled (not config.input.active)
+         ]
+            ++ attributes
+        )
+        []
+
+
+{-| **@private:** A dropdown, `selected` is the index of the selected option.
+It is a select-only combobox, the keyboard is handled by
+`typescript/liascript/combobox.ts`, which clicks the existing elements.
+-}
+viewSelect : Config sub -> Int -> Bool -> Int -> List (Attribute (Msg sub)) -> (List (Attribute (Msg sub)) -> List (Attribute (Msg sub))) -> Html (Msg sub)
+viewSelect config id open selected attributes highlight =
+    let
+        options =
+            config.input.options
+                |> Array.get id
+                |> Maybe.withDefault []
+
+        listID =
+            "lia-select-"
+                ++ inputPrefix config
+                ++ "-"
+                ++ String.fromInt id
+
+        action =
+            if config.input.active then
+                [ Attr.attribute "onClick" (config.input.on "toggle" id "true") ]
+
+            else
+                [ Attr.class "is-disabled" ]
+    in
+    Html.span
+        (highlight
+            (action
+                ++ [ Attr.class "lia-dropdown"
+                   , Attr.style "padding" "0 0.5rem"
+                   , Attr.style "vertical-align"
+                        (if open then
+                            "text-top"
+
+                         else
+                            "middle"
+                        )
+                   ]
+                ++ attributes
+            )
+        )
+        [ Html.span
+            (combobox listID open (not config.input.active) (A11y_Aria.label (Translations.quizSelection config.lang ++ " " ++ String.fromInt (id + 1)))
+                ++ [ Attr.style "font-weight" "inherit"
+                   , Attr.style "text-decoration" "inherit"
+                   , Attr.style "font-style" "inherit"
+                   ]
+            )
+            [ case List.Extra.getAt selected options of
+                Just option ->
+                    Html.span [] (viewer config option)
+
+                Nothing ->
+                    Html.span [] [ Html.text <| Translations.quizSelection config.lang ]
+            , Html.i
+                [ Attr.class <|
+                    if open then
+                        "icon icon-chevron-up"
+
+                    else
+                        "icon icon-chevron-down"
+                , A11y_Aria.hidden True
+                ]
+                []
+            ]
+        , options
+            |> List.indexedMap (viewOption config listID selected id)
+            |> shuffle (Maybe.andThen (Array.get id) config.input.randomize)
+            |> Html.div
+                (dropdownList listID
+                    open
+                    [ Attr.class "lia-dropdown__options"
+                    , Attr.class <|
+                        if open then
+                            "is-visible"
+
+                        else
+                            "is-hidden"
+                    ]
+                )
+        ]
+
+
+{-| **@private:** An option `i` of the dropdown with `id`.
+-}
+viewOption : Config sub -> String -> Int -> Int -> Int -> Inlines -> Html (Msg sub)
+viewOption config listID selected id i option =
+    Html.div
+        [ Attr.class "lia-dropdown__option"
+        , Attr.id (listID ++ "-" ++ String.fromInt i)
+        , Attr.attribute "onclick" (config.input.on "choose" id (String.fromInt i))
+        , A11y_Role.option
+        , A11y_Aria.selected (i == selected)
+        ]
+        [ Html.div [] (viewer config option) ]
+
+
+{-| **@private:** A drop target, `state` is `[ input, option ]` of the
+dropped option, which can be dragged away again.
+-}
+viewDropTarget : Config sub -> Int -> Bool -> Bool -> List Int -> Maybe Bool -> List (Attribute (Msg sub)) -> Html (Msg sub)
+viewDropTarget config id highlighted active state partiallyCorrect attr =
+    let
+        option =
+            case state of
+                [ i, j ] ->
+                    config.input.options
+                        |> Array.get i
+                        |> Maybe.andThen (List.Extra.getAt j)
+
+                _ ->
+                    Nothing
+    in
+    Html.span
+        (attr
+            ++ dropStyle
+                ((if highlighted then
+                    "5px"
+
+                  else
+                    "3px"
+                 )
+                    ++ " dotted "
+                    ++ borderColor partiallyCorrect
+                )
+                "4px"
+            ++ [ Attr.style "background-color" "#88888822"
+               , Attr.attribute "ondragover" (config.input.on "dragenter" id "true")
+               , Attr.attribute "ondragleave" ("setTimeout(()=>" ++ config.input.on "dragenter" id "false" ++ ", 100)")
+               , Attr.tabindex 0
+               , A11y_Role.button
+               , dropZoneLabel config.lang (" " ++ String.fromInt (id + 1)) (Maybe.map (stringify_ config) option)
+               , A11y_Aria.describedBy [ dragHintID config ]
+
+               -- selected by Enter or click, the next card is placed here
+               , A11y_Aria.pressed (Just active)
+               , Attr.attribute "onclick" (config.input.on "dragtarget" id "null")
+               , keyDownEvent (config.input.on "dragtarget" id "null")
+               ]
+        )
+        [ case option of
+            Just inlines ->
+                Html.span
+                    [ Attr.draggable "true"
+                    , Attr.style "cursor" "pointer"
+                    , Attr.attribute "ondragend"
+                        (config.input.on "dragend"
+                            id
+                            (case state of
+                                [ i, j ] ->
+                                    encodePair i j
+
+                                _ ->
+                                    ""
+                            )
+                        )
+                    ]
+                    (viewer config inlines)
+
+            Nothing ->
+                dropHere [ A11y_Aria.hidden True ]
+        ]
+
+
+{-| **@private:** The common style of drop targets.
+-}
+dropStyle : String -> String -> List (Attribute msg)
+dropStyle border radius =
+    [ Attr.class "lia-drop"
+    , Attr.style "padding" "1rem"
+    , Attr.style "margin" "0.25rem"
+    , Attr.style "position" "relative"
+    , Attr.style "border" border
+    , Attr.style "border-radius" radius
+    , Attr.style "display" "inline-block"
+    , Attr.style "vertical-align" "middle"
+    ]
+
+
+{-| **@private:** Gray if unchecked, otherwise green or red.
+-}
+borderColor : Maybe Bool -> String
+borderColor partiallyCorrect =
+    case partiallyCorrect of
+        Nothing ->
+            "#888"
+
+        Just True ->
+            "rgb(var(--color-success))"
+
+        Just False ->
+            "rgb(var(--color-failure))"
+
+
+{-| **@private:** `[i,j]`
+-}
+encodePair : Int -> Int -> String
+encodePair i j =
+    [ i, j ]
+        |> JE.list JE.int
+        |> JE.encode 0
+
+
+{-| Render all options of all drop inputs that are not dropped yet, so that
+they can be dragged onto their targets.
+-}
 viewQuizDrops : Config sub -> List (Html (Msg sub))
 viewQuizDrops config =
     let
@@ -422,64 +470,18 @@ viewQuizDrops config =
         (Array.toList config.input.state)
         (Array.toList config.input.options)
         |> List.indexedMap
-            (\id ( state, option ) ->
+            (\id ( state, options ) ->
                 case state of
                     Drop _ active _ ->
-                        option
-                            |> List.indexedMap
-                                (\i o ->
-                                    if List.member [ id, i ] occupied then
-                                        Html.text ""
+                        List.indexedMap
+                            (\i option ->
+                                if List.member [ id, i ] occupied then
+                                    Html.text ""
 
-                                    else
-                                        viewer config o
-                                            |> Html.span
-                                                ([ Attr.style "border" "3px dotted #888"
-                                                 , Attr.style "margin" "0.25rem"
-                                                 , Attr.style "padding" "1rem"
-                                                 , Attr.style "background-color" "#88888822"
-                                                 , Attr.style "border-radius" "4px"
-                                                 , Attr.style "display" "inline-block"
-                                                 , A11y_Role.button
-                                                 , Attr.tabindex 0
-                                                 , Attr.attribute "aria-grabbed"
-                                                    (if active then
-                                                        "true"
-
-                                                     else
-                                                        "false"
-                                                    )
-                                                 ]
-                                                    |> CList.appendIf
-                                                        config.input.active
-                                                        [ Attr.style "cursor" "pointer"
-                                                        , Attr.draggable "true"
-                                                        , dragEvent config
-                                                            { msg = "dragend"
-                                                            , event = "ondragend"
-                                                            , id = id
-                                                            , i = i
-                                                            }
-                                                        , dragEvent config
-                                                            { msg = "dragstart"
-                                                            , event = "ondragstart"
-                                                            , id = id
-                                                            , i = i
-                                                            }
-                                                        , dragEvent config
-                                                            { msg = "dragsource"
-                                                            , event = "onclick"
-                                                            , id = id
-                                                            , i = i
-                                                            }
-                                                        , [ id, i ]
-                                                            |> JE.list JE.int
-                                                            |> JE.encode 0
-                                                            |> config.input.on "dragsource" id
-                                                            |> keyDownEvent
-                                                        ]
-                                                )
-                                )
+                                else
+                                    viewDragOption config active id i option
+                            )
+                            options
 
                     _ ->
                         []
@@ -487,39 +489,114 @@ viewQuizDrops config =
         |> List.concat
 
 
+{-| How to use drag & drop with the keyboard, it describes the cards and drop
+zones of a quiz and is only rendered if it has drop inputs.
+-}
+viewDragHint : Config sub -> Html msg
+viewDragHint config =
+    if
+        config.input.state
+            |> Array.toList
+            |> List.any
+                (\state ->
+                    case state of
+                        Drop _ _ _ ->
+                            True
+
+                        _ ->
+                            False
+                )
+    then
+        Html.span [ Attr.id (dragHintID config), Attr.class "hidden-visually" ]
+            [ Html.text (Translations.quizDragHint config.lang) ]
+
+    else
+        Html.text ""
+
+
+{-| **@private:** The id of the keyboard hint of the drop inputs of a quiz.
+-}
+dragHintID : Config sub -> String
+dragHintID config =
+    "lia-drag-hint-" ++ inputPrefix config
+
+
+{-| **@private:** Identifies the inputs of a quiz within the page.
+-}
+inputPrefix : Config sub -> String
+inputPrefix config =
+    config.input.path
+        |> List.map (\( name, i ) -> "-" ++ name ++ "-" ++ String.fromInt i)
+        |> String.concat
+        |> (++) (String.fromInt config.slide)
+
+
+{-| **@private:** Option `i` of the drop input `id`.
+-}
+viewDragOption : Config sub -> Bool -> Int -> Int -> Inlines -> Html (Msg sub)
+viewDragOption config active id i option =
+    let
+        on msg =
+            config.input.on msg id (encodePair id i)
+    in
+    viewer config option
+        |> Html.span
+            ([ Attr.style "border" "3px dotted #888"
+             , Attr.style "margin" "0.25rem"
+             , Attr.style "padding" "1rem"
+             , Attr.style "background-color" "#88888822"
+             , Attr.style "border-radius" "4px"
+             , Attr.style "display" "inline-block"
+             , A11y_Role.button
+             , Attr.tabindex 0
+             , A11y_Aria.describedBy [ dragHintID config ]
+             ]
+                |> CList.appendIf config.input.active
+                    [ Attr.style "cursor" "pointer"
+                    , Attr.draggable "true"
+                    , Attr.attribute "ondragend" (on "dragend")
+                    , Attr.attribute "ondragstart" (on "dragstart")
+                    , Attr.attribute "onclick" (on "dragsource")
+                    , keyDownEvent (on "dragsource")
+                    ]
+            )
+
+
+{-| The name of a drop zone and its card, `number` is empty if there is only
+one drop zone.
+-}
+dropZoneLabel : Lang -> String -> Maybe String -> Attribute msg
+dropZoneLabel lang number card =
+    A11y_Aria.label <|
+        Translations.quizDropZone lang
+            ++ number
+            ++ (case card of
+                    Just text ->
+                        ": " ++ text
+
+                    Nothing ->
+                        ", " ++ Translations.quizEmpty lang
+               )
+
+
+{-| An empty drop target.
+-}
 dropHere : List (Attribute msg) -> Html msg
 dropHere attr =
     Html.div
-        (List.append
-            [ Attr.style "display" "flex"
-            , Attr.style "justify-content" "center"
-            , Attr.style "align-items" "center"
-            , Attr.style "line-height" "1"
-            , Attr.style "color" "#888"
-            , Attr.style "min-width" "3rem"
-            ]
-            attr
+        (Attr.style "display" "flex"
+            :: Attr.style "justify-content" "center"
+            :: Attr.style "align-items" "center"
+            :: Attr.style "line-height" "1"
+            :: Attr.style "color" "#888"
+            :: Attr.style "min-width" "3rem"
+            :: attr
         )
         [ Html.text "✛" ]
 
 
-dragEvent :
-    Config sub
-    ->
-        { msg : String
-        , event : String
-        , id : Int
-        , i : Int
-        }
-    -> Attribute msg
-dragEvent config { msg, event, id, i } =
-    [ id, i ]
-        |> JE.list JE.int
-        |> JE.encode 0
-        |> config.input.on msg id
-        |> Attr.attribute event
-
-
+{-| **@private:** Execute `msg` on space or enter.
+-}
 keyDownEvent : String -> Attribute msg
 keyDownEvent msg =
     Attr.attribute
@@ -527,6 +604,8 @@ keyDownEvent msg =
         ("if(event.key===' '||event.key==='Enter')" ++ msg)
 
 
+{-| **@private:** Mark a quiz input as correct or wrong.
+-}
 highlightPartialSolution : List (Attribute msg) -> Bool -> List (Attribute msg)
 highlightPartialSolution attr partiallyCorrect =
     if partiallyCorrect then
@@ -540,24 +619,25 @@ highlightPartialSolution attr partiallyCorrect =
             :: attr
 
 
-
---Select ->
---  Html.text "SELECT"
-
-
-htmlView : Config sub -> Parameters -> Node Inline -> Html (Msg sub)
-htmlView config =
-    HTML.view Html.span (view config)
-
-
+{-| **@private:** A reduced text representation, every sentence `". "` of
+plain text becomes a paragraph.
+-}
 toText : Config sub -> Inline -> Html (Msg sub)
 toText config element =
     case element of
         Chars e _ ->
-            e
-                |> String.split ". "
-                |> List.map (\s -> s ++ "." |> Html.text |> List.singleton |> Html.p [])
-                |> Html.div []
+            -- Google translates long paragraphs only sentence by sentence. The
+            -- last piece stays inline, it might continue with a formula, etc.
+            case e |> String.split ". " |> List.reverse of
+                last :: sentences ->
+                    sentences
+                        |> List.foldl
+                            (\s html -> Html.p [] [ Html.text (s ++ ".") ] :: html)
+                            [ Html.text last ]
+                        |> Html.span []
+
+                [] ->
+                    Html.text ""
 
         Verbatim e attr ->
             Html.span
@@ -567,16 +647,8 @@ toText config element =
                 )
                 [ Html.text e ]
 
-        Formula mode_ e _ ->
-            Html.node "lia-formula"
-                [ Attr.attribute "displayMode" mode_
-                , Attr.class "notranslate"
-                , Attr.attribute "translate" "no"
-                , e
-                    |> JE.string
-                    |> Attr.property "formula"
-                ]
-                []
+        Formula mode_ e attr ->
+            viewFormula config (List.filter (Tuple.first >> (==) "aria-label") attr) mode_ e
 
         Symbol e _ ->
             Html.text e
@@ -586,15 +658,15 @@ toText config element =
 
         Container list _ ->
             list
-                |> toTextList config
+                |> List.map (toText config)
                 |> Html.span []
 
         IHTML node attr ->
-            toHtmlText config attr node
+            HTML.view Html.span (toText config) attr node
 
         EInline e _ ->
             e.content
-                |> toTextList config
+                |> List.map (toText config)
                 |> Effect.inline config [] e
 
         Script id attr ->
@@ -604,16 +676,8 @@ toText config element =
             Html.text ""
 
 
-toHtmlText : Config sub -> Parameters -> Node Inline -> Html (Msg sub)
-toHtmlText config =
-    HTML.view Html.span (toText config)
-
-
-toTextList : Config sub -> Inlines -> List (Html (Msg sub))
-toTextList config =
-    List.map (toText config)
-
-
+{-| Render inlines without styles and references, see `toText`.
+-}
 reduce : Config sub -> List Inline -> List (Html (Msg sub))
 reduce config =
     List.map reduce_
@@ -621,6 +685,8 @@ reduce config =
         >> List.map (toText config)
 
 
+{-| **@private:** Remove styles and replace references by their text.
+-}
 reduce_ : Inline -> Inline
 reduce_ element =
     case element of
@@ -678,28 +744,29 @@ reduce_ element =
             reduce_ e
 
         Container list _ ->
-            reduce_List list
+            Container (List.map reduce_ list) []
 
         _ ->
             element
 
 
-reduce_List : Inlines -> Inline
-reduce_List list =
-    Container (List.map reduce_ list) []
-
-
+{-| Render an image as zoomable figure (used by galleries), all other
+elements are rendered as usual.
+-}
 viewMedia : Config sub -> Inline -> Html (Msg sub)
 viewMedia config inline =
     case inline of
         Ref (Image alt_ url_ title_) attr ->
+            let
+                width =
+                    mediaWidth config url_
+            in
             Html.figure [ Attr.class "lia-figure" ]
                 [ Html.div
                     [ Attr.class "lia-figure__media"
                     , Attr.attribute "data-media-image" "image"
-                    , config.media
-                        |> Dict.get url_
-                        |> Maybe.map (Tuple.first >> Attr.width)
+                    , width
+                        |> Maybe.map Attr.width
                         |> Maybe.withDefault (Attr.class "")
                     , Attr.style "background-image" ("url('" ++ url_ ++ "')")
                     , Attr.class "lia-figure__zoom"
@@ -710,26 +777,20 @@ viewMedia config inline =
                             :: onError "img" url_
                             :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
                             :: toAttribute attr
-                            |> CList.addIf
-                                (config.media
-                                    |> Dict.get url_
-                                    |> Maybe.map Tuple.first
-                                    |> (==) Nothing
-                                )
-                                (load url_)
-                            |> CList.addWhen (title config title_)
+                            |> CList.addIf (width == Nothing) (load url_)
                         )
                         []
                     ]
-                , title_
-                    |> Maybe.map (viewer config >> Html.figcaption [ Attr.class "lia-figure__caption" ])
-                    |> Maybe.withDefault (Html.text "")
+                , caption config title_
                 ]
 
         _ ->
             view config inline
 
 
+{-| Render an inline outside of a section (titles, the table of contents,
+etc.).
+-}
 view_inf :
     Scripts SubSection
     -> Lang
@@ -745,6 +806,7 @@ view_inf scripts lang light tooltips translations formulas media =
     , visible = Nothing
     , slide = -1
     , speaking = Nothing
+    , paused = Nothing
     , lang = lang
     , theme = Nothing
     , light = light
@@ -760,12 +822,22 @@ view_inf scripts lang light tooltips translations formulas media =
         |> view
 
 
+{-| **@private:** The width of a loaded image, `Nothing` if it is not loaded
+yet.
+-}
+mediaWidth : Config sub -> String -> Maybe Int
+mediaWidth config url_ =
+    config.media
+        |> Dict.get url_
+        |> Maybe.map Tuple.first
+
+
+{-| **@private:** Turn `title` and `alt` text into attributes, empty strings
+are ignored.
+-}
 stringFrom : Config sub -> Maybe Inlines -> Maybe String
 stringFrom config el =
-    case
-        el
-            |> Maybe.map (stringify_ config >> String.trim)
-    of
+    case Maybe.map (stringify_ config >> String.trim) el of
         Just "" ->
             Nothing
 
@@ -773,16 +845,40 @@ stringFrom config el =
             str
 
 
-title : Config sub -> Maybe Inlines -> Maybe (Html.Attribute msg)
+title : Config sub -> Maybe Inlines -> Maybe (Attribute msg)
 title config =
     stringFrom config >> Maybe.map Attr.title
 
 
-alt : Config sub -> Inlines -> Maybe (Html.Attribute msg)
+alt : Config sub -> Inlines -> Maybe (Attribute msg)
 alt config =
     Just >> stringFrom config >> Maybe.map Attr.alt
 
 
+{-| **@private:** An iframe is named by its `title`, which is the title of the
+media or otherwise its alt text.
+-}
+iframeTitle : Config sub -> Inlines -> Maybe Inlines -> List (Attribute msg) -> List (Attribute msg)
+iframeTitle config alt_ title_ =
+    case stringFrom config title_ of
+        Just str ->
+            (::) (Attr.title str)
+
+        Nothing ->
+            CList.addWhen (stringFrom config (Just alt_) |> Maybe.map Attr.title)
+
+
+{-| **@private:** Audio and video elements have no `alt` attribute, the alt text
+names them via `aria-label`. The title is the caption of their figure.
+-}
+mediaLabel : Config sub -> Inlines -> List (Attribute msg) -> List (Attribute msg)
+mediaLabel config alt_ =
+    CList.addWhen (stringFrom config (Just alt_) |> Maybe.map A11y_Aria.label)
+
+
+{-| **@private:** An image, a click opens the zoomed image, if it has no
+annotations. `width` is `Nothing` if the image is not loaded yet.
+-}
 img : Config sub -> Parameters -> Inlines -> String -> Maybe Inlines -> Maybe Int -> Html msg
 img config attr alt_ url_ title_ width =
     Html.img
@@ -790,33 +886,59 @@ img config attr alt_ url_ title_ width =
             :: onError "img" url_
             :: (alt config alt_ |> Maybe.withDefault (Attr.alt ""))
             :: (if List.isEmpty attr && config.image_zoom then
-                    [ Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")") ]
+                    Attr.attribute "onClick" ("window.LIA.img.click(\"" ++ url_ ++ "\")")
+                        :: zoomByKeyboard (stringFrom config (Just alt_))
 
                 else
                     toAttribute attr
                )
             |> CList.addIf (width == Nothing) (load url_)
-            |> CList.addWhen (title config title_)
             |> addLazyLoading config.visible
         )
         []
 
 
-addLazyLoading : Maybe Int -> List (Html.Attribute msg) -> List (Html.Attribute msg)
+{-| **@private:** Images with an alt text can be zoomed with the keyboard too,
+decorative images (`alt=""`) are not focusable.
+-}
+zoomByKeyboard : Maybe String -> List (Attribute msg)
+zoomByKeyboard alt_ =
+    case alt_ of
+        Just _ ->
+            [ Attr.tabindex 0
+            , A11y_Role.button
+            , Attr.attribute "aria-haspopup" "dialog"
+            , Attr.attribute "onkeydown" "if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"
+            ]
+
+        Nothing ->
+            []
+
+
+{-| **@private:** Only in textbook mode (`visible == Nothing`) media is loaded
+lazily.
+-}
+addLazyLoading : Maybe Int -> List (Attribute msg) -> List (Attribute msg)
 addLazyLoading visible =
     CList.addIf (visible == Nothing) (Attr.attribute "loading" "lazy")
 
 
+{-| **@private:** Report the size of a loaded image.
+-}
 load : String -> Attribute msg
 load url =
     Attr.attribute "onload" ("window.LIA.img.load('" ++ url ++ "',this.width,this.height)")
 
 
+{-| Report a media `tag` that could not be loaded from `url`.
+-}
 onError : String -> String -> Attribute msg
 onError tag url =
     Attr.attribute "onerror" ("window.LIA.fetchError('" ++ tag ++ "','" ++ url ++ "')")
 
 
+{-| **@private:** Wrap media into a figure with an optional caption.
+-}
 figure : Config sub -> Maybe Inlines -> Maybe Int -> String -> Html (Msg sub) -> Html (Msg sub)
 figure config title_ width dataType element =
     Html.figure
@@ -829,12 +951,27 @@ figure config title_ width dataType element =
             ]
             [ element
             ]
-        , title_
-            |> Maybe.map (viewer config >> Html.figcaption [ Attr.class "lia-figure__caption" ])
-            |> Maybe.withDefault (Html.text "")
+        , caption config title_
         ]
 
 
+{-| **@private:** The title as figure caption.
+-}
+caption : Config sub -> Maybe Inlines -> Html (Msg sub)
+caption config =
+    Maybe.map (viewer config >> Html.figcaption [ Attr.class "lia-figure__caption" ])
+        >> Maybe.withDefault (Html.text "")
+
+
+{-| **@private:** Permissions of embedded iframes.
+-}
+allow : Attribute msg
+allow =
+    Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+
+
+{-| **@private:** Render links and media.
+-}
 reference : Config sub -> Reference -> Parameters -> Html (Msg sub)
 reference config ref attr =
     case ref of
@@ -847,9 +984,7 @@ reference config ref attr =
         Image alt_ url_ title_ ->
             let
                 width =
-                    config.media
-                        |> Dict.get url_
-                        |> Maybe.map Tuple.first
+                    mediaWidth config url_
             in
             img config attr alt_ url_ title_ width
                 |> figure config title_ width "image"
@@ -862,21 +997,17 @@ reference config ref attr =
                         Html.iframe
                             (Attr.src url_
                                 :: Attr.attribute "allowfullscreen" ""
-                                :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                                :: allow
                                 :: Attr.style "width" "100%"
                                 :: annotation "lia-audio" attr
-                                |> CList.addWhen (title config title_)
-                                |> CList.addWhen (alt config alt_)
+                                |> iframeTitle config alt_ title_
                                 |> addLazyLoading config.visible
                             )
                             []
 
                       else
                         audio
-                            (toAttribute attr
-                                |> CList.addWhen (title config title_)
-                                |> CList.addWhen (alt config alt_)
-                            )
+                            (toAttribute attr |> mediaLabel config alt_)
                             { url = url_
                             , controls = True
                             , preload = "none"
@@ -890,15 +1021,11 @@ reference config ref attr =
                     Html.div [ Attr.class "lia-iframe-wrapper" ]
                         [ printLink config alt_ title_ url_
                         , Html.iframe
-                            ((url_
-                                |> addTranslation config
-                                |> Attr.src
-                             )
+                            (Attr.src (addTranslation config url_)
                                 :: Attr.attribute "allowfullscreen" ""
-                                :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                                :: allow
                                 :: toAttribute attr
-                                |> CList.addWhen (title config title_)
-                                |> CList.addWhen (alt config alt_)
+                                |> iframeTitle config alt_ title_
                                 |> addLazyLoading config.visible
                             )
                             (viewer config alt_)
@@ -919,8 +1046,7 @@ reference config ref attr =
                                     (Attr.controls True
                                         :: Attr.attribute "preload" "none"
                                         :: toAttribute attr
-                                        |> CList.addWhen (title config title_)
-                                        |> CList.addWhen (alt config alt_)
+                                        |> mediaLabel config alt_
                                     )
                                     [ Html.source [ Attr.src url_, onError "video" url_ ] [] ]
                               )
@@ -928,10 +1054,10 @@ reference config ref attr =
                         ]
 
         Embed alt_ url title_ ->
-            Html.figure [ Attr.class "lia-figure", Attr.style "height" "auto", Attr.style "width" "100%" ] <|
-                [ Html.div [ Attr.class "lia-figure__media" ] <|
+            Html.figure [ Attr.class "lia-figure", Attr.style "height" "auto", Attr.style "width" "100%" ]
+                [ Html.div [ Attr.class "lia-figure__media" ]
                     [ printLink config alt_ title_ url
-                    , oembed config.oEmbed attr url
+                    , oembed config.oEmbed attr (stringFrom config (Just alt_)) url
                     , Html.figcaption [ Attr.class "lia-figure__caption" ] <|
                         case title_ of
                             Just sub ->
@@ -939,10 +1065,10 @@ reference config ref attr =
 
                             Nothing ->
                                 [ Html.a
-                                    [ Attr.class "lia-link"
-                                    , Attr.href url
-                                    , Attr.target "blank_"
-                                    ]
+                                    (Attr.class "lia-link"
+                                        :: Attr.href url
+                                        :: newTab
+                                    )
                                     [ Html.text url ]
                                 ]
                     ]
@@ -959,24 +1085,22 @@ reference config ref attr =
                 []
 
         QR_Link url title_ ->
-            [ url
-                |> QRCode.fromString
-                |> Result.map (QRCode.toSvg [ A11y_Aria.label <| Translations.qrCode config.lang ++ ": " ++ url ])
-                |> Result.withDefault (Html.text (Translations.qrErr config.lang))
-            ]
+            [ Html.Lazy.lazy2 qrCode config.lang url ]
                 |> Html.a
                     (Attr.href url
                         :: Attr.style "width" "300px"
                         :: Attr.style "display" "inline-block"
                         :: Attr.style "background-color" "white"
                         :: annotation "lia-link" attr
-                        |> CList.addWhen (title config title_)
                     )
                 |> figure config title_ (Just 300) "image"
 
 
+{-| An audio element, keyed by its url, so that it gets replaced if the url
+changes.
+-}
 audio :
-    List (Html.Attribute msg)
+    List (Attribute msg)
     ->
         { url : String
         , controls : Bool
@@ -1003,6 +1127,10 @@ audio attr settings =
         ]
 
 
+{-| **@private:** Add the current language to YouTube videos. `hl` is only the
+language of the player, if the course has been translated (e.g. by Google),
+the captions are switched on in the new language.
+-}
 addTranslation : Config sub -> String -> String
 addTranslation config url_ =
     if String.startsWith website.youtube url_ then
@@ -1013,19 +1141,24 @@ addTranslation config url_ =
                 else
                     "?hl="
                )
-            ++ getLang config
+            ++ (case config.translations of
+                    Just { old, new } ->
+                        if old /= new then
+                            new ++ "&cc_load_policy=1&cc_lang_pref=" ++ new
+
+                        else
+                            new
+
+                    Nothing ->
+                        Translations.getCodeFromLn config.lang
+               )
 
     else
         url_
 
 
-getLang : Config sub -> String
-getLang config =
-    config.translations
-        |> Maybe.map .new
-        |> Maybe.withDefault (Translations.baseLang config.lang)
-
-
+{-| **@private:** A link to the media, which is only visible in print.
+-}
 printLink : Config sub -> Inlines -> Maybe Inlines -> String -> Html (Msg sub)
 printLink config alt_ title_ url_ =
     Html.a
@@ -1037,12 +1170,19 @@ printLink config alt_ title_ url_ =
         (viewer config alt_)
 
 
-oembed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool } -> Parameters -> String -> Html msg
-oembed option attr url =
+{-| **@private:** The `lia-embed` web component, which loads oEmbed content.
+-}
+oembed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool } -> Parameters -> Maybe String -> String -> Html msg
+oembed option attr alt_ url =
     Html.node "lia-embed"
         [ url
             |> JE.string
             |> Attr.property "url"
+
+        -- names the embedded iframe or image
+        , alt_
+            |> Maybe.map (JE.string >> Attr.property "alt")
+            |> Maybe.withDefault (Attr.class "")
         , option
             |> Maybe.map
                 (\o ->
@@ -1094,6 +1234,9 @@ oembed option attr url =
         []
 
 
+{-| **@private:** Links get a preview tooltip, if tooltips are enabled and if
+they do not point to a section of the course.
+-}
 view_url : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
 view_url config alt_ url_ title_ attr =
     if not config.tooltips || String.startsWith "#" url_ then
@@ -1114,51 +1257,35 @@ view_url config alt_ url_ title_ attr =
             ]
 
 
+{-| **@private:** External links are opened in a new tab and say so, mails
+open in a new tab as before, but without the hint.
+-}
 link : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
 link config alt_ url_ title_ attr =
-    Attr.href url_
-        :: Attr.target
-            (if String.startsWith "#" url_ then
-                ""
+    Html.a
+        (Attr.href url_
+            :: annotation "lia-link" attr
+            |> CList.addWhen (title config title_)
+            |> List.append
+                (if String.startsWith "#" url_ then
+                    []
 
-             else
-                "_blank"
-            )
-        :: annotation "lia-link" attr
-        |> CList.addWhen (title config title_)
-        |> Html.a
-        |> (\a -> a (viewer config alt_))
+                 else if String.startsWith "mailto:" url_ then
+                    [ Attr.target "_blank" ]
 
-
-getOption : Config sub -> Int -> List Inlines -> Html (Msg sub)
-getOption config id list =
-    case ( id, list ) of
-        ( 0, x :: _ ) ->
-            x
-                |> viewer config
-                |> Html.span []
-
-        ( i, _ :: xs ) ->
-            getOption config (i - 1) xs
-
-        ( _, [] ) ->
-            Html.span [] [ Html.text <| Translations.quizSelection config.lang ]
+                 else
+                    newTab
+                )
+        )
+        (viewer config alt_)
 
 
-showOption : Config sub -> Bool -> Int -> Int -> Inlines -> Html (Msg sub)
-showOption config open id1 id2 =
-    viewer config
-        >> Html.div []
-        >> List.singleton
-        >> Html.div
-            [ Attr.class "lia-dropdown__option"
-            , Attr.attribute "onclick" (config.input.on "choose" id1 (String.fromInt id2))
-            , A11y_Role.listItem
-            , Attr.tabindex <|
-                if open then
-                    0
-
-                else
-                    -1
-            , keyDownEvent (config.input.on "choose" id1 (String.fromInt id2))
-            ]
+{-| Lazy, because encoding the QR matrix is expensive and would otherwise run on
+every frame.
+-}
+qrCode : Lang -> String -> Html msg
+qrCode lang url =
+    url
+        |> QRCode.fromString
+        |> Result.map (QRCode.toSvg [ A11y_Role.img, A11y_Aria.label <| Translations.qrCode lang ++ ": " ++ url ])
+        |> Result.withDefault (Html.text (Translations.qrErr lang))

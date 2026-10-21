@@ -1,6 +1,6 @@
 {
   "name": "liascript",
-  "version": "1.0.7",
+  "version": "2.3.0",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
@@ -26,7 +26,7 @@
     "postinstall": "patch-package",
     "clean": "rm -rf dist .parcel-cache",
     "sw": "npx workbox injectManifest workbox-config.js",
-    "translate": "elm-i18n-gen lia-localization/locale src/elm/Translations.elm",
+    "translate": "elm-i18n-gen -d en lia-localization/locale src/elm/I18n/Translations.elm && sed -i -e 's/^module Translations/module I18n.Translations/' -e 's/[[:space:]]*$//' src/elm/I18n/Translations.elm",
     "test": "npx elm-test",
     "analyze": "npm run clean && npx parcel build --no-source-maps --reporter @parcel/reporter-bundle-analyzer src/entry/app/index.html",
     "prebuild": "npx parcel build --no-source-maps --no-optimize --public-url . src/entry/app/index.html",
@@ -50,6 +50,8 @@
     "build:scorm2004": "npm run clean && ./node_modules/parcel/lib/bin.js build --no-source-maps --public-url . src/entry/scorm2004/index.html",
     "watch:scorm2004": "npx parcel serve src/entry/scorm2004/index.html",
     "build:worker": "npm run clean && npx parcel build --no-source-maps --target node src/entry/worker/index.js",
+    "watch:chat": "npx parcel serve src/entry/chat/demo.html src/entry/chat/index.html",
+    "build:chat": "npm run clean && npx parcel build --no-source-maps src/entry/chat/element.ts && find dist -mindepth 1 ! -name element.js -delete && npx parcel build --no-source-maps --public-url . --dist-dir dist/app src/entry/chat/index.html && rm -f dist/app/README.md",
     "watch:webcomponent": "npx parcel serve src/entry/webcomponent/index.html --open",
     "build:webcomponent": "npm run clean && npx parcel build --no-source-maps src/entry/webcomponent/index.ts && rm dist/README.md",
     "build:webcomponentPublic": "npm run clean && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md",
@@ -75,7 +77,7 @@
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "abortcontroller-polyfill": "^1.7.8",
     "ace-builds": "^1.43.6",
-    "caniuse-lite": "^1.0.30001787",
+    "caniuse-lite": "^1.0.30001809",
     "crypto-browserify": "^3.5.1",
     "dexie": "^4.2.1",
     "easy-speech": "^2.4.0",
@@ -83,13 +85,14 @@
     "echarts-wordcloud": "^2.1.0",
     "elm": "^0.19.1-5",
     "elm-hot": "^1.1.6",
-    "elm-optimize-level-2": "^0.3.5",
+    "elm-i18n-gen": "github:andre-dietrich/elm-i18n-module-generator",
+    "elm-optimize-level-2": "^0.4.0",
     "elm-review": "^2.13.5",
     "elm-test": "^0.19.1-revision12",
     "eslint": "^9.39.4",
     "events": "^3.3.0",
     "jszip": "^3.10.1",
-    "katex": "^0.16.45",
+    "katex": "^0.18.4",
     "logger.ts": "^1.0.5",
     "minify": "^9.2.0",
     "node-elm-compiler": "^5.0.6",
@@ -102,12 +105,13 @@
     "process": "^0.11.10",
     "resize-observer-polyfill": "^1.5.1",
     "sass": "^1.99.0",
+    "speech-rule-engine": "^5.0.0-rc.4",
     "svgo": "^3.3.2",
     "tsc": "^2.0.4",
     "typescript": "^5.9.3",
     "uint8-to-base64": "^0.2.1",
     "util": "^0.12.5",
-    "workbox-cli": "^7.4.0",
+    "workbox-cli": "^7.4.1",
     "y-generic": "github:andre-dietrich/y-generic",
     "y-utility": "^0.1.4",
     "yjs": "^13.6.27"
@@ -127,6 +131,12 @@
     "test": "tests"
   },
   "dependencies": {
+    "@dragdroptouch/drag-drop-touch": "^2.0.3",
     "pako": "^2.1.0"
+  },
+  "allowScripts": {
+    "elm@0.19.1-6": true,
+    "msgpackr-extract@3.0.2": true,
+    "lmdb": true
   }
 }

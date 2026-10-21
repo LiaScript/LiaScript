@@ -10,18 +10,24 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import I18n.Translations exposing (Lang)
-import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Inline.Config as Inline
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Section exposing (Section, SubSection(..))
+import Lia.Section exposing (Section, SubSection)
 import Lia.Settings.Types exposing (Mode(..), Settings)
 import Lia.Sync.Types as Sync
 import Session exposing (Screen)
 
 
+{-| Everything required to render the blocks of a section:
+
+  - `view`: renders inlines with the `main` inline config
+  - `screen`: the width without the table of contents, if it is open
+  - `ace_theme` and `light`: the editor theme and light or dark mode
+
+-}
 type alias Config sub =
     { mode : Mode
     , view : Inlines -> List (Html Msg)
@@ -30,9 +36,13 @@ type alias Config sub =
     , light : Bool
     , screen : Screen
     , main : Inline.Config sub
+    , sound : Bool
     }
 
 
+{-| Build the config for one section, the formulas of the section definition
+are merged into the global ones, global ones win.
+-}
 init :
     Lang
     -> { old : String, new : String, name : Maybe String }
@@ -44,55 +54,69 @@ init :
     -> Dict String ( Int, Int )
     -> Section
     -> Config sub
-init lang translations settings sync screen id formula media section =
+init lang translations settings sync screen id formulas media section =
     let
+        effect =
+            section.effect_model
+
         main =
-            inline lang
-                translations
-                settings
-                screen
-                section.effect_model
-                id
-                (section.definition
-                    |> Maybe.map .formulas
-                    |> mergeFormulas formula
-                )
-                media
-                sync
+            Inline.init
+                { mode = settings.mode
+                , visible = Just effect.visible
+                , slide = id
+                , speaking = effect.speaking
+                , paused = effect.paused
+                , lang = lang
+                , theme = Just settings.editor
+                , light = settings.light
+                , tooltips = settings.tooltips && (screen.width >= Const.tooltipBreakpoint)
+                , hideVideoComments = settings.hideVideoComments
+                , media = media
+                , scripts = effect.javascript
+                , translations = Just translations
+                , sync = Just sync
+                , formulas = mergeFormulas formulas (Maybe.map .formulas section.definition)
+                }
     in
-    Config
-        settings.mode
-        (viewer main >> List.map (Html.map Script))
-        section
-        settings.editor
-        settings.light
-        (if settings.table_of_contents then
+    { mode = settings.mode
+    , view = toView main
+    , section = section
+    , ace_theme = settings.editor
+    , light = settings.light
+    , screen =
+        if settings.table_of_contents then
             { screen | width = screen.width - 260 }
 
-         else
+        else
             screen
-        )
-        main
+    , main = main
+    , sound = settings.sound
+    }
 
 
+toView : Inline.Config Msg -> Inlines -> List (Html Msg)
+toView main =
+    viewer main >> List.map (Html.map Script)
 
---setMain : Inline.Config sub -> Config sub -> Config sub
 
-
+{-| Replace the inline config (used by quizzes, which add their input state),
+the input path of the new config is appended to the current one.
+-}
+setMain : Inline.Config Msg -> Config Msg -> Config Msg
 setMain main config =
     let
         input =
             main.input
 
-        path =
-            List.append config.main.input.path main.input.path
+        main_ =
+            { main | input = { input | path = config.main.input.path ++ input.path } }
     in
-    { config
-        | main = { main | input = { input | path = path } }
-        , view = viewer main >> List.map (Html.map Script)
-    }
+    { config | main = main_, view = toView main_ }
 
 
+{-| Render a section as if it were slide `id` in textbook mode (used by the
+chat).
+-}
 setID : Int -> Config sub -> Config sub
 setID id config =
     let
@@ -112,49 +136,20 @@ setID id config =
 mergeFormulas : Maybe (Dict String String) -> Maybe (Dict String String) -> Maybe (Dict String String)
 mergeFormulas main sec =
     case ( main, sec ) of
-        ( Just _, Nothing ) ->
-            main
-
         ( Just m, Just s ) ->
-            Just <| Dict.union m s
+            Just (Dict.union m s)
 
-        ( Nothing, Just _ ) ->
+        ( Nothing, _ ) ->
             sec
 
         _ ->
-            Nothing
+            main
 
 
-inline :
-    Lang
-    -> { old : String, new : String, name : Maybe String }
-    -> Settings
-    -> Screen
-    -> Effect.Model SubSection
-    -> Int
-    -> Maybe (Dict String String)
-    -> Dict String ( Int, Int )
-    -> Sync.Settings
-    -> Inline.Config sub
-inline lang translations settings screen effect id formulas media sync =
-    Inline.init
-        { mode = settings.mode
-        , visible = Just effect.visible
-        , slide = id
-        , speaking = effect.speaking
-        , lang = lang
-        , theme = Just settings.editor
-        , light = settings.light
-        , tooltips = settings.tooltips && (screen.width >= Const.tooltipBreakpoint)
-        , hideVideoComments = settings.hideVideoComments
-        , media = media
-        , scripts = effect.javascript
-        , translations = Just translations
-        , sync = Just sync
-        , formulas = formulas
-        }
-
-
+{-| Inlines get a viewer for the LiaScript results of scripts (sub-sections),
+their input path is extended by `effect` and `sub`. Blocks that render their
+inlines with `main` (quizzes, surveys, ...) get the viewer too.
+-}
 setSubViewer : (Int -> Int -> SubSection -> List (Html (Script.Msg Msg))) -> Config Msg -> Config Msg
 setSubViewer function config =
     let
@@ -165,7 +160,7 @@ setSubViewer function config =
             main.input
     in
     { config
-        | view =
-            viewer (Inline.setViewer function { main | input = { input | path = ( "effect", 0 ) :: ( "sub", 1 ) :: input.path } })
-                >> List.map (Html.map Script)
+        | main = Inline.setViewer function main
+        , view =
+            toView (Inline.setViewer function { main | input = { input | path = ( "effect", 0 ) :: ( "sub", 1 ) :: input.path } })
     }

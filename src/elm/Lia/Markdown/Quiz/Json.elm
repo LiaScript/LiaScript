@@ -1,13 +1,14 @@
 module Lia.Markdown.Quiz.Json exposing
     ( encode
+    , fromState
     , fromVector
+    , toState
     , toVector
     )
 
 import Array
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Inline.Json.Encode as Inline
 import Lia.Markdown.Quiz.Block.Json as Block
 import Lia.Markdown.Quiz.Matrix.Json as Matrix
 import Lia.Markdown.Quiz.Multi.Json as Multi
@@ -16,8 +17,10 @@ import Lia.Markdown.Quiz.Types exposing (Element, Quiz, State(..), Type(..), Vec
 import Lia.Markdown.Quiz.Vector.Json as Vector
 
 
-encode : Quiz x -> JE.Value
-encode quiz =
+{-| Encode the quiz definition, as part of the exported Markdown.
+-}
+encode : (x -> JE.Value) -> Quiz x -> JE.Value
+encode encoder quiz =
     JE.object
         [ case quiz.quiz of
             Generic_Type ->
@@ -30,20 +33,25 @@ encode quiz =
                 Multi.encode multi
 
             Vector_Type vector ->
-                Vector.encode vector
+                Vector.encode encoder vector
 
             Matrix_Type matrix ->
                 Matrix.encode matrix
         , ( "id", JE.int quiz.id )
-        , ( "hints", JE.list Inline.encode quiz.hints )
+        , ( "hints", JE.list (JE.list encoder) quiz.hints )
         ]
 
 
+{-| Encode the states of all quizzes of a section, to be stored.
+-}
 fromVector : Vector -> JE.Value
 fromVector =
     JE.array fromElement
 
 
+{-| **private:** Only the user's state and the score are stored, the options
+are defined by the course.
+-}
 fromElement : Element -> JE.Value
 fromElement element =
     [ ( "solved"
@@ -72,6 +80,7 @@ fromElement element =
         |> JE.object
 
 
+{-| -}
 fromState : State -> JE.Value
 fromState state =
     case state of
@@ -91,6 +100,9 @@ fromState state =
             Matrix.fromState s
 
 
+{-| Decode a stored vector, it has to be merged with the parsed one (see
+`Quiz.Update`), since the options and scripts are missing.
+-}
 toVector : JD.Value -> Result JD.Error Vector
 toVector =
     JD.decodeValue (JD.array toElement)
@@ -102,13 +114,13 @@ toElement =
         solved_decoder i =
             case i of
                 0 ->
-                    JD.succeed Solution.Open
+                    Solution.Open
 
                 1 ->
-                    JD.succeed Solution.Solved
+                    Solution.Solved
 
                 _ ->
-                    JD.succeed Solution.ReSolved
+                    Solution.ReSolved
 
         set solved state trial hint error_msg =
             Element
@@ -132,13 +144,14 @@ toElement =
                 True
     in
     JD.map5 set
-        (JD.field "solved" JD.int |> JD.andThen solved_decoder)
+        (JD.field "solved" JD.int |> JD.map solved_decoder)
         (JD.field "state" toState)
         (JD.field "trial" JD.int)
         (JD.field "hint" JD.int)
         (JD.field "error_msg" JD.string)
 
 
+{-| -}
 toState : JD.Decoder State
 toState =
     JD.oneOf
