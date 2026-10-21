@@ -104,7 +104,7 @@ view session settings model =
 
 itemView : Bool -> Masonry.Id -> Course -> Html Msg
 itemView hasShareAPI _ course =
-    card hasShareAPI [] course
+    card { share = hasShareAPI, compact = Nothing, extra = [] } course
 
 
 searchBar : String -> Html Msg

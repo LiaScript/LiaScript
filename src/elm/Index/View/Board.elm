@@ -17,6 +17,8 @@ import Index.View.Card exposing (card)
 import Json.Decode as JD
 import Lia.Utils exposing (btn, btnIcon)
 import Library.Group as Group
+import List.Extra
+import Set
 
 
 {-| The available layouts, a new one only needs an entry here.
@@ -102,12 +104,58 @@ viewColumn hasShareAPI model names count i ( column, courses ) =
     let
         renaming =
             Maybe.map Tuple.first model.rename == Just i
+
+        index id =
+            List.Extra.findIndex (.id >> (==) id) courses
+
+        -- where the dragged element would land, see `Update.moveCourse`,
+        -- downwards or to the right behind the target, otherwise before it
+        behind from to =
+            if from < to then
+                "lia-board--after"
+
+            else
+                "lia-board--before"
+
+        columnMark =
+            case ( model.drag, model.over ) of
+                ( Just (DragColumn from), Just ( j, _ ) ) ->
+                    if j == i && from /= i then
+                        behind from i
+
+                    else
+                        ""
+
+                ( Just (DragCourse _), Just ( j, Nothing ) ) ->
+                    if j == i then
+                        "lia-board--over"
+
+                    else
+                        ""
+
+                _ ->
+                    ""
+
+        courseMark id =
+            case ( model.drag, model.over ) of
+                ( Just (DragCourse dragged), Just ( j, Just target ) ) ->
+                    if j == i && target == id && dragged /= id then
+                        Maybe.map2 behind (index dragged) (index id)
+                            |> Maybe.withDefault "lia-board--before"
+
+                    else
+                        ""
+
+                _ ->
+                    ""
     in
     Html.section
         [ Attr.class "lia-board__column"
+        , Attr.class columnMark
         , Attr.classList [ ( "lia-board--dragging", model.drag == Just (DragColumn i) ) ]
         , A11y_Aria.label column.name
         , onDragOver
+        , onDragEnter (DragOver i Nothing)
         , onDrop (DropOn i Nothing)
         ]
         [ Html.div
@@ -185,9 +233,13 @@ viewColumn hasShareAPI model names count i ( column, courses ) =
               else
                 Html.text ""
             ]
-        , courses
-            |> List.map (viewCourse hasShareAPI model.drag names i)
-            |> Html.div [ Attr.class "lia-board__courses" ]
+        , if List.isEmpty courses then
+            Html.div [ Attr.class "lia-board__empty" ] [ Html.text "Drop courses here" ]
+
+          else
+            courses
+                |> List.map (\course -> viewCourse hasShareAPI model names i (courseMark course.id) course)
+                |> Html.div [ Attr.class "lia-board__courses" ]
         ]
 
 
@@ -200,35 +252,40 @@ title name courses =
         ]
 
 
-viewCourse : Bool -> Maybe Drag -> List String -> Int -> Course -> Html Msg
-viewCourse hasShareAPI drag names i course =
+viewCourse : Bool -> Model -> List String -> Int -> String -> Course -> Html Msg
+viewCourse hasShareAPI model names i mark course =
     Html.div
         (Attr.class "lia-board__course"
-            :: Attr.classList [ ( "lia-board--dragging", drag == Just (DragCourse course.id) ) ]
+            :: Attr.class mark
+            :: Attr.classList [ ( "lia-board--dragging", model.drag == Just (DragCourse course.id) ) ]
+            :: onDragEnter (DragOver i (Just course.id))
             :: onDrop (DropOn i (Just course.id))
             :: draggable (DragCourse course.id)
         )
-        [ card hasShareAPI
-            (if List.length names > 1 then
-                [ names
-                    |> List.indexedMap
-                        (\j name ->
-                            Html.option
-                                [ Attr.value (String.fromInt j)
-                                , Attr.selected (i == j)
-                                ]
-                                [ Html.text name ]
-                        )
-                    |> Html.select
-                        [ Attr.class "lia-select lia-card__move"
-                        , A11y_Aria.label "Move to column"
-                        , Event.on "change" (JD.map (String.toInt >> Maybe.withDefault i >> MoveTo course.id) Event.targetValue)
-                        ]
-                ]
+        [ card
+            { share = hasShareAPI
+            , compact = Just (Set.member course.id model.details)
+            , extra =
+                if List.length names > 1 then
+                    [ names
+                        |> List.indexedMap
+                            (\j name ->
+                                Html.option
+                                    [ Attr.value (String.fromInt j)
+                                    , Attr.selected (i == j)
+                                    ]
+                                    [ Html.text name ]
+                            )
+                        |> Html.select
+                            [ Attr.class "lia-select lia-card__move"
+                            , A11y_Aria.label "Move to column"
+                            , Event.on "change" (JD.map (String.toInt >> Maybe.withDefault i >> MoveTo course.id) Event.targetValue)
+                            ]
+                    ]
 
-             else
-                []
-            )
+                else
+                    []
+            }
             course
         ]
 
@@ -271,6 +328,13 @@ draggable drag =
     , Event.on "dragstart" (JD.succeed (DragStart drag))
     , Event.on "dragend" (JD.succeed DragEnd)
     ]
+
+
+{-| Marks the drop target, the innermost one wins.
+-}
+onDragEnter : Msg -> Attribute Msg
+onDragEnter msg =
+    Event.stopPropagationOn "dragenter" (JD.succeed ( msg, True ))
 
 
 {-| Allows dropping, without sending a message on every mouse move.

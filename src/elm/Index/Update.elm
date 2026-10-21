@@ -29,6 +29,7 @@ import Service.Database
 import Service.Event exposing (Event)
 import Service.Resource
 import Service.Share
+import Set
 
 
 type Msg
@@ -60,6 +61,8 @@ type Msg
     | RenameStop Bool
     | DragStart Drag
     | DragEnd
+    | DragOver Int (Maybe String)
+    | ToggleDetails String
     | DropOn Int (Maybe String)
     | MoveTo String Int
     | None
@@ -380,29 +383,54 @@ update msg settings model =
 
             -- dropped outside of the board
             DragEnd ->
-                ( { model | drag = Nothing }, Cmd.none, [] )
+                ( { model | drag = Nothing, over = Nothing }, Cmd.none, [] )
+
+            DragOver i before ->
+                ( if model.over == Just ( i, before ) then
+                    model
+
+                  else
+                    { model | over = Just ( i, before ) }
+                , Cmd.none
+                , []
+                )
+
+            ToggleDetails courseID ->
+                ( { model
+                    | details =
+                        if Set.member courseID model.details then
+                            Set.remove courseID model.details
+
+                        else
+                            Set.insert courseID model.details
+                  }
+                , Cmd.none
+                , []
+                )
 
             DropOn i before ->
                 case model.drag of
                     Just (DragCourse courseID) ->
                         if before == Just courseID then
-                            ( { model | drag = Nothing }, Cmd.none, [] )
+                            ( { model | drag = Nothing, over = Nothing }, Cmd.none, [] )
 
                         else
                             storeBoard
                                 { model
                                     | drag = Nothing
+                                    , over = Nothing
                                     , columns = moveCourse courseID i before (normalize model)
                                 }
 
                     Just (DragColumn from) ->
                         if from == i then
-                            ( { model | drag = Nothing }, Cmd.none, [] )
+                            ( { model | drag = Nothing, over = Nothing }, Cmd.none, [] )
 
                         else
                             storeBoard
                                 { model
                                     | drag = Nothing
+                                    , over = Nothing
                                     , columns = moveAt from i (normalize model)
                                 }
 

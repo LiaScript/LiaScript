@@ -20,6 +20,7 @@ import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Library.Masonry as Masonry exposing (Masonry)
 import List.Extra
+import Set exposing (Set)
 
 
 type Modal
@@ -37,6 +38,8 @@ type alias Model =
     , layout : Layout
     , columns : List Column
     , drag : Maybe Drag
+    , over : Maybe ( Int, Maybe String )
+    , details : Set String
     , newColumn : String
     , rename : Maybe ( Int, String )
     , layoutMenu : Bool
@@ -74,6 +77,8 @@ init =
     , layout = Grid
     , columns = [ Column "Courses" [] ]
     , drag = Nothing
+    , over = Nothing
+    , details = Set.empty
     , newColumn = ""
     , rename = Nothing
     , layoutMenu = False

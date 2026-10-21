@@ -5,11 +5,20 @@
   gap: 2rem;
   overflow-x: auto;
   padding-block-end: 1rem;
+  // room for the drop marker of the first column, which overflow would clip
+  padding-inline: 1.6rem;
+  margin-inline: -1.6rem;
+  scroll-padding-inline: 1.6rem;
+  // on small screens a swipe stops at the start of a column
+  scroll-snap-type: x proximity;
 
   &__column {
+    position: relative;
+    scroll-snap-align: start;
     flex: 0 0 36rem;
     max-width: 90vw;
-    padding: 1rem;
+    // more space at the end for the drop marker behind the last course
+    padding: 1rem 1rem 2rem;
     border: 0.25rem solid rgb(var(--color-highlight));
     border-radius: 1rem;
   }
@@ -36,8 +45,65 @@
     cursor: grab;
   }
 
+  &__course {
+    position: relative;
+  }
+
+  &__empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 10rem;
+    margin-block-start: 1rem;
+    border: 0.2rem dashed rgb(var(--color-highlight));
+    border-radius: 0.5rem;
+  }
+
   &--dragging {
     opacity: 0.4;
+  }
+
+  // drop markers, a bar in the middle of the gap (cards 2rem, columns 2rem)
+  &--over {
+    background-color: rgba(var(--color-highlight), 0.1);
+  }
+
+  &--before::before,
+  &--after::after {
+    content: '';
+    position: absolute;
+    background-color: rgb(var(--color-highlight));
+    border-radius: 0.2rem;
+  }
+
+  &__course#{&}--before::before,
+  &__course#{&}--after::after {
+    left: 0;
+    right: 0;
+    height: 0.4rem;
+  }
+
+  &__course#{&}--before::before {
+    top: -1.2rem;
+  }
+
+  &__course#{&}--after::after {
+    bottom: -1.2rem;
+  }
+
+  &__column#{&}--before::before,
+  &__column#{&}--after::after {
+    top: 0;
+    bottom: 0;
+    width: 0.4rem;
+  }
+
+  &__column#{&}--before::before {
+    inset-inline-start: -1.2rem;
+  }
+
+  &__column#{&}--after::after {
+    inset-inline-end: -1.2rem;
   }
 
   &__add {
@@ -87,4 +153,79 @@
 .lia-card__move {
   margin: 0.5rem 2.4rem 0;
   width: calc(100% - 4.8rem);
+}
+
+// kanban cards only show an image, the title and the open button, the details
+// can be opened; flex instead of grid and :has() for KaiOS (Gecko 48)
+.lia-card__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2.4rem;
+}
+
+.lia-card--compact {
+  flex-direction: row;
+
+  // the thumbnail comes later and is positioned, it would cover the versions
+  .lia-card__version {
+    z-index: 1;
+  }
+
+  .lia-card__content {
+    flex: 1;
+    min-width: 0;
+    padding-block-start: 1.6rem;
+  }
+
+  // at most three lines, the whole title is the tooltip of the card
+  .lia-card__title {
+    font-size: calc(2rem * var(--font-size-multiplier));
+    margin-block-end: 1rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+
+    &::before {
+      display: none;
+    }
+  }
+}
+
+// the logo covers the course icon, which remains if the logo is missing
+.lia-card__thumb {
+  position: relative;
+  flex: 0 0 7rem;
+  min-height: 7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--color-highlight), 0.1);
+
+  overflow: hidden;
+
+  &-icon {
+    width: 5rem;
+    height: 5rem;
+
+    // zoomed into the head of the bird
+    &--default {
+      position: absolute;
+      width: 14rem;
+      height: 14rem;
+      max-width: none;
+      left: -1.5rem;
+      top: calc(50% - 4.6rem);
+    }
+  }
+
+  &-logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
