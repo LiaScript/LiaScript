@@ -5,6 +5,9 @@ import { Connector } from '../../connectors/Base/index'
 import { Settings } from '../../connectors/Base/settings'
 import TTS from './TTS'
 import Script from './Script'
+import { offlineOpened } from './Resource'
+
+const BOARD = '__LiaScriptIndexBoard__'
 
 var connector: Connector | null = null
 var elmSend: Lia.Send | null
@@ -84,6 +87,26 @@ const Service = {
         sendReply(event)
         break
 
+      // the kanban board of the index: layout, columns and their course ids
+      case 'index_board_get':
+        try {
+          event.message.param = JSON.parse(
+            localStorage.getItem(BOARD) || 'null'
+          )
+        } catch (e) {
+          event.message.param = null
+        }
+        sendReply(event)
+        break
+
+      case 'index_board_store':
+        try {
+          localStorage.setItem(BOARD, JSON.stringify(param))
+        } catch (e) {
+          log.warn('DB: cannot store the index board -> ', e)
+        }
+        break
+
       case 'index_reset':
         connector.reset(param.url, param.version)
         break
@@ -114,6 +137,8 @@ const Service = {
         if (isPersistent) {
           connector.open(param.readme, param.version, param.section_active)
         }
+
+        offlineOpened(param.readme)
 
         if (param.definition.onload !== '') {
           // adding the semaphore to delay the execution of other scripts

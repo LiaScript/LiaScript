@@ -1,11 +1,16 @@
 module Index.Model exposing
     ( Action(..)
+    , Column
     , Course
+    , Drag(..)
+    , Layout(..)
     , Modal(..)
     , Model
     , Release
+    , boardColumns
     , cardID
     , init
+    , normalize
     , reset_modal
     , urlInputID
     )
@@ -14,6 +19,8 @@ import Dict exposing (Dict)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Library.Masonry as Masonry exposing (Masonry)
+import List.Extra
+import Set exposing (Set)
 
 
 type Modal
@@ -28,6 +35,34 @@ type alias Model =
     , modal : Maybe Modal
     , error : Maybe String
     , masonry : Masonry Course
+    , layout : Layout
+    , columns : List Column
+    , drag : Maybe Drag
+    , over : Maybe ( Int, Maybe String )
+    , details : Set String
+    , newColumn : String
+    , rename : Maybe ( Int, String )
+    , layoutMenu : Bool
+    }
+
+
+{-| What is currently dragged on the kanban board, a course or a column.
+-}
+type Drag
+    = DragCourse String
+    | DragColumn Int
+
+
+type Layout
+    = Grid
+    | Kanban
+
+
+{-| A user defined kanban column, it only stores the ids of its courses.
+-}
+type alias Column =
+    { name : String
+    , ids : List String
     }
 
 
@@ -39,7 +74,53 @@ init =
     , modal = Nothing
     , error = Nothing
     , masonry = Masonry.empty
+    , layout = Grid
+    , columns = [ Column "Courses" [] ]
+    , drag = Nothing
+    , over = Nothing
+    , details = Set.empty
+    , newColumn = ""
+    , rename = Nothing
+    , layoutMenu = False
     }
+
+
+{-| The columns with their courses. Ids of deleted courses are dropped and
+courses that are not part of any column get appended to the first one, thus
+new courses or those of a deleted column end up there.
+-}
+boardColumns : Model -> List ( Column, List Course )
+boardColumns model =
+    let
+        assigned =
+            List.concatMap .ids model.columns
+
+        find id =
+            List.Extra.find (.id >> (==) id) model.courses
+
+        orphans =
+            List.filter (\course -> not (List.member course.id assigned)) model.courses
+    in
+    List.indexedMap
+        (\i column ->
+            ( column
+            , List.filterMap find column.ids
+                ++ (if i == 0 then
+                        orphans
+
+                    else
+                        []
+                   )
+            )
+        )
+        model.columns
+
+
+{-| The columns with the ids as they are displayed.
+-}
+normalize : Model -> List Column
+normalize =
+    boardColumns >> List.map (\( column, courses ) -> { column | ids = List.map .id courses })
 
 
 reset_modal : Model -> Model

@@ -19,35 +19,97 @@ import Lia.Markdown.Inline.View as Inline
 import Lia.Utils exposing (btn, btnIcon)
 
 
-card : Bool -> Course -> Html Msg
-card hasShareAPI course =
+{-| `compact` is used by the kanban board: `Nothing` shows the whole card,
+`Just open` only the title with an open button and a toggle for the details.
+`extra` is appended as the last row of the details, e.g. the column select of
+the kanban board.
+-}
+card : { share : Bool, compact : Maybe Bool, extra : List (Html Msg) } -> Course -> Html Msg
+card config course =
     get_active course
-        |> Maybe.map (article hasShareAPI course)
+        |> Maybe.map (article config course)
         |> Maybe.withDefault (Html.text "something went wrong")
 
 
-article : Bool -> Course -> Release -> Html Msg
-article hasShareAPI course { title, definition } =
+article : { share : Bool, compact : Maybe Bool, extra : List (Html Msg) } -> Course -> Release -> Html Msg
+article { share, compact, extra } course { title, definition } =
+    let
+        details =
+            compact /= Just False
+    in
     Html.article
         [ Attr.class "lia-card"
+        , Attr.classList [ ( "lia-card--compact", not details ) ]
         , A11y_Aria.label (stringify title)
+
+        -- the title of a compact card might be cut off
+        , if details then
+            Attr.class ""
+
+          else
+            Attr.title (stringify title)
 
         -- focusable by script only, see the deletion of a course
         , Attr.id (cardID course.id)
         , Attr.tabindex -1
         ]
-        [ versions course
-        , definition.macro
-            |> getIcon
-            |> icon
-        , logo definition.logo
-        , Html.div [ Attr.class "lia-card__content" ]
-            [ header title definition.macro
-            , body definition.comment
-            , controls hasShareAPI title definition course
-            , footer definition.author
-            ]
-        ]
+        (versions course
+            :: (if details then
+                    [ icon (getIcon definition.macro)
+                    , logo definition.logo
+                    ]
+
+                else
+                    [ thumb course.id (getIcon definition.macro) definition.logo ]
+               )
+            ++ [ Html.div [ Attr.class "lia-card__content" ]
+                    (header title definition.macro
+                        :: (if details then
+                                [ body definition.comment
+                                , controls share title definition course
+                                , footer definition.author
+                                ]
+                                    ++ extra
+
+                            else
+                                []
+                           )
+                        ++ (case compact of
+                                Just open ->
+                                    [ Html.div [ Attr.class "lia-card__toggle" ]
+                                        [ btnIcon
+                                            { title =
+                                                if open then
+                                                    "Hide details"
+
+                                                else
+                                                    "Show details"
+                                            , tabbable = True
+                                            , msg = Just (ToggleDetails course.id)
+                                            , icon =
+                                                if open then
+                                                    "icon-chevron-up"
+
+                                                else
+                                                    "icon-chevron-down"
+                                            }
+                                            [ Attr.class "lia-btn--transparent"
+                                            , A11y_Aria.expanded open
+                                            ]
+                                        , if open then
+                                            Html.text ""
+
+                                          else
+                                            openButton course
+                                        ]
+                                    ]
+
+                                Nothing ->
+                                    []
+                           )
+                    )
+               ]
+        )
 
 
 getIcon : Dict String String -> String
@@ -113,6 +175,9 @@ icon url =
     Html.img
         [ Attr.class "lia-card__icon"
         , Attr.src url
+
+        -- the kanban board drags the whole card, not the image
+        , Attr.draggable "false"
         , Attr.alt ""
         , Attr.attribute "loading" "lazy"
         ]
@@ -128,10 +193,70 @@ logo url =
         Html.img
             [ Attr.class "lia-card__logo"
             , Attr.src url
+            , Attr.draggable "false"
             , Attr.attribute "loading" "lazy"
+            , Attr.alt ""
+            , hideOnError
+            ]
+            []
+
+
+{-| The image of a compact card, the logo covers the course icon, if there is
+no logo or it cannot be loaded, the icon remains.
+-}
+thumb : String -> String -> String -> Html msg
+thumb courseID iconUrl logoUrl =
+    Html.div [ Attr.class "lia-card__thumb" ]
+        [ Html.img
+            [ Attr.class "lia-card__thumb-icon"
+
+            -- the LiaScript bird is zoomed into its head and gets a color
+            -- per course
+            , if iconUrl == Const.icon then
+                Attr.class "lia-card__thumb-icon--default"
+
+              else
+                Attr.class ""
+            , if iconUrl == Const.icon then
+                Attr.style "filter" ("hue-rotate(" ++ String.fromInt (hue courseID) ++ "deg)")
+
+              else
+                Attr.class ""
+            , Attr.src iconUrl
+            , Attr.draggable "false"
             , Attr.alt ""
             ]
             []
+        , if String.isEmpty logoUrl then
+            Html.text ""
+
+          else
+            Html.img
+                [ Attr.class "lia-card__thumb-logo"
+                , Attr.src logoUrl
+                , Attr.draggable "false"
+                , Attr.attribute "loading" "lazy"
+                , Attr.alt ""
+                , hideOnError
+                ]
+                []
+        ]
+
+
+{-| A stable hue (0 - 359) for an url, djb2 hash kept below a prime, such
+that it stays within the safe integer range.
+-}
+hue : String -> Int
+hue =
+    String.foldl (\char hash -> modBy 1000003 (hash * 33 + Char.toCode char)) 5381
+        >> modBy 360
+
+
+{-| Broken logo urls are common, a broken image would be shown otherwise.
+-}
+hideOnError : Html.Attribute msg
+hideOnError =
+    Attr.attribute "onerror" "this.style.display='none'"
 
 
 header : Inlines -> Dict String String -> Html Msg
@@ -256,6 +381,13 @@ controls hasShareAPI title definition course =
                 , icon = "icon-copy"
                 }
                 [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise" ]
+        , btnIcon
+            { msg = Just <| SaveOffline course.id
+            , title = "Download media for offline use (images, audio and video)"
+            , tabbable = True
+            , icon = "icon-download"
+            }
+            [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise" ]
         , Html.a
             [ Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise"
             , Attr.href <| "mailto:" ++ definition.email
@@ -265,28 +397,33 @@ controls hasShareAPI title definition course =
             ]
             [ Html.i [ A11y_Aria.hidden True, Attr.class "icon icon-mail" ] []
             ]
-        , case course.active of
-            Nothing ->
-                Html.a
-                    [ Base.href course.id
-                    , Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 border-turquoise"
-                    , Attr.title "Open this course"
-                    , Attr.style "border" "2.5px solid"
-                    , A11y_Aria.label "Open this course"
-                    ]
-                    [ Html.i [ A11y_Aria.hidden True, Attr.class "icon icon-login text-turquoise" ] [] ]
-
-            Just _ ->
-                btnIcon
-                    { msg = Just <| Restore course.id course.active
-                    , title = "Open this course"
-                    , tabbable = True
-                    , icon = "icon-login"
-                    }
-                    [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise"
-                    , Attr.style "border" "2.5px solid"
-                    ]
+        , openButton course
         ]
+
+
+openButton : Course -> Html Msg
+openButton course =
+    case course.active of
+        Nothing ->
+            Html.a
+                [ Base.href course.id
+                , Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 border-turquoise"
+                , Attr.title "Open this course"
+                , Attr.style "border" "2.5px solid"
+                , A11y_Aria.label "Open this course"
+                ]
+                [ Html.i [ A11y_Aria.hidden True, Attr.class "icon icon-login text-turquoise" ] [] ]
+
+        Just _ ->
+            btnIcon
+                { msg = Just <| Restore course.id course.active
+                , title = "Open this course"
+                , tabbable = True
+                , icon = "icon-login"
+                }
+                [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise"
+                , Attr.style "border" "2.5px solid"
+                ]
 
 
 footer : String -> Html msg

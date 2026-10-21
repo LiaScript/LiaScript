@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 21/10/2026
+
+- feat: kanban board for the course overview – a layout dropdown on the left of the header switches between the list and the board; own columns can be added, renamed, reordered and deleted, courses are sorted into them by drag and drop (mouse and touch, press and hold) or via a select on the card; layout and columns are stored in the browser, new courses end up in the first column
+- feat: compact course cards on the board – image, title (at most three lines) and open button, the details can be expanded; without a logo the LiaScript bird is shown, zoomed into its head and colored per course
+- feat: the board shows where a dragged course or column will land, empty columns offer a drop area, on small screens a swipe stops at the start of a column
+- feat: columns as tinted lanes with a badge for the number of courses, their actions appear on hover or focus (always on touch devices)
+- feat: new icons for the list and the kanban layout
+- fix: broken logos of courses are hidden instead of showing a broken image
+
+
+## [2.3.1] - 21/10/2026
+
+- feat: hide the navigation – a "Navigation" button next to the modes hides the table of contents and the header, a slim menu with floating buttons, next/previous arrows and the TTS bar remains; works with the classroom chat, on small screens (notes included) and in rtl
+- feat: download course media for offline use (opt-in) – a button in the information menu and on the course cards stores all images, audio and video files of a course, including the recordings of comments; offline the service worker falls back to them, audio and video stay seekable; streams like YouTube are skipped
+- feat: loading screen – lists the README, templates, scripts and styles with their state, stays on top until all are loaded and warns if some failed (the course can be opened anyway); a template that cannot be loaded no longer stops the course; a tangram bird instead of the spinner, also as static preloader
+- improve: the service worker precaches only the app shell (74 instead of 645 files, 9.8 instead of 24 MB), everything else is cached on first use, a lecture hall behind one NAT address hit the GitHub Pages rate limit; CSS and scripts loaded as blobs are cached too, `?data:text` urls work offline
+- improve: translations – "Hide navigation" and the offline media texts in all languages, the font size sample in the script of the language
+- fix: relative links to urls with a line break
+
+
 ## [2.3.0] - 20/10/2026
 
 - feat: accessible table of contents – a collapsible navigation tree (APG treeview) with a single tab stop, Up/Down/Home/End move between the entries, Right/Left open and close sections (mirrored for rtl); the two upper levels are shown by default and the branch of the current section is opened, while searching all matches are shown
