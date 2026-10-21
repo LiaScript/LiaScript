@@ -10,6 +10,11 @@ import { offlineOpened } from './Resource'
 const BOARD = '__LiaScriptIndexBoard__'
 
 var connector: Connector | null = null
+
+// Course scripts (`@onload`) can ask for template state before the course
+// database is opened, `load` would then just return nothing.
+var courseOpened: () => void
+const opened = new Promise<void>((resolve) => (courseOpened = resolve))
 var elmSend: Lia.Send | null
 
 const Service = {
@@ -137,6 +142,7 @@ const Service = {
         if (isPersistent) {
           connector.open(param.readme, param.version, param.section_active)
         }
+        courseOpened()
 
         offlineOpened(param.readme)
 
@@ -278,6 +284,17 @@ const Service = {
     } else {
       console.warn('connector not initialized')
     }
+  },
+
+  // own template layers of the current course, see `LIA.classroom.layer`
+  loadTemplate: async function (name: string) {
+    await opened
+    return connector?.load({ table: 'template', id: name })
+  },
+
+  storeTemplate: async function (name: string, data: any[]) {
+    await opened
+    return connector?.store({ table: 'template', id: name, data })
   },
 
   getClassrooms: async function (uidDB: string) {

@@ -1,6 +1,7 @@
 import log from '../log'
 import { docId } from '../../sync/Base/persist'
 import * as peerCrypto from '../../sync/Base/peerCrypto'
+import type { TemplateLayer } from '../../sync/Base/db'
 
 var sync: any
 var elmSend: Lia.Send | null
@@ -82,6 +83,11 @@ const Service = {
         subscribe,
         unsubscribe,
         on,
+
+        layer,
+        array: shared('getArray'),
+        map: shared('getMap'),
+        text: shared('getText'),
       }
     }
   },
@@ -100,6 +106,8 @@ const Service = {
         if (sync) {
           sync.disconnect()
           sync = undefined
+          // until the new room is synced, nothing may be mirrored into it
+          window.LIA.classroom.connected = false
         }
 
         if (elmSend) {
@@ -360,6 +368,13 @@ const Service = {
         }
 
         if (sync) {
+          // an old connection may still finish a re-check after teardown
+          const db = sync.db
+          db.onTemplate = (name: string, layers: TemplateLayer[]) => {
+            if (sync?.db === db && window.LIA.classroom.connected) {
+              emitLayers(name, layers)
+            }
+          }
           sync.connect(event.message.param.config)
 
           const config = event.message.param.config
@@ -397,6 +412,7 @@ const Service = {
 
           window.LIA.classroom.publish = publish
           window.LIA.classroom.connected = false
+          for (const name in LAYERS) emitLayers(name, localView(name))
           CALLBACK.disconnect.forEach((cb) => cb())
         }
 
@@ -623,5 +639,113 @@ function onConnect() {
     }
   }
 
+  for (const name in LAYERS) mirror(name)
+
   CALLBACK.connect.forEach((cb) => cb())
+}
+
+//*************************************************************************
+// Template state
+//
+// `layer(name)`: an own layer per peer, kept locally (table `template`) and
+// mirrored into the classroom like quiz answers - so authorship and the
+// classroom mode decide who sees which layer, see `CRDT.getTemplate`.
+//
+// `array/map/text(name)`: one shared Yjs type for everyone, only while
+// connected, no authorship.
+
+type Layer = {
+  own: any[]
+  loaded: Promise<void>
+  // mirror runs one after another, otherwise two of them append the same tail
+  queue: Promise<void>
+  subs: ((layers: TemplateLayer[]) => void)[]
+}
+
+var LAYERS: { [name: string]: Layer } = {}
+
+function layer(name: string) {
+  let l = LAYERS[name]
+
+  if (!l) {
+    const fresh: Layer = {
+      own: [],
+      subs: [],
+      loaded: Promise.resolve(),
+      queue: Promise.resolve(),
+    }
+
+    fresh.loaded = Promise.resolve(Database?.loadTemplate(name))
+      .then((stored: any) => {
+        if (Array.isArray(stored)) fresh.own = stored.concat(fresh.own)
+      })
+      .catch((e: any) =>
+        log.warn('could not load template ->', name, e?.message || e),
+      )
+
+    l = LAYERS[name] = fresh
+    mirror(name)
+  }
+
+  return {
+    push(value: any) {
+      if (value === undefined) return
+
+      l.own.push(value)
+      // ponytail: rewrites the whole layer on every push, switch to one row
+      // per value if layers get really large
+      l.loaded
+        .then(() => Database?.storeTemplate(name, l.own))
+        .catch((e: any) =>
+          log.warn('could not store template ->', name, e?.message || e),
+        )
+
+      if (window.LIA.classroom.connected) mirror(name)
+      else l.loaded.then(() => emitLayers(name, localView(name)))
+    },
+
+    on(callback: (layers: TemplateLayer[]) => void) {
+      l.subs.push(callback)
+      l.loaded.then(async () =>
+        callback(
+          window.LIA.classroom.connected && sync
+            ? await sync.db.getTemplate(name)
+            : localView(name),
+        ),
+      )
+    },
+  }
+}
+
+function mirror(name: string) {
+  const l = LAYERS[name]
+
+  l.queue = l.queue
+    .then(() => l.loaded)
+    .then(() => {
+      if (window.LIA.classroom.connected && sync) {
+        return sync.db.syncTemplate(name, l.own.slice())
+      }
+    })
+    .catch((e: any) =>
+      log.warn('could not sync template ->', name, e?.message || e),
+    )
+}
+
+function localView(name: string): TemplateLayer[] {
+  return [{ id: '', name: '', me: true, values: LAYERS[name].own.slice() }]
+}
+
+function emitLayers(name: string, layers: TemplateLayer[]) {
+  LAYERS[name]?.subs.forEach((callback) => callback(layers))
+}
+
+function shared(kind: 'getArray' | 'getMap' | 'getText') {
+  return (name: string) => {
+    if (window.LIA.classroom.connected && sync) {
+      return sync.db.doc[kind]('tpl:' + name)
+    }
+
+    console.warn('Classroom: not connected, no shared state for =>', name)
+  }
 }

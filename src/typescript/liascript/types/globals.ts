@@ -167,6 +167,30 @@ declare global {
         publish: (topic: string, message: any) => void
 
         on: (event: 'connect' | 'disconnect', callback: () => void) => void
+
+        /** Own layer per peer, stored locally and mirrored into the
+         * classroom. Visibility follows the classroom mode like quizzes.
+         */
+        layer: (name: string) => {
+          push: (value: any) => void
+          on: (
+            callback: (
+              layers: {
+                id: string
+                name: string
+                me: boolean
+                values: any[]
+              }[],
+            ) => void,
+          ) => void
+        }
+
+        /** Shared Yjs types for everyone in the room (undefined if not
+         * connected), readable and writable by all peers in every mode.
+         */
+        array: (name: string) => any
+        map: (name: string) => any
+        text: (name: string) => any
       }
     }
   }
