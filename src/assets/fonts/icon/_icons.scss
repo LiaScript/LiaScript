@@ -500,197 +500,207 @@ $icon-mqtt: "\EA39";
   content: $icon-mqtt
 }
 
-$icon-nostr: "\EA3A";
+$icon-navigation-hide: "\EA3A";
+.icon-navigation-hide:before {
+  content: $icon-navigation-hide
+}
+
+$icon-navigation-show: "\EA3B";
+.icon-navigation-show:before {
+  content: $icon-navigation-show
+}
+
+$icon-nostr: "\EA3C";
 .icon-nostr:before {
   content: $icon-nostr
 }
 
-$icon-p2pt: "\EA3B";
+$icon-p2pt: "\EA3D";
 .icon-p2pt:before {
   content: $icon-p2pt
 }
 
-$icon-parallel: "\EA3C";
+$icon-parallel: "\EA3E";
 .icon-parallel:before {
   content: $icon-parallel
 }
 
-$icon-pause-circle: "\EA3D";
+$icon-pause-circle: "\EA3F";
 .icon-pause-circle:before {
   content: $icon-pause-circle
 }
 
-$icon-pause: "\EA3E";
+$icon-pause: "\EA40";
 .icon-pause:before {
   content: $icon-pause
 }
 
-$icon-peerjs: "\EA3F";
+$icon-peerjs: "\EA41";
 .icon-peerjs:before {
   content: $icon-peerjs
 }
 
-$icon-pencil: "\EA40";
+$icon-pencil: "\EA42";
 .icon-pencil:before {
   content: $icon-pencil
 }
 
-$icon-person: "\EA41";
+$icon-person: "\EA43";
 .icon-person:before {
   content: $icon-person
 }
 
-$icon-piechart: "\EA42";
+$icon-piechart: "\EA44";
 .icon-piechart:before {
   content: $icon-piechart
 }
 
-$icon-play-circle: "\EA43";
+$icon-play-circle: "\EA45";
 .icon-play-circle:before {
   content: $icon-play-circle
 }
 
-$icon-play: "\EA44";
+$icon-play: "\EA46";
 .icon-play:before {
   content: $icon-play
 }
 
-$icon-plus: "\EA45";
+$icon-plus: "\EA47";
 .icon-plus:before {
   content: $icon-plus
 }
 
-$icon-presentation: "\EA46";
+$icon-presentation: "\EA48";
 .icon-presentation:before {
   content: $icon-presentation
 }
 
-$icon-pubnub: "\EA47";
+$icon-pubnub: "\EA49";
 .icon-pubnub:before {
   content: $icon-pubnub
 }
 
-$icon-radar: "\EA48";
+$icon-radar: "\EA4A";
 .icon-radar:before {
   content: $icon-radar
 }
 
-$icon-refresh: "\EA49";
+$icon-refresh: "\EA4B";
 .icon-refresh:before {
   content: $icon-refresh
 }
 
-$icon-resolve: "\EA4A";
+$icon-resolve: "\EA4C";
 .icon-resolve:before {
   content: $icon-resolve
 }
 
-$icon-sankey: "\EA4B";
+$icon-sankey: "\EA4D";
 .icon-sankey:before {
   content: $icon-sankey
 }
 
-$icon-scatterplot: "\EA4C";
+$icon-scatterplot: "\EA4E";
 .icon-scatterplot:before {
   content: $icon-scatterplot
 }
 
-$icon-search: "\EA4D";
+$icon-search: "\EA4F";
 .icon-search:before {
   content: $icon-search
 }
 
-$icon-send: "\EA4E";
+$icon-send: "\EA50";
 .icon-send:before {
   content: $icon-send
 }
 
-$icon-settings: "\EA4F";
+$icon-settings: "\EA51";
 .icon-settings:before {
   content: $icon-settings
 }
 
-$icon-slides: "\EA50";
+$icon-slides: "\EA52";
 .icon-slides:before {
   content: $icon-slides
 }
 
-$icon-social: "\EA51";
+$icon-social: "\EA53";
 .icon-social:before {
   content: $icon-social
 }
 
-$icon-sort-asc: "\EA52";
+$icon-sort-asc: "\EA54";
 .icon-sort-asc:before {
   content: $icon-sort-asc
 }
 
-$icon-sort-desc: "\EA53";
+$icon-sort-desc: "\EA55";
 .icon-sort-desc:before {
   content: $icon-sort-desc
 }
 
-$icon-sound-off: "\EA54";
+$icon-sound-off: "\EA56";
 .icon-sound-off:before {
   content: $icon-sound-off
 }
 
-$icon-sound-on: "\EA55";
+$icon-sound-on: "\EA57";
 .icon-sound-on:before {
   content: $icon-sound-on
 }
 
-$icon-stop-circle: "\EA56";
+$icon-stop-circle: "\EA58";
 .icon-stop-circle:before {
   content: $icon-stop-circle
 }
 
-$icon-stop: "\EA57";
+$icon-stop: "\EA59";
 .icon-stop:before {
   content: $icon-stop
 }
 
-$icon-table: "\EA58";
+$icon-table: "\EA5A";
 .icon-table:before {
   content: $icon-table
 }
 
-$icon-torrent: "\EA59";
+$icon-torrent: "\EA5B";
 .icon-torrent:before {
   content: $icon-torrent
 }
 
-$icon-trash: "\EA5A";
+$icon-trash: "\EA5C";
 .icon-trash:before {
   content: $icon-trash
 }
 
-$icon-warning: "\EA5B";
+$icon-warning: "\EA5D";
 .icon-warning:before {
   content: $icon-warning
 }
 
-$icon-webrtc: "\EA5C";
+$icon-webrtc: "\EA5E";
 .icon-webrtc:before {
   content: $icon-webrtc
 }
 
-$icon-websocket: "\EA5D";
+$icon-websocket: "\EA5F";
 .icon-websocket:before {
   content: $icon-websocket
 }
 
-$icon-wordcloud: "\EA5E";
+$icon-wordcloud: "\EA60";
 .icon-wordcloud:before {
   content: $icon-wordcloud
 }
 
-$icon-zoom-out: "\EA5F";
+$icon-zoom-out: "\EA61";
 .icon-zoom-out:before {
   content: $icon-zoom-out
 }
 
-$icon-zoom: "\EA60";
+$icon-zoom: "\EA62";
 .icon-zoom:before {
   content: $icon-zoom
 }
