@@ -19,25 +19,60 @@
     max-width: 90vw;
     // more space at the end for the drop marker behind the last course
     padding: 1rem 1rem 2rem;
-    border: 0.25rem solid rgb(var(--color-highlight));
     border-radius: 1rem;
+    // a lane instead of a box, only the cards have borders
+    background-color: rgba(var(--color-highlight), 0.07);
+
+    @at-root html.lia-variant-dark & {
+      background-color: rgba(var(--color-highlight), 0.12);
+    }
   }
 
+  // name | actions (centered) | count
   &__header {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.5rem;
 
     .lia-input {
-      flex: 1;
       min-width: 0;
     }
   }
 
   &__title {
-    flex: 1;
     font-weight: bold;
     overflow-wrap: anywhere;
+  }
+
+  &__actions {
+    display: flex;
+  }
+
+  // the actions only appear on hover or focus, touch devices always show them
+  @media (hover: hover) {
+    &__actions {
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    &__column:hover &__actions,
+    &__actions:focus-within {
+      opacity: 1;
+    }
+  }
+
+  &__count {
+    justify-self: end;
+    min-width: 2.2rem;
+    padding: 0 0.6rem;
+    border-radius: 1.1rem;
+    background-color: rgb(var(--color-highlight));
+    color: white;
+    font-size: 1.3rem;
+    font-weight: bold;
+    line-height: 2.2rem;
+    text-align: center;
   }
 
   &__course,
@@ -64,8 +99,12 @@
   }
 
   // drop markers, a bar in the middle of the gap (cards 2rem, columns 2rem)
-  &--over {
-    background-color: rgba(var(--color-highlight), 0.1);
+  &__column#{&}--over {
+    background-color: rgba(var(--color-highlight), 0.2);
+
+    @at-root html.lia-variant-dark & {
+      background-color: rgba(var(--color-highlight), 0.3);
+    }
   }
 
   &--before::before,
@@ -106,11 +145,17 @@
     inset-inline-end: -1.2rem;
   }
 
+  // not a column yet, thus no lane but a dashed outline
   &__add {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    border-style: dashed;
+    background-color: transparent;
+    border: 0.25rem dashed rgb(var(--color-highlight));
+
+    @at-root html.lia-variant-dark & {
+      background-color: transparent;
+    }
   }
 }
 

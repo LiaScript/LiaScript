@@ -186,52 +186,60 @@ viewColumn hasShareAPI model names count i ( column, courses ) =
                             []
 
                     else
-                        title column.name courses
+                        title column.name
 
                 Nothing ->
-                    title column.name courses
-            , btnIcon
-                { title = "Rename column " ++ column.name
-                , tabbable = True
-                , msg = Just (RenameStart i)
-                , icon = "icon-pencil"
-                }
-                [ Attr.class "lia-btn--transparent", Attr.id (renameID i) ]
-            , btnIcon
-                { title = "Move column " ++ column.name ++ " to the left"
-                , tabbable = i > 0
-                , msg =
-                    if i > 0 then
-                        Just (ColumnMove i (i - 1))
+                    title column.name
 
-                    else
-                        Nothing
-                , icon = "icon-arrow-left"
-                }
-                [ Attr.class "lia-btn--transparent" ]
-            , btnIcon
-                { title = "Move column " ++ column.name ++ " to the right"
-                , tabbable = i < count - 1
-                , msg =
-                    if i < count - 1 then
-                        Just (ColumnMove i (i + 1))
-
-                    else
-                        Nothing
-                , icon = "icon-arrow-right"
-                }
-                [ Attr.class "lia-btn--transparent" ]
-            , if count > 1 then
-                btnIcon
-                    { title = "Delete column " ++ column.name ++ ", its courses move to the first column"
+            -- visible on hover or focus, see the scss
+            , Html.div [ Attr.class "lia-board__actions" ]
+                [ btnIcon
+                    { title = "Rename column " ++ column.name
                     , tabbable = True
-                    , msg = Just (ColumnDelete i)
-                    , icon = "icon-trash"
+                    , msg = Just (RenameStart i)
+                    , icon = "icon-pencil"
                     }
-                    [ Attr.class "lia-btn--transparent text-red-dark" ]
+                    [ Attr.class "lia-btn--transparent", Attr.id (renameID i) ]
+                , btnIcon
+                    { title = "Move column " ++ column.name ++ " to the left"
+                    , tabbable = i > 0
+                    , msg =
+                        if i > 0 then
+                            Just (ColumnMove i (i - 1))
 
-              else
-                Html.text ""
+                        else
+                            Nothing
+                    , icon = "icon-arrow-left"
+                    }
+                    [ Attr.class "lia-btn--transparent" ]
+                , btnIcon
+                    { title = "Move column " ++ column.name ++ " to the right"
+                    , tabbable = i < count - 1
+                    , msg =
+                        if i < count - 1 then
+                            Just (ColumnMove i (i + 1))
+
+                        else
+                            Nothing
+                    , icon = "icon-arrow-right"
+                    }
+                    [ Attr.class "lia-btn--transparent" ]
+                , if count > 1 then
+                    btnIcon
+                        { title = "Delete column " ++ column.name ++ ", its courses move to the first column"
+                        , tabbable = True
+                        , msg = Just (ColumnDelete i)
+                        , icon = "icon-trash"
+                        }
+                        [ Attr.class "lia-btn--transparent text-red-dark" ]
+
+                  else
+                    Html.text ""
+                ]
+            , Html.span [ Attr.class "lia-board__count" ]
+                [ Html.text (String.fromInt (List.length courses))
+                , Html.span [ Attr.class "hidden-visually" ] [ Html.text " courses" ]
+                ]
             ]
         , if List.isEmpty courses then
             Html.div [ Attr.class "lia-board__empty" ] [ Html.text "Drop courses here" ]
@@ -243,13 +251,9 @@ viewColumn hasShareAPI model names count i ( column, courses ) =
         ]
 
 
-title : String -> List Course -> Html Msg
-title name courses =
-    Html.span [ Attr.class "lia-board__title" ]
-        [ Html.text name
-        , Html.span [ Attr.class "lia-board__count" ]
-            [ Html.text <| " (" ++ String.fromInt (List.length courses) ++ ")" ]
-        ]
+title : String -> Html Msg
+title name =
+    Html.span [ Attr.class "lia-board__title" ] [ Html.text name ]
 
 
 viewCourse : Bool -> Model -> List String -> Int -> String -> Course -> Html Msg
