@@ -119,6 +119,19 @@
   position: relative;
   padding-inline-start: 1rem;
 
+  // like the buttons of the support menu (.lia-support-menu__item)
+  > .lia-btn {
+    font-size: 2rem;
+    color: rgb(var(--color-highlight));
+
+    @at-root html.lia-variant-dark & {
+      color: rgb(
+        from rgb(var(--color-highlight)) calc(r * 1.8) calc(g * 1.8)
+          calc(b * 1.8)
+      );
+    }
+  }
+
   &__list {
     display: none;
     position: absolute;
