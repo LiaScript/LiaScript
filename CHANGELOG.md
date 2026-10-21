@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 21/10/2026
+
+- feat: kanban board for the course overview – a layout dropdown on the left of the header switches between the list and the board; own columns can be added, renamed, reordered and deleted, courses are sorted into them by drag and drop (mouse and touch, press and hold) or via a select on the card; layout and columns are stored in the browser, new courses end up in the first column
+- feat: compact course cards on the board – image, title (at most three lines) and open button, the details can be expanded; without a logo the LiaScript bird is shown, zoomed into its head and colored per course
+- feat: the board shows where a dragged course or column will land, empty columns offer a drop area, on small screens a swipe stops at the start of a column
+- feat: columns as tinted lanes with a badge for the number of courses, their actions appear on hover or focus (always on touch devices)
+- feat: new icons for the list and the kanban layout
+- fix: broken logos of courses are hidden instead of showing a broken image
+
+
 ## [2.3.1] - 21/10/2026
 
 - feat: hide the navigation – a "Navigation" button next to the modes hides the table of contents and the header, a slim menu with floating buttons, next/previous arrows and the TTS bar remains; works with the classroom chat, on small screens (notes included) and in rtl
