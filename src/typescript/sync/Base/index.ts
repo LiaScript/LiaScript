@@ -405,9 +405,11 @@ export class Sync {
   }
 
   pubsubSend(topic: string, message: any) {
-    const stringifiedObject = JSON.stringify({ topic, message })
-    const encoder = new TextEncoder()
-    //this.broadcast(false, encoder.encode(stringifiedObject))
+    if (!this.provider) {
+      console.warn('Sync: pubsub not supported by this backend ->', topic)
+      return
+    }
+    this.provider.pubsub.publish(topic, message)
     if (this.replyOnReceive) {
       this.onReceive?.(topic, message)
     }

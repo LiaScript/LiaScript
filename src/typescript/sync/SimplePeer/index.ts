@@ -155,14 +155,6 @@ export class Sync extends Base.Sync {
       this.sendDisconnectError(message)
     }
   }
-  pubsubSend(topic: string, message: any): void {
-    if (this.provider) {
-      this.provider.pubsub.publish(topic, message)
-      if (this.replyOnReceive) {
-        this.onReceive?.(topic, message)
-      }
-    }
-  }
 }
 
 /** Only a hint for the dial rule: too large costs a small room a second hop,

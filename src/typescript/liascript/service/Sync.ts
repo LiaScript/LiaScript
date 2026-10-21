@@ -96,6 +96,7 @@ const Service = {
         // plaintext (a stray duplicate Yjs update is a no-op), but now that
         // encrypted backends hard-fail on a mismatched key, a leaked old
         // connection can spam decrypt-failure warnings forever.
+        BACKUP = {}
         if (sync) {
           sync.disconnect()
           sync = undefined
@@ -392,6 +393,7 @@ const Service = {
           sync.disconnect()
 
           sync = undefined
+          BACKUP = {}
 
           window.LIA.classroom.publish = publish
           window.LIA.classroom.connected = false
@@ -549,7 +551,9 @@ var CALLBACK: {
 
 function publish(topic: string, message: any) {
   console.warn(
-    'Classroom: not connected, cannot publish topic => ' + { topic, message },
+    'Classroom: not connected, cannot publish topic =>',
+    topic,
+    message,
   )
 }
 
@@ -561,7 +565,7 @@ function subscribe(topic: string, callback: (message: any) => void): number {
   }
   SUBSCRIPTIONS[topic].push({ id, callback })
 
-  if (BACKUP[topic]) {
+  if (topic in BACKUP) {
     setTimeout(() => callback(BACKUP[topic]), 100)
   }
 
