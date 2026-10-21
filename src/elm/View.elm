@@ -8,6 +8,8 @@ import Html.Events as Events
 import Index.View as Index
 import Lia.Script
 import Model exposing (Log, Model, State(..))
+import Svg
+import Svg.Attributes as SvgAttr
 import Update exposing (Msg(..))
 import Url
 
@@ -154,7 +156,7 @@ parsing model =
         model.log
 
 
-{-| The header (title, spinner, ...) above the list of loaded files. The list
+{-| The bird and the header (title, status, ...) above the list of loaded files. The list
 scrolls if it gets too long, the whole screen on small displays.
 -}
 screen : List (Html msg) -> List Log -> List (Html msg)
@@ -174,7 +176,7 @@ screen header logs =
         -- the texts are not translated
         , Attr.lang "en"
         ]
-        (Html.div [ Attr.style "width" "100%" ] header :: showLogs logs)
+        (tangram :: Html.div [ Attr.style "width" "100%" ] header :: showLogs logs)
     ]
 
 
@@ -188,9 +190,57 @@ loading logs =
     screen
         [ title "Loading"
         , status logs
-        , Html.div [ Attr.class "lds-dual-ring", Attr.attribute "aria-hidden" "true" ] []
         ]
         logs
+
+
+{-| The LiaScript bird, its pieces light up one after another.
+ponytail: fixed order instead of random, pure CSS without a script.
+-}
+tangram : Html msg
+tangram =
+    let
+        -- glow 1.35s + pause 0.4s per piece
+        step =
+            1.75
+
+        piece order fill points =
+            Svg.polygon
+                [ SvgAttr.fill fill
+                , SvgAttr.points points
+                , Attr.style "animation-delay" (String.fromFloat (toFloat order * step) ++ "s")
+                ]
+                []
+    in
+    Html.div [ Attr.style "width" "100%" ]
+        [ Html.node "style"
+            []
+            [ Html.text <|
+                ".lia-tangram polygon { animation: lia-tangram-glow "
+                    ++ String.fromFloat (8 * step)
+                    ++ "s ease-in-out infinite; }"
+                    -- 1.35s of 14s
+                    ++ "@keyframes lia-tangram-glow { 0%, 9.6%, 100% { filter: brightness(1); } 4.8% { filter: brightness(1.65) drop-shadow(0 0 8px rgba(202,207,0,.5)); } }"
+                    ++ "@media (prefers-reduced-motion: reduce) { .lia-tangram polygon { animation: none; } }"
+            ]
+        , Svg.svg
+            [ SvgAttr.class "lia-tangram"
+            , SvgAttr.viewBox "0 0 200 200"
+            , Attr.attribute "aria-hidden" "true"
+            , Attr.style "width" "50%"
+            , Attr.style "max-width" "160px"
+            , Attr.style "overflow" "visible"
+            ]
+            [ piece 0 "#59c5c7" "97,2 62,60 120,96"
+            , piece 5 "#00b6bd" "176,28 110,44 126,110"
+            , piece 2 "#00b6bd" "25,95 88,79 48,56"
+            , piece 7 "#cacf00" "89,83 57,91 65,123 97,115"
+            , piece 3 "#00b6bd" "53,92 23,99 30,130"
+            , piece 6 "#e2e34a" "93,83 104,128 131,145 120,100"
+            , piece 1 "#cacf00" "67,126 105,149 98,119"
+            , piece 4 "#e4e37d" "105,133 120,197 145,157"
+            ]
+        ]
 
 
 {-| Explains what is currently loaded, based on the files that are not finished
