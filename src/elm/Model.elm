@@ -1,5 +1,6 @@
 module Model exposing
-    ( Model
+    ( Log
+    , Model
     , State(..)
     )
 
@@ -57,8 +58,18 @@ type alias Model =
     , preload : Maybe Index.Course
     , session : Session
     , state : State
-    , log : List ( String, Maybe Bool, Maybe String )
+    , log : List Log
     , lia : Lia.Script.Model
+    }
+
+
+{-| A loaded file for the loading screen, `kind` is one of "readme",
+"template", "js" or "css", `ok` is `Nothing` while it is still loading.
+-}
+type alias Log =
+    { kind : String
+    , url : String
+    , ok : Maybe Bool
     }
 
 

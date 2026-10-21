@@ -31,16 +31,21 @@ export const Service = {
   handle: function (event: Lia.Event) {
     switch (event.message.cmd) {
       case 'script':
-        loadScript(event.message.param, true, false)
+      case 'module': {
+        const url = event.message.param
+        report('js', url)
+        loadScript(url, true, event.message.cmd === 'module', ok =>
+          report('js', url, ok)
+        )
         break
+      }
 
-      case 'module':
-        loadScript(event.message.param, true, true)
+      case 'link': {
+        const url = event.message.param
+        report('css', url)
+        loadLink(url, ok => report('css', url, ok))
         break
-
-      case 'link':
-        loadLink(event.message.param)
-        break
+      }
 
       case 'style':
         let tag = document.createElement('style')
@@ -63,6 +68,19 @@ export const Service = {
         log.warn('(Service ', this.PORT, ') unknown message =>', event.message)
     }
   },
+}
+
+/**
+ * Show the loading state of a resource on the loading screen, see `Update.elm`
+ * (`resource_log`), `ok` is undefined while it is still loading.
+ */
+function report(kind: string, url: string, ok?: boolean) {
+  elmSend?.({
+    reply: true,
+    track: [],
+    service: 'resource',
+    message: { cmd: 'resource_log', param: { kind, url, ok: ok ?? null } },
+  })
 }
 
 /**
@@ -241,7 +259,7 @@ export function loadScript(
 ) {
   // try to load all local scripts as blobs
   if (!url.startsWith('blob:') && origin(url) === window.location.origin) {
-    loadScriptAsBlob(url, withSemaphore, asModule)
+    loadScriptAsBlob(url, withSemaphore, asModule, callback)
     return
   }
 
@@ -414,7 +432,15 @@ function loadAsBlob(
  *
  * @param url - A valid URL string
  */
-function loadLink(url: string) {
+function loadLink(url: string, callback?: (ok: boolean) => void) {
+  const asBlob = () =>
+    loadAsBlob(
+      'link',
+      url,
+      (blobUrl: string) => loadLink(blobUrl, callback),
+      () => callback?.(false)
+    )
+
   try {
     // Chrome will CORB block this request, therefor it can only be loaded as blob
     if (!!window['chrome'] && !url.startsWith('blob:')) {
@@ -426,23 +452,22 @@ function loadLink(url: string) {
     tag.rel = 'stylesheet'
     tag.type = 'text/css'
 
+    tag.onload = () => callback?.(true)
     tag.onerror = _event => {
       console.warn('could not load =>', url)
-      loadAsBlob('link', url, (blobUrl: string) => {
-        loadLink(blobUrl)
-      })
+      if (url.startsWith('blob:')) callback?.(false)
+      else asBlob()
     }
 
     document.head.appendChild(tag)
   } catch (e: any) {
     if (url.startsWith('blob:')) {
       log.warn('failed loading style => ', url, e.message)
+      callback?.(false)
     } else {
       log.warn('could not load =>', url, e)
       log.warn('will try to import as blob')
-      loadAsBlob('link', url, (blobUrl: string) => {
-        loadLink(blobUrl)
-      })
+      asBlob()
     }
   }
 }
