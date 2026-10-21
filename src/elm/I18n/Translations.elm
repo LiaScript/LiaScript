@@ -1021,8 +1021,14 @@ baseAbc lang =
         Am ->
             "አማ"
 
+        Ar ->
+            "أب"
+
+        Bg ->
+            "Аа"
+
         Bn ->
-            "এবিসি"
+            "অআ"
 
         Ca ->
             "Aa"
@@ -1033,7 +1039,13 @@ baseAbc lang =
         Da ->
             "Aa"
 
+        De ->
+            "Aa"
+
         El ->
+            "Aa"
+
+        Es ->
             "Aa"
 
         Et ->
@@ -1042,17 +1054,29 @@ baseAbc lang =
         Eu ->
             "Aa"
 
+        Fa ->
+            "اب"
+
         Fi ->
+            "Aa"
+
+        Fr ->
             "Aa"
 
         Ga ->
             "Aa"
+
+        Hi ->
+            "अआ"
 
         Hr ->
             "Aa"
 
         Hu ->
             "Aa"
+
+        Hy ->
+            "Աա"
 
         It ->
             "Aa"
@@ -1075,8 +1099,11 @@ baseAbc lang =
         Nb ->
             "Aa"
 
+        Nl ->
+            "Aa"
+
         Pa ->
-            "ਏਬੀਸੀ"
+            "ਅਆ"
 
         Pl ->
             "Aa"
@@ -1086,6 +1113,9 @@ baseAbc lang =
 
         Ro ->
             "Aa"
+
+        Ru ->
+            "Аа"
 
         Sk ->
             "Aa"
@@ -1105,8 +1135,17 @@ baseAbc lang =
         Tr ->
             "Aa"
 
+        Tw ->
+            "字"
+
+        Uk ->
+            "Аа"
+
         Ur ->
             "Aa"
+
+        Zh ->
+            "字"
 
         _ ->
             "Aa"
@@ -7504,6 +7543,142 @@ modeSlides lang =
             "Slides"
 
 
+modeNavigation : Lang -> String
+modeNavigation lang =
+    case lang of
+        Am ->
+            "ዳሰሳን ደብቅ"
+
+        Ar ->
+            "إخفاء التنقل"
+
+        Bg ->
+            "Скриване на навигацията"
+
+        Bn ->
+            "নেভিগেশন লুকান"
+
+        Ca ->
+            "Amaga la navegació"
+
+        Cs ->
+            "Skrýt navigaci"
+
+        Da ->
+            "Skjul navigation"
+
+        De ->
+            "Navigation ausblenden"
+
+        El ->
+            "Απόκρυψη πλοήγησης"
+
+        Es ->
+            "Ocultar navegación"
+
+        Et ->
+            "Peida navigeerimine"
+
+        Eu ->
+            "Ezkutatu nabigazioa"
+
+        Fa ->
+            "پنهان کردن ناوبری"
+
+        Fi ->
+            "Piilota navigointi"
+
+        Fr ->
+            "Masquer la navigation"
+
+        Ga ->
+            "Folaigh an nascleanúint"
+
+        Hi ->
+            "नेविगेशन छिपाएँ"
+
+        Hr ->
+            "Sakrij navigaciju"
+
+        Hu ->
+            "Navigáció elrejtése"
+
+        Hy ->
+            "Թաքցնել նավարկումը"
+
+        It ->
+            "Nascondi navigazione"
+
+        Ja ->
+            "ナビゲーションを隠す"
+
+        Ka ->
+            "ნავიგაციის დამალვა"
+
+        Ko ->
+            "탐색 숨기기"
+
+        Lt ->
+            "Slėpti naršymą"
+
+        Lv ->
+            "Paslēpt navigāciju"
+
+        Nb ->
+            "Skjul navigasjon"
+
+        Nl ->
+            "Navigatie verbergen"
+
+        Pa ->
+            "ਨੈਵੀਗੇਸ਼ਨ ਲੁਕਾਓ"
+
+        Pl ->
+            "Ukryj nawigację"
+
+        Pt ->
+            "Ocultar navegação"
+
+        Ro ->
+            "Ascunde navigarea"
+
+        Ru ->
+            "Скрыть навигацию"
+
+        Sk ->
+            "Skryť navigáciu"
+
+        Sl ->
+            "Skrij navigacijo"
+
+        Sq ->
+            "Fshih navigimin"
+
+        Sv ->
+            "Dölj navigering"
+
+        Sw ->
+            "Ficha urambazaji"
+
+        Tr ->
+            "Gezinmeyi gizle"
+
+        Tw ->
+            "隱藏導覽"
+
+        Uk ->
+            "Сховати навігацію"
+
+        Ur ->
+            "نیویگیشن چھپائیں"
+
+        Zh ->
+            "隐藏导航"
+
+        _ ->
+            "Hide navigation"
+
+
 soundOn : Lang -> String
 soundOn lang =
     case lang of
@@ -8454,6 +8629,414 @@ infoVersion lang =
 
         _ ->
             "Version: "
+
+
+infoOffline : Lang -> String
+infoOffline lang =
+    case lang of
+        Am ->
+            "ሚዲያን ከመስመር ውጭ ለመጠቀም አውርድ"
+
+        Ar ->
+            "تنزيل الوسائط للاستخدام دون اتصال"
+
+        Bg ->
+            "Изтегляне на медиите за офлайн използване"
+
+        Bn ->
+            "অফলাইনে ব্যবহারের জন্য মিডিয়া ডাউনলোড করুন"
+
+        Ca ->
+            "Baixa els mitjans per a ús sense connexió"
+
+        Cs ->
+            "Stáhnout média pro použití offline"
+
+        Da ->
+            "Download medier til offlinebrug"
+
+        De ->
+            "Medien für offline herunterladen"
+
+        El ->
+            "Λήψη πολυμέσων για χρήση εκτός σύνδεσης"
+
+        Es ->
+            "Descargar multimedia para usar sin conexión"
+
+        Et ->
+            "Laadi meedia alla võrguühenduseta kasutamiseks"
+
+        Eu ->
+            "Deskargatu multimedia lineaz kanpo erabiltzeko"
+
+        Fa ->
+            "دانلود رسانه‌ها برای استفادهٔ آفلاین"
+
+        Fi ->
+            "Lataa media offline-käyttöön"
+
+        Fr ->
+            "Télécharger les médias pour une utilisation hors ligne"
+
+        Ga ->
+            "Íoslódáil meáin le húsáid as líne"
+
+        Hi ->
+            "ऑफ़लाइन उपयोग के लिए मीडिया डाउनलोड करें"
+
+        Hr ->
+            "Preuzmi medije za izvanmrežnu upotrebu"
+
+        Hu ->
+            "Médiafájlok letöltése offline használatra"
+
+        Hy ->
+            "Ներբեռնել մեդիան անցանց օգտագործման համար"
+
+        It ->
+            "Scarica i media per l'uso offline"
+
+        Ja ->
+            "オフライン用にメディアをダウンロード"
+
+        Ka ->
+            "მედიის ჩამოტვირთვა ხაზგარეშე გამოყენებისთვის"
+
+        Ko ->
+            "오프라인용 미디어 다운로드"
+
+        Lt ->
+            "Atsisiųsti mediją naudoti neprisijungus"
+
+        Lv ->
+            "Lejupielādēt multividi lietošanai bezsaistē"
+
+        Nb ->
+            "Last ned medier for frakoblet bruk"
+
+        Nl ->
+            "Media downloaden voor offline gebruik"
+
+        Pa ->
+            "ਔਫਲਾਈਨ ਵਰਤੋਂ ਲਈ ਮੀਡੀਆ ਡਾਊਨਲੋਡ ਕਰੋ"
+
+        Pl ->
+            "Pobierz multimedia do użytku offline"
+
+        Pt ->
+            "Baixar mídia para uso offline"
+
+        Ro ->
+            "Descarcă media pentru utilizare offline"
+
+        Ru ->
+            "Скачать медиафайлы для офлайн-использования"
+
+        Sk ->
+            "Stiahnuť médiá na použitie offline"
+
+        Sl ->
+            "Prenesi medije za uporabo brez povezave"
+
+        Sq ->
+            "Shkarko mediat për përdorim jashtë linje"
+
+        Sv ->
+            "Ladda ner media för offlineanvändning"
+
+        Sw ->
+            "Pakua media kwa matumizi nje ya mtandao"
+
+        Tr ->
+            "Medyayı çevrimdışı kullanım için indir"
+
+        Tw ->
+            "下載媒體以供離線使用"
+
+        Uk ->
+            "Завантажити медіа для офлайн-використання"
+
+        Ur ->
+            "آف لائن استعمال کے لیے میڈیا ڈاؤن لوڈ کریں"
+
+        Zh ->
+            "下载媒体以供离线使用"
+
+        _ ->
+            "Download media for offline use"
+
+
+infoOfflineFailed : Lang -> String
+infoOfflineFailed lang =
+    case lang of
+        Am ->
+            "አልተሳካም"
+
+        Ar ->
+            "فشل"
+
+        Bg ->
+            "неуспешни"
+
+        Bn ->
+            "ব্যর্থ"
+
+        Ca ->
+            "fallits"
+
+        Cs ->
+            "selhalo"
+
+        Da ->
+            "mislykkedes"
+
+        De ->
+            "fehlgeschlagen"
+
+        El ->
+            "απέτυχαν"
+
+        Es ->
+            "fallidos"
+
+        Et ->
+            "ebaõnnestus"
+
+        Eu ->
+            "huts egin du"
+
+        Fa ->
+            "ناموفق"
+
+        Fi ->
+            "epäonnistui"
+
+        Fr ->
+            "échoués"
+
+        Ga ->
+            "theip"
+
+        Hi ->
+            "विफल"
+
+        Hr ->
+            "neuspjelo"
+
+        Hu ->
+            "sikertelen"
+
+        Hy ->
+            "ձախողվել է"
+
+        It ->
+            "non riusciti"
+
+        Ja ->
+            "失敗"
+
+        Ka ->
+            "ვერ მოხერხდა"
+
+        Ko ->
+            "실패"
+
+        Lt ->
+            "nepavyko"
+
+        Lv ->
+            "neizdevās"
+
+        Nb ->
+            "mislyktes"
+
+        Nl ->
+            "mislukt"
+
+        Pa ->
+            "ਅਸਫਲ"
+
+        Pl ->
+            "nieudane"
+
+        Pt ->
+            "falharam"
+
+        Ro ->
+            "eșuate"
+
+        Ru ->
+            "не удалось"
+
+        Sk ->
+            "zlyhalo"
+
+        Sl ->
+            "neuspešno"
+
+        Sq ->
+            "dështuan"
+
+        Sv ->
+            "misslyckades"
+
+        Sw ->
+            "imeshindwa"
+
+        Tr ->
+            "başarısız"
+
+        Tw ->
+            "失敗"
+
+        Uk ->
+            "не вдалося"
+
+        Ur ->
+            "ناکام"
+
+        Zh ->
+            "失败"
+
+        _ ->
+            "failed"
+
+
+infoOfflineStatus : Lang -> String
+infoOfflineStatus lang =
+    case lang of
+        Am ->
+            "ሚዲያ ከመስመር ውጭ"
+
+        Ar ->
+            "الوسائط دون اتصال"
+
+        Bg ->
+            "Медии офлайн"
+
+        Bn ->
+            "মিডিয়া অফলাইন"
+
+        Ca ->
+            "Mitjans sense connexió"
+
+        Cs ->
+            "Média offline"
+
+        Da ->
+            "Medier offline"
+
+        De ->
+            "Medien offline"
+
+        El ->
+            "Πολυμέσα εκτός σύνδεσης"
+
+        Es ->
+            "Multimedia sin conexión"
+
+        Et ->
+            "Meedia võrguühenduseta"
+
+        Eu ->
+            "Multimedia lineaz kanpo"
+
+        Fa ->
+            "رسانه‌ها آفلاین"
+
+        Fi ->
+            "Media offline-tilassa"
+
+        Fr ->
+            "Médias hors ligne"
+
+        Ga ->
+            "Meáin as líne"
+
+        Hi ->
+            "मीडिया ऑफ़लाइन"
+
+        Hr ->
+            "Mediji izvan mreže"
+
+        Hu ->
+            "Média offline"
+
+        Hy ->
+            "Մեդիան անցանց"
+
+        It ->
+            "Media offline"
+
+        Ja ->
+            "オフラインのメディア"
+
+        Ka ->
+            "მედია ხაზგარეშე"
+
+        Ko ->
+            "오프라인 미디어"
+
+        Lt ->
+            "Medija neprisijungus"
+
+        Lv ->
+            "Multivide bezsaistē"
+
+        Nb ->
+            "Medier frakoblet"
+
+        Nl ->
+            "Media offline"
+
+        Pa ->
+            "ਮੀਡੀਆ ਔਫਲਾਈਨ"
+
+        Pl ->
+            "Multimedia offline"
+
+        Pt ->
+            "Mídia offline"
+
+        Ro ->
+            "Media offline"
+
+        Ru ->
+            "Медиа офлайн"
+
+        Sk ->
+            "Médiá offline"
+
+        Sl ->
+            "Mediji brez povezave"
+
+        Sq ->
+            "Mediat jashtë linje"
+
+        Sv ->
+            "Media offline"
+
+        Sw ->
+            "Media nje ya mtandao"
+
+        Tr ->
+            "Çevrimdışı medya"
+
+        Tw ->
+            "離線媒體"
+
+        Uk ->
+            "Медіа офлайн"
+
+        Ur ->
+            "میڈیا آف لائن"
+
+        Zh ->
+            "离线媒体"
+
+        _ ->
+            "Media offline"
 
 
 confInformation : Lang -> String
@@ -19062,34 +19645,4 @@ chatSend lang =
 
         _ ->
             "Send message"
-
-
-infoOffline : Lang -> String
-infoOffline lang =
-    case lang of
-        De ->
-            "Medien für offline herunterladen"
-
-        _ ->
-            "Download media for offline use"
-
-
-infoOfflineFailed : Lang -> String
-infoOfflineFailed lang =
-    case lang of
-        De ->
-            "fehlgeschlagen"
-
-        _ ->
-            "failed"
-
-
-infoOfflineStatus : Lang -> String
-infoOfflineStatus lang =
-    case lang of
-        De ->
-            "Medien offline"
-
-        _ ->
-            "Media offline"
 

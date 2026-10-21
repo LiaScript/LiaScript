@@ -259,7 +259,7 @@ btnNavigation grouping lang tabbable navigation =
             , onClick (Toggle Navigation)
             , A11y_Key.tabbable tabbable
             , A11y_Aria.hidden (not tabbable)
-            , A11y_Aria.pressed (Just navigation)
+            , A11y_Aria.pressed (Just (not navigation))
             ]
         )
         [ Html.i
@@ -274,7 +274,7 @@ btnNavigation grouping lang tabbable navigation =
                        )
             ]
             []
-        , Html.span [ Attr.class "lia-btn__text" ] [ Html.text "Navigation" ]
+        , Html.span [ Attr.class "lia-btn__text" ] [ Html.text (Trans.modeNavigation lang) ]
         ]
 
 
