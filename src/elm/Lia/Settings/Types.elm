@@ -53,9 +53,18 @@ type alias Settings =
     , showQRCode : Bool
     , tts : TTS
     , chat : { show : Bool, updates : Bool }
+    , navigation : Bool
     , audio : { pitch : String, rate : String }
     , fullscreen : Bool
     , edit : Maybe String
+
+    -- progress of "save course offline" (stored and all slides, failed media
+    -- files), not persisted
+    , offline : Maybe { slides : Int, total : Int, failed : Int }
+
+    -- the connector provides an index (home button), not within LMS packages
+    -- like SCORM or xAPI, set by `Main.init`, not persisted
+    , hasIndex : Bool
     }
 
 
@@ -164,9 +173,12 @@ init hasShareApi isFullscreen mode =
         { show = False
         , updates = False
         }
+    , navigation = True
     , audio = { pitch = "1", rate = "1" }
     , fullscreen = isFullscreen
     , edit = Nothing
+    , offline = Nothing
+    , hasIndex = False
     }
 
 

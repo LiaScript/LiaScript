@@ -100,6 +100,7 @@ init flags url key =
                 Nothing
                 (Session (Maybe.withDefault False flags.hasShareAPI) key flags.screen url_)
                 state_
+                []
                 (Lia.Script.init
                     { seed = flags.seed
                     , hasShareApi = flags.hasShareAPI
@@ -112,6 +113,13 @@ init flags url key =
                     , origin = lia_.origin
                     , anchor = lia_.anchor
                     }
+                    |> (\lia ->
+                            let
+                                settings =
+                                    lia.settings
+                            in
+                            { lia | settings = { settings | hasIndex = flags.hasIndex } }
+                       )
                 )
 
         decodedQuery =

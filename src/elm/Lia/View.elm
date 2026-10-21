@@ -67,6 +67,7 @@ view screen hasIndex model =
             :: newTabHint model.translation
             :: viewIndex modalIsActive hasIndex model
             :: viewSlide modalIsActive screen model
+            ++ [ Settings.viewOfflineStatus model.translation model.settings.offline ]
         )
 
 
@@ -135,7 +136,21 @@ viewSlide : Bool -> Screen -> Model -> List (Html Msg)
 viewSlide modalIsActive screen model =
     case get_active_section model of
         Just section ->
-            [ Html.div (deactivate modalIsActive [ Attr.class "lia-slide" ])
+            [ Html.div
+                (deactivate modalIsActive
+                    [ Attr.class "lia-slide"
+
+                    -- share of the course pane, places the footer buttons next to the chat
+                    , Attr.attribute "style" <|
+                        "--lia-pane-first: "
+                            ++ (if panes screen model == SplitPane.Both then
+                                    String.fromFloat (SplitPane.share model.pane)
+
+                                else
+                                    "1"
+                               )
+                    ]
+                )
                 [ slideTopBar screen
                     model
                     (Definition.merge model.definition section.definition)
@@ -202,27 +217,33 @@ viewProgress model effect_model =
         |> (\percent -> percent ++ "%")
 
 
+{-| **@private:** Which panes are shown, the chat only if connected and opened.
+-}
+panes : Screen -> Model -> SplitPane.Visible
+panes screen model =
+    case
+        ( model.settings.chat.show
+        , Sync_.isConnected model.sync.state
+        , screen.width > Const.globalBreakpoints.sm
+        )
+    of
+        ( True, True, True ) ->
+            SplitPane.Both
+
+        ( True, True, False ) ->
+            SplitPane.OnlySecond
+
+        _ ->
+            SplitPane.OnlyFirst
+
+
 viewPanes : Screen -> Model -> Html Msg
 viewPanes screen model =
     Html.div
         [ Attr.class "lia-slide__container"
         ]
         [ SplitPane.view (Trans.baseResize model.translation)
-            (case
-                ( model.settings.chat.show
-                , Sync_.isConnected model.sync.state
-                , screen.width > Const.globalBreakpoints.sm
-                )
-             of
-                ( True, True, True ) ->
-                    SplitPane.Both
-
-                ( True, True, False ) ->
-                    SplitPane.OnlySecond
-
-                _ ->
-                    SplitPane.OnlyFirst
-            )
+            (panes screen model)
             Pane
             (model.sections
                 |> Array.toIndexedList
@@ -314,6 +335,7 @@ slideBottom { lang, tiny, settings, slide, effects, translated } =
                 in
                 Html.div
                     [ Attr.class "lia-responsive-voice"
+                    , Attr.classList [ ( "lia-responsive-voice--silent", not sound ) ]
                     , if tiny then
                         Attr.style "padding" "0px"
 
@@ -666,8 +688,9 @@ slideTopBar screen model def progress =
                 ]
         , progress = progress
         , active = True
+        , left = []
+        , toMsg = UpdateSettings
         }
-        |> Html.map UpdateSettings
 
 
 slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg

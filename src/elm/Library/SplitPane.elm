@@ -1,5 +1,5 @@
 module Library.SplitPane exposing
-    ( State, init
+    ( State, init, share
     , Msg, update, subscriptions
     , Visible(..), view
     )
@@ -8,7 +8,7 @@ module Library.SplitPane exposing
 down version of [elm-split-pane](https://github.com/doodledood/elm-split-pane):
 horizontal only, the splitter position is a share of the width between 0 and 1.
 
-@docs State, init
+@docs State, init, share
 @docs Msg, update, subscriptions
 @docs Visible, view
 
@@ -33,6 +33,13 @@ type State
         { position : Float
         , drag : Maybe { width : Int, x : Int }
         }
+
+
+{-| The splitter position, the share of the width of the first pane.
+-}
+share : State -> Float
+share (State state) =
+    state.position
 
 
 {-| Which of the two panes are shown, only `Both` shows the splitter.
