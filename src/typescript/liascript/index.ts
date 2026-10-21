@@ -250,6 +250,7 @@ export class LiaScript {
     Translate.init(elmSend)
     Sync.init(elmSend, Database)
     Zip.init(elmSend)
+    Resource.init(elmSend)
     Torrent.init(elmSend, Database)
     Nostr.init(elmSend)
 

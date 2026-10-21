@@ -12,6 +12,7 @@ port module Update exposing
 import Array
 import Base64
 import Browser
+import Browser.Dom
 import Browser.Events
 import Browser.Navigation as Navigation
 import Conditional.List as CList
@@ -31,7 +32,7 @@ import Lia.Model
 import Lia.Script
 import Lia.Utils exposing (checkPersistency)
 import Library.IPFS as IPFS
-import Model exposing (Model, State(..))
+import Model exposing (Log, Model, State(..))
 import Process
 import Return exposing (Return)
 import Service.Database
@@ -104,6 +105,8 @@ type Msg
     | Port_JIT String
     | Port_Compile String
     | GotResponse String (Result Http.Error ResponseData)
+    | Proceed
+    | Ignore
 
 
 type ResponseData
@@ -196,7 +199,10 @@ update msg model =
                 ( Nothing, _, ( "index_get", param ) ) ->
                     case Index.decodeGet param of
                         Ok ( url, course ) ->
-                            ( { model | preload = course }
+                            ( { model
+                                | preload = course
+                                , log = updateLog "readme" url Nothing model.log
+                              }
                             , if isURI url then
                                 download False url
 
@@ -227,6 +233,22 @@ update msg model =
                             ( { model | preload = Nothing }
                             , download_text_or_zip model.lia.readme
                             )
+
+                ( Nothing, _, ( "resource_log", param ) ) ->
+                    case
+                        JD.decodeValue
+                            (JD.map3 updateLog
+                                (JD.field "kind" JD.string)
+                                (JD.field "url" JD.string)
+                                (JD.field "ok" (JD.nullable JD.bool))
+                            )
+                            param
+                    of
+                        Ok log ->
+                            ( { model | log = log model.log }, focusProceed )
+
+                        Err _ ->
+                            ( model, Cmd.none )
 
                 ( Nothing, _, ( "lang", param ) ) ->
                     case JD.decodeValue (JD.list JD.string) param of
@@ -420,8 +442,16 @@ update msg model =
         LiaParse ->
             parsing model
 
-        Load_ReadMe_Result _ (Ok readme) ->
-            load_readme readme model
+        Proceed ->
+            -- hides the warning about resources that could not be loaded
+            ( { model | log = [] }, Cmd.none )
+
+        Ignore ->
+            ( model, Cmd.none )
+
+        Load_ReadMe_Result url (Ok readme) ->
+            { model | log = updateLog "readme" url (Just True) model.log }
+                |> load_readme readme
 
         Load_ReadMe_Result url (Err info) ->
             case info of
@@ -432,6 +462,7 @@ update msg model =
                             | state =
                                 Error.Message.badStatus url errorCode
                                     |> Error.Report.add model.state
+                            , log = updateLog "readme" url (Just False) model.log
                         }
 
                 _ ->
@@ -450,10 +481,11 @@ update msg model =
                                 | state =
                                     Error.Message.loadingCourse url info
                                         |> Error.Report.add model.state
+                                , log = updateLog "readme" url (Just False) model.log
                             }
 
                     else if isOffline info && model.preload /= Nothing then
-                        restore model
+                        restore { model | log = updateLog "readme" url (Just False) model.log }
 
                     else if IPFS.isIPFS url then
                         ( model
@@ -487,27 +519,29 @@ update msg model =
                         template
                             |> removeCR
                             |> Lia.Script.add_imports { model = model.lia, base = url }
-                    , state =
-                        case model.state of
-                            Parsing b templates ->
-                                Parsing b (templates - 1)
-
-                            _ ->
-                                model.state
+                    , state = templateLoaded model.state
+                    , log = updateLog "template" url (Just True) model.log
                     , templates = Dict.insert url template model.templates
                 }
 
-        Load_Template_Result url (Err info) ->
+        Load_Template_Result url (Err _) ->
             if String.startsWith Const.urlProxy url then
-                startWithError
+                -- the course starts without it, the loading screen warns about it
+                parsing
                     { model
-                        | state =
-                            Error.Message.loadingResource url info
-                                |> Error.Report.add model.state
+                        | state = templateLoaded model.state
+                        , log = updateLog "template" url (Just False) model.log
                     }
 
             else
-                ( model, download True (IPFS.toHTTPS (Const.urlProxy ++ url) url) )
+                ( { model
+                    | log =
+                        model.log
+                            |> updateLog "template" url (Just False)
+                            |> updateLog "template" (IPFS.toHTTPS (Const.urlProxy ++ url) url) Nothing
+                  }
+                , download True (IPFS.toHTTPS (Const.urlProxy ++ url) url)
+                )
 
         GotResponse url (Ok responseData) ->
             case responseData of
@@ -528,6 +562,57 @@ update msg model =
 
         GotResponse url (Err info) ->
             update (Load_ReadMe_Result url (Err info)) model
+
+
+{-| Keyboard users would otherwise tab through the course below the warning, it
+is only there if some resources could not be loaded, see `View.overlay`.
+ponytail: waits 100ms for the view to be rendered.
+-}
+focusProceed : Cmd Msg
+focusProceed =
+    Process.sleep 100
+        |> Task.andThen (\_ -> Browser.Dom.focus "lia-proceed")
+        |> Task.attempt (always Ignore)
+
+
+logResource : Definition.Resource -> List Log -> List Log
+logResource resource =
+    case resource of
+        Definition.Link url ->
+            updateLog "css" url Nothing
+
+        Definition.Script url ->
+            updateLog "js" url Nothing
+
+        Definition.Module url ->
+            updateLog "js" url Nothing
+
+
+templateLoaded : State -> State
+templateLoaded state =
+    case state of
+        Parsing b templates ->
+            Parsing b (templates - 1)
+
+        _ ->
+            state
+
+
+updateLog : String -> String -> Maybe Bool -> List Log -> List Log
+updateLog kind url ok log =
+    if List.any (.url >> (==) url) log then
+        List.map
+            (\entry ->
+                if entry.url == url then
+                    { entry | ok = ok }
+
+                else
+                    entry
+            )
+            log
+
+    else
+        log ++ [ Log kind url ok ]
 
 
 restore : Model -> ( Model, Cmd Msg )
@@ -593,9 +678,14 @@ start model =
         | state = Running
         , lia = return.value
         , session = session
+
+        -- scripts and styles are loaded by `Resource.ts` after the first slide
+        -- got rendered, until then the loading screen would disappear
+        , log = List.foldl logResource model.log lia.resource
       }
     , Cmd.batch
         [ batch LiaScript return
+        , focusProceed
         , if session.url.fragment == Nothing then
             Session.navToSlide session slide
 
@@ -706,6 +796,11 @@ load model initial =
                         |> Parsing True
                 , code = initial.code
                 , size = code_ |> Tuple.first >> String.length >> toFloat
+                , log =
+                    initial.templates
+                        |> List.foldl
+                            (\url -> updateLog "template" url Nothing)
+                            model.log
               }
             , initial.templates
                 |> List.map (download True)
@@ -834,6 +929,8 @@ initIndex : Model -> ( Model, Cmd Msg )
 initIndex model =
     ( model
     , [ Service.Database.index_list
+            |> Event.push "index"
+      , Service.Database.index_board_get
             |> Event.push "index"
       , Service.Local.clear
       ]

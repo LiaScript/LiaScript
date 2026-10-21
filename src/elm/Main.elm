@@ -109,6 +109,13 @@ init flags url key =
                         , origin = lia_.origin
                         , anchor = lia_.anchor
                         }
+                        |> (\lia ->
+                                let
+                                    settings =
+                                        lia.settings
+                                in
+                                { lia | settings = { settings | hasIndex = flags.hasIndex } }
+                           )
             in
             Model 4
                 0
@@ -118,6 +125,7 @@ init flags url key =
                 Nothing
                 (Session (Maybe.withDefault False flags.hasShareAPI) key flags.screen url_)
                 state_
+                []
                 model_
                 model_
                 Dict.empty

@@ -114,31 +114,30 @@
     <link rel="icon" href="../../assets/logo.png" type="image/png" />
 
     <style>
-      .lds-dual-ring {
-        display: inline-block;
-        width: 150px;
-        height: 150px;
+      /* same as the bird in View.elm (tangram), shown until Elm takes over */
+      body {
+        margin: 0;
       }
 
-      .lds-dual-ring:after {
-        content: ' ';
-        display: block;
-        width: 128px;
-        height: 128px;
-        margin: 1px;
-        border-radius: 50%;
-        border: 5px solid #fff;
-        border-color: #000 transparent #000 transparent;
-        animation: lds-dual-ring 1.2s linear infinite;
+      .lia-tangram polygon {
+        animation: lia-tangram-glow 14s ease-in-out infinite;
       }
 
-      @keyframes lds-dual-ring {
-        0% {
-          transform: rotate(0deg);
+      @keyframes lia-tangram-glow {
+        0%,
+        9.6%,
+        100% {
+          filter: brightness(1);
         }
 
-        100% {
-          transform: rotate(360deg);
+        4.8% {
+          filter: brightness(1.65) drop-shadow(0 0 8px rgba(202, 207, 0, 0.5));
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .lia-tangram polygon {
+          animation: none;
         }
       }
     </style>
@@ -184,10 +183,28 @@
       <p>Thanks.</p>
     </div>
 
-    <div style="width: 100%; text-align: center; top: 25%; position: absolute">
-      <h1>Loading</h1>
-      <br />
-      <div class="lds-dual-ring"></div>
-    </div>
+    <main
+      lang="en"
+      style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; box-sizing: border-box; padding: 1em; text-align: center"
+    >
+      <div style="width: 100%">
+        <svg
+          class="lia-tangram"
+          viewBox="0 0 200 200"
+          aria-hidden="true"
+          style="width: 50%; max-width: 160px; overflow: visible"
+        >
+          <polygon fill="#59c5c7" points="97,2 62,60 120,96" style="animation-delay: 0s" />
+          <polygon fill="#00b6bd" points="176,28 110,44 126,110" style="animation-delay: 8.75s" />
+          <polygon fill="#00b6bd" points="25,95 88,79 48,56" style="animation-delay: 3.5s" />
+          <polygon fill="#cacf00" points="89,83 57,91 65,123 97,115" style="animation-delay: 12.25s" />
+          <polygon fill="#00b6bd" points="53,92 23,99 30,130" style="animation-delay: 5.25s" />
+          <polygon fill="#e2e34a" points="93,83 104,128 131,145 120,100" style="animation-delay: 10.5s" />
+          <polygon fill="#cacf00" points="67,126 105,149 98,119" style="animation-delay: 1.75s" />
+          <polygon fill="#e4e37d" points="105,133 120,197 145,157" style="animation-delay: 7s" />
+        </svg>
+      </div>
+      <div style="width: 100%"><h1>Loading</h1></div>
+    </main>
   </body>
 </html>
