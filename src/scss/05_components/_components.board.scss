@@ -1,0 +1,90 @@
+// kanban view of the index (Index.View.Board)
+.lia-board {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  overflow-x: auto;
+  padding-block-end: 1rem;
+
+  &__column {
+    flex: 0 0 36rem;
+    max-width: 90vw;
+    padding: 1rem;
+    border: 0.25rem solid rgb(var(--color-highlight));
+    border-radius: 1rem;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    .lia-input {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  &__title {
+    flex: 1;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+  }
+
+  &__course,
+  &__header[draggable='true'] {
+    cursor: grab;
+  }
+
+  &--dragging {
+    opacity: 0.4;
+  }
+
+  &__add {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-style: dashed;
+  }
+}
+
+// layout dropdown on the left edge of the index header
+.lia-layout-menu {
+  position: relative;
+  padding-inline-start: 1rem;
+
+  &__list {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: max-content;
+    padding: 0.5rem;
+    background-color: rgb(var(--color-background));
+    border: 0.1rem solid rgb(var(--color-highlight));
+    border-radius: 0.5rem;
+
+    &.active {
+      display: flex;
+    }
+
+    // icons and names in one column each
+    .lia-btn {
+      justify-content: flex-start;
+      text-align: start;
+    }
+
+    [aria-pressed='true'] {
+      color: rgb(var(--color-highlight));
+      font-weight: bold;
+    }
+  }
+}
+
+// column select as the last row of a card in the kanban board
+.lia-card__move {
+  margin: 0.5rem 2.4rem 0;
+  width: calc(100% - 4.8rem);
+}

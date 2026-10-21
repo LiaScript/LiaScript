@@ -688,8 +688,9 @@ slideTopBar screen model def progress =
                 ]
         , progress = progress
         , active = True
+        , left = []
+        , toMsg = UpdateSettings
         }
-        |> Html.map UpdateSettings
 
 
 slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg

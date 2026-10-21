@@ -910,6 +910,8 @@ initIndex model =
     ( model
     , [ Service.Database.index_list
             |> Event.push "index"
+      , Service.Database.index_board_get
+            |> Event.push "index"
       , Service.Local.clear
       ]
         |> List.map event2js

@@ -19,15 +19,18 @@ import Lia.Markdown.Inline.View as Inline
 import Lia.Utils exposing (btn, btnIcon)
 
 
-card : Bool -> Course -> Html Msg
-card hasShareAPI course =
+{-| `extra` is appended as the last row of the card, e.g. the column select of
+the kanban board.
+-}
+card : Bool -> List (Html Msg) -> Course -> Html Msg
+card hasShareAPI extra course =
     get_active course
-        |> Maybe.map (article hasShareAPI course)
+        |> Maybe.map (article hasShareAPI extra course)
         |> Maybe.withDefault (Html.text "something went wrong")
 
 
-article : Bool -> Course -> Release -> Html Msg
-article hasShareAPI course { title, definition } =
+article : Bool -> List (Html Msg) -> Course -> Release -> Html Msg
+article hasShareAPI extra course { title, definition } =
     Html.article
         [ Attr.class "lia-card"
         , A11y_Aria.label (stringify title)
@@ -42,11 +45,13 @@ article hasShareAPI course { title, definition } =
             |> icon
         , logo definition.logo
         , Html.div [ Attr.class "lia-card__content" ]
-            [ header title definition.macro
-            , body definition.comment
-            , controls hasShareAPI title definition course
-            , footer definition.author
-            ]
+            ([ header title definition.macro
+             , body definition.comment
+             , controls hasShareAPI title definition course
+             , footer definition.author
+             ]
+                ++ extra
+            )
         ]
 
 
@@ -113,6 +118,9 @@ icon url =
     Html.img
         [ Attr.class "lia-card__icon"
         , Attr.src url
+
+        -- the kanban board drags the whole card, not the image
+        , Attr.draggable "false"
         , Attr.alt ""
         , Attr.attribute "loading" "lazy"
         ]
@@ -128,6 +136,7 @@ logo url =
         Html.img
             [ Attr.class "lia-card__logo"
             , Attr.src url
+            , Attr.draggable "false"
             , Attr.attribute "loading" "lazy"
             , Attr.alt ""
             ]

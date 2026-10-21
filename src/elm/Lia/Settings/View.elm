@@ -1250,7 +1250,8 @@ doAction =
 
 
 {-| The header with the support menu, `buttons` are the menus (`menu`, `menu1`,
-`menu2`), the first one (chat) is only shown if online.
+`menu2`), the first one (chat) is only shown if online. `left` goes to the left
+edge, `toMsg` maps the messages of the support menu.
 -}
 header :
     { online : Bool
@@ -1261,14 +1262,16 @@ header :
     , logo : String
     , progress : String
     , buttons : List (Lang -> Bool -> Settings -> Html Msg)
+    , left : List (Html msg)
+    , toMsg : Msg -> msg
     }
-    -> Html Msg
-header { online, active, lang, screen, settings, logo, progress, buttons } =
+    -> Html msg
+header { online, active, lang, screen, settings, logo, progress, buttons, left, toMsg } =
     let
         tabbable =
             screen.width >= Const.globalBreakpoints.md || settings.support_menu
     in
-    [ Html.div [ Attr.class "lia-header__left" ] []
+    [ Html.div [ Attr.class "lia-header__left" ] left
     , Html.div [ Attr.class "lia-header__middle" ]
         [ Html.img
             [ Attr.src logo
@@ -1317,6 +1320,7 @@ header { online, active, lang, screen, settings, logo, progress, buttons } =
                 ]
             ]
         ]
+        |> Html.map toMsg
     , Html.div [ Attr.class "lia-progress", Attr.style "width" progress ] []
     ]
         |> Html.header

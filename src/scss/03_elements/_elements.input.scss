@@ -1,5 +1,6 @@
 @use 'sass:color';
 @use '../00_settings/settings.global';
+@use '../../assets/fonts/icon/icons';
 
 @use 'sass:math';
 
@@ -117,7 +118,7 @@ input[type='search']::-webkit-search-results-decoration {
 
   &:after {
     color: white;
-    content: '\EA11';
+    content: icons.$icon-check;
     font-family: 'icon';
     left: 50%;
     opacity: 0;

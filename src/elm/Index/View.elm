@@ -5,9 +5,10 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onInput)
 import I18n.Translations exposing (Lang(..))
-import Index.Model exposing (Course, Modal(..), Model, urlInputID)
+import Index.Model exposing (Course, Layout(..), Modal(..), Model, urlInputID)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
+import Index.View.Board as Board
 import Index.View.Card exposing (card)
 import Index.View.Modal as Modal
 import Lia.Settings.Types exposing (Settings)
@@ -32,8 +33,14 @@ view session settings model =
                 [ \_ _ _ -> Html.text ""
                 , Settings.menu1 "settings" Settings.menuSettings session.screen.width
                 ]
+            , left =
+                if List.isEmpty model.courses then
+                    []
+
+                else
+                    [ Board.layoutMenu model.layoutMenu model.layout ]
+            , toMsg = UpdateSettings
             }
-            |> Html.map UpdateSettings
         , Html.div
             (deactivate (model.modal /= Nothing) [ Attr.class "lia-slide__container" ])
             [ Html.main_
@@ -71,7 +78,12 @@ view session settings model =
                         [ Html.p [ Attr.style "padding-block-start" "1rem" ]
                             [ Html.text "These courses are stored locally in your browser and are only visible to you. You can access them offline and safely remove or reset any of them at any time."
                             ]
-                        , Masonry.view config model.masonry
+                        , case model.layout of
+                            Grid ->
+                                Masonry.view config model.masonry
+
+                            Kanban ->
+                                Board.view session.share model
                         ]
 
                   else
@@ -92,7 +104,7 @@ view session settings model =
 
 itemView : Bool -> Masonry.Id -> Course -> Html Msg
 itemView hasShareAPI _ course =
-    card hasShareAPI course
+    card hasShareAPI [] course
 
 
 searchBar : String -> Html Msg
