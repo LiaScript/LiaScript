@@ -230,3 +230,14 @@ export function identicon(id: string): { color: string; symbol: string } {
     symbol: IDENTICON_SYMBOLS[sum % IDENTICON_SYMBOLS.length],
   }
 }
+
+/** Freeze a JSON value with everything inside, so template code cannot
+ * change shared layer values in place (they are cached and synchronized).
+ */
+export function deepFreeze<T>(value: T): T {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    Object.freeze(value)
+    for (const key of Object.keys(value)) deepFreeze((value as any)[key])
+  }
+  return value
+}

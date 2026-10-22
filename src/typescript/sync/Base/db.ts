@@ -996,7 +996,7 @@ export class CRDT {
         if (value === undefined) return undefined
         if (enc) this.templateCache.set(raw.iv, value)
       }
-      plain.push(value)
+      plain.push(helper.deepFreeze(value))
     }
 
     return plain

@@ -180,24 +180,28 @@ declare global {
         unsubscribe: (id: number) => void
         publish: (topic: string, message: any) => void
 
+        /** returns a function to remove the callback again */
         on: {
-          (event: 'connect' | 'disconnect', callback: () => void): void
+          (event: 'connect' | 'disconnect', callback: () => void): () => void
           /** joined, left, renamed or a new owner, called at once as well */
           (
             event: 'peers',
             callback: (peers: Lia.ClassroomPerson[]) => void,
-          ): void
+          ): () => void
         }
 
         /** Own layer per peer, stored locally and mirrored into the
          * classroom. Visibility follows the classroom mode like quizzes.
          */
         layer: (name: string) => {
-          push: (value: any) => void
+          /** Values are stored as frozen JSON copies. Resolves once stored
+           * (and written into the classroom), rejects with the reason. */
+          push: (value: any) => Promise<void>
           /** without `id` the own layer, with `id` the layer of another
            * peer, which only the classroom owner may change */
-          set: (values: any[], id?: string) => void
+          set: (values: any[], id?: string) => Promise<void>
           get: () => any[]
+          /** returns a function to remove the callback again */
           on: (
             callback: (
               layers: {
@@ -213,7 +217,7 @@ declare global {
               /** remote: the own layer was changed by someone else */
               info: { remote: boolean },
             ) => void,
-          ) => void
+          ) => () => void
         }
 
         /** Shared Yjs types for everyone in the room (undefined if not

@@ -2,7 +2,7 @@ import log from '../log'
 import { docId } from '../../sync/Base/persist'
 import * as peerCrypto from '../../sync/Base/peerCrypto'
 import type { TemplateLayer } from '../../sync/Base/db'
-import { identicon } from '../../helper'
+import { identicon, deepFreeze } from '../../helper'
 
 var sync: any
 var elmSend: Lia.Send | null
@@ -635,35 +635,29 @@ function unsubscribe(id: number) {
   }
 }
 
-function on(event: 'connect' | 'disconnect' | 'peers', callback: (peers?: Person[]) => void) {
-  switch (event) {
-    case 'connect': {
-      CALLBACK.connect.push(callback)
-
-      // if the callback is added after the connection was established
-      if (window.LIA.classroom.connected) {
-        callback()
-      }
-
-      break
-    }
-
-    case 'disconnect': {
-      CALLBACK.disconnect.push(callback)
-      break
-    }
-
-    // somebody joined or left, changed the name, or the owner changed
-    case 'peers': {
-      CALLBACK.peers.push(callback)
-      callback(peers())
-      break
-    }
-
-    default: {
-      console.warn('Classroom: unknown event -> ' + event)
-    }
+// returns a function to remove the callback again
+function on(
+  event: 'connect' | 'disconnect' | 'peers',
+  callback: (peers?: Person[]) => void,
+): () => void {
+  const list: ((peers?: Person[]) => void)[] | undefined = CALLBACK[event]
+  if (!list) {
+    console.warn('Classroom: unknown event -> ' + event)
+    return () => {}
   }
+
+  list.push(callback)
+
+  // called at once if the state already holds
+  if (event === 'peers') callback(peers())
+  else if (event === 'connect' && window.LIA.classroom.connected) callback()
+
+  return () => remove(list, callback)
+}
+
+function remove<T>(list: T[], item: T) {
+  const i = list.indexOf(item)
+  if (i >= 0) list.splice(i, 1)
 }
 
 function onReceive(topic: string, data: any) {
@@ -789,7 +783,7 @@ function layer(name: string) {
         if (!stored || fresh.replaced) return
         // older entries are a plain array
         const values = Array.isArray(stored) ? stored : stored.values
-        fresh.own = (values || []).concat(fresh.own)
+        fresh.own = (values || []).map(deepFreeze).concat(fresh.own)
         fresh.time = Math.max(fresh.time, stored.time || 0)
         fresh.synced = stored.synced || 0
       })
@@ -801,33 +795,34 @@ function layer(name: string) {
     if (window.LIA.classroom.connected) reconcile(name)
   }
 
+  // push and set resolve once the change is stored (and written into the
+  // classroom, when connected), and reject with the reason otherwise
   return {
-    push(value: any) {
-      if (value === undefined) return
+    push(value: any): Promise<void> {
+      if (value === undefined) return Promise.resolve()
+      value = frozen(value)
       l.own.push(value)
       const time = (l.time = Date.now())
-      changed(name, time, (db) => db.appendTemplate(name, value, time))
+      return changed(name, time, (db) => db.appendTemplate(name, value, time))
     },
 
     // Replace the own layer (undo, erase, move), or with an `id` the layer
     // of another peer, which only the classroom owner may do.
-    set(values: any[], id?: string) {
-      values = values.filter((value) => value !== undefined)
+    set(values: any[], id?: string): Promise<void> {
+      values = values.filter((value) => value !== undefined).map(frozen)
       const time = Date.now()
 
       if (id && id !== ownId()) {
-        if (window.LIA.classroom.connected) {
-          write(name, (db) => db.writeTemplate(id, name, values, time))
-        } else {
-          console.warn('Classroom: not connected, cannot change layer of =>', id)
+        if (!window.LIA.classroom.connected) {
+          return Promise.reject(new Error(`not connected, cannot change the layer of ${id}`))
         }
-        return
+        return write(name, (db) => db.writeTemplate(id, name, values, time))
       }
 
       l.own = values
       l.time = time
       l.replaced = true
-      changed(name, time, (db) => db.writeTemplate(ownId(), name, values, time), true)
+      return changed(name, time, (db) => db.writeTemplate(ownId(), name, values, time), true)
     },
 
     // a copy of the own layer
@@ -835,18 +830,26 @@ function layer(name: string) {
       return l.own.slice()
     },
 
+    // returns a function to remove the callback again
     on(callback: (layers: TemplateLayer[], info: { remote: boolean }) => void) {
       l.subs.push(callback)
-      l.loaded.then(async () =>
-        callback(
+      l.loaded.then(async () => {
+        const layers =
           window.LIA.classroom.connected && sync
             ? await sync.db.getTemplate(name)
-            : localView(name),
-          { remote: false },
-        ),
-      )
+            : localView(name)
+        if (l.subs.includes(callback)) callback(layers, { remote: false })
+      })
+      return () => remove(l.subs, callback)
     },
   }
+}
+
+// A JSON copy that cannot be changed in place, values are cached and shared.
+// The copy also shows at once what does not survive storing and syncing
+// (Date, Map, functions ...). Already frozen values are ours.
+function frozen(value: any) {
+  return Object.isFrozen(value) ? value : deepFreeze(JSON.parse(JSON.stringify(value)))
 }
 
 function changed(
@@ -854,23 +857,24 @@ function changed(
   time: number,
   op: (db: any) => Promise<void>,
   now = false,
-) {
+): Promise<void> {
   const l = LAYERS[name]
 
   // store at once, only a stroke (many pushes per second) at most every 300ms
   if (l.saving && !now) l.pending = true
   else save(name)
 
-  if (window.LIA.classroom.connected) write(name, op, time)
-  else l.loaded.then(() => emitLayers(name, localView(name)))
+  if (window.LIA.classroom.connected) return write(name, op, time)
+
+  return l.loaded.then(() => emitLayers(name, localView(name)))
 }
 
 // `time`: an own change, the room is up to date with it once it is written
-function write(name: string, op: (db: any) => Promise<void>, time = 0) {
+function write(name: string, op: (db: any) => Promise<void>, time = 0): Promise<void> {
   const l = LAYERS[name]
   l.ops++
 
-  l.queue = l.queue
+  const done = l.queue
     .then(() => l.loaded)
     .then(async () => {
       if (window.LIA.classroom.connected && sync) {
@@ -878,10 +882,14 @@ function write(name: string, op: (db: any) => Promise<void>, time = 0) {
         l.synced = Math.max(l.synced, time)
       }
     })
-    .catch((e: any) =>
-      log.warn('could not sync template ->', name, e?.message || e),
-    )
     .finally(() => l.ops--)
+
+  // the queue goes on after a failed write, the caller gets the error
+  l.queue = done.catch((e: any) =>
+    log.warn('could not sync template ->', name, e?.message || e),
+  )
+
+  return done
 }
 
 // On a new connection: without own changes made offline the own layer just
@@ -890,6 +898,7 @@ function write(name: string, op: (db: any) => Promise<void>, time = 0) {
 function reconcile(name: string) {
   const l = LAYERS[name]
 
+  // nobody waits for this one, a failure is logged by write()
   write(name, async (db) => {
     if (l.time <= l.synced) {
       // ponytail: "no layer in the room yet" can also mean "not synced yet",
@@ -908,7 +917,7 @@ function reconcile(name: string) {
       emitLayers(name, await db.getTemplate(name), { remote: true })
     }
     l.synced = l.time
-  })
+  }).catch(() => {})
 }
 
 // While connected the room copy is the truth: Yjs merges what the owner and
