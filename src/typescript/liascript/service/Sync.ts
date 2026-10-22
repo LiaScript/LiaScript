@@ -639,7 +639,11 @@ function onConnect() {
     }
   }
 
-  for (const name in LAYERS) mirror(name)
+  // the room may hold an older copy of the own layer (persistent classroom)
+  for (const name in LAYERS) {
+    LAYERS[name].diff = true
+    mirror(name)
+  }
 
   CALLBACK.connect.forEach((cb) => cb())
 }
@@ -661,6 +665,12 @@ type Layer = {
   queue: Promise<void>
   subs: ((layers: TemplateLayer[]) => void)[]
   saving?: ReturnType<typeof setTimeout>
+  pending: boolean
+  // the room copy may differ from `own` not only by a missing tail (set, a
+  // new connection), the next mirror has to compare
+  diff: boolean
+  // set() before loading finished replaces the stored layer
+  replaced: boolean
 }
 
 var LAYERS: { [name: string]: Layer } = {}
@@ -674,11 +684,16 @@ function layer(name: string) {
       subs: [],
       loaded: Promise.resolve(),
       queue: Promise.resolve(),
+      diff: true,
+      replaced: false,
+      pending: false,
     }
 
     fresh.loaded = Promise.resolve(Database?.loadTemplate(name))
       .then((stored: any) => {
-        if (Array.isArray(stored)) fresh.own = stored.concat(fresh.own)
+        if (Array.isArray(stored) && !fresh.replaced) {
+          fresh.own = stored.concat(fresh.own)
+        }
       })
       .catch((e: any) =>
         log.warn('could not load template ->', name, e?.message || e),
@@ -691,14 +706,21 @@ function layer(name: string) {
   return {
     push(value: any) {
       if (value === undefined) return
-
       l.own.push(value)
+      changed(name)
+    },
 
-      // a stroke pushes many values per second, store at most twice a second
-      if (!l.saving) l.saving = setTimeout(() => save(name), 500)
+    // replace the own layer, e.g. for undo, delete or move
+    set(values: any[]) {
+      l.own = values.filter((value) => value !== undefined)
+      l.replaced = true
+      l.diff = true
+      changed(name)
+    },
 
-      if (window.LIA.classroom.connected) mirror(name)
-      else l.loaded.then(() => emitLayers(name, localView(name)))
+    // a copy of the own layer
+    get(): any[] {
+      return l.own.slice()
     },
 
     on(callback: (layers: TemplateLayer[]) => void) {
@@ -714,6 +736,17 @@ function layer(name: string) {
   }
 }
 
+function changed(name: string) {
+  const l = LAYERS[name]
+
+  // store at once, but a stroke (many values per second) at most every 300ms
+  if (l.saving) l.pending = true
+  else save(name)
+
+  if (window.LIA.classroom.connected) mirror(name)
+  else l.loaded.then(() => emitLayers(name, localView(name)))
+}
+
 function mirror(name: string) {
   const l = LAYERS[name]
 
@@ -721,7 +754,14 @@ function mirror(name: string) {
     .then(() => l.loaded)
     .then(() => {
       if (window.LIA.classroom.connected && sync) {
-        return sync.db.syncTemplate(name, l.own.slice())
+        const diff = l.diff
+        l.diff = false
+        return sync.db
+          .syncTemplate(name, l.own.slice(), diff)
+          .catch((e: any) => {
+            l.diff = true
+            throw e
+          })
       }
     })
     .catch((e: any) =>
@@ -734,7 +774,11 @@ function mirror(name: string) {
 function save(name: string) {
   const l = LAYERS[name]
   clearTimeout(l.saving)
-  l.saving = undefined
+  l.pending = false
+  l.saving = setTimeout(() => {
+    l.saving = undefined
+    if (l.pending) save(name)
+  }, 300)
   l.loaded
     .then(() => Database?.storeTemplate(name, l.own))
     .catch((e: any) =>
@@ -744,7 +788,7 @@ function save(name: string) {
 
 // do not lose the last strokes when the page is closed while saving waits
 window.addEventListener('pagehide', () => {
-  for (const name in LAYERS) if (LAYERS[name].saving) save(name)
+  for (const name in LAYERS) if (LAYERS[name].pending) save(name)
 })
 
 // the same id the classroom uses (see sync/Base), so a layer keeps its id

@@ -951,20 +951,8 @@ export class CRDT {
         | undefined
       if (!values) continue
 
-      const plain: any[] = []
-      for (const raw of values.toArray()) {
-        const enc = peerCrypto.isEncryptedValue(raw)
-        let value = enc ? this.templateCache.get(raw.iv) : undefined
-        if (value === undefined) {
-          value = await this.decryptSectionValue(peerId, raw)
-          if (value === undefined) break
-          if (enc) this.templateCache.set(raw.iv, value)
-        }
-        plain.push(value)
-      }
-
-      // a layer is either readable as a whole or not at all
-      if (plain.length < values.length) continue
+      const plain = await this.readTemplate(peerId, values)
+      if (!plain) continue
 
       layers.push({
         id: peerId,
@@ -975,6 +963,27 @@ export class CRDT {
     }
 
     return layers
+  }
+
+  // A layer is either readable as a whole or not at all (undefined).
+  protected async readTemplate(
+    peerId: string,
+    values: Y.Array<any>,
+  ): Promise<any[] | undefined> {
+    const plain: any[] = []
+
+    for (const raw of values.toArray()) {
+      const enc = peerCrypto.isEncryptedValue(raw)
+      let value = enc ? this.templateCache.get(raw.iv) : undefined
+      if (value === undefined) {
+        value = await this.decryptSectionValue(peerId, raw)
+        if (value === undefined) return undefined
+        if (enc) this.templateCache.set(raw.iv, value)
+      }
+      plain.push(value)
+    }
+
+    return plain
   }
 
   protected async fireTemplates() {
@@ -991,12 +1000,28 @@ export class CRDT {
     }
   }
 
-  // Mirror the local own layer (the source of truth) into the room: append
-  // what the room copy is missing, rewrite it only if the room has more.
-  async syncTemplate(name: string, local: any[]) {
-    const current = this.ownTemplate(name)?.length ?? 0
-    if (current === local.length) return
-    const from = current > local.length ? 0 : current
+  // Mirror the local own layer (the source of truth) into the room. After a
+  // push the room copy is a prefix, only the tail is appended. With `diff`
+  // (after set() or a new connection) the room copy is compared and only
+  // rewritten from the first value that differs - an undo costs one delete.
+  async syncTemplate(name: string, local: any[], diff = false) {
+    const array = this.ownTemplate(name)
+    const current = array?.length ?? 0
+    let from = current > local.length ? 0 : current
+
+    if (diff && array) {
+      const room = (await this.readTemplate(this.peerID, array)) || []
+      from = 0
+      while (
+        from < room.length &&
+        from < local.length &&
+        JSON.stringify(room[from]) === JSON.stringify(local[from])
+      ) {
+        from++
+      }
+    }
+
+    if (from === current && from === local.length) return
 
     const values = await Promise.all(
       local.slice(from).map((value) => this.sealValue(value)),
@@ -1004,7 +1029,7 @@ export class CRDT {
 
     this.doc.transact(() => {
       const array = this.ownTemplate(name, true)!
-      if (from === 0 && array.length > 0) array.delete(0, array.length)
+      if (array.length > from) array.delete(from, array.length - from)
       array.push(values)
     }, this.peerID)
   }

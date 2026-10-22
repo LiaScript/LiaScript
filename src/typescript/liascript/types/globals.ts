@@ -173,6 +173,8 @@ declare global {
          */
         layer: (name: string) => {
           push: (value: any) => void
+          set: (values: any[]) => void
+          get: () => any[]
           on: (
             callback: (
               layers: {
