@@ -173,7 +173,9 @@ declare global {
          */
         layer: (name: string) => {
           push: (value: any) => void
-          set: (values: any[]) => void
+          /** without `id` the own layer, with `id` the layer of another
+           * peer, which only the classroom owner may change */
+          set: (values: any[], id?: string) => void
           get: () => any[]
           on: (
             callback: (
@@ -181,8 +183,11 @@ declare global {
                 id: string
                 name: string
                 me: boolean
+                editable: boolean
                 values: any[]
               }[],
+              /** remote: the own layer was changed by someone else */
+              info: { remote: boolean },
             ) => void,
           ) => void
         }

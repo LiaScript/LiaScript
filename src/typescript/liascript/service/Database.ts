@@ -292,7 +292,10 @@ const Service = {
     return connector?.load({ table: 'template', id: name })
   },
 
-  storeTemplate: async function (name: string, data: any[]) {
+  storeTemplate: async function (
+    name: string,
+    data: { values: any[]; time: number; synced: number },
+  ) {
     await opened
     return connector?.store({ table: 'template', id: name, data })
   },

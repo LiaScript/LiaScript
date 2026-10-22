@@ -370,9 +370,13 @@ const Service = {
         if (sync) {
           // an old connection may still finish a re-check after teardown
           const db = sync.db
-          db.onTemplate = (name: string, layers: TemplateLayer[]) => {
+          db.onTemplate = (
+            name: string,
+            layers: TemplateLayer[],
+            ownTime: number,
+          ) => {
             if (sync?.db === db && window.LIA.classroom.connected) {
-              emitLayers(name, layers)
+              roomChanged(name, layers, ownTime)
             }
           }
           sync.connect(event.message.param.config)
@@ -639,11 +643,8 @@ function onConnect() {
     }
   }
 
-  // the room may hold an older copy of the own layer (persistent classroom)
-  for (const name in LAYERS) {
-    LAYERS[name].diff = true
-    mirror(name)
-  }
+  // the room may hold an older or a newer copy of the own layer
+  for (const name in LAYERS) reconcile(name)
 
   CALLBACK.connect.forEach((cb) => cb())
 }
@@ -660,15 +661,19 @@ function onConnect() {
 
 type Layer = {
   own: any[]
+  // last change of the own layer, the newer copy wins on a new connection
+  time: number
+  // `time` of the last state that matched the room, own changes made while
+  // offline are newer
+  synced: number
   loaded: Promise<void>
-  // mirror runs one after another, otherwise two of them append the same tail
+  // writes into the classroom, one after another
   queue: Promise<void>
-  subs: ((layers: TemplateLayer[]) => void)[]
+  // writes still waiting in the queue, the room copy is behind `own`
+  ops: number
+  subs: ((layers: TemplateLayer[], info: { remote: boolean }) => void)[]
   saving?: ReturnType<typeof setTimeout>
   pending: boolean
-  // the room copy may differ from `own` not only by a missing tail (set, a
-  // new connection), the next mirror has to compare
-  diff: boolean
   // set() before loading finished replaces the stored layer
   replaced: boolean
 }
@@ -681,41 +686,60 @@ function layer(name: string) {
   if (!l) {
     const fresh: Layer = {
       own: [],
+      time: 0,
+      synced: 0,
       subs: [],
       loaded: Promise.resolve(),
       queue: Promise.resolve(),
-      diff: true,
+      ops: 0,
       replaced: false,
       pending: false,
     }
 
     fresh.loaded = Promise.resolve(Database?.loadTemplate(name))
       .then((stored: any) => {
-        if (Array.isArray(stored) && !fresh.replaced) {
-          fresh.own = stored.concat(fresh.own)
-        }
+        if (!stored || fresh.replaced) return
+        // older entries are a plain array
+        const values = Array.isArray(stored) ? stored : stored.values
+        fresh.own = (values || []).concat(fresh.own)
+        fresh.time = Math.max(fresh.time, stored.time || 0)
+        fresh.synced = stored.synced || 0
       })
       .catch((e: any) =>
         log.warn('could not load template ->', name, e?.message || e),
       )
 
     l = LAYERS[name] = fresh
-    mirror(name)
+    if (window.LIA.classroom.connected) reconcile(name)
   }
 
   return {
     push(value: any) {
       if (value === undefined) return
       l.own.push(value)
-      changed(name)
+      const time = (l.time = Date.now())
+      changed(name, time, (db) => db.appendTemplate(name, value, time))
     },
 
-    // replace the own layer, e.g. for undo, delete or move
-    set(values: any[]) {
-      l.own = values.filter((value) => value !== undefined)
+    // Replace the own layer (undo, erase, move), or with an `id` the layer
+    // of another peer, which only the classroom owner may do.
+    set(values: any[], id?: string) {
+      values = values.filter((value) => value !== undefined)
+      const time = Date.now()
+
+      if (id && id !== ownId()) {
+        if (window.LIA.classroom.connected) {
+          write(name, (db) => db.writeTemplate(id, name, values, time))
+        } else {
+          console.warn('Classroom: not connected, cannot change layer of =>', id)
+        }
+        return
+      }
+
+      l.own = values
+      l.time = time
       l.replaced = true
-      l.diff = true
-      changed(name)
+      changed(name, time, (db) => db.writeTemplate(ownId(), name, values, time), true)
     },
 
     // a copy of the own layer
@@ -723,50 +747,103 @@ function layer(name: string) {
       return l.own.slice()
     },
 
-    on(callback: (layers: TemplateLayer[]) => void) {
+    on(callback: (layers: TemplateLayer[], info: { remote: boolean }) => void) {
       l.subs.push(callback)
       l.loaded.then(async () =>
         callback(
           window.LIA.classroom.connected && sync
             ? await sync.db.getTemplate(name)
             : localView(name),
+          { remote: false },
         ),
       )
     },
   }
 }
 
-function changed(name: string) {
+function changed(
+  name: string,
+  time: number,
+  op: (db: any) => Promise<void>,
+  now = false,
+) {
   const l = LAYERS[name]
 
-  // store at once, but a stroke (many values per second) at most every 300ms
-  if (l.saving) l.pending = true
+  // store at once, only a stroke (many pushes per second) at most every 300ms
+  if (l.saving && !now) l.pending = true
   else save(name)
 
-  if (window.LIA.classroom.connected) mirror(name)
+  if (window.LIA.classroom.connected) write(name, op, time)
   else l.loaded.then(() => emitLayers(name, localView(name)))
 }
 
-function mirror(name: string) {
+// `time`: an own change, the room is up to date with it once it is written
+function write(name: string, op: (db: any) => Promise<void>, time = 0) {
   const l = LAYERS[name]
+  l.ops++
 
   l.queue = l.queue
     .then(() => l.loaded)
-    .then(() => {
+    .then(async () => {
       if (window.LIA.classroom.connected && sync) {
-        const diff = l.diff
-        l.diff = false
-        return sync.db
-          .syncTemplate(name, l.own.slice(), diff)
-          .catch((e: any) => {
-            l.diff = true
-            throw e
-          })
+        await op(sync.db)
+        l.synced = Math.max(l.synced, time)
       }
     })
     .catch((e: any) =>
       log.warn('could not sync template ->', name, e?.message || e),
     )
+    .finally(() => l.ops--)
+}
+
+// On a new connection: without own changes made offline the own layer just
+// follows the room (the room may still be syncing, writing now would merge an
+// old copy into it). With offline changes the newer copy wins.
+function reconcile(name: string) {
+  const l = LAYERS[name]
+
+  write(name, async (db) => {
+    if (l.time <= l.synced) {
+      // ponytail: "no layer in the room yet" can also mean "not synced yet",
+      // the same assumption quiz answers make on join
+      if (!db.hasTemplate(name) && l.own.length > 0) {
+        await db.writeTemplate(ownId(), name, l.own.slice(), l.time)
+      }
+      return
+    }
+
+    const newer = await db.reconcileTemplate(name, l.own.slice(), l.time)
+    if (newer) {
+      l.own = newer.values
+      l.time = newer.time
+      save(name)
+      emitLayers(name, await db.getTemplate(name), { remote: true })
+    }
+    l.synced = l.time
+  })
+}
+
+// While connected the room copy is the truth: Yjs merges what the owner and
+// the peer itself change at the same time, the own layer follows it as soon
+// as no own write is waiting anymore.
+function roomChanged(name: string, layers: TemplateLayer[], ownTime: number) {
+  const l = LAYERS[name]
+  if (!l) return
+
+  let remote = false
+  const mine = layers.find((layer) => layer.me)
+
+  if (l.ops === 0 && mine) {
+    if (JSON.stringify(mine.values) !== JSON.stringify(l.own)) {
+      l.own = mine.values.slice()
+      l.time = Math.max(l.time, ownTime)
+      remote = true
+      save(name)
+    }
+    l.synced = l.time
+  }
+
+  emitLayers(name, layers, { remote })
 }
 
 // ponytail: rewrites the whole layer, switch to one row per value if layers
@@ -780,7 +857,13 @@ function save(name: string) {
     if (l.pending) save(name)
   }, 300)
   l.loaded
-    .then(() => Database?.storeTemplate(name, l.own))
+    .then(() =>
+      Database?.storeTemplate(name, {
+        values: l.own,
+        time: l.time,
+        synced: l.synced,
+      }),
+    )
     .catch((e: any) =>
       log.warn('could not store template ->', name, e?.message || e),
     )
@@ -802,11 +885,24 @@ function ownId(): string {
 }
 
 function localView(name: string): TemplateLayer[] {
-  return [{ id: ownId(), name: '', me: true, values: LAYERS[name].own.slice() }]
+  return [
+    {
+      id: ownId(),
+      name: '',
+      me: true,
+      editable: true,
+      values: LAYERS[name].own.slice(),
+    },
+  ]
 }
 
-function emitLayers(name: string, layers: TemplateLayer[]) {
-  LAYERS[name]?.subs.forEach((callback) => callback(layers))
+// `remote`: the own layer was changed by someone else (the owner)
+function emitLayers(
+  name: string,
+  layers: TemplateLayer[],
+  info = { remote: false },
+) {
+  LAYERS[name]?.subs.forEach((callback) => callback(layers, info))
 }
 
 function shared(kind: 'getArray' | 'getMap' | 'getText') {
