@@ -660,6 +660,7 @@ type Layer = {
   // mirror runs one after another, otherwise two of them append the same tail
   queue: Promise<void>
   subs: ((layers: TemplateLayer[]) => void)[]
+  saving?: ReturnType<typeof setTimeout>
 }
 
 var LAYERS: { [name: string]: Layer } = {}
@@ -692,13 +693,9 @@ function layer(name: string) {
       if (value === undefined) return
 
       l.own.push(value)
-      // ponytail: rewrites the whole layer on every push, switch to one row
-      // per value if layers get really large
-      l.loaded
-        .then(() => Database?.storeTemplate(name, l.own))
-        .catch((e: any) =>
-          log.warn('could not store template ->', name, e?.message || e),
-        )
+
+      // a stroke pushes many values per second, store at most twice a second
+      if (!l.saving) l.saving = setTimeout(() => save(name), 500)
 
       if (window.LIA.classroom.connected) mirror(name)
       else l.loaded.then(() => emitLayers(name, localView(name)))
@@ -732,8 +729,36 @@ function mirror(name: string) {
     )
 }
 
+// ponytail: rewrites the whole layer, switch to one row per value if layers
+// get really large
+function save(name: string) {
+  const l = LAYERS[name]
+  clearTimeout(l.saving)
+  l.saving = undefined
+  l.loaded
+    .then(() => Database?.storeTemplate(name, l.own))
+    .catch((e: any) =>
+      log.warn('could not store template ->', name, e?.message || e),
+    )
+}
+
+// do not lose the last strokes when the page is closed while saving waits
+window.addEventListener('pagehide', () => {
+  for (const name in LAYERS) if (LAYERS[name].saving) save(name)
+})
+
+// the same id the classroom uses (see sync/Base), so a layer keeps its id
+// and with it its color inside and outside of a classroom
+function ownId(): string {
+  try {
+    return window.localStorage.getItem('lia-token') || ''
+  } catch (e) {
+    return ''
+  }
+}
+
 function localView(name: string): TemplateLayer[] {
-  return [{ id: '', name: '', me: true, values: LAYERS[name].own.slice() }]
+  return [{ id: ownId(), name: '', me: true, values: LAYERS[name].own.slice() }]
 }
 
 function emitLayers(name: string, layers: TemplateLayer[]) {
