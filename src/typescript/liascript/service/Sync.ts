@@ -85,11 +85,27 @@ const Service = {
         unsubscribe,
         on,
 
+        peers,
+
         layer,
         array: shared('getArray'),
         map: shared('getMap'),
         text: shared('getText'),
       }
+
+      Object.defineProperties(window['LIA']['classroom'], {
+        // who am I, also without a classroom
+        me: { get: () => person(ownId()), enumerable: true },
+        owner: { get: () => isOwner(), enumerable: true },
+        // 'shared' | 'summary' | 'details', or null without a classroom
+        mode: {
+          get: () =>
+            window.LIA.classroom.connected && sync
+              ? ['shared', 'summary', 'details'][sync.mode] || 'shared'
+              : null,
+          enumerable: true,
+        },
+      })
     }
   },
 
@@ -371,6 +387,10 @@ const Service = {
         if (sync) {
           // an old connection may still finish a re-check after teardown
           const db = sync.db
+          const instance = sync
+          instance.onContext = () => {
+            if (sync === instance) contextChanged()
+          }
           db.onTemplate = (
             name: string,
             layers: TemplateLayer[],
@@ -418,6 +438,7 @@ const Service = {
           window.LIA.classroom.publish = publish
           window.LIA.classroom.connected = false
           for (const name in LAYERS) emitLayers(name, localView(name))
+          contextChanged()
           CALLBACK.disconnect.forEach((cb) => cb())
         }
 
@@ -552,9 +573,18 @@ export default Service
 
 //*************************************************************************
 
+type Person = {
+  id: string
+  name: string
+  color: string
+  symbol: string
+  me: boolean
+  owner: boolean
+}
+
 type Subscription = {
   id: number
-  callback: (message: any) => void
+  callback: (message: any, from?: Person) => void
 }
 
 // Container for all subscriptions
@@ -565,9 +595,11 @@ var BACKUP: { [topic: string]: any } = {}
 var CALLBACK: {
   connect: (() => void)[]
   disconnect: (() => void)[]
+  peers: ((peers: Person[]) => void)[]
 } = {
   connect: [],
   disconnect: [],
+  peers: [],
 }
 
 function publish(topic: string, message: any) {
@@ -578,7 +610,10 @@ function publish(topic: string, message: any) {
   )
 }
 
-function subscribe(topic: string, callback: (message: any) => void): number {
+function subscribe(
+  topic: string,
+  callback: (message: any, from?: Person) => void,
+): number {
   const id = Math.round(Math.random() * 1000000000)
 
   if (!SUBSCRIPTIONS[topic]) {
@@ -587,7 +622,8 @@ function subscribe(topic: string, callback: (message: any) => void): number {
   SUBSCRIPTIONS[topic].push({ id, callback })
 
   if (topic in BACKUP) {
-    setTimeout(() => callback(BACKUP[topic]), 100)
+    const { message, from } = BACKUP[topic]
+    setTimeout(() => callback(message, from && person(from)), 100)
   }
 
   return id
@@ -599,7 +635,7 @@ function unsubscribe(id: number) {
   }
 }
 
-function on(event: 'connect' | 'disconnect', callback: () => void) {
+function on(event: 'connect' | 'disconnect' | 'peers', callback: (peers?: Person[]) => void) {
   switch (event) {
     case 'connect': {
       CALLBACK.connect.push(callback)
@@ -617,18 +653,68 @@ function on(event: 'connect' | 'disconnect', callback: () => void) {
       break
     }
 
+    // somebody joined or left, changed the name, or the owner changed
+    case 'peers': {
+      CALLBACK.peers.push(callback)
+      callback(peers())
+      break
+    }
+
     default: {
       console.warn('Classroom: unknown event -> ' + event)
     }
   }
 }
 
-function onReceive(topic: string, message: any) {
-  BACKUP[topic] = message
+function onReceive(topic: string, data: any) {
+  // older versions send the bare message without a sender
+  const envelope = data?.__lia === 1
+  const message = envelope ? data.message : data
+  const from: string | undefined = envelope ? data.from : undefined
+
+  BACKUP[topic] = { message, from }
 
   if (SUBSCRIPTIONS[topic]) {
-    SUBSCRIPTIONS[topic].forEach((sub) => sub.callback(message))
+    const sender = from ? person(from) : undefined
+    SUBSCRIPTIONS[topic].forEach((sub) => sub.callback(message, sender))
   }
+}
+
+function isOwner(): boolean {
+  return !!(
+    window.LIA.classroom.connected &&
+    sync &&
+    sync.db.getOwner() === ownId()
+  )
+}
+
+// a peer as templates see it, with the same color and emoji as in the chat
+function person(id: string): Person {
+  const connected = window.LIA.classroom.connected && sync
+  const names = connected ? sync.db.getIdentities() : {}
+  return {
+    id,
+    name: names[id] || (id === ownId() && sync ? sync.name || '' : ''),
+    ...identicon(id),
+    me: id === ownId(),
+    owner: !!connected && sync.db.getOwner() === id,
+  }
+}
+
+// everybody who is in the classroom right now, including me
+function peers(): Person[] {
+  if (!window.LIA.classroom.connected || !sync) return []
+  return Object.keys(sync.db.getPeers()).map(person)
+}
+
+// awareness changes with every cursor move, only report real changes
+var lastPeers = '[]'
+function contextChanged() {
+  const list = peers()
+  const key = JSON.stringify(list)
+  if (key === lastPeers) return
+  lastPeers = key
+  CALLBACK.peers.forEach((cb) => cb(list))
 }
 
 function onConnect() {
@@ -647,6 +733,7 @@ function onConnect() {
   // the room may hold an older or a newer copy of the own layer
   for (const name in LAYERS) reconcile(name)
 
+  contextChanged()
   CALLBACK.connect.forEach((cb) => cb())
 }
 
@@ -876,10 +963,17 @@ window.addEventListener('pagehide', () => {
 })
 
 // the same id the classroom uses (see sync/Base), so a layer keeps its id
-// and with it its color inside and outside of a classroom
+// and with it its color inside and outside of a classroom - created here if
+// this browser has never been in a classroom yet
 function ownId(): string {
   try {
-    return window.localStorage.getItem('lia-token') || ''
+    let id = window.localStorage.getItem('lia-token')
+    if (!id) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+      id = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => chars[b % 62]).join('')
+      window.localStorage.setItem('lia-token', id)
+    }
+    return id
   } catch (e) {
     return ''
   }

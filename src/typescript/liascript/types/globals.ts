@@ -162,11 +162,32 @@ declare global {
       classroom: {
         connected: boolean
 
-        subscribe: (topic: string, callback: (message: any) => void) => number
+        /** me, also without a classroom */
+        me: Lia.ClassroomPerson
+        /** am I the owner of the classroom */
+        owner: boolean
+        /** null without a classroom */
+        mode: 'shared' | 'summary' | 'details' | null
+        /** everybody in the classroom right now, including me */
+        peers: () => Lia.ClassroomPerson[]
+
+        /** `from` is claimed by the sender, not verified, and missing for
+         * messages of older LiaScript versions */
+        subscribe: (
+          topic: string,
+          callback: (message: any, from?: Lia.ClassroomPerson) => void,
+        ) => number
         unsubscribe: (id: number) => void
         publish: (topic: string, message: any) => void
 
-        on: (event: 'connect' | 'disconnect', callback: () => void) => void
+        on: {
+          (event: 'connect' | 'disconnect', callback: () => void): void
+          /** joined, left, renamed or a new owner, called at once as well */
+          (
+            event: 'peers',
+            callback: (peers: Lia.ClassroomPerson[]) => void,
+          ): void
+        }
 
         /** Own layer per peer, stored locally and mirrored into the
          * classroom. Visibility follows the classroom mode like quizzes.

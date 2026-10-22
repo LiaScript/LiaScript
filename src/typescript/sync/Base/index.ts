@@ -82,6 +82,11 @@ export class Sync {
   protected onConnect?: () => void
 
   protected onReceive?: (topic: string, message: any) => void
+
+  /** Called when peers, their names or the owner change, see
+   * `LIA.classroom.peers` in service/Sync.ts.
+   */
+  public onContext?: () => void
   protected replyOnReceive: boolean = false
 
   public db: CRDT
@@ -146,6 +151,9 @@ export class Sync {
       token,
       useInternalCallback
         ? (event, origin) => {
+          if (origin === 'peer' || origin === 'identity' || origin === 'ownership') {
+            self.onContext?.()
+          }
           if (self.db) {
             switch (origin) {
               case 'cursor': {
@@ -404,14 +412,18 @@ export class Sync {
     })
   }
 
+  /** The sender travels with the message, see `onReceive` in
+   * service/Sync.ts. It is claimed by the sender, not verified.
+   */
   pubsubSend(topic: string, message: any) {
     if (!this.provider) {
       console.warn('Sync: pubsub not supported by this backend ->', topic)
       return
     }
-    this.provider.pubsub.publish(topic, message)
+    const envelope = { __lia: 1, from: this.token, message }
+    this.provider.pubsub.publish(topic, envelope)
     if (this.replyOnReceive) {
-      this.onReceive?.(topic, message)
+      this.onReceive?.(topic, envelope)
     }
   }
 

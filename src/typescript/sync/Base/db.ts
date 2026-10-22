@@ -512,6 +512,8 @@ export class CRDT {
     // owner.
     this.metadata.observe(() => {
       this.callback(this.getOwner() === this.peerID, 'ownership')
+      // `editable` of template layers depends on who the owner is
+      this.scheduleTemplates()
       this.maybeBecomeOwner().catch((e: any) =>
         console.warn('maybeBecomeOwner failed ->', e),
       )
