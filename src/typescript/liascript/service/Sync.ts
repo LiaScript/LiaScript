@@ -2,6 +2,7 @@ import log from '../log'
 import { docId } from '../../sync/Base/persist'
 import * as peerCrypto from '../../sync/Base/peerCrypto'
 import type { TemplateLayer } from '../../sync/Base/db'
+import { identicon } from '../../helper'
 
 var sync: any
 var elmSend: Lia.Send | null
@@ -891,6 +892,7 @@ function localView(name: string): TemplateLayer[] {
       name: '',
       me: true,
       editable: true,
+      ...identicon(ownId()),
       values: LAYERS[name].own.slice(),
     },
   ]

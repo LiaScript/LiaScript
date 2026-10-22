@@ -29,6 +29,9 @@ export type TemplateLayer = {
   me: boolean
   // own layer, or any layer for the classroom owner
   editable: boolean
+  // the same color and emoji the peer has in the chat
+  color: string
+  symbol: string
   values: any[]
 }
 
@@ -968,6 +971,7 @@ export class CRDT {
         name: this.identities.get(peerId) || '',
         me: peerId === this.peerID,
         editable: owner || peerId === this.peerID,
+        ...helper.identicon(peerId),
         values: plain,
       })
     }

@@ -133,3 +133,100 @@ export function getColorFor(str: string) {
 }
 
 export const PROXY = 'https://api.allorigins.win/get?url='
+
+
+/** Keep in sync with `identicon` in src/elm/Lia/Utils.elm: the same color
+ * and emoji a peer has in the chat and in the quiz details.
+ */
+const IDENTICON_SYMBOLS = [
+  '🐶',
+  '🐱',
+  '🦊',
+  '🦁',
+  '🐯',
+  '🐼',
+  '🐨',
+  '🐰',
+  '🐧',
+  '🐦',
+  '🦅',
+  '🦄',
+  '🐬',
+  '🐳',
+  '🦋',
+  '🐞',
+  '🐝',
+  '🐢',
+  '🦔',
+  '🦒',
+  '🦖',
+  '🦕',
+  '🌹',
+  '🌻',
+  '🌵',
+  '🍀',
+  '☀️',
+  '🌙',
+  '⭐',
+  '🪐',
+  '❄️',
+  '🌊',
+  '🍎',
+  '🍓',
+  '⚽',
+  '🏀',
+  '🏈',
+  '🏓',
+  '🛹',
+  '🎿',
+  '🏆',
+  '🥇',
+  '🎵',
+  '🎸',
+  '🎹',
+  '🎧',
+  '🎤',
+  '🎨',
+  '📷',
+  '🎮',
+  '🎁',
+  '🎈',
+  '🎉',
+  '🎯',
+  '🧸',
+  '🏎️',
+  '🚲',
+  '✈️',
+  '⛵',
+  '💻',
+  '📱',
+  '⌚',
+  '💡',
+  '🔭',
+  '🔬',
+  '📚',
+  '✏️',
+  '🎒',
+  '💎',
+  '👑',
+  '🕶️',
+  '👟',
+  '🎓',
+  '🔑',
+]
+
+export function identicon(id: string): { color: string; symbol: string } {
+  const rgb = [11111, 99, 12]
+  let sum = 0
+  let i = 0
+  for (const char of id) {
+    const code = char.codePointAt(0)!
+    rgb[i++ % 3] += code
+    sum += code
+  }
+
+  return {
+    color: `rgb(${rgb[0] % 180},${rgb[1] % 180},${rgb[2] % 180})`,
+    symbol: IDENTICON_SYMBOLS[sum % IDENTICON_SYMBOLS.length],
+  }
+}

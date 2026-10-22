@@ -184,6 +184,9 @@ declare global {
                 name: string
                 me: boolean
                 editable: boolean
+                /** the same color and emoji the peer has in the chat */
+                color: string
+                symbol: string
                 values: any[]
               }[],
               /** remote: the own layer was changed by someone else */
