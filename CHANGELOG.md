@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 24/10/2026
+
+- feat: classroom state for templates – `LIA.classroom.layer(name)` gives every participant an own layer (`push`, `set`, `get`, `on`), stored locally in IndexedDB (also without a classroom) and synchronized when joining one; visibility follows the classroom mode like quiz answers: Shared shows all layers, Summary and Details only the own one, the owner sees all with names and can change them; after leaving, the own layer stays, including what was drawn in the classroom
+- feat: layers carry the color and emoji a participant has in the chat, values are frozen JSON copies, `push`/`set` return a promise that rejects with the reason
+- feat: `LIA.classroom.array`, `map` and `text` – shared Yjs types for everyone in the room (experimental)
+- feat: classroom context for scripts and templates – `LIA.classroom.me`, `owner`, `mode`, `peers()` and `on('peers', …)`; `on(…)` returns a function to remove the callback
+- feat: pubsub callbacks receive the sender as second argument (`subscribe(topic, (message, from) => …)`)
+- improve: Nostr classrooms send continuous changes (drawing, fast typing) at least every 150 ms instead of only after a pause; with 20 participants the delay drops from several seconds to 0.3 s (y-generic update)
+- fix: classroom pubsub of backends without an own implementation was dropped, a room change replayed the last message of the previous room, `0`, `false` and `""` were not replayed to late subscribers
+- fix: Nostr links without relays use the relays of the classroom settings instead of relay.damus.io, which blocks a school's IP after a short time of classroom traffic
+
+
 ## [2.4.0] - 21/10/2026
 
 - feat: kanban board for the course overview – a layout dropdown on the left of the header switches between the list and the board; own columns can be added, renamed, reordered and deleted, courses are sorted into them by drag and drop (mouse and touch, press and hold) or via a select on the card; layout and columns are stored in the browser, new courses end up in the first column
@@ -26,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [2.3.0] - 20/10/2026
 
+- feat: videos from YouTube, Vimeo, Dailymotion, PeerTube and other platforms as narrator comments, shown in the comment overlay like local videos; YouTube and Vimeo can be paused and seeked and continue with the next comment when they end, a range is set via `start`/`end` or `#t=30,45`
 - feat: accessible table of contents – a collapsible navigation tree (APG treeview) with a single tab stop, Up/Down/Home/End move between the entries, Right/Left open and close sections (mirrored for rtl); the two upper levels are shown by default and the branch of the current section is opened, while searching all matches are shown
 - feat: the search in the table of contents tolerates one typo per word (words with 4 or more characters)
 - feat: all dropdowns (gap texts, selection quizzes, select surveys, classroom backend) are select-only comboboxes with full keyboard support (arrows, Home, End, Enter, Space, Escape, Tab)

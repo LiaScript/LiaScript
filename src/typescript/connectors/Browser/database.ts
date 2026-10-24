@@ -72,6 +72,11 @@ class LiaDB {
       keys: '&id',
     })
 
+    // own layers of template state, see `LIA.classroom.layer`
+    db.version(3).stores({
+      template: '[id+version], version',
+    })
+
     return db
   }
 
@@ -727,6 +732,7 @@ class LiaDB {
       db['quiz'].where('version').equals(versionDB).delete(),
       db['survey'].where('version').equals(versionDB).delete(),
       db['task'].where('version').equals(versionDB).delete(),
+      db['template'].where('version').equals(versionDB).delete(),
     ])
   }
 }
