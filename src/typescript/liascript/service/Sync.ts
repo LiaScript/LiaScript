@@ -226,6 +226,7 @@ const Service = {
             */
 
             case 'nostr':
+            /*
               if (!Nostr) {
                 import('../../sync/Nostr/index').then((e) => {
                   Nostr = e
@@ -242,7 +243,7 @@ const Service = {
                 true,
               )
               break
-
+            */
             // case 'jitsi':
             //   if (!Jitsi) {
             //     import('../../sync/Jitsi/index').then((e) => {
@@ -274,6 +275,7 @@ const Service = {
             //   break
 
             case 'ably':
+              /*
               if (!Ably) {
                 import('../../sync/Ably/index').then((e) => {
                   Ably = e
@@ -290,7 +292,7 @@ const Service = {
                 true,
               )
               break
-
+            */
             case 'pubnub':
             /*
               if (!PubNub) {
