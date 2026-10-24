@@ -384,7 +384,10 @@ identiconSymbols =
         ]
 
 
-{-| A small, deterministic per-user "avatar" derived only from a string
+{-| Keep in sync with `identicon` in src/typescript/helper.ts, which gives
+templates the same color and emoji (LIA.classroom.layer).
+
+A small, deterministic per-user "avatar" derived only from a string
 (typically a peer id): a `string2Color` background plus a symbol picked from
 `identiconSymbols`. The same id always yields the same result on every
 client, with no coordination needed -- useful to visually tell two users

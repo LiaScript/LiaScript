@@ -36,6 +36,7 @@ import Translate from './service/Translate'
 import Zip from './service/Zip'
 import Torrent from './service/Torrent'
 import Nostr from './service/Nostr'
+import Parent from './service/Parent'
 
 // ----------------------------------------------------------------------------
 // GLOBAL INITIALIZATION
@@ -237,6 +238,7 @@ export class LiaScript {
     Resource.init(elmSend)
     Torrent.init(elmSend, Database)
     Nostr.init(elmSend)
+    Parent.init(elmSend)
 
     let connector = this.connector
     jsSubscribe((event: Lia.Event) => {
@@ -302,6 +304,10 @@ export class LiaScript {
 
         case Nostr.PORT:
           Nostr.handle(event)
+          break
+
+        case Parent.PORT:
+          Parent.handle(event)
           break
 
         default:

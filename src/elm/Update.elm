@@ -438,7 +438,8 @@ update msg model =
                             { model | lia = { lia | origin = "" } }
                         -- Handle ZIP file URL
 
-                    else if String.startsWith Const.urlProxy url then
+                    else if String.startsWith Const.urlProxy url || String.startsWith "parent:" url then
+                        -- a course from the embedding page cannot be retried via the proxy
                         startWithError
                             { model
                                 | state =
@@ -818,6 +819,7 @@ isURI url =
     String.startsWith "data:text" url
         || String.startsWith "magnet:" url
         || String.startsWith "nostr:" url
+        || String.startsWith "parent:" url
 
 
 {-| **@private:** Used by multiple times to connect a download with a message.
@@ -835,6 +837,11 @@ download template url =
     else if String.startsWith "nostr:" url then
         { template = template, uri = url }
             |> Service.P2P.nostr
+            |> event2js
+
+    else if String.startsWith "parent:" url then
+        { template = template, uri = url }
+            |> Service.P2P.parent
             |> event2js
 
     else
