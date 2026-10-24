@@ -11,6 +11,9 @@ import { Crypto } from '../Crypto'
 const NOSTR_TOOLS_URL =
   'https://cdn.jsdelivr.net/npm/nostr-tools@2/lib/nostr.bundle.js'
 
+// keep in sync with `nostrRelayURLs` in src/elm/Const.elm
+const DEFAULT_RELAYS = ['wss://relay.edufeed.org', 'wss://nos.lol', 'wss://nostr.mom']
+
 /** The Nostr key this device uses in `room`, made once and kept in
  * localStorage. A relay replaces a persistent snapshot only under the same
  * (kind, key, room): with a new key per session every reload, every pupil
@@ -63,9 +66,12 @@ export class Sync extends Base.Sync {
   }) {
     super.connect(data)
 
+    // a link without relays (just "nostr") gets the same relays as the
+    // classroom settings, not y-generic's default with relay.damus.io, which
+    // bans a school's IP after a short time of classroom traffic
     this.relayUrls = data.config?.relayUrls?.length
       ? data.config.relayUrls
-      : undefined
+      : DEFAULT_RELAYS
     this.persistent = data.config?.persistent || false
 
     const urls: string[] = []
