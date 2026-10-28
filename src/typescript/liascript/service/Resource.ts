@@ -441,6 +441,13 @@ function loadLink(url: string, callback?: (ok: boolean) => void) {
       () => callback?.(false)
     )
 
+  // raw.githubusercontent.com sends text/plain + nosniff, a <link> always fails
+  // (behind the service worker as NS_ERROR_CORRUPTED_CONTENT) — load as blob
+  if (url.startsWith('https://raw.githubusercontent.com/')) {
+    asBlob()
+    return
+  }
+
   try {
     // Chrome will CORB block this request, therefor it can only be loaded as blob
     if (!!window['chrome'] && !url.startsWith('blob:')) {
