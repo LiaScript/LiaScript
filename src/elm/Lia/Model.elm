@@ -191,8 +191,19 @@ as well as a list of events to be send through the elm-port.
 loadResource : List Resource -> List Resource -> ( List Resource, List Event )
 loadResource old new =
     let
+        -- duplicates within `new` are dropped too, a restored definition
+        -- contains the header resources twice (see `Lia.Script.init_script`)
         toLoad =
-            List.filter (\res -> not (List.member res old)) new
+            List.foldl
+                (\res acc ->
+                    if List.member res old || List.member res acc then
+                        acc
+
+                    else
+                        acc ++ [ res ]
+                )
+                []
+                new
     in
     ( old ++ toLoad
     , List.map load toLoad
