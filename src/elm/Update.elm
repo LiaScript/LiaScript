@@ -27,7 +27,6 @@ import Index.Version
 import Json.Decode as JD
 import Lia.Definition.Types as Definition
 import Lia.Json.Decode
-import Lia.Model
 import Lia.Script
 import Lia.Utils exposing (checkPersistency)
 import Library.IPFS as IPFS
@@ -385,14 +384,9 @@ update msg model =
                         , batch LiaScript return
                         )
 
+                    -- a fresh page, scripts and styles of a course cannot be unloaded
                     Session.Index ->
-                        initIndex
-                            { model
-                                | state = Idle
-                                , session = Session.setUrl url model.session
-                                , lia = Lia.Model.clear model.lia
-                                , index = Index.reset_modal model.index
-                            }
+                        ( model, Session.load url )
 
             else
                 ( model, Cmd.none )
