@@ -51,8 +51,8 @@ type alias Element =
 
 
 {-| A single comment paragraph. Hidden comments (`<!-- --{{1}}-- -->`) are
-not `visible` in textbook mode. `audio` and `video` hold recordings that
-replace the text-to-speech output.
+not `visible` in textbook mode. `audio`, `video` and `embedVideo` hold
+recordings that replace the text-to-speech output.
 -}
 type alias Content =
     { visible : Bool
@@ -64,9 +64,9 @@ type alias Content =
     }
 
 
-{-| An embeddable platform video used as a spoken-comment video. `url` is the
-ready-to-embed iframe URL; `provider` selects the JS player adapter (e.g.
-"youtube", "vimeo", "generic").
+{-| A video of a platform like YouTube or Vimeo used as comment recording.
+`url` is the embed url, `provider` selects the player adapter in TTS.ts
+(`"youtube"`, `"vimeo"`, otherwise a generic iframe).
 -}
 type alias EmbedVideo =
     { url : String
@@ -95,20 +95,14 @@ getVideoRecordings =
     getRecordings .video
 
 
+{-| Embedded platform videos of the comments at the current animation step.
+-}
 getEmbedVideoRecordings : Model a -> List EmbedVideo
-getEmbedVideoRecordings model =
-    model.comments
-        |> Dict.get model.visible
-        |> Maybe.map
-            (.content
-                >> Array.map (.embedVideo >> Array.toList)
-                >> Array.toList
-                >> List.concat
-            )
-        |> Maybe.withDefault []
+getEmbedVideoRecordings =
+    getRecordings .embedVideo
 
 
-getRecordings : (Content -> Array String) -> Model a -> List String
+getRecordings : (Content -> Array b) -> Model a -> List b
 getRecordings fn model =
     case Dict.get model.visible model.comments of
         Just element ->

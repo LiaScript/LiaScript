@@ -51,7 +51,7 @@ import Combine
 import Combine.Char exposing (anyChar)
 import Combine.Num exposing (int)
 import Dict
-import Lia.Markdown.Effect.Model exposing (Content, Element)
+import Lia.Markdown.Effect.Model exposing (Content, Element, EmbedVideo)
 import Lia.Markdown.Effect.Types as Effect exposing (Effect)
 import Lia.Markdown.Inline.Multimedia exposing (providerOf)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
@@ -265,8 +265,8 @@ add_comment visible ( idx, narrator, par ) =
         )
 
 
-{-| Turn a paragraph into a `Content`, with a leading audio, video or embedded
-video (YouTube, Vimeo, ...) link as recording. If there is none (`start`), the last element is checked too.
+{-| Turn a paragraph into a `Content`, with a leading audio or video link as
+recording. If there is none (`start`), the last element is checked too.
 -}
 media : Bool -> Inlines -> Bool -> Content
 media start par visible =
@@ -277,8 +277,8 @@ media start par visible =
         (Ref (Movie _ ( False, video ) _) _) :: rest ->
             Content visible [] rest Array.empty (Array.fromList [ video ]) Array.empty
 
-        (Ref (Movie _ ( True, embed ) _) _) :: rest ->
-            Content visible [] rest Array.empty Array.empty (Array.fromList [ { url = embed, provider = providerOf embed } ])
+        (Ref (Movie _ ( True, url ) _) _) :: rest ->
+            Content visible [] rest Array.empty Array.empty (Array.fromList [ EmbedVideo url (providerOf url) ])
 
         _ ->
             if start then

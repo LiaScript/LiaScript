@@ -176,11 +176,12 @@ cases =
                 case parseQuiz "[(a) (b)]\n[(X) ( )] one\n[( ) (X)] two\n" of
                     Just ( quiz, e ) ->
                         render config quiz { e | trial = 1, partiallySolved = Array.fromList [ True, False ] }
+                            |> Query.find [ Selector.tag "tbody" ]
                             |> Query.findAll [ Selector.tag "tr" ]
                             |> Expect.all
-                                [ Query.index 0 >> Query.has [ Selector.attribute (Aria.invalid False) ]
+                                [ Query.index 0 >> Query.findAll [ Selector.tag "input" ] >> Query.first >> Query.has [ Selector.attribute (Aria.invalid False) ]
                                 , Query.index 0 >> Query.findAll [ Selector.class "is-success" ] >> Query.count (Expect.equal 2)
-                                , Query.index 1 >> Query.has [ Selector.attribute (Aria.invalid True) ]
+                                , Query.index 1 >> Query.findAll [ Selector.tag "input" ] >> Query.first >> Query.has [ Selector.attribute (Aria.invalid True) ]
                                 ]
 
                     Nothing ->

@@ -14,7 +14,7 @@ and down keys.
 import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import I18n.Translations exposing (Lang(..))
+import I18n.Translations exposing (Lang(..), codeSendTerminal)
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Utils exposing (btnIcon)
 
@@ -122,8 +122,8 @@ update msg term =
 -- VIEW
 
 
-view : Terminal -> Html Msg
-view terminal =
+view : Lang -> Terminal -> Html Msg
+view lang terminal =
     let
         lines =
             String.lines terminal.input
@@ -135,7 +135,7 @@ view terminal =
             { icon = "icon-chevron-double-right"
             , msg = Just Enter
             , tabbable = True
-            , title = "Send to terminal"
+            , title = codeSendTerminal lang
             }
             [ Attr.class "lia-btn--transparent" ]
         , Editor.editor

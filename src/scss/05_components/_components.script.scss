@@ -3,6 +3,7 @@
 .lia-script {
   border-radius: settings.$global-radius;
   display: inline-flex;
+  max-width: 100%;
   overflow: hidden;
   vertical-align: middle;
   background-color: rgba(var(--color-highlight), 0.1);
@@ -42,6 +43,11 @@
     border: none;
     border-radius: 0;
     background-color: transparent;
+  }
+
+  // may shrink within the flex layout on small screens
+  input {
+    min-width: 0;
   }
 
   input[type='color'] {

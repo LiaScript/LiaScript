@@ -17,7 +17,7 @@ Positions are measured from the right edge, so `x` grows to the left.
 -}
 
 import Html exposing (Attribute, Html, div, text)
-import Html.Attributes exposing (attribute, style, tabindex, title)
+import Html.Attributes exposing (attribute, style, title)
 import Html.Events exposing (on, onBlur, preventDefaultOn)
 import Json.Decode as Decode exposing (Decoder)
 
@@ -264,12 +264,12 @@ toggleMode mode =
 
 
 {-| Render the overlay with `inside` as its content (its events are ignored),
-`attr` are added to the overlay itself. With `allowNativeClicks` the center of
-the drag area lets clicks through to the content (e.g. an iframe's own play
-button), the overlay can then only be dragged from its outer ring.
+`attr` are added to the overlay itself. With `nativeClicks` the center of the
+overlay is not draggable, such that clicks reach the content (e.g. the play
+button of an embedded video), it can still be dragged at its ring.
 -}
 view : Bool -> List (Attribute Msg) -> Model -> Html a -> Html Msg
-view allowNativeClicks attr model inside =
+view nativeClicks attr model inside =
     let
         following =
             model.mode /= Move && model.mode /= Resize
@@ -285,7 +285,6 @@ view allowNativeClicks attr model inside =
                     :: style "height" "100vh"
                     :: style "z-index" "40"
                     :: style "background" "transparent"
-                    :: tabindex 0
                     :: pointer model
                 )
                 []
@@ -333,31 +332,29 @@ view allowNativeClicks attr model inside =
             )
             [ Html.map (always Ignore) inside
             , div
-                ([ style "position" "absolute"
-                 , style "width" "100%"
-                 , style "padding" "10px"
-                 , style "height" "100%"
-                 , style "cursor" (iif (isFollowMove model.mode) "grabbing" "move")
-                 , style "color" "#fff"
-                 , style "text-align" "center"
-                 , style "top" "0px"
-                 , style "right" "0px"
-                 , onPointer "mousedown" DragStart
-                 , onTouch "touchstart" DragStart
-                 , onPointer "dblclick" DoubleClick
-                 , attribute "aria-label" "Drag to move video overlay. Double-click to make it follow mouse."
-                 , attribute "tabindex" "0"
-                 , title (iif (isFollowMove model.mode) "double-click to release" "drag or double-click video comment")
-                 ]
-                    ++ (if allowNativeClicks then
-                            -- Cut a hole in the drag-catcher's hit-test area so
-                            -- clicks reach the iframe's native play button, while
-                            -- the outer ring stays draggable (from the border).
-                            [ style "clip-path" "polygon(0% 0%, 0% 100%, 15% 100%, 15% 15%, 85% 15%, 85% 85%, 15% 85%, 15% 100%, 100% 100%, 100% 0%)" ]
+                ((if nativeClicks then
+                    -- a hole in the center, only the ring stays draggable
+                    [ style "clip-path" "polygon(0% 0%, 0% 100%, 15% 100%, 15% 15%, 85% 15%, 85% 85%, 15% 85%, 15% 100%, 100% 100%, 100% 0%)" ]
 
-                        else
-                            []
-                       )
+                  else
+                    []
+                 )
+                    ++ [ style "position" "absolute"
+                       , style "width" "100%"
+                       , style "padding" "10px"
+                       , style "height" "100%"
+                       , style "cursor" (iif (isFollowMove model.mode) "grabbing" "move")
+                       , style "color" "#fff"
+                       , style "text-align" "center"
+                       , style "top" "0px"
+                       , style "right" "0px"
+                       , onPointer "mousedown" DragStart
+                       , onTouch "touchstart" DragStart
+                       , onPointer "dblclick" DoubleClick
+                       , -- mouse only, the keyboard controls the overlay itself
+                         attribute "aria-hidden" "true"
+                       , title (iif (isFollowMove model.mode) "double-click to release" "drag or double-click video comment")
+                       ]
                 )
                 []
             , div
@@ -372,7 +369,7 @@ view allowNativeClicks attr model inside =
                 , onPointer "mousedown" ResizeStart
                 , onTouch "touchstart" ResizeStart
                 , onPointer "dblclick" DoubleClickResize
-                , attribute "aria-label" "Resize video overlay. Double-click to make it follow mouse for resizing."
+                , attribute "aria-hidden" "true"
                 , title (iif (isFollowResize model.mode) "double-click to stop resize following" "resize or double-click to follow resize")
                 ]
                 []

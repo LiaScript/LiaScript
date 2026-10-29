@@ -5,8 +5,16 @@ import { Connector } from '../../connectors/Base/index'
 import { Settings } from '../../connectors/Base/settings'
 import TTS from './TTS'
 import Script from './Script'
+import { offlineOpened } from './Resource'
+
+const BOARD = '__LiaScriptIndexBoard__'
 
 var connector: Connector | null = null
+
+// Course scripts (`@onload`) can ask for template state before the course
+// database is opened, `load` would then just return nothing.
+var courseOpened: () => void
+const opened = new Promise<void>((resolve) => (courseOpened = resolve))
 var elmSend: Lia.Send | null
 
 const Service = {
@@ -84,6 +92,26 @@ const Service = {
         sendReply(event)
         break
 
+      // the kanban board of the index: layout, columns and their course ids
+      case 'index_board_get':
+        try {
+          event.message.param = JSON.parse(
+            localStorage.getItem(BOARD) || 'null'
+          )
+        } catch (e) {
+          event.message.param = null
+        }
+        sendReply(event)
+        break
+
+      case 'index_board_store':
+        try {
+          localStorage.setItem(BOARD, JSON.stringify(param))
+        } catch (e) {
+          log.warn('DB: cannot store the index board -> ', e)
+        }
+        break
+
       case 'index_reset':
         connector.reset(param.url, param.version)
         break
@@ -114,6 +142,9 @@ const Service = {
         if (isPersistent) {
           connector.open(param.readme, param.version, param.section_active)
         }
+        courseOpened()
+
+        offlineOpened(param.readme)
 
         if (param.definition.onload !== '') {
           // adding the semaphore to delay the execution of other scripts
@@ -253,6 +284,20 @@ const Service = {
     } else {
       console.warn('connector not initialized')
     }
+  },
+
+  // own template layers of the current course, see `LIA.classroom.layer`
+  loadTemplate: async function (name: string) {
+    await opened
+    return connector?.load({ table: 'template', id: name })
+  },
+
+  storeTemplate: async function (
+    name: string,
+    data: { values: any[]; time: number; synced: number },
+  ) {
+    await opened
+    return connector?.store({ table: 'template', id: name, data })
   },
 
   getClassrooms: async function (uidDB: string) {

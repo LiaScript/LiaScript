@@ -5,6 +5,11 @@ import LANGUAGE_FALLBACKS, {
 } from './helper/language-fallbacks'
 import { detectGender } from './helper/voice-gender'
 import * as Narrator from './Narrator'
+import {
+  CommentMediaController,
+  createControllers,
+  parseTimeFragment,
+} from './comment-media'
 
 // @ts-ignore
 import EasySpeech from 'easy-speech/dist/EasySpeech'
@@ -16,8 +21,6 @@ import {
   nativeResume,
   nativeCancel,
 } from './TTS_native'
-
-import { CommentMediaController, createControllers, parseTimeFragment } from './comment-media'
 
 var useBrowserTTS: null | boolean = null
 var browserVoices: Record<string, SpeechSynthesisVoice> = {}
@@ -52,6 +55,8 @@ type ResponsiveVoiceSpeakArgs = {
 var responsiveVoiceSpeakArgs: ResponsiveVoiceSpeakArgs = null
 
 // For tracking active audio/video media to enable pause/resume and progress updates.
+// Audio recordings are tracked as `media`, comment videos (direct files and
+// embeds such as YouTube) as `controller`.
 type ActiveMediaState = {
   media: HTMLMediaElement | null
   controller: CommentMediaController | null
@@ -239,29 +244,30 @@ export const Service = {
       case 'pause': {
         if (isNative && nativePause()) {
           sendResponse(event, 'paused', null)
-        } else {
-          // A comment video and the TTS narration can run at the same time
-          // (translation mode plays a muted video while TTS speaks the
-          // translation).
-          let paused = false
+          break
+        }
 
-          if (activeMedia.controller && !activeMedia.controller.isPaused()) {
-            activeMedia.controller.pause()
-            stopProgressInterval()
-            paused = true
-          } else if (activeMedia.media && !activeMedia.media.paused) {
-            activeMedia.media.pause()
-            stopProgressInterval()
-            paused = true
-          }
+        // A comment video and the TTS narration can run at the same time
+        // (translation mode plays a muted video while TTS speaks the
+        // translation), so both are paused.
+        let paused = false
 
-          if (pauseTTSEngine()) {
-            paused = true
-          }
+        if (activeMedia.controller && !activeMedia.controller.isPaused()) {
+          activeMedia.controller.pause()
+          stopProgressInterval()
+          paused = true
+        } else if (activeMedia.media && !activeMedia.media.paused) {
+          activeMedia.media.pause()
+          stopProgressInterval()
+          paused = true
+        }
 
-          if (paused) {
-            sendResponse(activeMedia.event ?? event, 'paused', null)
-          }
+        if (pauseTTSEngine()) {
+          paused = true
+        }
+
+        if (paused) {
+          sendResponse(activeMedia.event ?? event, 'paused', null)
         }
         break
       }
@@ -269,37 +275,35 @@ export const Service = {
       case 'resume': {
         if (isNative && nativeResume()) {
           sendResponse(event, 'start', null)
-        } else {
-          // Mirror of pause: resume BOTH the comment video and the TTS
-          // narration when both are active (translation mode).
-          let resumed = false
+          break
+        }
 
-          if (activeMedia.controller && activeMedia.controller.isPaused() && activeMedia.event) {
-            const controller = activeMedia.controller
-            controller.play().catch((e: any) => {
-              if (e?.name !== 'AbortError') {
-                console.warn('Failed to resume media:', e?.message ?? e)
-              }
-            })
-            startProgressInterval(activeMedia.event)
-            resumed = true
-          } else if (activeMedia.media && activeMedia.media.paused && activeMedia.event) {
-            activeMedia.media.play().catch((e: any) => {
-              if (e.name !== 'AbortError') {
-                console.warn('Failed to resume media:', e.message)
-              }
-            })
-            startProgressInterval(activeMedia.event)
-            resumed = true
-          }
+        // Mirror of pause: resume the comment video and the TTS narration
+        let resumed = false
+        const media = activeMedia.controller || activeMedia.media
 
-          if (resumeTTSEngine()) {
-            resumed = true
-          }
+        if (
+          media &&
+          (activeMedia.controller
+            ? activeMedia.controller.isPaused()
+            : activeMedia.media!.paused) &&
+          activeMedia.event
+        ) {
+          media.play().catch((e: any) => {
+            if (e?.name !== 'AbortError') {
+              console.warn('Failed to resume media:', e?.message ?? e)
+            }
+          })
+          startProgressInterval(activeMedia.event)
+          resumed = true
+        }
 
-          if (resumed) {
-            sendResponse(activeMedia.event ?? event, 'start', null)
-          }
+        if (resumeTTSEngine()) {
+          resumed = true
+        }
+
+        if (resumed) {
+          sendResponse(activeMedia.event ?? event, 'start', null)
         }
         break
       }
@@ -319,7 +323,7 @@ export const Service = {
           sendResponse(
             activeMedia.event,
             'progress',
-            JSON.stringify({ current: seekTo, total: total !== null ? total : seekTo + 10 })
+            JSON.stringify({ current: seekTo, total: total ?? seekTo + 10 })
           )
           if (!controller.isPaused()) {
             startProgressInterval(activeMedia.event)
@@ -472,8 +476,7 @@ function getAudioSettings(element: HTMLElement | Element) {
 
 /**
  * Resolve a comment-video controller's duration, waiting briefly for HTML media
- * metadata to load. Used only on the rate-match path (HTML media), so it
- * resolves quickly; falls back to 0 if the duration never appears in time.
+ * metadata to load. Falls back to 0 if the duration never appears in time.
  */
 function probeDuration(controller: CommentMediaController): Promise<number> {
   const immediate = controller.getDuration()
@@ -481,13 +484,12 @@ function probeDuration(controller: CommentMediaController): Promise<number> {
 
   return new Promise<number>(resolve => {
     const startedAt = Date.now()
-    const timeout = 3000
     const poll = setInterval(() => {
       const d = controller.getDuration()
       if (d !== null) {
         clearInterval(poll)
         resolve(d)
-      } else if (Date.now() - startedAt > timeout) {
+      } else if (Date.now() - startedAt > 3000) {
         clearInterval(poll)
         resolve(0)
       }
@@ -543,7 +545,7 @@ function read(event: Lia.Event) {
       translated: translation,
     }
 
-    if (controllers.length > 0 && player) {
+    if (controllers.length > 0) {
       Narrator.begin(event, { ...narrator, source: 'video' })
 
       let currentIndex = 0
@@ -604,7 +606,6 @@ function read(event: Lia.Event) {
             speak(text, voice, lang, options, { ...event, handlers: makeVideoHandlers() })
           })
       } else if (translation && text.trim() !== '') {
-        // Embeds without duration reporting: speak alongside, no rate-match.
         options.videoRate = options.rate
         speak(text, voice, lang, options, { ...event, handlers: makeVideoHandlers() })
       } else {
@@ -647,13 +648,11 @@ function read(event: Lia.Event) {
         if (currentIndex > 0) controllers[currentIndex - 1].setVisible(false)
 
         // Background-frame preview only applies to real <video> elements.
-        if (controller.isHtmlMedia && controller.mediaElement) {
+        if (controller.mediaElement) {
           storeBackgroundVideo(player, controller.mediaElement as HTMLVideoElement)
         }
 
-        activeMedia.media = null
         activeMedia.controller = controller
-        // embeds have no media element, the narrator then has no media to follow
         Narrator.setMedia(controller.mediaElement)
         activeMedia.event = event
         startProgressInterval(event)
@@ -817,8 +816,6 @@ export function inject(key: string) {
 /**
  * Pause whichever TTS engine is currently speaking (responsiveVoice or the
  * browser speechSynthesis). Returns true if a speaking engine was paused.
- * Kept separate from media pausing so both can be paused together in
- * translation mode (muted video + TTS narration).
  */
 function pauseTTSEngine(): boolean {
   if (window.responsiveVoice && responsiveVoiceSpeakArgs && window.responsiveVoice.isPlaying()) {
@@ -848,29 +845,27 @@ function resumeTTSEngine(): boolean {
   if (window.responsiveVoice && responsiveVoiceSpeakArgs) {
     try {
       window.responsiveVoice.resume()
-      return true
     } catch (e) {
       // resume() failed — re-speak from scratch as last resort
       const args = responsiveVoiceSpeakArgs
       if (args) responsiveSpeak(args.text, args.voice, args.options, args.handlers)
       console.warn('Failed to resume responsiveVoice, re-speaking:', e)
-      return true
     }
+    return true
   } else if (browserTTSSpeakArgs && (window.speechSynthesis?.paused || browserTTSIntentionalPause)) {
     try {
       EasySpeech.resume()
       // If we reach here, resume() did not fire 'end' synchronously — clear
       // the flag so any future natural 'end' is treated as real completion.
       browserTTSIntentionalPause = false
-      return true
     } catch (e) {
       browserTTSIntentionalPause = false
       // resume() threw — re-speak from scratch as last resort
       const args = browserTTSSpeakArgs
       if (args) easySpeak(args.text, args.voice, args.options, args.handlers)
       console.warn('Failed to resume browser TTS, re-speaking:', e)
-      return true
     }
+    return true
   }
   return false
 }
@@ -905,10 +900,10 @@ function cancel() {
 
   try {
     const player: any = document.getElementById(VIDEO)
-    // Reset only real <video> children; embed placeholders are owned by their
-    // (now destroyed) controllers and must not be treated as media elements.
-    const videos = Array.from(
-      (player?.querySelectorAll('video') as NodeListOf<HTMLMediaElement>) ?? []
+    // Reset only real <video> children, embed placeholders are owned by their
+    // (now destroyed) controllers.
+    const videos: HTMLMediaElement[] = Array.from(
+      player?.querySelectorAll('video') ?? []
     )
 
     for (let i = 0; i < videos.length; i++) {
@@ -930,6 +925,20 @@ function cancel() {
   responsiveVoiceSpeakArgs = null
 }
 
+// Emojis would be read aloud as "smiling face", ©, ® and ™ are kept. Built at
+// runtime, a \p{…} literal is a syntax error on old browsers (Gecko < 78),
+// there emojis are still read aloud.
+const EMOJI: RegExp | null = (() => {
+  try {
+    return new RegExp(
+      '(?![\\u00A9\\u00AE\\u2122])\\p{Extended_Pictographic}|\\p{Emoji_Modifier}|\\p{Regional_Indicator}|[\\u200D\\uFE0F\\u20E3]',
+      'gu'
+    )
+  } catch (e) {
+    return null
+  }
+})()
+
 function speak(
   text: string,
   voice: string,
@@ -947,6 +956,9 @@ function speak(
     }
   }
 ) {
+  // replaced by spaces of the same length, boundary offsets stay valid
+  if (EMOJI) text = text.replace(EMOJI, m => ' '.repeat(m.length))
+
   const customHandlers = event.handlers || {
     onStart: () => sendResponse(event, 'start'),
     onStop: () => sendResponse(event, 'stop'),

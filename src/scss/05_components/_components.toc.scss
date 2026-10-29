@@ -150,18 +150,16 @@
       color: inherit;
 
       &.lia-active {
-        color: rgb(var(--color-highlight));
+        color: var(--color-accent);
 
         &:before {
-          bottom: 0.5rem;
           content: '';
-          background-color: rgb(var(--color-highlight));
           position: absolute;
           left: 0;
           top: 0px;
           bottom: 0px;
           width: 5px;
-          background-color: rgb(var(--color-highlight));
+          background-color: var(--color-accent);
 
           [dir='rtl'] & {
             left: auto;
@@ -221,8 +219,40 @@
     --focus-ring-offset: -0.25lh;
   }
 
+  // nested lists, the indentation comes from the level classes of the links
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    a {
+      display: block;
+    }
+  }
+
+  &__parent {
+    position: relative;
+
+    > a {
+      padding-inline-end: 3.5rem;
+    }
+  }
+
+  // collapses the subsections of a section
+  &__toggle {
+    background: none;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    inset-inline-end: 0.5rem;
+    padding: 0.5rem;
+    position: absolute;
+    top: 0.4rem;
+  }
+
   &__bottom {
-    margin: 0 3rem 0;
+    // pushed to the bottom, also with only a few sections
+    margin: auto 3rem 0;
     padding-top: 1rem;
     position: relative;
 

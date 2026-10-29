@@ -18,6 +18,22 @@ const USER = 'user'
 const OWNER_KEY = 'ownerKey'
 const WRAPPED_KEYS = 'wrappedKeys'
 const SIGNING_KEYS = 'signingKeys'
+// per-peer template layers, see `LIA.classroom.layer` in service/Sync.ts,
+// and the time of their last change, which decides on a new connection
+const TEMPLATE = 't'
+const TEMPLATE_TIME = 'tt'
+
+export type TemplateLayer = {
+  id: string
+  name: string
+  me: boolean
+  // own layer, or any layer for the classroom owner
+  editable: boolean
+  // the same color and emoji the peer has in the chat
+  color: string
+  symbol: string
+  values: any[]
+}
 
 type SyncType = typeof QUIZ | typeof SURVEY
 
@@ -125,6 +141,24 @@ export class CRDT {
           'quiz/survey re-check did not finish within 15s - giving up on it, the next change triggers a fresh one',
         ),
     },
+  )
+
+  // Receives the visible layers of one template, set by service/Sync.ts.
+  // Template data never goes to Elm.
+  public onTemplate?: (
+    name: string,
+    layers: TemplateLayer[],
+    ownTime: number,
+  ) => void
+
+  // Decrypted template values by their random iv. A drawing has thousands of
+  // entries, decrypting all of them again on every stroke is too slow.
+  protected templateCache = new Map<string, any>()
+
+  protected scheduleTemplates = coalesce(() =>
+    this.fireTemplates().catch((e: any) =>
+      console.warn('template re-check failed ->', e),
+    ),
   )
 
   constructor(
@@ -378,6 +412,7 @@ export class CRDT {
 
     // Quizzes and surveys
     this.scheduleQuizSurvey()
+    this.scheduleTemplates()
 
     // Code editors
     const codeIds = new Set<number>()
@@ -477,6 +512,8 @@ export class CRDT {
     // owner.
     this.metadata.observe(() => {
       this.callback(this.getOwner() === this.peerID, 'ownership')
+      // `editable` of template layers depends on who the owner is
+      this.scheduleTemplates()
       this.maybeBecomeOwner().catch((e: any) =>
         console.warn('maybeBecomeOwner failed ->', e),
       )
@@ -501,8 +538,19 @@ export class CRDT {
     // The callback is a local event2elm port call, not a network send, so
     // recomputing full current state on any change is cheap — just resend
     // everything instead of trying to diff precisely.
+    // path[1] is the type below a peer: a stroke must not re-dump all
+    // quizzes to Elm. Shorter paths (a peer/type created right now) -> both.
     this.user.observeDeep((events: Y.YEvent<any>[]) => {
-      if (events.length > 0) this.scheduleQuizSurvey()
+      let quiz = false
+      let template = false
+      for (const event of events) {
+        const type = event.path[1]
+        if (type === TEMPLATE || type === TEMPLATE_TIME) template = true
+        else if (type === QUIZ || type === SURVEY) quiz = true
+        else quiz = template = true
+      }
+      if (quiz) this.scheduleQuizSurvey()
+      if (template) this.scheduleTemplates()
     })
 
     // A peer's content key, wrapped for the owner, arrives after that peer's
@@ -510,7 +558,10 @@ export class CRDT {
     // answers synchronously, `rewrapForCurrentOwner()` wraps asynchronously).
     // Those answers were skipped as unreadable by the recompute above, and
     // nothing else would re-read them until someone happened to answer again.
-    this.wrappedKeys.observe(() => this.scheduleQuizSurvey())
+    this.wrappedKeys.observe(() => {
+      this.scheduleQuizSurvey()
+      this.scheduleTemplates()
+    })
 
     this.identities.observe(() => {
       this.callback(this.getIdentities(), 'identity')
@@ -800,6 +851,7 @@ export class CRDT {
     // persisted room's snapshot arriving right after join) came back as
     // unreadable, see decryptSectionValue - read it again now.
     this.scheduleQuizSurvey()
+    this.scheduleTemplates()
     const pub = await peerCrypto.exportPublicKey(this.ownerKeyPair.publicKey)
 
     if (this.ownerKey.get(this.peerID) !== pub) {
@@ -899,6 +951,213 @@ export class CRDT {
     }
 
     return section
+  }
+
+  // All layers of one template this peer may read: everyone in Shared mode,
+  // otherwise only the own layer, the owner reads all (decryptSectionValue).
+  async getTemplate(name: string): Promise<TemplateLayer[]> {
+    const layers: TemplateLayer[] = []
+    const owner = this.getOwner() === this.peerID
+
+    for (const [peerId, own] of this.user) {
+      const values = (own.get(TEMPLATE) as Y.Map<any> | undefined)?.get(name) as
+        | Y.Array<any>
+        | undefined
+      if (!values) continue
+
+      const plain = await this.readTemplate(peerId, values)
+      if (!plain) continue
+
+      layers.push({
+        id: peerId,
+        name: this.identities.get(peerId) || '',
+        me: peerId === this.peerID,
+        editable: owner || peerId === this.peerID,
+        ...helper.identicon(peerId),
+        values: plain,
+      })
+    }
+
+    return layers
+  }
+
+  // A layer is either readable as a whole or not at all (undefined).
+  protected async readTemplate(
+    peerId: string,
+    values: Y.Array<any>,
+  ): Promise<any[] | undefined> {
+    const plain: any[] = []
+
+    for (const raw of values.toArray()) {
+      const enc = peerCrypto.isEncryptedValue(raw)
+      let value = enc ? this.templateCache.get(raw.iv) : undefined
+      if (value === undefined) {
+        value = await this.decryptSectionValue(peerId, raw)
+        if (value === undefined) return undefined
+        if (enc) this.templateCache.set(raw.iv, value)
+      }
+      plain.push(helper.deepFreeze(value))
+    }
+
+    return plain
+  }
+
+  protected async fireTemplates() {
+    if (!this.onTemplate) return
+
+    const names = new Set<string>()
+    for (const [, own] of this.user) {
+      const t = own.get(TEMPLATE) as Y.Map<any> | undefined
+      if (t) for (const name of t.keys()) names.add(name)
+    }
+
+    for (const name of names) {
+      this.onTemplate(
+        name,
+        await this.getTemplate(name),
+        this.templateTime(this.peerID, name),
+      )
+    }
+  }
+
+  // On a new connection: the newer copy of the own layer wins. Returns the
+  // room copy if it is newer (changed by the owner meanwhile), otherwise the
+  // local copy is written into the room.
+  async reconcileTemplate(
+    name: string,
+    local: any[],
+    localTime: number,
+  ): Promise<{ values: any[]; time: number } | undefined> {
+    const array = this.templateArray(this.peerID, name)
+    const roomTime = this.templateTime(this.peerID, name)
+
+    if (array && roomTime > localTime) {
+      const values = await this.readTemplate(this.peerID, array)
+      if (values) return { values, time: roomTime }
+    }
+
+    await this.writeTemplate(this.peerID, name, local, localTime)
+  }
+
+  hasTemplate(name: string): boolean {
+    return !!this.templateArray(this.peerID, name)
+  }
+
+  async appendTemplate(name: string, value: any, time: number) {
+    const sealed = await this.sealTemplate(this.peerID, value)
+    this.doc.transact(() => {
+      this.templateArray(this.peerID, name, true)!.push([sealed])
+      this.stampTemplate(this.peerID, name, time)
+    }, this.peerID)
+  }
+
+  // Replace a layer, the own one or, for the owner, any existing one. Only
+  // the part that differs from the room copy is rewritten, an undo or the
+  // move of one stroke is one delete and one insert.
+  async writeTemplate(peerId: string, name: string, values: any[], time: number) {
+    const own = peerId === this.peerID
+    if (!own && this.getOwner() !== this.peerID) {
+      throw new Error('only the classroom owner may change other layers')
+    }
+
+    // nothing drawn yet, no need for an (empty) layer in the room
+    if (values.length === 0 && !this.templateArray(peerId, name)) return
+
+    const array = this.templateArray(peerId, name, own)
+    if (!array) throw new Error(`no layer "${name}" for ${peerId}`)
+
+    const room = await this.readTemplate(peerId, array)
+    if (!room) throw new Error(`layer "${name}" of ${peerId} is not readable`)
+
+    const same = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b)
+    let start = 0
+    while (start < room.length && start < values.length && same(room[start], values[start])) {
+      start++
+    }
+    let end = 0
+    while (
+      end < room.length - start &&
+      end < values.length - start &&
+      same(room[room.length - 1 - end], values[values.length - 1 - end])
+    ) {
+      end++
+    }
+
+    const removed = room.length - start - end
+    const inserted = values.slice(start, values.length - end)
+    if (removed === 0 && inserted.length === 0) return
+
+    const sealed = await Promise.all(
+      inserted.map((value) => this.sealTemplate(peerId, value)),
+    )
+
+    this.doc.transact(() => {
+      const array = this.templateArray(peerId, name, own)!
+      if (removed > 0) array.delete(start, removed)
+      if (sealed.length > 0) array.insert(start, sealed)
+      this.stampTemplate(peerId, name, time)
+    }, this.peerID)
+  }
+
+  // Values of another peer are encrypted with that peer's content key, which
+  // only the owner can unwrap - so both of them can read the result.
+  protected async sealTemplate(peerId: string, value: any) {
+    if (this.classroomMode === 0) return value
+
+    const key =
+      peerId === this.peerID
+        ? await this.ensureContentKey()
+        : this.ownerKeyPair && (await this.getPeerContentKey(peerId))
+    if (!key) throw new Error(`no content key for ${peerId}`)
+
+    return peerCrypto.encryptValue(key, value)
+  }
+
+  protected templateTime(peerId: string, name: string): number {
+    const times = this.user.get(peerId)?.get(TEMPLATE_TIME) as
+      | Y.Map<number>
+      | undefined
+    return times?.get(name) ?? 0
+  }
+
+  protected stampTemplate(peerId: string, name: string, time: number) {
+    const times = this.user.get(peerId)?.get(TEMPLATE_TIME) as
+      | Y.Map<number>
+      | undefined
+    times?.set(name, time)
+  }
+
+  // Only a peer itself creates its layers (and their time map), the owner
+  // only changes existing ones - two peers creating the same nested type at
+  // once would lose one of them.
+  protected templateArray(
+    peerId: string,
+    name: string,
+    create = false,
+  ): Y.Array<any> | undefined {
+    let own = this.user.get(peerId)
+    if (!own) {
+      if (!create) return undefined
+      own = new Y.Map()
+      this.user.set(peerId, own)
+    }
+
+    if (create && !own.get(TEMPLATE_TIME)) own.set(TEMPLATE_TIME, new Y.Map())
+
+    let templates = own.get(TEMPLATE) as Y.Map<any> | undefined
+    if (!templates) {
+      if (!create) return undefined
+      templates = new Y.Map()
+      own.set(TEMPLATE, templates)
+    }
+
+    let values = templates.get(name) as Y.Array<any> | undefined
+    if (!values && create) {
+      values = new Y.Array()
+      templates.set(name, values)
+    }
+
+    return values
   }
 
   initCode(id: number, i: number, j: number, value: string) {

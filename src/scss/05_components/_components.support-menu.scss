@@ -180,6 +180,11 @@
       }
     }
 
+    // the edit entry is a link: menu colour instead of the link colour
+    > a.lia-btn {
+      color: inherit;
+    }
+
     // safari fix of container width
     &--info .lia-support-menu__submenu {
       width: -webkit-max-content;
@@ -197,7 +202,19 @@
       > .icon {
         margin-block-end: 0;
       }
+
+      // same icon size as the buttons (the label is hidden here)
+      > a.lia-btn > .icon {
+        font-size: 2rem;
+      }
     }
+  }
+
+  // language code (EN, DE, ...): capitals as tall as the icons next to it
+  &__lang {
+    font-size: 1.3em;
+    line-height: 1;
+    vertical-align: middle;
   }
 
   &__submenu {
@@ -232,8 +249,13 @@
       }
     }
 
-    .lia-btn[aria-checked='true'] {
-      color: rgb(var(--color-highlight));
+    .lia-btn[aria-pressed='true'] {
+      color: var(--color-accent);
+
+      // already bright enough, not brightened like transparent buttons in dark mode
+      @at-root html.lia-variant-dark & {
+        filter: none;
+      }
     }
 
     svg {

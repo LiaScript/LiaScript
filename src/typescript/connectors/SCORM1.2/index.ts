@@ -406,7 +406,7 @@ Have fun ;-)`
       if (this.scorm) {
         data = this.scorm.LMSGetValue(`cmi.objectives.${id}.id`)
 
-        if (data) return Utils.decodeJSON(data)
+        if (data) return Utils.decodeIdentifier(data)
       }
     } catch (e) {
       WARN('getObjective =>', e, `cmi.objectives.${id}.id`, data)
@@ -421,7 +421,7 @@ Have fun ;-)`
    * @param state
    */
   setObjective(id: number, state: any): void {
-    const data = Utils.encodeJSON(state)
+    const data = Utils.encodeIdentifier(state)
 
     if (data.length > 255) {
       WARN(`cmi.objectives.${id}.id`, 'Content exceeds 256Bytes!')

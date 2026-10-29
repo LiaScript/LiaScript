@@ -252,11 +252,11 @@ suite =
         , describe "narrator comments"
             [ test "a translated course has no recordings" <|
                 \_ ->
-                    MView.addTranslation { hidden = True, translations = Just { old = "de", new = "en", name = Just "English" }, id = 2, narrator = "unknown", audio = Array.fromList [ "a.mp3" ] }
+                    MView.addTranslation { hidden = True, ariaHidden = True, translations = Just { old = "de", new = "en", name = Just "English" }, id = 2, narrator = "unknown", audio = Array.fromList [ "a.mp3" ] }
                         |> Expect.equal [ ( "aria-hidden", "true" ), ( "class", "translate hidden-visually" ), ( "class", "lia-tts-2" ), ( "data-voice", "unknown" ), ( "data-lang", "en" ), ( "translate", "yes" ), ( "data-translated", "no" ) ]
             , test "an untranslated course has the recordings of a comment" <|
                 \_ ->
-                    MView.addTranslation { hidden = False, translations = Just { old = "en", new = "en", name = Just "English" }, id = 2, narrator = "unknown", audio = Array.fromList [ "a.mp3", "b.mp3" ] }
+                    MView.addTranslation { hidden = False, ariaHidden = False, translations = Just { old = "en", new = "en", name = Just "English" }, id = 2, narrator = "unknown", audio = Array.fromList [ "a.mp3", "b.mp3" ] }
                         |> Expect.equal [ ( "data-file", "a.mp3,b.mp3" ), ( "class", "translate" ), ( "class", "lia-tts-2" ), ( "data-voice", "unknown" ), ( "data-lang", "en" ), ( "translate", "yes" ), ( "data-translated", "no" ) ]
             ]
         , describe "config"

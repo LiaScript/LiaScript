@@ -79,7 +79,7 @@ snapshots =
           , "k"
           )
         , ( "stringify html inner"
-          , ""
+          , " "
           )
         , ( "stringify effect"
           , "ef"
@@ -247,7 +247,7 @@ snapshots =
           , "k"
           )
         , ( "stringify_ html inner"
-          , ""
+          , " "
           )
         , ( "stringify_ effect"
           , "ef"
@@ -415,7 +415,7 @@ snapshots =
           , "k"
           )
         , ( "stringify_ hidden html inner"
-          , ""
+          , " "
           )
         , ( "stringify_ hidden effect"
           , ""

@@ -1,4 +1,4 @@
-module Service.P2P exposing (decode, nostr, torrent)
+module Service.P2P exposing (decode, nostr, parent, torrent)
 
 import Http
 import Json.Decode as JD
@@ -21,6 +21,14 @@ torrent =
 nostr : { template : Bool, uri : String } -> Event
 nostr =
     load >> Event.init "nostr"
+
+
+{-| Ask the page that embeds LiaScript for the course (`parent:<id>`), see
+`src/typescript/liascript/service/Parent.ts`.
+-}
+parent : { template : Bool, uri : String } -> Event
+parent =
+    load >> Event.init "parent"
 
 
 load : { template : Bool, uri : String } -> { cmd : String, param : JE.Value }
