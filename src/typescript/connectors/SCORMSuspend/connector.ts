@@ -8,7 +8,7 @@ import * as Base from '../Base/index'
 import { Settings } from '../Base/settings'
 
 import * as Adapter from './adapter'
-import { Engine, type Clock } from './engine'
+import { Engine, type Clock, type LMS } from './engine'
 import type { LiaMeta } from './meta'
 import { profile } from './profile'
 import type { Version } from './report'
@@ -23,19 +23,27 @@ const clock: Clock = {
 }
 
 export class SuspendConnector extends Base.Connector {
-  private engine: Engine
+  protected engine: Engine
   private location: number | null
 
-  constructor(version: Version) {
+  /**
+   * @param connect - the LMS to talk to, the SCORM API of the frames above
+   *   by default; the H5P connector passes a virtual one
+   */
+  constructor(
+    version: Version,
+    connect: (warn: (...args: any[]) => void) => LMS | null = (warn) => Adapter.connect(version, warn),
+    name = `SCORM ${version} (suspend)`
+  ) {
     super()
 
-    const warn = (...args: any[]) => console.warn(`SCORM ${version} (suspend):`, ...args)
+    const warn = (...args: any[]) => console.warn(`${name}:`, ...args)
     const config = (window as any).config_ || {}
     const meta: LiaMeta | null = config.meta?.version === 1 ? config.meta : null
     const mastery = (window as any).MASTERY_SCORE
 
     this.engine = new Engine(
-      Adapter.connect(version, warn),
+      connect(warn),
       {
         profile: profile(version),
         defaults: { quiz: config.quiz || [], survey: config.survey || [], task: config.task || [] },
