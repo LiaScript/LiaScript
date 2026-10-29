@@ -1,5 +1,7 @@
 module Service.Database exposing
-    ( index_delete
+    ( index_board_get
+    , index_board_store
+    , index_delete
     , index_get
     , index_list
     , index_reset
@@ -112,6 +114,20 @@ index_restore =
 index_list : Event
 index_list =
     index_ "list" JE.null
+
+
+{-| Query for the kanban board of the index (layout and columns).
+-}
+index_board_get : Event
+index_board_get =
+    index_ "board_get" JE.null
+
+
+{-| Store the kanban board of the index.
+-}
+index_board_store : JE.Value -> Event
+index_board_store =
+    index_ "board_store"
 
 
 {-| Delete all entries for a certain course identified by its.

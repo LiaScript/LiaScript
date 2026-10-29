@@ -1,7 +1,6 @@
 module Lia.Chat.View exposing (view)
 
 import Accessibility.Aria as A11y
-import Accessibility.Live as A11y_Live
 import Accessibility.Role as A11y_Role
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -32,7 +31,7 @@ view lang lightMode config peers model =
         )
         [ model.messages
             |> Dict.toList
-            |> List.map (viewMessage config peers)
+            |> List.map (viewMessage lang config peers)
             |> Keyed.node "article"
                 [ Attr.style "display" "flex"
                 , Attr.style "flex-direction" "column"
@@ -45,8 +44,10 @@ view lang lightMode config peers model =
                 [ Attr.style "height" "100%"
                 , Attr.style "overflow" "auto"
                 , Attr.id "lia-chat-messages"
-                , A11y_Live.livePolite
-                , A11y_Live.atomic True
+
+                -- only new messages are read out
+                , A11y_Role.log
+                , A11y.label "Chat"
                 ]
         , Html.div
             [ Attr.style "padding" "0.5rem"
@@ -69,7 +70,7 @@ view lang lightMode config peers model =
                 , Attr.style "z-index" "100"
                 , Attr.style "color" "#888"
                 , Attr.class "lia-btn--transparent"
-                , A11y.keyShortcuts [ "Ctrl-Enter", "Command-Enter" ]
+                , A11y.keyShortcuts [ "Control+Enter", "Meta+Enter" ]
                 ]
             , Editor.editor
                 [ Editor.onChange Input
@@ -81,7 +82,7 @@ view lang lightMode config peers model =
                 , Editor.showGutter False
                 , Attr.class "lia-code__input"
                 , Editor.onCtrlEnter Send
-                , A11y_Role.textBox
+                , Editor.label (Trans.chatMessage lang)
                 , Editor.theme <|
                     "cloud9_"
                         ++ (if lightMode then
@@ -96,8 +97,8 @@ view lang lightMode config peers model =
         ]
 
 
-viewMessage : (Section -> Config Markdown.Msg) -> Dict String String -> ( String, { section : Section, peer : String, verified : Bool } ) -> ( String, Html Msg )
-viewMessage config peers ( id, message ) =
+viewMessage : Lang -> (Section -> Config Markdown.Msg) -> Dict String String -> ( String, { section : Section, peer : String, verified : Bool } ) -> ( String, Html Msg )
+viewMessage lang config peers ( id, message ) =
     let
         id_ =
             id
@@ -132,9 +133,12 @@ viewMessage config peers ( id, message ) =
                         Html.text ""
 
                       else
-                        Lia.Utils.icon "icon-warning"
-                            [ Attr.title "Unverified sender"
-                            , Attr.style "margin" "0 0.25rem"
+                        Html.span []
+                            [ Lia.Utils.icon "icon-warning"
+                                [ Attr.title (Trans.chatUnverified lang)
+                                , Attr.style "margin" "0 0.25rem"
+                                ]
+                            , Html.span [ Attr.class "hidden-visually" ] [ Html.text (Trans.chatUnverified lang) ]
                             ]
                     , Html.text " · "
                     , Html.text <| String.right 5 (formatDate id_)

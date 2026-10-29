@@ -870,7 +870,7 @@ multiGapText_Suite =
                                     { elements =
                                         [ Paragraph []
                                             [ chars "The capital of France is "
-                                            , InlineTypes.Quiz ( String.fromFloat (toFloat (String.length "Paris" + 2) * 0.4) ++ "em", 0 ) []
+                                            , InlineTypes.Quiz ( "calc(" ++ String.fromInt (String.length "Paris" + String.length (String.filter Char.isUpper "Paris") // 2 + 1) ++ "ch + 1rem + 4px)", 0 ) []
                                             , chars "."
                                             ]
                                         ]
@@ -893,9 +893,9 @@ multiGapText_Suite =
                                     { elements =
                                         [ Paragraph []
                                             [ chars "The capital of "
-                                            , InlineTypes.Quiz ( String.fromFloat (toFloat (String.length "France" + 2) * 0.4) ++ "em", 0 ) []
+                                            , InlineTypes.Quiz ( "calc(" ++ String.fromInt (String.length "France" + String.length (String.filter Char.isUpper "France") // 2 + 1) ++ "ch + 1rem + 4px)", 0 ) []
                                             , chars " is "
-                                            , InlineTypes.Quiz ( String.fromFloat (toFloat (String.length "Paris" + 2) * 0.4) ++ "em", 1 ) []
+                                            , InlineTypes.Quiz ( "calc(" ++ String.fromInt (String.length "Paris" + String.length (String.filter Char.isUpper "Paris") // 2 + 1) ++ "ch + 1rem + 4px)", 1 ) []
                                             , chars "."
                                             ]
                                         ]
@@ -918,7 +918,7 @@ multiGapText_Suite =
                                     { elements =
                                         [ Paragraph []
                                             [ chars "Pick one: "
-                                            , InlineTypes.Quiz ( String.fromFloat (toFloat (String.length "foo|(bar)|baz" + 2) * 0.4) ++ "em", 0 ) []
+                                            , InlineTypes.Quiz ( "calc(" ++ String.fromInt (String.length "foo|(bar)|baz" + String.length (String.filter Char.isUpper "foo|(bar)|baz") // 2 + 1) ++ "ch + 1rem + 4px)", 0 ) []
                                             , chars "."
                                             ]
                                         ]
@@ -1842,7 +1842,7 @@ inlineStyledBlank_Suite =
                                             [ InlineTypes.Bold
                                                 (InlineTypes.Container
                                                     [ chars "I (learn) "
-                                                    , InlineTypes.Quiz ( String.fromFloat (toFloat (String.length "have been learning" + 2) * 0.4) ++ "em", 0 ) []
+                                                    , InlineTypes.Quiz ( "calc(" ++ String.fromInt (String.length "have been learning" + String.length (String.filter Char.isUpper "have been learning") // 2 + 1) ++ "ch + 1rem + 4px)", 0 ) []
                                                     , chars " English for seven years now."
                                                     ]
                                                     []
@@ -1870,7 +1870,7 @@ inlineStyledBlank_Suite =
                                         [ Paragraph []
                                             [ chars "I (study) "
                                             , InlineTypes.Strike
-                                                (InlineTypes.Quiz ( String.fromFloat (toFloat (String.length "am going to study" + 2) * 0.4) ++ "em", 0 ) [])
+                                                (InlineTypes.Quiz ( "calc(" ++ String.fromInt (String.length "am going to study" + String.length (String.filter Char.isUpper "am going to study") // 2 + 1) ++ "ch + 1rem + 4px)", 0 ) [])
                                                 []
                                             , chars " harder this term."
                                             ]
@@ -1993,7 +1993,7 @@ multiGapTextOtherBlockTypes_Suite =
                                             , body =
                                                 [ [ ( [], [ chars "gehen " ] )
                                                   , ( []
-                                                    , [ InlineTypes.Quiz ( String.fromFloat (toFloat (String.length "werde" + 2) * 0.4) ++ "em", 0 ) []
+                                                    , [ InlineTypes.Quiz ( "calc(" ++ String.fromInt (String.length "werde" + String.length (String.filter Char.isUpper "werde") // 2 + 1) ++ "ch + 1rem + 4px)", 0 ) []
                                                       , chars " "
                                                       ]
                                                     )
@@ -2039,7 +2039,7 @@ multiGapTextOtherBlockTypes_Suite =
                                                 ]
                                             , Citation []
                                                 [ chars " By "
-                                                , InlineTypes.Quiz ( String.fromFloat (toFloat (String.length "Dieter Nuhr" + 2) * 0.4) ++ "em", 0 ) []
+                                                , InlineTypes.Quiz ( "calc(" ++ String.fromInt (String.length "Dieter Nuhr" + String.length (String.filter Char.isUpper "Dieter Nuhr") // 2 + 1) ++ "ch + 1rem + 4px)", 0 ) []
                                                 ]
                                             ]
                                         ]

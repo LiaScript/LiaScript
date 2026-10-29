@@ -4,6 +4,7 @@ module Lia.Markdown.Survey.View exposing (view)
 diagrams and tables.
 -}
 
+import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
 import Array
@@ -25,7 +26,7 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (dropHere, viewer)
+import Lia.Markdown.Inline.View exposing (dropHere, dropZoneLabel, viewer)
 import Lia.Markdown.Quiz.View exposing (openState, syncAttributes, viewMatrixTableSync, viewTableSync)
 import Lia.Markdown.Survey.Sync as Sync exposing (Sync)
 import Lia.Markdown.Survey.Types
@@ -49,9 +50,11 @@ import Lia.Markdown.Update as Main
 import Lia.Sync.Types as Sync_
 import Lia.Utils
     exposing
-        ( blockKeydown
-        , btn
+        ( btn
+        , combobox
+        , dropdownList
         , icon
+        , labeledOption
         , shuffle
         , string2Color
         )
@@ -64,11 +67,15 @@ import List.Extra
 `viewBlocks`), one `List (Html Main.Msg)` per option - exactly as with
 Task-list items and Quiz-Vector options.
 -}
-view : Config Main.Msg -> Parameters -> Survey Markdown.Block -> Vector -> List ( String, List (Html Main.Msg) ) -> ( Maybe Int, Html Main.Msg )
-view config attr survey model renderedOptions =
+view : Config Main.Msg -> Maybe String -> Parameters -> Survey Markdown.Block -> Vector -> List ( String, List (Html Main.Msg) ) -> ( Maybe Int, Html Main.Msg )
+view config labeledBy attr survey model renderedOptions =
     let
         id =
             survey.id
+
+        -- name of the inputs and prefix of the option ids
+        base =
+            "lia-survey-" ++ String.fromInt config.slide ++ "-" ++ String.fromInt id
 
         element =
             Array.get id model
@@ -102,7 +109,7 @@ view config attr survey model renderedOptions =
                 _ ->
                     ""
             )
-                |> viewText config lines id submitted
+                |> viewText config labeledBy lines id submitted
                 |> Html.map Main.UpdateSurvey
                 |> frame "text"
                 |> viewTextSync config lines syncData
@@ -135,23 +142,33 @@ view config attr survey model renderedOptions =
 
         Vector checkbox questions analysis ->
             renderedOptions
-                |> List.map (viewOption checkbox (isChecked state) (VectorUpdate id) submitted)
+                |> List.indexedMap (viewOption base checkbox (isChecked state) (VectorUpdate id) submitted)
                 |> shuffle opt.randomize
-                |> Html.div [ Attr.class "lia-quiz__answers" ]
+                |> Html.div
+                    [ Attr.class "lia-quiz__answers"
+                    , if checkbox then
+                        A11y_Role.group
+
+                      else
+                        A11y_Role.radioGroup
+                    , labeledBy
+                        |> Maybe.map A11y_Aria.labelledBy
+                        |> Maybe.withDefault (Attr.class "")
+                    ]
                 |> frame
                     (if checkbox then
-                        "single-choice"
+                        "multiple-choice"
 
                      else
-                        "multiple-choice"
+                        "single-choice"
                     )
                 |> viewVectorSync config analysis (List.map Tuple.first questions) syncData
 
         Matrix checkbox header vars questions ->
             questions
-                |> List.indexedMap (viewRow config checkbox (isCheckedRow state) (MatrixUpdate id) submitted vars)
+                |> List.indexedMap (viewRow config base checkbox (isCheckedRow state) (MatrixUpdate id) submitted vars)
                 |> shuffle opt.randomize
-                |> viewMatrix config header
+                |> viewMatrix config base header
                 |> Html.map Main.UpdateSurvey
                 |> frame "matrix"
                 |> viewMatrixSync config questions vars syncData
@@ -263,7 +280,7 @@ viewSubmitButton config submitted id updatesAllowed =
     Html.div [ Attr.class "lia-quiz__control" ]
         [ btn
             { msg = Maybe.map Main.UpdateSurvey msg
-            , tabbable = not submitted || updatesAllowed
+            , tabbable = True
             , title = title config.lang
             }
             [ Attr.class "lia-btn--outline lia-quiz__check" ]
@@ -273,11 +290,14 @@ viewSubmitButton config submitted id updatesAllowed =
 
 {-| A single line input or, for more `lines`, a textarea.
 -}
-viewText : Config sub -> Int -> Int -> Bool -> String -> Html (Msg sub)
-viewText config lines id submitted str =
+viewText : Config sub -> Maybe String -> Int -> Int -> Bool -> String -> Html (Msg sub)
+viewText config labeledBy lines id submitted str =
     let
         attr =
             [ onInput <| TextUpdate id
+            , labeledBy
+                |> Maybe.map A11y_Aria.labelledBy
+                |> Maybe.withDefault (A11y_Aria.label (surveyText config.lang))
             , Attr.placeholder (surveyText config.lang)
             , Attr.value str
             , Attr.disabled submitted
@@ -289,26 +309,33 @@ viewText config lines id submitted str =
     else
         Html.textarea
             (Attr.class "lia-input lia-quiz__input"
-                :: blockKeydown (TextUpdate id str)
                 :: Attr.rows lines
                 :: attr
             )
             []
 
 
+{-| A select-only combobox, the keyboard is handled by
+`typescript/liascript/combobox.ts`, which clicks the existing elements.
+-}
 viewSelect : Config sub -> Maybe (List Int) -> List Inlines -> Int -> Bool -> ( Bool, Int ) -> Html (Msg sub)
 viewSelect config randomize options id submitted ( open, value ) =
+    let
+        listID =
+            "lia-survey-" ++ String.fromInt config.slide ++ "-" ++ String.fromInt id ++ "-select"
+    in
     Html.div [ Attr.class "lia-quiz__answers" ]
         [ Html.div
             [ Attr.class "lia-dropdown" ]
             [ Html.span
-                [ Attr.class "lia-dropdown__selected"
-                , if submitted then
-                    Attr.disabled True
+                (combobox listID open submitted (A11y_Aria.label (Translations.quizSelection config.lang))
+                    ++ [ if submitted then
+                            Attr.class "is-disabled"
 
-                  else
-                    onClick <| SelectUpdate id Choose
-                ]
+                         else
+                            onClick <| SelectUpdate id Choose
+                       ]
+                )
                 [ Html.span []
                     [ options
                         |> List.Extra.getAt value
@@ -329,21 +356,26 @@ viewSelect config randomize options id submitted ( open, value ) =
                     (\i option ->
                         Html.div
                             [ Attr.class "lia-dropdown__option"
+                            , Attr.id (listID ++ "-" ++ String.fromInt i)
+                            , A11y_Role.option
+                            , A11y_Aria.selected (i == value)
                             , onClick (SelectUpdate id (Update i))
                             ]
                             (inlines config option)
                     )
                 |> shuffle randomize
                 |> Html.div
-                    [ Attr.class "lia-dropdown__options"
-                    , Attr.tabindex -1
-                    , Attr.class <|
-                        if open then
-                            "is-visible"
+                    (dropdownList listID
+                        open
+                        [ Attr.class "lia-dropdown__options"
+                        , Attr.class <|
+                            if open then
+                                "is-visible"
 
-                        else
-                            "is-hidden"
-                    ]
+                            else
+                                "is-hidden"
+                        ]
+                    )
             ]
         ]
 
@@ -391,9 +423,12 @@ viewDrop config randomize options id submitted ( highlight, active, value ) =
             , Attr.style "position" "relative"
             , onClick (unlessSubmitted Target)
             , A11y_Role.button
+            , dropZoneLabel config.lang "" (Maybe.map stringify (List.Extra.getAt value options))
             , onKeys Target
+
+            -- only a filled drop zone does something, Enter clears it
             , Attr.tabindex <|
-                if submitted then
+                if submitted || List.Extra.getAt value options == Nothing then
                     -1
 
                 else
@@ -413,21 +448,20 @@ viewDrop config randomize options id submitted ( highlight, active, value ) =
                         [ Attr.style "border" "3px dotted #888"
                         , Attr.style "padding" "1rem"
                         , Attr.style "cursor" "pointer"
-                        , Attr.style "background-color" "#f9f9f9"
+                        , Attr.style "background-color" "#88888822"
                         , Attr.style "border-radius" "4px"
                         , Attr.style "display" "flex"
                         , Attr.style "justify-content" "center"
                         , draggable
                         , on "dragend" (Drop value)
                         , on "dragstart" Start
-                        , A11y_Role.button
-                        , Attr.tabindex 0
                         ]
                         (inlines config option)
 
                 Nothing ->
                     dropHere
-                        [ Attr.style "height" "4rem"
+                        [ A11y_Aria.hidden True
+                        , Attr.style "height" "4rem"
                         , Attr.style "display" "flex"
                         , Attr.style "font-size" "4rem" -- fallback
                         , Attr.style "font-size" "min(10vw, 4rem)" -- scales with viewport
@@ -466,7 +500,7 @@ viewDrop config randomize options id submitted ( highlight, active, value ) =
                                 , Attr.style "margin" "0.25rem"
                                 , Attr.style "padding" "1rem"
                                 , Attr.style "cursor" "pointer"
-                                , Attr.style "background-color" "#f9f9f9"
+                                , Attr.style "background-color" "#88888822"
                                 , Attr.style "border-radius" "4px"
                                 , draggable
                                 , on "dragend" (Drop i)
@@ -493,63 +527,98 @@ viewDrop config randomize options id submitted ( highlight, active, value ) =
 
 {-| A checkbox or radio button with the pre-rendered `body` of the option.
 -}
-viewOption : Bool -> (String -> Bool) -> (String -> Msg Main.Msg) -> Bool -> ( String, List (Html Main.Msg) ) -> Html Main.Msg
-viewOption checkbox checked msg submitted ( var, body ) =
-    Html.label [ Attr.class "lia-label lia-label--top" ]
-        [ input checkbox (msg var) (checked var) submitted
-            |> Html.map Main.UpdateSurvey
-        , Html.div [ Attr.style "width" "100%" ] body
-        ]
+viewOption : String -> Bool -> (String -> Bool) -> (String -> Msg Main.Msg) -> Bool -> Int -> ( String, List (Html Main.Msg) ) -> Html Main.Msg
+viewOption base checkbox checked msg submitted i ( var, body ) =
+    labeledOption (base ++ "-option-" ++ String.fromInt i)
+        (\label ->
+            input checkbox (msg var) (checked var) submitted [ Attr.name base, label ]
+                |> Html.map Main.UpdateSurvey
+        )
+        body
 
 
-viewMatrix : Config sub -> List Inlines -> List (Html (Msg sub)) -> Html (Msg sub)
-viewMatrix config header rows =
+{-| Every input is labeled by its row and column header (`base`-row-i and
+`base`-col-j).
+-}
+viewMatrix : Config sub -> String -> List Inlines -> List (Html (Msg sub)) -> Html (Msg sub)
+viewMatrix config base header rows =
     Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-last-col-sticky" ]
         [ Html.table [ Attr.class "lia-table lia-survey-matrix is-alternating" ]
             [ header
-                |> List.map (inlines config >> Html.th [ Attr.class "lia-table__head lia-survey-matrix__head" ])
-                |> Html.thead [ Attr.class "lia-table__head lia-survey-matrix__head", A11y_Role.columnHeader ]
-            , Html.tbody [ Attr.class "lia-table__body lia-survey-matrix__body", A11y_Role.rowHeader ] rows
+                |> List.indexedMap
+                    (\column ->
+                        inlines config
+                            >> Html.th
+                                [ Attr.class "lia-table__head lia-survey-matrix__head"
+                                , Attr.scope "col"
+                                , Attr.id (base ++ "-col-" ++ String.fromInt column)
+                                ]
+                    )
+                |> Html.tr []
+                |> List.singleton
+                |> Html.thead [ Attr.class "lia-table__head lia-survey-matrix__head" ]
+            , Html.tbody [ Attr.class "lia-table__body lia-survey-matrix__body" ] rows
             ]
         ]
 
 
-{-| One checkbox or radio button per variable and the statement of the row.
+{-| One checkbox or radio button per variable and the statement of the row,
+radio buttons of one row form a group.
 -}
-viewRow : Config sub -> Bool -> (Int -> String -> Bool) -> (Int -> String -> Msg sub) -> Bool -> List String -> Int -> Inlines -> Html (Msg sub)
-viewRow config checkbox checked msg submitted vars row statement =
+viewRow : Config sub -> String -> Bool -> (Int -> String -> Bool) -> (Int -> String -> Msg sub) -> Bool -> List String -> Int -> Inlines -> Html (Msg sub)
+viewRow config base checkbox checked msg submitted vars row statement =
+    let
+        rowID =
+            base ++ "-row-" ++ String.fromInt row
+    in
     vars
-        |> List.map
-            (\var ->
+        |> List.indexedMap
+            (\column var ->
                 Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
-                    [ input checkbox (msg row var) (checked row var) submitted ]
+                    [ input checkbox
+                        (msg row var)
+                        (checked row var)
+                        submitted
+                        [ Attr.name rowID
+                        , A11y_Aria.labelledBy (rowID ++ " " ++ base ++ "-col-" ++ String.fromInt column)
+                        ]
+                    ]
             )
-        |> (\cells -> cells ++ [ Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ] [ Html.span [] (inlines config statement) ] ])
+        |> (\cells ->
+                cells
+                    ++ [ Html.th
+                            [ Attr.class "lia-table__data lia-survey-matrix__data"
+                            , Attr.scope "row"
+                            , Attr.id rowID
+                            ]
+                            [ Html.span [] (inlines config statement) ]
+                       ]
+           )
         |> Html.tr [ Attr.class "lia-table__row lia-survey-matrix__row" ]
 
 
-input : Bool -> Msg sub -> Bool -> Bool -> Html (Msg sub)
-input checkbox msg checked submitted =
-    Html.input
-        [ Attr.class <|
-            if checkbox then
-                "lia-checkbox"
-
-            else
-                "lia-radio"
-        , Attr.type_ <|
+input : Bool -> Msg sub -> Bool -> Bool -> List (Html.Attribute (Msg sub)) -> Html (Msg sub)
+input checkbox msg checked submitted attr =
+    let
+        type_ =
             if checkbox then
                 "checkbox"
 
             else
                 "radio"
-        , if submitted then
-            Attr.disabled True
+    in
+    Html.input
+        (List.append attr
+            [ Attr.class ("lia-" ++ type_)
+            , Attr.type_ type_
+            , if submitted then
+                Attr.disabled True
 
-          else
-            onClick msg
-        , Attr.checked checked
-        ]
+              else
+                onClick msg
+            , Attr.checked checked
+            ]
+        )
         []
 
 

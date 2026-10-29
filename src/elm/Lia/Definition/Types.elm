@@ -114,16 +114,24 @@ add_macros : Definition -> Definition -> Definition
 add_macros orig temp =
     { orig
         | macro = Dict.union orig.macro temp.macro
-        , attributes = List.append orig.attributes temp.attributes
+        , attributes = appendNew orig.attributes temp.attributes
         , onload =
             if orig.onload /= temp.onload then
                 String.trim (orig.onload ++ ";\n" ++ temp.onload)
 
             else
                 String.trim orig.onload
-        , resources = List.append orig.resources temp.resources
+        , resources = appendNew orig.resources temp.resources
         , formulas = Dict.union orig.formulas temp.formulas
     }
+
+
+{-| Append only the elements of `new` that `old` does not contain, a definition
+is also merged with itself (header in `init_script`, cached `index_restore`).
+-}
+appendNew : List a -> List a -> List a
+appendNew old new =
+    old ++ List.filter (\x -> not (List.member x old)) new
 
 
 {-| The URL of the course icon, defined by `icon` or the LiaScript default.

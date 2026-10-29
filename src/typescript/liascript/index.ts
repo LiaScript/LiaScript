@@ -14,6 +14,9 @@ import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only.js'
 import { Connector } from '../connectors/Base/index'
 
 import '../webcomponents/tooltip/index'
+import '../webcomponents/modal'
+import './combobox'
+import './matrix'
 
 // Services
 import Console from './service/Console'
@@ -33,6 +36,7 @@ import Translate from './service/Translate'
 import Zip from './service/Zip'
 import Torrent from './service/Torrent'
 import Nostr from './service/Nostr'
+import Parent from './service/Parent'
 
 // ----------------------------------------------------------------------------
 // GLOBAL INITIALIZATION
@@ -41,6 +45,21 @@ import * as GLOBALS from './init'
 GLOBALS.initGlobals()
 window.LIA.injectResposivevoice = TTS.inject
 window.LIA.narrator = Narrator.api
+
+// Browsers show the focus ring of text fields also after a click. For .lia-input
+// it shall only appear on keyboard focus, see _elements.input.scss. An attribute,
+// because the settings overwrite the className of <html>.
+let mouseFocus = false
+document.addEventListener('mousedown', () => (mouseFocus = true), true)
+document.addEventListener('keydown', () => (mouseFocus = false), true)
+document.addEventListener(
+  'focusin',
+  () =>
+    mouseFocus
+      ? document.documentElement.setAttribute('data-mouse-focus', '')
+      : document.documentElement.removeAttribute('data-mouse-focus'),
+  true
+)
 
 if (typeof queueMicrotask !== 'function') {
   window.queueMicrotask = function (callback) {
@@ -216,8 +235,10 @@ export class LiaScript {
     Translate.init(elmSend)
     Sync.init(elmSend, Database)
     Zip.init(elmSend)
+    Resource.init(elmSend)
     Torrent.init(elmSend, Database)
     Nostr.init(elmSend)
+    Parent.init(elmSend)
 
     let connector = this.connector
     jsSubscribe((event: Lia.Event) => {
@@ -283,6 +304,10 @@ export class LiaScript {
 
         case Nostr.PORT:
           Nostr.handle(event)
+          break
+
+        case Parent.PORT:
+          Parent.handle(event)
           break
 
         default:

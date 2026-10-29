@@ -91,6 +91,11 @@ export function addBase(base: string, url: string) {
 }
 
 const TEMPLATE = `<style>
+/* the plain link until the card is loaded, readable in light and dark mode */
+a {
+  color: var(--color-accent);
+}
+
 .card {
   border: 5px solid #399193;
   position: relative;
@@ -131,8 +136,11 @@ const TEMPLATE = `<style>
   margin-bottom: 1.5rem;
 }
 
+/* no headings within the link, they would be part of the course outline */
 .card__title {
   color: #4b4b4b;
+  font-size: 1.5em;
+  font-weight: bold;
   margin: 0;
   position: relative;
 }
@@ -147,14 +155,17 @@ const TEMPLATE = `<style>
 }
 
 .card__subtitle {
-  color: #aeaeae;
+  color: #707070;
+  font-size: 1.17em;
+  font-weight: bold;
   margin: 0.5rem 0 1rem;
 }
 
 .card__version {
   display: inline-block;
   padding: 0.5rem;
-  background-color: #399193;
+  /* darker than the brand color #399193 for a text contrast of 4.5:1 */
+  background-color: #2f7d7f;
   color: white;
   position: absolute;
   font-size: x-small;
@@ -168,7 +179,7 @@ const TEMPLATE = `<style>
 }
 
 .card__contact {
-  color: #399193;
+  color: #2f7d7f;
   text-decoration: none;
   font-size: small;
 }
@@ -259,25 +270,28 @@ class PreviewLia extends HTMLElement {
       'https://LiaScript.github.io/course/?' + this.source_url
 
     let tagLine = ''
-    if (meta.tags && meta.tags.length > 0) {
-      tagLine = `<h3 class="card__subtitle">${meta.tags.join(' | ')}</h3>`
+    const tags = (meta.tags || []).filter((tag: string) => tag && tag.trim())
+    if (tags.length > 0) {
+      tagLine = `<div class="card__subtitle">${tags.join(' | ')}</div>`
     }
 
+    // meta is cached in backup and rendered again on every visit, do not modify it
+    let logo = ''
     if (meta.logo) {
-      meta.logo_alt = meta.logo_alt ? `alt="${meta.logo_alt}"` : ''
-      meta.logo = `<div class="card__media">
-              <img src="${meta.logo}" ${meta.logo_alt} class="card__image">
+      // without a description the logo is decorative
+      logo = `<div class="card__media">
+              <img src="${meta.logo}" alt="${meta.logo_alt || ''}" class="card__image">
             </div>`
     }
 
+    // no mailto links, the whole card is already a link
+    let author = ''
     if (meta.author && meta.email) {
-      meta.author = `<a class="card__contact" href="mailto:${meta.email}">${meta.author} ✉️</a>`
+      author = `<span class="card__contact">${meta.author} ✉️</span>`
     } else if (meta.author) {
-      meta.author = `<span class="card__contact">${meta.author}</span>`
+      author = `<span class="card__contact">${meta.author}</span>`
     } else if (meta.email) {
-      meta.author = `<a class="card__contact" href="mailto:${meta.email}">${meta.email} ✉️</a>`
-    } else {
-      meta.author = ''
+      author = `<span class="card__contact">${meta.email} ✉️</span>`
     }
 
     a.href = link
@@ -286,20 +300,20 @@ class PreviewLia extends HTMLElement {
     a.style.display = 'block'
     a.innerHTML = `<article class="card">
             <div class="card__version">V ${meta.version}</div>
-            ${meta.logo || ''}
+            ${logo}
             <div class="card__content">
               <img src="${
                 meta.icon
               }" alt="" style="display: block; height: 3rem; position: absolute; right: 5px; top: 5px">
               <header class="card__header">
-                <h2 class="card__title">${meta.title}</h2>
+                <div class="card__title">${meta.title}</div>
                 ${tagLine}
               </header>
               <div class="card__body">
                 <p class="card__copy">${meta.description}</p>
               </div>
               <footer>
-                ${meta.author}
+                ${author}
               </footer>
             </div>
             
