@@ -233,7 +233,7 @@ modal lang activeBorder msgClose controls content =
 deactivate : Bool -> List (Attribute msg) -> List (Attribute msg)
 deactivate true attr =
     if true then
-        A11y_Aria.hidden True :: Attr.attribute "inert" "true" :: attr
+        A11y_Aria.hidden True :: Attr.attribute "inert" "" :: attr
 
     else
         attr
