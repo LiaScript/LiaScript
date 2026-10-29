@@ -1,5 +1,6 @@
 @use '../00_settings/settings.colors' as colors;
 @use '../00_settings/settings.global' as global;
+@use '../01_tools/tools.color';
 
 :root {
   // Basic color definitions
@@ -15,11 +16,19 @@
   --color-highlight: var(--lia-turquoise);
   --color-text: var(--lia-anthracite);
 
+  // text and borders of quiz states, readable on --color-background
+  --color-success: 63, 122, 42;
+  --color-failure: var(--lia-red);
+  --color-disabled: 112, 112, 112;
+  // the highlight as text or border on --color-background
+  --color-accent: rgb(var(--color-highlight));
+
   // dark theme
   &.lia-variant-dark {
     --color-background: var(--lia-grey-dark);
     --color-border: var(--lia-anthracite);
     --color-text: var(--lia-white);
+    @include tools.dark-colors;
   }
 
   &.lia-theme-turquoise {

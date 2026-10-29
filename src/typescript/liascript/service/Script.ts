@@ -416,7 +416,8 @@ function liaExecCode(event: Lia.Event) {
       if (window.LIA.debug) {
         evalError('exec', event.message.param.code, e)
       }
-      send.lia(e.message, false, [])
+      // the name tells that it is an error, a thrown string has no message
+      send.lia(String(e), false, [])
     }
   }, event.message.param.delay)
 }

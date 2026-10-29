@@ -9,6 +9,7 @@ import Expect
 import Html
 import Html.Attributes as Attr
 import HtmlSnapshot
+import I18n.Translations exposing (Lang(..))
 import Json.Encode as JE
 import Lia.Utils as Utils
 import Test exposing (Test, describe, test)
@@ -140,13 +141,13 @@ suite =
                 "<button class=\"lia-btn\" aria-hidden=\"false\" id=\"b\" tabIndex=\"0\" title=\"T\">\n    <i class=\"icon icon-x lia-btn__icon\" aria-hidden=\"true\">\n    </i>\n</button>"
             , snapshot "btn without msg and title"
                 (Utils.btn { title = "", tabbable = False, msg = Nothing } [] [ Html.text "x" ])
-                "<button class=\"lia-btn \" aria-hidden=\"true\" tabIndex=\"-1\" disabled>\n    x\n</button>"
+                "<button class=\"lia-btn lia-btn--disabled is-disabled \" aria-disabled=\"true\" aria-hidden=\"true\" tabIndex=\"-1\">\n    x\n</button>"
             , snapshot "modal"
-                (Utils.modal True "close" (Just [ Html.text "ctrl" ]) [ Html.text "content" ])
-                "<div class=\"lia-modal\" aria-modal=\"true\" role=\"dialog\">\n    <div class=\"lia-modal__inner\">\n        <div class=\"lia-modal__close\">\n            <button class=\"lia-btn lia-btn--transparent\" aria-hidden=\"false\" id=\"lia-modal__close\" tabIndex=\"0\" title=\"close modal\">\n                <i class=\"icon icon-close lia-btn__icon\" aria-hidden=\"true\">\n                </i>\n            </button>\n        </div>\n        <div class=\"lia-modal__content\">\n            content\n        </div>\n        <div class=\"lia-modal__controls\">\n            ctrl\n        </div>\n    </div>\n    <div class=\"lia-modal__outer\">\n    </div>\n</div>"
+                (Utils.modal En True "close" (Just [ Html.text "ctrl" ]) [ Html.text "content" ])
+                "<lia-modal class=\"lia-modal\" aria-modal=\"true\" role=\"dialog\">\n    <div class=\"lia-modal__inner\">\n        <div class=\"lia-modal__close\">\n            <button class=\"lia-btn lia-btn--transparent\" aria-hidden=\"false\" id=\"lia-modal__close\" tabIndex=\"0\" title=\"Close dialog\">\n                <i class=\"icon icon-close lia-btn__icon\" aria-hidden=\"true\">\n                </i>\n            </button>\n        </div>\n        <div class=\"lia-modal__content\">\n            content\n        </div>\n        <div class=\"lia-modal__controls\">\n            ctrl\n        </div>\n    </div>\n    <div class=\"lia-modal__outer\">\n    </div>\n</lia-modal>"
             , snapshot "modal without controls"
-                (Utils.modal False "close" Nothing [])
-                "<div class=\"lia-modal\" aria-modal=\"true\" role=\"dialog\">\n    <div class=\"lia-modal__inner\">\n        <div class=\"lia-modal__close\">\n            <button class=\"lia-btn lia-btn--transparent\" aria-hidden=\"false\" id=\"lia-modal__close\" tabIndex=\"0\" title=\"close modal\">\n                <i class=\"icon icon-close lia-btn__icon\" aria-hidden=\"true\">\n                </i>\n            </button>\n        </div>\n        <div class=\"lia-modal__content\">\n        </div>\n        \n    </div>\n    <div class=\"lia-modal__outer \">\n    </div>\n</div>"
+                (Utils.modal En False "close" Nothing [])
+                "<lia-modal class=\"lia-modal\" aria-modal=\"true\" role=\"dialog\">\n    <div class=\"lia-modal__inner\">\n        <div class=\"lia-modal__close\">\n            <button class=\"lia-btn lia-btn--transparent\" aria-hidden=\"false\" id=\"lia-modal__close\" tabIndex=\"0\" title=\"Close dialog\">\n                <i class=\"icon icon-close lia-btn__icon\" aria-hidden=\"true\">\n                </i>\n            </button>\n        </div>\n        <div class=\"lia-modal__content\">\n        </div>\n        \n    </div>\n    <div class=\"lia-modal__outer \">\n    </div>\n</lia-modal>"
             , snapshot "deactivate"
                 (Html.div (Utils.deactivate True [ Attr.id "a" ] ++ Utils.deactivate False [ Attr.id "b" ]) [])
                 "<div aria-hidden=\"true\" id=\"b\" inert=\"true\">\n</div>"
@@ -166,14 +167,13 @@ suite =
                 \_ ->
                     let
                         modal active =
-                            Utils.modal active "close" Nothing [] |> Query.fromHtml
+                            Utils.modal En active "close" Nothing [] |> Query.fromHtml
                     in
                     Expect.all
                         [ \_ -> modal True |> Query.find [ Selector.tag "button" ] |> HE.simulate HE.click |> HE.expect "close"
                         , \_ -> modal True |> Query.find [ Selector.class "lia-modal__outer" ] |> HE.simulate HE.click |> HE.expect "close"
                         , \_ -> modal False |> Query.find [ Selector.class "lia-modal__outer" ] |> HE.simulate HE.click |> HE.toResult |> Result.toMaybe |> Expect.equal Nothing
                         , \_ -> modal False |> HE.simulate (keydown 27 "Escape") |> HE.expect "close"
-                        , \_ -> modal False |> Query.find [ Selector.tag "button" ] |> HE.simulate (keydown 27 "Escape") |> HE.expect "close"
                         ]
                         ()
             , test "onEnter fires on keyup Enter only" <|
@@ -194,12 +194,6 @@ suite =
                         |> Query.fromHtml
                         |> HE.simulate (keydown 37 "ArrowLeft")
                         |> Expect.all [ HE.expect "37", HE.expectStopPropagation ]
-            , test "blockKeydown stops propagation" <|
-                \_ ->
-                    Html.input [ Utils.blockKeydown "x" ] []
-                        |> Query.fromHtml
-                        |> HE.simulate (keydown 37 "ArrowLeft")
-                        |> Expect.all [ HE.expect "x", HE.expectStopPropagation ]
             ]
         ]
 

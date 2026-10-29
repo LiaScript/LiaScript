@@ -141,6 +141,8 @@ customElements.define(
     private thumbnail_: boolean = false
     private connected_: boolean = false
     private dataAttributes: { [key: string]: string } = {}
+    // the alt text of the Markdown, names the embedded iframe or image
+    private alt_: string = ''
 
     constructor() {
       super()
@@ -206,10 +208,13 @@ customElements.define(
           // the url has changed while loading
           if (url !== this.url_) return
 
+          const name = this.alt_ || json.title || ''
+
           if (thumbnail && json.thumbnail_url) {
             this.show(
               this.element('img', {
                 src: json.thumbnail_url,
+                alt: name,
                 style: 'width: inherit; height: inherit; object-fit: cover',
               })
             )
@@ -220,7 +225,11 @@ customElements.define(
             div.innerHTML = json.html
           } else if (json.type === 'photo' && json.url) {
             this.show(
-              this.element('img', { src: json.url, style: 'width: 100%' })
+              this.element('img', {
+                src: json.url,
+                alt: name,
+                style: 'width: 100%',
+              })
             )
           } else {
             this.iframe(url, 'inherit')
@@ -228,6 +237,9 @@ customElements.define(
           }
 
           const frame = div.querySelector('iframe')
+          if (frame && !frame.title) {
+            frame.title = name || url
+          }
           if (frame) {
             // the provider sized the iframe for the width measured on connect,
             // stretching it to 100% has to keep the ratio, otherwise it gets thin
@@ -274,6 +286,7 @@ customElements.define(
       this.show(
         this.element('iframe', {
           src,
+          title: this.alt_ || src,
           style: `width: 100%; height: ${height}`,
           allowfullscreen: '',
         })
@@ -321,6 +334,14 @@ customElements.define(
 
     set maxwidth(value) {
       if (value) this.maxwidth_ = value
+    }
+
+    get alt() {
+      return this.alt_
+    }
+
+    set alt(value: string) {
+      this.alt_ = value || ''
     }
 
     get thumbnail() {

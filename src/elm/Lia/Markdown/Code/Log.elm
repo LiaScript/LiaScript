@@ -16,8 +16,8 @@ module Lia.Markdown.Code.Log exposing
 {-| The terminal output of a code project.
 -}
 
-import Accessibility.Aria as A11y_Aria
 import Array exposing (Array)
+import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as JD
@@ -101,16 +101,16 @@ viewMessage { level, text } =
     ( text
     , case level of
         Debug ->
-            viewText "text-debug" "debug" text
+            viewText "text-debug" Nothing text
 
         Info ->
-            viewText "text-info" "info" text
+            viewText "text-info" Nothing text
 
         Warn ->
-            viewText "text-warning" "warning" text
+            viewText "text-warning" (Just "warning") text
 
         Error ->
-            viewText "text-error" "error" text
+            viewText "text-error" (Just "error") text
 
         HTML ->
             Html.div
@@ -120,17 +120,21 @@ viewMessage { level, text } =
                 []
 
         Stream ->
-            viewText "text-info" "info" text
+            viewText "text-info" Nothing text
     )
 
 
-viewText : String -> String -> String -> Html msg
+{-| Warnings and errors are not only shown by their color, their level is also
+read out.
+-}
+viewText : String -> Maybe String -> String -> Html msg
 viewText class label text =
     Html.div
-        [ Attr.class class
-        , A11y_Aria.label label
-        ]
-        [ Html.text text ]
+        [ Attr.class class ]
+        (CList.addWhen
+            (Maybe.map (\level -> Html.span [ Attr.class "hidden-visually" ] [ Html.text (level ++ ": ") ]) label)
+            [ Html.text text ]
+        )
 
 
 {-| Append a message, a `Stream` message continues a preceding `Stream`

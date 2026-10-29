@@ -19,9 +19,14 @@
 }
 
 .text-highlight {
-  color: rgb(var(--color-highlight));
+  color: var(--color-accent);
+
+  // already bright enough, not brightened like transparent buttons in dark mode
+  @at-root html.lia-variant-dark & {
+    filter: none;
+  }
 }
 
 .border-highlight {
-  border-color: rgb(var(--color-highlight));
+  border-color: var(--color-accent);
 }

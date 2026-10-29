@@ -348,8 +348,6 @@ customElements.define(
 
       this._editor.setAutoScrollEditorIntoView(true)
 
-      const input = this._editor.textInput.getElement()
-
       const dispatchUpdateEvent = throttle(
         (
           changes: Update[],
@@ -371,7 +369,17 @@ customElements.define(
         }
       )
 
-      input.setAttribute('role', 'application')
+      // Ace overwrites the textarea's aria-label on every focus, with
+      // keyboard accessibility enabled it prefixes this label instead
+      this._editor.setOption(
+        'textInputAriaLabel',
+        this.getAttribute('data-label') ||
+          (this.model.readOnly ? 'Code-block' : 'Code-editor') +
+            ' in ' +
+            this.model.mode +
+            ' mode'
+      )
+
       if (!this.model.readOnly) {
         const runDispatch = (event: any) => {
           if (this._blockEvents) {
@@ -421,16 +429,6 @@ customElements.define(
 
         // Apply any configured key bindings
         this.applyKeyBindings()
-
-        input.setAttribute(
-          'aria-label',
-          'Code-editor in ' + this.model.mode + ' mode'
-        )
-      } else {
-        input.setAttribute(
-          'aria-label',
-          'Code-block in ' + this.model.mode + ' mode'
-        )
       }
 
       let self = this

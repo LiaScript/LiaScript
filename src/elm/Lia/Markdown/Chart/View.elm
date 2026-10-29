@@ -26,7 +26,7 @@ import Dict exposing (Dict)
 import Helper.List as List
 import Html exposing (Html)
 import Html.Attributes as Attr
-import I18n.Translations exposing (getCodeFromLn)
+import I18n.Translations exposing (chartDefault, getCodeFromLn)
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Data, Diagram(..), Orientation(..), Settings, invertDiagram)
 import Lia.Markdown.HTML.Attributes exposing (annotation)
@@ -121,6 +121,9 @@ eCharts { lang, attr, light } json option =
                 else
                     "dark"
             , Attr.attribute "locale" (getCodeFromLn lang)
+
+            -- the name until eCharts has generated a description
+            , Attr.attribute "data-label" (chartDefault lang)
             , Attr.property "option" option
             , json
                 |> Maybe.withDefault ""

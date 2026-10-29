@@ -9,6 +9,7 @@ module Lia.Sync.Update exposing
 
 import Dict exposing (Dict)
 import Helper.Array as Array
+import Index.View.Popup as Popup
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
@@ -37,6 +38,7 @@ import Lia.Sync.Types
         , toClassroomMode
         )
 import Lia.Sync.Via as Backend exposing (Backend)
+import Lia.Utils
 import List.Extra
 import Random
 import Return exposing (Return)
@@ -73,6 +75,7 @@ type Msg
     | SaveMeta Classroom.Entry
     | TogglePasswordVisibility
     | GenerateOwnerToken
+    | NoOp
 
 
 type SyncMsg
@@ -517,6 +520,10 @@ update session model msg =
         AskDeleteClassroom room backend ->
             { model | sync = { sync | deletePopup = Just ( room, backend ) } }
                 |> Return.val
+                |> Return.cmd (Lia.Utils.focus NoOp Popup.cancelID)
+
+        NoOp ->
+            Return.val model
 
         CancelDeleteClassroom ->
             { model | sync = { sync | deletePopup = Nothing } }

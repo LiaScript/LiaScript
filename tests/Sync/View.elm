@@ -18,18 +18,13 @@ suite : Test
 suite =
     describe "Lia.Sync.View"
         [ describe "backend dropdown"
-            [ test "opens by click, Enter and Space while it can be changed" <|
+            [ test "opens by click while it can be changed, keys are handled by combobox.ts" <|
                 \_ ->
-                    let
-                        dropdown =
-                            View.view selected |> Query.fromHtml |> Query.find [ Selector.class "lia-dropdown" ]
-                    in
-                    Expect.all
-                        [ \_ -> dropdown |> HE.simulate HE.click |> HE.expect (Backend (Open True))
-                        , \_ -> dropdown |> HE.simulate (key 13) |> HE.expect (Backend (Open True))
-                        , \_ -> dropdown |> HE.simulate (key 32) |> HE.expect (Backend (Open True))
-                        ]
-                        ()
+                    View.view selected
+                        |> Query.fromHtml
+                        |> Query.find [ Selector.class "lia-dropdown" ]
+                        |> HE.simulate HE.click
+                        |> HE.expect (Backend (Open True))
             , test "cannot be opened, neither by click nor by keyboard, while connected or locked" <|
                 \_ ->
                     [ { selected | state = Sync.Connected "me" }

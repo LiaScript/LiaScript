@@ -5,8 +5,8 @@ module Lia.Markdown.Table.View exposing (view)
 -}
 
 import Accessibility.Aria as A11y_Aria
-import Accessibility.Live as A11y_Live
 import Array
+import Conditional.List as CList
 import Const
 import Dict
 import Html exposing (Html)
@@ -36,7 +36,7 @@ import Lia.Markdown.Table.Types
         )
 import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Utils exposing (blockKeydown, btn, btnIcon, get, icon)
+import Lia.Utils exposing (btn, btnIcon, get, icon)
 import Set
 
 
@@ -84,10 +84,8 @@ viewLazyDiagram lang width light scripts visible =
 viewDiagram : Stringify.Config config input a -> Lang -> Int -> Bool -> Parameters -> Table -> State -> Html Msg
 viewDiagram main lang width light attr table state =
     Html.div
-        [ blockKeydown (UpdateTable Sub.NoOp)
-        , A11y_Live.polite
-        ]
-        [ toggleBtn table.id ( "table", "Table" )
+        []
+        [ toggleBtn table.id ( "table", Translations.chartTable lang )
         , table.head
             :: sort main state identity table.body
             |> toMatrix main
@@ -564,9 +562,13 @@ viewTable sticky attr body =
             , ( "has-thead-sticky", True )
             , ( "has-first-col-sticky", sticky )
             ]
-        , A11y_Live.polite
         ]
-        [ Html.table (Param.annotation "lia-table" attr) body
+        [ Html.table (Param.annotation "lia-table" attr)
+            -- names the table for screen readers, it is not shown
+            (CList.addWhen
+                (Param.get "data-title" attr |> Maybe.map (\title -> Html.caption [ Attr.class "hidden-visually" ] [ Html.text title ]))
+                body
+            )
         ]
 
 
@@ -577,14 +579,7 @@ toggleBtn id ( name, title ) =
         , msg = Just <| UpdateTable <| Sub.Toggle id
         , tabbable = True
         }
-        [ Attr.class "lia-btn--outline lia-plot__switch mb-1"
-        , A11y_Aria.label <|
-            if name == "table" then
-                "switch to table representation"
-
-            else
-                "switch to visualization in mode " ++ title
-        ]
+        [ Attr.class "lia-btn--outline lia-plot__switch mb-1" ]
         [ icon ("icon-" ++ name) []
         , Html.span [ Attr.class "lia-btn__text" ]
             [ Html.text title
@@ -627,6 +622,8 @@ viewFormatted config state table =
             (\column ( format, ( attr, inlines ) ) ->
                 Html.th
                     (Attr.class "lia-table__header"
+                        :: Attr.scope "col"
+                        -- only the sorted column is marked
                         :: (if state.column == column then
                                 if state.dir then
                                     A11y_Aria.sortAscending
@@ -635,7 +632,7 @@ viewFormatted config state table =
                                     A11y_Aria.sortDescending
 
                             else
-                                A11y_Aria.sortNone
+                                Attr.class ""
                            )
                         :: Attr.class format
                         :: Param.toAttribute attr
@@ -706,6 +703,21 @@ header config state table format column ( attr, inlines ) =
             }
             [ Attr.class "lia-btn--transparent lia-table__sort"
             , Attr.classList [ ( "active", active ) ]
+
+            -- the buttons of all columns would have the same name otherwise
+            , A11y_Aria.label
+                ((if not active then
+                    sortAsc config.main.lang
+
+                  else if state.dir then
+                    sortDesc config.main.lang
+
+                  else
+                    sortNot config.main.lang
+                 )
+                    ++ ": "
+                    ++ Stringify.stringify inlines
+                )
             ]
 
       else

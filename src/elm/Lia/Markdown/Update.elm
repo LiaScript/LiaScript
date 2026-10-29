@@ -24,7 +24,6 @@ import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as ScriptUpdate
 import Lia.Markdown.Effect.Update as Effect
-import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Gallery.Update as Gallery
 import Lia.Markdown.Quiz.Types as QuizTypes
 import Lia.Markdown.Quiz.Update as Quiz
@@ -116,7 +115,7 @@ update sync globals msg section =
                     (Just section.id)
                     section.effect_model.javascript
                     childMsg
-                |> Return.mapVal (\v -> { section | code_model = v })
+                |> Return.mapValCmd (\v -> { section | code_model = v }) UpdateCode
                 |> Return.mapEvents "code" section.id
 
         UpdateQuiz childMsg ->
@@ -160,13 +159,9 @@ update sync globals msg section =
                 |> Return.cmd (focus NoOp "lia-modal__close")
 
         FootnoteHide ->
+            -- the modal returns the focus to the mark that opened it
             { section | footnote2show = Nothing }
                 |> Return.val
-                |> Return.cmd
-                    (section.footnote2show
-                        |> Maybe.map (Footnote.byKey >> focus NoOp)
-                        |> Maybe.withDefault Cmd.none
-                    )
 
         Script childMsg ->
             section

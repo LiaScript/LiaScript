@@ -17,6 +17,9 @@ import Html.Keyed as Keyed
 import I18n.Translations as Translations
     exposing
         ( Lang
+        , baseStop
+        , codeBlock
+        , codeEditor
         , codeExecute
         , codeFirst
         , codeLast
@@ -25,6 +28,7 @@ import I18n.Translations as Translations
         , codeNext
         , codePrev
         , codeRunning
+        , infoVersion
         )
 import Json.Decode as JD
 import Json.Encode as JE
@@ -65,6 +69,7 @@ view { lang, theme, model, code, sync, cursors } =
                             , errors = always JE.null
                             , sync = Nothing
                             , cursors = []
+                            , copied = model.copied
                             }
                             project
                             |> CList.attachIf (not <| Log.isEmpty project.log)
@@ -105,6 +110,7 @@ view { lang, theme, model, code, sync, cursors } =
                                 else
                                     Nothing
                             , cursors = cursors
+                            , copied = model.copied
                             }
                             project
                             ++ [ viewControl
@@ -146,7 +152,7 @@ view { lang, theme, model, code, sync, cursors } =
 
                                         Just term ->
                                             term
-                                                |> Terminal.view
+                                                |> Terminal.view lang
                                                 |> Html.map (UpdateTerminal id)
                                     ]
                                ]
@@ -174,6 +180,7 @@ type alias Config =
     , errors : Int -> JE.Value
     , sync : Maybe Sync
     , cursors : List Sync.Cursor
+    , copied : Maybe ( Code, Int )
     }
 
 
@@ -196,7 +203,8 @@ viewFile config fileID file attr =
 
         editor =
             viewEditor
-                { isExecutable = isExecutable
+                { lang = config.lang
+                , isExecutable = isExecutable
                 , theme = config.theme
                 , attr = attr
                 , isRunning = config.isRunning
@@ -209,7 +217,7 @@ viewFile config fileID file attr =
                 }
 
         copy inverted =
-            copyToClipboard config.lang inverted (Params.isSet "data-rtl" attr) config.code fileID
+            copyToClipboard config.lang inverted (Params.isSet "data-rtl" attr) (config.copied == Just ( config.code, fileID )) config.code fileID
 
         toggleTitle visible =
             if visible then
@@ -217,19 +225,38 @@ viewFile config fileID file attr =
 
             else
                 codeMaximize config.lang
+
+        contentID =
+            "lia-code-" ++ String.fromInt (idOf config.code) ++ "-" ++ String.fromInt fileID
+
+        minMax =
+            if isExecutable then
+                btnIcon
+                    { title = toggleTitle file.fullscreen
+                    , msg = Just <| FlipFullscreen config.code fileID
+                    , icon =
+                        if file.fullscreen then
+                            "icon-chevron-up"
+
+                        else
+                            "icon-chevron-down"
+                    , tabbable = True
+                    }
+                    [ Attr.class "lia-code__min-max lia-btn--transparent" ]
+
+            else
+                Html.text ""
     in
     if file.name == "" then
         Html.div (noTranslate [ Attr.class "lia-code__input" ])
-            [ editor, copy False ]
+            (editor ++ copy False)
 
     else
         Html.div (noTranslate [ Attr.class "lia-accordion" ])
             [ Html.div (Attr.class "lia-accordion__item" :: Params.toAttribute attr)
-                [ Html.label
-                    [ Attr.class "lia-accordion__header"
-                    , A11y_Aria.label (file.name ++ " " ++ toggleTitle True)
-                    ]
-                    [ btnIcon
+                [ Html.div
+                    [ Attr.class "lia-accordion__header" ]
+                    ([ btnIcon
                         { title = toggleTitle True
                         , msg = Just <| FlipView config.code fileID
                         , icon =
@@ -240,35 +267,24 @@ viewFile config fileID file attr =
                                 "icon-minus"
                         , tabbable = True
                         }
-                        [ Attr.class "lia-accordion__toggle" ]
-                    , Html.h3 [ Attr.class "lia-accordion__headline h4" ] [ Html.text file.name ]
-                    , copy True
-                    ]
+                        [ Attr.class "lia-accordion__toggle"
+                        , A11y_Aria.expanded True
+                        , A11y_Aria.controls [ contentID ]
+                        , A11y_Aria.label (toggleTitle True ++ ": " ++ file.name)
+                        ]
+                     , Html.h3 [ Attr.class "lia-accordion__headline h4" ] [ Html.text file.name ]
+                     ]
+                        ++ copy True
+                    )
                 , Html.div
                     [ Attr.classList
                         [ ( "lia-accordion__content", True )
                         , ( "active", True )
                         ]
+                    , Attr.id contentID
                     ]
                     [ Html.div [ Attr.class "lia-code__input" ]
-                        [ if isExecutable then
-                            btnIcon
-                                { title = toggleTitle file.fullscreen
-                                , msg = Just <| FlipFullscreen config.code fileID
-                                , icon =
-                                    if file.fullscreen then
-                                        "icon-chevron-up"
-
-                                    else
-                                        "icon-chevron-down"
-                                , tabbable = True
-                                }
-                                [ Attr.class "lia-code__min-max lia-btn--transparent" ]
-
-                          else
-                            Html.text ""
-                        , editor
-                        ]
+                        (minMax :: editor)
                     ]
                 ]
             ]
@@ -294,12 +310,20 @@ idOf code =
             id
 
 
-copyToClipboard : Lang -> Bool -> Bool -> Code -> Int -> Html Msg
-copyToClipboard lang inverted rtl code fileID =
-    btnIcon
+{-| The copy button and its status, which confirms a copy for a moment. The
+status exists from the beginning, otherwise the message is not announced.
+-}
+copyToClipboard : Lang -> Bool -> Bool -> Bool -> Code -> Int -> List (Html Msg)
+copyToClipboard lang inverted rtl copied code fileID =
+    [ btnIcon
         { title = Translations.codeCopy lang
         , msg = Just <| CopyToClipboard code fileID
-        , icon = "icon-copy"
+        , icon =
+            if copied then
+                "icon-check"
+
+            else
+                "icon-copy"
         , tabbable = True
         }
         (CList.appendIf rtl
@@ -313,6 +337,16 @@ copyToClipboard lang inverted rtl code fileID =
                 ]
             ]
         )
+    , Html.span [ A11y_Role.status, Attr.class "hidden-visually" ]
+        [ Html.text
+            (if copied then
+                Translations.codeCopied lang
+
+             else
+                ""
+            )
+        ]
+    ]
 
 
 {-| The editor of a file, `sync` is the shared classroom code that replaces
@@ -321,7 +355,8 @@ with `data-readonly`, highlighted ones unless `data-readonly="false"`.
 At most 16 lines are shown unless the file is in fullscreen.
 -}
 viewEditor :
-    { isExecutable : Bool
+    { lang : Lang
+    , isExecutable : Bool
     , theme : String
     , attr : Parameters
     , isRunning : Bool
@@ -332,8 +367,8 @@ viewEditor :
     , sync : Maybe String
     , cursors : List Sync.Cursor
     }
-    -> Html Msg
-viewEditor { isExecutable, theme, attr, isRunning, code, fileID, file, errors, sync, cursors } =
+    -> List (Html Msg)
+viewEditor { lang, isExecutable, theme, attr, isRunning, code, fileID, file, errors, sync, cursors } =
     let
         id =
             idOf code
@@ -364,8 +399,24 @@ viewEditor { isExecutable, theme, attr, isRunning, code, fileID, file, errors, s
             Params.get name attr
                 |> Maybe.withDefault default
     in
-    Editor.editor
+    [ Editor.editor
         ([ Editor.value content
+         , Editor.label
+            ((if readOnly then
+                codeBlock lang
+
+              else
+                codeEditor lang
+             )
+                ++ ", "
+                ++ file.lang
+                ++ (if String.isEmpty file.name then
+                        ""
+
+                    else
+                        ": " ++ file.name
+                   )
+            )
          , Editor.setCursors cursors
          , Editor.mode file.lang
          , Editor.theme (string "data-theme" theme)
@@ -405,6 +456,14 @@ viewEditor { isExecutable, theme, attr, isRunning, code, fileID, file, errors, s
             |> CList.appendIf isExecutable [ Editor.onCtrlEnter (Eval id) ]
         )
         []
+    , if readOnly then
+        -- Ace hides its content from screen readers, which would skip the
+        -- code in browse mode, thus it is repeated invisibly
+        Html.pre [ Attr.class "hidden-visually" ] [ Html.code [] [ Html.text content ] ]
+
+      else
+        Html.text ""
+    ]
 
 
 {-| Reserve the height of `lines` lines, so the page does not jump while the
@@ -433,10 +492,10 @@ viewLog code height log =
     else
         Log.view log
             |> Keyed.node "lia-terminal"
+                -- the surrounding lia-code-terminal is the log, the output
+                -- scrolls and can therefore be focused
                 [ Attr.class "lia-code-terminal__output"
-                , A11y_Role.log
-                , A11y_Live.polite
-                , A11y_Live.atomic False
+                , Attr.tabindex 0
                 , onChangeHeight (Resize code)
                 , height
                     |> Maybe.map (JE.string >> Attr.property "height")
@@ -470,7 +529,7 @@ viewControl { lang, id, version_active, version_count, running, terminal, sync }
         version title icon disabled msg =
             btnIcon
                 { title = title lang
-                , tabbable = not (disabled || shared)
+                , tabbable = True
                 , msg =
                     if disabled || shared then
                         Nothing
@@ -494,14 +553,14 @@ viewControl { lang, id, version_active, version_count, running, terminal, sync }
                     btnIcon
                         { title = codeRunning lang
                         , msg = Nothing
-                        , tabbable = False
+                        , tabbable = True
                         , icon = "icon-refresh rotating"
                         }
                         [ Attr.class "is-disabled lia-btn--transparent" ]
 
                 ( True, True ) ->
                     btnIcon
-                        { title = codeRunning lang
+                        { title = baseStop lang
                         , msg = Just <| Stop id
                         , tabbable = True
                         , icon = "icon-stop-circle"
@@ -516,7 +575,7 @@ viewControl { lang, id, version_active, version_count, running, terminal, sync }
                         , icon = "icon-compile-circle"
                         }
                         [ Attr.class "lia-btn--transparent"
-                        , A11y_Aria.keyShortcuts [ "Ctrl-Enter", "Command-Enter" ]
+                        , A11y_Aria.keyShortcuts [ "Control+Enter", "Meta+Enter" ]
                         ]
             , case sync of
                 Nothing ->
@@ -530,7 +589,7 @@ viewControl { lang, id, version_active, version_count, running, terminal, sync }
 
                             else
                                 "switch to collaborative editor"
-                        , tabbable = not running
+                        , tabbable = True
                         , msg =
                             if running then
                                 Nothing
@@ -558,7 +617,9 @@ viewControl { lang, id, version_active, version_count, running, terminal, sync }
             , version codePrev "icon-chevron-left" isFirst (Load id (version_active - 1))
             , Html.span
                 [ Attr.class "lia-label" ]
-                [ Html.text (String.fromInt version_active) ]
+                [ Html.span [ Attr.class "hidden-visually" ] [ Html.text (String.trimRight (infoVersion lang) ++ " ") ]
+                , Html.text (String.fromInt version_active)
+                ]
             , version codeNext "icon-chevron-right" isLast (Load id (version_active + 1))
             , version codeLast "icon-end-right" isLast (Last id)
             ]

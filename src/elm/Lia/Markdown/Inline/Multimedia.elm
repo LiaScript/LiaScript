@@ -2,6 +2,7 @@ module Lia.Markdown.Inline.Multimedia exposing
     ( audio
     , movie
     , reverseMovie
+    , providerOf
     , website
     )
 
@@ -149,6 +150,24 @@ reversePreserve url =
         "&" ++ params
     )
         ++ frag
+
+
+{-| The platform of an embed URL created by `movie`, it selects the player
+adapter for comment videos in TTS.ts. Unknown platforms are `"generic"`.
+-}
+providerOf : String -> String
+providerOf url =
+    [ ( "youtube", "youtube" )
+    , ( "vimeo", "vimeo.com" )
+    , ( "dailymotion", "dailymotion.com" )
+    , ( "peertube", "peertube.tv" )
+    , ( "teachertube", "teachertube.com" )
+    , ( "tu-freiberg", "video.tu-freiberg.de" )
+    ]
+        |> List.filter (\( _, host ) -> String.contains host url)
+        |> List.head
+        |> Maybe.map Tuple.first
+        |> Maybe.withDefault "generic"
 
 
 {-| Turn audio URLs of known platforms into URLs of their embeddable

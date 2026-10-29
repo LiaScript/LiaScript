@@ -1,6 +1,5 @@
 module Lia.Model exposing
     ( Model
-    , clear
     , getTitle
     , init
     , loadResource
@@ -192,8 +191,19 @@ as well as a list of events to be send through the elm-port.
 loadResource : List Resource -> List Resource -> ( List Resource, List Event )
 loadResource old new =
     let
+        -- duplicates within `new` are dropped too, a restored definition
+        -- contains the header resources twice (see `Lia.Script.init_script`)
         toLoad =
-            List.filter (\res -> not (List.member res old)) new
+            List.foldl
+                (\res acc ->
+                    if List.member res old || List.member res acc then
+                        acc
+
+                    else
+                        acc ++ [ res ]
+                )
+                []
+                new
     in
     ( old ++ toLoad
     , List.map load toLoad
@@ -223,35 +233,3 @@ getTitle =
     Array.get 0
         >> Maybe.map (.title >> stringify >> String.trim)
         >> Maybe.withDefault "Lia"
-
-
-{-| Reset everything that belongs to the loaded course (when going back to the
-index), but keep the user settings, the classroom, the pane and the video
-overlay. The seed changes, so that the next course gets other random values.
--}
-clear : Model -> Model
-clear model =
-    { model
-        | url = ""
-        , repositoryUrl = Nothing
-        , readme = ""
-        , origin = ""
-        , title = "Lia"
-        , error = Nothing
-        , sections = Array.empty
-        , section_active = 0
-        , anchor = Nothing
-        , definition = Definition.default "" ""
-        , index_model = Index.init
-        , resource = []
-        , to_do = []
-        , translation = Translations.En
-        , langCode = "en"
-        , langCodeOriginal = "en"
-        , search_index = identity
-        , media = Dict.empty
-        , modal = Nothing
-        , persistent = False
-        , seed = model.seed + 111
-        , chat = Chat.init
-    }

@@ -31,7 +31,7 @@
   }
 
   &__input {
-    border: 1px solid rgb(var(--color-highlight));
+    border: 1px solid var(--color-accent);
     width: 100%;
   }
 
@@ -51,6 +51,7 @@
   &__hints,
   &__solution {
     grid-column: 1 / -1;
+    flex-basis: 100%; // own line in the flex-wrapped matrix quiz
   }
 
   &__feedback {
@@ -81,6 +82,7 @@
   &-matrix {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     width: 100%;
 
     > .lia-quiz__answers {
@@ -89,6 +91,10 @@
 
     > .lia-quiz__control {
       margin-inline-end: 1rem;
+    }
+
+    > .lia-quiz__hints {
+      margin-top: 2rem;
     }
 
     > .lia-quiz__solution {

@@ -1,6 +1,8 @@
 import log from '../log'
 import { docId } from '../../sync/Base/persist'
 import * as peerCrypto from '../../sync/Base/peerCrypto'
+import type { TemplateLayer } from '../../sync/Base/db'
+import { identicon, deepFreeze } from '../../helper'
 
 var sync: any
 var elmSend: Lia.Send | null
@@ -82,7 +84,28 @@ const Service = {
         subscribe,
         unsubscribe,
         on,
+
+        peers,
+
+        layer,
+        array: shared('getArray'),
+        map: shared('getMap'),
+        text: shared('getText'),
       }
+
+      Object.defineProperties(window['LIA']['classroom'], {
+        // who am I, also without a classroom
+        me: { get: () => person(ownId()), enumerable: true },
+        owner: { get: () => isOwner(), enumerable: true },
+        // 'shared' | 'summary' | 'details', or null without a classroom
+        mode: {
+          get: () =>
+            window.LIA.classroom.connected && sync
+              ? ['shared', 'summary', 'details'][sync.mode] || 'shared'
+              : null,
+          enumerable: true,
+        },
+      })
     }
   },
 
@@ -96,9 +119,12 @@ const Service = {
         // plaintext (a stray duplicate Yjs update is a no-op), but now that
         // encrypted backends hard-fail on a mismatched key, a leaked old
         // connection can spam decrypt-failure warnings forever.
+        BACKUP = {}
         if (sync) {
           sync.disconnect()
           sync = undefined
+          // until the new room is synced, nothing may be mirrored into it
+          window.LIA.classroom.connected = false
         }
 
         if (elmSend) {
@@ -359,6 +385,21 @@ const Service = {
         }
 
         if (sync) {
+          // an old connection may still finish a re-check after teardown
+          const db = sync.db
+          const instance = sync
+          instance.onContext = () => {
+            if (sync === instance) contextChanged()
+          }
+          db.onTemplate = (
+            name: string,
+            layers: TemplateLayer[],
+            ownTime: number,
+          ) => {
+            if (sync?.db === db && window.LIA.classroom.connected) {
+              roomChanged(name, layers, ownTime)
+            }
+          }
           sync.connect(event.message.param.config)
 
           const config = event.message.param.config
@@ -392,9 +433,12 @@ const Service = {
           sync.disconnect()
 
           sync = undefined
+          BACKUP = {}
 
           window.LIA.classroom.publish = publish
           window.LIA.classroom.connected = false
+          for (const name in LAYERS) emitLayers(name, localView(name))
+          contextChanged()
           CALLBACK.disconnect.forEach((cb) => cb())
         }
 
@@ -529,9 +573,18 @@ export default Service
 
 //*************************************************************************
 
+type Person = {
+  id: string
+  name: string
+  color: string
+  symbol: string
+  me: boolean
+  owner: boolean
+}
+
 type Subscription = {
   id: number
-  callback: (message: any) => void
+  callback: (message: any, from?: Person) => void
 }
 
 // Container for all subscriptions
@@ -542,18 +595,25 @@ var BACKUP: { [topic: string]: any } = {}
 var CALLBACK: {
   connect: (() => void)[]
   disconnect: (() => void)[]
+  peers: ((peers: Person[]) => void)[]
 } = {
   connect: [],
   disconnect: [],
+  peers: [],
 }
 
 function publish(topic: string, message: any) {
   console.warn(
-    'Classroom: not connected, cannot publish topic => ' + { topic, message },
+    'Classroom: not connected, cannot publish topic =>',
+    topic,
+    message,
   )
 }
 
-function subscribe(topic: string, callback: (message: any) => void): number {
+function subscribe(
+  topic: string,
+  callback: (message: any, from?: Person) => void,
+): number {
   const id = Math.round(Math.random() * 1000000000)
 
   if (!SUBSCRIPTIONS[topic]) {
@@ -561,8 +621,9 @@ function subscribe(topic: string, callback: (message: any) => void): number {
   }
   SUBSCRIPTIONS[topic].push({ id, callback })
 
-  if (BACKUP[topic]) {
-    setTimeout(() => callback(BACKUP[topic]), 100)
+  if (topic in BACKUP) {
+    const { message, from } = BACKUP[topic]
+    setTimeout(() => callback(message, from && person(from)), 100)
   }
 
   return id
@@ -574,36 +635,80 @@ function unsubscribe(id: number) {
   }
 }
 
-function on(event: 'connect' | 'disconnect', callback: () => void) {
-  switch (event) {
-    case 'connect': {
-      CALLBACK.connect.push(callback)
+// returns a function to remove the callback again
+function on(
+  event: 'connect' | 'disconnect' | 'peers',
+  callback: (peers?: Person[]) => void,
+): () => void {
+  const list: ((peers?: Person[]) => void)[] | undefined = CALLBACK[event]
+  if (!list) {
+    console.warn('Classroom: unknown event -> ' + event)
+    return () => {}
+  }
 
-      // if the callback is added after the connection was established
-      if (window.LIA.classroom.connected) {
-        callback()
-      }
+  list.push(callback)
 
-      break
-    }
+  // called at once if the state already holds
+  if (event === 'peers') callback(peers())
+  else if (event === 'connect' && window.LIA.classroom.connected) callback()
 
-    case 'disconnect': {
-      CALLBACK.disconnect.push(callback)
-      break
-    }
+  return () => remove(list, callback)
+}
 
-    default: {
-      console.warn('Classroom: unknown event -> ' + event)
-    }
+function remove<T>(list: T[], item: T) {
+  const i = list.indexOf(item)
+  if (i >= 0) list.splice(i, 1)
+}
+
+function onReceive(topic: string, data: any) {
+  // older versions send the bare message without a sender
+  const envelope = data?.__lia === 1
+  const message = envelope ? data.message : data
+  const from: string | undefined = envelope ? data.from : undefined
+
+  BACKUP[topic] = { message, from }
+
+  if (SUBSCRIPTIONS[topic]) {
+    const sender = from ? person(from) : undefined
+    SUBSCRIPTIONS[topic].forEach((sub) => sub.callback(message, sender))
   }
 }
 
-function onReceive(topic: string, message: any) {
-  BACKUP[topic] = message
+function isOwner(): boolean {
+  return !!(
+    window.LIA.classroom.connected &&
+    sync &&
+    sync.db.getOwner() === ownId()
+  )
+}
 
-  if (SUBSCRIPTIONS[topic]) {
-    SUBSCRIPTIONS[topic].forEach((sub) => sub.callback(message))
+// a peer as templates see it, with the same color and emoji as in the chat
+function person(id: string): Person {
+  const connected = window.LIA.classroom.connected && sync
+  const names = connected ? sync.db.getIdentities() : {}
+  return {
+    id,
+    name: names[id] || (id === ownId() && sync ? sync.name || '' : ''),
+    ...identicon(id),
+    me: id === ownId(),
+    owner: !!connected && sync.db.getOwner() === id,
   }
+}
+
+// everybody who is in the classroom right now, including me
+function peers(): Person[] {
+  if (!window.LIA.classroom.connected || !sync) return []
+  return Object.keys(sync.db.getPeers()).map(person)
+}
+
+// awareness changes with every cursor move, only report real changes
+var lastPeers = '[]'
+function contextChanged() {
+  const list = peers()
+  const key = JSON.stringify(list)
+  if (key === lastPeers) return
+  lastPeers = key
+  CALLBACK.peers.forEach((cb) => cb(list))
 }
 
 function onConnect() {
@@ -619,5 +724,298 @@ function onConnect() {
     }
   }
 
+  // the room may hold an older or a newer copy of the own layer
+  for (const name in LAYERS) reconcile(name)
+
+  contextChanged()
   CALLBACK.connect.forEach((cb) => cb())
+}
+
+//*************************************************************************
+// Template state
+//
+// `layer(name)`: an own layer per peer, kept locally (table `template`) and
+// mirrored into the classroom like quiz answers - so authorship and the
+// classroom mode decide who sees which layer, see `CRDT.getTemplate`.
+//
+// `array/map/text(name)`: one shared Yjs type for everyone, only while
+// connected, no authorship.
+
+type Layer = {
+  own: any[]
+  // last change of the own layer, the newer copy wins on a new connection
+  time: number
+  // `time` of the last state that matched the room, own changes made while
+  // offline are newer
+  synced: number
+  loaded: Promise<void>
+  // writes into the classroom, one after another
+  queue: Promise<void>
+  // writes still waiting in the queue, the room copy is behind `own`
+  ops: number
+  subs: ((layers: TemplateLayer[], info: { remote: boolean }) => void)[]
+  saving?: ReturnType<typeof setTimeout>
+  pending: boolean
+  // set() before loading finished replaces the stored layer
+  replaced: boolean
+}
+
+var LAYERS: { [name: string]: Layer } = {}
+
+function layer(name: string) {
+  let l = LAYERS[name]
+
+  if (!l) {
+    const fresh: Layer = {
+      own: [],
+      time: 0,
+      synced: 0,
+      subs: [],
+      loaded: Promise.resolve(),
+      queue: Promise.resolve(),
+      ops: 0,
+      replaced: false,
+      pending: false,
+    }
+
+    fresh.loaded = Promise.resolve(Database?.loadTemplate(name))
+      .then((stored: any) => {
+        if (!stored || fresh.replaced) return
+        // older entries are a plain array
+        const values = Array.isArray(stored) ? stored : stored.values
+        fresh.own = (values || []).map(deepFreeze).concat(fresh.own)
+        fresh.time = Math.max(fresh.time, stored.time || 0)
+        fresh.synced = stored.synced || 0
+      })
+      .catch((e: any) =>
+        log.warn('could not load template ->', name, e?.message || e),
+      )
+
+    l = LAYERS[name] = fresh
+    if (window.LIA.classroom.connected) reconcile(name)
+  }
+
+  // push and set resolve once the change is stored (and written into the
+  // classroom, when connected), and reject with the reason otherwise
+  return {
+    push(value: any): Promise<void> {
+      if (value === undefined) return Promise.resolve()
+      value = frozen(value)
+      l.own.push(value)
+      const time = (l.time = Date.now())
+      return changed(name, time, (db) => db.appendTemplate(name, value, time))
+    },
+
+    // Replace the own layer (undo, erase, move), or with an `id` the layer
+    // of another peer, which only the classroom owner may do.
+    set(values: any[], id?: string): Promise<void> {
+      values = values.filter((value) => value !== undefined).map(frozen)
+      const time = Date.now()
+
+      if (id && id !== ownId()) {
+        if (!window.LIA.classroom.connected) {
+          return Promise.reject(new Error(`not connected, cannot change the layer of ${id}`))
+        }
+        return write(name, (db) => db.writeTemplate(id, name, values, time))
+      }
+
+      l.own = values
+      l.time = time
+      l.replaced = true
+      return changed(name, time, (db) => db.writeTemplate(ownId(), name, values, time), true)
+    },
+
+    // a copy of the own layer
+    get(): any[] {
+      return l.own.slice()
+    },
+
+    // returns a function to remove the callback again
+    on(callback: (layers: TemplateLayer[], info: { remote: boolean }) => void) {
+      l.subs.push(callback)
+      l.loaded.then(async () => {
+        const layers =
+          window.LIA.classroom.connected && sync
+            ? await sync.db.getTemplate(name)
+            : localView(name)
+        if (l.subs.includes(callback)) callback(layers, { remote: false })
+      })
+      return () => remove(l.subs, callback)
+    },
+  }
+}
+
+// A JSON copy that cannot be changed in place, values are cached and shared.
+// The copy also shows at once what does not survive storing and syncing
+// (Date, Map, functions ...). Already frozen values are ours.
+function frozen(value: any) {
+  return Object.isFrozen(value) ? value : deepFreeze(JSON.parse(JSON.stringify(value)))
+}
+
+function changed(
+  name: string,
+  time: number,
+  op: (db: any) => Promise<void>,
+  now = false,
+): Promise<void> {
+  const l = LAYERS[name]
+
+  // store at once, only a stroke (many pushes per second) at most every 300ms
+  if (l.saving && !now) l.pending = true
+  else save(name)
+
+  if (window.LIA.classroom.connected) return write(name, op, time)
+
+  return l.loaded.then(() => emitLayers(name, localView(name)))
+}
+
+// `time`: an own change, the room is up to date with it once it is written
+function write(name: string, op: (db: any) => Promise<void>, time = 0): Promise<void> {
+  const l = LAYERS[name]
+  l.ops++
+
+  const done = l.queue
+    .then(() => l.loaded)
+    .then(async () => {
+      if (window.LIA.classroom.connected && sync) {
+        await op(sync.db)
+        l.synced = Math.max(l.synced, time)
+      }
+    })
+    .finally(() => l.ops--)
+
+  // the queue goes on after a failed write, the caller gets the error
+  l.queue = done.catch((e: any) =>
+    log.warn('could not sync template ->', name, e?.message || e),
+  )
+
+  return done
+}
+
+// On a new connection: without own changes made offline the own layer just
+// follows the room (the room may still be syncing, writing now would merge an
+// old copy into it). With offline changes the newer copy wins.
+function reconcile(name: string) {
+  const l = LAYERS[name]
+
+  // nobody waits for this one, a failure is logged by write()
+  write(name, async (db) => {
+    if (l.time <= l.synced) {
+      // ponytail: "no layer in the room yet" can also mean "not synced yet",
+      // the same assumption quiz answers make on join
+      if (!db.hasTemplate(name) && l.own.length > 0) {
+        await db.writeTemplate(ownId(), name, l.own.slice(), l.time)
+      }
+      return
+    }
+
+    const newer = await db.reconcileTemplate(name, l.own.slice(), l.time)
+    if (newer) {
+      l.own = newer.values
+      l.time = newer.time
+      save(name)
+      emitLayers(name, await db.getTemplate(name), { remote: true })
+    }
+    l.synced = l.time
+  }).catch(() => {})
+}
+
+// While connected the room copy is the truth: Yjs merges what the owner and
+// the peer itself change at the same time, the own layer follows it as soon
+// as no own write is waiting anymore.
+function roomChanged(name: string, layers: TemplateLayer[], ownTime: number) {
+  const l = LAYERS[name]
+  if (!l) return
+
+  let remote = false
+  const mine = layers.find((layer) => layer.me)
+
+  if (l.ops === 0 && mine) {
+    if (JSON.stringify(mine.values) !== JSON.stringify(l.own)) {
+      l.own = mine.values.slice()
+      l.time = Math.max(l.time, ownTime)
+      remote = true
+      save(name)
+    }
+    l.synced = l.time
+  }
+
+  emitLayers(name, layers, { remote })
+}
+
+// ponytail: rewrites the whole layer, switch to one row per value if layers
+// get really large
+function save(name: string) {
+  const l = LAYERS[name]
+  clearTimeout(l.saving)
+  l.pending = false
+  l.saving = setTimeout(() => {
+    l.saving = undefined
+    if (l.pending) save(name)
+  }, 300)
+  l.loaded
+    .then(() =>
+      Database?.storeTemplate(name, {
+        values: l.own,
+        time: l.time,
+        synced: l.synced,
+      }),
+    )
+    .catch((e: any) =>
+      log.warn('could not store template ->', name, e?.message || e),
+    )
+}
+
+// do not lose the last strokes when the page is closed while saving waits
+window.addEventListener('pagehide', () => {
+  for (const name in LAYERS) if (LAYERS[name].pending) save(name)
+})
+
+// the same id the classroom uses (see sync/Base), so a layer keeps its id
+// and with it its color inside and outside of a classroom - created here if
+// this browser has never been in a classroom yet
+function ownId(): string {
+  try {
+    let id = window.localStorage.getItem('lia-token')
+    if (!id) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+      id = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => chars[b % 62]).join('')
+      window.localStorage.setItem('lia-token', id)
+    }
+    return id
+  } catch (e) {
+    return ''
+  }
+}
+
+function localView(name: string): TemplateLayer[] {
+  return [
+    {
+      id: ownId(),
+      name: '',
+      me: true,
+      editable: true,
+      ...identicon(ownId()),
+      values: LAYERS[name].own.slice(),
+    },
+  ]
+}
+
+// `remote`: the own layer was changed by someone else (the owner)
+function emitLayers(
+  name: string,
+  layers: TemplateLayer[],
+  info = { remote: false },
+) {
+  LAYERS[name]?.subs.forEach((callback) => callback(layers, info))
+}
+
+function shared(kind: 'getArray' | 'getMap' | 'getText') {
+  return (name: string) => {
+    if (window.LIA.classroom.connected && sync) {
+      return sync.db.doc[kind]('tpl:' + name)
+    }
+
+    console.warn('Classroom: not connected, no shared state for =>', name)
+  }
 }

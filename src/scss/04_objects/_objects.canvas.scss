@@ -87,8 +87,8 @@ $slide-margin-left-textbook: 19rem !default;
        this pushes the buttons to their original positions */
     &.lia-toc--visible.lia-support--visible {
       #lia-btn-toc,
-      .lia-support-menu__toggler {
-        transform: translate(-3rem, -50%);
+      .lia-btn-support {
+        transform: translate(-3rem, -50%) !important;
 
         [dir='rtl'] & {
           transform: translate(3rem, -50%);
@@ -236,5 +236,305 @@ $slide-margin-left-textbook: 19rem !default;
     //     // margin-left: calc(#{$slide-margin-left-presentation} - 3rem);
     //   }
     // }
+  }
+
+  &.lia-navigation--hidden {
+    .lia-slide {
+      &__container {
+        margin-top: 0px;
+        // focused elements are not scrolled below the floating menu buttons
+        scroll-padding-top: 3rem;
+      }
+
+      &__content {
+        margin: 0 2rem;
+      }
+    }
+
+    #lia-btn-prev,
+    #lia-btn-next {
+      position: absolute;
+      color: rgb(var(--color-highlight));
+      bottom: 0.25rem;
+    }
+
+    #lia-btn-prev {
+      left: 0;
+
+      [dir='rtl'] & {
+        left: auto;
+        right: 0;
+      }
+    }
+
+    // next to the chat, if it is open (--lia-pane-first is set in Lia.View),
+    // the course pane is the right one in rtl
+    #lia-btn-next {
+      right: calc((1 - var(--lia-pane-first)) * 100% + 0.8rem);
+
+      [dir='rtl'] & {
+        right: auto;
+        left: calc((1 - var(--lia-pane-first)) * 100% + 0.8rem);
+      }
+    }
+
+    // the chat covers the whole slide, keep its input above prev and next
+    @include tools.breakpoint('sm', 'max') {
+      // the chat is absolute with an inline padding (Lia.Chat.View)
+      .pane-second-view > * {
+        padding-bottom: 4rem !important;
+      }
+
+      // and above the sound button
+      &.lia-mode--slides,
+      &.lia-mode--presentation {
+        .pane-second-view > * {
+          padding-bottom: 8rem !important;
+        }
+      }
+    }
+
+    .lia-pagination {
+      margin-bottom: 0px;
+    }
+
+    .lia-pagination__current {
+      display: none;
+    }
+
+    // TTS: the sound button above next, the player centered between the arrows,
+    // as wide as the course pane (the strip itself lets clicks through)
+    .lia-responsive-voice {
+      position: absolute;
+      left: 0;
+      right: calc((1 - var(--lia-pane-first)) * 100%);
+      bottom: 0.25rem;
+      width: auto;
+
+      [dir='rtl'] & {
+        left: calc((1 - var(--lia-pane-first)) * 100%);
+        right: 0;
+      }
+
+      height: auto;
+      padding: 0;
+      background-color: transparent;
+      pointer-events: none;
+
+      &__control {
+        pointer-events: auto;
+        max-width: calc(100% - 8rem);
+        padding: 0.2rem;
+        border-radius: 2rem;
+        background-color: rgb(var(--lia-grey-light));
+
+        @at-root html.lia-variant-dark & {
+          background-color: rgb(var(--lia-anthracite));
+        }
+      }
+
+      // play at the left end, pause at the right end, the info between them
+      &__playgroup {
+        display: contents;
+
+        > :last-child {
+          order: 1;
+          margin-inline-start: 0;
+        }
+      }
+
+      // sound off or nothing to read on this slide: only the sound button
+      &--silent .lia-responsive-voice__control {
+        background-color: transparent;
+
+        > :not(#lia-btn-sound) {
+          display: none;
+        }
+      }
+    }
+
+    #lia-btn-sound {
+      color: rgb(var(--color-highlight));
+      position: absolute;
+      right: 0.8rem;
+      bottom: 4rem;
+
+      [dir='rtl'] & {
+        right: auto;
+        left: 0.8rem;
+      }
+    }
+
+    #lia-btn-toc {
+      top: 1.8rem;
+      padding: 0;
+    }
+
+    &.lia-toc--hidden.lia-support--visible {
+      #lia-btn-toc {
+        display: none;
+      }
+    }
+
+    .lia-toc--closed {
+      & #lia-btn-toc {
+        transform: translate(2.5rem, -50%);
+
+        [dir='rtl'] & {
+          transform: translate(-2.5rem, -50%);
+        }
+      }
+    }
+
+    .lia-toc--open {
+      & #lia-btn-toc {
+        transform: translate(-0.5rem, -50%);
+
+        [dir='rtl'] & {
+          transform: translate(0.5rem, -50%);
+        }
+
+        // the toc text color, white on the colored toc of all other themes
+        color: rgb(var(--lia-white));
+
+        html.lia-theme-default & {
+          color: rgb(var(--color-highlight));
+        }
+
+        height: 2.2rem;
+        display: inline;
+        > i {
+          padding: 0px;
+          bottom: 0.575rem;
+          position: relative;
+        }
+      }
+    }
+
+    .lia-header {
+      flex-direction: column;
+      height: 5.8rem;
+      margin: 0;
+      position: absolute;
+      right: 1.8rem;
+      left: unset;
+      z-index: 100;
+      top: 0px;
+      width: 2rem;
+      border-bottom: unset;
+
+      // beats the rtl offsets of the toc, support menu and notes above
+      [dir='rtl'] & {
+        left: 1.8rem;
+        right: auto;
+      }
+
+      @include tools.breakpoint('md', 'max') {
+        top: 2rem;
+      }
+    }
+
+    .lia-support-menu {
+      &__nav {
+        flex-direction: column;
+      }
+
+      &--open {
+        .lia-support-menu__toggler {
+          transform: translate(0.25rem, -50%);
+          z-index: 1000;
+
+          [dir='rtl'] & {
+            transform: translate(-0.25rem, -50%);
+          }
+        }
+
+        #lia-btn-toc {
+          transform: translate(0rem, -50%);
+        }
+      }
+
+      &--closed {
+        .lia-support-menu__toggler {
+          transform: translate(-4rem, -50%);
+
+          [dir='rtl'] & {
+            transform: translate(4rem, -50%);
+          }
+        }
+      }
+
+      &__toggler {
+        top: 1.8rem;
+        right: 2rem;
+        padding: 0;
+
+        // mirrors the inline left: -4rem of Lia.Settings.View.header
+        [dir='rtl'] & {
+          left: auto !important;
+          right: -4rem;
+        }
+
+        button {
+          // Styles for buttons within any level of sub-children
+          padding-right: 0px;
+          padding-left: 0px;
+        }
+      }
+
+      &__item {
+        align-items: center;
+
+        // the edit entry is a link, same size and color as the buttons
+        > button,
+        > a.lia-btn,
+        > a.lia-btn > .icon {
+          font-size: 1.4rem;
+          padding-inline: 0;
+          margin: 0 !important; // inline margin of the chat button
+          color: rgba(var(--color-highlight), 0.75);
+
+          &:hover {
+            color: inherit;
+          }
+        }
+
+        .lia-support-menu__lang {
+          font-size: 1.1em;
+        }
+
+        // scaled, not a bigger font, the other icons do not move
+        > button,
+        > a.lia-btn {
+          transition: transform 150ms ease-out;
+
+          &:hover {
+            transform: scale(1.4);
+          }
+        }
+      }
+
+      @include tools.breakpoint('md', 'min') {
+        &__submenu {
+          right: 3rem;
+          top: 2rem;
+
+          [dir='rtl'] & {
+            left: 3rem;
+            right: auto;
+          }
+        }
+
+        &__item {
+          padding: 0px;
+
+          button {
+            // Styles for buttons within any level of sub-children
+            padding-right: 0px;
+            padding-left: 0px;
+          }
+        }
+      }
+    }
   }
 }

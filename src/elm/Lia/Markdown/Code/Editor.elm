@@ -14,6 +14,7 @@ module Lia.Markdown.Code.Editor exposing
     , fontSize
     , highlightActiveLine
     , keyBindings
+    , label
     , marker
     , maxLines
     , mode
@@ -196,6 +197,13 @@ firstLineNumber =
 mode : String -> Html.Attribute msg
 mode =
     JE.string >> Attr.property "mode"
+
+
+{-| The name of the editor for screen readers, Ace adds the cursor position.
+-}
+label : String -> Html.Attribute msg
+label =
+    Attr.attribute "data-label"
 
 
 theme : String -> Html.Attribute msg

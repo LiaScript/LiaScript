@@ -7,7 +7,9 @@ module Lia.Settings.Types exposing
     , TTS
     , fromGroup
     , init
+    , submenuID
     , toGroup
+    , toggleID
     )
 
 {-| The user settings of LiaScript and the state of the menus and the TTS
@@ -45,14 +47,24 @@ type alias Settings =
     , translateWithGoogle : Maybe Bool
     , customTheme : Maybe String
     , tooltips : Bool
+    , decals : Bool
     , hideVideoComments : Bool
     , sync : Maybe Bool
     , showQRCode : Bool
     , tts : TTS
     , chat : { show : Bool, updates : Bool }
+    , navigation : Bool
     , audio : { pitch : String, rate : String }
     , fullscreen : Bool
     , edit : Maybe String
+
+    -- progress of "save course offline" (stored and all slides, failed media
+    -- files), not persisted
+    , offline : Maybe { slides : Int, total : Int, failed : Int }
+
+    -- the connector provides an index (home button), not within LMS packages
+    -- like SCORM or xAPI, set by `Main.init`, not persisted
+    , hasIndex : Bool
     }
 
 
@@ -77,6 +89,43 @@ type Action
     | ShowModes
     | ShowShare
     | Close
+
+
+{-| The id of the toolbar button, which opens and closes the submenu of an
+action.
+-}
+toggleID : Action -> String
+toggleID action =
+    "lia-btn-" ++ actionName action
+
+
+{-| The id of the submenu of an action, referenced by `aria-controls`.
+-}
+submenuID : Action -> String
+submenuID action =
+    "lia-submenu-" ++ actionName action
+
+
+actionName : Action -> String
+actionName action =
+    case action of
+        ShowInformation ->
+            "information"
+
+        ShowTranslations ->
+            "translations"
+
+        ShowSettings ->
+            "settings"
+
+        ShowModes ->
+            "modes"
+
+        ShowShare ->
+            "share"
+
+        Close ->
+            "close"
 
 
 {-| -}
@@ -111,6 +160,7 @@ init hasShareApi isFullscreen mode =
     , translateWithGoogle = Just False
     , customTheme = Nothing
     , tooltips = False
+    , decals = False
     , hideVideoComments = False
     , sync = Just False
     , showQRCode = False
@@ -124,9 +174,12 @@ init hasShareApi isFullscreen mode =
         { show = False
         , updates = False
         }
+    , navigation = True
     , audio = { pitch = "1", rate = "1" }
     , fullscreen = isFullscreen
     , edit = Nothing
+    , offline = Nothing
+    , hasIndex = False
     }
 
 

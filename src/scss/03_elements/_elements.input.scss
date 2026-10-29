@@ -1,5 +1,6 @@
 @use 'sass:color';
 @use '../00_settings/settings.global';
+@use '../../assets/fonts/icon/icons';
 
 @use 'sass:math';
 
@@ -7,12 +8,18 @@
   max-width: 100%;
   width: 100%;
 
-  @at-root html.lia-variant-dark & {
-    filter: brightness(1.8) contrast(1.1);
+  &::placeholder {
+    color: rgb(var(--color-text));
+    opacity: 0.8;
+  }
+
+  // no focus ring after a click, only on keyboard focus (see liascript/index.ts)
+  html[data-mouse-focus] &:focus-visible {
+    outline: none;
   }
 
   &.is-failure {
-    border-color: rgb(var(--lia-red));
+    border-color: rgb(var(--color-failure));
   }
 
   &.is-warning {
@@ -20,7 +27,7 @@
   }
 
   &.is-success {
-    border-color: rgb(var(--lia-success));
+    border-color: rgb(var(--color-success));
   }
 
   &.is-disabled {
@@ -74,7 +81,7 @@ input[type='search']::-webkit-search-results-decoration {
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
-  border: 1px solid rgb(var(--color-highlight));
+  border: 1px solid var(--color-accent);
   color-adjust: exact;
   cursor: pointer;
   height: 2.4rem;
@@ -84,7 +91,7 @@ input[type='search']::-webkit-search-results-decoration {
   width: 2.4rem;
 
   &.is-failure {
-    border-color: rgb(var(--lia-red));
+    border-color: rgb(var(--color-failure));
   }
 
   &.is-warning {
@@ -94,7 +101,7 @@ input[type='search']::-webkit-search-results-decoration {
   &.is-success,
   &.is-success:checked,
   &.is-success[disabled]:checked {
-    border-color: rgb(var(--lia-success));
+    border-color: rgb(var(--color-success));
   }
 
   &.is-disabled {
@@ -111,7 +118,7 @@ input[type='search']::-webkit-search-results-decoration {
 
   &:after {
     color: white;
-    content: '\EA11';
+    content: icons.$icon-check;
     font-family: 'icon';
     left: 50%;
     opacity: 0;
@@ -125,6 +132,12 @@ input[type='search']::-webkit-search-results-decoration {
     &:after {
       opacity: 1;
     }
+  }
+
+  // the bright state colors of the dark mode need a dark check mark
+  &.is-success:checked:after,
+  &.is-failure:checked:after {
+    color: rgb(var(--color-background));
   }
 
   &.is-turquoise {
@@ -157,11 +170,11 @@ input[type='search']::-webkit-search-results-decoration {
   }
 
   &.is-success:checked {
-    background-color: rgb(var(--lia-success));
+    background-color: rgb(var(--color-success));
   }
 
   &.is-failure:checked {
-    background-color: rgb(var(--lia-red));
+    background-color: rgb(var(--color-failure));
   }
 }
 
@@ -173,7 +186,7 @@ input[type='search']::-webkit-search-results-decoration {
   border-radius: 100%;
 
   &:checked {
-    border: 0.8rem solid rgb(var(--color-highlight));
+    border: 0.8rem solid var(--color-accent);
   }
 
   &.is-red {
@@ -209,7 +222,7 @@ input[type='search']::-webkit-search-results-decoration {
   }
 
   &.is-failure:checked {
-    border-color: rgb(var(--lia-red));
+    border-color: rgb(var(--color-failure));
   }
 }
 
@@ -433,6 +446,48 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
     &::-ms-fill-lower,
     &::-ms-fill-upper {
       cursor: not-allowed;
+    }
+  }
+}
+
+/* --------------------------------------------------
+   Do not rely on color alone (setting decals): the border
+   of a correct input is solid, of a wrong one dashed
+   -------------------------------------------------- */
+
+html.lia-decals {
+  .lia-input,
+  .lia-dropdown,
+  .lia-checkbox:not(:checked),
+  .lia-radio:not(:checked) {
+    &.is-success {
+      border-style: solid;
+      border-width: 2px;
+    }
+
+    &.is-failure {
+      border-style: dashed;
+      border-width: 2px;
+    }
+  }
+
+  // the fill of a checked box covers its border, thus a ring around it
+  .lia-checkbox:checked,
+  .lia-radio:checked {
+    &.is-failure {
+      outline: 2px dashed rgb(var(--color-failure));
+      outline-offset: 2px;
+    }
+  }
+
+  // drop zones are dotted by an inline style, dotted means "drop here"
+  .lia-drop {
+    &.is-success {
+      border-style: solid !important;
+    }
+
+    &.is-failure {
+      border-style: dashed !important;
     }
   }
 }
