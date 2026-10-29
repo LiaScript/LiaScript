@@ -4,6 +4,68 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 24/10/2026
+
+- feat: classroom state for templates – `LIA.classroom.layer(name)` gives every participant an own layer (`push`, `set`, `get`, `on`), stored locally in IndexedDB (also without a classroom) and synchronized when joining one; visibility follows the classroom mode like quiz answers: Shared shows all layers, Summary and Details only the own one, the owner sees all with names and can change them; after leaving, the own layer stays, including what was drawn in the classroom
+- feat: layers carry the color and emoji a participant has in the chat, values are frozen JSON copies, `push`/`set` return a promise that rejects with the reason
+- feat: `LIA.classroom.array`, `map` and `text` – shared Yjs types for everyone in the room (experimental)
+- feat: classroom context for scripts and templates – `LIA.classroom.me`, `owner`, `mode`, `peers()` and `on('peers', …)`; `on(…)` returns a function to remove the callback
+- feat: pubsub callbacks receive the sender as second argument (`subscribe(topic, (message, from) => …)`)
+- improve: Nostr classrooms send continuous changes (drawing, fast typing) at least every 150 ms instead of only after a pause; with 20 participants the delay drops from several seconds to 0.3 s (y-generic update)
+- fix: classroom pubsub of backends without an own implementation was dropped, a room change replayed the last message of the previous room, `0`, `false` and `""` were not replayed to late subscribers
+- fix: Nostr links without relays use the relays of the classroom settings instead of relay.damus.io, which blocks a school's IP after a short time of classroom traffic
+
+
+## [2.4.0] - 21/10/2026
+
+- feat: kanban board for the course overview – a layout dropdown on the left of the header switches between the list and the board; own columns can be added, renamed, reordered and deleted, courses are sorted into them by drag and drop (mouse and touch, press and hold) or via a select on the card; layout and columns are stored in the browser, new courses end up in the first column
+- feat: compact course cards on the board – image, title (at most three lines) and open button, the details can be expanded; without a logo the LiaScript bird is shown, zoomed into its head and colored per course
+- feat: the board shows where a dragged course or column will land, empty columns offer a drop area, on small screens a swipe stops at the start of a column
+- feat: columns as tinted lanes with a badge for the number of courses, their actions appear on hover or focus (always on touch devices)
+- feat: new icons for the list and the kanban layout
+- fix: broken logos of courses are hidden instead of showing a broken image
+
+
+## [2.3.1] - 21/10/2026
+
+- feat: hide the navigation – a "Navigation" button next to the modes hides the table of contents and the header, a slim menu with floating buttons, next/previous arrows and the TTS bar remains; works with the classroom chat, on small screens (notes included) and in rtl
+- feat: download course media for offline use (opt-in) – a button in the information menu and on the course cards stores all images, audio and video files of a course, including the recordings of comments; offline the service worker falls back to them, audio and video stay seekable; streams like YouTube are skipped
+- feat: loading screen – lists the README, templates, scripts and styles with their state, stays on top until all are loaded and warns if some failed (the course can be opened anyway); a template that cannot be loaded no longer stops the course; a tangram bird instead of the spinner, also as static preloader
+- improve: the service worker precaches only the app shell (74 instead of 645 files, 9.8 instead of 24 MB), everything else is cached on first use, a lecture hall behind one NAT address hit the GitHub Pages rate limit; CSS and scripts loaded as blobs are cached too, `?data:text` urls work offline
+- improve: translations – "Hide navigation" and the offline media texts in all languages, the font size sample in the script of the language
+- fix: relative links to urls with a line break
+
+
+## [2.3.0] - 20/10/2026
+
+- feat: videos from YouTube, Vimeo, Dailymotion, PeerTube and other platforms as narrator comments, shown in the comment overlay like local videos; YouTube and Vimeo can be paused and seeked and continue with the next comment when they end, a range is set via `start`/`end` or `#t=30,45`
+- feat: accessible table of contents – a collapsible navigation tree (APG treeview) with a single tab stop, Up/Down/Home/End move between the entries, Right/Left open and close sections (mirrored for rtl); the two upper levels are shown by default and the branch of the current section is opened, while searching all matches are shown
+- feat: the search in the table of contents tolerates one typo per word (words with 4 or more characters)
+- feat: all dropdowns (gap texts, selection quizzes, select surveys, classroom backend) are select-only comboboxes with full keyboard support (arrows, Home, End, Enter, Space, Escape, Tab)
+- feat: keyboard – arrow keys move between the cells of matrix quizzes and surveys, switch the media of an open gallery, move the splitter between course and chat; images with an alt text are zoomed with Enter or Space
+- feat: do not rely on color alone – a new setting adds patterns to chart series, checked quiz inputs show solid (correct) or dashed (wrong) borders
+- feat: links that open in a new tab say so to screen readers
+- feat: the copy button of code blocks confirms the copy, visually and to screen readers
+- feat: icons with a uniform stroke width, new word cloud icon
+- improve: readable colors (WCAG AA) in all themes in light and dark mode, for quiz states, borders, links, focus rings, notes, the TTS bar and the table of contents
+- improve: focus handling – modals move the focus to their close button, keep Tab inside and return the focus to their opener; Escape closes toolbar panels; deactivated buttons of quizzes, surveys and code stay focusable and greyed out; text fields show their focus ring only on keyboard focus; surveys, course popups and deleted course cards no longer drop the focus to the page
+- improve: screen readers – live regions only announce what changes (quiz feedback, terminal, chat, search results, animation steps) instead of whole slides; names and roles for quiz, survey and task options, matrix inputs (row and column), gaps and drop zones (with a keyboard hint), code editors and read-only code, charts, sort buttons, footnotes, media, gallery, QR codes, link previews, the comments sidebar, the slide navigation and the toolbar (disclosure buttons instead of menus)
+- improve: the system setting "reduce motion" stops all animations, also those of course authors
+- improve: audio, figures and script inputs reflow at 320px without horizontal scrolling
+- improve: translations – all languages complete with native language names, 39 languages revised, Simplified Chinese for `zh`, the remaining English texts of the course view translated
+- fix: arrow keys switched slides while used by a slider, select, radio group or text field, or together with Alt (browser back)
+- fix: Enter on the abort button of the confirm popup deleted or reset the course or classroom
+- fix: swiping within a gallery or a wide table changed the slide
+- fix: YouTube got the language name instead of its code, captions follow the language of a translated course
+- fix: quizzes – hints below the controls in matrix quizzes, drop zones overflowed, gaps too narrow for their solution
+- fix: script errors name their kind (e.g. `ReferenceError: x is not defined`), thrown strings were not shown
+- fix: links in formulas were not reachable for screen readers, pages without a course had no language
+- fix: preview-lia modified cached meta data, broken logo on revisits
+- fix: header – the edit link and the language code match the other menu buttons
+- test: snapshots and tests adapted to the accessible markup
+- chore: `npm run translate` generates `src/elm/I18n/Translations.elm` again
+
+
 ## [2.2.2] - 13/10/2026
 
 - fix: chat – answering a quiz, survey or code block scrolled up to the one of an older message (the ids repeat in every message, the reveal now takes the one next to the click)

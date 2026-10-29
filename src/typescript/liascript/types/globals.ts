@@ -162,11 +162,70 @@ declare global {
       classroom: {
         connected: boolean
 
-        subscribe: (topic: string, callback: (message: any) => void) => number
+        /** me, also without a classroom */
+        me: Lia.ClassroomPerson
+        /** am I the owner of the classroom */
+        owner: boolean
+        /** null without a classroom */
+        mode: 'shared' | 'summary' | 'details' | null
+        /** everybody in the classroom right now, including me */
+        peers: () => Lia.ClassroomPerson[]
+
+        /** `from` is claimed by the sender, not verified, and missing for
+         * messages of older LiaScript versions */
+        subscribe: (
+          topic: string,
+          callback: (message: any, from?: Lia.ClassroomPerson) => void,
+        ) => number
         unsubscribe: (id: number) => void
         publish: (topic: string, message: any) => void
 
-        on: (event: 'connect' | 'disconnect', callback: () => void) => void
+        /** returns a function to remove the callback again */
+        on: {
+          (event: 'connect' | 'disconnect', callback: () => void): () => void
+          /** joined, left, renamed or a new owner, called at once as well */
+          (
+            event: 'peers',
+            callback: (peers: Lia.ClassroomPerson[]) => void,
+          ): () => void
+        }
+
+        /** Own layer per peer, stored locally and mirrored into the
+         * classroom. Visibility follows the classroom mode like quizzes.
+         */
+        layer: (name: string) => {
+          /** Values are stored as frozen JSON copies. Resolves once stored
+           * (and written into the classroom), rejects with the reason. */
+          push: (value: any) => Promise<void>
+          /** without `id` the own layer, with `id` the layer of another
+           * peer, which only the classroom owner may change */
+          set: (values: any[], id?: string) => Promise<void>
+          get: () => any[]
+          /** returns a function to remove the callback again */
+          on: (
+            callback: (
+              layers: {
+                id: string
+                name: string
+                me: boolean
+                editable: boolean
+                /** the same color and emoji the peer has in the chat */
+                color: string
+                symbol: string
+                values: any[]
+              }[],
+              /** remote: the own layer was changed by someone else */
+              info: { remote: boolean },
+            ) => void,
+          ) => () => void
+        }
+
+        /** Shared Yjs types for everyone in the room (undefined if not
+         * connected), readable and writable by all peers in every mode.
+         */
+        array: (name: string) => any
+        map: (name: string) => any
+        text: (name: string) => any
       }
     }
   }

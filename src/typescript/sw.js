@@ -1,4 +1,3 @@
-console.log('service-worker.js')
 // advanced config for injectManifest approach
 importScripts(
   'https://storage.googleapis.com/workbox-cdn/releases/7.4.0/workbox-sw.js'
@@ -11,230 +10,114 @@ workbox.setConfig({
 self.skipWaiting()
 workbox.core.clientsClaim()
 
-// Custom strategy that immediately returns cache when offline
-class NetworkFirstOfflineImmediate extends workbox.strategies.NetworkFirst {
-  async _handle(request, handler) {
-    try {
-      // Safely check if we're offline
-      // navigator.onLine is not 100% reliable but gives a good hint
-      const isOnline =
-        typeof self.navigator !== 'undefined' &&
-        typeof self.navigator.onLine !== 'undefined'
-          ? self.navigator.onLine
-          : true
+// Media stored by "save course offline" (Resource.ts), used if the network and
+// the route's own cache fail. Audio and video (range requests) get the whole
+// file with `Accept-Ranges`, which keeps them seekable. A sliced 206 response
+// is rejected by Chrome for cross-origin media (tested).
+// ponytail: opaque responses (no CORS) cannot be rebuilt, they play but cannot
+// be seeked offline
+const offlineFallback = {
+  handlerDidError: async ({ request }) => {
+    const response = await caches.match(request.url, { cacheName: 'offline' })
 
-      if (!isOnline) {
-        // Try cache first when offline
-        const cachedResponse = await handler.cacheMatch(request)
-        if (cachedResponse) {
-          return cachedResponse
-        }
-      }
-    } catch (error) {
-      // If checking online status fails, continue to normal behavior
-      console.warn('Error checking online status:', error)
+    if (
+      !response ||
+      response.type === 'opaque' ||
+      !request.headers.has('range')
+    ) {
+      return response
     }
 
-    // Online, no cache, or error: use normal NetworkFirst behavior
-    return super._handle(request, handler)
-  }
+    const headers = new Headers(response.headers)
+    headers.set('Accept-Ranges', 'bytes')
+    return new Response(response.body, { headers })
+  },
 }
 
-// data-uris shall not be cached and also work offline
+// NetworkFirst with expiration, offline a failing fetch falls back to the cache
+// immediately, the timeout covers slow networks
+function networkFirst(
+  cacheName,
+  maxEntries,
+  maxAgeDays,
+  networkTimeoutSeconds
+) {
+  return new workbox.strategies.NetworkFirst({
+    cacheName,
+    networkTimeoutSeconds,
+    plugins: [
+      new workbox.cacheableResponse.CacheableResponsePlugin({
+        statuses: [0, 200], // opaque (0) and successful responses
+      }),
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries,
+        maxAgeSeconds: maxAgeDays * 24 * 60 * 60,
+        purgeOnQuotaError: true,
+      }),
+      offlineFallback,
+    ],
+  })
+}
+
+// data-uris shall not be cached and also work offline, they only need the app
 workbox.routing.registerRoute(
   ({ url }) => url.search.startsWith('?data:text'),
-  async ({ event }) => {
-    const cache = await caches.open(workbox.core.cacheNames.precache)
-    const response = await cache.match(event.request.url.split('?data:text')[0])
-    return response || fetch(event.request)
-  }
+  async ({ request }) =>
+    (await workbox.precaching.matchPrecache('index.html')) || fetch(request)
 )
-// workbox.googleAnalytics.initialize();
+
 workbox.routing.registerRoute(
   // Match all navigation requests, except those for URLs whose
   // path starts with '/LiveEditor/'
   ({ request, url }) =>
     request.mode === 'navigate' && !url.pathname.startsWith('/LiveEditor/'),
-  new NetworkFirstOfflineImmediate({
-    cacheName: 'navigation',
-    plugins: [
-      new workbox.cacheableResponse.CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new workbox.expiration.ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
-        purgeOnQuotaError: true,
-      }),
-    ],
-    networkTimeoutSeconds: 3, // Quick fallback to cache when offline
-  })
-)
-//workbox.routing.registerRoute(/\/*/, new workbox.strategies.NetworkFirst())
-workbox.routing.registerRoute(
-  /https:\/\/code\.responsivevoice\.org/,
-  new workbox.strategies.NetworkFirst()
+  networkFirst('navigation', 50, 7, 3)
 )
 
-// Cache external images with NetworkFirst strategy
-workbox.routing.registerRoute(
-  ({ request, url }) =>
-    request.destination === 'image' && url.origin !== self.location.origin,
-  new NetworkFirstOfflineImmediate({
-    cacheName: 'external-images',
-    plugins: [
-      new workbox.cacheableResponse.CacheableResponsePlugin({
-        statuses: [0, 200], // Cache opaque responses (0) and successful responses (200)
-      }),
-      new workbox.expiration.ExpirationPlugin({
-        maxEntries: 500,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-        purgeOnQuotaError: true,
-      }),
-    ],
-    networkTimeoutSeconds: 5, // Fallback to cache if network is slow
-  })
-)
+// External resources, video and audio are left out, since media elements
+// request byte ranges and partial (206) responses cannot be cached. CSS and
+// scripts loaded via fetch as blobs (Resource.ts) have no destination, these
+// are matched by their extension.
+for (const [destination, cacheName, maxEntries, maxAgeDays, timeout, ext] of [
+  ['image', 'external-images', 500, 30, 5],
+  ['style', 'external-css', 100, 7, 3, '.css'],
+  ['script', 'external-scripts', 100, 7, 3, '.js'],
+  ['font', 'external-fonts', 50, 365, 3],
+]) {
+  workbox.routing.registerRoute(
+    ({ request, url }) =>
+      url.origin !== self.location.origin &&
+      (request.destination === destination ||
+        (!!ext && url.pathname.endsWith(ext))),
+    networkFirst(cacheName, maxEntries, maxAgeDays, timeout)
+  )
+}
 
-// Cache external videos with NetworkFirst strategy
+// README.md files and other documents from external sources
 workbox.routing.registerRoute(
-  ({ request, url }) =>
-    request.destination === 'video' && url.origin !== self.location.origin,
-  new NetworkFirstOfflineImmediate({
-    cacheName: 'external-videos',
-    plugins: [
-      new workbox.cacheableResponse.CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new workbox.expiration.ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-        purgeOnQuotaError: true,
-      }),
-      new workbox.rangeRequests.RangeRequestsPlugin(),
-    ],
-    networkTimeoutSeconds: 10, // Longer timeout for videos
-  })
-)
-
-// Cache external audio with NetworkFirst strategy
-workbox.routing.registerRoute(
-  ({ request, url }) =>
-    request.destination === 'audio' && url.origin !== self.location.origin,
-  new NetworkFirstOfflineImmediate({
-    cacheName: 'external-audio',
-    plugins: [
-      new workbox.cacheableResponse.CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new workbox.expiration.ExpirationPlugin({
-        maxEntries: 100,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-        purgeOnQuotaError: true,
-      }),
-      new workbox.rangeRequests.RangeRequestsPlugin(),
-    ],
-    networkTimeoutSeconds: 8, // Timeout for audio
-  })
-)
-
-// Cache external CSS with NetworkFirst
-workbox.routing.registerRoute(
-  ({ request, url }) =>
-    request.destination === 'style' && url.origin !== self.location.origin,
-  new NetworkFirstOfflineImmediate({
-    cacheName: 'external-css',
-    plugins: [
-      new workbox.cacheableResponse.CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new workbox.expiration.ExpirationPlugin({
-        maxEntries: 100,
-        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
-        purgeOnQuotaError: true,
-      }),
-    ],
-    networkTimeoutSeconds: 3,
-  })
-)
-
-// Cache external JavaScript with NetworkFirst
-workbox.routing.registerRoute(
-  ({ request, url }) =>
-    request.destination === 'script' && url.origin !== self.location.origin,
-  new NetworkFirstOfflineImmediate({
-    cacheName: 'external-scripts',
-    plugins: [
-      new workbox.cacheableResponse.CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new workbox.expiration.ExpirationPlugin({
-        maxEntries: 100,
-        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
-        purgeOnQuotaError: true,
-      }),
-    ],
-    networkTimeoutSeconds: 3,
-  })
-)
-
-// Cache external fonts with NetworkFirst strategy
-workbox.routing.registerRoute(
-  ({ request, url }) =>
-    request.destination === 'font' && url.origin !== self.location.origin,
-  new NetworkFirstOfflineImmediate({
-    cacheName: 'external-fonts',
-    plugins: [
-      new workbox.cacheableResponse.CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new workbox.expiration.ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 365 * 24 * 60 * 60, // 1 year
-        purgeOnQuotaError: true,
-      }),
-    ],
-    networkTimeoutSeconds: 3,
-  })
-)
-
-// Cache README.md files and other documents from external sources
-// Using NetworkFirst to always try to get the latest version
-workbox.routing.registerRoute(
-  ({ request, url }) =>
+  ({ url }) =>
     url.origin !== self.location.origin &&
     (url.pathname.endsWith('.md') ||
       url.pathname.includes('README') ||
       url.pathname.endsWith('.markdown')),
-  new NetworkFirstOfflineImmediate({
-    cacheName: 'external-documents',
-    plugins: [
-      new workbox.cacheableResponse.CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new workbox.expiration.ExpirationPlugin({
-        maxEntries: 200,
-        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
-        purgeOnQuotaError: true,
-      }),
-    ],
-    networkTimeoutSeconds: 5, // Fallback to cache if network is slow
-  })
+  networkFirst('external-documents', 200, 7, 5)
 )
 
-// Add error handling for fetch operations
-workbox.routing.setCatchHandler(async ({ event, url }) => {
-  console.error(`Failed to handle fetch: ${url}`)
-
-  // Return a cached response if available
-  const cache = await caches.open('external-images')
-  const cachedResponse = await cache.match(event.request)
-  if (cachedResponse) {
-    return cachedResponse
-  }
-
-  // Otherwise return error
-  return Response.error()
-})
-
 workbox.precaching.precacheAndRoute(self.__WB_MANIFEST)
+
+// Own assets left out of the precache (see workbox-config.js) are cached on
+// first use. Must come after precacheAndRoute, routes match in order.
+workbox.routing.registerRoute(
+  ({ request, url }) =>
+    url.origin === self.location.origin &&
+    !url.search && // cache-busted urls would pile up
+    ['script', 'worker', 'style', 'font'].includes(request.destination),
+  new workbox.strategies.StaleWhileRevalidate({ cacheName: 'assets' })
+)
+
+// Media without a route above (audio, video, images from the own origin) only
+// need the fallback to the courses stored offline
+workbox.routing.registerRoute(
+  ({ request }) => ['image', 'audio', 'video'].includes(request.destination),
+  new workbox.strategies.NetworkOnly({ plugins: [offlineFallback] })
+)

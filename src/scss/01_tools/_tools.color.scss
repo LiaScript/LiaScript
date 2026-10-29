@@ -38,3 +38,27 @@
   $color-l: var(#{$color + '-l'});
   @return hsl($color-h, $color-s, calc(#{$color-l} * #{$darknessMultiplier}));
 }
+
+// state and accent colors on a dark background, also used by the modal
+@mixin dark-colors {
+  --color-success: var(--lia-success);
+  --color-failure: 255, 135, 120;
+  --color-disabled: var(--lia-grey);
+
+  // older browsers keep the plain highlight
+  @supports (color: rgb(from red r g b)) {
+    --color-accent: rgb(
+      from rgb(var(--color-highlight)) calc(r * 2.5) calc(g * 2.5) calc(b * 2.5)
+    );
+  }
+}
+
+// the dark mode accent lifted towards white, for the lighter anthracite surfaces
+@mixin dark-accent-on-anthracite {
+  @supports (color: rgb(from red r g b)) {
+    --color-accent: rgb(
+      from rgb(var(--color-highlight)) calc(min(255, r * 2.5) * 0.6 + 102)
+        calc(min(255, g * 2.5) * 0.6 + 102) calc(min(255, b * 2.5) * 0.6 + 102)
+    );
+  }
+}

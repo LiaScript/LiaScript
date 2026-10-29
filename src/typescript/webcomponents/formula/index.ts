@@ -147,13 +147,66 @@ customElements.define(
           console.warn('formula: render ->', e.message)
         }
 
-        this.span.setAttribute('role', 'math')
-
         // the generated description or the aria-label of the author
         const label = this.speech()
-        this.span.setAttribute('aria-label', label)
         this.label.textContent = label
+
+        // role=math makes links (\href, \url) presentational, and KaTeX hides
+        // the visible formula, thus only formulas without links get the role
+        if (this.span.querySelector('.katex-html a') === null) {
+          this.span.setAttribute('role', 'math')
+          this.span.setAttribute('aria-label', label)
+        } else {
+          this.span.removeAttribute('role')
+          this.span.removeAttribute('aria-label')
+          this.exposeLinks(label)
+        }
+
+        // descriptions are generated in English and German only, others fall
+        // back to English, which must not be read with another pronunciation
+        const lang = (document.documentElement.lang || 'en').slice(0, 2)
+        if (this.getAttribute('aria-label') === null && lang !== 'en' && lang !== 'de') {
+          this.span.setAttribute('lang', 'en')
+        } else {
+          this.span.removeAttribute('lang')
+        }
       }
+    }
+
+    // the description as visually hidden text, followed by the links of the
+    // visible formula, everything else of it stays hidden
+    exposeLinks(label: string) {
+      const text = document.createElement('span')
+      text.textContent = label
+      text.setAttribute(
+        'style',
+        'position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap'
+      )
+      this.span.prepend(text)
+
+      this.span
+        .querySelectorAll('.katex-mathml')
+        .forEach((e) => e.setAttribute('aria-hidden', 'true'))
+
+      const hide = (e: Element) => {
+        e.removeAttribute('aria-hidden')
+        for (const child of Array.from(e.children)) {
+          if (child.tagName === 'A') {
+            child.setAttribute(
+              'aria-label',
+              // KaTeX inserts zero-width spaces, e.g. within \KaTeX
+              child.textContent?.replace(/​/g, '').trim() ||
+                child.getAttribute('href') ||
+                ''
+            )
+          } else if (child.querySelector('a')) {
+            hide(child)
+          } else {
+            child.setAttribute('aria-hidden', 'true')
+          }
+        }
+      }
+      this.span.querySelectorAll('.katex-html').forEach(hide)
     }
 
     get formula() {

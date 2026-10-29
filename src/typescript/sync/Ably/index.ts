@@ -103,6 +103,10 @@ export class Sync extends Base.Sync {
         }
       })
 
+      this.provider.pubsub.subscribe('*', (message: any, topic: string) => {
+        this.onReceive?.(topic, message)
+      })
+
       this.provider.connect({
         room: id,
         apiKey: this.apiKey,

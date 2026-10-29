@@ -2,6 +2,7 @@ module Lia.Markdown.Effect.Script.View exposing (view)
 
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
+import Accessibility.Role as A11y_Role
 import Array
 import Conditional.List as CList
 import Html exposing (Html)
@@ -13,10 +14,10 @@ import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Intl as Intl
 import Lia.Markdown.Effect.Script.Types exposing (Modifiable(..), Msg(..), Script, Stdout(..))
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, filterNames, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Section exposing (SubSection)
-import Lia.Utils exposing (blockKeydown, icon, modal)
+import Lia.Utils exposing (icon, modal)
 import List.Extra
 
 
@@ -33,7 +34,7 @@ view config id attr =
                 Just result ->
                     if node.edit then
                         Html.span [ Attr.class "flex items-center" ]
-                            [ editor config.theme
+                            [ editor config.lang config.theme
                                 node.highlighting
                                 id
                                 (case node.modify of
@@ -106,6 +107,7 @@ script config withStyling attr id node result =
                 (case node.input.type_ of
                     Just (Input.Button_ _) ->
                         [ Event.onClick (Click id)
+                        , A11y_Role.button
                         , [ A11y_Key.enter (Click id)
                           , A11y_Key.space (Click id)
                           ]
@@ -130,7 +132,7 @@ script config withStyling attr id node result =
                     _ ->
                         False
                 )
-                (Attr.style "color" "#dc0000")
+                (Attr.class "text-error")
             |> CList.appendIf
                 (case node.input.type_ of
                     Nothing ->
@@ -198,7 +200,7 @@ input config attr id node result =
                     ++ [ Attr.class "lia-checkbox"
                        , Attr.checked (node.input.value == "true")
                        , Attr.type_ "checkbox"
-                       , Attr.id "lia-focus"
+                       , Attr.id (focusID id)
                        , Event.onCheck
                             (\b ->
                                 Value id node.input.updateOnChange <|
@@ -209,6 +211,7 @@ input config attr id node result =
                                         "false"
                             )
                        ]
+                    ++ toAttribute attr
                 )
                 []
             ]
@@ -223,12 +226,12 @@ input config attr id node result =
                         |> Maybe.withDefault []
             in
             list
-                |> options "checkbox" Checkbox (\o -> List.member o checked) node.input.updateOnChange id
+                |> options "checkbox" Checkbox (\o -> List.member o checked) node.input.updateOnChange id attr
                 |> withResult
 
         Just (Input.Radio_ list) ->
             list
-                |> options "radio" Radio ((==) node.input.value) node.input.updateOnChange id
+                |> options "radio" Radio ((==) node.input.value) node.input.updateOnChange id attr
                 |> withResult
 
         Just (Input.Select_ list) ->
@@ -249,28 +252,55 @@ input config attr id node result =
             script config True attr id node result
 
 
-{-| A labeled checkbox or radio button for every option.
+{-| A labeled checkbox or radio button for every option, the group is named
+by the `aria-label` or `aria-labelledby` of the script.
 -}
-options : String -> (Int -> Bool -> String -> Msg sub) -> (String -> Bool) -> Bool -> Int -> List String -> Html (Msg sub)
-options type_ msg checked updateOnChange id =
-    List.map
-        (\o ->
-            Html.label [ Attr.class "lia-label mr-1" ]
-                [ Html.input
-                    (onActivate False id
-                        ++ [ Attr.value o
-                           , Attr.type_ type_
-                           , Event.onCheck (always (msg id updateOnChange o))
-                           , Attr.checked (checked o)
-                           , Attr.autofocus True
-                           , Attr.class ("lia-" ++ type_)
-                           ]
-                    )
-                    []
-                , Html.text o
-                ]
-        )
-        >> Html.span [ Attr.class "flex items-center" ]
+options : String -> (Int -> Bool -> String -> Msg sub) -> (String -> Bool) -> Bool -> Int -> Parameters -> List String -> Html (Msg sub)
+options type_ msg checked updateOnChange id attr list =
+    let
+        -- only one option gets the focus, the checked or the first one
+        focused =
+            list
+                |> List.filter checked
+                |> List.head
+                |> Maybe.withDefault (List.head list |> Maybe.withDefault "")
+    in
+    list
+        |> List.map
+            (\o ->
+                Html.label [ Attr.class "lia-label mr-1" ]
+                    [ Html.input
+                        (onActivate False id
+                            ++ [ Attr.value o
+                               , Attr.type_ type_
+                               , Event.onCheck (always (msg id updateOnChange o))
+                               , Attr.checked (checked o)
+                               , Attr.class ("lia-" ++ type_)
+                               ]
+                            |> CList.addIf (o == focused) (Attr.autofocus True)
+                            |> CList.addIf (o == focused) (Attr.id (focusID id))
+                        )
+                        []
+                    , Html.text o
+                    ]
+            )
+        |> Html.span
+            (Attr.class "flex items-center"
+                :: (if type_ == "radio" then
+                        A11y_Role.radioGroup
+
+                    else
+                        A11y_Role.group
+                   )
+                :: toAttribute (filterNames [ "aria-label", "aria-labelledby" ] attr)
+            )
+
+
+{-| The id of an active input, that gets the focus.
+-}
+focusID : Int -> String
+focusID id =
+    "lia-focus-" ++ String.fromInt id
 
 
 attributes : Bool -> Int -> String -> Parameters -> List (Html.Attribute (Msg sub))
@@ -279,8 +309,7 @@ attributes updateOnChange id value =
         >> List.append
             [ Event.onInput (Value id updateOnChange)
             , Attr.value value
-            , Attr.id "lia-focus"
-            , blockKeydown NoOp
+            , Attr.id (focusID id)
             ]
         >> List.append (onActivate False id)
 
@@ -291,11 +320,12 @@ Space trigger the native click of a button.
 reset : Lang -> Int -> Html (Msg sub)
 reset lang id =
     Html.button
-        [ Attr.class "lia-script__refresh icon icon-refresh"
+        [ Attr.class "lia-script__refresh"
         , Attr.title (codeReset lang)
         , Event.onClick (Reset id)
         ]
-        []
+        -- as content the glyph would replace the title as name
+        [ icon "icon-refresh" [] ]
 
 
 {-| A plain `<input>` of the given type, Enter executes the script, Escape
@@ -319,8 +349,7 @@ base type_ updateOnChange id attr value =
                             "lia-input"
                     )
                , Attr.value value
-               , Attr.id "lia-focus"
-               , blockKeydown NoOp
+               , Attr.id (focusID id)
                , A11y_Key.onKeyUp
                     [ A11y_Key.enter (Activate False id)
                     , A11y_Key.escape (Reset id)
@@ -384,8 +413,8 @@ onEdit id =
 {-| Modal code editor, with a `Partially` modifiable script only the part
 between the first two appearances of `subPattern` can be edited.
 -}
-editor : Maybe String -> String -> Int -> Maybe String -> String -> Html (Msg sub)
-editor theme mode id subPattern code =
+editor : Lang -> Maybe String -> String -> Int -> Maybe String -> String -> Html (Msg sub)
+editor lang theme mode id subPattern code =
     let
         ( msg, value ) =
             case subPattern of
@@ -398,7 +427,7 @@ editor theme mode id subPattern code =
                 _ ->
                     ( EditCode id, code )
     in
-    modal True
+    modal lang True
         (Edit False id)
         Nothing
         [ Editor.editor

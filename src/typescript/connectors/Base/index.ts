@@ -11,7 +11,7 @@ import { Settings } from './settings'
  */
 export type Record = {
   table: string
-  id: number
+  id: number | string
   data?: any
 }
 

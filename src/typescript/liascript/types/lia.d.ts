@@ -33,6 +33,7 @@ export type Settings = {
   lang: Lang
   dir: 'ltr' | 'rtl'
   tooltips: boolean
+  decals?: boolean
   preferBrowserTTS: boolean
   hideVideoComments: boolean
   audio: {
@@ -64,3 +65,14 @@ type Lang =
   | 'tw'
   | 'ua'
   | 'zh'
+
+/** A peer as templates see it, see `LIA.classroom.peers` */
+export type ClassroomPerson = {
+  id: string
+  name: string
+  /** the same color and emoji the peer has in the chat */
+  color: string
+  symbol: string
+  me: boolean
+  owner: boolean
+}

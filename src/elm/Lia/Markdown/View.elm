@@ -8,7 +8,6 @@ module Lia.Markdown.View exposing
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
-import Accessibility.Live as A11y_Live
 import Array exposing (Array)
 import Conditional.List as CList
 import Dict
@@ -148,12 +147,12 @@ footnotes (textbook mode) or the comments for the narrator (presentation mode).
 view_body : Bool -> ( Config Msg, Maybe String, Footnotes.Model ) -> Blocks -> Html Msg
 view_body hidden ( config, footnote2show, footnotes ) =
     fold config []
-        >> (::) (view_footnote (view_block config) footnote2show footnotes)
+        >> (::) (view_footnote config.main.lang (view_block config) footnote2show footnotes)
         >> (::) (view_header config)
         >> (\s ->
                 List.append s <|
                     if config.main.visible == Nothing then
-                        [ Footnote.block (view_block config) footnotes ]
+                        [ Footnote.block config.main.lang (view_block config) footnotes ]
 
                     else if config.mode == Presentation then
                         config.section.effect_model.comments
@@ -162,6 +161,7 @@ view_body hidden ( config, footnote2show, footnotes ) =
                                 (\( id, voice, text ) ->
                                     Html.span
                                         ({ hidden = True
+                                         , ariaHidden = True
                                          , translations = config.main.translations
                                          , id = id
                                          , narrator = voice
@@ -190,16 +190,31 @@ viewContent config =
     fold config_ [] config_.section.body
 
 
-{-| Id of the block in front of a quiz, which labels the quiz (aria-labelledby),
-it only has to be unique within the page.
+{-| Id of the block in front of a quiz, survey or task list, which labels it
+(aria-labelledby), it only has to be unique within the page.
 -}
-quizLabel : Config Msg -> Quiz.Quiz Block -> String
-quizLabel config quiz =
-    "lia-quiz-" ++ String.fromInt config.section.id ++ "-" ++ String.fromInt quiz.id
+labelID : Config Msg -> Block -> Maybe String
+labelID config block =
+    let
+        prefix name id =
+            Just ("lia-" ++ name ++ "-" ++ String.fromInt config.section.id ++ "-" ++ String.fromInt id)
+    in
+    case block of
+        Quiz _ quiz _ ->
+            prefix "quiz" quiz.id
+
+        Survey _ survey _ ->
+            prefix "survey" survey.id
+
+        Task _ task ->
+            prefix "task" task.id
+
+        _ ->
+            Nothing
 
 
-{-| Render blocks, a paragraph or HTML block in front of a quiz becomes its
-label.
+{-| Render blocks, a paragraph or HTML block in front of a quiz, survey or task
+list becomes its label.
 -}
 fold : Config Msg -> List (Html Msg) -> Blocks -> List (Html Msg)
 fold config output blocks =
@@ -207,25 +222,51 @@ fold config output blocks =
         [] ->
             List.reverse output
 
-        b :: (Quiz attr quiz solution) :: bs ->
-            let
-                id =
-                    quizLabel config quiz
-            in
-            case withId id b of
-                Just label ->
+        b :: next :: bs ->
+            case
+                labelID config next
+                    |> Maybe.andThen (\id -> withId id b |> Maybe.map (Tuple.pair id))
+            of
+                Just ( id, label ) ->
                     fold config
-                        (viewQuiz config (Just id) attr quiz solution
+                        (viewLabeled config (Just id) next
                             :: view_block config label
                             :: output
                         )
                         bs
 
                 Nothing ->
-                    fold config (view_block config b :: output) (Quiz attr quiz solution :: bs)
+                    fold config (view_block config b :: output) (next :: bs)
 
         b :: bs ->
             fold config (view_block config b :: output) bs
+
+
+{-| Render a quiz, survey or task list, which is labeled by the block with the
+id `labeledBy`.
+-}
+viewLabeled : Config Msg -> Maybe String -> Block -> Html Msg
+viewLabeled config labeledBy block =
+    case block of
+        Quiz attr quiz solution ->
+            viewQuiz config labeledBy attr quiz solution
+
+        Survey attr survey solution ->
+            viewSurvey config labeledBy attr survey solution
+
+        Task attr task ->
+            task.items
+                |> List.map (viewBlocks config)
+                |> Task.view
+                    ("lia-task-" ++ String.fromInt config.section.id ++ "-" ++ String.fromInt task.id)
+                    labeledBy
+                    config.section.task_vector
+                    attr
+                    task
+                |> scriptView config.view
+
+        _ ->
+            view_block config block
 
 
 withId : String -> Block -> Maybe Block
@@ -247,13 +288,14 @@ the course is not translated).
 -}
 addTranslation :
     { hidden : Bool
+    , ariaHidden : Bool
     , translations : Maybe { old : String, new : String, name : Maybe String }
     , id : Int
     , narrator : String
     , audio : Array String
     }
     -> List ( String, String )
-addTranslation { hidden, translations, id, narrator, audio } =
+addTranslation { hidden, ariaHidden, translations, id, narrator, audio } =
     let
         -- Google's automatic page translation should pick up every
         -- comment that is spoken in the document's own language. Only a
@@ -318,7 +360,7 @@ addTranslation { hidden, translations, id, narrator, audio } =
                     "no"
               )
             ]
-                |> CList.addIf hidden ( "aria-hidden", "true" )
+                |> CList.addIf ariaHidden ( "aria-hidden", "true" )
                 |> CList.addIf
                     ((Maybe.map (\t -> t.old == t.new) translations == Just True)
                         && not (Array.isEmpty audio)
@@ -336,16 +378,16 @@ viewMain hidden =
             ]
 
         else
+            -- no live region, the focus moves to the heading of a new section
             [ Attr.class "lia-slide__content"
             , A11y_Landmark.main_
-            , A11y_Live.polite
             ]
 
 
 {-| The footnote `key` as a modal.
 -}
-view_footnote : (Block -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
-view_footnote viewer key footnotes =
+view_footnote : Lang -> (Block -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
+view_footnote lang viewer key footnotes =
     case Maybe.andThen (\k -> Dict.get k footnotes) key of
         Just notes ->
             [ notes
@@ -361,7 +403,7 @@ view_footnote viewer key footnotes =
                     , Attr.style "max-width" "90%"
                     ]
             ]
-                |> modal True FootnoteHide Nothing
+                |> modal lang True FootnoteHide Nothing
 
         Nothing ->
             Html.text ""
@@ -498,30 +540,11 @@ view_block config block =
                 |> Codes.view
                 |> Html.map UpdateCode
 
-        Quiz attr quiz solution ->
-            viewQuiz config Nothing attr quiz solution
+        Quiz _ _ _ ->
+            viewLabeled config Nothing block
 
-        Survey attr survey solution ->
-            Surveys.view config.main attr survey config.section.survey_vector (surveyVectorOptions config survey.survey)
-                |> Tuple.mapSecond
-                    (\html ->
-                        case solution of
-                            Just ( blocks, _ ) ->
-                                if
-                                    config.section.survey_vector
-                                        |> Array.get survey.id
-                                        |> Maybe.map .submitted
-                                        |> Maybe.withDefault False
-                                then
-                                    Html.div [] [ html, viewSolution config "survey" survey.id blocks ]
-
-                                else
-                                    html
-
-                            Nothing ->
-                                html
-                    )
-                |> scriptView config.view
+        Survey _ _ _ ->
+            viewLabeled config Nothing block
 
         Comment ( id1, id2 ) ->
             case
@@ -542,6 +565,10 @@ view_block config block =
                         |> Inline.reduce config.main
                         |> Html.div
                             ({ hidden = True
+
+                             -- with the sound off, screen readers read the
+                             -- comments instead of the narrator
+                             , ariaHidden = config.sound
                              , translations = config.main.translations
                              , id = id1
                              , narrator = narrator
@@ -569,11 +596,8 @@ view_block config block =
         ASCII attr bob ->
             view_ascii config attr bob
 
-        Task attr task ->
-            task.items
-                |> List.map (viewBlocks config)
-                |> Task.view config.section.task_vector attr task
-                |> scriptView config.view
+        Task _ _ ->
+            viewLabeled config Nothing block
 
         Gallery attr media ->
             Gallery.view config.main config.section.gallery_vector attr media
@@ -609,7 +633,7 @@ viewHidden =
 
 viewBlocks : Config Msg -> Blocks -> List (Html Msg)
 viewBlocks config =
-    List.map (view_block config)
+    fold config []
 
 
 {-| Pre-render a Quiz-Vector's option content (used only for `Vector_Type`) via
@@ -624,6 +648,38 @@ quizVectorOptions config type_ =
 
         _ ->
             []
+
+
+{-| Render a survey, which is labeled by the block with the id `labeledBy`, and
+its solution, if it has been submitted.
+-}
+viewSurvey : Config Msg -> Maybe String -> Parameters -> Survey.Survey Block -> Maybe ( Blocks, Int ) -> Html Msg
+viewSurvey config labeledBy attr survey solution =
+    Surveys.view config.main labeledBy attr survey config.section.survey_vector (surveyVectorOptions config survey.survey)
+        |> Tuple.mapSecond
+            (\html ->
+                case solution of
+                    -- the wrapper exists from the beginning, otherwise the
+                    -- survey gets rebuilt on submit and loses the focus
+                    Just ( blocks, _ ) ->
+                        Html.div []
+                            [ html
+                            , if
+                                config.section.survey_vector
+                                    |> Array.get survey.id
+                                    |> Maybe.map .submitted
+                                    |> Maybe.withDefault False
+                              then
+                                viewSolution config "survey" survey.id blocks
+
+                              else
+                                Html.text ""
+                            ]
+
+                    Nothing ->
+                        html
+            )
+        |> scriptView config.view
 
 
 {-| Pre-render a Survey-Vector's option content (used only for `Vector`) via
@@ -717,7 +773,7 @@ viewQuote config attr alert elements =
 
         _ ->
             elements
-                |> List.map (view_block config)
+                |> fold config []
                 |> CList.addWhen (alert_title |> Maybe.map (Html.p []))
                 |> Html.blockquote (annotation alert_class attr)
 
@@ -873,6 +929,7 @@ viewQuiz config labeledBy attr quiz solution =
                         , Attr.style "align-items" "flex-start"
                         ]
                     |> Html.map Script
+                , Inline.viewDragHint mainConfig.main
                 , quizControl config labeledBy attr quiz solution
                 ]
 

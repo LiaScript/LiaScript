@@ -31,7 +31,7 @@ snapshots =
           , "[Header [] (1,[Chars \"a \" [],Formula \"true\" \"b\\nc\" []])]"
           )
         , ( "quiz input"
-          , "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Chars \"a \" [],Quiz (\"2em\",0) []])], options = Array.fromList [[]], solution = Array.fromList [Text \"b\\nc\"] } } Nothing]"
+          , "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Chars \"a \" [],Quiz (\"calc(4ch + 1rem + 4px)\",0) []])], options = Array.fromList [[]], solution = Array.fromList [Text \"b\\nc\"] } } Nothing]"
           )
         , ( "footnote"
           , "[Header [] (1,[Chars \"a \" [],FootnoteMark \"1\" []])]"
@@ -52,11 +52,11 @@ snapshots =
           , "[]"
           )
         , ( "macro listing", "[Header [] (1,[Chars \"Title x\" []])]" )
-        , ( "quiz inputs", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Quiz (\"2em\",0) [],Chars \" + \" [],Quiz (\"2em\",1) [],Chars \" = \" [],Quiz (\"2em\",2) []])], options = Array.fromList [[],[],[]], solution = Array.fromList [Text \"2\",Text \"5\",Text \"7\"] } } Nothing]" )
-        , ( "quiz inputs, last open", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Quiz (\"2em\",0) [],Chars \" + \" [],Quiz (\"2em\",1) []])], options = Array.fromList [[],[]], solution = Array.fromList [Text \"2\",Text \"5\"] } } Nothing]" )
-        , ( "quiz inputs, first open", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Quiz (\"4.800000000000001em\",0) []])], options = Array.fromList [[]], solution = Array.fromList [Text \"2 + [[ 5\"] } } Nothing]" )
-        , ( "quiz inputs, closed before", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Chars \"]] \" [],Quiz (\"2em\",0) []])], options = Array.fromList [[]], solution = Array.fromList [Text \"2\"] } } Nothing]" )
-        , ( "quiz inputs, nested", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Paragraph [] [Quiz (\"4em\",0) [],Chars \" 7 ]] ===\" []]], options = Array.fromList [[]], solution = Array.fromList [Text \"2 [[ 5\"] } } Nothing]" )
-        , ( "drop input", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Quiz (\"2em\",0) []])], options = Array.fromList [[[Chars \"2\" []]]], solution = Array.fromList [Drop False False [0]] } } Nothing]" )
-        , ( "drop input closed", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Quiz (\"2em\",0) [],Chars \" \" [],Quiz (\"2em\",1) []])], options = Array.fromList [[[Chars \"2\" []]],[]], solution = Array.fromList [Drop False False [0],Text \"3\"] } } Nothing]" )
+        , ( "quiz inputs", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Quiz (\"calc(4ch + 1rem + 4px)\",0) [],Chars \" + \" [],Quiz (\"calc(4ch + 1rem + 4px)\",1) [],Chars \" = \" [],Quiz (\"calc(4ch + 1rem + 4px)\",2) []])], options = Array.fromList [[],[],[]], solution = Array.fromList [Text \"2\",Text \"5\",Text \"7\"] } } Nothing]" )
+        , ( "quiz inputs, last open", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Quiz (\"calc(4ch + 1rem + 4px)\",0) [],Chars \" + \" [],Quiz (\"calc(4ch + 1rem + 4px)\",1) []])], options = Array.fromList [[],[]], solution = Array.fromList [Text \"2\",Text \"5\"] } } Nothing]" )
+        , ( "quiz inputs, first open", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Quiz (\"calc(11ch + 1rem + 4px)\",0) []])], options = Array.fromList [[]], solution = Array.fromList [Text \"2 + [[ 5\"] } } Nothing]" )
+        , ( "quiz inputs, closed before", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Chars \"]] \" [],Quiz (\"calc(4ch + 1rem + 4px)\",0) []])], options = Array.fromList [[]], solution = Array.fromList [Text \"2\"] } } Nothing]" )
+        , ( "quiz inputs, nested", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Paragraph [] [Quiz (\"calc(9ch + 1rem + 4px)\",0) [],Chars \" 7 ]] ===\" []]], options = Array.fromList [[]], solution = Array.fromList [Text \"2 [[ 5\"] } } Nothing]" )
+        , ( "drop input", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Quiz (\"calc(4ch + 1rem + 4px)\",0) []])], options = Array.fromList [[[Chars \"2\" []]]], solution = Array.fromList [Drop False False [0]] } } Nothing]" )
+        , ( "drop input closed", "[Quiz [] { hints = [], id = 0, quiz = Multi_Type { elements = [Header [] (1,[Quiz (\"calc(4ch + 1rem + 4px)\",0) [],Chars \" \" [],Quiz (\"calc(4ch + 1rem + 4px)\",1) []])], options = Array.fromList [[[Chars \"2\" []]],[]], solution = Array.fromList [Drop False False [0],Text \"3\"] } } Nothing]" )
         ]

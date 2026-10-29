@@ -1,11 +1,13 @@
 module Lia.Markdown.Effect.Model exposing
     ( Content
     , Element
+    , EmbedVideo
     , Model
     , current_comment
     , current_narrator
     , current_paragraphs
     , getAudioRecordings
+    , getEmbedVideoRecordings
     , getHiddenComments
     , getVideoRecordings
     , get_paragraph
@@ -49,8 +51,8 @@ type alias Element =
 
 
 {-| A single comment paragraph. Hidden comments (`<!-- --{{1}}-- -->`) are
-not `visible` in textbook mode. `audio` and `video` hold recordings that
-replace the text-to-speech output.
+not `visible` in textbook mode. `audio`, `video` and `embedVideo` hold
+recordings that replace the text-to-speech output.
 -}
 type alias Content =
     { visible : Bool
@@ -58,6 +60,17 @@ type alias Content =
     , content : Inlines
     , audio : Array String
     , video : Array String
+    , embedVideo : Array EmbedVideo
+    }
+
+
+{-| A video of a platform like YouTube or Vimeo used as comment recording.
+`url` is the embed url, `provider` selects the player adapter in TTS.ts
+(`"youtube"`, `"vimeo"`, otherwise a generic iframe).
+-}
+type alias EmbedVideo =
+    { url : String
+    , provider : String
     }
 
 
@@ -82,7 +95,14 @@ getVideoRecordings =
     getRecordings .video
 
 
-getRecordings : (Content -> Array String) -> Model a -> List String
+{-| Embedded platform videos of the comments at the current animation step.
+-}
+getEmbedVideoRecordings : Model a -> List EmbedVideo
+getEmbedVideoRecordings =
+    getRecordings .embedVideo
+
+
+getRecordings : (Content -> Array b) -> Model a -> List b
 getRecordings fn model =
     case Dict.get model.visible model.comments of
         Just element ->
