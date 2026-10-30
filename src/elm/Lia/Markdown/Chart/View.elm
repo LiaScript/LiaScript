@@ -2,6 +2,7 @@ module Lia.Markdown.Chart.View exposing
     ( eCharts
     , feature
     , getColor
+    , niceLimits
     , toolbox
     , view
     , viewBarChart
@@ -30,19 +31,19 @@ import I18n.Translations exposing (chartDefault, getCodeFromLn)
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Data, Diagram(..), Orientation(..), Settings, invertDiagram)
 import Lia.Markdown.HTML.Attributes exposing (annotation)
-import Lia.Utils exposing (string2Color)
+import Lia.Utils exposing (string2Color, string2ColorRange)
 import List.Statistics as Stat
 import Maybe
 
 
 view : Settings -> Chart -> Html msg
 view settings =
-    encode True >> eCharts settings Nothing
+    encode settings.light True >> eCharts settings Nothing
 
 
 viewChart : Settings -> Chart -> Html msg
 viewChart settings =
-    encode False >> eCharts settings Nothing
+    encode settings.light False >> eCharts settings Nothing
 
 
 viewLines : Settings -> Data ( String, List (Maybe Float) ) -> Html msg
@@ -102,7 +103,7 @@ viewFunnel settings =
 
 viewWordCloud : Settings -> Int -> Data (List ( String, Float )) -> Html msg
 viewWordCloud settings width =
-    encodeWordCloud width >> eCharts settings Nothing
+    encodeWordCloud settings.light width >> eCharts settings Nothing
 
 
 viewHeatMap : Settings -> List String -> Data (List ( Int, Int, Maybe Float )) -> Html msg
@@ -498,7 +499,10 @@ grid =
         [ ( "left", JE.string "1%" )
         , ( "right", JE.string "1%" )
         , ( "bottom", JE.string "12%" )
-        , ( "containLabel", JE.bool True )
+
+        -- keeps axis labels and axis names within the margins
+        , ( "outerBoundsMode", JE.string "same" )
+        , ( "outerBoundsContain", JE.string "all" )
         ]
     )
 
@@ -1067,11 +1071,23 @@ titles chart =
     )
 
 
+{-| Every word keeps its color, in dark mode the same color is lifted into the
+bright range.
+-}
+wordColor : Bool -> String -> String
+wordColor light =
+    if light then
+        string2Color 160
+
+    else
+        string2ColorRange 95 160
+
+
 {-| Word clouds side by side, like pies. All clouds share one font scale, so
 equal values have equal sizes, and every word keeps its color.
 -}
-encodeWordCloud : Int -> Data (List ( String, Float )) -> JE.Value
-encodeWordCloud width chart =
+encodeWordCloud : Bool -> Int -> Data (List ( String, Float )) -> JE.Value
+encodeWordCloud light width chart =
     let
         step =
             stepWidth chart.data
@@ -1126,7 +1142,7 @@ encodeWordCloud width chart =
                                     JE.object
                                         [ ( "name", JE.string name )
                                         , ( "value", JE.float value )
-                                        , ( "textStyle", JE.object [ ( "color", JE.string (string2Color 160 name) ) ] )
+                                        , ( "textStyle", JE.object [ ( "color", JE.string (wordColor light name) ) ] )
                                         ]
                                 )
                       )
@@ -1206,8 +1222,8 @@ label =
     )
 
 
-encode : Bool -> Chart -> JE.Value
-encode withColor chart =
+encode : Bool -> Bool -> Chart -> JE.Value
+encode light withColor chart =
     let
         ( min, max ) =
             chart.diagrams
@@ -1224,14 +1240,11 @@ encode withColor chart =
                     )
                 |> Stat.minmax
                 |> Maybe.withDefault ( 0, 0 )
+                |> niceLimits
                 |> Tuple.mapBoth String.fromFloat String.fromFloat
     in
     JE.object
-        [ ( "textStyle"
-          , JE.object
-                [ ( "fontFamily", JE.string "Roboto" )
-                ]
-          )
+        [ grid
         , (if chart.orientation == Just Vertical then
             yAxis
 
@@ -1284,9 +1297,40 @@ encode withColor chart =
                     else
                         identity
                    )
-                |> JE.list (series withColor)
+                |> JE.list (series light withColor)
           )
         ]
+
+
+{-| Rounds the limits of the data to a tenth of the order of magnitude of their
+range (4.33 and 97.67 become 4 and 98), otherwise the axis labels at both ends
+show the odd values.
+-}
+niceLimits : ( Float, Float ) -> ( Float, Float )
+niceLimits ( min, max ) =
+    if max <= min then
+        ( min, max )
+
+    else
+        let
+            exp =
+                floor (logBase 10 (max - min)) - 1
+
+            -- the epsilon keeps float noise like 97.00000000000001 from rounding up
+            steps value =
+                value / 10 ^ toFloat exp
+
+            -- fractions are divided by the inverse, 3 * 0.1 would be 0.30000000000000004
+            toValue n =
+                if exp >= 0 then
+                    toFloat n * 10 ^ toFloat exp
+
+                else
+                    toFloat n / 10 ^ toFloat -exp
+        in
+        ( toValue (floor (steps min + 1.0e-9))
+        , toValue (ceiling (steps max - 1.0e-9))
+        )
 
 
 toolbox :
@@ -1349,8 +1393,8 @@ feature config =
     )
 
 
-series : Bool -> ( Char, Diagram ) -> JE.Value
-series withColor ( char, diagram ) =
+series : Bool -> Bool -> ( Char, Diagram ) -> JE.Value
+series light withColor ( char, diagram ) =
     let
         ( points, name, specific ) =
             case diagram of
@@ -1373,7 +1417,7 @@ series withColor ( char, diagram ) =
     , ( "barGap", JE.int 0 )
     ]
         ++ specific
-        |> CList.addIf withColor (color char)
+        |> CList.addIf withColor (color light char)
         |> add (JE.string >> Tuple.pair "name") name
         |> JE.object
 
@@ -1520,15 +1564,22 @@ colors =
         |> Dict.fromList
 
 
-color : Char -> ( String, JE.Value )
-color char =
+{-| Black and white are swapped in dark mode, otherwise they would vanish.
+-}
+color : Bool -> Char -> ( String, JE.Value )
+color light char =
     ( "itemStyle"
     , JE.object
         [ ( "color"
-          , colors
-                |> Dict.get (toLower char)
-                |> Maybe.withDefault "#000000"
-                |> JE.string
+          , case ( light, colors |> Dict.get (toLower char) |> Maybe.withDefault "#000000" ) of
+                ( False, "#000000" ) ->
+                    JE.string "#FFFFFF"
+
+                ( False, "#FFFFFF" ) ->
+                    JE.string "#000000"
+
+                ( _, hex ) ->
+                    JE.string hex
           )
         ]
     )

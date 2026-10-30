@@ -71,10 +71,11 @@ function themeOf(name: string) {
   probe.dispose()
   return theme
 }
-echarts.registerTheme(
-  'v5-dark',
-  echarts.util.merge(themeOf('v5'), themeOf('dark'), true)
-)
+// the dark background is replaced by the one of the course
+echarts.registerTheme('v5-dark', {
+  ...echarts.util.merge(themeOf('v5'), themeOf('dark'), true),
+  backgroundColor: 'transparent',
+})
 
 // Decals are patterns, which distinguish the series not only by their color,
 // they can be switched on in the settings (class lia-decals of the html)
@@ -161,6 +162,7 @@ customElements.define(
 
     connectedCallback() {
       window.addEventListener('lia-decals', this.onDecals)
+      window.addEventListener('lia-variant', this.onVariant)
 
       if (!this.container) {
         this.init()
@@ -227,8 +229,14 @@ customElements.define(
       this.updateChart()
     }
 
+    // charts written by hand have no mode and follow the dark mode of the course
+    onVariant = () => {
+      if (!this.hasAttribute('mode')) this.reinitChart()
+    }
+
     disconnectedCallback() {
       window.removeEventListener('lia-decals', this.onDecals)
+      window.removeEventListener('lia-variant', this.onVariant)
       if (this.chart) echarts.dispose(this.chart)
 
       this.resizeObserver.disconnect()
@@ -323,7 +331,12 @@ customElements.define(
     initChart() {
       if (this.chart) echarts.dispose(this.chart)
 
-      const theme = this.mode === 'dark' ? 'v5-dark' : this.mode || 'v5'
+      const mode = this.hasAttribute('mode')
+        ? this.mode
+        : document.documentElement.classList.contains('lia-variant-dark')
+          ? 'dark'
+          : ''
+      const theme = mode === 'dark' ? 'v5-dark' : mode || 'v5'
 
       this.chart = echarts.init(this.container, theme, {
         renderer: this.renderer,
