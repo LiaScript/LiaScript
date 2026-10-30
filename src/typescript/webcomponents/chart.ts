@@ -100,6 +100,38 @@ function aria() {
   }
 }
 
+// strings under these keys are shown as text, source and target name the nodes
+// of graphs and sankeys and have to be replaced like the node names
+const TEXT_KEYS = ['text', 'subtext', 'name', 'data', 'source', 'target']
+// two letters, a date like 2026-10-30T00:00 is no text, no unicode classes in
+// the regex, they break the parser of older browsers (KaiOS)
+const LETTER = /[A-Za-z\u00C0-\uFFFF]{2}/
+
+// replaces every displayed string of an option, only plain objects and arrays
+// are copied, functions and echarts classes like gradients are kept
+function mapTexts(o: any, fn: (s: string) => string, key = ''): any {
+  if (typeof o === 'string') {
+    return TEXT_KEYS.includes(key) && LETTER.test(o) ? fn(o) : o
+  }
+  if (Array.isArray(o)) {
+    // only the items of data are texts, not e.g. the rows of dataset.source
+    return o.map(v => mapTexts(v, fn, key === 'data' ? key : ''))
+  }
+  if (
+    o &&
+    typeof o === 'object' &&
+    Object.getPrototypeOf(o) === Object.prototype
+  ) {
+    // region names of a map have to match the geojson
+    if (o.type === 'map') return o
+
+    const copy: any = {}
+    for (const k in o) copy[k] = mapTexts(o[k], fn, k)
+    return copy
+  }
+  return o
+}
+
 customElements.define(
   'lia-chart',
   class extends HTMLElement {
@@ -107,6 +139,16 @@ customElements.define(
 
     private chart?: echarts.ECharts
     private option_: { aria?: { show: boolean; decal?: { show: boolean } } }
+
+    // Google Translate does not reach svg text or the shadow DOM, therefor all
+    // texts are also hidden children of the element, translated texts are
+    // passed back to the chart
+    // shortcut: Google translates these children only when the element is
+    // rendered, an option set later (fetch, scripts) stays untranslated until
+    // the language is changed again, a fix would need a retranslate API
+    // from Google
+    private texts?: HTMLDivElement
+    private textObserver?: MutationObserver
 
     // the aria-label of the author, otherwise the generated description is used
     private authorLabel: string | null = null
@@ -204,6 +246,10 @@ customElements.define(
           )
         }
 
+        // the texts have to exist with the element, Google Translate ignores
+        // texts added later, e.g. after the geoJson of a map is loaded
+        this.translate()
+
         // this forces to wait for the chart until geoJson is loaded
         if (!this.geoJson.url) {
           this.updateChart()
@@ -232,7 +278,18 @@ customElements.define(
         'svg { direction: ltr; } text { unicode-bidi: plaintext; }'
       shadowRoot.appendChild(css)
 
+      // renders the texts as an invisible layer over the chart, Firefox only
+      // translates text that is rendered within the viewport, the wrapper
+      // has no height and does not change the layout
+      const layer = document.createElement('div')
+      layer.style.cssText = 'position:relative;height:0'
+      layer.appendChild(document.createElement('slot'))
+      shadowRoot.appendChild(layer)
+
       this.container = document.createElement('div')
+      // Firefox translates the drawn svg in place, which breaks the layout,
+      // the texts above are translated instead and echarts draws them anew
+      this.container.setAttribute('translate', 'no')
       shadowRoot.appendChild(this.container)
 
       let self = this
@@ -259,6 +316,7 @@ customElements.define(
       window.removeEventListener('lia-variant', this.onVariant)
       if (this.chart) echarts.dispose(this.chart)
 
+      this.textObserver?.disconnect()
       this.resizeObserver.disconnect()
       this.geoJson.data = {}
     }
@@ -338,6 +396,9 @@ customElements.define(
 
     updateChart() {
       if (!this.chart || !this.option_) return
+      // a map can only be drawn with its geoJson, locale or translation
+      // changes would otherwise throw before it is loaded
+      if (this.geoJson.url && this.geoJson.data === null) return
 
       // this.chart.clear();
 
@@ -345,7 +406,56 @@ customElements.define(
         echarts.registerMap(this.geoJson.url, this.geoJson.data)
       }
 
-      this.chart.setOption(this.option_, true)
+      this.chart.setOption(this.translate(), true)
+    }
+
+    // the option with the texts translated by an external translator
+    translate() {
+      if (!this.texts) {
+        this.texts = document.createElement('div')
+        // invisible, not display none, see the layer in init
+        this.texts.setAttribute('aria-hidden', 'true')
+        this.texts.style.cssText =
+          'position:absolute;top:0;left:0;width:100%;height:300px;overflow:hidden;opacity:0;pointer-events:none;user-select:none;font-size:1px;line-height:1px'
+        this.appendChild(this.texts)
+        this.textObserver = new MutationObserver(
+          helper.debounce(() => this.updateChart())
+        )
+      }
+
+      const translated: { [original: string]: string } = {}
+      for (const block of Array.from(this.texts.children) as HTMLElement[]) {
+        translated[block.dataset.text || ''] = (block.textContent || '').trim()
+      }
+
+      const keys: string[] = []
+      const option = mapTexts(this.option_, s => {
+        if (!keys.includes(s)) keys.push(s)
+        return translated[s] || s
+      })
+
+      // new texts, the old translations are dropped, the translator
+      // translates the new blocks again
+      if (keys.join('\n') !== Object.keys(translated).join('\n')) {
+        this.textObserver?.disconnect()
+        this.texts.innerHTML = ''
+        for (const text of keys) {
+          // blocks, Google translates spans in a row as one sentence and
+          // spreads the words over all of them
+          const block = document.createElement('div')
+          block.dataset.text = text
+          block.textContent = text
+          this.texts.appendChild(block)
+        }
+        this.textObserver?.observe(this.texts, {
+          subtree: true,
+          childList: true,
+          characterData: true,
+        })
+        return this.option_
+      }
+
+      return option
     }
 
     initChart() {
