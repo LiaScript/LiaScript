@@ -606,10 +606,17 @@ encodeMapChart json data =
                 |> List.filterMap Tuple.second
                 |> Stat.minmax
                 |> Maybe.withDefault ( 0, 0 )
-                |> Tuple.mapBoth String.fromFloat String.fromFloat
+
+        -- a string limit turns the color bar black
+        limit default =
+            Maybe.andThen String.toFloat >> Maybe.withDefault default >> JE.float
     in
     [ ( "series"
       , [ [ ( "type", JE.string "map" )
+
+          -- use the full height, by default a map only takes 80 percent
+          , ( "top", JE.int 50 )
+          , ( "bottom", JE.int 40 )
           , ( "map"
             , json
                 |> Maybe.withDefault ""
@@ -643,16 +650,8 @@ encodeMapChart json data =
       )
     , ( "visualMap"
       , JE.object
-            [ ( "min"
-              , data.labels.xLimits.min
-                    |> Maybe.withDefault min
-                    |> JE.string
-              )
-            , ( "max"
-              , data.labels.xLimits.max
-                    |> Maybe.withDefault max
-                    |> JE.string
-              )
+            [ ( "min", limit min data.labels.xLimits.min )
+            , ( "max", limit max data.labels.xLimits.max )
             , ( "calculable", JE.bool True )
             , ( "itemHeight", JE.string "150px" )
             , ( "right", JE.string "0" )
@@ -844,15 +843,21 @@ encodeHeatMap yLabels { labels, category, data } =
     , ( "tooltip", JE.object [] )
     , ( "grid"
       , JE.object <|
-            if labels.main == Nothing then
-                [ ( "height", JE.string "82%" )
-                , ( "top", JE.string "0%" )
-                ]
+            [ ( "left", JE.string "1%" )
+            , ( "right", JE.string "1%" )
+            , ( "outerBoundsMode", JE.string "same" )
+            , ( "outerBoundsContain", JE.string "all" )
+            ]
+                ++ (if labels.main == Nothing then
+                        [ ( "height", JE.string "82%" )
+                        , ( "top", JE.string "0%" )
+                        ]
 
-            else
-                [ ( "height", JE.string "74%" )
-                , ( "top", JE.string "7%" )
-                ]
+                    else
+                        [ ( "height", JE.string "74%" )
+                        , ( "top", JE.string "7%" )
+                        ]
+                   )
       )
     , xAxis labels.xLimits "category" labels.x category
     , yAxis labels.yLimits "category" labels.y yLabels

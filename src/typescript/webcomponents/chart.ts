@@ -241,9 +241,9 @@ customElements.define(
       this.updateChart()
     }
 
-    // charts written by hand have no mode and follow the dark mode of the course
+    // charts with an empty or missing mode follow the dark mode of the course
     onVariant = () => {
-      if (!this.hasAttribute('mode')) this.reinitChart()
+      if (!this.mode) this.reinitChart()
     }
 
     disconnectedCallback() {
@@ -343,12 +343,14 @@ customElements.define(
     initChart() {
       if (this.chart) echarts.dispose(this.chart)
 
-      const mode = this.hasAttribute('mode')
-        ? this.mode
-        : document.documentElement.classList.contains('lia-variant-dark')
+      // an empty or missing mode follows the course, light and dark are fixed,
+      // any other value is the name of an echarts theme
+      const mode =
+        this.mode ||
+        (document.documentElement.classList.contains('lia-variant-dark')
           ? 'dark'
-          : ''
-      const theme = mode === 'dark' ? 'v5-dark' : mode || 'v5'
+          : 'light')
+      const theme = mode === 'dark' ? 'v5-dark' : mode === 'light' ? 'v5' : mode
 
       this.chart = echarts.init(this.container, theme, {
         renderer: this.renderer,
