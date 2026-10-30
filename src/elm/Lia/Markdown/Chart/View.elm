@@ -606,6 +606,19 @@ textWidth =
 
 encodeParallel : Data (List (Maybe Float)) -> JE.Value
 encodeParallel { labels, category, data, orientation } =
+    let
+        -- half of the first, centered axis name
+        left =
+            category
+                |> List.head
+                |> Maybe.map (textWidth >> (\w -> w / 2 + 4) >> round)
+                |> Maybe.withDefault 20
+                -- longer names are cut by echarts anyway
+                |> clamp 20 60
+
+        truncate maxWidth =
+            ( "nameTruncate", JE.object [ ( "maxWidth", JE.int maxWidth ) ] )
+    in
     [ ( "parallelAxis"
       , category
             |> List.indexedMap
@@ -617,8 +630,9 @@ encodeParallel { labels, category, data, orientation } =
                     , ( "axisLabel", JE.object [ ( "hideOverlap", JE.bool True ) ] )
                     ]
                         -- vertical names stand right of the axis, within the margin
-                        |> CList.addIf (orientation == Just Vertical)
-                            ( "nameTruncate", JE.object [ ( "maxWidth", JE.int 100 ) ] )
+                        |> CList.addIf (orientation == Just Vertical) (truncate 100)
+                        -- a longer translation of the first name stays within the margin
+                        |> CList.addIf (orientation /= Just Vertical && i == 0) (truncate (2 * (left - 4)))
                 )
             |> JE.list JE.object
       )
@@ -647,18 +661,9 @@ encodeParallel { labels, category, data, orientation } =
                 ]
 
             else
-                -- half of the first, centered axis name, the numbers right of
-                -- the last axis keep the default of 80
+                -- the numbers right of the last axis keep the default of 80
                 [ ( "layout", JE.string "horizontal" )
-                , ( "left"
-                  , category
-                        |> List.head
-                        |> Maybe.map (textWidth >> (\w -> w / 2 + 4) >> round)
-                        |> Maybe.withDefault 10
-                        -- longer names are cut by echarts anyway
-                        |> clamp 10 60
-                        |> JE.int
-                  )
+                , ( "left", JE.int left )
                 ]
       )
     , ( "tooltip", JE.object [] )
