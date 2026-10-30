@@ -41,7 +41,11 @@ import 'echarts/i18n/langZH.js'
 import * as helper from '../helper'
 
 // LiaScript language codes, whose echarts locale has another name
-const LOCALES: { [lang: string]: string } = { nb: 'nb-NO', pt: 'PT-br', sl: 'SI' }
+const LOCALES: { [lang: string]: string } = {
+  nb: 'nb-NO',
+  pt: 'PT-br',
+  sl: 'SI',
+}
 
 const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 
@@ -71,11 +75,19 @@ function themeOf(name: string) {
   probe.dispose()
   return theme
 }
-// the dark background is replaced by the one of the course
-echarts.registerTheme('v5-dark', {
-  ...echarts.util.merge(themeOf('v5'), themeOf('dark'), true),
-  backgroundColor: 'transparent',
-})
+// the dark background is replaced by the one of the course, a saved image
+// still needs one, otherwise its light text is lost on a white image viewer
+echarts.registerTheme(
+  'v5-dark',
+  echarts.util.merge(
+    echarts.util.merge(themeOf('v5'), themeOf('dark'), true),
+    {
+      backgroundColor: 'transparent',
+      toolbox: { feature: { saveAsImage: { backgroundColor: '#303030' } } },
+    },
+    true
+  )
+)
 
 // Decals are patterns, which distinguish the series not only by their color,
 // they can be switched on in the settings (class lia-decals of the html)
