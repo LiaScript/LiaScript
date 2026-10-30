@@ -1,5 +1,5 @@
 // @ts-ignore
-import ace from 'ace-builds/src-min-noconflict/ace'
+import ace from 'ace-builds'
 import "ace-builds/src-noconflict/ext-rtl";
 import * as EDITOR from './editor-modes'
 
