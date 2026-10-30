@@ -224,6 +224,14 @@ customElements.define(
       const shadowRoot = this.attachShadow({
         mode: 'open',
       })
+      // echarts places all text for ltr, in rtl courses labels would shift
+      // onto axes and legend icons, the reading order of every text follows
+      // its own content, so arabic text keeps its order (svg renderer only)
+      const css = document.createElement('style')
+      css.textContent =
+        'svg { direction: ltr; } text { unicode-bidi: plaintext; }'
+      shadowRoot.appendChild(css)
+
       this.container = document.createElement('div')
       shadowRoot.appendChild(this.container)
 
