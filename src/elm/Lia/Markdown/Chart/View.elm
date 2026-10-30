@@ -267,6 +267,13 @@ encodeSankey { labels, category, data, orientation } =
                     )
                     dict
                 |> Dict.toList
+
+        -- nodes without outgoing flow form the last column
+        sources =
+            List.map (Tuple.first >> Tuple.first) cleared
+
+        horizontal =
+            orientation /= Just Vertical
     in
     [ toolbox Nothing
         { saveAsImage = True
@@ -276,16 +283,41 @@ encodeSankey { labels, category, data, orientation } =
         , restore = False
         }
     , ( "tooltip", JE.object [] )
-    , ( "height", JE.string "80%" )
-    , ( "width", JE.string "90%" )
     , ( "series"
       , [ ( "type", JE.string "sankey" )
+
+        -- below the title, above the toolbox, vertical node labels stand right
+        , ( "left", JE.string "1%" )
+        , ( "top"
+          , JE.int <|
+                if labels.main == Nothing then
+                    10
+
+                else
+                    50
+          )
+        , ( "right"
+          , JE.string <|
+                if horizontal then
+                    "1%"
+
+                else
+                    "10%"
+          )
+        , ( "bottom", JE.int 40 )
         , ( "layout", JE.string "none" )
         , ( "focusNodeAdjacency", JE.string "allEdges" )
         , ( "animation", JE.bool True )
         , ( "data"
           , category
-                |> JE.list (\node -> JE.object [ ( "name", JE.string node ) ])
+                |> JE.list
+                    (\node ->
+                        [ ( "name", JE.string node ) ]
+                            -- the labels of the last column stand left, no margin needed
+                            |> CList.addIf (horizontal && not (List.member node sources))
+                                ( "label", JE.object [ ( "position", JE.string "left" ) ] )
+                            |> JE.object
+                    )
           )
         , ( "edges"
           , cleared
@@ -300,7 +332,7 @@ encodeSankey { labels, category, data, orientation } =
           )
         , ( "lineStyle", JE.object [ ( "color", JE.string "source" ) ] )
         ]
-            |> CList.addIf (orientation == Just Vertical) ( "orient", JE.string "vertical" )
+            |> CList.addIf (not horizontal) ( "orient", JE.string "vertical" )
             |> List.singleton
             |> JE.list JE.object
       )
@@ -552,17 +584,16 @@ encodeParallel : Data (List (Maybe Float)) -> JE.Value
 encodeParallel { labels, category, data, orientation } =
     [ ( "parallelAxis"
       , category
-            |> List.indexedMap (\i cat -> [ ( "dim", JE.int i ), ( "name", JE.string cat ) ])
+            |> List.indexedMap
+                (\i cat ->
+                    [ ( "dim", JE.int i )
+                    , ( "name", JE.string cat )
+                    ]
+                        -- vertical names stand right of the axis, within the margin
+                        |> CList.addIf (orientation == Just Vertical)
+                            ( "nameTruncate", JE.object [ ( "maxWidth", JE.int 110 ) ] )
+                )
             |> JE.list JE.object
-      )
-    , ( "parallel"
-      , [ ( "axisExpandable", JE.bool True )
-        , ( "axisExpandCenter", JE.int 15 )
-        , ( "axisExpandCount", JE.int 10 )
-        , ( "axisExpandWidth", JE.int 100 )
-        , ( "axisExpandTriggerOn", JE.string "mousemove" )
-        ]
-            |> JE.object
       )
     , ( "series"
       , [ ( "type", JE.string "parallel" )
@@ -582,15 +613,18 @@ encodeParallel { labels, category, data, orientation } =
         }
     , ( "parallel"
       , JE.object <|
-            [ ( "layout"
-              , JE.string <|
-                    if orientation == Just Vertical then
-                        "vertical"
+            if orientation == Just Vertical then
+                [ ( "layout", JE.string "vertical" )
+                , ( "left", JE.int 30 )
+                , ( "right", JE.int 120 )
+                ]
 
-                    else
-                        "horizontal"
-              )
-            ]
+            else
+                -- half of a centered axis name, the numbers right of the last
+                -- axis keep the default of 80
+                [ ( "layout", JE.string "horizontal" )
+                , ( "left", JE.int 60 )
+                ]
       )
     , ( "tooltip", JE.object [] )
     ]
