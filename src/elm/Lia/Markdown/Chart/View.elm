@@ -286,7 +286,7 @@ encodeSankey { labels, category, data, orientation } =
     , ( "series"
       , [ ( "type", JE.string "sankey" )
 
-        -- below the title, above the toolbox, vertical node labels stand right
+        -- below the title, above the toolbox
         , ( "left", JE.string "1%" )
         , ( "top"
           , JE.int <|
@@ -296,14 +296,7 @@ encodeSankey { labels, category, data, orientation } =
                 else
                     50
           )
-        , ( "right"
-          , JE.string <|
-                if horizontal then
-                    "1%"
-
-                else
-                    "10%"
-          )
+        , ( "right", JE.string "1%" )
         , ( "bottom", JE.int 40 )
         , ( "layout", JE.string "none" )
         , ( "focusNodeAdjacency", JE.string "allEdges" )
@@ -333,6 +326,8 @@ encodeSankey { labels, category, data, orientation } =
         , ( "lineStyle", JE.object [ ( "color", JE.string "source" ) ] )
         ]
             |> CList.addIf (not horizontal) ( "orient", JE.string "vertical" )
+            -- labels right of the wide vertical nodes would overlap the next one
+            |> CList.addIf (not horizontal) ( "label", JE.object [ ( "position", JE.string "inside" ) ] )
             |> List.singleton
             |> JE.list JE.object
       )
@@ -580,6 +575,35 @@ encodeBasic type_ { labels, category, data } =
         |> JE.object
 
 
+{-| Estimated width of a text in the 12px chart font.
+
+shortcut: 6.4px per letter and 12px per CJK character, measure the text in the
+browser if other scripts or fonts get clipped
+
+-}
+textWidth : String -> Float
+textWidth =
+    String.foldl
+        (\c sum ->
+            let
+                code =
+                    Char.toCode c
+            in
+            if
+                (code >= 0x1100 && code <= 0x115F)
+                    || (code >= 0x2E80 && code <= 0xA4CF)
+                    || (code >= 0xAC00 && code <= 0xD7A3)
+                    || (code >= 0xF900 && code <= 0xFAFF)
+                    || (code >= 0xFF00 && code <= 0xFF60)
+            then
+                sum + 12
+
+            else
+                sum + 6.4
+        )
+        0
+
+
 encodeParallel : Data (List (Maybe Float)) -> JE.Value
 encodeParallel { labels, category, data, orientation } =
     [ ( "parallelAxis"
@@ -588,10 +612,13 @@ encodeParallel { labels, category, data, orientation } =
                 (\i cat ->
                     [ ( "dim", JE.int i )
                     , ( "name", JE.string cat )
+
+                    -- long numbers on narrow screens
+                    , ( "axisLabel", JE.object [ ( "hideOverlap", JE.bool True ) ] )
                     ]
                         -- vertical names stand right of the axis, within the margin
                         |> CList.addIf (orientation == Just Vertical)
-                            ( "nameTruncate", JE.object [ ( "maxWidth", JE.int 110 ) ] )
+                            ( "nameTruncate", JE.object [ ( "maxWidth", JE.int 100 ) ] )
                 )
             |> JE.list JE.object
       )
@@ -620,10 +647,18 @@ encodeParallel { labels, category, data, orientation } =
                 ]
 
             else
-                -- half of a centered axis name, the numbers right of the last
-                -- axis keep the default of 80
+                -- half of the first, centered axis name, the numbers right of
+                -- the last axis keep the default of 80
                 [ ( "layout", JE.string "horizontal" )
-                , ( "left", JE.int 60 )
+                , ( "left"
+                  , category
+                        |> List.head
+                        |> Maybe.map (textWidth >> (\w -> w / 2 + 4) >> round)
+                        |> Maybe.withDefault 10
+                        -- longer names are cut by echarts anyway
+                        |> clamp 10 60
+                        |> JE.int
+                  )
                 ]
       )
     , ( "tooltip", JE.object [] )
@@ -767,6 +802,10 @@ encodeRadarChart { labels, category, data } =
     [ ( "radar"
       , JE.object
             [ ( "indicator", indicator )
+
+            -- keeps the lowest name above the toolbox
+            , ( "radius", JE.string "70%" )
+            , ( "center", JE.list JE.string [ "50%", "48%" ] )
             , ( "axisName"
               , JE.object
                     [ ( "color", JE.string "#fff" )
@@ -775,6 +814,15 @@ encodeRadarChart { labels, category, data } =
                     , ( "padding", JE.list JE.int [ 3, 5 ] )
                     ]
               )
+            ]
+      )
+
+    -- on narrow screens the names left and right would be cut off
+    , ( "media"
+      , JE.list JE.object
+            [ [ ( "query", JE.object [ ( "maxWidth", JE.int 450 ) ] )
+              , ( "option", JE.object [ ( "radar", JE.object [ ( "radius", JE.string "50%" ) ] ) ] )
+              ]
             ]
       )
     , toolbox Nothing
