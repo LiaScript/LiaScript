@@ -221,9 +221,6 @@ isMember list element =
         ( (Via.Nostr _) :: _, Via.Nostr _ ) ->
             ( True, element )
 
-        ( (Via.P2PT _) :: _, Via.P2PT _ ) ->
-            ( True, element )
-
         ( e :: es, _ ) ->
             if e == element then
                 ( True, element )

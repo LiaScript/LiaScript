@@ -1130,7 +1130,9 @@ export class Connector extends Base.Connector {
     if (!this.active || !this.lrs || !record.data) return
 
     this.lastActivityTime = Date.now()
-    const { table, id, data } = record
+    // all slide tables (code, quiz, survey, task) use the slide number as id
+    const { table, data } = record
+    const id = record.id as number
 
     // LiaScript stores the initial projects of a slide: nothing changed yet
     if (table === 'code') {
@@ -1305,7 +1307,8 @@ export class Connector extends Base.Connector {
    * @param fn Update function
    */
   update(record: Base.Record, fn: (a: any) => any) {
-    const { table, id } = record
+    const { table } = record
+    const id = record.id as number
     if (table !== 'code' || !this.active || !this.lrs) return
 
     const before = this.codeProjects[id]

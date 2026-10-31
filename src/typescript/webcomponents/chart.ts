@@ -248,7 +248,7 @@ customElements.define(
 
         // the texts have to exist with the element, Google Translate ignores
         // texts added later, e.g. after the geoJson of a map is loaded
-        this.translate()
+        this.translateTexts()
 
         // this forces to wait for the chart until geoJson is loaded
         if (!this.geoJson.url) {
@@ -406,11 +406,11 @@ customElements.define(
         echarts.registerMap(this.geoJson.url, this.geoJson.data)
       }
 
-      this.chart.setOption(this.translate(), true)
+      this.chart.setOption(this.translateTexts(), true)
     }
 
     // the option with the texts translated by an external translator
-    translate() {
+    translateTexts() {
       if (!this.texts) {
         this.texts = document.createElement('div')
         // invisible, not display none, see the layer in init

@@ -30,7 +30,6 @@ import Lia.Utils as Util
 type Backend
     = Edrys
     | GUN { urls : String, persistent : Bool }
-    | P2PT String
     | IPFS { turnConfig : String }
     | PubNub { pubKey : String, subKey : String }
     | Ably { apiKey : String, persistent : Bool }
@@ -72,9 +71,6 @@ toString full via =
 
                 Ably { apiKey, persistent } ->
                     ( "Ably", [ flag persistent, apiKey ] )
-
-                P2PT urls ->
-                    ( "P2PT", [ urls ] )
 
                 WebSocket { url } ->
                     ( "WebSocket", [ url ] )
@@ -138,9 +134,6 @@ icon via =
             Ably _ ->
                 "icon-ably"
 
-            P2PT _ ->
-                "icon-p2pt"
-
             WebSocket _ ->
                 "icon-websocket"
 
@@ -188,9 +181,6 @@ badges via =
 
         Ably _ ->
             [ "Managed service", "Account required", "WebSocket", "Dedicated infra" ]
-
-        P2PT _ ->
-            [ "WebTorrent", "Tracker based", "WebSocket", "WebRTC", "Public relays" ]
 
         WebSocket _ ->
             [ "Self-hostable", "Experimental", "Dedicated infra" ]
@@ -413,9 +403,6 @@ tagline via =
         Ably _ ->
             "Managed real-time messaging with a global edge network."
 
-        P2PT _ ->
-            "WebTorrent trackers used for WebRTC signaling."
-
         WebSocket _ ->
             "Full-duplex communication over your own WebSocket server."
 
@@ -491,12 +478,6 @@ fromString via =
 
         [ "gun", "t", urls ] ->
             Just (GUN { urls = urls, persistent = True })
-
-        [ "p2pt" ] ->
-            Just (P2PT "")
-
-        [ "p2pt", urls ] ->
-            Just (P2PT urls)
 
         [ "pubnub" ] ->
             Just <| PubNub { pubKey = "", subKey = "" }
@@ -667,7 +648,7 @@ info =
         , Html.p []
             [ Html.text "Note, most backend services are free, and you can also host them by your own. "
             , Html.text "There might be cases where the synchronization is slow or there are collisions, but we are working in the background on optimizations and fixes ;-) "
-            , Html.text "Connections can also simply be blocked outright: school and company networks routinely restrict what's allowed out. Some block WebRTC, which rules out PeerJS, SimplePeer, and the peer-to-peer legs of Torrent, IPFS, and P2PT; others block WebSocket connections entirely, which rules out GUN, Nostr, MQTT, WebSocket, and Ably too. There's no way to know in advance — if a room won't connect, that's usually the network, not you. Try a different backend before assuming something's broken."
+            , Html.text "Connections can also simply be blocked outright: school and company networks routinely restrict what's allowed out. Some block WebRTC, which rules out PeerJS, SimplePeer, and the peer-to-peer legs of Torrent and IPFS; others block WebSocket connections entirely, which rules out GUN, Nostr, MQTT, WebSocket, and Ably too. There's no way to know in advance — if a room won't connect, that's usually the network, not you. Try a different backend before assuming something's broken."
             ]
         , Html.blockquote [ Attr.class "lia-quote lia-quote__alert-tip" ]
             [ Html.p []
@@ -770,7 +751,7 @@ backendGroups : Html msg
 backendGroups =
     Html.div [ Attr.style "margin" "0.75rem 0 1.25rem" ]
         [ backendGroup "rgb(var(--lia-success))" "No setup" [ "PeerJS", "PubNub", "Ably", "Edrys" ] "Works immediately on a shared free tier LiaScript provides. Fine for classes and quick sessions; capacity is split with everyone else using the default keys."
-        , backendGroup "rgb(var(--color-highlight))" "Decentralized / public relays" [ "GUN", "Nostr", "MQTT", "Torrent", "IPFS", "P2PT" ] "No single company runs these — traffic passes through volunteer-run community relays. Reliable enough for regular use, occasionally slower to connect."
+        , backendGroup "rgb(var(--color-highlight))" "Decentralized / public relays" [ "GUN", "Nostr", "MQTT", "Torrent", "IPFS" ] "No single company runs these — traffic passes through volunteer-run community relays. Reliable enough for regular use, occasionally slower to connect."
         , backendGroup "rgb(var(--lia-warning))" "Bring your own server" [ "WebSocket", "SimplePeer" ] "You (or your institution) host the relay. More control, but requires someone to run and maintain it — the two backends with no public fallback."
         , backendGroup "rgb(var(--color-border))" "Just for you" [ "Local" ] "\"Own Notes\" — no network at all, nothing to configure."
         ]
@@ -936,20 +917,6 @@ infoOn about =
                 , Html.text "."
                 ]
 
-            P2PT _ ->
-                [ Html.text "The "
-                , link "P2PT" "https://github.com/subins2000/p2pt"
-                , Html.text " project utilizes "
-                , link "WebTorrent" "https://webtorrent.io"
-                , Html.text " trackers as signaling servers for establishing peer-to-peer (P2P) connections via "
-                , link "WebRTC" "https://en.wikipedia.org/wiki/WebRTC"
-                , Html.text ". Therefor P2PT uses magnet-URIs as an app identifier to communicate with the WebTorrent trackers, which provide a list of web peers using the app."
-                , Html.text "With this information, P2PT enables an browser applications to share real-time data and send messages interaction between connected peers."
-                , Html.text "Thus, you have to provide one or more WebSocket tracker URLs, starting with "
-                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://" ]
-                , Html.text ", separated by commas if you list several — there is no built-in default, so at least one is required."
-                ]
-
             Local ->
                 [ Html.text "This is a purely local classroom — nothing is sent over the network. "
                 , Html.text "Your notes are written to this browser's storage only and never shared with anyone."
@@ -1086,19 +1053,6 @@ view locked editable backend =
                             , label = Html.text "save class data on server"
                             }
                         , fieldHint "Uses Ably's LiveObjects to keep the chat and modified code available after everyone disconnects, retained for up to 90 days by default. Left unchecked, the state is dropped once the room empties."
-                        ]
-
-                P2PT urls ->
-                    details
-                        [ input
-                            { active = active
-                            , type_ = "text"
-                            , msg = InputP2PT
-                            , value = urls
-                            , placeholder = "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, ..."
-                            , label = Html.text "WebTorrent tracker URLs (required, comma-separated)"
-                            , autocomplete = Just "websocket-urls"
-                            }
                         ]
 
                 WebSocket { url } ->
@@ -1350,7 +1304,6 @@ type Msg
     | InputPubNub String String
     | InputAbly String
     | CheckboxAbly
-    | InputP2PT String
     | InputWebSocket String
     | InputPeerJS String String
     | InputSimplePeer String String
@@ -1380,9 +1333,6 @@ update msg backend =
 
         ( CheckboxAbly, Ably data ) ->
             Ably { data | persistent = not data.persistent }
-
-        ( InputP2PT urls, P2PT _ ) ->
-            P2PT urls
 
         ( InputWebSocket url, WebSocket _ ) ->
             WebSocket { url = url }

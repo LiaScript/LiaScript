@@ -108,7 +108,8 @@ export class Sync extends Base.Sync {
       this.transport = new NostrTransport({
         finalizeEvent: NostrTools.finalizeEvent,
         getPublicKey: NostrTools.getPublicKey,
-        SimplePool: ReconnectingPool,
+        // nostr-tools comes untyped from its script, so does the subclass
+        SimplePool: ReconnectingPool as any,
         secretKey: this.persistent ? roomKey(id) : undefined,
       })
 
