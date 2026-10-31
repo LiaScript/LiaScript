@@ -9,13 +9,10 @@ var elmSend: Lia.Send | null
 var Database: any
 
 var Edrys
-// var Jitsi
-// var Matrix
 var Ably
 var PubNub
 var Gun
 var Local
-var P2PT
 var Trystero
 var Nostr
 var WebSocket_
@@ -65,7 +62,6 @@ const Service = {
     'mqtt',
     'nostr',
     'pubnub',
-    // hasRTCPeerConnection() ? 'p2pt' : '',
     hasRTCPeerConnection() ? 'peerjs' : '',
     hasRTCPeerConnection() ? 'simplepeer' : '',
     'torrent',
@@ -91,7 +87,8 @@ const Service = {
         array: shared('getArray'),
         map: shared('getMap'),
         text: shared('getText'),
-      }
+        // me, owner and mode are getters, defined below
+      } as typeof window.LIA.classroom
 
       Object.defineProperties(window['LIA']['classroom'], {
         // who am I, also without a classroom
@@ -239,38 +236,6 @@ const Service = {
               )
               break
 
-            // case 'jitsi':
-            //   if (!Jitsi) {
-            //     import('../../sync/Jitsi/index').then((e) => {
-            //       Jitsi = e
-            //       Service.handle(event)
-            //     })
-            //     return
-            //   }
-
-            //   sync = new Jitsi.Sync(
-            //     cbConnection,
-            //     elmSend,
-            //     onConnect,
-            //     onReceive,
-            //     true
-            //   )
-            //   break
-
-            /*
-            case 'matrix':
-              if (!Matrix) {
-                import('../../sync/Matrix/index').then((e) => {
-                  Matrix = e
-                  Service.handle(event)
-                })
-                return
-              }
-
-              sync = new Matrix.Sync(cbConnection, elmSend)
-              break
-            */
-
             case 'ably':
               if (!Ably) {
                 import('../../sync/Ably/index').then((e) => {
@@ -306,25 +271,6 @@ const Service = {
                 true,
               )
               break
-            /*
-            case 'p2pt':
-              if (!P2PT) {
-                import('../../sync/P2PT/index').then((e) => {
-                  P2PT = e
-                  Service.handle(event)
-                })
-                return
-              }
-
-              sync = new P2PT.Sync(
-                cbConnection,
-                elmSend,
-                onConnect,
-                onReceive,
-                true,
-              )
-              break
-*/
             case 'peerjs':
               if (!PeerJS_) {
                 import('../../sync/PeerJS/index').then((e) => {

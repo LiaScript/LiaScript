@@ -59,7 +59,7 @@ customElements.define(
       this.embed = this.getAttribute('embed') !== 'false'
 
       this.responsiveVoiceKey = this.getAttribute('responsiveVoiceKey')
-      this.scriptUrl = document.currentScript?.src
+      this.scriptUrl = (document.currentScript as HTMLScriptElement | null)?.src
 
       if (this.embed && document.location.href.match('LiaScript=') === null) {
         const shadowRoot = this.attachShadow({

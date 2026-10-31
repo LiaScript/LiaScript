@@ -325,6 +325,7 @@ customElements.define(
         fontSize: this.model.fontSize,
         fontFamily: this.model.fontFamily,
         enableKeyboardAccessibility: this.model.enableKeyboardAccessibility,
+        // @ts-expect-error rtl comes from ext-rtl, ace's types do not know it
         rtl: this.model.rtl,
         rtlText: this.model.rtlText,
       })

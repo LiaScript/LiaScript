@@ -42,7 +42,7 @@ export class CRDT {
   public doc: Y.Doc
   public sub: Y.Doc
 
-  // Used by legacy manual-sync providers (Trystero, PubNub, P2PT) as a
+  // Used by legacy manual-sync providers (Trystero, PubNub) as a
   // rough causal tiebreaker. Not needed by the GenericProvider path.
   public timestamp: number = Date.now()
 

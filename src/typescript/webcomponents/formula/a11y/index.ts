@@ -18,14 +18,16 @@
  * file plus an entry in LANGUAGES.
  */
 
-// NOTE: since we're importing types here these files won't actually be
-// included in the build.
-import type { Atom } from 'katex/src/symbols.js'
-import type { AnyParseNode } from 'katex/src/parseNode.js'
-import type { SettingsOptions } from 'katex/src/Settings.js'
-
-// $FlowIgnore: we import the types directly anyways
 import katex from 'katex'
+import type { KatexOptions } from 'katex'
+
+// katex/src/atoms.ts
+type Atom = 'bin' | 'close' | 'inner' | 'open' | 'punct' | 'rel'
+// shortcut: katex's parse tree is internal and its source does not type-check
+// with our tsconfig, so nodes stay untyped; import katex/src/types/nodes once
+// katex publishes these types
+type AnyParseNode = any
+type SettingsOptions = KatexOptions
 
 import en, { type Dict } from './en.ts'
 import de from './de.ts'
@@ -1428,7 +1430,8 @@ const renderA11yString = function (
   t = dict ?? en
   locale = dict ? lang : 'en'
   scriptDepth = 0
-  const tree = katex.__parse(text, settings)
+  // internal parser, not part of katex's types
+  const tree = (katex as any).__parse(text, settings)
   functionLetters = new Set()
   collectFunctions(tree)
   const a11yStrings = buildA11yStrings(tree, [], 'normal')

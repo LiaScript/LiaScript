@@ -95,11 +95,6 @@ connect param =
                             , ( "persistent", JE.bool persistent )
                             ]
 
-                    Via.P2PT urls ->
-                        urls
-                            |> String.split ","
-                            |> JE.list (String.trim >> JE.string)
-
                     Via.WebSocket { url } ->
                         JE.object
                             [ ( "url", JE.string url )

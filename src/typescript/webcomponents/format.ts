@@ -1,14 +1,3 @@
-declare namespace Intl {
-  class RelativeTimeFormat {
-    constructor(locale: string | undefined, options: object)
-    format(value: string, unit: string | undefined): string
-  }
-  class ListFormat {
-    constructor(locale: string | undefined, options: object)
-    format(value: string[]): string
-  }
-}
-
 enum Format {
   DateTime = 'datetime',
   List = 'list',
@@ -152,7 +141,10 @@ customElements.define(
             value = new Intl.RelativeTimeFormat(
               this.locale,
               this.option
-            ).format(this.value_, this.unit)
+            ).format(
+              Number(this.value_),
+              this.unit as Intl.RelativeTimeFormatUnit
+            )
             break
           case Format.List:
             value = new Intl.ListFormat(this.locale, this.option).format(
@@ -208,3 +200,5 @@ customElements.define(
     disconnectedCallback() {}
   }
 )
+
+export {}
