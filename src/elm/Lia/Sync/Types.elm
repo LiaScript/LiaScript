@@ -164,6 +164,7 @@ init supportedBackends =
             , Via.Nostr { relayUrls = Const.nostrRelayURLs, persistent = False }
             , Via.GUN { urls = Const.gunDB_ServerURL, persistent = False }
             , Via.Torrent { relayUrls = "", turnConfig = "" }
+            , Via.TrysteroNostr { relayUrls = Const.nostrRelayURLs, turnConfig = "" }
             , Via.MQTT { relayUrls = "", turnConfig = "" }
             , Via.IPFS { turnConfig = "" }
             , Via.Ably { apiKey = "", persistent = False }
@@ -219,6 +220,9 @@ isMember list element =
             ( True, element )
 
         ( (Via.Nostr _) :: _, Via.Nostr _ ) ->
+            ( True, element )
+
+        ( (Via.TrysteroNostr _) :: _, Via.TrysteroNostr _ ) ->
             ( True, element )
 
         ( e :: es, _ ) ->

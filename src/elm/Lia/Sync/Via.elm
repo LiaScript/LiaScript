@@ -37,6 +37,7 @@ type Backend
       -- Trystero
     | MQTT { relayUrls : String, turnConfig : String }
     | Torrent { relayUrls : String, turnConfig : String }
+    | TrysteroNostr { relayUrls : String, turnConfig : String }
     | WebSocket { url : String }
     | PeerJS { host : String, port_ : String, path : String, iceServers : String }
     | SimplePeer { signaling : String, iceServers : String, conference : Bool }
@@ -55,13 +56,16 @@ toString full via =
                     ( "Nostr", [ flag persistent, relayUrls ] )
 
                 MQTT { relayUrls, turnConfig } ->
-                    ( "MQTT", [ relayUrls, turnConfig ] )
+                    ( "Trystero-MQTT", [ relayUrls, turnConfig ] )
 
                 Torrent { relayUrls, turnConfig } ->
-                    ( "Torrent", [ relayUrls, turnConfig ] )
+                    ( "Trystero-Torrent", [ relayUrls, turnConfig ] )
+
+                TrysteroNostr { relayUrls, turnConfig } ->
+                    ( "Trystero-Nostr", [ relayUrls, turnConfig ] )
 
                 IPFS { turnConfig } ->
-                    ( "IPFS", [ turnConfig ] )
+                    ( "Trystero-IPFS", [ turnConfig ] )
 
                 GUN { urls, persistent } ->
                     ( "GUN", [ flag persistent, urls ] )
@@ -125,6 +129,9 @@ icon via =
             Torrent _ ->
                 "icon-torrent"
 
+            TrysteroNostr _ ->
+                "icon-nostr"
+
             IPFS _ ->
                 "icon-ipfs"
 
@@ -172,6 +179,9 @@ badges via =
 
         Torrent _ ->
             [ "BitTorrent", "Tracker based", "WebSocket", "WebRTC", "Public relays" ]
+
+        TrysteroNostr _ ->
+            [ "Relay based", "Open protocol", "WebSocket", "WebRTC", "Public relays" ]
 
         IPFS _ ->
             [ "Peer-to-peer", "Decentralized", "WebSocket", "WebRTC", "Public relays" ]
@@ -237,6 +247,9 @@ capacityInfo via =
             trysteroCapacity
 
         Torrent _ ->
+            trysteroCapacity
+
+        TrysteroNostr _ ->
             trysteroCapacity
 
         IPFS _ ->
@@ -394,6 +407,9 @@ tagline via =
         Torrent _ ->
             "BitTorrent trackers used for WebRTC signaling."
 
+        TrysteroNostr _ ->
+            "Nostr relays used for WebRTC signaling."
+
         IPFS _ ->
             "Peer-to-peer hypermedia protocol for decentralized data."
 
@@ -440,29 +456,38 @@ fromString via =
         [ "nostr", relayUrls ] ->
             Just (Nostr { relayUrls = relayUrls, persistent = False })
 
-        [ "mqtt" ] ->
+        [ "trystero-mqtt" ] ->
             Just (MQTT { relayUrls = "", turnConfig = "" })
 
-        [ "mqtt", relayUrls ] ->
+        [ "trystero-mqtt", relayUrls ] ->
             Just (MQTT { relayUrls = relayUrls, turnConfig = "" })
 
-        [ "mqtt", relayUrls, turnConfig ] ->
+        [ "trystero-mqtt", relayUrls, turnConfig ] ->
             Just (MQTT { relayUrls = relayUrls, turnConfig = turnConfig })
 
-        [ "ipfs" ] ->
+        [ "trystero-ipfs" ] ->
             Just (IPFS { turnConfig = "" })
 
-        [ "ipfs", turnConfig ] ->
+        [ "trystero-ipfs", turnConfig ] ->
             Just (IPFS { turnConfig = turnConfig })
 
-        [ "torrent" ] ->
+        [ "trystero-torrent" ] ->
             Just (Torrent { relayUrls = "", turnConfig = "" })
 
-        [ "torrent", relayUrls ] ->
+        [ "trystero-torrent", relayUrls ] ->
             Just (Torrent { relayUrls = relayUrls, turnConfig = "" })
 
-        [ "torrent", relayUrls, turnConfig ] ->
+        [ "trystero-torrent", relayUrls, turnConfig ] ->
             Just (Torrent { relayUrls = relayUrls, turnConfig = turnConfig })
+
+        [ "trystero-nostr" ] ->
+            Just (TrysteroNostr { relayUrls = "", turnConfig = "" })
+
+        [ "trystero-nostr", relayUrls ] ->
+            Just (TrysteroNostr { relayUrls = relayUrls, turnConfig = "" })
+
+        [ "trystero-nostr", relayUrls, turnConfig ] ->
+            Just (TrysteroNostr { relayUrls = relayUrls, turnConfig = turnConfig })
 
         [ "gun" ] ->
             Just (GUN { urls = "", persistent = False })
@@ -648,7 +673,7 @@ info =
         , Html.p []
             [ Html.text "Note, most backend services are free, and you can also host them by your own. "
             , Html.text "There might be cases where the synchronization is slow or there are collisions, but we are working in the background on optimizations and fixes ;-) "
-            , Html.text "Connections can also simply be blocked outright: school and company networks routinely restrict what's allowed out. Some block WebRTC, which rules out PeerJS, SimplePeer, and the peer-to-peer legs of Torrent and IPFS; others block WebSocket connections entirely, which rules out GUN, Nostr, MQTT, WebSocket, and Ably too. There's no way to know in advance — if a room won't connect, that's usually the network, not you. Try a different backend before assuming something's broken."
+            , Html.text "Connections can also simply be blocked outright: school and company networks routinely restrict what's allowed out. Some block WebRTC, which rules out PeerJS, SimplePeer, and the peer-to-peer legs of Trystero-Torrent, Trystero-IPFS, and Trystero-Nostr; others block WebSocket connections entirely, which rules out GUN, Nostr, Trystero-MQTT, WebSocket, and Ably too. There's no way to know in advance — if a room won't connect, that's usually the network, not you. Try a different backend before assuming something's broken."
             ]
         , Html.blockquote [ Attr.class "lia-quote lia-quote__alert-tip" ]
             [ Html.p []
@@ -751,7 +776,7 @@ backendGroups : Html msg
 backendGroups =
     Html.div [ Attr.style "margin" "0.75rem 0 1.25rem" ]
         [ backendGroup "rgb(var(--lia-success))" "No setup" [ "PeerJS", "PubNub", "Ably", "Edrys" ] "Works immediately on a shared free tier LiaScript provides. Fine for classes and quick sessions; capacity is split with everyone else using the default keys."
-        , backendGroup "rgb(var(--color-highlight))" "Decentralized / public relays" [ "GUN", "Nostr", "MQTT", "Torrent", "IPFS" ] "No single company runs these — traffic passes through volunteer-run community relays. Reliable enough for regular use, occasionally slower to connect."
+        , backendGroup "rgb(var(--color-highlight))" "Decentralized / public relays" [ "GUN", "Nostr", "Trystero-Nostr", "Trystero-MQTT", "Trystero-Torrent", "Trystero-IPFS" ] "No single company runs these — traffic passes through volunteer-run community relays. Reliable enough for regular use, occasionally slower to connect."
         , backendGroup "rgb(var(--lia-warning))" "Bring your own server" [ "WebSocket", "SimplePeer" ] "You (or your institution) host the relay. More control, but requires someone to run and maintain it — the two backends with no public fallback."
         , backendGroup "rgb(var(--color-border))" "Just for you" [ "Local" ] "\"Own Notes\" — no network at all, nothing to configure."
         ]
@@ -863,6 +888,14 @@ infoOn about =
                 , link "BitTorrent" "https://en.wikipedia.org/wiki/BitTorrent"
                 , Html.text " clients use to find peers sharing a file — here they're repurposed to bootstrap real-time connections for chat and quizzes instead; no file-sharing involved."
                 , trysteroRelayHint "tracker"
+                ]
+
+            TrysteroNostr _ ->
+                [ Html.text "Uses the relays of "
+                , link "Nostr" "https://nostr.com"
+                , Html.text ", the decentralized \"Notes and Other Stuff Transmitted by Relays\" protocol, as signaling servers. "
+                , Html.text "Unlike the Nostr backend, where all classroom data passes through the relays, they only help the browsers find each other here."
+                , trysteroRelayHint "relay"
                 ]
 
             PubNub _ ->
@@ -996,6 +1029,9 @@ view locked editable backend =
 
                 Torrent { relayUrls, turnConfig } ->
                     trysteroSettings active "tracker" "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, ..." relayUrls turnConfig
+
+                TrysteroNostr { relayUrls, turnConfig } ->
+                    trysteroSettings active "relay" Const.nostrRelayURLs relayUrls turnConfig
 
                 IPFS { turnConfig } ->
                     details
@@ -1375,6 +1411,12 @@ update msg backend =
 
         ( InputTrystero "turn" v, Torrent data ) ->
             Torrent { data | turnConfig = v }
+
+        ( InputTrystero "relay" v, TrysteroNostr data ) ->
+            TrysteroNostr { data | relayUrls = v }
+
+        ( InputTrystero "turn" v, TrysteroNostr data ) ->
+            TrysteroNostr { data | turnConfig = v }
 
         ( InputTrystero "turn" v, IPFS data ) ->
             IPFS { data | turnConfig = v }
