@@ -55,16 +55,15 @@ const Service = {
     'ably',
     'edrys',
     'gun',
-    //'jitsi',
-    //'matrix',
-    'ipfs',
     'local',
-    'mqtt',
     'nostr',
     'pubnub',
     hasRTCPeerConnection() ? 'peerjs' : '',
     hasRTCPeerConnection() ? 'simplepeer' : '',
-    'torrent',
+    'trystero-ipfs',
+    'trystero-mqtt',
+    'trystero-nostr',
+    'trystero-torrent',
     'websocket',
   ],
 
@@ -192,12 +191,12 @@ const Service = {
               )
               break
 
-            case 'ipfs':
-            case 'mqtt':
-            // 'nostr' used to be Trystero's WebRTC-signaling-over-Nostr
-            // strategy - retired in favor of the real Nostr-relay backend
-            // below (see case 'nostr').
-            case 'torrent': {
+            case 'trystero-ipfs':
+            case 'trystero-mqtt':
+            // Trystero's WebRTC signaling over Nostr relays, 'nostr' is the
+            // real Nostr-relay backend below
+            case 'trystero-nostr':
+            case 'trystero-torrent': {
               if (!Trystero) {
                 import('../../sync/Trystero/index').then((e) => {
                   Trystero = e
@@ -207,7 +206,11 @@ const Service = {
               }
 
               sync = new Trystero.Sync(
-                backend as 'mqtt' | 'torrent' | 'ipfs',
+                backend.replace('trystero-', '') as
+                  | 'nostr'
+                  | 'mqtt'
+                  | 'torrent'
+                  | 'ipfs',
                 cbConnection,
                 elmSend,
                 onConnect,
