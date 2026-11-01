@@ -668,7 +668,7 @@ info =
             ]
         , Html.h4 [] [ Html.text "Choosing how you connect" ]
         , Html.p []
-            [ Html.text "A room needs a relay to help browsers find each other — LiaScript speaks to eleven of them, grouped here by how much setup they need:" ]
+            [ Html.text "A room needs a relay to help browsers find each other — LiaScript speaks to twelve of them, grouped here by how much setup they need:" ]
         , backendGroups
         , Html.p []
             [ Html.text "Note, most backend services are free, and you can also host them by your own. "
@@ -768,7 +768,7 @@ modeLegendItem accentColor label description =
         ]
 
 
-{-| The eleven connection backends, grouped by how much setup each needs.
+{-| The twelve connection backends, grouped by how much setup each needs.
 Badges reuse the app-wide `.lia-badge` pill (also used in the backend
 picker's option list) instead of introducing a table.
 -}
@@ -1056,7 +1056,7 @@ view locked editable backend =
                             , label = Html.text "publishKey"
                             , value = pubKey
                             , placeholder = "pub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-                            , autocomplete = Just "pubnup-publishKey"
+                            , autocomplete = Just "pubnub-publishKey"
                             }
                         , input
                             { active = active
@@ -1065,7 +1065,7 @@ view locked editable backend =
                             , label = Html.text "subscribeKey"
                             , value = subKey
                             , placeholder = "sub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-                            , autocomplete = Just "pubnup-subscribeKey"
+                            , autocomplete = Just "pubnub-subscribeKey"
                             }
                         , fieldHint "Leave both empty to use LiaScript's shared keyset. For regular use, create your own free App/Keyset in the PubNub dashboard and paste its publish and subscribe key here instead, so you're not sharing capacity with everyone else."
                         ]
@@ -1194,7 +1194,8 @@ trysteroSettings editable kind placeholder relayUrls turnConfig =
             , value = relayUrls
             , placeholder = placeholder
             , label = Html.text (kind ++ " URLs (optional)")
-            , autocomplete = Just "trystero-relay"
+            -- broker, tracker and relay URLs must not be offered for each other
+            , autocomplete = Just ("trystero-" ++ kind)
             }
         , fieldHint ("Comma-separated. Leave empty to use Trystero's built-in default " ++ kind ++ "s.")
         , input
