@@ -348,7 +348,16 @@ update session model msg =
                 |> Return.val
 
         OwnerTokenHash str ->
-            { model | sync = { sync | ownerTokenHash = str } }
+            let
+                -- a generated secret only belongs to the hash it was generated with
+                token =
+                    if str == sync.ownerTokenHash then
+                        sync.ownerToken
+
+                    else
+                        Nothing
+            in
+            { model | sync = { sync | ownerTokenHash = str, ownerToken = token } }
                 |> Return.val
 
         LocalName str ->
