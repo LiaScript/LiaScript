@@ -161,6 +161,7 @@ update session model msg =
 
                                 -- the next join may be another room, it needs the preload again
                                 , preloaded = False
+                                , owner = False
                                 , error =
                                     case ( JD.decodeValue JD.string param, sync.sync.select ) of
                                         ( Ok message, Just ( True, _ ) ) ->
@@ -288,6 +289,7 @@ update session model msg =
                                 , error = Nothing
                                 , data = Lia.Sync.Types.disconnected.data
                                 , preloaded = False
+                                , owner = False
                             }
                         , chat = Chat.init
                     }
@@ -385,6 +387,7 @@ update session model msg =
                     { sync
                         | sync = updateSync (Select Nothing) sync.sync
                         , error = Nothing
+                        , owner = False
                         , room = ""
                         , password = ""
                         , title = ""
