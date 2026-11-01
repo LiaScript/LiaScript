@@ -1,7 +1,6 @@
 module Lia.Sync.View exposing (view)
 
 import Accessibility.Aria as A11y_Aria
-import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -277,7 +276,13 @@ view settings =
 
                           else
                             Html.text ""
-                        , button settings
+                        , if support then
+                            Html.text ""
+
+                          else
+                            Html.p [ Attr.style "margin-block-start" "2rem" ]
+                                [ Html.text "Your browser does not support this backend, probably because WebRTC is missing or disabled. Please try another browser, or ask for a link to a classroom with a different backend." ]
+                        , button support settings
 
                         -- , if settings.ownerToken /= Nothing then
                         --     btn
@@ -657,8 +662,8 @@ selectString via =
         ]
 
 
-button : Sync.Settings -> Html Msg
-button settings =
+button : Bool -> Sync.Settings -> Html Msg
+button support settings =
     let
         attrs =
             [ Attr.style "margin-block-start" "2rem"
@@ -671,7 +676,8 @@ button settings =
                 { title = "connect"
                 , msg =
                     if
-                        String.isEmpty settings.room
+                        not support
+                            || String.isEmpty settings.room
                             || (settings.mode /= Shared && String.isEmpty settings.ownerTokenHash)
                     then
                         Nothing
