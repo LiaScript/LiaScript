@@ -34,12 +34,12 @@ import Combine
         , manyTill
         , map
         , maybe
-        , modifyInput
         , modifyState
         , onsuccess
         , optional
         , or
         , parens
+        , primitive
         , putState
         , regex
         , runParser
@@ -260,12 +260,31 @@ inject ignoreIndentation call =
                         code
                     )
                         |> present
-                        |> (++)
-                        |> modifyInput
+                        |> prepend
                         |> ignore (putState newState)
 
                 Nothing ->
                     fail "macro definition not found"
+        )
+
+
+{-| Put the expansion in front of the remaining input. `modifyInput` would
+leave `data` at the original text, so lines and columns (`withColumn` in quiz
+and survey items) were measured against text the parser never saw, see
+issue #325. `data` stays the consumed text plus the new input.
+-}
+prepend : String -> Parser Context ()
+prepend code =
+    primitive
+        (\state stream ->
+            let
+                input =
+                    code ++ stream.input
+            in
+            ( state
+            , { stream | input = input, data = String.left stream.position stream.data ++ input }
+            , Ok ()
+            )
         )
 
 
