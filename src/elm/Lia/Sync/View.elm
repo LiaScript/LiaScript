@@ -318,7 +318,15 @@ view settings =
 
                           else
                             Backend.view
-                                settings.locked
+                                (if not open then
+                                    Just "Infrastructure settings are locked while connected to this classroom."
+
+                                 else if settings.locked then
+                                    Just "Infrastructure settings are fixed for this saved classroom."
+
+                                 else
+                                    Nothing
+                                )
                                 (open && support)
                                 via
                                 |> Html.map Config

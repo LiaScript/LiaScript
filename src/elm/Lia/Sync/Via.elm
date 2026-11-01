@@ -966,19 +966,21 @@ link title url =
     Html.a (Attr.href url :: Util.newTab) [ Html.text title ]
 
 
-view : Bool -> Bool -> Backend -> Html Msg
-view locked editable backend =
+{-| `lockedBy` is the reason why the settings cannot be changed, if any.
+-}
+view : Maybe String -> Bool -> Backend -> Html Msg
+view lockedBy editable backend =
     let
         active =
-            editable && not locked
+            editable && lockedBy == Nothing
 
         lockedHint =
-            if locked then
-                Html.p [ Attr.style "font-style" "italic" ]
-                    [ Html.text "Infrastructure settings are locked while connected to this classroom." ]
+            case lockedBy of
+                Just reason ->
+                    Html.p [ Attr.style "font-style" "italic" ] [ Html.text reason ]
 
-            else
-                Html.text ""
+                Nothing ->
+                    Html.text ""
 
         content =
             case backend of
