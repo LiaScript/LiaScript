@@ -397,6 +397,7 @@ update session model msg =
                         | sync = updateSync (Select Nothing) sync.sync
                         , error = Nothing
                         , owner = False
+                        , passwordVisible = False
                         , room = ""
                         , password = ""
                         , title = ""

@@ -218,7 +218,7 @@ view settings =
                                     -- is already fixed for this session
                                     , btnIcon
                                         { title = "generate owner token"
-                                        , tabbable = editable
+                                        , tabbable = True
                                         , msg =
                                             if editable then
                                                 Just GenerateOwnerToken
@@ -702,7 +702,9 @@ button support settings =
             btn
                 { title = "pending"
                 , msg = Nothing
-                , tabbable = False
+
+                -- aria-disabled, not aria-hidden: the state must stay readable
+                , tabbable = True
                 }
                 attrs
                 [ Html.text "pending" ]
