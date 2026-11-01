@@ -297,16 +297,21 @@ update session model msg =
 
                 ( "classrooms", param ) ->
                     let
+                        saved =
+                            param
+                                |> JD.decodeValue Classroom.decoder
+                                |> Result.withDefault sync.saved
+
                         -- a room from the URL takes the name it was saved
-                        -- with, before the generic prefill below
+                        -- with, before the generic prefill below; only on the
+                        -- first list, every dialog opening lists them again and
+                        -- must not undo what the user changed, e.g. "Remember"
                         restored =
-                            restoreSaved
-                                { sync
-                                    | saved =
-                                        param
-                                            |> JD.decodeValue Classroom.decoder
-                                            |> Result.withDefault sync.saved
-                                }
+                            if List.isEmpty sync.saved then
+                                restoreSaved { sync | saved = saved }
+
+                            else
+                                { sync | saved = saved }
 
                         -- prefill "Your name" from the most recently used
                         -- classroom, so returning users don't have to
