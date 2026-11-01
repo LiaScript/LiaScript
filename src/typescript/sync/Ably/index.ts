@@ -114,7 +114,7 @@ export class Sync extends Base.Sync {
         doc: this.persistent ? this.db.doc : undefined,
         waitFor: this.persistReady,
         ...(this.password ? { password: this.password } : {}),
-      } as any)
+      } as any).catch(this.connectFailed('Ably'))
     } else {
       let message = 'Ably unknown error'
       if (error) message = 'Could not load resource: ' + error

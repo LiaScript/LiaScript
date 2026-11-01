@@ -80,6 +80,7 @@ export class Sync extends Base.Sync {
       // A conference room speaks another wire format: keep it on a topic of
       // its own, so a peer that joins without the flag cannot break it.
       hashID(this.conference ? raw + '|conference' : raw).then((id) => {
+        if (!this.isConnected) return
         const stun =
           this.iceServers ?? JSON.parse(process.env.STUN_SERVER || 'null')
 
@@ -145,8 +146,8 @@ export class Sync extends Base.Sync {
           room: id,
           waitFor: this.persistReady,
           ...(this.password ? { password: this.password } : {}),
-        } as any)
-      })
+        } as any).catch(this.connectFailed('SimplePeer'))
+      }).catch(this.connectFailed('SimplePeer'))
     } else {
       let message = 'SimplePeer unknown error'
       if (error) message = 'Could not load resource: ' + error

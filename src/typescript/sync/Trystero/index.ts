@@ -81,7 +81,7 @@ export class Sync extends Base.Sync {
       module
         .then((e) => {
           joinRoomFns[this.backend] = e.joinRoom
-          this.init(true)
+          if (this.isConnected) this.init(true)
         })
         .catch((e) => this.init(false, e.message))
     }
@@ -163,7 +163,7 @@ export class Sync extends Base.Sync {
         // the initial local-state broadcast isn't dropped by a transport
         // that silently no-ops send() while unconnected.
         this.db.setAwareness(this.provider.awareness, this.name)
-      })
+      }).catch(this.connectFailed(this.backend))
     } else {
       let message = this.backend + ' unknown error'
       if (error) message = 'Could not load resource: ' + error

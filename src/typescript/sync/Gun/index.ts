@@ -160,7 +160,7 @@ export class Sync extends Base.Sync {
         persistent: this.persistent,
         doc: this.persistent ? this.db.doc : undefined,
         waitFor: this.persistReady,
-      })
+      }).catch(this.connectFailed('GunDB'))
     } else {
       let message = 'GunDB unknown error'
 

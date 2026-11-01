@@ -133,6 +133,10 @@ const Service = {
               })
           }
 
+          // a backend chunk may fail to load (offline, or replaced by a redeploy)
+          const failed = (e: any) =>
+            cbConnection('error', 'Could not load backend: ' + (e?.message || e))
+
           const backend = event.message.param.backend
 
           switch (backend) {
@@ -141,7 +145,7 @@ const Service = {
                 import('../../sync/Edrys/index').then((e) => {
                   Edrys = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -160,7 +164,7 @@ const Service = {
                 import('../../sync/Gun/index').then((e) => {
                   Gun = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -178,7 +182,7 @@ const Service = {
                 import('../../sync/Local/index').then((e) => {
                   Local = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -201,7 +205,7 @@ const Service = {
                 import('../../sync/Trystero/index').then((e) => {
                   Trystero = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -226,7 +230,7 @@ const Service = {
                 import('../../sync/Nostr/index').then((e) => {
                   Nostr = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -244,7 +248,7 @@ const Service = {
                 import('../../sync/Ably/index').then((e) => {
                   Ably = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -262,7 +266,7 @@ const Service = {
                 import('../../sync/PubNub/index').then((e) => {
                   PubNub = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -279,7 +283,7 @@ const Service = {
                 import('../../sync/PeerJS/index').then((e) => {
                   PeerJS_ = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -297,7 +301,7 @@ const Service = {
                 import('../../sync/SimplePeer/index').then((e) => {
                   SimplePeer_ = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -315,7 +319,7 @@ const Service = {
                 import('../../sync/WebSocket/index').then((e) => {
                   WebSocket_ = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
