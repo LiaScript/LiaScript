@@ -56,6 +56,11 @@
       animation: lds-dual-ring 1.2s linear infinite;
     }
 
+    /* opened for print: no slide-in, or the page is captured mid-fade */
+    details[open] > *:not(summary) {
+      animation: none !important;
+    }
+
     @keyframes lds-dual-ring {
       0% {
         transform: rotate(0deg);
