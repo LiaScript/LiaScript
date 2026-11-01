@@ -158,6 +158,9 @@ update session model msg =
                                 | state = Disconnected
                                 , peers = Dict.empty
                                 , peersHistory = Dict.empty
+
+                                -- the next join may be another room, it needs the preload again
+                                , preloaded = False
                                 , error =
                                     case ( JD.decodeValue JD.string param, sync.sync.select ) of
                                         ( Ok message, Just ( True, _ ) ) ->
@@ -284,6 +287,7 @@ update session model msg =
                                 , peersHistory = Dict.empty
                                 , error = Nothing
                                 , data = Lia.Sync.Types.disconnected.data
+                                , preloaded = False
                             }
                         , chat = Chat.init
                     }
