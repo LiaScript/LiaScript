@@ -757,10 +757,15 @@ synchronize model json =
                         |> Result.map (Chat.insert model.sync model.sync.scriptsEnabled model.search_index model.definition model.chat)
                         |> Result.withDefault ( [], model.chat )
             in
-            { model | chat = chat, settings = updatedChatMessages model.settings }
-                |> Return.val
-                |> Return.batchEvents todo
-                |> Return.batchEvent (Service.Slide.scrollDown "lia-chat-messages" 350)
+            if Dict.size chat.messages > Dict.size model.chat.messages then
+                { model | chat = chat, settings = updatedChatMessages model.settings }
+                    |> Return.val
+                    |> Return.batchEvents todo
+                    |> Return.batchEvent (Service.Slide.scrollDown "lia-chat-messages" 350)
+
+            else
+                -- only verified flags changed, no notice, no scroll
+                { model | chat = chat } |> Return.val
 
         Ok ( "peer", param ) ->
             let
