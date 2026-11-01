@@ -67,6 +67,7 @@ export class Sync extends Base.Sync {
       if (this.password) Crypto.init(this.password)
 
       hashID(raw).then((id) => {
+        if (!this.isConnected) return
         const peerOptions: Record<string, any> = {}
         if (this.host) {
           peerOptions.host = this.host
@@ -131,8 +132,8 @@ export class Sync extends Base.Sync {
           // the initial local-state broadcast isn't dropped by a transport
           // that silently no-ops send() while unconnected.
           this.db.setAwareness(this.provider.awareness, this.name)
-        })
-      })
+        }).catch(this.connectFailed('PeerJS'))
+      }).catch(this.connectFailed('PeerJS'))
     } else {
       let message = 'PeerJS unknown error'
       if (error) message = 'Could not load resource: ' + error
