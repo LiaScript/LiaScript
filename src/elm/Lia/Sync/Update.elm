@@ -278,6 +278,9 @@ update session model msg =
                                 |> Return.val
                                 |> Return.cmd
                                     (resetUrl session model.readme)
+                                -- a late connect nobody waits for anymore (the
+                                -- form was left after an error): no ghost peer
+                                |> Return.batchEvent (Service.Sync.disconnect "")
 
                 ( "disconnect", _ ) ->
                     { model
