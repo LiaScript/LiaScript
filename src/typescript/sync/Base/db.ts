@@ -559,6 +559,7 @@ export class CRDT {
     // Those answers were skipped as unreadable by the recompute above, and
     // nothing else would re-read them until someone happened to answer again.
     this.wrappedKeys.observe(() => {
+      if (this.getOwner() !== this.peerID) return // only the owner can unwrap them
       this.scheduleQuizSurvey()
       this.scheduleTemplates()
     })
