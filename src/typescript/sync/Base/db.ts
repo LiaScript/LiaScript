@@ -155,6 +155,12 @@ export class CRDT {
   // entries, decrypting all of them again on every stroke is too slow.
   protected templateCache = new Map<string, any>()
 
+  // Decrypted quiz/survey values of the last run. A stored value never
+  // changes, a new answer is a new envelope, so only new ones get decrypted.
+  // Each run keeps just what it used, see fireQuizSurvey.
+  protected sectionCache = new Map<string, any>()
+  protected sectionCacheNext = new Map<string, any>()
+
   protected scheduleTemplates = coalesce(() =>
     this.fireTemplates().catch((e: any) =>
       console.warn('template re-check failed ->', e),
@@ -364,6 +370,7 @@ export class CRDT {
   // Recompute and dispatch every section's quiz/survey state, as seen right
   // now. Only ever run through `scheduleQuizSurvey`, never directly.
   protected async fireQuizSurvey() {
+    this.sectionCacheNext = new Map()
     const quizIds = this.collectSectionIds(QUIZ)
     if (quizIds.size > 0) {
       this.callback(
@@ -389,6 +396,7 @@ export class CRDT {
         'survey',
       )
     }
+    this.sectionCache = this.sectionCacheNext
   }
 
   protected async fireInitialState() {
@@ -751,7 +759,7 @@ export class CRDT {
         const raw = section.get(qi)
         if (raw == null) continue
 
-        const value = await this.decryptSectionValue(peerId, raw)
+        const value = await this.readSectionValue(peerId, raw)
         // undefined means "not authorized to read this peer's answer" -
         // omit it entirely, same outcome the Elm-side filter gave before,
         // now actually enforced at the data layer.
@@ -768,6 +776,27 @@ export class CRDT {
     }
 
     return result
+  }
+
+  // decryptSectionValue with a cache, same access rule: a former owner must
+  // not keep reading the others' answers from it
+  protected async readSectionValue(peerId: string, raw: any): Promise<any> {
+    if (this.classroomMode === 0 || !peerCrypto.isEncryptedValue(raw)) {
+      return raw
+    }
+    if (peerId !== this.peerID && this.getOwner() !== this.peerID) {
+      return undefined
+    }
+
+    const key = `${peerId}|${raw.iv}|${raw.ct}`
+    let value = this.sectionCache.get(key)
+    if (value === undefined) {
+      value = await this.decryptSectionValue(peerId, raw)
+      // not readable yet (e.g. the wrapped key is missing), retry next run
+      if (value === undefined) return undefined
+    }
+    this.sectionCacheNext.set(key, value)
+    return value
   }
 
   // classroomMode === 0 (Shared) or a legacy/plaintext value: use as-is.
