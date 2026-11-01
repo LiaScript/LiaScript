@@ -384,6 +384,7 @@ update session model msg =
                 | sync =
                     { sync
                         | sync = updateSync (Select Nothing) sync.sync
+                        , error = Nothing
                         , room = ""
                         , password = ""
                         , title = ""
@@ -402,6 +403,11 @@ update session model msg =
                 |> Return.val
                 |> Return.cmd
                     (resetUrl session model.readme)
+
+        Backend ((Select _) as sub) ->
+            -- an error belongs to the backend it came from
+            { model | sync = { sync | sync = updateSync sub sync.sync, error = Nothing } }
+                |> Return.val
 
         Backend sub ->
             { model | sync = { sync | sync = updateSync sub sync.sync } }
@@ -480,6 +486,7 @@ update session model msg =
                         | sync =
                             { sync
                                 | sync = { innerSync | select = Just ( True, backend ), open = False }
+                                , error = Nothing
                                 , room = entry.room
                                 , password = entry.password |> Maybe.withDefault ""
                                 , name = entry.name |> Maybe.withDefault sync.name
@@ -555,7 +562,8 @@ update session model msg =
         Connect ->
             case ( sync.sync.select, sync.state ) of
                 ( Just ( True, backend ), Disconnected ) ->
-                    { model | sync = { sync | state = Pending, sync = updateSync (Open False) sync.sync, name = String.trim sync.name } }
+                    -- only the outcome of this attempt is shown, not the last one
+                    { model | sync = { sync | state = Pending, error = Nothing, sync = updateSync (Open False) sync.sync, name = String.trim sync.name } }
                         |> Return.val
                         |> Return.batchEvent
                             -- only a join brings along a pwCheck hint to
