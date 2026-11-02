@@ -61,7 +61,7 @@ export class Sync extends Base.Sync {
 
     const urls: string[] = []
     if (!window['SimplePeer'])
-      urls.push('//unpkg.com/simple-peer@9.11.1/simplepeer.min.js')
+      urls.push('https://unpkg.com/simple-peer@9.11.1/simplepeer.min.js')
     if (this.password && !window['SimpleCrypto']) urls.push(Crypto.url)
 
     if (urls.length === 0) {

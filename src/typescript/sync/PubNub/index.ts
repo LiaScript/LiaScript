@@ -33,7 +33,7 @@ export class Sync extends Base.Sync {
     if (window['PubNub']) {
       this.init(true)
     } else {
-      this.load(['//cdn.pubnub.com/sdk/javascript/pubnub.10.2.7.min.js'], this)
+      this.load(['https://cdn.pubnub.com/sdk/javascript/pubnub.10.2.7.min.js'], this)
     }
   }
 
