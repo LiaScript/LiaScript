@@ -1,3 +1,4 @@
+@use '../00_settings/settings.global';
 @use '../01_tools/tools.breakpoints';
 
 .lia-card {
@@ -115,8 +116,11 @@
     }
   }
 
+  // an h3 for the heading order, but sized like the h4 it used to be
   &__subtitle {
     color: rgb(var(--lia-anthracite));
+    font-family: settings.$global-font-family;
+    font-size: calc(1.6rem * var(--font-size-multiplier));
     margin: 0 0 1rem;
   }
 

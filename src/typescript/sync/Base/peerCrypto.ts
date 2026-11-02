@@ -1,11 +1,12 @@
 import { encode, decode } from 'uint8-to-base64'
 
-function b64(bytes: ArrayBuffer): string {
+function b64(bytes: ArrayBuffer | Uint8Array): string {
   return encode(new Uint8Array(bytes))
 }
 
-function unb64(s: string): Uint8Array {
-  return decode(s)
+// decode always creates a fresh ArrayBuffer, never a SharedArrayBuffer
+function unb64(s: string): Uint8Array<ArrayBuffer> {
+  return decode(s) as Uint8Array<ArrayBuffer>
 }
 
 export function generateContentKey(): Promise<CryptoKey> {

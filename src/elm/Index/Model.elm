@@ -11,7 +11,6 @@ module Index.Model exposing
     , cardID
     , init
     , normalize
-    , reset_modal
     , urlInputID
     )
 
@@ -121,11 +120,6 @@ boardColumns model =
 normalize : Model -> List Column
 normalize =
     boardColumns >> List.map (\( column, courses ) -> { column | ids = List.map .id courses })
-
-
-reset_modal : Model -> Model
-reset_modal model =
-    { model | modal = Nothing, error = Nothing }
 
 
 type Action

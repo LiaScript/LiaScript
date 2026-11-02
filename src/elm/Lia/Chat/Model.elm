@@ -60,6 +60,25 @@ parse :
     -> ( List Event, Dict String { section : Section, peer : String, verified : Bool } )
     -> ( List Event, Dict String { section : Section, peer : String, verified : Bool } )
 parse classroom scriptsEnabled searchIndex definition change ( todo, chat ) =
+    case Dict.get (String.fromInt change.id) chat of
+        -- a full resend (signature re-check on every join) must not reset a
+        -- known message's quizzes or rerun its scripts, only verified may change
+        Just known ->
+            ( todo, Dict.insert (String.fromInt change.id) { known | verified = change.verified } chat )
+
+        Nothing ->
+            parseNew classroom scriptsEnabled searchIndex definition change ( todo, chat )
+
+
+parseNew :
+    { sync | state : Classroom.State, data : Classroom.Data }
+    -> Bool
+    -> (String -> String)
+    -> Definition
+    -> Change
+    -> ( List Event, Dict String { section : Section, peer : String, verified : Bool } )
+    -> ( List Event, Dict String { section : Section, peer : String, verified : Bool } )
+parseNew classroom scriptsEnabled searchIndex definition change ( todo, chat ) =
     case
         change.message
             ++ "\n\n"

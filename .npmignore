@@ -21,7 +21,6 @@ elm.json
 lia-localization
 tsconfig.json
 workbox-config.js
-.eslintrc.js
 Makefile
 .gitmodules
 shell.nix

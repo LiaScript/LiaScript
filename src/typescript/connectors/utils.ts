@@ -1,4 +1,4 @@
-const short = {
+const short: Record<string, string> = {
   SingleChoice: 'sc',
   MultipleChoice: 'mc',
   Text: 'tx',
@@ -12,9 +12,12 @@ const short = {
 const long = Object.entries(short).reduce((acc, [key, value]) => {
   acc[value] = key
   return acc
-}, {})
+}, {} as Record<string, string>)
 
-function renameJsonKeys(jsonObject: any, replacements: Object) {
+function renameJsonKeys(
+  jsonObject: any,
+  replacements: Record<string, string>
+): any {
   if (typeof jsonObject !== 'object' || jsonObject === null) {
     return jsonObject
   }
@@ -23,7 +26,7 @@ function renameJsonKeys(jsonObject: any, replacements: Object) {
     return jsonObject.map((element) => renameJsonKeys(element, replacements))
   }
 
-  const modifiedObject = {}
+  const modifiedObject: Record<string, any> = {}
   for (const [key, value] of Object.entries(jsonObject)) {
     const newKey = replacements[key] || key
     modifiedObject[newKey] = renameJsonKeys(value, replacements)
@@ -37,6 +40,32 @@ export function encodeJSON(json: any) {
 
 export function decodeJSON(json: string) {
   return renameJsonKeys(JSON.parse(json), long)
+}
+
+/**
+ * Encode a state as SCORM 1.2 CMIIdentifier (printable ASCII, no spaces),
+ * which strict LMS like Moodle enforce (error 405). States that are valid
+ * already stay plain JSON, all others get a `~` prefix and percent-escape
+ * every space, non-ASCII character and `%`.
+ * @param json - any state
+ */
+export function encodeIdentifier(json: any) {
+  const data = encodeJSON(json)
+
+  return /^[!-~]*$/.test(data)
+    ? data
+    : '~' + data.replace(/[^!-~]|%/gu, encodeURIComponent)
+}
+
+/**
+ * Decode a state stored by `encodeIdentifier`, or the plain JSON of older
+ * packages, which never starts with `~`.
+ * @param data - CMIIdentifier
+ */
+export function decodeIdentifier(data: string) {
+  return decodeJSON(
+    data.startsWith('~') ? decodeURIComponent(data.slice(1)) : data
+  )
 }
 
 /**

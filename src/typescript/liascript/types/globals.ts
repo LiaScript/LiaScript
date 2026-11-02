@@ -4,6 +4,9 @@ declare global {
   interface Window {
     googleTranslateElementInit: () => void
 
+    /** set by the host page of the editor, see `src/entry/base/index.ts` */
+    injectHandler?: (param: any) => void
+
     LIA: {
       /** Will print out a hole bunch of event-messages in the console
        */

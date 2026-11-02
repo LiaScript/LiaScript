@@ -339,11 +339,20 @@ export class Sync {
   }
 
   sync(topic: string, message: any = null) {
-    this.cbConnection(topic, message)
+    // a destroyed or failed instance may still finish async work, Elm must not hear it
+    if (this.isConnected) this.cbConnection(topic, message)
   }
 
   sendDisconnectError(msg: string) {
     this.sync('error', msg)
+  }
+
+  /** catch handler for a connect attempt (provider.connect, hashID, ...);
+   * the instance stays alive: a transport that retries by itself may still
+   * reach 'synced' and then connect Elm after all */
+  connectFailed(label: string) {
+    return (e: any) =>
+      this.sendDisconnectError(`${label}: ${e?.message || e || 'connect failed'}`)
   }
 
   /** Show an advisory message without touching connection state - unlike
@@ -368,6 +377,9 @@ export class Sync {
       this.pwSalt = peerCrypto.randomBytesBase64(16)
       this.pwCheck = await peerCrypto.pbkdf2Base64(this.password, this.pwSalt)
     }
+
+    // destroyed while waiting: no ack, no onConnect for a dead room
+    if (!this.isConnected) return
 
     this.sync('connect', {
       id: this.token,
@@ -472,8 +484,8 @@ export class Sync {
 
           self.urlCounter--
 
-          // all sources have been loaded successfully
-          if (self.urlCounter == 0) obj.init(true)
+          // all sources have been loaded successfully, and nobody disconnected meanwhile
+          if (self.urlCounter == 0 && self.isConnected) obj.init(true)
         }
         tag.onerror = function (e: any) {
           console.warn('could not load =>', url, e)

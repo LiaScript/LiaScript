@@ -24,6 +24,7 @@ module Lia.Utils exposing
     , scheduleFocus
     , shuffle
     , string2Color
+    , string2ColorRange
     , toEscapeString
     , urlBasePath
     , urlDecodeIfEncoded
@@ -233,7 +234,7 @@ modal lang activeBorder msgClose controls content =
 deactivate : Bool -> List (Attribute msg) -> List (Attribute msg)
 deactivate true attr =
     if true then
-        A11y_Aria.hidden True :: Attr.attribute "inert" "true" :: attr
+        A11y_Aria.hidden True :: Attr.attribute "inert" "" :: attr
 
     else
         attr
@@ -271,7 +272,14 @@ to white.
 
 -}
 string2Color : Int -> String -> String
-string2Color maxValue url =
+string2Color =
+    string2ColorRange 0
+
+
+{-| The same as `string2Color`, but every channel is shifted by offset.
+-}
+string2ColorRange : Int -> Int -> String -> String
+string2ColorRange offset maxValue url =
     url
         |> String.toList
         -- the character codes are summed up alternately in r, g, and b
@@ -291,11 +299,11 @@ string2Color maxValue url =
             ( 11111, 99, 12 )
         |> (\( r, g, b ) ->
                 "rgb("
-                    ++ (String.fromInt <| modBy maxValue r)
+                    ++ (String.fromInt <| offset + modBy maxValue r)
                     ++ ","
-                    ++ (String.fromInt <| modBy maxValue g)
+                    ++ (String.fromInt <| offset + modBy maxValue g)
                     ++ ","
-                    ++ (String.fromInt <| modBy maxValue b)
+                    ++ (String.fromInt <| offset + modBy maxValue b)
                     ++ ")"
            )
 

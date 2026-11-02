@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 02/11/2026
+
+- feat: suspend connectors for SCORM 1.2 and 2004 (opt-in) – the whole learner state (quizzes, surveys, tasks, code, settings, position) is kept compressed in `cmi.suspend_data`; SCORM 1.2 attempts stay open and checked answers are kept; H5P uses the same engine with a virtual SCORM 2004 LMS
+- feat: xAPI – valid answered statements with the learner's input, state and slide are restored on relaunch, code runs are stored and restored per slide, questions and answers are described readably, up to 10000 statements are read
+- feat: classroom backend Trystero-Nostr, using the classroom relays; MQTT, Torrent and IPFS are renamed to Trystero-MQTT, Trystero-Torrent and Trystero-IPFS, links and saved classrooms with the old names are no longer recognized
+- feat: charts use ECharts 6 and the locales of all 26 languages of LiaScript, chart texts are translated by Google Translate, Chrome and Firefox
+- improve: classroom answers are decrypted only once and only the owner recomputes when a key arrives, a large room no longer slows down with every answer
+- improve: editor – broken ace mode mappings fixed, toml, basic and godot modes added
+- fix: classroom – many fixes for connecting, leaving and reconnecting, the owner flag and token, saved rooms, chat resends, malformed peer data and error messages; locked infrastructure settings explain why
+- fix: charts – dark mode, rtl text, spacing and layout of parallel, sankey, radar, heatmap and map charts, dark background for saved images
+- fix: header scripts run only once when a cached course is reloaded, leaving a course for the index reloads the page so its scripts and styles are unloaded
+- fix: scripts and styles that are already loaded no longer stay "pending" on the loading screen when a course is parsed again in the same page
+- fix: styles with a relative path failed when loaded as blob (always in Chromium, in Firefox after a failed `<link>`), CSS from raw.githubusercontent.com is loaded as blob
+- fix: `console.log` in course code reaches the terminal again and script tags use `LIA.fetch` (Parcel 2.16)
+- fix: wrong columns after a long macro expansion broke choice quizzes with "Regular expression too large" (#325), a macro in a section title hid the next section
+- fix: an older offline copy of a course no longer overwrites a newer one (#326), the index compares major versions as numbers, course card tags no longer use the h3 size
+- fix: PeerJS, SimplePeer and PubNub load over https (also from `file://`), the CDN versions of Ably, GUN and nostr-tools are pinned
+- fix: SCORM 1.2 keeps answers with spaces and non-ASCII characters, valid `lesson_status` without mastery score
+- fix: Ably and PubNub receive pubsub messages from other peers, the Piper voice jarvis is detected as male
+- chore: type check with `npm run typecheck` (tsc) instead of eslint, dependency updates and npm audit fixes
+
+
 ## [2.5.0] - 24/10/2026
 
 - feat: classroom state for templates – `LIA.classroom.layer(name)` gives every participant an own layer (`push`, `set`, `get`, `on`), stored locally in IndexedDB (also without a classroom) and synchronized when joining one; visibility follows the classroom mode like quiz answers: Shared shows all layers, Summary and Details only the own one, the owner sees all with names and can change them; after leaving, the own layer stays, including what was drawn in the classroom

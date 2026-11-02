@@ -41,7 +41,7 @@ const modes: {
   aql: 'aql',
   /* ------------------------------------- */
   arduino: 'c_cpp',
-  ino: 'cpp',
+  ino: 'c_cpp',
   /* ------------------------------------- */
   armasm: 'assembly_arm32',
   arm: 'assembly_arm32',
@@ -57,8 +57,6 @@ const modes: {
   /* ------------------------------------- */
   aspectj: 'java',
   /* ------------------------------------- */
-  astro: 'astro',
-  /* ------------------------------------- */
   autohotkey: 'autohotkey',
   ahk: 'autohotkey',
   /* ------------------------------------- */
@@ -73,7 +71,8 @@ const modes: {
   bash: 'sh',
   sh: 'sh',
   /* ------------------------------------- */
-  basic: 'vbscript',
+  basic: 'basic',
+  bas: 'basic',
   bibtex: 'bibtex',
   bib: 'bibtex',
 
@@ -115,6 +114,7 @@ const modes: {
   /* ------------------------------------- */
   coldfusion: 'coldfusion',
   cfm: 'coldfusion',
+  cfc: 'coldfusion',
   /* ------------------------------------- */
   cpp: 'c_cpp',
   cc: 'c_cpp',
@@ -124,8 +124,6 @@ const modes: {
   hh: 'c_cpp',
   hxx: 'c_cpp',
   cxx: 'c_cpp',
-  /* ------------------------------------- */
-  clue: 'clue',
   /* ------------------------------------- */
   crmsh: 'sh',
   crm: 'sh',
@@ -175,6 +173,7 @@ const modes: {
   /* ------------------------------------- */
   django: 'django',
   jinja: 'django',
+  djt: 'django',
   /* ------------------------------------- */
   dockerfile: 'dockerfile',
   docker: 'dockerfile',
@@ -233,12 +232,9 @@ const modes: {
   f95: 'fortran',
   f: 'fortran',
   /* ------------------------------------- */
-  flix: 'flix',
-  /* ------------------------------------- */
   fsharp: 'fsharp',
   fsi: 'fsharp',
   fs: 'fsharp',
-  mli: 'fsharp',
   fsx: 'fsharp',
   fsscript: 'fsharp',
   'f#': 'fsharp',
@@ -251,6 +247,14 @@ const modes: {
   // ! G
   // !--------------------------------------
 
+  gdscript: 'gdscript',
+  gd: 'gdscript',
+  gdshader: 'gdshader',
+  gdshaderinc: 'gdshader',
+  gdresource: 'gdresource',
+  tres: 'gdresource',
+  tscn: 'gdresource',
+  /* ------------------------------------- */
   gcode: 'gcode',
   nc: 'gcode',
   /* ------------------------------------- */
@@ -265,6 +269,7 @@ const modes: {
   vert: 'glsl',
   /* ------------------------------------- */
   gobstones: 'gobstones',
+  gbs: 'gobstones',
   /* ------------------------------------- */
   go: 'golang',
   golang: 'golang',
@@ -349,8 +354,8 @@ const modes: {
   /* ------------------------------------- */
   jexl: 'jexl',
   /* ------------------------------------- */
-  jsdoc: 'jsdoc',
-  jsdoc_comment: 'jsdoc',
+  jsdoc: 'javascript',
+  jsdoc_comment: 'javascript',
   /* ------------------------------------- */
   json: 'json',
   /* ------------------------------------- */
@@ -397,7 +402,6 @@ const modes: {
   logiql: 'logiql',
   lql: 'logiql',
   /* ------------------------------------- */
-  log: 'log',
   /* ------------------------------------- */
   logtalk: 'logtalk',
   lgt: 'logtalk',
@@ -469,6 +473,7 @@ const modes: {
   /* ------------------------------------- */
   nsis: 'nsis',
   nsh: 'nsis',
+  nsi: 'nsis',
   /* ------------------------------------- */
   nunjucks: 'nunjucks',
   nunjs: 'nunjucks',
@@ -487,6 +492,7 @@ const modes: {
   /* ------------------------------------- */
   ocaml: 'ocaml',
   ml: 'ocaml',
+  mli: 'ocaml',
   /* ------------------------------------- */
   odin: 'odin',
   /* ------------------------------------- */
@@ -552,9 +558,11 @@ const modes: {
   properties: 'properties',
   /* ------------------------------------- */
   protobuf: 'protobuf',
+  proto: 'protobuf',
   /* ------------------------------------- */
   puppet: 'puppet',
   pp: 'puppet',
+  epp: 'puppet',
   /* ------------------------------------- */
   purebasic: 'vbscript',
   pb: 'vbscript',
@@ -587,10 +595,13 @@ const modes: {
   pm6: 'raku',
   /* ------------------------------------- */
   razor: 'razor',
+  cshtml: 'razor',
   /* ------------------------------------- */
   rdoc: 'rdoc',
+  rd: 'rdoc',
   /* ------------------------------------- */
   red: 'red',
+  reds: 'red',
   /* ------------------------------------- */
   redshift: 'redshift',
   /* ------------------------------------- */
@@ -610,6 +621,7 @@ const modes: {
   rakefile: 'ruby',
   gemfile: 'ruby',
   rb: 'ruby',
+  rake: 'ruby',
   thor: 'ruby',
   /* ------------------------------------- */
   rust: 'rust',
@@ -650,8 +662,8 @@ const modes: {
   /* ------------------------------------- */
   smithy: 'smithy',
   /* ------------------------------------- */
-  soy: 'soy',
-  soy_template: 'soy',
+  soy: 'soy_template',
+  soy_template: 'soy_template',
   /* ------------------------------------- */
   space: 'space',
   /* ------------------------------------- */
@@ -682,6 +694,7 @@ const modes: {
   tf: 'terraform',
   tfvars: 'terraform',
   terragrunt: 'terraform',
+  toml: 'toml',
   /* ------------------------------------- */
   textile: 'textile',
   /* ------------------------------------- */
@@ -751,7 +764,8 @@ const modes: {
   html: 'html',
   plist: 'xml',
   rss: 'xml',
-  wdsl: 'xml',
+  wsdl: 'xml',
+  xslt: 'xml',
   svg: 'svg',
   wsf: 'xml',
   xbl: 'xml',

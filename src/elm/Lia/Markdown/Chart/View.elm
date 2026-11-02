@@ -2,6 +2,7 @@ module Lia.Markdown.Chart.View exposing
     ( eCharts
     , feature
     , getColor
+    , niceLimits
     , toolbox
     , view
     , viewBarChart
@@ -30,19 +31,19 @@ import I18n.Translations exposing (chartDefault, getCodeFromLn)
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Data, Diagram(..), Orientation(..), Settings, invertDiagram)
 import Lia.Markdown.HTML.Attributes exposing (annotation)
-import Lia.Utils exposing (string2Color)
+import Lia.Utils exposing (string2Color, string2ColorRange)
 import List.Statistics as Stat
 import Maybe
 
 
 view : Settings -> Chart -> Html msg
 view settings =
-    encode True >> eCharts settings Nothing
+    encode settings.light True >> eCharts settings Nothing
 
 
 viewChart : Settings -> Chart -> Html msg
 viewChart settings =
-    encode False >> eCharts settings Nothing
+    encode settings.light False >> eCharts settings Nothing
 
 
 viewLines : Settings -> Data ( String, List (Maybe Float) ) -> Html msg
@@ -102,7 +103,7 @@ viewFunnel settings =
 
 viewWordCloud : Settings -> Int -> Data (List ( String, Float )) -> Html msg
 viewWordCloud settings width =
-    encodeWordCloud width >> eCharts settings Nothing
+    encodeWordCloud settings.light width >> eCharts settings Nothing
 
 
 viewHeatMap : Settings -> List String -> Data (List ( Int, Int, Maybe Float )) -> Html msg
@@ -266,6 +267,13 @@ encodeSankey { labels, category, data, orientation } =
                     )
                     dict
                 |> Dict.toList
+
+        -- nodes without outgoing flow form the last column
+        sources =
+            List.map (Tuple.first >> Tuple.first) cleared
+
+        horizontal =
+            orientation /= Just Vertical
     in
     [ toolbox Nothing
         { saveAsImage = True
@@ -275,16 +283,34 @@ encodeSankey { labels, category, data, orientation } =
         , restore = False
         }
     , ( "tooltip", JE.object [] )
-    , ( "height", JE.string "80%" )
-    , ( "width", JE.string "90%" )
     , ( "series"
       , [ ( "type", JE.string "sankey" )
+
+        -- below the title, above the toolbox
+        , ( "left", JE.string "1%" )
+        , ( "top"
+          , JE.int <|
+                if labels.main == Nothing then
+                    10
+
+                else
+                    50
+          )
+        , ( "right", JE.string "1%" )
+        , ( "bottom", JE.int 40 )
         , ( "layout", JE.string "none" )
         , ( "focusNodeAdjacency", JE.string "allEdges" )
         , ( "animation", JE.bool True )
         , ( "data"
           , category
-                |> JE.list (\node -> JE.object [ ( "name", JE.string node ) ])
+                |> JE.list
+                    (\node ->
+                        [ ( "name", JE.string node ) ]
+                            -- the labels of the last column stand left, no margin needed
+                            |> CList.addIf (horizontal && not (List.member node sources))
+                                ( "label", JE.object [ ( "position", JE.string "left" ) ] )
+                            |> JE.object
+                    )
           )
         , ( "edges"
           , cleared
@@ -299,7 +325,9 @@ encodeSankey { labels, category, data, orientation } =
           )
         , ( "lineStyle", JE.object [ ( "color", JE.string "source" ) ] )
         ]
-            |> CList.addIf (orientation == Just Vertical) ( "orient", JE.string "vertical" )
+            |> CList.addIf (not horizontal) ( "orient", JE.string "vertical" )
+            -- labels right of the wide vertical nodes would overlap the next one
+            |> CList.addIf (not horizontal) ( "label", JE.object [ ( "position", JE.string "inside" ) ] )
             |> List.singleton
             |> JE.list JE.object
       )
@@ -498,7 +526,10 @@ grid =
         [ ( "left", JE.string "1%" )
         , ( "right", JE.string "1%" )
         , ( "bottom", JE.string "12%" )
-        , ( "containLabel", JE.bool True )
+
+        -- keeps axis labels and axis names within the margins
+        , ( "outerBoundsMode", JE.string "same" )
+        , ( "outerBoundsContain", JE.string "all" )
         ]
     )
 
@@ -544,21 +575,66 @@ encodeBasic type_ { labels, category, data } =
         |> JE.object
 
 
+{-| Estimated width of a text in the 12px chart font.
+
+shortcut: 6.4px per letter and 12px per CJK character, measure the text in the
+browser if other scripts or fonts get clipped
+
+-}
+textWidth : String -> Float
+textWidth =
+    String.foldl
+        (\c sum ->
+            let
+                code =
+                    Char.toCode c
+            in
+            if
+                (code >= 0x1100 && code <= 0x115F)
+                    || (code >= 0x2E80 && code <= 0xA4CF)
+                    || (code >= 0xAC00 && code <= 0xD7A3)
+                    || (code >= 0xF900 && code <= 0xFAFF)
+                    || (code >= 0xFF00 && code <= 0xFF60)
+            then
+                sum + 12
+
+            else
+                sum + 6.4
+        )
+        0
+
+
 encodeParallel : Data (List (Maybe Float)) -> JE.Value
 encodeParallel { labels, category, data, orientation } =
+    let
+        -- half of the first, centered axis name
+        left =
+            category
+                |> List.head
+                |> Maybe.map (textWidth >> (\w -> w / 2 + 4) >> round)
+                |> Maybe.withDefault 20
+                -- longer names are cut by echarts anyway
+                |> clamp 20 60
+
+        truncate maxWidth =
+            ( "nameTruncate", JE.object [ ( "maxWidth", JE.int maxWidth ) ] )
+    in
     [ ( "parallelAxis"
       , category
-            |> List.indexedMap (\i cat -> [ ( "dim", JE.int i ), ( "name", JE.string cat ) ])
+            |> List.indexedMap
+                (\i cat ->
+                    [ ( "dim", JE.int i )
+                    , ( "name", JE.string cat )
+
+                    -- long numbers on narrow screens
+                    , ( "axisLabel", JE.object [ ( "hideOverlap", JE.bool True ) ] )
+                    ]
+                        -- vertical names stand right of the axis, within the margin
+                        |> CList.addIf (orientation == Just Vertical) (truncate 100)
+                        -- a longer translation of the first name stays within the margin
+                        |> CList.addIf (orientation /= Just Vertical && i == 0) (truncate (2 * (left - 4)))
+                )
             |> JE.list JE.object
-      )
-    , ( "parallel"
-      , [ ( "axisExpandable", JE.bool True )
-        , ( "axisExpandCenter", JE.int 15 )
-        , ( "axisExpandCount", JE.int 10 )
-        , ( "axisExpandWidth", JE.int 100 )
-        , ( "axisExpandTriggerOn", JE.string "mousemove" )
-        ]
-            |> JE.object
       )
     , ( "series"
       , [ ( "type", JE.string "parallel" )
@@ -578,15 +654,17 @@ encodeParallel { labels, category, data, orientation } =
         }
     , ( "parallel"
       , JE.object <|
-            [ ( "layout"
-              , JE.string <|
-                    if orientation == Just Vertical then
-                        "vertical"
+            if orientation == Just Vertical then
+                [ ( "layout", JE.string "vertical" )
+                , ( "left", JE.int 30 )
+                , ( "right", JE.int 120 )
+                ]
 
-                    else
-                        "horizontal"
-              )
-            ]
+            else
+                -- the numbers right of the last axis keep the default of 80
+                [ ( "layout", JE.string "horizontal" )
+                , ( "left", JE.int left )
+                ]
       )
     , ( "tooltip", JE.object [] )
     ]
@@ -602,10 +680,17 @@ encodeMapChart json data =
                 |> List.filterMap Tuple.second
                 |> Stat.minmax
                 |> Maybe.withDefault ( 0, 0 )
-                |> Tuple.mapBoth String.fromFloat String.fromFloat
+
+        -- a string limit turns the color bar black
+        limit default =
+            Maybe.andThen String.toFloat >> Maybe.withDefault default >> JE.float
     in
     [ ( "series"
       , [ [ ( "type", JE.string "map" )
+
+          -- use the full height, by default a map only takes 80 percent
+          , ( "top", JE.int 50 )
+          , ( "bottom", JE.int 40 )
           , ( "map"
             , json
                 |> Maybe.withDefault ""
@@ -639,16 +724,8 @@ encodeMapChart json data =
       )
     , ( "visualMap"
       , JE.object
-            [ ( "min"
-              , data.labels.xLimits.min
-                    |> Maybe.withDefault min
-                    |> JE.string
-              )
-            , ( "max"
-              , data.labels.xLimits.max
-                    |> Maybe.withDefault max
-                    |> JE.string
-              )
+            [ ( "min", limit min data.labels.xLimits.min )
+            , ( "max", limit max data.labels.xLimits.max )
             , ( "calculable", JE.bool True )
             , ( "itemHeight", JE.string "150px" )
             , ( "right", JE.string "0" )
@@ -730,6 +807,10 @@ encodeRadarChart { labels, category, data } =
     [ ( "radar"
       , JE.object
             [ ( "indicator", indicator )
+
+            -- keeps the lowest name above the toolbox
+            , ( "radius", JE.string "70%" )
+            , ( "center", JE.list JE.string [ "50%", "48%" ] )
             , ( "axisName"
               , JE.object
                     [ ( "color", JE.string "#fff" )
@@ -738,6 +819,15 @@ encodeRadarChart { labels, category, data } =
                     , ( "padding", JE.list JE.int [ 3, 5 ] )
                     ]
               )
+            ]
+      )
+
+    -- on narrow screens the names left and right would be cut off
+    , ( "media"
+      , JE.list JE.object
+            [ [ ( "query", JE.object [ ( "maxWidth", JE.int 450 ) ] )
+              , ( "option", JE.object [ ( "radar", JE.object [ ( "radius", JE.string "50%" ) ] ) ] )
+              ]
             ]
       )
     , toolbox Nothing
@@ -840,15 +930,21 @@ encodeHeatMap yLabels { labels, category, data } =
     , ( "tooltip", JE.object [] )
     , ( "grid"
       , JE.object <|
-            if labels.main == Nothing then
-                [ ( "height", JE.string "82%" )
-                , ( "top", JE.string "0%" )
-                ]
+            [ ( "left", JE.string "1%" )
+            , ( "right", JE.string "1%" )
+            , ( "outerBoundsMode", JE.string "same" )
+            , ( "outerBoundsContain", JE.string "all" )
+            ]
+                ++ (if labels.main == Nothing then
+                        [ ( "height", JE.string "82%" )
+                        , ( "top", JE.string "0%" )
+                        ]
 
-            else
-                [ ( "height", JE.string "74%" )
-                , ( "top", JE.string "7%" )
-                ]
+                    else
+                        [ ( "height", JE.string "74%" )
+                        , ( "top", JE.string "7%" )
+                        ]
+                   )
       )
     , xAxis labels.xLimits "category" labels.x category
     , yAxis labels.yLimits "category" labels.y yLabels
@@ -1067,11 +1163,23 @@ titles chart =
     )
 
 
+{-| Every word keeps its color, in dark mode the same color is lifted into the
+bright range.
+-}
+wordColor : Bool -> String -> String
+wordColor light =
+    if light then
+        string2Color 160
+
+    else
+        string2ColorRange 95 160
+
+
 {-| Word clouds side by side, like pies. All clouds share one font scale, so
 equal values have equal sizes, and every word keeps its color.
 -}
-encodeWordCloud : Int -> Data (List ( String, Float )) -> JE.Value
-encodeWordCloud width chart =
+encodeWordCloud : Bool -> Int -> Data (List ( String, Float )) -> JE.Value
+encodeWordCloud light width chart =
     let
         step =
             stepWidth chart.data
@@ -1126,7 +1234,7 @@ encodeWordCloud width chart =
                                     JE.object
                                         [ ( "name", JE.string name )
                                         , ( "value", JE.float value )
-                                        , ( "textStyle", JE.object [ ( "color", JE.string (string2Color 160 name) ) ] )
+                                        , ( "textStyle", JE.object [ ( "color", JE.string (wordColor light name) ) ] )
                                         ]
                                 )
                       )
@@ -1206,8 +1314,8 @@ label =
     )
 
 
-encode : Bool -> Chart -> JE.Value
-encode withColor chart =
+encode : Bool -> Bool -> Chart -> JE.Value
+encode light withColor chart =
     let
         ( min, max ) =
             chart.diagrams
@@ -1224,14 +1332,11 @@ encode withColor chart =
                     )
                 |> Stat.minmax
                 |> Maybe.withDefault ( 0, 0 )
+                |> niceLimits
                 |> Tuple.mapBoth String.fromFloat String.fromFloat
     in
     JE.object
-        [ ( "textStyle"
-          , JE.object
-                [ ( "fontFamily", JE.string "Roboto" )
-                ]
-          )
+        [ grid
         , (if chart.orientation == Just Vertical then
             yAxis
 
@@ -1284,9 +1389,40 @@ encode withColor chart =
                     else
                         identity
                    )
-                |> JE.list (series withColor)
+                |> JE.list (series light withColor)
           )
         ]
+
+
+{-| Rounds the limits of the data to a tenth of the order of magnitude of their
+range (4.33 and 97.67 become 4 and 98), otherwise the axis labels at both ends
+show the odd values.
+-}
+niceLimits : ( Float, Float ) -> ( Float, Float )
+niceLimits ( min, max ) =
+    if max <= min then
+        ( min, max )
+
+    else
+        let
+            exp =
+                floor (logBase 10 (max - min)) - 1
+
+            -- the epsilon keeps float noise like 97.00000000000001 from rounding up
+            steps value =
+                value / 10 ^ toFloat exp
+
+            -- fractions are divided by the inverse, 3 * 0.1 would be 0.30000000000000004
+            toValue n =
+                if exp >= 0 then
+                    toFloat n * 10 ^ toFloat exp
+
+                else
+                    toFloat n / 10 ^ toFloat -exp
+        in
+        ( toValue (floor (steps min + 1.0e-9))
+        , toValue (ceiling (steps max - 1.0e-9))
+        )
 
 
 toolbox :
@@ -1349,8 +1485,8 @@ feature config =
     )
 
 
-series : Bool -> ( Char, Diagram ) -> JE.Value
-series withColor ( char, diagram ) =
+series : Bool -> Bool -> ( Char, Diagram ) -> JE.Value
+series light withColor ( char, diagram ) =
     let
         ( points, name, specific ) =
             case diagram of
@@ -1373,7 +1509,7 @@ series withColor ( char, diagram ) =
     , ( "barGap", JE.int 0 )
     ]
         ++ specific
-        |> CList.addIf withColor (color char)
+        |> CList.addIf withColor (color light char)
         |> add (JE.string >> Tuple.pair "name") name
         |> JE.object
 
@@ -1520,15 +1656,22 @@ colors =
         |> Dict.fromList
 
 
-color : Char -> ( String, JE.Value )
-color char =
+{-| Black and white are swapped in dark mode, otherwise they would vanish.
+-}
+color : Bool -> Char -> ( String, JE.Value )
+color light char =
     ( "itemStyle"
     , JE.object
         [ ( "color"
-          , colors
-                |> Dict.get (toLower char)
-                |> Maybe.withDefault "#000000"
-                |> JE.string
+          , case ( light, colors |> Dict.get (toLower char) |> Maybe.withDefault "#000000" ) of
+                ( False, "#000000" ) ->
+                    JE.string "#FFFFFF"
+
+                ( False, "#FFFFFF" ) ->
+                    JE.string "#000000"
+
+                ( _, hex ) ->
+                    JE.string hex
           )
         ]
     )
