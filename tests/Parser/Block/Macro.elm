@@ -1,5 +1,6 @@
 module Parser.Block.Macro exposing
     ( expansion_Suite
+    , location_Suite
     , inlineUsage_Suite
     , parameterized_Suite
     , simple_Suite
@@ -212,4 +213,27 @@ expansion_Suite =
             \_ ->
                 expand [ ( "a.b1", "X" ) ] [] "@a.b1|"
                     |> Expect.equal "X|"
+        ]
+
+
+location_Suite : Test
+location_Suite =
+    describe "lines and columns after an expansion are measured against the expanded text (#325)"
+        [ test "a quiz after long block macros parses like the written-out text" <|
+            \_ ->
+                let
+                    body =
+                        String.repeat 3 (String.repeat 60 "x" ++ "\n\n")
+
+                    quiz =
+                        "[( )] wrong\n[(X)] right\n      still right\n"
+
+                    expected =
+                        parseWithMacros [] (body ++ "\n" ++ body ++ "\n" ++ quiz)
+                in
+                parseWithMacros [ ( "long", body ) ] ("@long\n\n@long\n\n" ++ quiz)
+                    |> Expect.all
+                        [ Expect.equal expected
+                        , List.length >> Expect.equal 7
+                        ]
         ]

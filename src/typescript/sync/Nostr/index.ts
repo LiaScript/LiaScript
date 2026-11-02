@@ -9,7 +9,7 @@ import { Crypto } from '../Crypto'
 // single global `NostrTools` with `.SimplePool`, `.finalizeEvent`,
 // `.getPublicKey`.
 const NOSTR_TOOLS_URL =
-  'https://cdn.jsdelivr.net/npm/nostr-tools@2/lib/nostr.bundle.js'
+  'https://cdn.jsdelivr.net/npm/nostr-tools@2.25.4/lib/nostr.bundle.js'
 
 // keep in sync with `nostrRelayURLs` in src/elm/Const.elm
 const DEFAULT_RELAYS = ['wss://relay.edufeed.org', 'wss://nos.lol', 'wss://nostr.mom']
@@ -108,7 +108,8 @@ export class Sync extends Base.Sync {
       this.transport = new NostrTransport({
         finalizeEvent: NostrTools.finalizeEvent,
         getPublicKey: NostrTools.getPublicKey,
-        SimplePool: ReconnectingPool,
+        // nostr-tools comes untyped from its script, so does the subclass
+        SimplePool: ReconnectingPool as any,
         secretKey: this.persistent ? roomKey(id) : undefined,
       })
 
@@ -164,7 +165,7 @@ export class Sync extends Base.Sync {
         doc: this.persistent ? this.db.doc : undefined,
         waitFor: this.persistReady,
         ...(this.password ? { password: this.password } : {}),
-      } as any)
+      } as any).catch(this.connectFailed('Nostr'))
     } else {
       let message = 'Nostr unknown error'
       if (error) message = 'Could not load resource: ' + error

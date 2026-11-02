@@ -1,0 +1,20 @@
+{
+  "short_name": "Lia",
+  "name": "LiaScript Open-courSe",
+  "description": "An interpreter for interactive online courses developed in LiaScript.",
+  "icons": [{
+      "src": "../../assets/logo_192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "../../assets/logo_512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#fff",
+  "display": "standalone",
+  "theme_color": "#fff"
+}

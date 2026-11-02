@@ -264,6 +264,16 @@ function liaEval(event: Lia.Event) {
   })
 }
 
+// Parcel renames locals that shadow globals (console -> console1), so a direct
+// eval would not see them; the course code gets its scope passed explicitly.
+const evalWith = new Function(
+  'console',
+  'fetch',
+  'send',
+  'code',
+  'return eval(code)'
+)
+
 function sendReply(event: Lia.Event) {
   if (elmSend) {
     elmSend(event)
@@ -347,7 +357,7 @@ function liaEvalCode(code: string, send: Script.SendEval) {
       clear: () => send.lia('LIA: clear'),
     }
 
-    send.lia(String(eval(code + '\n'))) //, send, console)))
+    send.lia(String(evalWith(console, fetch, send, code + '\n')))
   } catch (e: any) {
     if (e instanceof LiaError) {
       send.lia(e.message, e.details, false)
@@ -403,7 +413,7 @@ function liaExecCode(event: Lia.Event) {
     const fetch = window.LIA.fetch
 
     try {
-      const result = eval(event.message.param.code)
+      const result = evalWith(console, fetch, send, event.message.param.code)
       send.lia(result === undefined ? 'LIA: stop' : result)
     } catch (e: any) {
       if (window.LIA.debug) {
