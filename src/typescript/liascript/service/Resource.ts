@@ -406,7 +406,8 @@ function loadAsBlob(
         filename = match[1]
       }
 
-      const src = new URL(url)
+      // relative like fetch, otherwise `/style.css` throws "Invalid URL"
+      const src = new URL(url, document.baseURI)
 
       if (filename && filename !== src.pathname.split('/').slice(-1)[0]) {
         throw new Error(
