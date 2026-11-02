@@ -51,6 +51,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_KEY }}
 
       - name: Publish to npm
-        run: npm publish --access public
+        # a version like 1.2.0--2.6.0 is a prerelease for npm, which needs a tag
+        run: npm publish --access public --tag latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_KEY }}
