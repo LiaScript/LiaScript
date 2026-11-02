@@ -166,7 +166,7 @@ load =
 
 
 {-| A shortcut for going to the Index-page, by simply deleting the URL query and
-fragment.
+fragment. The page gets reloaded, so no scripts or styles of the course remain.
 -}
 navToHome : Session -> Cmd msg
 navToHome session =
@@ -174,8 +174,7 @@ navToHome session =
         url =
             session.url
     in
-    { url | query = Nothing, fragment = Nothing }
-        |> navTo session
+    load { url | query = Nothing, fragment = Nothing }
 
 
 {-| A shortcut for changing the fragment number, which replicates the current

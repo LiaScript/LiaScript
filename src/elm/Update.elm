@@ -27,7 +27,6 @@ import Index.Version
 import Json.Decode as JD
 import Lia.Definition.Types as Definition
 import Lia.Json.Decode
-import Lia.Model
 import Lia.Script
 import Lia.Utils exposing (checkPersistency)
 import Library.IPFS as IPFS
@@ -385,14 +384,9 @@ update msg model =
                         , batch LiaScript return
                         )
 
+                    -- a fresh page, scripts and styles of a course cannot be unloaded
                     Session.Index ->
-                        initIndex
-                            { model
-                                | state = Idle
-                                , session = Session.setUrl url model.session
-                                , lia = Lia.Model.clear model.lia
-                                , index = Index.reset_modal model.index
-                            }
+                        ( model, Session.load url )
 
             else
                 ( model, Cmd.none )
@@ -538,17 +532,23 @@ focusProceed =
         |> Task.attempt (always Ignore)
 
 
-logResource : Definition.Resource -> List Log -> List Log
-logResource resource =
-    case resource of
-        Definition.Link url ->
+{-| Only resources with a load event in `to_do` are pending, already loaded
+ones are filtered by `Lia.Model.loadResource` and never reported back.
+-}
+logResource : Event -> List Log -> List Log
+logResource event =
+    case ( event.service, event.message.cmd, JD.decodeValue JD.string event.message.param ) of
+        ( "resource", "link", Ok url ) ->
             updateLog "css" url Nothing
 
-        Definition.Script url ->
+        ( "resource", "script", Ok url ) ->
             updateLog "js" url Nothing
 
-        Definition.Module url ->
+        ( "resource", "module", Ok url ) ->
             updateLog "js" url Nothing
+
+        _ ->
+            identity
 
 
 templateLoaded : State -> State
@@ -644,7 +644,7 @@ start model =
 
         -- scripts and styles are loaded by `Resource.ts` after the first slide
         -- got rendered, until then the loading screen would disappear
-        , log = List.foldl logResource model.log lia.resource
+        , log = List.foldr logResource model.log lia.to_do
       }
     , Cmd.batch
         [ batch LiaScript return

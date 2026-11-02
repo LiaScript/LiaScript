@@ -63,6 +63,21 @@ suite =
                     Lia.Model.loadResource [ Definition.Link "b.css" ] [ Definition.Link "b.css", Definition.Module "m.js" ]
                         |> Tuple.mapSecond events
                         |> Expect.equal ( [ Definition.Link "b.css", Definition.Module "m.js" ], events [ Service.Resource.script_module "m.js" ] )
+            , test "loadResource loads a resource listed twice only once" <|
+                \_ ->
+                    Lia.Model.loadResource [] [ Definition.Script "a.js", Definition.Script "a.js", Definition.Link "b.css" ]
+                        |> Tuple.mapSecond events
+                        |> Expect.equal ( [ Definition.Script "a.js", Definition.Link "b.css" ], events [ Service.Resource.script "a.js", Service.Resource.link "b.css" ] )
+            , test "add_macros merges a definition with itself without duplicates" <|
+                \_ ->
+                    let
+                        def =
+                            Definition.default "" ""
+                                |> (\d -> { d | resources = [ Definition.Script "a.js" ], attributes = [ [] ] })
+                    in
+                    Definition.add_macros def def
+                        |> (\d -> ( d.resources, d.attributes ))
+                        |> Expect.equal ( def.resources, def.attributes )
             , test "Section.sync shares submitted surveys with the own peer id" <|
                 \_ ->
                     case parse "[(1)] eins\n[(2)] zwei\n" of

@@ -30,7 +30,6 @@ import Lia.Utils as Util
 type Backend
     = Edrys
     | GUN { urls : String, persistent : Bool }
-    | P2PT String
     | IPFS { turnConfig : String }
     | PubNub { pubKey : String, subKey : String }
     | Ably { apiKey : String, persistent : Bool }
@@ -38,6 +37,7 @@ type Backend
       -- Trystero
     | MQTT { relayUrls : String, turnConfig : String }
     | Torrent { relayUrls : String, turnConfig : String }
+    | TrysteroNostr { relayUrls : String, turnConfig : String }
     | WebSocket { url : String }
     | PeerJS { host : String, port_ : String, path : String, iceServers : String }
     | SimplePeer { signaling : String, iceServers : String, conference : Bool }
@@ -56,13 +56,16 @@ toString full via =
                     ( "Nostr", [ flag persistent, relayUrls ] )
 
                 MQTT { relayUrls, turnConfig } ->
-                    ( "MQTT", [ relayUrls, turnConfig ] )
+                    ( "Trystero-MQTT", [ relayUrls, turnConfig ] )
 
                 Torrent { relayUrls, turnConfig } ->
-                    ( "Torrent", [ relayUrls, turnConfig ] )
+                    ( "Trystero-Torrent", [ relayUrls, turnConfig ] )
+
+                TrysteroNostr { relayUrls, turnConfig } ->
+                    ( "Trystero-Nostr", [ relayUrls, turnConfig ] )
 
                 IPFS { turnConfig } ->
-                    ( "IPFS", [ turnConfig ] )
+                    ( "Trystero-IPFS", [ turnConfig ] )
 
                 GUN { urls, persistent } ->
                     ( "GUN", [ flag persistent, urls ] )
@@ -72,9 +75,6 @@ toString full via =
 
                 Ably { apiKey, persistent } ->
                     ( "Ably", [ flag persistent, apiKey ] )
-
-                P2PT urls ->
-                    ( "P2PT", [ urls ] )
 
                 WebSocket { url } ->
                     ( "WebSocket", [ url ] )
@@ -129,6 +129,9 @@ icon via =
             Torrent _ ->
                 "icon-torrent"
 
+            TrysteroNostr _ ->
+                "icon-nostr"
+
             IPFS _ ->
                 "icon-ipfs"
 
@@ -137,9 +140,6 @@ icon via =
 
             Ably _ ->
                 "icon-ably"
-
-            P2PT _ ->
-                "icon-p2pt"
 
             WebSocket _ ->
                 "icon-websocket"
@@ -180,6 +180,9 @@ badges via =
         Torrent _ ->
             [ "BitTorrent", "Tracker based", "WebSocket", "WebRTC", "Public relays" ]
 
+        TrysteroNostr _ ->
+            [ "Relay based", "Open protocol", "WebSocket", "WebRTC", "Public relays" ]
+
         IPFS _ ->
             [ "Peer-to-peer", "Decentralized", "WebSocket", "WebRTC", "Public relays" ]
 
@@ -188,9 +191,6 @@ badges via =
 
         Ably _ ->
             [ "Managed service", "Account required", "WebSocket", "Dedicated infra" ]
-
-        P2PT _ ->
-            [ "WebTorrent", "Tracker based", "WebSocket", "WebRTC", "Public relays" ]
 
         WebSocket _ ->
             [ "Self-hostable", "Experimental", "Dedicated infra" ]
@@ -247,6 +247,9 @@ capacityInfo via =
             trysteroCapacity
 
         Torrent _ ->
+            trysteroCapacity
+
+        TrysteroNostr _ ->
             trysteroCapacity
 
         IPFS _ ->
@@ -404,6 +407,9 @@ tagline via =
         Torrent _ ->
             "BitTorrent trackers used for WebRTC signaling."
 
+        TrysteroNostr _ ->
+            "Nostr relays used for WebRTC signaling."
+
         IPFS _ ->
             "Peer-to-peer hypermedia protocol for decentralized data."
 
@@ -412,9 +418,6 @@ tagline via =
 
         Ably _ ->
             "Managed real-time messaging with a global edge network."
-
-        P2PT _ ->
-            "WebTorrent trackers used for WebRTC signaling."
 
         WebSocket _ ->
             "Full-duplex communication over your own WebSocket server."
@@ -453,29 +456,38 @@ fromString via =
         [ "nostr", relayUrls ] ->
             Just (Nostr { relayUrls = relayUrls, persistent = False })
 
-        [ "mqtt" ] ->
+        [ "trystero-mqtt" ] ->
             Just (MQTT { relayUrls = "", turnConfig = "" })
 
-        [ "mqtt", relayUrls ] ->
+        [ "trystero-mqtt", relayUrls ] ->
             Just (MQTT { relayUrls = relayUrls, turnConfig = "" })
 
-        [ "mqtt", relayUrls, turnConfig ] ->
+        [ "trystero-mqtt", relayUrls, turnConfig ] ->
             Just (MQTT { relayUrls = relayUrls, turnConfig = turnConfig })
 
-        [ "ipfs" ] ->
+        [ "trystero-ipfs" ] ->
             Just (IPFS { turnConfig = "" })
 
-        [ "ipfs", turnConfig ] ->
+        [ "trystero-ipfs", turnConfig ] ->
             Just (IPFS { turnConfig = turnConfig })
 
-        [ "torrent" ] ->
+        [ "trystero-torrent" ] ->
             Just (Torrent { relayUrls = "", turnConfig = "" })
 
-        [ "torrent", relayUrls ] ->
+        [ "trystero-torrent", relayUrls ] ->
             Just (Torrent { relayUrls = relayUrls, turnConfig = "" })
 
-        [ "torrent", relayUrls, turnConfig ] ->
+        [ "trystero-torrent", relayUrls, turnConfig ] ->
             Just (Torrent { relayUrls = relayUrls, turnConfig = turnConfig })
+
+        [ "trystero-nostr" ] ->
+            Just (TrysteroNostr { relayUrls = "", turnConfig = "" })
+
+        [ "trystero-nostr", relayUrls ] ->
+            Just (TrysteroNostr { relayUrls = relayUrls, turnConfig = "" })
+
+        [ "trystero-nostr", relayUrls, turnConfig ] ->
+            Just (TrysteroNostr { relayUrls = relayUrls, turnConfig = turnConfig })
 
         [ "gun" ] ->
             Just (GUN { urls = "", persistent = False })
@@ -491,12 +503,6 @@ fromString via =
 
         [ "gun", "t", urls ] ->
             Just (GUN { urls = urls, persistent = True })
-
-        [ "p2pt" ] ->
-            Just (P2PT "")
-
-        [ "p2pt", urls ] ->
-            Just (P2PT urls)
 
         [ "pubnub" ] ->
             Just <| PubNub { pubKey = "", subKey = "" }
@@ -662,12 +668,12 @@ info =
             ]
         , Html.h4 [] [ Html.text "Choosing how you connect" ]
         , Html.p []
-            [ Html.text "A room needs a relay to help browsers find each other — LiaScript speaks to eleven of them, grouped here by how much setup they need:" ]
+            [ Html.text "A room needs a relay to help browsers find each other — LiaScript speaks to twelve of them, grouped here by how much setup they need:" ]
         , backendGroups
         , Html.p []
             [ Html.text "Note, most backend services are free, and you can also host them by your own. "
             , Html.text "There might be cases where the synchronization is slow or there are collisions, but we are working in the background on optimizations and fixes ;-) "
-            , Html.text "Connections can also simply be blocked outright: school and company networks routinely restrict what's allowed out. Some block WebRTC, which rules out PeerJS, SimplePeer, and the peer-to-peer legs of Torrent, IPFS, and P2PT; others block WebSocket connections entirely, which rules out GUN, Nostr, MQTT, WebSocket, and Ably too. There's no way to know in advance — if a room won't connect, that's usually the network, not you. Try a different backend before assuming something's broken."
+            , Html.text "Connections can also simply be blocked outright: school and company networks routinely restrict what's allowed out. Some block WebRTC, which rules out PeerJS, SimplePeer, and the peer-to-peer legs of Trystero-Torrent, Trystero-IPFS, and Trystero-Nostr; others block WebSocket connections entirely, which rules out GUN, Nostr, Trystero-MQTT, WebSocket, and Ably too. There's no way to know in advance — if a room won't connect, that's usually the network, not you. Try a different backend before assuming something's broken."
             ]
         , Html.blockquote [ Attr.class "lia-quote lia-quote__alert-tip" ]
             [ Html.p []
@@ -762,7 +768,7 @@ modeLegendItem accentColor label description =
         ]
 
 
-{-| The eleven connection backends, grouped by how much setup each needs.
+{-| The twelve connection backends, grouped by how much setup each needs.
 Badges reuse the app-wide `.lia-badge` pill (also used in the backend
 picker's option list) instead of introducing a table.
 -}
@@ -770,7 +776,7 @@ backendGroups : Html msg
 backendGroups =
     Html.div [ Attr.style "margin" "0.75rem 0 1.25rem" ]
         [ backendGroup "rgb(var(--lia-success))" "No setup" [ "PeerJS", "PubNub", "Ably", "Edrys" ] "Works immediately on a shared free tier LiaScript provides. Fine for classes and quick sessions; capacity is split with everyone else using the default keys."
-        , backendGroup "rgb(var(--color-highlight))" "Decentralized / public relays" [ "GUN", "Nostr", "MQTT", "Torrent", "IPFS", "P2PT" ] "No single company runs these — traffic passes through volunteer-run community relays. Reliable enough for regular use, occasionally slower to connect."
+        , backendGroup "rgb(var(--color-highlight))" "Decentralized / public relays" [ "GUN", "Nostr", "Trystero-Nostr", "Trystero-MQTT", "Trystero-Torrent", "Trystero-IPFS" ] "No single company runs these — traffic passes through volunteer-run community relays. Reliable enough for regular use, occasionally slower to connect."
         , backendGroup "rgb(var(--lia-warning))" "Bring your own server" [ "WebSocket", "SimplePeer" ] "You (or your institution) host the relay. More control, but requires someone to run and maintain it — the two backends with no public fallback."
         , backendGroup "rgb(var(--color-border))" "Just for you" [ "Local" ] "\"Own Notes\" — no network at all, nothing to configure."
         ]
@@ -884,6 +890,14 @@ infoOn about =
                 , trysteroRelayHint "tracker"
                 ]
 
+            TrysteroNostr _ ->
+                [ Html.text "Uses the relays of "
+                , link "Nostr" "https://nostr.com"
+                , Html.text ", the decentralized \"Notes and Other Stuff Transmitted by Relays\" protocol, as signaling servers. "
+                , Html.text "Unlike the Nostr backend, where all classroom data passes through the relays, they only help the browsers find each other here."
+                , trysteroRelayHint "relay"
+                ]
+
             PubNub _ ->
                 [ link "PubNub" "https://www.pubnub.com"
                 , Html.text " is a managed real-time communication platform — no server of your own to run. "
@@ -936,20 +950,6 @@ infoOn about =
                 , Html.text "."
                 ]
 
-            P2PT _ ->
-                [ Html.text "The "
-                , link "P2PT" "https://github.com/subins2000/p2pt"
-                , Html.text " project utilizes "
-                , link "WebTorrent" "https://webtorrent.io"
-                , Html.text " trackers as signaling servers for establishing peer-to-peer (P2P) connections via "
-                , link "WebRTC" "https://en.wikipedia.org/wiki/WebRTC"
-                , Html.text ". Therefor P2PT uses magnet-URIs as an app identifier to communicate with the WebTorrent trackers, which provide a list of web peers using the app."
-                , Html.text "With this information, P2PT enables an browser applications to share real-time data and send messages interaction between connected peers."
-                , Html.text "Thus, you have to provide one or more WebSocket tracker URLs, starting with "
-                , Html.code [ Attr.class "lia-code lia-code--inline" ] [ Html.text "wss://" ]
-                , Html.text ", separated by commas if you list several — there is no built-in default, so at least one is required."
-                ]
-
             Local ->
                 [ Html.text "This is a purely local classroom — nothing is sent over the network. "
                 , Html.text "Your notes are written to this browser's storage only and never shared with anyone."
@@ -966,19 +966,21 @@ link title url =
     Html.a (Attr.href url :: Util.newTab) [ Html.text title ]
 
 
-view : Bool -> Bool -> Backend -> Html Msg
-view locked editable backend =
+{-| `lockedBy` is the reason why the settings cannot be changed, if any.
+-}
+view : Maybe String -> Bool -> Backend -> Html Msg
+view lockedBy editable backend =
     let
         active =
-            editable && not locked
+            editable && lockedBy == Nothing
 
         lockedHint =
-            if locked then
-                Html.p [ Attr.style "font-style" "italic" ]
-                    [ Html.text "Infrastructure settings are locked while connected to this classroom." ]
+            case lockedBy of
+                Just reason ->
+                    Html.p [ Attr.style "font-style" "italic" ] [ Html.text reason ]
 
-            else
-                Html.text ""
+                Nothing ->
+                    Html.text ""
 
         content =
             case backend of
@@ -1030,6 +1032,9 @@ view locked editable backend =
                 Torrent { relayUrls, turnConfig } ->
                     trysteroSettings active "tracker" "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, ..." relayUrls turnConfig
 
+                TrysteroNostr { relayUrls, turnConfig } ->
+                    trysteroSettings active "relay" Const.nostrRelayURLs relayUrls turnConfig
+
                 IPFS { turnConfig } ->
                     details
                         [ input
@@ -1053,7 +1058,7 @@ view locked editable backend =
                             , label = Html.text "publishKey"
                             , value = pubKey
                             , placeholder = "pub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-                            , autocomplete = Just "pubnup-publishKey"
+                            , autocomplete = Just "pubnub-publishKey"
                             }
                         , input
                             { active = active
@@ -1062,7 +1067,7 @@ view locked editable backend =
                             , label = Html.text "subscribeKey"
                             , value = subKey
                             , placeholder = "sub-c-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-                            , autocomplete = Just "pubnup-subscribeKey"
+                            , autocomplete = Just "pubnub-subscribeKey"
                             }
                         , fieldHint "Leave both empty to use LiaScript's shared keyset. For regular use, create your own free App/Keyset in the PubNub dashboard and paste its publish and subscribe key here instead, so you're not sharing capacity with everyone else."
                         ]
@@ -1086,19 +1091,6 @@ view locked editable backend =
                             , label = Html.text "save class data on server"
                             }
                         , fieldHint "Uses Ably's LiveObjects to keep the chat and modified code available after everyone disconnects, retained for up to 90 days by default. Left unchecked, the state is dropped once the room empties."
-                        ]
-
-                P2PT urls ->
-                    details
-                        [ input
-                            { active = active
-                            , type_ = "text"
-                            , msg = InputP2PT
-                            , value = urls
-                            , placeholder = "wss://tracker.openwebtorrent.com, wss://tracker.webtorrent.dev, ..."
-                            , label = Html.text "WebTorrent tracker URLs (required, comma-separated)"
-                            , autocomplete = Just "websocket-urls"
-                            }
                         ]
 
                 WebSocket { url } ->
@@ -1204,7 +1196,8 @@ trysteroSettings editable kind placeholder relayUrls turnConfig =
             , value = relayUrls
             , placeholder = placeholder
             , label = Html.text (kind ++ " URLs (optional)")
-            , autocomplete = Just "trystero-relay"
+            -- broker, tracker and relay URLs must not be offered for each other
+            , autocomplete = Just ("trystero-" ++ kind)
             }
         , fieldHint ("Comma-separated. Leave empty to use Trystero's built-in default " ++ kind ++ "s.")
         , input
@@ -1350,7 +1343,6 @@ type Msg
     | InputPubNub String String
     | InputAbly String
     | CheckboxAbly
-    | InputP2PT String
     | InputWebSocket String
     | InputPeerJS String String
     | InputSimplePeer String String
@@ -1380,9 +1372,6 @@ update msg backend =
 
         ( CheckboxAbly, Ably data ) ->
             Ably { data | persistent = not data.persistent }
-
-        ( InputP2PT urls, P2PT _ ) ->
-            P2PT urls
 
         ( InputWebSocket url, WebSocket _ ) ->
             WebSocket { url = url }
@@ -1425,6 +1414,12 @@ update msg backend =
 
         ( InputTrystero "turn" v, Torrent data ) ->
             Torrent { data | turnConfig = v }
+
+        ( InputTrystero "relay" v, TrysteroNostr data ) ->
+            TrysteroNostr { data | relayUrls = v }
+
+        ( InputTrystero "turn" v, TrysteroNostr data ) ->
+            TrysteroNostr { data | turnConfig = v }
 
         ( InputTrystero "turn" v, IPFS data ) ->
             IPFS { data | turnConfig = v }

@@ -237,7 +237,9 @@ function collectMedia(json: any, urls: Set<string>) {
  * @returns
  */
 function origin(url: string) {
-  const match = url.match(/.*?:\/\/[^\/]*/)
+  // anchored: an unanchored `.*?://` is quadratic on long data: URLs, Firefox
+  // aborts it with "too much recursion"
+  const match = url.match(/^[a-z][a-z0-9+.-]*:\/\/[^\/]*/i)
 
   if (match && match.length > 0) return match[0]
 
@@ -404,7 +406,8 @@ function loadAsBlob(
         filename = match[1]
       }
 
-      const src = new URL(url)
+      // relative like fetch, otherwise `/style.css` throws "Invalid URL"
+      const src = new URL(url, document.baseURI)
 
       if (filename && filename !== src.pathname.split('/').slice(-1)[0]) {
         throw new Error(
@@ -440,6 +443,13 @@ function loadLink(url: string, callback?: (ok: boolean) => void) {
       (blobUrl: string) => loadLink(blobUrl, callback),
       () => callback?.(false)
     )
+
+  // raw.githubusercontent.com sends text/plain + nosniff, a <link> always fails
+  // (behind the service worker as NS_ERROR_CORRUPTED_CONTENT) — load as blob
+  if (url.startsWith('https://raw.githubusercontent.com/')) {
+    asBlob()
+    return
+  }
 
   try {
     // Chrome will CORB block this request, therefor it can only be loaded as blob

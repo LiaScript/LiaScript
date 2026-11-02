@@ -64,8 +64,8 @@ export class Sync extends Base.Sync {
       // gun.js must be loaded before sea.js — sea.js extends the Gun object.
       this.load(
         [
-          'https://cdn.jsdelivr.net/npm/gun/gun.js',
-          'https://cdn.jsdelivr.net/npm/gun/sea.js',
+          'https://cdn.jsdelivr.net/npm/gun@0.2020.1241/gun.js',
+          'https://cdn.jsdelivr.net/npm/gun@0.2020.1241/sea.js',
         ],
         this,
       )
@@ -160,7 +160,7 @@ export class Sync extends Base.Sync {
         persistent: this.persistent,
         doc: this.persistent ? this.db.doc : undefined,
         waitFor: this.persistReady,
-      })
+      }).catch(this.connectFailed('GunDB'))
     } else {
       let message = 'GunDB unknown error'
 

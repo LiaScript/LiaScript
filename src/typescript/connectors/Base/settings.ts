@@ -79,12 +79,18 @@ export const Settings = {
       const decalsChanged =
         document.documentElement.classList.contains('lia-decals') !==
         !!data.decals
+      const variantChanged =
+        document.documentElement.classList.contains('lia-variant-light') !==
+        !!data.light
 
       document.documentElement.className = className
 
       // charts add patterns to their series, see webcomponents/chart.ts
       if (decalsChanged) {
         window.dispatchEvent(new CustomEvent('lia-decals'))
+      }
+      if (variantChanged) {
+        window.dispatchEvent(new CustomEvent('lia-variant'))
       }
     } catch (err: any) {
       console.warn('settings (className): ', err.message)

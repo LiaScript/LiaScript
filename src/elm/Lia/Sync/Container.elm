@@ -89,4 +89,9 @@ the custom `sync` type has to be passed.
 -}
 decoder : JD.Decoder sync -> JD.Decoder (Container sync)
 decoder fn =
-    JD.array (JD.dict fn) |> JD.map Container
+    -- a malformed value of one peer (any peer can write one) is skipped, it
+    -- must not block the section's update for everyone else
+    JD.keyValuePairs (JD.maybe fn)
+        |> JD.map (List.filterMap (\( peer, value ) -> Maybe.map (Tuple.pair peer) value) >> Dict.fromList)
+        |> JD.array
+        |> JD.map Container

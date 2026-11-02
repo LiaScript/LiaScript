@@ -36,6 +36,8 @@
   {"name":"cy_GB-gwryw_gogleddol-medium","voiceURI":"urn:moz-tts:speechd:cy_GB-gwryw_gogleddol-medium?cy","lang":"cy-GB","gender":"male","engine":"piper","browser":["firefox"]},
   {"name":"da_DK-talesyntese-medium","voiceURI":"urn:moz-tts:speechd:da_DK-talesyntese-medium?da","lang":"da-DK","gender":"male","engine":"piper","browser":["firefox"],"confidence":"inferred"},
   {"name":"de_DE-eva_k-x_low","voiceURI":"urn:moz-tts:speechd:de_DE-eva_k-x_low?de","lang":"de-DE","gender":"female","engine":"piper","browser":["firefox"],"confidence":"inferred"},
+  {"name":"de_DE-jarvis-high","voiceURI":"urn:moz-tts:speechd:de_DE-jarvis-high?de","lang":"de-DE","gender":"male","engine":"piper","browser":["firefox"],"confidence":"inferred"},
+  {"name":"de_DE-jarvis-medium","voiceURI":"urn:moz-tts:speechd:de_DE-jarvis-medium?de","lang":"de-DE","gender":"male","engine":"piper","browser":["firefox"],"confidence":"inferred"},
   {"name":"de_DE-karlsson-low","voiceURI":"urn:moz-tts:speechd:de_DE-karlsson-low?de","lang":"de-DE","gender":"male","engine":"piper","browser":["firefox"],"confidence":"inferred"},
   {"name":"de_DE-kerstin-low","voiceURI":"urn:moz-tts:speechd:de_DE-kerstin-low?de","lang":"de-DE","gender":"female","engine":"piper","browser":["firefox"],"confidence":"inferred"},
   {"name":"de_DE-mls-medium","voiceURI":"urn:moz-tts:speechd:de_DE-mls-medium?de","lang":"de-DE","gender":"unknown","engine":"piper","browser":["firefox"]},

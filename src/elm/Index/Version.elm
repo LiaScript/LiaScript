@@ -112,4 +112,4 @@ min =
 -}
 max : List String -> Maybe String
 max =
-    List.sort >> List.last
+    sort >> List.last

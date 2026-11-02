@@ -22,12 +22,12 @@
   $light-text-brightness: brightness($light);
   $dark-text-brightness: brightness($dark);
 
-  @return if(
-    math.abs($color-brightness - $light-text-brightness) >
-      math.abs($color-brightness - $dark-text-brightness),
-    $light,
-    $dark
-  );
+  @if math.abs($color-brightness - $light-text-brightness) >
+    math.abs($color-brightness - $dark-text-brightness)
+  {
+    @return $light;
+  }
+  @return $dark;
 }
 
 @function darkness($color, $darknessMultiplier) {

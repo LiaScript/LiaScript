@@ -9,13 +9,10 @@ var elmSend: Lia.Send | null
 var Database: any
 
 var Edrys
-// var Jitsi
-// var Matrix
 var Ably
 var PubNub
 var Gun
 var Local
-var P2PT
 var Trystero
 var Nostr
 var WebSocket_
@@ -58,17 +55,15 @@ const Service = {
     'ably',
     'edrys',
     'gun',
-    //'jitsi',
-    //'matrix',
-    'ipfs',
     'local',
-    'mqtt',
     'nostr',
     'pubnub',
-    // hasRTCPeerConnection() ? 'p2pt' : '',
     hasRTCPeerConnection() ? 'peerjs' : '',
     hasRTCPeerConnection() ? 'simplepeer' : '',
-    'torrent',
+    hasRTCPeerConnection() ? 'trystero-ipfs' : '',
+    hasRTCPeerConnection() ? 'trystero-mqtt' : '',
+    hasRTCPeerConnection() ? 'trystero-nostr' : '',
+    hasRTCPeerConnection() ? 'trystero-torrent' : '',
     'websocket',
   ],
 
@@ -91,7 +86,8 @@ const Service = {
         array: shared('getArray'),
         map: shared('getMap'),
         text: shared('getText'),
-      }
+        // me, owner and mode are getters, defined below
+      } as typeof window.LIA.classroom
 
       Object.defineProperties(window['LIA']['classroom'], {
         // who am I, also without a classroom
@@ -137,6 +133,10 @@ const Service = {
               })
           }
 
+          // a backend chunk may fail to load (offline, or replaced by a redeploy)
+          const failed = (e: any) =>
+            cbConnection('error', 'Could not load backend: ' + (e?.message || e))
+
           const backend = event.message.param.backend
 
           switch (backend) {
@@ -145,7 +145,7 @@ const Service = {
                 import('../../sync/Edrys/index').then((e) => {
                   Edrys = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -164,7 +164,7 @@ const Service = {
                 import('../../sync/Gun/index').then((e) => {
                   Gun = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -182,7 +182,7 @@ const Service = {
                 import('../../sync/Local/index').then((e) => {
                   Local = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -195,22 +195,26 @@ const Service = {
               )
               break
 
-            case 'ipfs':
-            case 'mqtt':
-            // 'nostr' used to be Trystero's WebRTC-signaling-over-Nostr
-            // strategy - retired in favor of the real Nostr-relay backend
-            // below (see case 'nostr').
-            case 'torrent': {
+            case 'trystero-ipfs':
+            case 'trystero-mqtt':
+            // Trystero's WebRTC signaling over Nostr relays, 'nostr' is the
+            // real Nostr-relay backend below
+            case 'trystero-nostr':
+            case 'trystero-torrent': {
               if (!Trystero) {
                 import('../../sync/Trystero/index').then((e) => {
                   Trystero = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
               sync = new Trystero.Sync(
-                backend as 'mqtt' | 'torrent' | 'ipfs',
+                backend.replace('trystero-', '') as
+                  | 'nostr'
+                  | 'mqtt'
+                  | 'torrent'
+                  | 'ipfs',
                 cbConnection,
                 elmSend,
                 onConnect,
@@ -226,7 +230,7 @@ const Service = {
                 import('../../sync/Nostr/index').then((e) => {
                   Nostr = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -239,44 +243,12 @@ const Service = {
               )
               break
 
-            // case 'jitsi':
-            //   if (!Jitsi) {
-            //     import('../../sync/Jitsi/index').then((e) => {
-            //       Jitsi = e
-            //       Service.handle(event)
-            //     })
-            //     return
-            //   }
-
-            //   sync = new Jitsi.Sync(
-            //     cbConnection,
-            //     elmSend,
-            //     onConnect,
-            //     onReceive,
-            //     true
-            //   )
-            //   break
-
-            /*
-            case 'matrix':
-              if (!Matrix) {
-                import('../../sync/Matrix/index').then((e) => {
-                  Matrix = e
-                  Service.handle(event)
-                })
-                return
-              }
-
-              sync = new Matrix.Sync(cbConnection, elmSend)
-              break
-            */
-
             case 'ably':
               if (!Ably) {
                 import('../../sync/Ably/index').then((e) => {
                   Ably = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -294,7 +266,7 @@ const Service = {
                 import('../../sync/PubNub/index').then((e) => {
                   PubNub = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -306,31 +278,12 @@ const Service = {
                 true,
               )
               break
-            /*
-            case 'p2pt':
-              if (!P2PT) {
-                import('../../sync/P2PT/index').then((e) => {
-                  P2PT = e
-                  Service.handle(event)
-                })
-                return
-              }
-
-              sync = new P2PT.Sync(
-                cbConnection,
-                elmSend,
-                onConnect,
-                onReceive,
-                true,
-              )
-              break
-*/
             case 'peerjs':
               if (!PeerJS_) {
                 import('../../sync/PeerJS/index').then((e) => {
                   PeerJS_ = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -348,7 +301,7 @@ const Service = {
                 import('../../sync/SimplePeer/index').then((e) => {
                   SimplePeer_ = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
@@ -366,7 +319,7 @@ const Service = {
                 import('../../sync/WebSocket/index').then((e) => {
                   WebSocket_ = e
                   Service.handle(event)
-                })
+                }).catch(failed)
                 return
               }
 
