@@ -33,9 +33,9 @@ export class Sync extends Base.Sync {
     this.persistent = data.config?.persistent || false
 
     const urls: string[] = []
-    if (!window['Ably']) urls.push('https://cdn.ably.com/lib/ably.min-2.js')
+    if (!window['Ably']) urls.push('https://cdn.ably.com/lib/ably.min-2.30.0.js')
     if (this.persistent && !window['AblyLiveObjectsPlugin'])
-      urls.push('https://cdn.ably.com/lib/liveobjects.umd.min-2.js')
+      urls.push('https://cdn.ably.com/lib/liveobjects.umd.min-2.30.0.js')
     if (this.password && !window['SimpleCrypto']) urls.push(Crypto.url)
 
     if (urls.length === 0) {

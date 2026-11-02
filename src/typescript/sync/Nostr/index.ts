@@ -9,7 +9,7 @@ import { Crypto } from '../Crypto'
 // single global `NostrTools` with `.SimplePool`, `.finalizeEvent`,
 // `.getPublicKey`.
 const NOSTR_TOOLS_URL =
-  'https://cdn.jsdelivr.net/npm/nostr-tools@2/lib/nostr.bundle.js'
+  'https://cdn.jsdelivr.net/npm/nostr-tools@2.25.4/lib/nostr.bundle.js'
 
 // keep in sync with `nostrRelayURLs` in src/elm/Const.elm
 const DEFAULT_RELAYS = ['wss://relay.edufeed.org', 'wss://nos.lol', 'wss://nostr.mom']
