@@ -150,7 +150,7 @@ suite =
                 "<lia-modal class=\"lia-modal\" aria-modal=\"true\" role=\"dialog\">\n    <div class=\"lia-modal__inner\">\n        <div class=\"lia-modal__close\">\n            <button class=\"lia-btn lia-btn--transparent\" aria-hidden=\"false\" id=\"lia-modal__close\" tabIndex=\"0\" title=\"Close dialog\">\n                <i class=\"icon icon-close lia-btn__icon\" aria-hidden=\"true\">\n                </i>\n            </button>\n        </div>\n        <div class=\"lia-modal__content\">\n        </div>\n        \n    </div>\n    <div class=\"lia-modal__outer \">\n    </div>\n</lia-modal>"
             , snapshot "deactivate"
                 (Html.div (Utils.deactivate True [ Attr.id "a" ] ++ Utils.deactivate False [ Attr.id "b" ]) [])
-                "<div aria-hidden=\"true\" id=\"b\" inert=\"true\">\n</div>"
+                "<div aria-hidden=\"true\" id=\"b\" inert=\"\">\n</div>"
             , snapshot "noTranslate"
                 (Html.div (Utils.noTranslate [ Attr.id "a" ]) [])
                 "<div class=\"notranslate\" id=\"a\" translate=\"no\">\n</div>"
