@@ -1,5 +1,5 @@
 // @ts-ignore
-import ace from 'ace-builds/src-min-noconflict/ace'
+import ace from 'ace-builds'
 import "ace-builds/src-noconflict/ext-rtl";
 import * as EDITOR from './editor-modes'
 
@@ -325,6 +325,7 @@ customElements.define(
         fontSize: this.model.fontSize,
         fontFamily: this.model.fontFamily,
         enableKeyboardAccessibility: this.model.enableKeyboardAccessibility,
+        // @ts-expect-error rtl comes from ext-rtl, ace's types do not know it
         rtl: this.model.rtl,
         rtlText: this.model.rtlText,
       })

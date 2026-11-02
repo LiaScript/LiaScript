@@ -108,9 +108,7 @@ export class Sync extends Base.Sync {
         serverUrl: this.serverUrl!,
         room: id,
         waitFor: this.persistReady,
-      }).catch((e: any) => {
-        console.warn('WebSocket: initial connect failed ->', e?.message || e)
-      })
+      }).catch(this.connectFailed('WebSocket'))
     } else {
       let message = 'WebSocket unknown error'
       if (error) message = 'Could not connect: ' + error

@@ -289,7 +289,7 @@ viewFile config fileID file attr =
                             Attr.class ""
 
                           else
-                            Attr.attribute "inert" "true"
+                            Attr.attribute "inert" ""
                         ]
                         (minMax :: editor)
                     ]

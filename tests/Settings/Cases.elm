@@ -353,5 +353,7 @@ header online active settings =
         , logo = "logo.png"
         , progress = "50%"
         , buttons = [ View.menu "chat" View.menuChat, View.menu "mode" View.menuMode ]
+        , left = []
+        , toMsg = identity
         }
         |> Query.fromHtml

@@ -22,7 +22,9 @@ type alias Changes =
 
 decoder : JD.Decoder Changes
 decoder =
-    JD.list changeDecoder
+    -- one malformed entry (any peer can write one) must not drop the whole history
+    JD.list (JD.maybe changeDecoder)
+        |> JD.map (List.filterMap identity)
 
 
 changeDecoder : JD.Decoder Change

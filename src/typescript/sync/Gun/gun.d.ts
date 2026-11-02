@@ -16,7 +16,7 @@ type Gun = {
 
 declare global {
   interface Window {
-    Gun?: ({
+    Gun?: (({
       peers,
       radisk,
       localStorage,
@@ -26,7 +26,7 @@ declare global {
       radisk?: boolean
       localStorage?: boolean
       uuid?: () => number
-    }) => Gun
+    }) => Gun) & { SEA?: unknown }
   }
 }
 

@@ -158,6 +158,10 @@ update session model msg =
                                 | state = Disconnected
                                 , peers = Dict.empty
                                 , peersHistory = Dict.empty
+
+                                -- the next join may be another room, it needs the preload again
+                                , preloaded = False
+                                , owner = False
                                 , error =
                                     case ( JD.decodeValue JD.string param, sync.sync.select ) of
                                         ( Ok message, Just ( True, _ ) ) ->
@@ -274,6 +278,9 @@ update session model msg =
                                 |> Return.val
                                 |> Return.cmd
                                     (resetUrl session model.readme)
+                                -- a late connect nobody waits for anymore (the
+                                -- form was left after an error): no ghost peer
+                                |> Return.batchEvent (Service.Sync.disconnect "")
 
                 ( "disconnect", _ ) ->
                     { model
@@ -284,6 +291,8 @@ update session model msg =
                                 , peersHistory = Dict.empty
                                 , error = Nothing
                                 , data = Lia.Sync.Types.disconnected.data
+                                , preloaded = False
+                                , owner = False
                             }
                         , chat = Chat.init
                     }
@@ -293,16 +302,21 @@ update session model msg =
 
                 ( "classrooms", param ) ->
                     let
+                        saved =
+                            param
+                                |> JD.decodeValue Classroom.decoder
+                                |> Result.withDefault sync.saved
+
                         -- a room from the URL takes the name it was saved
-                        -- with, before the generic prefill below
+                        -- with, before the generic prefill below; only on the
+                        -- first list, every dialog opening lists them again and
+                        -- must not undo what the user changed, e.g. "Remember"
                         restored =
-                            restoreSaved
-                                { sync
-                                    | saved =
-                                        param
-                                            |> JD.decodeValue Classroom.decoder
-                                            |> Result.withDefault sync.saved
-                                }
+                            if List.isEmpty sync.saved then
+                                restoreSaved { sync | saved = saved }
+
+                            else
+                                { sync | saved = saved }
 
                         -- prefill "Your name" from the most recently used
                         -- classroom, so returning users don't have to
@@ -337,7 +351,16 @@ update session model msg =
                 |> Return.val
 
         OwnerTokenHash str ->
-            { model | sync = { sync | ownerTokenHash = str } }
+            let
+                -- a generated secret only belongs to the hash it was generated with
+                token =
+                    if str == sync.ownerTokenHash then
+                        sync.ownerToken
+
+                    else
+                        Nothing
+            in
+            { model | sync = { sync | ownerTokenHash = str, ownerToken = token } }
                 |> Return.val
 
         LocalName str ->
@@ -375,6 +398,9 @@ update session model msg =
                 | sync =
                     { sync
                         | sync = updateSync (Select Nothing) sync.sync
+                        , error = Nothing
+                        , owner = False
+                        , passwordVisible = False
                         , room = ""
                         , password = ""
                         , title = ""
@@ -393,6 +419,11 @@ update session model msg =
                 |> Return.val
                 |> Return.cmd
                     (resetUrl session model.readme)
+
+        Backend ((Select _) as sub) ->
+            -- an error belongs to the backend it came from
+            { model | sync = { sync | sync = updateSync sub sync.sync, error = Nothing } }
+                |> Return.val
 
         Backend sub ->
             { model | sync = { sync | sync = updateSync sub sync.sync } }
@@ -471,6 +502,7 @@ update session model msg =
                         | sync =
                             { sync
                                 | sync = { innerSync | select = Just ( True, backend ), open = False }
+                                , error = Nothing
                                 , room = entry.room
                                 , password = entry.password |> Maybe.withDefault ""
                                 , name = entry.name |> Maybe.withDefault sync.name
@@ -546,7 +578,8 @@ update session model msg =
         Connect ->
             case ( sync.sync.select, sync.state ) of
                 ( Just ( True, backend ), Disconnected ) ->
-                    { model | sync = { sync | state = Pending, sync = updateSync (Open False) sync.sync, name = String.trim sync.name } }
+                    -- only the outcome of this attempt is shown, not the last one
+                    { model | sync = { sync | state = Pending, error = Nothing, sync = updateSync (Open False) sync.sync, name = String.trim sync.name } }
                         |> Return.val
                         |> Return.batchEvent
                             -- only a join brings along a pwCheck hint to
@@ -757,10 +790,15 @@ synchronize model json =
                         |> Result.map (Chat.insert model.sync model.sync.scriptsEnabled model.search_index model.definition model.chat)
                         |> Result.withDefault ( [], model.chat )
             in
-            { model | chat = chat, settings = updatedChatMessages model.settings }
-                |> Return.val
-                |> Return.batchEvents todo
-                |> Return.batchEvent (Service.Slide.scrollDown "lia-chat-messages" 350)
+            if Dict.size chat.messages > Dict.size model.chat.messages then
+                { model | chat = chat, settings = updatedChatMessages model.settings }
+                    |> Return.val
+                    |> Return.batchEvents todo
+                    |> Return.batchEvent (Service.Slide.scrollDown "lia-chat-messages" 350)
+
+            else
+                -- only verified flags changed, no notice, no scroll
+                { model | chat = chat } |> Return.val
 
         Ok ( "peer", param ) ->
             let

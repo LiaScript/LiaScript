@@ -247,14 +247,13 @@ class LiaDB {
     await this.opening
 
     try {
-      let item = await this.db.offline.get({
-        id: 0,
-        version: this.version,
-      })
-
-      item.data.section_active = id
-
-      await this.db.offline.put(item)
+      // read and write in one transaction, a separate get/put could write an
+      // older copy back over the one `storeIndex()` just stored (#326)
+      await this.db.offline
+        .where({ id: 0, version: this.version })
+        .modify((item) => {
+          item.data.section_active = id
+        })
     } catch (e) {
       log.warn('DB: could not update slide => ', id)
     }

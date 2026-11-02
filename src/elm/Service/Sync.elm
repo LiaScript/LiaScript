@@ -1,6 +1,7 @@
 module Service.Sync exposing (chat, checkPassword, code, codes, connect, cursor, deleteClassroom, disconnect, generateOwnerToken, join, listClassrooms, markOwner, markOwnerTokenHash, publish, quiz, survey, updateClassroomMeta)
 
 import Array exposing (Array)
+import Const
 import Json.Encode as JE
 import Lia.Sync.Via as Via
 import Library.IPFS as IPFS
@@ -95,11 +96,6 @@ connect param =
                             , ( "persistent", JE.bool persistent )
                             ]
 
-                    Via.P2PT urls ->
-                        urls
-                            |> String.split ","
-                            |> JE.list (String.trim >> JE.string)
-
                     Via.WebSocket { url } ->
                         JE.object
                             [ ( "url", JE.string url )
@@ -137,6 +133,18 @@ connect param =
 
                     Via.Torrent { relayUrls, turnConfig } ->
                         trysteroConfig relayUrls turnConfig
+
+                    Via.TrysteroNostr { relayUrls, turnConfig } ->
+                        -- a link without relays gets the classroom defaults,
+                        -- Trystero's own list contains relays that are gone
+                        trysteroConfig
+                            (if String.isEmpty (String.trim relayUrls) then
+                                Const.nostrRelayURLs
+
+                             else
+                                relayUrls
+                            )
+                            turnConfig
 
                     Via.IPFS { turnConfig } ->
                         trysteroConfig "" turnConfig
