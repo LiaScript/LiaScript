@@ -7,16 +7,45 @@ import { evalError } from '../liascript/service/Script'
 // @ts-ignore
 import * as echarts from 'echarts'
 import 'echarts-wordcloud'
+// echarts 6 changed the default colors and layout, v5 keeps the old look and
+// theme/dark is the old dark theme, which replaces the new built-in one
+import 'echarts/theme/v5'
+import 'echarts/theme/dark'
 
+import 'echarts/i18n/langAR.js'
+import 'echarts/i18n/langCS.js'
 import 'echarts/i18n/langDE.js'
+import 'echarts/i18n/langEL.js'
 import 'echarts/i18n/langEN.js'
 import 'echarts/i18n/langES.js'
+import 'echarts/i18n/langFA.js'
 import 'echarts/i18n/langFI.js'
 import 'echarts/i18n/langFR.js'
+import 'echarts/i18n/langHU.js'
+import 'echarts/i18n/langIT.js'
 import 'echarts/i18n/langJA.js'
+import 'echarts/i18n/langKO.js'
+import 'echarts/i18n/langLV.js'
+import 'echarts/i18n/langnb-NO.js'
+import 'echarts/i18n/langNL.js'
+import 'echarts/i18n/langPL.js'
+import 'echarts/i18n/langPT-br.js'
+import 'echarts/i18n/langRO.js'
+import 'echarts/i18n/langRU.js'
+import 'echarts/i18n/langSI.js'
+import 'echarts/i18n/langSV.js'
 import 'echarts/i18n/langTH.js'
+import 'echarts/i18n/langTR.js'
+import 'echarts/i18n/langUK.js'
 import 'echarts/i18n/langZH.js'
 import * as helper from '../helper'
+
+// LiaScript language codes, whose echarts locale has another name
+const LOCALES: { [lang: string]: string } = {
+  nb: 'nb-NO',
+  pt: 'PT-br',
+  sl: 'SI',
+}
 
 const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 
@@ -36,6 +65,30 @@ const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 // - Decals:
 //      https://echarts.apache.org/en/option.html#aria.decal.show
 
+// shortcut: echarts has no API to combine or read themes, so the old dark look
+// (v5 layout + old dark colors) is read from the private _theme of a probe,
+// replace it if echarts ever exports its themes
+function themeOf(name: string) {
+  const probe = echarts.init(document.createElement('div'), name)
+  // @ts-ignore
+  const theme = probe._theme
+  probe.dispose()
+  return theme
+}
+// the dark background is replaced by the one of the course, a saved image
+// still needs one, otherwise its light text is lost on a white image viewer
+echarts.registerTheme(
+  'v5-dark',
+  echarts.util.merge(
+    echarts.util.merge(themeOf('v5'), themeOf('dark'), true),
+    {
+      backgroundColor: 'transparent',
+      toolbox: { feature: { saveAsImage: { backgroundColor: '#303030' } } },
+    },
+    true
+  )
+)
+
 // Decals are patterns, which distinguish the series not only by their color,
 // they can be switched on in the settings (class lia-decals of the html)
 function aria() {
@@ -47,6 +100,38 @@ function aria() {
   }
 }
 
+// strings under these keys are shown as text, source and target name the nodes
+// of graphs and sankeys and have to be replaced like the node names
+const TEXT_KEYS = ['text', 'subtext', 'name', 'data', 'source', 'target']
+// two letters, a date like 2026-10-30T00:00 is no text, no unicode classes in
+// the regex, they break the parser of older browsers (KaiOS)
+const LETTER = /[A-Za-z\u00C0-\uFFFF]{2}/
+
+// replaces every displayed string of an option, only plain objects and arrays
+// are copied, functions and echarts classes like gradients are kept
+function mapTexts(o: any, fn: (s: string) => string, key = ''): any {
+  if (typeof o === 'string') {
+    return TEXT_KEYS.includes(key) && LETTER.test(o) ? fn(o) : o
+  }
+  if (Array.isArray(o)) {
+    // only the items of data are texts, not e.g. the rows of dataset.source
+    return o.map(v => mapTexts(v, fn, key === 'data' ? key : ''))
+  }
+  if (
+    o &&
+    typeof o === 'object' &&
+    Object.getPrototypeOf(o) === Object.prototype
+  ) {
+    // region names of a map have to match the geojson
+    if (o.type === 'map') return o
+
+    const copy: any = {}
+    for (const k in o) copy[k] = mapTexts(o[k], fn, k)
+    return copy
+  }
+  return o
+}
+
 customElements.define(
   'lia-chart',
   class extends HTMLElement {
@@ -54,6 +139,16 @@ customElements.define(
 
     private chart?: echarts.ECharts
     private option_: { aria?: { show: boolean; decal?: { show: boolean } } }
+
+    // Google Translate does not reach svg text or the shadow DOM, therefor all
+    // texts are also hidden children of the element, translated texts are
+    // passed back to the chart
+    // shortcut: Google translates these children only when the element is
+    // rendered, an option set later (fetch, scripts) stays untranslated until
+    // the language is changed again, a fix would need a retranslate API
+    // from Google
+    private texts?: HTMLDivElement
+    private textObserver?: MutationObserver
 
     // the aria-label of the author, otherwise the generated description is used
     private authorLabel: string | null = null
@@ -121,6 +216,7 @@ customElements.define(
 
     connectedCallback() {
       window.addEventListener('lia-decals', this.onDecals)
+      window.addEventListener('lia-variant', this.onVariant)
 
       if (!this.container) {
         this.init()
@@ -136,8 +232,6 @@ customElements.define(
 
         this.option_['aria'] = aria()
 
-        let self = this
-
         // the chart is an image, which is described by the author or by the
         // description generated by eCharts
         this.authorLabel = this.getAttribute('aria-label')
@@ -151,13 +245,10 @@ customElements.define(
               'Chart'
           )
         }
-        // @ts-ignore
-        this.chart?.on('finished', function () {
-          const generated = self.container?.getAttribute('aria-label')
-          if (self.authorLabel === null && generated) {
-            self.setAttribute('aria-label', generated)
-          }
-        })
+
+        // the texts have to exist with the element, Google Translate ignores
+        // texts added later, e.g. after the geoJson of a map is loaded
+        this.translateTexts()
 
         // this forces to wait for the chart until geoJson is loaded
         if (!this.geoJson.url) {
@@ -179,7 +270,26 @@ customElements.define(
       const shadowRoot = this.attachShadow({
         mode: 'open',
       })
+      // echarts places all text for ltr, in rtl courses labels would shift
+      // onto axes and legend icons, the reading order of every text follows
+      // its own content, so arabic text keeps its order (svg renderer only)
+      const css = document.createElement('style')
+      css.textContent =
+        'svg { direction: ltr; } text { unicode-bidi: plaintext; }'
+      shadowRoot.appendChild(css)
+
+      // renders the texts as an invisible layer over the chart, Firefox only
+      // translates text that is rendered within the viewport, the wrapper
+      // has no height and does not change the layout
+      const layer = document.createElement('div')
+      layer.style.cssText = 'position:relative;height:0'
+      layer.appendChild(document.createElement('slot'))
+      shadowRoot.appendChild(layer)
+
       this.container = document.createElement('div')
+      // Firefox translates the drawn svg in place, which breaks the layout,
+      // the texts above are translated instead and echarts draws them anew
+      this.container.setAttribute('translate', 'no')
       shadowRoot.appendChild(this.container)
 
       let self = this
@@ -196,10 +306,17 @@ customElements.define(
       this.updateChart()
     }
 
+    // charts with an empty or missing mode follow the dark mode of the course
+    onVariant = () => {
+      if (!this.mode) this.reinitChart()
+    }
+
     disconnectedCallback() {
       window.removeEventListener('lia-decals', this.onDecals)
+      window.removeEventListener('lia-variant', this.onVariant)
       if (this.chart) echarts.dispose(this.chart)
 
+      this.textObserver?.disconnect()
       this.resizeObserver.disconnect()
       this.geoJson.data = {}
     }
@@ -279,6 +396,9 @@ customElements.define(
 
     updateChart() {
       if (!this.chart || !this.option_) return
+      // a map can only be drawn with its geoJson, locale or translation
+      // changes would otherwise throw before it is loaded
+      if (this.geoJson.url && this.geoJson.data === null) return
 
       // this.chart.clear();
 
@@ -286,16 +406,83 @@ customElements.define(
         echarts.registerMap(this.geoJson.url, this.geoJson.data)
       }
 
-      this.chart.setOption(this.option_, true)
+      this.chart.setOption(this.translateTexts(), true)
+    }
+
+    // the option with the texts translated by an external translator
+    translateTexts() {
+      if (!this.texts) {
+        this.texts = document.createElement('div')
+        // invisible, not display none, see the layer in init
+        this.texts.setAttribute('aria-hidden', 'true')
+        this.texts.style.cssText =
+          'position:absolute;top:0;left:0;width:100%;height:300px;overflow:hidden;opacity:0;pointer-events:none;user-select:none;font-size:1px;line-height:1px'
+        this.appendChild(this.texts)
+        this.textObserver = new MutationObserver(
+          helper.debounce(() => this.updateChart())
+        )
+      }
+
+      const translated: { [original: string]: string } = {}
+      for (const block of Array.from(this.texts.children) as HTMLElement[]) {
+        translated[block.dataset.text || ''] = (block.textContent || '').trim()
+      }
+
+      const keys: string[] = []
+      const option = mapTexts(this.option_, s => {
+        if (!keys.includes(s)) keys.push(s)
+        return translated[s] || s
+      })
+
+      // new texts, the old translations are dropped, the translator
+      // translates the new blocks again
+      if (keys.join('\n') !== Object.keys(translated).join('\n')) {
+        this.textObserver?.disconnect()
+        this.texts.innerHTML = ''
+        for (const text of keys) {
+          // blocks, Google translates spans in a row as one sentence and
+          // spreads the words over all of them
+          const block = document.createElement('div')
+          block.dataset.text = text
+          block.textContent = text
+          this.texts.appendChild(block)
+        }
+        this.textObserver?.observe(this.texts, {
+          subtree: true,
+          childList: true,
+          characterData: true,
+        })
+        return this.option_
+      }
+
+      return option
     }
 
     initChart() {
       if (this.chart) echarts.dispose(this.chart)
 
-      this.chart = echarts.init(this.container, this.mode || '', {
+      // an empty or missing mode follows the course, light and dark are fixed,
+      // any other value is the name of an echarts theme
+      const mode =
+        this.mode ||
+        (document.documentElement.classList.contains('lia-variant-dark')
+          ? 'dark'
+          : 'light')
+      const theme = mode === 'dark' ? 'v5-dark' : mode === 'light' ? 'v5' : mode
+
+      this.chart = echarts.init(this.container, theme, {
         renderer: this.renderer,
-        locale: this.locale,
+        locale: LOCALES[this.locale] || this.locale,
         useDirtyRect: false,
+      })
+
+      // re-registered on every init, a locale change creates a new chart
+      // @ts-ignore
+      this.chart.on('finished', () => {
+        const generated = this.container?.getAttribute('aria-label')
+        if (this.authorLabel === null && generated) {
+          this.setAttribute('aria-label', generated)
+        }
       })
     }
 

@@ -127,7 +127,7 @@ versions course =
     course.versions
         |> Dict.toList
         |> List.map (\( key, value ) -> ( key, value.definition.version ))
-        |> List.sortBy Tuple.first
+        |> List.sortBy (Tuple.first >> String.toInt >> Maybe.withDefault 0)
         |> List.indexedMap
             (\i ( key, value ) ->
                 btn
@@ -442,7 +442,7 @@ get_active course =
         Nothing ->
             course.versions
                 |> Dict.toList
-                |> List.sortBy Tuple.first
+                |> List.sortBy (Tuple.first >> String.toInt >> Maybe.withDefault 0)
                 |> List.reverse
                 |> List.head
                 |> Maybe.map Tuple.second

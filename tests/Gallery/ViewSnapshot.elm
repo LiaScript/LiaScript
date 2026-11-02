@@ -102,7 +102,7 @@ closed =
     
     <div class="lia-gallery">
         <div class="lia-lightbox">
-            <div aria-hidden="true" inert="true">
+            <div aria-hidden="true" inert="">
                 <figure class="lia-figure">
                     <div class="lia-figure__media" data-media-type="image">
                         <img alt="alt0" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" role="button" src="http://example.com/0.png" tabIndex="0">
@@ -116,7 +116,7 @@ closed =
             </div>
         </div>
         <div class="lia-lightbox">
-            <div aria-hidden="true" inert="true">
+            <div aria-hidden="true" inert="">
                 <figure class="lia-figure">
                     <div class="lia-figure__media" data-media-type="image">
                         <img alt="alt1" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" role="button" src="http://example.com/1.png" tabIndex="0">
@@ -170,7 +170,7 @@ first =
     </div>
     <div class="lia-gallery">
         <div class="lia-lightbox">
-            <div aria-hidden="true" inert="true">
+            <div aria-hidden="true" inert="">
                 <figure class="lia-figure">
                     <div class="lia-figure__media" data-media-type="image">
                         <img alt="alt0" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" role="button" src="http://example.com/0.png" tabIndex="0">
@@ -184,7 +184,7 @@ first =
             </div>
         </div>
         <div class="lia-lightbox">
-            <div aria-hidden="true" inert="true">
+            <div aria-hidden="true" inert="">
                 <figure class="lia-figure">
                     <div class="lia-figure__media" data-media-type="image">
                         <img alt="alt1" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" role="button" src="http://example.com/1.png" tabIndex="0">
@@ -238,7 +238,7 @@ last =
     </div>
     <div class="lia-gallery">
         <div class="lia-lightbox">
-            <div aria-hidden="true" inert="true">
+            <div aria-hidden="true" inert="">
                 <figure class="lia-figure">
                     <div class="lia-figure__media" data-media-type="image">
                         <img alt="alt0" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" role="button" src="http://example.com/0.png" tabIndex="0">
@@ -252,7 +252,7 @@ last =
             </div>
         </div>
         <div class="lia-lightbox">
-            <div aria-hidden="true" inert="true">
+            <div aria-hidden="true" inert="">
                 <figure class="lia-figure">
                     <div class="lia-figure__media" data-media-type="image">
                         <img alt="alt1" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" role="button" src="http://example.com/1.png" tabIndex="0">
@@ -275,7 +275,7 @@ outOfRange =
     
     <div class="lia-gallery">
         <div class="lia-lightbox">
-            <div aria-hidden="true" inert="true">
+            <div aria-hidden="true" inert="">
                 <figure class="lia-figure">
                     <div class="lia-figure__media" data-media-type="image">
                         <img alt="alt0" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" role="button" src="http://example.com/0.png" tabIndex="0">
@@ -289,7 +289,7 @@ outOfRange =
             </div>
         </div>
         <div class="lia-lightbox">
-            <div aria-hidden="true" inert="true">
+            <div aria-hidden="true" inert="">
                 <figure class="lia-figure">
                     <div class="lia-figure__media" data-media-type="image">
                         <img alt="alt1" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" role="button" src="http://example.com/1.png" tabIndex="0">
@@ -312,7 +312,7 @@ annotated =
     
     <div class="lia-gallery wide" title="my gallery">
         <div class="lia-lightbox">
-            <div aria-hidden="true" inert="true">
+            <div aria-hidden="true" inert="">
                 <figure class="lia-figure">
                     <div class="lia-figure__media" data-media-type="image">
                         <img alt="alt0" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" role="button" src="http://example.com/0.png" tabIndex="0">
@@ -326,7 +326,7 @@ annotated =
             </div>
         </div>
         <div class="lia-lightbox">
-            <div aria-hidden="true" inert="true">
+            <div aria-hidden="true" inert="">
                 <figure class="lia-figure">
                     <div class="lia-figure__media" data-media-type="image">
                         <img alt="alt1" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/1.png")" onerror="window.LIA.fetchError('img','http://example.com/1.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/1.png',this.width,this.height)" role="button" src="http://example.com/1.png" tabIndex="0">
@@ -388,7 +388,7 @@ embedOpen =
     </div>
     <div class="lia-gallery">
         <div class="lia-lightbox">
-            <div aria-hidden="true" inert="true">
+            <div aria-hidden="true" inert="">
                 <figure class="lia-figure">
                     <div class="lia-figure__media" data-media-type="image">
                         <img alt="alt0" aria-haspopup="dialog" loading="lazy" onClick="window.LIA.img.click("http://example.com/0.png")" onerror="window.LIA.fetchError('img','http://example.com/0.png')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onload="window.LIA.img.load('http://example.com/0.png',this.width,this.height)" role="button" src="http://example.com/0.png" tabIndex="0">
@@ -402,7 +402,7 @@ embedOpen =
             </div>
         </div>
         <div class="lia-lightbox">
-            <div aria-hidden="true" inert="true">
+            <div aria-hidden="true" inert="">
                 <figure class="lia-figure" style="height:auto;width:100%;">
                     <div class="lia-figure__media">
                         <a class="lia-link lia-print-only" href="https://www.youtube.com/watch?v=abc">

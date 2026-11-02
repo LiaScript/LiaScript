@@ -8,14 +8,7 @@ import * as Base from '../Base/index'
  * database is open, would be dropped silently.
  */
 export class Sync extends Base.Sync {
-  connect(data: {
-    course: string
-    room: string
-    password?: string
-    persistent?: boolean
-    fullBackend?: string
-    config?: any
-  }) {
+  connect(data: Parameters<Base.Sync['connect']>[0]) {
     super.connect(data)
 
     this.persistReady

@@ -969,14 +969,14 @@ isHidden model =
 {-| The Classroom modal's close ("×") button: on the backend/connect
 sub-page it steps back to the overview instead of closing the whole
 modal - only closes for real once already on the overview. But once
-actually connected to a classroom, "back to overview" would reset the
-room/password fields and rewrite the URL out from under the live
-session - so a connected user always just closes the modal instead.
+connected or still connecting, "back to overview" would reset the
+room/password fields and rewrite the URL out from under the live (or
+coming) session - so such a user always just closes the modal instead.
 -}
 syncCloseMsg : Sync_.Settings -> Msg
 syncCloseMsg sync =
-    case ( Sync_.isConnected sync.state, sync.sync.select ) of
-        ( False, Just _ ) ->
+    case ( sync.state, sync.sync.select ) of
+        ( Sync_.Disconnected, Just _ ) ->
             UpdateSync (SyncUpdate.Backend (SyncUpdate.Select Nothing))
 
         _ ->

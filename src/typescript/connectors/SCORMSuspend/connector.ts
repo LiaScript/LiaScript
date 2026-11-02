@@ -92,7 +92,7 @@ export class SuspendConnector extends Base.Connector {
   }
 
   load(record: Base.Record) {
-    return this.engine.load(record.table, record.id)
+    return this.engine.load(record.table, record.id as number)
   }
 
   loadAll(table: string) {
@@ -100,12 +100,12 @@ export class SuspendConnector extends Base.Connector {
   }
 
   store(record: Base.Record) {
-    this.engine.store(record.table, record.id, record.data)
+    this.engine.store(record.table, record.id as number, record.data)
     ;(window as any).SCORE = this.engine.score()
   }
 
   update(record: Base.Record, mapping: (project: any) => any) {
-    this.engine.update(record.table, record.id, mapping)
+    this.engine.update(record.table, record.id as number, mapping)
   }
 
   slide(id: number) {
