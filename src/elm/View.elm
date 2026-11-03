@@ -116,7 +116,7 @@ overlay model =
             , Attr.style "left" "0"
             , Attr.style "overflow-y" "auto"
             , Attr.style "z-index" "100000"
-            , Attr.style "background" "white"
+            , Attr.style "background" "rgb(var(--color-background))"
             ]
             (if pending then
                 loading model.log
@@ -179,6 +179,8 @@ screen header logs =
         , Attr.style "box-sizing" "border-box"
         , Attr.style "padding" "1em"
         , Attr.style "text-align" "center"
+        , Attr.style "background" "rgb(var(--color-background))"
+        , Attr.style "color" "rgb(var(--color-text))"
         , Attr.class "notranslate"
         , Attr.attribute "translate" "no"
 
@@ -312,7 +314,7 @@ showLogs logs =
                 , Attr.style "width" "100%"
                 , Attr.style "max-width" "500px"
                 , Attr.style "box-sizing" "border-box"
-                , Attr.style "background" "rgba(255,255,255,0.72)"
+                , Attr.style "background" "rgb(var(--color-background))"
                 , Attr.style "border-radius" "10px"
                 , Attr.style "box-shadow" "0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.07)"
                 , Attr.style "font-family" "monospace"
@@ -352,13 +354,13 @@ showLog { kind, url, ok } =
     in
     Html.li
         [ Attr.style "background" rowBg
-        , Attr.style "border-bottom" "1px solid rgba(0,0,0,0.06)"
+        , Attr.style "border-bottom" "1px solid rgba(var(--color-text),0.1)"
         ]
         [ Html.div
             [ Attr.style "display" "flex"
             , Attr.style "align-items" "center"
             , Attr.style "padding" "5px 12px"
-            , Attr.style "color" "#555"
+            , Attr.style "color" "rgb(var(--color-text))"
             ]
             [ Html.div
                 [ Attr.style "flex" "1"
@@ -367,7 +369,7 @@ showLog { kind, url, ok } =
                 ]
                 [ Html.span
                     [ Attr.style "display" "block"
-                    , Attr.style "color" "#6b6b6b"
+                    , Attr.style "color" "rgba(var(--color-text),0.85)"
                     , Attr.style "font-size" "0.8em"
                     , Attr.style "overflow" "hidden"
                     , Attr.style "text-overflow" "ellipsis"
@@ -380,7 +382,7 @@ showLog { kind, url, ok } =
                 , Html.span
                     [ Attr.style "display" "block"
                     , Attr.title url
-                    , Attr.style "color" "#555"
+                    , Attr.style "color" "rgb(var(--color-text))"
                     , Attr.style "overflow" "hidden"
                     , Attr.style "text-overflow" "ellipsis"
                     , Attr.style "white-space" "nowrap"

@@ -174,8 +174,7 @@ const Service = {
           } catch (e) {
             console.warn('failed to execute onload =>', e.message)
           }
-          window.LIA.eventSemaphore--
-          onload = false`
+          window.LIA.eventSemaphore--`
 
       liaExec({
         reply: false,
@@ -183,7 +182,7 @@ const Service = {
         service: this.PORT,
         message: {
           cmd: 'exec',
-          param: { code, delay },
+          param: { code, delay, onload: true },
         },
       })
     }
@@ -266,13 +265,20 @@ function liaEval(event: Lia.Event) {
 
 // Parcel renames locals that shadow globals (console -> console1), so a direct
 // eval would not see them; the course code gets its scope passed explicitly.
-const evalWith = new Function(
+// LiaError and getLineNumber were visible to the old direct eval and are used
+// by templates (Tau-Prolog, JSCPP, p5js, TensorflowJS, ...).
+const evalFn = new Function(
   'console',
   'fetch',
   'send',
+  'LiaError',
+  'getLineNumber',
   'code',
   'return eval(code)'
 )
+
+const evalWith = (console: any, fetch: any, send: any, code: string) =>
+  evalFn(console, fetch, send, LiaError, getLineNumber, code)
 
 function sendReply(event: Lia.Event) {
   if (elmSend) {
@@ -422,6 +428,9 @@ function liaExecCode(event: Lia.Event) {
       // the name tells that it is an error, a thrown string has no message
       send.lia(String(e), false, [])
     }
+
+    // the evaluated code cannot reach this module variable itself
+    if (event.message.param.onload) onload = false
   }, event.message.param.delay)
 }
 
