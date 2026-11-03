@@ -51,7 +51,9 @@
   }
 
   @include tools.breakpoint('md') {
-    border: none;
+    // same logical property as above, the build turns both into :lang() rules
+    // of equal weight, `border: none` would lose against them
+    border-inline-start: none;
     height: 100%;
     position: relative;
     width: 100%;
