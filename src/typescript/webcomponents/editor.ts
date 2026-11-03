@@ -815,6 +815,8 @@ customElements.define(
       const cursor = this._editor.getCursorPosition()
 
       session.setValue(value)
+      // replacing the text drops the gutter annotations, they were set before (e.g. on a version switch)
+      session.setAnnotations(this.model.annotations)
 
       this._editor.moveCursorToPosition(cursor)
 
