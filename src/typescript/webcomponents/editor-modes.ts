@@ -34,7 +34,10 @@ const modes: {
   tgr: 'apex',
   /* ------------------------------------- */
   applescript: 'applescript',
-  oascript: 'applescript',
+  osascript: 'applescript',
+  /* ------------------------------------- */
+  angelscript: 'c_cpp',
+  asc: 'c_cpp',
   /* ------------------------------------- */
   astro: 'astro',
   /* ------------------------------------- */
@@ -70,6 +73,7 @@ const modes: {
 
   bash: 'sh',
   sh: 'sh',
+  zsh: 'sh',
   /* ------------------------------------- */
   basic: 'basic',
   bas: 'basic',
