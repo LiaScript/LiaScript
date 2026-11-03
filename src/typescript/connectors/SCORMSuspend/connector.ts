@@ -29,11 +29,13 @@ export class SuspendConnector extends Base.Connector {
   /**
    * @param connect - the LMS to talk to, the SCORM API of the frames above
    *   by default; the H5P connector passes a virtual one
+   * @param points - 2004: report the raw score in points, not in percent
    */
   constructor(
     version: Version,
     connect: (warn: (...args: any[]) => void) => LMS | null = (warn) => Adapter.connect(version, warn),
-    name = `SCORM ${version} (suspend)`
+    name = `SCORM ${version} (suspend)`,
+    points = false
   ) {
     super()
 
@@ -51,6 +53,7 @@ export class SuspendConnector extends Base.Connector {
         forceActive: !!(window as any).ACTIVE,
         mastery: typeof mastery === 'number' ? mastery : null,
         slides: meta?.slides.length,
+        points,
         warn,
       },
       clock
