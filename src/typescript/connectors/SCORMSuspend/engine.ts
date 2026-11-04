@@ -46,6 +46,8 @@ export interface Options {
   mastery?: number | null
   /** number of slides, to complete a course without quizzes or surveys */
   slides?: number
+  /** 2004: the raw score in points (H5P), not in percent */
+  points?: boolean
   warn?: (...args: any[]) => void
 }
 
@@ -268,12 +270,9 @@ export class Engine {
       this.write(cmi.completion, 'incomplete')
     }
 
-    if (this.profile.version === '1.2') {
+    if (this.profile.version === '1.2' || this.total > 0) {
       this.write(cmi.scoreMin, '0')
-      this.write(cmi.scoreMax, '100')
-    } else if (this.total > 0) {
-      this.write(cmi.scoreMin, '0')
-      this.write(cmi.scoreMax, String(round(this.total)))
+      this.write(cmi.scoreMax, String(round(this.scoreMax())))
     }
 
     this.evaluate()
@@ -485,8 +484,11 @@ export class Engine {
       return
     }
 
-    if (total > 0) {
-      this.write(cmi.scoreRaw, String(round(solved)))
+    // With a passing score the LMS judges success from score.scaled itself
+    // (SCORM 2004 RTE, ILIAS does): a score while quizzes are still open
+    // would read as failed, so it is reported once passed or done
+    if (total > 0 && (this.mastery === null || passed || done)) {
+      this.write(cmi.scoreRaw, String(round(scaled * this.scoreMax(), 2)))
       this.write(cmi.scoreScaled!, String(round(scaled)))
     }
 
@@ -506,6 +508,11 @@ export class Engine {
         this.write(cmi.success!, success)
       }
     }
+  }
+
+  /** in percent: Moodle grades a raw score as it is, ignoring min and max */
+  private scoreMax() {
+    return this.options.points && this.profile.version === '2004' ? this.total : 100
   }
 
   /** 1.2: only ever move a status up */

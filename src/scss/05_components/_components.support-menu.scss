@@ -51,7 +51,9 @@
   }
 
   @include tools.breakpoint('md') {
-    border: none;
+    // same logical property as above, the build turns both into :lang() rules
+    // of equal weight, `border: none` would lose against them
+    border-inline-start: none;
     height: 100%;
     position: relative;
     width: 100%;
@@ -213,6 +215,10 @@
   // language code (EN, DE, ...): capitals as tall as the icons next to it
   &__lang {
     font-size: 1.3em;
+    font-weight: 300;
+    // capitals have no descender, middle alignment puts them slightly too low
+    position: relative;
+    top: -0.05em;
     line-height: 1;
     vertical-align: middle;
   }

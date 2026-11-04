@@ -134,7 +134,9 @@ export class LiaScript {
         if (window.LIA.debug) {
           log.info(`LIA <<< (${msg.track}) :`, msg.message)
         }
-        sendTo(msg)
+        // classroom code is drawn at once (patched elm/core), otherwise the
+        // editor lags behind Yjs and local edits land at wrong positions
+        sendTo(msg, msg.service === 'sync' && msg.message.param?.cmd === 'code')
       }
     }
 
@@ -144,8 +146,11 @@ export class LiaScript {
 
     this.initEventSystem(
       document.body,
-      this.app.ports.event2js.subscribe,
-      sender,
+      (fn) => {
+        this.app.ports.event2js.subscribe(fn)
+        this.app.ports.event2js_.subscribe(fn)
+      },
+      sender
     )
 
     let self = this
