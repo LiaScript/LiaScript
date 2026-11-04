@@ -23,7 +23,9 @@ export class Connector extends SuspendConnector {
         }
         return Adapter.connect(bridge, warn)
       },
-      'H5P'
+      'H5P',
+      // points: Moodle keeps an H5P score as whole numbers (rawscore bigint)
+      true
     )
 
     if (bridge) bridge.flush = () => this.engine.flush()

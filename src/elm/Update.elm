@@ -55,6 +55,13 @@ will handle these events according to the topic value...
 port event2js : Event -> Cmd msg
 
 
+{-| Classroom code edits only. The patched elm/core (`patches/elm-patch`) sends
+on ports ending with `_` without a `setTimeout(0)` in between, otherwise fast
+typing gets overwritten by the view before it reaches the classroom.
+-}
+port event2js_ : Event -> Cmd msg
+
+
 {-| **@private:** Incoming events are mostly of type `Event`. `Event.topic` and
 `Event.section` are used to provide the correct path through the internal
 LiaScript implementation and thus modules and sub-modules. In most cases it is
@@ -129,7 +136,14 @@ message msg =
 batch : (a -> msg) -> Return model a sub -> Cmd msg
 batch map ret =
     ret.events
-        |> List.map event2js
+        |> List.map
+            (\event ->
+                if event.service == "sync" && event.message.cmd == "code" then
+                    event2js_ event
+
+                else
+                    event2js event
+            )
         |> (::) (Cmd.map map ret.command)
         |> Cmd.batch
 

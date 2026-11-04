@@ -40,6 +40,8 @@ export const Settings = {
     }
 
     this.data = data
+    // dark mode already for the loading screen, not only after the course is loaded
+    this.updateClassName(data)
 
     if (window.LIA) {
       window.LIA.settings = this
