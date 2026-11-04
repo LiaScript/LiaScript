@@ -319,9 +319,10 @@ class Connector extends Base.Connector {
         this.write('cmi.completion_status', 'incomplete')
       }
 
-      // set static score bounds once
+      // set static score bounds once, in percent: Moodle grades the raw
+      // score as it is, ignoring min and max
       this.write('cmi.score.min', '0')
-      this.write('cmi.score.max', JSON.stringify(this.totalScore))
+      this.write('cmi.score.max', '100')
 
       // restore location/bookmark
       const entry = this.scorm.GetValue('cmi.entry')
@@ -560,8 +561,17 @@ class Connector extends Base.Connector {
 
     // LMS writes (min/max already set at init)
     const round = (v: number) => Math.round(v * 10000) / 10000
-    this.write('cmi.score.scaled', JSON.stringify(round(score)))
-    this.write('cmi.score.raw', JSON.stringify(solved))
+    // With a passing score the LMS judges success from score.scaled itself
+    // (SCORM 2004 RTE, ILIAS does): a score while quizzes are still open
+    // would read as failed, so it is reported once passed or done
+    const reachable =
+      this.scaled_passing_score == null ||
+      (score >= this.scaled_passing_score && allSurveysCompleted) ||
+      (finished + solved === this.totalScore && allSurveysCompleted)
+    if (this.totalScore > 0 && reachable) {
+      this.write('cmi.score.scaled', JSON.stringify(round(score)))
+      this.write('cmi.score.raw', JSON.stringify(round(score * 100)))
+    }
     this.write('cmi.progress_measure', JSON.stringify(round(progress)))
 
     if (this.scaled_passing_score != null) {

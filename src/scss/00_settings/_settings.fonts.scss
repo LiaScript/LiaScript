@@ -23,6 +23,19 @@
   font-display: swap;
 }
 
+/* source-sans-pro light (@fontsource/source-sans-pro 5.0.8), thin as the icons */
+@font-face {
+  font-family: 'LiaSourceSansPro';
+  font-style: normal;
+  font-weight: 300;
+  src:
+    url('../assets/fonts/source-sans-pro/source-sans-pro-latin-300.woff2')
+      format('woff2'),
+    url('../assets/fonts/source-sans-pro/source-sans-pro-latin-300.woff')
+      format('woff');
+  font-display: swap;
+}
+
 /* source-sans-pro semibold */
 @font-face {
   font-family: 'LiaSourceSansPro';

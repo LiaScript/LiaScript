@@ -109,11 +109,17 @@ function throttle(
       window.clearTimeout(timerID)
     }
 
-    if (change !== null) storedChange.push(change)
     if (cursor) {
       storedCursor = cursor
     }
-    timerID = window.setTimeout(checkStoredArgs, delay)
+    // text changes go out at once, a held back change is overwritten by the
+    // next remote update and later applied at an outdated index
+    if (change !== null) {
+      storedChange.push(change)
+      checkStoredArgs()
+    } else {
+      timerID = window.setTimeout(checkStoredArgs, delay)
+    }
   }
 }
 
@@ -813,11 +819,35 @@ customElements.define(
 
       this.model.value = value
 
-      const cursor = this._editor.getCursorPosition()
+      // replace only the changed middle part, so ace shifts cursor and
+      // selection like for a typed edit (remote edits in the classroom)
+      const old = session.getValue()
+      let start = 0
+      while (start < old.length && old[start] === value[start]) start++
+      let end = 0
+      while (
+        end < old.length - start &&
+        end < value.length - start &&
+        old[old.length - 1 - end] === value[value.length - 1 - end]
+      )
+        end++
 
-      session.setValue(value)
+      if (old !== value) {
+        const doc = session.getDocument()
+        const Range = ace.require('ace/range').Range
+        session.replace(
+          Range.fromPoints(
+            doc.indexToPosition(start, 0),
+            doc.indexToPosition(old.length - end, 0)
+          ),
+          value.slice(start, value.length - end)
+        )
+        // as before with session.setValue, no undo across replaced values
+        session.getUndoManager().reset()
+      }
 
-      this._editor.moveCursorToPosition(cursor)
+      // replacing the text drops the gutter annotations, they were set before (e.g. on a version switch)
+      session.setAnnotations(this.model.annotations)
 
       this._blockEvents = false
       this.blockUpdate = false
