@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.2] - 04/11/2026
+
+- fix: SCORM 2004 – `cmi.score.raw` is reported in percent (max 100) as in SCORM 1.2, Moodle ignores min and max and turned 4 of 7 points into 4/100; with a passing score the score is only reported once passed or done, so the LMS no longer fails learners with open quizzes (H5P keeps points)
+- fix: classroom – no jumps or duplicates when typing fast in the shared editor, text changes are sent at once, remote edits replace only the changed part and keep cursor and selection
+- fix: editor – error annotations are kept when switching between code versions
+- fix: style – no border line next to the settings menu in production builds, the language code in the header is as thin and centered as the icons (Source Sans Pro Light)
+- fix: build keeps `<head>` in the built index.html, so the Makefile path rewriting works again
+- chore: removed the unneeded package-lock of the asset build
+
+
+## [2.6.1] - 03/11/2026
+
+- feat: dark mode for the loading screen
+- improve: editor – zsh, osascript and angelscript/asc mode mappings
+- fix: `LiaError` and `getLineNumber` are available again in course code, templates like Tau-Prolog, JSCPP, p5js or TensorflowJS failed; a queued eval is no longer dropped after `@onload`
+
+
 ## [2.6.0] - 02/11/2026
 
 - feat: suspend connectors for SCORM 1.2 and 2004 (opt-in) – the whole learner state (quizzes, surveys, tasks, code, settings, position) is kept compressed in `cmi.suspend_data`; SCORM 1.2 attempts stay open and checked answers are kept; H5P uses the same engine with a virtual SCORM 2004 LMS
