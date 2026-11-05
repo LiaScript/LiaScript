@@ -722,8 +722,9 @@ parsing model =
                     in
                     case lia.error of
                         Nothing ->
-                            -- stop after 4 iterations to update the view
-                            if modBy 4 (Lia.Script.pages lia) == 0 then
+                            -- yield after every 100,000 characters, so slow devices can show
+                            -- the progress, without paying the 4 ms timer clamp for every few sections
+                            if String.length code // 100000 /= (remaining_code |> Maybe.map String.length |> Maybe.withDefault 0) // 100000 then
                                 ( new_model, message LiaParse )
 
                             else
