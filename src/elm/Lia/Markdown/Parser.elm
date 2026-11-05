@@ -50,7 +50,7 @@ import Lia.Markdown.Table.Parser as Table
 import Lia.Markdown.Task.Parser as Task
 import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context as Context exposing (Context)
-import Lia.Parser.Helper exposing (c_frame, newline, newlines, peek, spaces, startsWith, trimSpaces)
+import Lia.Parser.Helper exposing (c_frame, mayContinue, newline, newlines, peek, spaces, startsWith, trimSpaces)
 import Lia.Parser.Indentation as Indent
 import Lia.Parser.Input as Input
 import Lia.Parser.Preprocessor exposing (title_tag)
@@ -475,7 +475,7 @@ isSetext : String -> Bool
 isSetext input =
     case Regex.findAtMost 1 firstLine input of
         [ { match } ] ->
-            List.any (\token -> String.contains token match) [ "<", "$$", "[^", "{", "\\", "@" ]
+            mayContinue match
                 || openInput match
                 || (input
                         |> String.dropLeft (String.length match)

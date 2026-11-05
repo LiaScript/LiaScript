@@ -93,12 +93,20 @@ optional pattern =
 -}
 push : String -> Parser Context ()
 push str =
-    modifyState
-        (\state ->
-            { state
-                | indentation_skip = True
-                , indentation = state.indentation ++ [ str ]
-            }
+    primitive
+        (\state stream ->
+            if List.length state.indentation >= 32 then
+                -- deeper nesting would overflow the stack
+                ( state, stream, Err [ "nested too deep" ] )
+
+            else
+                ( { state
+                    | indentation_skip = True
+                    , indentation = state.indentation ++ [ str ]
+                  }
+                , stream
+                , Ok ()
+                )
         )
 
 

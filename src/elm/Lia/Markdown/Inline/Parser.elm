@@ -55,7 +55,7 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Markdown.Quiz.Block.Parser as Input
 import Lia.Parser.Context as Context exposing (Context)
-import Lia.Parser.Helper exposing (inlineCode, peek, spaces, startsWith, trimSpaces)
+import Lia.Parser.Helper exposing (inlineCode, mayContinue, peek, spaces, startsWith, trimSpaces)
 import Lia.Parser.Input as Context
 import Regex exposing (Regex)
 
@@ -366,11 +366,16 @@ can cause problems with the reference parsing.
 -}
 ref_info : Parser Context Inlines
 ref_info =
-    string "["
-        |> ignore (Context.addAbort "]")
-        |> keep (manyTill inlines (string "]"))
-        |> ignore Context.popAbort
-        |> map (List.map unlink >> combine)
+    -- without any "]" left, every nested "[" would retry all reference types
+    peek (\rest -> startsWith "[" rest && String.contains "]" rest)
+        (string "["
+            |> ignore (Context.addAbort "]")
+            |> keep (manyTill inlines (string "]"))
+            |> ignore Context.popAbort
+            |> map (List.map unlink >> combine)
+            |> Context.nested
+        )
+        (fail "no closing ]")
 
 
 {-| **@private:** See `ref_info`.
@@ -568,9 +573,41 @@ between_ str =
 -}
 between_2 : String -> String -> Parser Context Inline
 between_2 begin end =
-    string begin
-        |> keep (many1Till inlines (string end))
-        |> map toContainer
+    peek (mayClose begin end)
+        (string begin
+            |> keep (many1Till inlines (string end))
+            |> map toContainer
+            |> Context.nested
+        )
+        (fail "not closed")
+
+
+{-| **@private:** Without a closing marker in the rest of the line, emphasis
+cannot be closed, unless something in it spans more lines or expands into more
+text (see `mayContinue`). Without this check, every unmatched marker doubles
+the parsing time of the line.
+-}
+mayClose : String -> String -> String -> Bool
+mayClose begin end remaining =
+    if startsWith begin remaining then
+        let
+            rest =
+                case Regex.findAtMost 1 restOfLine (String.dropLeft (String.length begin) remaining) of
+                    [ m ] ->
+                        m.match
+
+                    _ ->
+                        ""
+        in
+        String.contains end rest || mayContinue rest
+
+    else
+        False
+
+
+restOfLine : Regex.Regex
+restOfLine =
+    Regex.fromString "^[^\\n]*" |> Maybe.withDefault Regex.never
 
 
 {-| **@private:** Wrap multiple inlines into a container.

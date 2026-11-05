@@ -67,6 +67,7 @@ tag parser ( tagType, attributes ) =
                             (closingTag name)
                         )
                     |> ignore Context.popAbort
+                    |> Context.nested
                 )
                 (fail ("no closing tag: " ++ name))
 
@@ -81,18 +82,29 @@ tag parser ( tagType, attributes ) =
             succeed (OuterHtml name attributes)
                 |> ignore (regex "[ \t]*>")
                 |> andMap (stringTill (closingTag name))
+                |> requireClosing name
 
         Tag.LiaKeep ->
             whitespace
                 |> ignore (string ">")
                 |> keep (stringTill (closingTag "lia-keep"))
                 |> map InnerHtml
+                |> requireClosing "lia-keep"
 
         Tag.SVG ->
             whitespace
                 |> ignore (string ">")
                 |> keep (stringTill (closingTag "svg"))
                 |> andThen (svg parser attributes)
+                |> requireClosing "svg"
+
+
+{-| **@private:** Fail at once without a closing tag, otherwise `stringTill`
+scans up to the end of the input for every unclosed tag.
+-}
+requireClosing : String -> Parser Context a -> Parser Context a
+requireClosing name p =
+    peek (Regex.contains (closingTagRegex name)) p (fail ("no closing tag: " ++ name))
 
 
 {-| An `<svg>` without `<foreignObject>`s is kept as raw HTML. Otherwise the

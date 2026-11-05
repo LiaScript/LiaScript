@@ -4,6 +4,7 @@ module Lia.Parser.Context exposing
     , checkAbort
     , getSeed
     , init
+    , nested
     , popAbort
     , searchIndex
     )
@@ -17,6 +18,7 @@ import Array
 import Combine
     exposing
         ( Parser
+        , ignore
         , keep
         , modifyState
         , primitive
@@ -50,6 +52,8 @@ control:
     next step
   - `abort`: a stack of strings that end the current inline parsing (e.g. the
     closing tag of an HTML element)
+  - `depth`: the current nesting of HTML elements, links and emphasis, see
+    `nested`
   - `****_vector`: any kind of state to preserve for the applied sub-modules.
     Normally new states are pushed on this stack/array and their position (id) is
     later used to identify the required element from within the views.
@@ -73,6 +77,7 @@ control:
 type alias Context =
     { indentation : List String
     , abort : List String
+    , depth : Int
     , indentation_skip : Bool
     , task_vector : Task.Vector
     , code_model : Code.Model
@@ -103,6 +108,7 @@ init : Maybe Int -> Maybe (String -> String) -> Definition -> Context
 init seed search_index global =
     { indentation = []
     , abort = []
+    , depth = 0
     , indentation_skip = False
     , task_vector = Array.empty
     , code_model = Code.init
@@ -155,6 +161,24 @@ getSeed =
 addAbort : String -> Parser Context ()
 addAbort name =
     modifyState (\s -> { s | abort = name :: s.abort })
+
+
+{-| Parse nested content (HTML elements, links, emphasis) one level deeper.
+More than 32 levels fail, so that input like `<div>` x 300 or `[` x 200 cannot
+overflow the stack, such content is shown as text instead.
+-}
+nested : Parser Context a -> Parser Context a
+nested p =
+    primitive
+        (\state stream ->
+            if state.depth >= 32 then
+                ( state, stream, Err [ "nested too deep" ] )
+
+            else
+                ( { state | depth = state.depth + 1 }, stream, Ok () )
+        )
+        |> keep p
+        |> ignore (modifyState (\state -> { state | depth = state.depth - 1 }))
 
 
 {-| Remove the last pushed abort string.

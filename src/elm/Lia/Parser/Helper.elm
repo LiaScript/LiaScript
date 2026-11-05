@@ -1,6 +1,7 @@
 module Lia.Parser.Helper exposing
     ( c_frame
     , inlineCode
+    , mayContinue
     , newline
     , newlines
     , peek
@@ -120,3 +121,12 @@ inlineCode =
         |> keep (regex "([^`\n\\\\]*|\\\\`|\\\\)+")
         |> ignore (string "`")
         |> map (String.replace "\\`" "`")
+
+
+{-| Checks that look only at one line use this: the text contains something
+that might span more lines or is replaced by more text (HTML and comments,
+block formulas, footnotes, effects, line breaks, macros).
+-}
+mayContinue : String -> Bool
+mayContinue text =
+    List.any (\token -> String.contains token text) [ "<", "$$", "[^", "{", "\\", "@" ]
