@@ -14,6 +14,7 @@ import Combine
         , maybe
         , modifyState
         , onsuccess
+        , regex
         , string
         , succeed
         , withState
@@ -33,7 +34,8 @@ inline, the text is parsed with the given inline parser.
 inline : (Context -> String -> Inlines) -> Parser Context (Parameters -> Inline)
 inline parser =
     string "[^"
-        |> keep (stringTill (string "]"))
+        |> keep footnoteKey
+        |> ignore (string "]")
         |> map Tuple.pair
         |> andMap
             (maybe
@@ -53,7 +55,8 @@ block is returned.
 block : Parser Context Markdown.Blocks -> Parser Context ()
 block p =
     string "[^"
-        |> keep (stringTill (string "]:"))
+        |> keep footnoteKey
+        |> ignore (string "]:")
         |> map Tuple.pair
         |> ignore (Indent.push "[ ]{2,}")
         |> andMap p
@@ -74,3 +77,11 @@ store ( key, text ) =
 add : ( String, Markdown.Blocks ) -> Parser Context ()
 add ( key, body ) =
     modifyState (\s -> { s | footnotes = Dict.insert key body s.footnotes })
+
+
+{-| **@private:** A key ends at the line, otherwise `[^1]` at the start of a
+paragraph would swallow everything up to a later `]:` (or `]`).
+-}
+footnoteKey : Parser Context String
+footnoteKey =
+    regex "[^\\]\n]*"
