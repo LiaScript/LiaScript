@@ -12,6 +12,7 @@ import Combine
         ( Parser
         , andMap
         , choice
+        , consumed
         , fail
         , ignore
         , keep
@@ -66,13 +67,13 @@ body =
     , regex "(`{3,})[\\S\\s]*?\\1" -- code_block or ascii art
     , regex "`.+?`" -- code_block or ascii art
     , regexWith { caseInsensitive = True, multiline = False } "<(?:area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)[ \t]*/?>"
-    , regex "(?:<([\\w+\\-]+)[\\S\\s]*?<[ \t]*/[ \t]*\\1[ \t]*>|`|<)"
+    , regex "(?:<([\\w+\\-]+)(?=[\\s/>])[\\S\\s]*?<[ \t]*/[ \t]*\\1[ \t]*>|`|<)"
     , regex "#+(\\w|[^\\u0000-\\u007F]|[ \t]*\n)"
     , withColumn notFirstColumn |> keep (string "#")
     ]
         |> choice
         |> many
-        |> map String.concat
+        |> consumed
 
 
 {-| A section with its title and the unparsed body.
