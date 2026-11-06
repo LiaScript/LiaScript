@@ -20,6 +20,7 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Section exposing (Section, Sections)
 import Lia.Utils exposing (focus)
 import List.Extra
+import Regex
 import Set
 
 
@@ -297,42 +298,61 @@ scan pattern =
                     let
                         text =
                             String.toLower (section.code ++ stringify section.title)
-                    in
-                    { section
-                        | visible =
+
+                        visible =
                             case List.filter (\word -> not (String.contains word text)) words of
                                 [] ->
                                     True
 
                                 missing ->
-                                    let
-                                        tokens =
-                                            text
-                                                |> String.map
-                                                    (\c ->
-                                                        if Char.isAlphaNum c || Char.toCode c > 127 then
-                                                            c
+                                    -- shorter words have to match exactly
+                                    List.all (\word -> String.length word >= 4) missing
+                                        && (let
+                                                tokens =
+                                                    Regex.split separator text
+                                            in
+                                            List.all (\word -> List.any (nearToken (String.toList word)) tokens) missing
+                                           )
+                    in
+                    -- the same record keeps the lazy table of contents
+                    if visible == section.visible then
+                        section
 
-                                                        else
-                                                            ' '
-                                                    )
-                                                |> String.words
-                                                |> List.map String.toList
-                                    in
-                                    List.all
-                                        (\word ->
-                                            String.length word >= 4 && List.any (near (String.toList word)) tokens
-                                        )
-                                        missing
-                    }
+                    else
+                        { section | visible = visible }
                 )
+
+
+{-| Everything but letters, digits and non-ASCII characters separates words.
+-}
+separator : Regex.Regex
+separator =
+    Regex.fromString "[^a-z0-9\\u0080-\\uFFFF]+"
+        |> Maybe.withDefault Regex.never
+
+
+{-| `near`, but only tokens that start with the first or second character of
+`word` (one of the two first characters) can be near, so all others are not
+turned into lists of characters.
+-}
+nearToken : List Char -> String -> Bool
+nearToken word token =
+    case word of
+        w0 :: w1 :: _ ->
+            case String.toList (String.left 2 token) of
+                t0 :: rest ->
+                    (t0 == w0 || t0 == w1 || List.member w0 rest || List.member w1 rest)
+                        && near word (String.toList token)
+
+                [] ->
+                    False
+
+        _ ->
+            near word (String.toList token)
 
 
 {-| Typo tolerance: `word` differs from the start of `token` by at most one
 wrong, missing, extra or swapped character.
-
-ponytail: tokenizes the whole section on every miss, precompute tokens if large courses lag
-
 -}
 near : List Char -> List Char -> Bool
 near word token =
