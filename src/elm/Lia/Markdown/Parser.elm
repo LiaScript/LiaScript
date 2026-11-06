@@ -206,7 +206,33 @@ elements =
             |> andMap paragraph
             |> checkQuiz
         , htmlComment
+        , problemTooDeep
         ]
+
+
+{-| Beyond the nesting limit, a block effect `{{1}}` for a single block becomes
+a `Problem`, as on the top level. Otherwise all enclosing effects would fail
+too, and with a block effect in every line, the whole chain of 64 effects would
+be parsed again for every following line. Effects with several blocks
+(`{{1}}` followed by `****`) are excluded, as a `Problem` their chain would
+swallow the rest of the section.
+-}
+problemTooDeep : Parser Context Markdown.Block
+problemTooDeep =
+    withState
+        (\state ->
+            if Context.tooDeep state then
+                peek (Regex.contains singleEffect) problem (fail "not a single effect")
+
+            else
+                fail "not too deep"
+        )
+
+
+singleEffect : Regex.Regex
+singleEffect =
+    Regex.fromString "^[\\t ]*{{[^\\n]*\\n(?![\\t ]*\\*{3,})"
+        |> Maybe.withDefault Regex.never
 
 
 {-| Turn the block into a gap-text quiz, if it contains quiz inputs. The
@@ -470,13 +496,17 @@ its first line twice. If the first line contains nothing that might span
 multiple lines (HTML, comments, block formulas, open quiz inputs, footnotes,
 effects, line breaks, or macros and macro listings), then the underline has to follow directly in
 the next line.
+
+A line starting with a block marker (`>`, `<`, a list item) is tried as a
+header at every level of nested quotes, lists or HTML blocks, so its underline
+has to follow directly in any case. Otherwise HTML spanning many lines would be
+parsed again on every level.
 -}
 isSetext : String -> Bool
 isSetext input =
     case Regex.findAtMost 1 firstLine input of
         [ { match } ] ->
-            mayContinue match
-                || openInput match
+            (not (Regex.contains blockStart match) && (mayContinue match || openInput match))
                 || (input
                         |> String.dropLeft (String.length match)
                         |> (\next -> startsWith "===" next || startsWith "---" next)
@@ -498,6 +528,11 @@ openInput line_ =
 
         Nothing ->
             False
+
+
+blockStart : Regex.Regex
+blockStart =
+    Regex.fromString "^[ \\t]*(?:[<>]|[*+-][ \\t]|-?\\d+\\.)" |> Maybe.withDefault Regex.never
 
 
 firstLine : Regex.Regex
@@ -718,7 +753,7 @@ paragraph =
     checkParagraph
         |> ignore Indent.skip
         |> keep (many1 (Indent.check |> ignore (regex "[ \t]*") |> ignore allowedLine |> keep line |> ignore newline))
-        |> map (List.intersperse [ Chars " " [] ] >> List.concat >> combine)
+        |> map (joinLines >> combine)
 
 
 {-| A paragraph line cannot be empty and cannot start another block: a
@@ -727,6 +762,19 @@ solution `***`, a hint `[[?]]`, a list, a code block or a quote.
 allowedLine : Parser Context ()
 allowedLine =
     notFollowedBy (regexStart "[ \t]*\n|\\*\\*\\*+\n|\\[\\[\\?\\]\\]|[+*-] |```|>|\\d+\\. ")
+
+
+{-| Join the lines of a paragraph with a space. `List.intersperse` and
+`List.concat` use `foldr`, which takes stack per line, a loop does not.
+-}
+joinLines : List Inlines -> Inlines
+joinLines lines =
+    case List.reverse lines of
+        [] ->
+            []
+
+        last :: before ->
+            List.foldl (\line rest -> line ++ Chars " " [] :: rest) last before
 
 
 {-| A paragraph cannot start with a marker for Comments `--{{1}}--` or Effects

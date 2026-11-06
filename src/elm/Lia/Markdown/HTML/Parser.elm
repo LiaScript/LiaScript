@@ -12,6 +12,8 @@ import Combine
         , manyTill
         , map
         , maybe
+        , or
+        , primitive
         , putState
         , regex
         , runParser
@@ -23,7 +25,8 @@ import Combine
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
 import Lia.Markdown.HTML.Types as Tag exposing (Node(..))
 import Lia.Parser.Context as Context exposing (Context)
-import Lia.Parser.Helper exposing (newlines, peek, stringTill)
+import Lia.Parser.Helper exposing (newlines, peek, startsWith, stringTill, trimSpaces)
+import Lia.Parser.Indentation as Indent
 import Regex
 
 
@@ -55,21 +58,27 @@ tag parser ( tagType, attributes ) =
         Tag.HtmlNode name ->
             -- without a closing tag the content would be parsed up to the end
             -- of the input, and every tag within it again and again
-            peek (Regex.contains (closingTagRegex name))
-                (succeed (Node name attributes)
-                    |> ignore (regex "[ \t]*>[ \t]*\n*")
-                    |> ignore (Context.addAbort ("</" ++ name ++ ">"))
-                    |> andMap
-                        (manyTill
-                            (newlines
-                                |> keep parser
-                            )
-                            (closingTag name)
+            (succeed (Node name attributes)
+                |> ignore (regex "[ \t]*>[ \t]*\n*")
+                |> ignore (Context.addAbort ("</" ++ name ++ ">"))
+                |> andMap
+                    (manyTill
+                        (newlines
+                            |> keep parser
                         )
-                    |> ignore Context.popAbort
-                    |> Context.nested
-                )
-                (fail ("no closing tag: " ++ name))
+                        (or (closingTag name)
+                            -- within a quote the closing tag follows its `> `
+                            (newlines
+                                |> ignore atLineStart
+                                |> ignore (peek (trimSpaces >> startsWith ">") Indent.check (fail ""))
+                                |> keep (closingTag name)
+                            )
+                        )
+                    )
+                |> ignore Context.popAbort
+            )
+                |> requireClosingOf name
+                |> Context.nested
 
         Tag.HtmlVoidNode name ->
             succeed (Node name attributes [])
@@ -100,11 +109,96 @@ tag parser ( tagType, attributes ) =
 
 
 {-| **@private:** Fail at once without a closing tag, otherwise `stringTill`
-scans up to the end of the input for every unclosed tag.
+or the content parser run up to the end of the input for every unclosed tag.
+`findAtMost 1` stops at the first closing tag, `Regex.contains` would collect
+all of them.
 -}
 requireClosing : String -> Parser Context a -> Parser Context a
 requireClosing name p =
-    peek (Regex.contains (closingTagRegex name)) p (fail ("no closing tag: " ++ name))
+    peek (Regex.findAtMost 1 (closingTagRegex name) >> List.isEmpty >> not) p (fail ("no closing tag: " ++ name))
+
+
+{-| **@private:** Fail at once, if the element is not closed, so that `<div>`
+x 20 with a single `</div>` is not parsed in every combination of elements and
+text. Opening and closing tags with the same name are counted, the element is
+closed by the first closing tag on its own level, as in HTML, the innermost
+opening tag gets the next closing tag. Tags within code, comments, escapes,
+`<lia-keep>` and `<svg>` are skipped.
+-}
+requireClosingOf : String -> Parser Context a -> Parser Context a
+requireClosingOf name p =
+    peek (closes (sameTags name) 0) p (fail ("no closing tag: " ++ name))
+
+
+closes : Regex.Regex -> Int -> String -> Bool
+closes tags depth input =
+    let
+        matches =
+            Regex.findAtMost 64 tags input
+    in
+    case countTags depth matches of
+        Nothing ->
+            True
+
+        Just level ->
+            case List.reverse matches of
+                last :: _ ->
+                    if List.length matches < 64 then
+                        False
+
+                    else
+                        closes tags level (String.dropLeft (last.index + String.length last.match) input)
+
+                [] ->
+                    False
+
+
+{-| The level after all `matches`, `Nothing` if one of them closes the
+element.
+-}
+countTags : Int -> List Regex.Match -> Maybe Int
+countTags depth matches =
+    case matches of
+        [] ->
+            Just depth
+
+        m :: ms ->
+            case m.submatches of
+                (Just opening) :: _ ->
+                    if String.endsWith "/>" opening then
+                        countTags depth ms
+
+                    else
+                        countTags (depth + 1) ms
+
+                _ :: (Just _) :: _ ->
+                    if depth == 0 then
+                        Nothing
+
+                    else
+                        countTags (depth - 1) ms
+
+                _ ->
+                    countTags depth ms
+
+
+{-| Opening tags `<name ...>` (self-closing `<name/>` too) and closing tags
+`</name>` (see `closingTagRegex`) of one element name, as the first and second
+submatch. Code blocks, inline code, comments, escaped characters, `<lia-keep>`
+and `<svg>` match without a submatch, so that tags within them are skipped.
+-}
+sameTags : String -> Regex.Regex
+sameTags name =
+    Regex.fromStringWith { caseInsensitive = True, multiline = False }
+        ("`{3,}[\\s\\S]*?`{3,}|`[^`\n]*`|<!--[\\s\\S]*?-->|\\\\[\\s\\S]"
+            ++ "|<lia-keep[\\s\\S]*?</lia-keep\\s*>|<svg(?=[\\s>])[\\s\\S]*?</svg\\s*>"
+            ++ "|(<"
+            ++ name
+            ++ "(?=[\\s/>])[^>]*>)|(</[ \t]*"
+            ++ name
+            ++ "\\s*>)"
+        )
+        |> Maybe.withDefault Regex.never
 
 
 {-| An `<svg>` without `<foreignObject>`s is kept as raw HTML. Otherwise the
@@ -284,3 +378,18 @@ voidElements =
     , "track"
     , "wbr"
     ]
+
+
+{-| **@private:** Succeed only at the start of a line, so that the quote prefix
+of a closing tag (see `tag`) is not taken from a `>` within the line.
+-}
+atLineStart : Parser s ()
+atLineStart =
+    primitive
+        (\state stream ->
+            if stream.position == 0 || String.slice (stream.position - 1) stream.position stream.data == "\n" then
+                ( state, stream, Ok () )
+
+            else
+                ( state, stream, Err [ "not at line start" ] )
+        )

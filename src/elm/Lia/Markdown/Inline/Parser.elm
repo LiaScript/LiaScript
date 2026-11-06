@@ -364,14 +364,12 @@ inline_url =
 are not turned into links, nested links are not supported by markdown and
 can cause problems with the reference parsing.
 -}
-ref_info : Parser Context Inlines
-ref_info =
+ref_info : Int -> Parser Context Inlines
+ref_info level =
     -- without any "]" left, every nested "[" would retry all reference types
     peek (\rest -> startsWith "[" rest && String.contains "]" rest)
         (string "["
-            |> ignore (Context.addAbort "]")
-            |> keep (manyTill inlines (string "]"))
-            |> ignore Context.popAbort
+            |> keep (manyTill inlines (string "]") |> Context.inRef level)
             |> map (List.map unlink >> combine)
             |> Context.nested
         )
@@ -466,18 +464,48 @@ refToEmbed ref =
 -}
 reference : Parser Context (Parameters -> Inline)
 reference =
-    [ refEmbed
-    , refMovie
-    , refAudio
-    , refImage
-    , refMail
-    , refPreview
-    , refQr
-    , refLink
-    ]
-        |> choice
-        |> (\references -> peek (String.left 1 >> (\c -> c == "[" || c == "!" || c == "?")) references (fail "no reference"))
+    withState
+        (\state ->
+            case Context.refLevel state of
+                0 ->
+                    references
+
+                1 ->
+                    mediaReferences
+
+                _ ->
+                    fail "no reference"
+        )
+        |> (\refs -> peek (String.left 1 >> (\c -> c == "[" || c == "!" || c == "?")) refs (fail "no reference"))
         |> map Ref
+
+
+{-| **@private:** All references, see `reference`.
+-}
+references : Parser Context Reference
+references =
+    choice
+        [ refEmbed
+        , refMovie
+        , refAudio
+        , refImage
+        , refMail
+        , refPreview
+        , refQr
+        , refLink
+        ]
+
+
+{-| **@private:** The references allowed within link text, see `reference`.
+-}
+mediaReferences : Parser Context Reference
+mediaReferences =
+    choice
+        [ refEmbed
+        , refMovie
+        , refAudio
+        , refImage
+        ]
 
 
 {-| Parse a single media reference (image, movie, audio, qr-code, or embed)
@@ -498,7 +526,7 @@ mediaReference =
 
 refMail : Parser Context Reference
 refMail =
-    ref_pattern Mail ref_info email
+    ref_pattern Mail (ref_info 1) email
 
 
 {-| **@private:** `[preview-lia](url)` or `[preview-link](url)`, the title is
@@ -534,32 +562,32 @@ refQr =
 
 refLink : Parser Context Reference
 refLink =
-    ref_pattern Link ref_info ref_url_1
+    ref_pattern Link (ref_info 1) ref_url_1
 
 
 refImage : Parser Context Reference
 refImage =
     string "!"
-        |> keep (ref_pattern Image ref_info ref_url_2)
+        |> keep (ref_pattern Image (ref_info 2) ref_url_2)
 
 
 refAudio : Parser Context Reference
 refAudio =
     string "?"
-        |> keep (ref_pattern Audio ref_info (map Multimedia.audio ref_url_2))
+        |> keep (ref_pattern Audio (ref_info 2) (map Multimedia.audio ref_url_2))
         |> map refToEmbed
 
 
 refMovie : Parser Context Reference
 refMovie =
     string "!?"
-        |> keep (ref_pattern Movie ref_info (map Multimedia.movie ref_url_2))
+        |> keep (ref_pattern Movie (ref_info 2) (map Multimedia.movie ref_url_2))
 
 
 refEmbed : Parser Context Reference
 refEmbed =
     string "??"
-        |> keep (ref_pattern Embed ref_info ref_url_1)
+        |> keep (ref_pattern Embed (ref_info 2) ref_url_1)
 
 
 {-| **@private:** Inlines enclosed by `str`.
@@ -578,6 +606,8 @@ between_2 begin end =
             |> keep (many1Till inlines (string end))
             |> map toContainer
             |> Context.nested
+            |> Context.emphasized
+            |> Context.remember begin
         )
         (fail "not closed")
 
@@ -627,8 +657,9 @@ toContainer inline_list =
 strings : Parser Context (Parameters -> Inline)
 strings =
     Context.checkAbort
+        |> ignore Context.checkBracket
         |> keep
-            (choice
+            (Context.choice
                 [ inline_url
                 , ellipsis
                 , stringBase
@@ -650,7 +681,7 @@ strings =
 -}
 stringWithStyle : Parser Context (Parameters -> Inline)
 stringWithStyle =
-    choice
+    Context.choice
         [ between_ "**" |> map Bold
         , between_ "__" |> map Bold
         , between_ "*" |> map Italic
@@ -680,15 +711,14 @@ space) gets the typographic quotation marks of the document language.
 -}
 stringQuote : Parser Context (Parameters -> Inline)
 stringQuote =
-    or
-        (between_ "\""
+    Context.choice
+        [ between_ "\""
             |> map (\text ( start, end ) -> Container [ Chars start [], text, Chars end [] ])
             |> andMap (withState (.defines >> .typographic_quotation >> .double >> succeed))
-        )
-        (between_2 " '" "'"
+        , between_2 " '" "'"
             |> map (\text ( start, end ) -> Container [ Chars (" " ++ start) [], text, Chars end [] ])
             |> andMap (withState (.defines >> .typographic_quotation >> .single >> succeed))
-        )
+        ]
 
 
 dashes : Parser Context (Parameters -> Inline)

@@ -2,10 +2,16 @@ module Lia.Parser.Context exposing
     ( Context
     , addAbort
     , checkAbort
+    , checkBracket
+    , choice
+    , emphasized
     , getSeed
+    , inRef
     , init
     , nested
     , popAbort
+    , refLevel
+    , remember
     , searchIndex
     , tooDeep
     )
@@ -19,6 +25,7 @@ import Array
 import Combine
     exposing
         ( Parser
+        , app
         , ignore
         , keep
         , modifyState
@@ -26,6 +33,7 @@ import Combine
         , succeed
         , withState
         )
+import Dict exposing (Dict)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
@@ -53,8 +61,8 @@ control:
     next step
   - `abort`: a stack of strings that end the current inline parsing (e.g. the
     closing tag of an HTML element)
-  - `depth`: the current nesting of HTML elements, links, emphasis and effects, see
-    `nested`
+  - `nesting`: the current nesting of HTML elements, links, emphasis and
+    effects, see `Nesting`
   - `****_vector`: any kind of state to preserve for the applied sub-modules.
     Normally new states are pushed on this stack/array and their position (id) is
     later used to identify the required element from within the views.
@@ -78,7 +86,7 @@ control:
 type alias Context =
     { indentation : List String
     , abort : List String
-    , depth : Int
+    , nesting : Nesting
     , indentation_skip : Bool
     , task_vector : Task.Vector
     , code_model : Code.Model
@@ -102,6 +110,36 @@ type alias Context =
     }
 
 
+{-| The nesting of inline elements and where they failed before:
+
+  - `depth`: of HTML elements, links, emphasis and effects, see `nested`
+  - `emphasis`: of emphasis and quotes only, see `emphasized`
+  - `failed`: see `remember`, `failures` only grows with it, so that `choice`
+    can see at once if an alternative added a failure
+
+These are not fields of `Context`, one more field there makes V8 copy the
+record much slower, the whole parser took about 20% longer.
+
+-}
+type alias Nesting =
+    { depth : Int
+    , emphasis : Int
+    , failures : Int
+    , failed : Dict ( Int, Int, String ) Failure
+    }
+
+
+{-| Everything else, a failure of `remember` depends on.
+-}
+type alias Failure =
+    { input : String
+    , abort : List String
+    , indentation : List String
+    , inputs : Bool
+    , emphasis : Int
+    }
+
+
 {-| Initialize the current `Context` with a searchIndex function and the global
 definitions.
 -}
@@ -109,7 +147,12 @@ init : Maybe Int -> Maybe (String -> String) -> Definition -> Context
 init seed search_index global =
     { indentation = []
     , abort = []
-    , depth = 0
+    , nesting =
+        { depth = 0
+        , emphasis = 0
+        , failures = 0
+        , failed = Dict.empty
+        }
     , indentation_skip = False
     , task_vector = Array.empty
     , code_model = Code.init
@@ -170,7 +213,7 @@ quotes) shares one limit of 64 levels, so that input like `<div>` x 300 or
 -}
 tooDeep : Context -> Bool
 tooDeep state =
-    state.depth + List.length state.indentation >= 64
+    state.nesting.depth + List.length state.indentation >= 64
 
 
 {-| Parse nested content (HTML elements, links, emphasis, effects) one level
@@ -184,10 +227,102 @@ nested p =
                 ( state, stream, Err [ "nested too deep" ] )
 
             else
-                ( { state | depth = state.depth + 1 }, stream, Ok () )
+                ( deeper 1 0 state, stream, Ok () )
         )
         |> keep p
-        |> ignore (modifyState (\state -> { state | depth = state.depth - 1 }))
+        |> ignore (modifyState (deeper -1 0))
+
+
+{-| Emphasis and quotes can be nested by 5 levels
+(`**a *"b _x^2^_"* c**`), deeper markers are shown as text. Mixed emphasis that cannot be closed (see
+`remember`) is tried again on every level, so every level multiplies the time.
+-}
+emphasized : Parser Context a -> Parser Context a
+emphasized p =
+    primitive
+        (\state stream ->
+            if state.nesting.emphasis >= 5 then
+                ( state, stream, Err [ "emphasis too deep" ] )
+
+            else
+                ( deeper 0 1 state, stream, Ok () )
+        )
+        |> keep p
+        |> ignore (modifyState (deeper 0 -1))
+
+
+deeper : Int -> Int -> Context -> Context
+deeper depth emphasis state =
+    let
+        nesting =
+            state.nesting
+    in
+    { state
+        | nesting =
+            { nesting
+                | depth = nesting.depth + depth
+                , emphasis = nesting.emphasis + emphasis
+            }
+    }
+
+
+{-| Parse the text `[...]` of a link (1) or of a media reference (2), it ends
+at the next `]`. Media text pushes the abort string `"]"` twice, so that
+`refLevel` can tell both apart without another field in the context.
+-}
+inRef : Int -> Parser Context a -> Parser Context a
+inRef level p =
+    modifyState (\s -> { s | abort = List.repeat level "]" ++ s.abort })
+        |> keep p
+        |> ignore (modifyState (\s -> { s | abort = List.drop level s.abort }))
+
+
+{-| 0 outside of reference text, 1 within link text (only media references are
+allowed), 2 within media text (no references), see `inRef`.
+-}
+refLevel : Context -> Int
+refLevel state =
+    case dropTillBracket state.abort of
+        [] ->
+            0
+
+        _ :: "]" :: _ ->
+            2
+
+        _ ->
+            1
+
+
+dropTillBracket : List String -> List String
+dropTillBracket abort =
+    case abort of
+        "]" :: _ ->
+            abort
+
+        _ :: rest ->
+            dropTillBracket rest
+
+        [] ->
+            []
+
+
+{-| Within the text of a reference, a `[` cannot be plain text. It starts an
+inner reference that ends with the same `](...)`, and the inner one wins, since
+markdown does not allow links within links. Failing here, the outer reference
+fails at the first `[` and does not parse its text again for every `[` within
+it, which would be exponential. Beyond the nesting limit no inner reference
+can be parsed, there the `[` is text.
+-}
+checkBracket : Parser Context ()
+checkBracket =
+    primitive
+        (\state stream ->
+            if startsWith "[" stream.input && List.member "]" state.abort && not (tooDeep state) then
+                ( state, stream, Err [ "[ within reference" ] )
+
+            else
+                ( state, stream, Ok () )
+        )
 
 
 {-| Remove the last pushed abort string.
@@ -218,3 +353,95 @@ checkAbort =
                 [] ->
                     ( state, stream, Ok () )
         )
+
+
+{-| Fail at once, where `p` (called `name`) has already failed with the same
+input and state, otherwise run `p` and remember if it fails.
+
+Mixed emphasis like `*_~*_~ x *_~*_~` has closing markers, but they do not
+match. Every marker that fails is taken as text and the next ones are tried
+again, without this, every marker doubles the time.
+
+The failure is passed on with the state, which `Combine.choice` drops, so
+`choice` must be used on the way back to where `p` is tried again.
+
+-}
+remember : String -> Parser Context a -> Parser Context a
+remember name p =
+    primitive
+        (\state stream ->
+            let
+                nesting =
+                    state.nesting
+
+                key =
+                    ( stream.position, nesting.depth, name )
+
+                here =
+                    { input = stream.input
+                    , abort = state.abort
+                    , indentation = state.indentation
+                    , inputs = state.input.isEnabled
+                    , emphasis = nesting.emphasis
+                    }
+            in
+            if Dict.get key nesting.failed == Just here then
+                ( state, stream, Err [ "failed before" ] )
+
+            else
+                case app p state stream of
+                    ( estate, _, Err ms ) ->
+                        ( { state
+                            | nesting =
+                                { nesting
+                                    | failures = estate.nesting.failures + 1
+                                    , failed = Dict.insert key here estate.nesting.failed
+                                }
+                          }
+                        , stream
+                        , Err ms
+                        )
+
+                    ok ->
+                        ok
+        )
+
+
+{-| Like `Combine.choice`, but the failures `remember`ed by one alternative are
+passed on to the next ones.
+-}
+choice : List (Parser Context a) -> Parser Context a
+choice parsers =
+    let
+        try list state stream errors =
+            case list of
+                [] ->
+                    ( state, stream, Err (List.reverse errors) )
+
+                p :: rest ->
+                    case app p state stream of
+                        ( estate, _, Err ms ) ->
+                            try rest
+                                (if estate.nesting.failures == state.nesting.failures then
+                                    state
+
+                                 else
+                                    let
+                                        nesting =
+                                            state.nesting
+                                    in
+                                    { state
+                                        | nesting =
+                                            { nesting
+                                                | failures = estate.nesting.failures
+                                                , failed = estate.nesting.failed
+                                            }
+                                    }
+                                )
+                                stream
+                                (List.foldl (::) errors ms)
+
+                        ok ->
+                            ok
+    in
+    primitive (\state stream -> try parsers state stream [])
