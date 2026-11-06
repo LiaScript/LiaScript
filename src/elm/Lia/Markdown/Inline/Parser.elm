@@ -295,7 +295,7 @@ withAnnotations parsers =
 -}
 effect : Parser Context (Parameters -> Inline)
 effect =
-    Effect.inline inlines |> map EInline
+    Effect.inline inlines |> Context.nested |> map EInline
 
 
 {-| **@private:** A quiz input `[[ ... ]]`, which is only allowed if the

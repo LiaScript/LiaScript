@@ -7,6 +7,7 @@ module Lia.Parser.Context exposing
     , nested
     , popAbort
     , searchIndex
+    , tooDeep
     )
 
 {-| This module defines everything that is necessary to deal with the state of
@@ -52,7 +53,7 @@ control:
     next step
   - `abort`: a stack of strings that end the current inline parsing (e.g. the
     closing tag of an HTML element)
-  - `depth`: the current nesting of HTML elements, links and emphasis, see
+  - `depth`: the current nesting of HTML elements, links, emphasis and effects, see
     `nested`
   - `****_vector`: any kind of state to preserve for the applied sub-modules.
     Normally new states are pushed on this stack/array and their position (id) is
@@ -163,15 +164,23 @@ addAbort name =
     modifyState (\s -> { s | abort = name :: s.abort })
 
 
-{-| Parse nested content (HTML elements, links, emphasis) one level deeper.
-More than 32 levels fail, so that input like `<div>` x 300 or `[` x 200 cannot
-overflow the stack, such content is shown as text instead.
+{-| Nesting of all kinds (HTML elements, links, emphasis, effects, lists and
+quotes) shares one limit of 64 levels, so that input like `<div>` x 300 or
+64 lists with 64 `<div>` inside cannot overflow the stack.
+-}
+tooDeep : Context -> Bool
+tooDeep state =
+    state.depth + List.length state.indentation >= 64
+
+
+{-| Parse nested content (HTML elements, links, emphasis, effects) one level
+deeper. Beyond the limit of `tooDeep` it fails, such content is shown as text.
 -}
 nested : Parser Context a -> Parser Context a
 nested p =
     primitive
         (\state stream ->
-            if state.depth >= 32 then
+            if tooDeep state then
                 ( state, stream, Err [ "nested too deep" ] )
 
             else

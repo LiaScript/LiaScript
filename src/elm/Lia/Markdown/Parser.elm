@@ -119,7 +119,7 @@ elements =
     choice
         [ md_annotations
             |> map Markdown.Effect
-            |> andMap (Effect.markdown blocks)
+            |> andMap (Effect.markdown blocks |> Context.nested)
         , md_annotations
             |> map Tuple.pair
             |> andMap (Effect.comment paragraph)

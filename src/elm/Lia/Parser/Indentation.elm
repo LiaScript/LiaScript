@@ -22,7 +22,7 @@ import Combine
         , regex
         , string
         )
-import Lia.Parser.Context exposing (Context)
+import Lia.Parser.Context as Context exposing (Context)
 
 
 {-| Check the defined indentation on the `InputStream` and ignore it.
@@ -95,8 +95,7 @@ push : String -> Parser Context ()
 push str =
     primitive
         (\state stream ->
-            if List.length state.indentation >= 32 then
-                -- deeper nesting would overflow the stack
+            if Context.tooDeep state then
                 ( state, stream, Err [ "nested too deep" ] )
 
             else
