@@ -13,6 +13,7 @@ import Combine
         , andMap
         , andThen
         , choice
+        , fail
         , ignore
         , keep
         , manyTill
@@ -32,8 +33,9 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (c_frame, newline, spaces)
+import Lia.Parser.Helper exposing (c_frame, newline, peek, spaces)
 import Lia.Parser.Indentation as Indent
+import Regex
 import Service.Script exposing (Eval)
 
 
@@ -145,7 +147,9 @@ title =
 
 {-| All lines up to a closing fence of `len` backticks, alone on its line.
 A fence line that is not a valid closing fence (wrong indentation) fails the
-whole body, instead of swallowing the rest of the document.
+whole body, instead of swallowing the rest of the document. Without a line of
+the current indentation and the fence it fails at once, otherwise every
+unclosed fence would parse the rest of the input line by line.
 -}
 body : Int -> Parser Context String
 body len =
@@ -153,9 +157,29 @@ body len =
         fence =
             "`{" ++ String.fromInt len ++ "}"
     in
-    manyTill
-        (Indent.maybeCheck |> keep (regex ("(?![ \t]*" ++ fence ++ "[ \t]*\n).*\n")))
-        (Indent.check
-            |> ignore (regex ("[ \t]*" ++ fence ++ "[ \t]*\n"))
+    withState
+        (\state ->
+            peek (Regex.findAtMost 1 (closingFence state.indentation fence) >> List.isEmpty >> not)
+                (manyTill
+                    (Indent.maybeCheck |> keep (regex ("(?![ \t]*" ++ fence ++ "[ \t]*\n).*\n")))
+                    (Indent.check
+                        |> ignore (regex ("[ \t]*" ++ fence ++ "[ \t]*\n"))
+                    )
+                    |> map (String.concat >> String.dropRight 1)
+                )
+                (fail "no closing fence")
         )
-        |> map (String.concat >> String.dropRight 1)
+
+
+{-| A line that `Indent.check` and the closing `fence` accept, the first line
+may lack the indentation, since it can be skipped once.
+-}
+closingFence : List String -> String -> Regex.Regex
+closingFence indentation fence =
+    let
+        indent =
+            "(?:" ++ String.concat indentation ++ ")"
+    in
+    ("(?:^" ++ indent ++ "?|\n" ++ indent ++ ")[ \t]*" ++ fence ++ "[ \t]*\n")
+        |> Regex.fromString
+        |> Maybe.withDefault Regex.never

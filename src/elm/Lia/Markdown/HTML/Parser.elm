@@ -123,11 +123,17 @@ x 20 with a single `</div>` is not parsed in every combination of elements and
 text. Opening and closing tags with the same name are counted, the element is
 closed by the first closing tag on its own level, as in HTML, the innermost
 opening tag gets the next closing tag. Tags within code, comments, escapes,
-`<lia-keep>` and `<svg>` are skipped.
+`<lia-keep>` and `<svg>` are skipped. Without any closing tag it fails at once,
+the counting would run up to the end of the input for every unclosed tag.
+
+shortcut: with a closing tag far behind many unclosed ones (`<b>` x n + `</b>`)
+it is still quadratic, cap the input size (chat) or cache the counting.
+
 -}
 requireClosingOf : String -> Parser Context a -> Parser Context a
 requireClosingOf name p =
-    peek (closes (sameTags name) 0) p (fail ("no closing tag: " ++ name))
+    requireClosing name
+        (peek (closes (sameTags name) 0) p (fail ("no closing tag: " ++ name)))
 
 
 closes : Regex.Regex -> Int -> String -> Bool
