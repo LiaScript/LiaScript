@@ -89,7 +89,9 @@ isEmpty =
     .messages >> Array.isEmpty
 
 
-{-| Every message keyed by its text, for `Html.Keyed`.
+{-| Every message keyed by its text, for `Html.Keyed`. A `Stream` message
+grows with every output, it is keyed by its beginning, otherwise its node would
+be created again for every output.
 -}
 view : Log -> List ( String, Html msg )
 view =
@@ -98,7 +100,11 @@ view =
 
 viewMessage : Message -> ( String, Html msg )
 viewMessage { level, text } =
-    ( text
+    ( if level == Stream then
+        "stream:" ++ String.left 64 text
+
+      else
+        text
     , case level of
         Debug ->
             viewText "text-debug" Nothing text
@@ -138,7 +144,9 @@ viewText class label text =
 
 
 {-| Append a message, a `Stream` message continues a preceding `Stream`
-message. Only the last 249 messages are kept.
+message. Only the last 249 messages are kept, and only the last 100,000
+characters of a `Stream` (it is cut once it is 20 % longer, not on every
+output).
 -}
 add : Level -> String -> Log -> Log
 add level text log =
@@ -148,7 +156,7 @@ add level text log =
                 case ( level, array_getLast log.messages ) of
                     ( Stream, Just last ) ->
                         if last.level == Stream then
-                            array_setLast (Message Stream (last.text ++ text)) log.messages
+                            array_setLast (Message Stream (cropStream (last.text ++ text))) log.messages
 
                         else
                             Array.push (Message level text) log.messages
@@ -156,6 +164,15 @@ add level text log =
                     _ ->
                         Array.push (Message level text) log.messages
     }
+
+
+cropStream : String -> String
+cropStream text =
+    if String.length text > 120000 then
+        String.right 100000 text
+
+    else
+        text
 
 
 crop : Array Message -> Array Message
@@ -183,11 +200,12 @@ add_Eval eval log =
         { log | ok = eval.ok, details = eval.details }
 
 
-{-| The number of line breaks within all messages.
+{-| The number of characters of all messages, at least the number of lines.
+Counting the line breaks would search the whole output on every view.
 -}
 length : Array Message -> Int
 length =
-    Array.foldl (\message sum -> sum + List.length (String.indexes "\n" message.text)) 0
+    Array.foldl (\message sum -> sum + String.length message.text) 0
 
 
 encode : Log -> JE.Value
