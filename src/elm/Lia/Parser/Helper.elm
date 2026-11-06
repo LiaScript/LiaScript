@@ -23,6 +23,7 @@ import Combine
         , keep
         , manyTill
         , map
+        , or
         , primitive
         , regex
         , string
@@ -114,13 +115,20 @@ stringTill p =
 
 
 {-| Inline code surrounded by single backticks, a backslash escapes a backtick.
+Without a closing backtick that way, the backslash is taken literally, as in
+`` `\` ``.
 -}
 inlineCode : Parser s String
 inlineCode =
     string "`"
-        |> keep (regex "([^`\n\\\\]*|\\\\`|\\\\)+")
-        |> ignore (string "`")
-        |> map (String.replace "\\`" "`")
+        |> keep
+            (or
+                (regex "([^`\n\\\\]*|\\\\`|\\\\)+"
+                    |> ignore (string "`")
+                    |> map (String.replace "\\`" "`")
+                )
+                (regex "[^`\n]+" |> ignore (string "`"))
+            )
 
 
 {-| Checks that look only at one line use this: the text contains something

@@ -746,9 +746,12 @@ stringSpaces =
         |> map Chars
 
 
+{-| **@private:** The last resort, a single character that nothing else parses
+(e.g. an unknown `@`, `^` or `\`), everything after it is parsed normally.
+-}
 stringBase2 : Parser s (Parameters -> Inline)
 stringBase2 =
-    regex "[^\n*+\\-]+"
+    regex "[^\n]"
         |> map Chars
 
 
