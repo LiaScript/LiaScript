@@ -52,9 +52,7 @@ toModel seed pane sync readme =
                 language
                     |> Translations.getLnFromCode
                     |> Maybe.withDefault Translations.En
-            , langCode = language
-            , langName = Nothing
-            , langCodeOriginal = language
+            , translations = { old = language, new = language, name = Nothing }
             , search_index = identity
             , media = Dict.empty
             , modal = Nothing

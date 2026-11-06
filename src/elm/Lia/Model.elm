@@ -87,9 +87,7 @@ type alias Model =
     , resource : List Resource
     , to_do : List Event
     , translation : Translations.Lang
-    , langCode : String
-    , langName : Maybe String
-    , langCodeOriginal : String
+    , translations : { old : String, new : String, name : Maybe String }
     , search_index : String -> String
     , media : Dict String ( Int, Int )
     , modal : Maybe String
@@ -169,9 +167,7 @@ init { seed, hasShareApi, openTOC, isFullscreen, settings, backends, url, readme
     , resource = []
     , to_do = []
     , translation = Translations.En
-    , langCode = "en"
-    , langName = Nothing
-    , langCodeOriginal = "en"
+    , translations = { old = "en", new = "en", name = Nothing }
     , search_index = identity
     , media = Dict.empty
     , modal = Nothing

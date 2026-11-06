@@ -240,8 +240,11 @@ update msg model =
                                             language_code
                                                 |> Translations.getLnFromCode
                                                 |> Maybe.withDefault lia.translation
-                                        , langName = Just language_name
-                                        , langCode = language_code
+                                        , translations =
+                                            { old = lia.translations.old
+                                            , new = language_code
+                                            , name = Just language_name
+                                            }
                                     }
                               }
                             , Cmd.none

@@ -4,6 +4,7 @@ import Const
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onInput)
+import Html.Lazy
 import I18n.Translations exposing (Lang(..))
 import Index.Model exposing (Course, Layout(..), Modal(..), Model, urlInputID)
 import Index.Update exposing (Msg(..))
@@ -102,8 +103,16 @@ view session settings model =
         ]
 
 
+{-| A card is only built again if its course changed, not on every keystroke in
+the URL input.
+-}
 itemView : Bool -> Masonry.Id -> Course -> Html Msg
 itemView hasShareAPI _ course =
+    Html.Lazy.lazy2 viewCard hasShareAPI course
+
+
+viewCard : Bool -> Course -> Html Msg
+viewCard hasShareAPI course =
     card { share = hasShareAPI, compact = Nothing, extra = [] } course
 
 
