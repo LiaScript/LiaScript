@@ -396,7 +396,7 @@ viewEntry definition settings sync screen key section meta =
     let
         config =
             Config.init
-                (Translations.getLnFromCode definition.language |> Maybe.withDefault Translations.En)
+                (Translations.getLnFromCode definition.language |> Maybe.withDefault Translations.en)
                 { old = definition.language, new = definition.language, name = Nothing }
                 settings
                 sync

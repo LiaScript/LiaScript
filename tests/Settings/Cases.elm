@@ -10,7 +10,7 @@ import Expect
 import Html exposing (Html)
 import Html.Attributes
 import HtmlSnapshot
-import I18n.Translations exposing (Lang(..))
+import I18n.Translations exposing (Lang, en)
 import Json.Encode as JE
 import Lia.Definition.Types as Definition
 import Lia.Markdown.Inline.Types exposing (Inline(..))
@@ -76,7 +76,7 @@ suite =
                 \_ ->
                     let
                         checked tts_ =
-                            view (View.menuSettings 1200 En True { base | tts = tts_ })
+                            view (View.menuSettings 1200 en True { base | tts = tts_ })
                                 |> Query.findAll [ Selector.class "lia-checkbox" ]
                                 |> Query.index 3
                                 |> Query.has [ Selector.checked True ]
@@ -163,13 +163,13 @@ suite =
         , describe "events"
             [ test "the TOC button toggles the TOC" <|
                 \_ ->
-                    View.btnIndex En False
+                    View.btnIndex en False
                         |> Query.fromHtml
                         |> HE.simulate HE.click
                         |> HE.expect (Toggle TableOfContents)
             , test "a mode button switches the mode, Enter is the native click of the button" <|
                 \_ ->
-                    view (View.menuMode En True base)
+                    view (View.menuMode en True base)
                         |> Query.find [ Selector.id "lia-mode-slides" ]
                         |> HE.simulate HE.click
                         |> HE.expect (SwitchMode Slides)
@@ -177,7 +177,7 @@ suite =
                 \_ ->
                     let
                         button =
-                            view (View.menuMode En True base)
+                            view (View.menuMode en True base)
                                 |> Query.find [ Selector.id "lia-btn-modes" ]
                     in
                     Expect.all
@@ -185,7 +185,7 @@ suite =
 
                         -- toggling the open group closes it and focuses its button
                         , \_ ->
-                            view (View.menuMode En True { base | action = Just ShowModes })
+                            view (View.menuMode en True { base | action = Just ShowModes })
                                 |> Query.find [ Selector.id "lia-btn-modes" ]
                                 |> HE.simulate (keydown 27)
                                 |> HE.expect (Toggle (Action ShowModes))
@@ -196,14 +196,14 @@ suite =
                 \_ ->
                     let
                         button =
-                            view (View.menuTranslations "de" (Definition.default "" "") En True base)
+                            view (View.menuTranslations "de" (Definition.default "" "") en True base)
                                 |> Query.find [ Selector.tag "button" ]
                     in
                     Expect.all
                         [ \_ -> button |> HE.simulate HE.click |> HE.expect (Toggle (Action ShowTranslations))
                         , \_ -> button |> HE.simulate (keydown 40) |> HE.expect (Toggle (Action ShowTranslations))
                         , \_ ->
-                            view (View.menuTranslations "de" (Definition.default "" "") En True { base | action = Just ShowTranslations })
+                            view (View.menuTranslations "de" (Definition.default "" "") en True { base | action = Just ShowTranslations })
                                 |> Query.find [ Selector.tag "button" ]
                                 |> HE.simulate (keydown 27)
                                 |> HE.expect (Toggle (Action ShowTranslations))
@@ -213,7 +213,7 @@ suite =
                 \_ ->
                     let
                         menu =
-                            view (View.menuSettings 1200 En True { base | customTheme = Just "x" })
+                            view (View.menuSettings 1200 en True { base | customTheme = Just "x" })
                     in
                     Expect.all
                         [ \_ -> menu |> Query.find [ Selector.id "lia-btn-light-mode" ] |> HE.simulate HE.click |> HE.expect (Toggle Light)
@@ -234,7 +234,7 @@ suite =
                 \_ ->
                     let
                         menu =
-                            view (View.menuShare "https://x" syncSupported En True { base | hasShareApi = Just True, action = Just ShowShare })
+                            view (View.menuShare "https://x" syncSupported en True { base | hasShareApi = Just True, action = Just ShowShare })
                     in
                     Expect.all
                         [ \_ -> menu |> Query.find [ Selector.id "lia-button-qr-code" ] |> HE.simulate HE.click |> HE.expect (Toggle QRCode)
@@ -247,7 +247,7 @@ suite =
                     [ { show = False, updates = False }, { show = False, updates = True }, { show = True, updates = True } ]
                         |> List.map
                             (\chat ->
-                                view (View.menuChat En True { base | chat = chat })
+                                view (View.menuChat en True { base | chat = chat })
                                     |> Query.find [ Selector.tag "i" ]
                                     |> Query.has [ Selector.class "icon-chat-new" ]
                                     |> (\e -> e == Expect.pass)
@@ -255,12 +255,12 @@ suite =
                         |> Expect.equal [ False, True, False ]
             , test "the share icon for small screens is labeled share" <|
                 \_ ->
-                    view (View.menuShare "https://x" syncSupported En True base)
+                    view (View.menuShare "https://x" syncSupported en True base)
                         |> Query.find [ Selector.class "hide-md-up" ]
                         |> Query.has [ Selector.attribute (Html.Attributes.title "Share") ]
             , test "translate with Google" <|
                 \_ ->
-                    view (View.menuTranslations "de" (Definition.default "" "") En True base)
+                    view (View.menuTranslations "de" (Definition.default "" "") en True base)
                         |> Query.find [ Selector.id "lia-checkbox-google_translate" ]
                         |> HE.simulate HE.click
                         |> HE.expect (Toggle TranslateWithGoogle)
@@ -347,7 +347,7 @@ header online active settings =
     View.header
         { online = online
         , active = active
-        , lang = En
+        , lang = en
         , screen = { width = 1200, height = 800 }
         , settings = settings
         , logo = "logo.png"

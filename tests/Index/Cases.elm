@@ -9,7 +9,7 @@ import Expect
 import Fuzz
 import Html
 import HtmlSnapshot
-import I18n.Translations exposing (Lang(..))
+import I18n.Translations exposing (Lang, en)
 import Index.Snapshots exposing (snapshots)
 import Json.Encode as JE
 import Lia.Index.Model as IndexModel
@@ -184,7 +184,7 @@ suite =
                                 |> HE.expect DeleteSearch
                    , test "the home button sends its message" <|
                         \_ ->
-                            View.bottom En True "home"
+                            View.bottom en True "home"
                                 |> Query.fromHtml
                                 |> HE.simulate HE.click
                                 |> HE.expect "home"
@@ -195,25 +195,25 @@ suite =
 
 views : List ( String, Html.Html Msg )
 views =
-    [ ( "search empty", Html.div [] (View.search En True (Array.fromList [ { visible = True } ]) "") )
-    , ( "search inactive", Html.div [] (View.search De False (Array.fromList [ { visible = True } ]) "") )
-    , ( "search no result", Html.div [] (View.search En True (Array.fromList [ { visible = False }, { visible = False } ]) "x") )
-    , ( "search one result", Html.div [] (View.search En True (Array.fromList [ { visible = False }, { visible = True } ]) "x") )
-    , ( "search results", Html.div [] (View.search En False (Array.fromList [ { visible = True }, { visible = True }, { visible = False } ]) "x") )
+    [ ( "search empty", Html.div [] (View.search en True (Array.fromList [ { visible = True } ]) "") )
+    , ( "search inactive", Html.div [] (View.search de False (Array.fromList [ { visible = True } ]) "") )
+    , ( "search no result", Html.div [] (View.search en True (Array.fromList [ { visible = False }, { visible = False } ]) "x") )
+    , ( "search one result", Html.div [] (View.search en True (Array.fromList [ { visible = False }, { visible = True } ]) "x") )
+    , ( "search results", Html.div [] (View.search en False (Array.fromList [ { visible = True }, { visible = True }, { visible = False } ]) "x") )
     , ( "content"
       , let
             ( _, sections, _ ) =
                 Index.update (ScanIndex "c") (search "") (course [ ( "a", "b" ), ( "c", "d" ), ( "c", "**e**" ) ])
         in
-        Html.div [] (View.content En True 1 (always ()) (always ()) (search "c") (Array.map (\s -> { s | indentation = s.id + 1 }) sections))
+        Html.div [] (View.content en True 1 (always ()) (always ()) (search "c") (Array.map (\s -> { s | indentation = s.id + 1 }) sections))
             |> Html.map (always NoOp)
       )
-    , ( "content inactive", Html.div [] (View.content En False 0 (always ()) (always ()) (search "") (course [ ( "a", "b" ) ])) |> Html.map (always NoOp) )
+    , ( "content inactive", Html.div [] (View.content en False 0 (always ()) (always ()) (search "") (course [ ( "a", "b" ) ])) |> Html.map (always NoOp) )
     , ( "content nested", tree (search "") )
     , ( "content collapsed", tree { search = "", collapsed = Set.fromList [ 0 ], focus = Nothing, defaults = True } )
     , ( "content nested while searching", tree { search = "x", collapsed = Set.fromList [ 0 ], focus = Nothing, defaults = True } )
-    , ( "bottom", View.bottom En True NoOp )
-    , ( "bottom inactive", View.bottom De False NoOp )
+    , ( "bottom", View.bottom en True NoOp )
+    , ( "bottom inactive", View.bottom de False NoOp )
     ]
 
 
@@ -222,7 +222,7 @@ views =
 tree : IndexModel.Model -> Html.Html Msg
 tree model =
     levels
-        |> View.content En True 4 (always NoOp) identity model
+        |> View.content en True 4 (always NoOp) identity model
         |> Html.div []
 
 
@@ -248,7 +248,7 @@ search s =
 
 searchView : Bool -> List Bool -> String -> Query.Single Msg
 searchView active results model =
-    View.search En active (Array.fromList (List.map (\v -> { visible = v }) results)) model
+    View.search en active (Array.fromList (List.map (\v -> { visible = v }) results)) model
         |> Html.div []
         |> Query.fromHtml
 
@@ -284,3 +284,8 @@ word =
 pattern : Fuzz.Fuzzer String
 pattern =
     Fuzz.oneOfValues [ "", " ", "x", "a", "A", "b", "ab", "a b", " b  a ", "ä", "c", "x y", "ba", "b\ta" ]
+
+
+de : Lang
+de =
+    I18n.Translations.getLnFromCode "de" |> Maybe.withDefault en

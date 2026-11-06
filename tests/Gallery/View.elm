@@ -8,7 +8,7 @@ import Array
 import Dict
 import Expect
 import Html.Attributes as Attr
-import I18n.Translations exposing (Lang(..))
+import I18n.Translations exposing (Lang, en)
 import Json.Encode as JE
 import Lia.Markdown.Gallery.Types exposing (Gallery, Vector)
 import Lia.Markdown.Gallery.Update exposing (Msg(..))
@@ -30,7 +30,7 @@ config =
         , slide = 0
         , speaking = Nothing
         , paused = Nothing
-        , lang = En
+        , lang = en
         , theme = Nothing
         , light = True
         , tooltips = False

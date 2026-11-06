@@ -6,7 +6,7 @@ module Lia.Markdown.Quiz.Multi.Update exposing
     )
 
 import Array
-import I18n.Translations exposing (Lang(..))
+import I18n.Translations exposing (Lang)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script

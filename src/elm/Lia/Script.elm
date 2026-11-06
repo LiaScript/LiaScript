@@ -249,7 +249,7 @@ init_script model script =
                     , translation =
                         definition.language
                             |> Translations.getLnFromCode
-                            |> Maybe.withDefault Translations.En
+                            |> Maybe.withDefault Translations.en
                     , translations = { old = definition.language, new = definition.language, name = Nothing }
                     , persistent = checkPersistency definition.macro
                     , settings = applyDefinitionSettings model.readme definition model.settings

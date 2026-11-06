@@ -166,7 +166,7 @@ init { seed, hasShareApi, openTOC, isFullscreen, settings, backends, url, readme
     , index_model = Index.init
     , resource = []
     , to_do = []
-    , translation = Translations.En
+    , translation = Translations.en
     , translations = { old = "en", new = "en", name = Nothing }
     , search_index = identity
     , media = Dict.empty
