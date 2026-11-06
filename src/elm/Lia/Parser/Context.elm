@@ -4,11 +4,15 @@ module Lia.Parser.Context exposing
     , checkAbort
     , checkBracket
     , choice
+    , countMacro
     , emphasized
     , getSeed
+    , hasMacroBudget
     , inRef
     , init
+    , limitMacros
     , nested
+    , nestedMacro
     , popAbort
     , refLevel
     , remember
@@ -112,8 +116,10 @@ type alias Context =
 
 {-| The nesting of inline elements and where they failed before:
 
-  - `depth`: of HTML elements, links, emphasis and effects, see `nested`
+  - `depth`: of HTML elements, links, emphasis, effects and macro parameters,
+    see `nested`
   - `emphasis`: of emphasis and quotes only, see `emphasized`
+  - `macros`: the length of all macro expansions, see `hasMacroBudget`
   - `failed`: see `remember`, `failures` only grows with it, so that `choice`
     can see at once if an alternative added a failure
 
@@ -124,6 +130,7 @@ record much slower, the whole parser took about 20% longer.
 type alias Nesting =
     { depth : Int
     , emphasis : Int
+    , macros : Int
     , failures : Int
     , failed : Dict ( Int, Int, String ) Failure
     }
@@ -150,6 +157,7 @@ init seed search_index global =
     , nesting =
         { depth = 0
         , emphasis = 0
+        , macros = 0
         , failures = 0
         , failed = Dict.empty
         }
@@ -249,6 +257,55 @@ emphasized p =
         )
         |> keep p
         |> ignore (modifyState (deeper 0 -1))
+
+
+{-| Expand the parameters of a macro one level deeper, as `nested` does. Beyond
+the limit of `tooDeep` it returns `Nothing`, the parameters stay as they are.
+-}
+nestedMacro : (Context -> ( Context, a )) -> Context -> Maybe ( Context, a )
+nestedMacro expand state =
+    if tooDeep state then
+        Nothing
+
+    else
+        deeper 1 0 state
+            |> expand
+            |> Tuple.mapFirst (deeper -1 0)
+            |> Just
+
+
+{-| All macro expansions of a section can be 1,000,000 characters long, every
+expansion counts 100 more (in the courses so far at most 120,000), beyond that
+a macro is shown as text. Otherwise `@aa: x @aa` would never end and
+`@a1: @a0 @a0`, `@a2: @a1 @a1`, ... would double with every level.
+-}
+hasMacroBudget : Context -> Bool
+hasMacroBudget state =
+    state.nesting.macros < 1000000
+
+
+{-| At most `length` more characters of macro expansions, for a title or a
+text (quiz option, footnote, ...) that is parsed on its own and whose state is
+dropped. Otherwise every one of them could use the whole budget again.
+-}
+limitMacros : Int -> Context -> Context
+limitMacros length state =
+    let
+        nesting =
+            state.nesting
+    in
+    { state | nesting = { nesting | macros = max nesting.macros (1000000 - length) } }
+
+
+{-| Count the length of a macro expansion, see `hasMacroBudget`.
+-}
+countMacro : Int -> Context -> Context
+countMacro length state =
+    let
+        nesting =
+            state.nesting
+    in
+    { state | nesting = { nesting | macros = nesting.macros + length } }
 
 
 deeper : Int -> Int -> Context -> Context
@@ -396,6 +453,7 @@ remember name p =
                                 { nesting
                                     | failures = estate.nesting.failures + 1
                                     , failed = Dict.insert key here estate.nesting.failed
+                                    , macros = estate.nesting.macros
                                 }
                           }
                         , stream
@@ -408,7 +466,9 @@ remember name p =
 
 
 {-| Like `Combine.choice`, but the failures `remember`ed by one alternative are
-passed on to the next ones.
+passed on to the next ones, and so are its macro expansions, otherwise every
+retry of a recursive macro behind emphasis markers would get the whole budget
+again.
 -}
 choice : List (Parser Context a) -> Parser Context a
 choice parsers =
@@ -422,7 +482,7 @@ choice parsers =
                     case app p state stream of
                         ( estate, _, Err ms ) ->
                             try rest
-                                (if estate.nesting.failures == state.nesting.failures then
+                                (if estate.nesting.failures == state.nesting.failures && estate.nesting.macros == state.nesting.macros then
                                     state
 
                                  else
@@ -435,6 +495,7 @@ choice parsers =
                                             { nesting
                                                 | failures = estate.nesting.failures
                                                 , failed = estate.nesting.failed
+                                                , macros = estate.nesting.macros
                                             }
                                     }
                                 )

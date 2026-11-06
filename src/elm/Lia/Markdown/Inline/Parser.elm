@@ -68,7 +68,7 @@ parse_inlines state str =
     case
         str
             |> String.replace "\n" " "
-            |> runParser line state
+            |> runParser line (Context.limitMacros 10000 state)
     of
         Ok ( _, _, rslt ) ->
             rslt
