@@ -1131,7 +1131,7 @@ menuShare url sync lang tabbable settings =
                 , tabbable = tabbable
                 , msg = Just (Toggle Sync)
                 }
-                (grouping [])
+                (grouping [Attr.style "width" "100%"])
                 [ Sync.title sync ]
 
         else
