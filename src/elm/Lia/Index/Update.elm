@@ -10,8 +10,8 @@ module Lia.Index.Update exposing
 
 {-| Searching the sections of a course, the search pattern is a list of words,
 separated by spaces. A section is visible, if its code or title contain all of
-them (ignoring the case). Words with 4 or more characters may also match the
-start of a word with one typo.
+them (ignoring the case). A word with 4 or more characters, that the course
+does not contain at all, may also match the start of a word with one typo.
 -}
 
 import Array
@@ -293,34 +293,47 @@ scan pattern =
             Array.map (\section -> { section | visible = True })
 
         words ->
-            Array.map
-                (\section ->
-                    let
-                        text =
-                            String.toLower (section.code ++ stringify section.title)
+            \sections ->
+                let
+                    texts =
+                        sections
+                            |> Array.toList
+                            |> List.map (\section -> String.toLower (section.code ++ stringify section.title))
 
-                        visible =
-                            case List.filter (\word -> not (String.contains word text)) words of
-                                [] ->
-                                    True
+                    -- only a word that the course does not contain is a typo,
+                    -- shorter words have to match exactly
+                    ( typos, exact ) =
+                        List.partition
+                            (\word -> String.length word >= 4 && not (List.any (String.contains word) texts))
+                            words
 
-                                missing ->
-                                    -- shorter words have to match exactly
-                                    List.all (\word -> String.length word >= 4) missing
-                                        && (let
-                                                tokens =
-                                                    Regex.split separator text
-                                            in
-                                            List.all (\word -> List.any (nearToken (String.toList word)) tokens) missing
-                                           )
-                    in
-                    -- the same record keeps the lazy table of contents
-                    if visible == section.visible then
-                        section
+                    chars =
+                        List.map String.toList typos
+                in
+                List.map2
+                    (\section text ->
+                        let
+                            visible =
+                                List.all (\word -> String.contains word text) exact
+                                    && (List.isEmpty chars
+                                            || (let
+                                                    tokens =
+                                                        Regex.split separator text
+                                                in
+                                                List.all (\word -> List.any (nearToken word) tokens) chars
+                                               )
+                                       )
+                        in
+                        -- the same record keeps the lazy table of contents
+                        if visible == section.visible then
+                            section
 
-                    else
-                        { section | visible = visible }
-                )
+                        else
+                            { section | visible = visible }
+                    )
+                    (Array.toList sections)
+                    texts
+                    |> Array.fromList
 
 
 {-| Everything but letters, digits and non-ASCII characters separates words.

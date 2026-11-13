@@ -53,6 +53,15 @@ suite =
                                     |> (\( _, result, _ ) -> visibility result)
                             )
                         |> Expect.equal [ [ True ], [ True ], [ True ], [ True ], [ False ], [ True ], [ True ] ]
+            , test "a word that the course contains is not treated as a typo" <|
+                \_ ->
+                    [ "mac", "macr", "macro", "makro", "macro markdwn" ]
+                        |> List.map
+                            (\p ->
+                                Index.update (ScanIndex p) (search "") (course [ ( "Markdown", "" ), ( "Macros in Markdown", "" ) ])
+                                    |> (\( _, result, _ ) -> visibility result)
+                            )
+                        |> Expect.equal [ [ False, True ], [ False, True ], [ False, True ], [ False, True ], [ False, True ] ]
             , test "DeleteSearch shows all sections again" <|
                 \_ ->
                     let
@@ -115,13 +124,13 @@ suite =
                 \_ ->
                     let
                         first =
-                            Index.reveal 4 levels { search = "", collapsed = Set.empty, focus = Nothing, defaults = False }
+                            Index.reveal 2 4 levels { search = "", collapsed = Set.empty, focus = Nothing, defaults = False }
 
                         deep =
-                            Index.reveal 2 levels first
+                            Index.reveal 2 2 levels first
 
                         closedAgain =
-                            Index.reveal 4 levels { deep | collapsed = Set.insert 0 deep.collapsed }
+                            Index.reveal 2 4 levels { deep | collapsed = Set.insert 0 deep.collapsed }
                     in
                     [ Set.toList first.collapsed, Set.toList deep.collapsed, Set.toList closedAgain.collapsed ]
                         |> Expect.equal [ [ 1 ], [], [ 0 ] ]

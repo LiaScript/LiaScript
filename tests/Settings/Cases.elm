@@ -220,7 +220,7 @@ suite =
                         , \_ -> menu |> Query.find [ Selector.id "lia-btn-fullscreen" ] |> HE.simulate HE.click |> HE.expect (Toggle Fullscreen)
                         , \_ -> menu |> Query.find [ Selector.id "lia-theme-color-red" ] |> HE.simulate HE.click |> HE.expect (ChangeTheme "red")
                         , \_ -> menu |> Query.find [ Selector.id "lia-theme-color-custom" ] |> HE.simulate HE.click |> HE.expect (ChangeTheme "custom")
-                        , \_ -> menu |> Query.find [ Selector.tag "select" ] |> HE.simulate (HE.input "monokai") |> HE.expect (ChangeEditor "monokai")
+                        , \_ -> menu |> Query.findAll [ Selector.tag "select" ] |> Query.first |> HE.simulate (HE.input "monokai") |> HE.expect (ChangeEditor "monokai")
                         , \_ -> menu |> Query.find [ Selector.class "lia-fontscale__lvl-2" ] |> HE.simulate HE.click |> HE.expect (ChangeFontSize 2)
                         , \_ -> menu |> Query.findAll [ Selector.class "lia-checkbox" ] |> Query.index 0 |> HE.simulate HE.click |> HE.expect (Toggle Tooltips)
                         , \_ -> menu |> Query.findAll [ Selector.class "lia-checkbox" ] |> Query.index 1 |> HE.simulate HE.click |> HE.expect (Toggle Decals)
