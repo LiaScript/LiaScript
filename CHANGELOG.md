@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.0] - 14/11/2026
+
+- feat: setting `tocDepth` – the number of levels of the table of contents that are expanded by default (2 as before) can be set in the settings menu, via `LIA.settings.tocDepth` or in the course header with `tocDepth: 3`
+- feat: Malay (ms) translation
+- improve: faster start – the first slide of a large course is shown in less than half the time (the pre-parse pauses after every 100,000 characters instead of every 4 sections), parsing is about 13–18% faster (parser-combinators 7.1.1) and a parsed course needs about 30% less memory
+- improve: translations are one string per language instead of a switch per text, about 85 KB less minified JavaScript (gzip 25 KB)
+- improve: search in the table of contents – typos are only tolerated in words the course does not contain, so a longer word no longer finds more sections than a shorter one; searching is 2 to 5 times faster per keystroke
+- improve: rendering – hidden persistent sections, the chat and the course cards of the start page are only redrawn when they change; the terminal output of code keeps its last 100,000 characters and no longer slows down with every output
+- fix: parser – no stack overflow and no exponential or quadratic time for deeply nested or unclosed input (links, emphasis, effects, HTML, quotes, lists, code fences, comments), all of them share one nesting limit of 64 levels and deeper content is shown as text; such a message in the classroom chat broke the chat history for everybody
+- fix: parser – an unknown `@`, `^`, `` ` `` or `\` no longer swallows the rest of the line; table rows, links and mails with `@` in the text, inline code and formulas come back
+- fix: macros – recursive macros end (a budget of 1,000,000 characters per section), deeply nested macro parameters no longer overflow the stack, the last macro of a parameter is no longer expanded twice
+- fix: comments longer than 1000 characters no longer split sections at a `#` title within them, void HTML elements with attributes (`<img src=…>`) no longer swallow the following headings
+- fix: footnotes – keys end at the line, a paragraph starting with `[^key]` was taken as a definition and disappeared up to the next `]:`
+- fix: quizzes and effects of hidden persistent sections pointed to the active section
+- fix: style – the classroom button in the share menu uses the full width
+- chore: unused translation texts removed (`base.show`, `base.hide`, `chart.lines`, `c.color`, `no_translation`), elm-i18n-gen 1.1.0 with `--compact`
+
+
 ## [2.6.2] - 04/11/2026
 
 - fix: SCORM 2004 – `cmi.score.raw` is reported in percent (max 100) as in SCORM 1.2, Moodle ignores min and max and turned 4 of 7 points into 4/100; with a passing score the score is only reported once passed or done, so the LMS no longer fails learners with open quizzes (H5P keeps points)
