@@ -35,6 +35,7 @@ type Msg
     | ChangeEditor String
     | ChangeLang String
     | ChangeFontSize Int
+    | ChangeTocDepth String
     | SwitchMode Mode
     | Handle Event
     | ShareCourse String
@@ -330,6 +331,9 @@ update main msg model =
 
         ChangeLang lang ->
             log { model | lang = lang }
+
+        ChangeTocDepth depth ->
+            log { model | tocDepth = String.toInt depth |> Maybe.withDefault model.tocDepth }
 
         Change audio_setting ->
             let

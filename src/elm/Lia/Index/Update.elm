@@ -155,11 +155,11 @@ navigate { current, key, rtl, id } model sections =
 
 
 {-| Called whenever the current section changes: The first time, when all
-sections are known, the sections below the two upper levels of the course
+sections are known, the sections below the `depth` upper levels of the course
 get collapsed. Every time the branch of the current section gets opened.
 -}
-reveal : Int -> Sections -> Model -> Model
-reveal current sections model =
+reveal : Int -> Int -> Sections -> Model -> Model
+reveal depth current sections model =
     let
         list =
             Array.toList sections
@@ -173,7 +173,7 @@ reveal current sections model =
                     if List.isEmpty children then
                         []
 
-                    else if section.indentation > top then
+                    else if section.indentation >= top + depth - 1 then
                         section.id :: collapsible children
 
                     else

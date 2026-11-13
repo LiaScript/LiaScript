@@ -272,7 +272,7 @@ init_script model script =
 
 
 {-| Derive all settings that are controlled by the course header/macros (e.g.
-`edit`, `translateWithGoogle`, `sharing`, `classroom`, `custom`, light/dark
+`edit`, `translateWithGoogle`, `sharing`, `classroom`, `custom`, `tocDepth`, light/dark
 mode) from a parsed `Definition`. This has to be re-applied any time a
 `Definition` is (re-)established for a course, whether via a fresh parse
 (`init_script`) or via restoring a previously cached course from the
@@ -294,6 +294,10 @@ applyDefinitionSettings readme definition settings =
         | light = Maybe.withDefault settings.light definition.lightMode
         , mode = Maybe.withDefault settings.mode definition.mode
         , customTheme = Dict.get "custom" definition.macro
+        , tocDepth =
+            Dict.get "tocDepth" definition.macro
+                |> Maybe.andThen (String.trim >> String.toInt)
+                |> Maybe.withDefault settings.tocDepth
         , translateWithGoogle = unlessDisabled "translateWithGoogle" settings.translateWithGoogle
         , hasShareApi = unlessDisabled "sharing" settings.hasShareApi
         , sync = unlessDisabled "classroom" settings.sync
