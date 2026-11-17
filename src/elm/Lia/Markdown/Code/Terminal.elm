@@ -14,7 +14,7 @@ and down keys.
 import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import I18n.Translations exposing (Lang(..), codeSendTerminal)
+import I18n.Translations exposing (Lang, codeSendTerminal)
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Utils exposing (btnIcon)
 

@@ -518,6 +518,8 @@ viewLog code height log =
                 , height
                     |> Maybe.map (JE.string >> Attr.property "height")
                     |> Maybe.withDefault (Attr.class "")
+
+                -- more than the height, the browser scrolls to the end
                 , (Log.length log.messages * 28 + 14)
                     |> String.fromInt
                     |> JE.string

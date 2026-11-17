@@ -277,8 +277,11 @@ update msg model =
                                             language_code
                                                 |> Translations.getLnFromCode
                                                 |> Maybe.withDefault lia.translation
-                                        , langName = Just language_name
-                                        , langCode = language_code
+                                        , translations =
+                                            { old = lia.translations.old
+                                            , new = language_code
+                                            , name = Just language_name
+                                            }
                                     }
                               }
                             , Cmd.none
@@ -760,8 +763,13 @@ parsing model =
                     in
                     case lia.error of
                         Nothing ->
-                            -- stop after 4 iterations to update the view
-                            if modBy model.parse_steps (Lia.Script.pages lia) == 1 then
+                            -- yield after every 100,000 characters, so slow devices can show
+                            -- the progress, without paying the 4 ms timer clamp for every few sections,
+                            -- the editor's just-in-time parsing (parse_steps == 1) never yields
+                            if
+                                (model.parse_steps /= 1)
+                                    && (String.length (Tuple.first code) // 100000 /= (remaining_code |> Maybe.map (Tuple.first >> String.length) |> Maybe.withDefault 0) // 100000)
+                            then
                                 ( new_model, message LiaParse )
 
                             else

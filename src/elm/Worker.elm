@@ -290,11 +290,8 @@ parsing model =
                         new_model =
                             { model | lia = lia, code = remaining_code |> Maybe.map Tuple.first }
                     in
-                    if modBy 4 (Lia.Script.pages lia) == 0 then
-                        ( new_model, message LiaParse )
-
-                    else
-                        parsing new_model
+                    -- no view to update, so no need to yield
+                    parsing new_model
 
         _ ->
             ( model, Cmd.none )

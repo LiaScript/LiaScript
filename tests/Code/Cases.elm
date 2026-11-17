@@ -10,7 +10,7 @@ import Array
 import Combine
 import Expect
 import Html.Attributes as Attr
-import I18n.Translations as Translations exposing (Lang(..))
+import I18n.Translations as Translations exposing (Lang, en)
 import Json.Encode as JE
 import Lia.Definition.Types as Definition
 import Lia.Markdown.Code.Editor as Editor
@@ -59,7 +59,7 @@ view =
                 parseWithState "<!-- data-rtltext -->\n```js\na\n```\n"
                     |> Tuple.second
                     |> .code_model
-                    |> (\m -> View.view { lang = En, theme = "", model = m, code = Highlight 0, sync = Array.empty, cursors = [] })
+                    |> (\m -> View.view { lang = en, theme = "", model = m, code = Highlight 0, sync = Array.empty, cursors = [] })
                     |> Query.fromHtml
                     |> Query.find [ Selector.tag "lia-editor" ]
                     |> Expect.all
@@ -88,7 +88,7 @@ view =
         , test "the version controls are disabled while running" <|
             \_ ->
                 render course Array.empty [ Update (Evaluate 0) 0 "b", Eval 0, result True "x", First 0, Eval 0 ]
-                    |> Query.find [ Selector.attribute (Attr.title (Translations.codeNext En)) ]
+                    |> Query.find [ Selector.attribute (Attr.title (Translations.codeNext en)) ]
                     |> Query.has [ Selector.attribute (Attr.attribute "aria-disabled" "true") ]
         , test "the collaborative editor sends its changes to the classroom" <|
             \_ ->
@@ -98,7 +98,7 @@ view =
                     |> Event.expect (Synchronize 0 0 (JE.string "delta"))
         , test "without a classroom the local editor is shown, even in sync mode" <|
             \_ ->
-                View.view { lang = En, theme = "", model = run [ ToggleSync 0 ], code = Evaluate 0, sync = Array.empty, cursors = [] }
+                View.view { lang = en, theme = "", model = run [ ToggleSync 0 ], code = Evaluate 0, sync = Array.empty, cursors = [] }
                     |> Query.fromHtml
                     |> Query.find [ Selector.tag "lia-editor" ]
                     |> Event.simulate (Event.custom "editorUpdate" (JE.object [ ( "detail", JE.string "x" ) ]))
@@ -107,7 +107,7 @@ view =
             \_ ->
                 course
                     |> (\m -> { m | evaluate = Array.map (\p -> { p | syncMode = True, syncLog = Log.add Log.Info "shared output" p.syncLog }) m.evaluate })
-                    |> (\m -> View.view { lang = En, theme = "", model = m, code = Evaluate 0, sync = Array.empty, cursors = [] })
+                    |> (\m -> View.view { lang = en, theme = "", model = m, code = Evaluate 0, sync = Array.empty, cursors = [] })
                     |> Query.fromHtml
                     |> Query.hasNot [ Selector.text "shared output" ]
         , test "the output of a highlighted block keeps the height set by the user" <|
@@ -117,7 +117,7 @@ view =
                     |> .code_model
                     |> Update.update Array.empty (Just 0) Array.empty (Resize (Highlight 0) "99px")
                     |> .value
-                    |> (\m -> View.view { lang = En, theme = "", model = m, code = Highlight 0, sync = Array.empty, cursors = [] })
+                    |> (\m -> View.view { lang = en, theme = "", model = m, code = Highlight 0, sync = Array.empty, cursors = [] })
                     |> Query.fromHtml
                     |> Query.find [ Selector.tag "lia-terminal" ]
                     |> Query.has [ Selector.attribute (Attr.property "height" (JE.string "99px")) ]
@@ -126,7 +126,7 @@ view =
                 Terminal.init "sh"
                     |> Terminal.update (Terminal.Input "a\nb")
                     |> Tuple.first
-                    |> Terminal.view En
+                    |> Terminal.view en
                     |> Query.fromHtml
                     |> Query.find [ Selector.tag "lia-editor" ]
                     |> Query.has [ Selector.style "min-height" "calc( 2 * var(--global-font-size, 1.5rem) * var(--font-size-multiplier) * 1.3333 + 1.47rem)" ]
@@ -134,8 +134,8 @@ view =
             \_ ->
                 render course Array.empty [ Update (Evaluate 0) 0 "b", Eval 0, result True "x", First 0 ]
                     |> Expect.all
-                        [ Query.find [ Selector.attribute (Attr.title (Translations.codeNext En)) ] >> Event.simulate Event.click >> Event.expect (Load 0 1)
-                        , Query.find [ Selector.attribute (Attr.title (Translations.codeLast En)) ] >> Event.simulate Event.click >> Event.expect (Last 0)
+                        [ Query.find [ Selector.attribute (Attr.title (Translations.codeNext en)) ] >> Event.simulate Event.click >> Event.expect (Load 0 1)
+                        , Query.find [ Selector.attribute (Attr.title (Translations.codeLast en)) ] >> Event.simulate Event.click >> Event.expect (Last 0)
                         ]
         ]
 
@@ -430,7 +430,7 @@ parse macros code_ =
 render : Model -> Array.Array (Array.Array String) -> List Msg -> Query.Single Msg
 render model sync msgs =
     View.view
-        { lang = En
+        { lang = en
         , theme = ""
         , model = List.foldl (\msg -> Update.update sync (Just 0) Array.empty msg >> .value) model msgs
         , code = Evaluate 0

@@ -92,27 +92,44 @@ mediaBlock inline =
             False
 
 
-{-| Merge neighboring characters without annotations.
+{-| Merge neighboring characters with the same annotations.
 -}
 combine : Inlines -> Inlines
 combine list =
-    combineHelper list []
+    combineHelper list [] [] []
 
 
-{-| **@private:** Tail recursive helper of `combine`.
+{-| **@private:** Tail recursive helper of `combine`, neighboring texts with
+the same annotations `attr` are collected in `pieces` and joined once, `++` per
+piece would build a deep rope string, which costs a lot of memory.
 -}
-combineHelper : Inlines -> Inlines -> Inlines
-combineHelper input output =
-    case ( input, output ) of
-        ( [], _ ) ->
-            List.reverse output
+combineHelper : Inlines -> Parameters -> List String -> Inlines -> Inlines
+combineHelper input attr pieces output =
+    case input of
+        [] ->
+            List.reverse (flush attr pieces output)
 
-        ( (Chars str1 attr1) :: is, (Chars str2 attr2) :: os ) ->
-            if attr1 == attr2 then
-                combineHelper is (Chars (str2 ++ str1) attr1 :: os)
+        (Chars str attr_) :: is ->
+            if List.isEmpty pieces || attr_ == attr then
+                combineHelper is attr_ (str :: pieces) output
 
             else
-                combineHelper is (Chars str1 attr1 :: output)
+                combineHelper is attr_ [ str ] (flush attr pieces output)
 
-        ( i :: is, _ ) ->
-            combineHelper is (i :: output)
+        i :: is ->
+            combineHelper is [] [] (i :: flush attr pieces output)
+
+
+{-| **@private:** Add the collected texts (in reverse order) as one `Chars`.
+-}
+flush : Parameters -> List String -> Inlines -> Inlines
+flush attr pieces output =
+    case pieces of
+        [] ->
+            output
+
+        [ one ] ->
+            Chars one attr :: output
+
+        _ ->
+            Chars (String.concat (List.reverse pieces)) attr :: output
