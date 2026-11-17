@@ -145,7 +145,7 @@ update session msg model =
                             , settings = { settings | playback = Idle }
 
                             -- the table of contents shows the branch of the section
-                            , index_model = Index.reveal idx model.sections model.index_model
+                            , index_model = Index.reveal settings.tocDepth idx model.sections model.index_model
                         }
                 in
                 if idx == model.section_active || force then
@@ -314,7 +314,24 @@ update session msg model =
                 )
                 childMsg
                 model.settings
-                |> Return.mapValCmd (\settings -> { model | settings = settings }) UpdateSettings
+                |> Return.mapValCmd
+                    (\settings ->
+                        let
+                            index_model =
+                                model.index_model
+                        in
+                        { model
+                            | settings = settings
+                            , index_model =
+                                -- a new depth collapses the table of contents again
+                                if settings.tocDepth == model.settings.tocDepth then
+                                    model.index_model
+
+                                else
+                                    Index.reveal settings.tocDepth model.section_active model.sections { index_model | defaults = False }
+                        }
+                    )
+                    UpdateSettings
                 |> maybeTextbookChange session model.settings.mode
 
         TTSReplay replay ->

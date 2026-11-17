@@ -1,6 +1,7 @@
 module Lia.Parser.Helper exposing
     ( c_frame
     , inlineCode
+    , mayContinue
     , newline
     , newlines
     , peek
@@ -22,6 +23,7 @@ import Combine
         , keep
         , manyTill
         , map
+        , or
         , primitive
         , regex
         , string
@@ -113,10 +115,26 @@ stringTill p =
 
 
 {-| Inline code surrounded by single backticks, a backslash escapes a backtick.
+Without a closing backtick that way, the backslash is taken literally, as in
+`` `\` ``.
 -}
 inlineCode : Parser s String
 inlineCode =
     string "`"
-        |> keep (regex "([^`\n\\\\]*|\\\\`|\\\\)+")
-        |> ignore (string "`")
-        |> map (String.replace "\\`" "`")
+        |> keep
+            (or
+                (regex "([^`\n\\\\]*|\\\\`|\\\\)+"
+                    |> ignore (string "`")
+                    |> map (String.replace "\\`" "`")
+                )
+                (regex "[^`\n]+" |> ignore (string "`"))
+            )
+
+
+{-| Checks that look only at one line use this: the text contains something
+that might span more lines or is replaced by more text (HTML and comments,
+block formulas, footnotes, effects, line breaks, macros).
+-}
+mayContinue : String -> Bool
+mayContinue text =
+    List.any (\token -> String.contains token text) [ "<", "$$", "[^", "{", "\\", "@" ]

@@ -96,19 +96,36 @@ mediaBlock inline =
 -}
 combine : Inlines -> Inlines
 combine list =
-    combineHelper list []
+    combineHelper list [] []
 
 
-{-| **@private:** Tail recursive helper of `combine`.
+{-| **@private:** Tail recursive helper of `combine`, neighboring texts are
+collected in `pieces` and joined once, `++` per piece would build a deep rope
+string, which costs a lot of memory.
 -}
-combineHelper : Inlines -> Inlines -> Inlines
-combineHelper input output =
-    case ( input, output ) of
-        ( [], _ ) ->
-            List.reverse output
+combineHelper : Inlines -> List String -> Inlines -> Inlines
+combineHelper input pieces output =
+    case input of
+        [] ->
+            List.reverse (flush pieces output)
 
-        ( (Chars str1 []) :: is, (Chars str2 []) :: os ) ->
-            combineHelper is (Chars (str2 ++ str1) [] :: os)
+        (Chars str []) :: is ->
+            combineHelper is (str :: pieces) output
 
-        ( i :: is, _ ) ->
-            combineHelper is (i :: output)
+        i :: is ->
+            combineHelper is [] (i :: flush pieces output)
+
+
+{-| **@private:** Add the collected texts (in reverse order) as one `Chars`.
+-}
+flush : List String -> Inlines -> Inlines
+flush pieces output =
+    case pieces of
+        [] ->
+            output
+
+        [ one ] ->
+            Chars one [] :: output
+
+        _ ->
+            Chars (String.concat (List.reverse pieces)) [] :: output
