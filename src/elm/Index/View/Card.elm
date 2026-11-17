@@ -7,7 +7,7 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import I18n.Translations exposing (Lang(..))
+import I18n.Translations exposing (Lang, en)
 import Index.Model exposing (Action(..), Course, Release, cardID)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
@@ -454,4 +454,4 @@ get_active course =
 
 inlines : Inlines -> List (Html Msg)
 inlines =
-    List.map (Inline.view_inf Array.empty En False False Nothing Nothing Nothing >> Html.map (always None))
+    List.map (Inline.view_inf Array.empty en False False Nothing Nothing Nothing >> Html.map (always None))

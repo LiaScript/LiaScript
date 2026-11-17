@@ -15,7 +15,7 @@ import Expect
 import Html exposing (Html)
 import Html.Attributes
 import HtmlSnapshot
-import I18n.Translations exposing (Lang(..))
+import I18n.Translations exposing (Lang, en)
 import Inline.ViewSnapshots exposing (snapshots)
 import Lia.Markdown.Effect.Script.Types exposing (Msg)
 import Lia.Markdown.HTML.Types exposing (Node(..))
@@ -35,7 +35,7 @@ config =
         , slide = 0
         , speaking = Nothing
         , paused = Nothing
-        , lang = En
+        , lang = en
         , theme = Nothing
         , light = True
         , tooltips = False
@@ -58,7 +58,7 @@ presentation =
         , slide = 0
         , speaking = Nothing
         , paused = Nothing
-        , lang = De
+        , lang = de
         , theme = Nothing
         , light = False
         , tooltips = True
@@ -274,6 +274,11 @@ suite =
         , snapshot "drop here" (View.dropHere [ Html.Attributes.class "x" ] |> Html.map never)
         , snapshot "audio" (View.audio [] { url = "a.mp3", controls = False, preload = "auto", errorHandling = False } |> Html.map never)
         , snapshot "audio error" (View.audio [] { url = "a.mp3", controls = True, preload = "none", errorHandling = True } |> Html.map never)
-        , snapshot "view_inf" (View.view_inf Array.empty En True False Nothing Nothing Nothing (Ref (Image [ chars "alt" ] "img.png" Nothing) []))
-        , snapshot "view_inf media" (View.view_inf Array.empty De False True Nothing (Just Dict.empty) (Just (Dict.fromList [ ( "img.png", ( 1, 2 ) ) ])) (Container [ Ref (Image [] "img.png" Nothing) [], Ref (Link [ chars "l" ] "https://l.org" Nothing) [] ] []))
+        , snapshot "view_inf" (View.view_inf Array.empty en True False Nothing Nothing Nothing (Ref (Image [ chars "alt" ] "img.png" Nothing) []))
+        , snapshot "view_inf media" (View.view_inf Array.empty de False True Nothing (Just Dict.empty) (Just (Dict.fromList [ ( "img.png", ( 1, 2 ) ) ])) (Container [ Ref (Image [] "img.png" Nothing) [], Ref (Link [ chars "l" ] "https://l.org" Nothing) [] ] []))
         ]
+
+
+de : I18n.Translations.Lang
+de =
+    I18n.Translations.getLnFromCode "de" |> Maybe.withDefault I18n.Translations.en

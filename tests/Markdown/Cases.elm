@@ -16,7 +16,7 @@ import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Gallery.Update as GalleryUpdate
 import Lia.Markdown.Task.Update as TaskUpdate
-import I18n.Translations exposing (Lang(..))
+import I18n.Translations exposing (Lang, en)
 import Lia.Markdown.Code.Sync as CSync
 import Lia.Markdown.Config as MConfig
 import Lia.Markdown.Update as MU
@@ -561,7 +561,7 @@ config =
 
 configWith : Int -> Maybe (Dict.Dict String String) -> (Settings.Settings -> Settings.Settings) -> Section.Section -> MConfig.Config MU.Msg
 configWith width formulas settings s =
-    MConfig.init En
+    MConfig.init en
         { old = "en", new = "en", name = Nothing }
         (settings (Settings.init Nothing False Textbook))
         (Sync.init [])
@@ -574,7 +574,7 @@ configWith width formulas settings s =
 
 renderSync : Sync.Settings -> Section.Section -> String
 renderSync sync s =
-    MConfig.init En
+    MConfig.init en
         { old = "en", new = "en", name = Nothing }
         (Settings.init Nothing False Textbook)
         sync
@@ -589,7 +589,7 @@ renderSync sync s =
 
 render : Mode -> Section.Section -> String
 render mode s =
-    MConfig.init En
+    MConfig.init en
         { old = "en", new = "en", name = Nothing }
         (Settings.init Nothing False mode)
         (Sync.init [])
@@ -620,7 +620,7 @@ its way through all LiaScript results.
 -}
 typeX : Section.Section -> Result String Section.Section
 typeX s =
-    MConfig.init En { old = "en", new = "en", name = Nothing } (Settings.init Nothing False Textbook) (Sync.init []) { width = 1000, height = 800 } s.id Nothing Dict.empty s
+    MConfig.init en { old = "en", new = "en", name = Nothing } (Settings.init Nothing False Textbook) (Sync.init []) { width = 1000, height = 800 } s.id Nothing Dict.empty s
         |> MView.view False True
         |> Query.fromHtml
         |> Query.find [ Selector.tag "input" ]

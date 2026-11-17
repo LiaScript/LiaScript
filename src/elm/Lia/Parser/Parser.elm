@@ -24,7 +24,7 @@ import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Parser as Markdown
 import Lia.Markdown.Types exposing (Block(..), Blocks)
-import Lia.Parser.Context exposing (Context, init)
+import Lia.Parser.Context exposing (Context, init, limitMacros)
 import Lia.Parser.Helper exposing (stringTill)
 import Lia.Parser.Preprocessor as Preprocessor
 import Lia.Section as Section exposing (Section, SubSection(..))
@@ -67,7 +67,7 @@ parse_definition base appendix code =
 -}
 parse_titles : Definition -> String -> Result String ( Section.Base, String )
 parse_titles defines code =
-    case Combine.runParser Preprocessor.section (init Nothing Nothing defines) code of
+    case Combine.runParser Preprocessor.section (init Nothing Nothing defines |> limitMacros 10000) code of
         Ok ( _, data, rslt ) ->
             Ok ( rslt, data.input )
 

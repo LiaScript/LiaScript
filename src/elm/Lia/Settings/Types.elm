@@ -49,6 +49,9 @@ type alias Settings =
     , tooltips : Bool
     , decals : Bool
     , hideVideoComments : Bool
+
+    -- levels of the table of contents expanded by default, counted from the top
+    , tocDepth : Int
     , sync : Maybe Bool
     , showQRCode : Bool
     , tts : TTS
@@ -161,6 +164,7 @@ init hasShareApi isFullscreen mode =
     , tooltips = False
     , decals = False
     , hideVideoComments = False
+    , tocDepth = 2
     , sync = Just False
     , showQRCode = False
     , tts =

@@ -9,7 +9,7 @@ import Array
 import Dict
 import Expect
 import Html
-import I18n.Translations exposing (Lang(..))
+import I18n.Translations exposing (Lang, en)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Input as Input
@@ -334,7 +334,7 @@ config =
         , slide = 0
         , speaking = Nothing
         , paused = Nothing
-        , lang = En
+        , lang = en
         , theme = Nothing
         , light = True
         , tooltips = False

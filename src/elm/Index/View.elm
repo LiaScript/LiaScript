@@ -4,7 +4,8 @@ import Const
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onInput)
-import I18n.Translations exposing (Lang(..))
+import Html.Lazy
+import I18n.Translations exposing (Lang, en)
 import Index.Model exposing (Course, Layout(..), Modal(..), Model, urlInputID)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
@@ -24,7 +25,7 @@ view session settings model =
         [ Settings.header
             { online = False
             , active = model.modal == Nothing
-            , lang = En
+            , lang = en
             , screen = session.screen
             , settings = settings
             , logo = Const.icon
@@ -54,7 +55,7 @@ view session settings model =
                 [ Html.h1 [] [ Html.text "LiaScript: Open-courSe" ]
 
                 -- the page is English, so is the hint for links in a new tab
-                , newTabHint En
+                , newTabHint en
                 , Html.p []
                     [ Html.text "( ... search a list of free LiaScript courses and related material on "
                     , Html.a
@@ -102,8 +103,16 @@ view session settings model =
         ]
 
 
+{-| A card is only built again if its course changed, not on every keystroke in
+the URL input.
+-}
 itemView : Bool -> Masonry.Id -> Course -> Html Msg
 itemView hasShareAPI _ course =
+    Html.Lazy.lazy2 viewCard hasShareAPI course
+
+
+viewCard : Bool -> Course -> Html Msg
+viewCard hasShareAPI course =
     card { share = hasShareAPI, compact = Nothing, extra = [] } course
 
 

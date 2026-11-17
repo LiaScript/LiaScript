@@ -13,7 +13,7 @@ snapshots must not change.
 import Array
 import Dict
 import HtmlSnapshot
-import I18n.Translations exposing (Lang(..))
+import I18n.Translations exposing (Lang, en)
 import Lia.Markdown.Gallery.Types exposing (Gallery)
 import Lia.Markdown.Gallery.View exposing (view)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
@@ -31,7 +31,7 @@ config =
         , slide = 0
         , speaking = Nothing
         , paused = Nothing
-        , lang = En
+        , lang = en
         , theme = Nothing
         , light = True
         , tooltips = False

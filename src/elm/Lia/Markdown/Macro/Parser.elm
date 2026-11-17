@@ -26,6 +26,7 @@ import Combine
         ( Parser
         , andMap
         , andThen
+        , app
         , choice
         , fail
         , ignore
@@ -52,8 +53,8 @@ import Combine
 import Dict
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.HTML.Attributes exposing (toURL)
-import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (c_frame, inlineCode, peek, startsWith, stringTill)
+import Lia.Parser.Context as Context exposing (Context)
+import Lia.Parser.Helper exposing (c_frame, inlineCode, peek, startsWith)
 import Lia.Parser.Indentation as Indent
 import Lia.Utils exposing (toEscapeString)
 import Regex
@@ -93,6 +94,7 @@ expansion leaves the input unchanged (e.g. `@a` defined as `@a`).
 macros : Parser Context ()
 macros =
     choice [ uid_macro, simple_macro, reference_macro ]
+        |> withSource
         |> andThen (inject False)
         |> or macro_listing
         |> many
@@ -113,6 +115,26 @@ start =
 identifier : Parser s String
 identifier =
     regex "\\w[\\w.]+"
+
+
+{-| The name of a macro that can be expanded, it is defined and the budget is
+not used up (see `Context.hasMacroBudget`). The parameters of other calls
+like `@input(...)` are not parsed, an `@` is tried at every position.
+-}
+known : Parser Context String
+known =
+    identifier
+        |> andThen
+            (\name ->
+                withState
+                    (\state ->
+                        if Context.hasMacroBudget state && get name state.defines /= Nothing then
+                            succeed name
+
+                        else
+                            fail "unknown macro"
+                    )
+            )
 
 
 {-| `@uid` counts up on every call, see `get`.
@@ -138,7 +160,7 @@ nextUid state =
 simple_macro : Parser Context Call
 simple_macro =
     start
-        |> andMap identifier
+        |> andMap known
         |> andMap parameter_list
 
 
@@ -149,7 +171,7 @@ reference_macro : Parser Context Call
 reference_macro =
     start
         |> ignore (string "[")
-        |> andMap identifier
+        |> andMap known
         |> andMap
             (parameter_list
                 |> ignore (string "](")
@@ -173,7 +195,7 @@ inline code or plain text.
 parameter : Parser Context String
 parameter =
     choice
-        [ c_frame |> andThen (\n -> stringTill (string (String.repeat n "`")))
+        [ c_frame |> andThen (\n -> regex ("[\\s\\S]*?`{" ++ String.fromInt n ++ "}") |> map (String.dropRight n))
         , inlineCode
         , regex "[^),]+"
         ]
@@ -189,7 +211,7 @@ macro_listing =
         |> map Tuple.pair
         |> andMap
             (start
-                |> andMap identifier
+                |> andMap known
                 |> andMap parameter_list
                 |> ignore (regex "[\t ]*\n")
             )
@@ -198,7 +220,26 @@ macro_listing =
                 code_block backticks
                     |> map (\code -> { call | params = call.params ++ [ code ] })
             )
+        |> withSource
         |> andThen (inject True)
+
+
+{-| The parsed call and its text.
+-}
+withSource : Parser Context Call -> Parser Context ( String, Call )
+withSource p =
+    primitive
+        (\state stream ->
+            case app p state stream of
+                ( newState, newStream, Ok call ) ->
+                    ( newState
+                    , newStream
+                    , Ok ( String.left (newStream.position - stream.position) stream.input, call )
+                    )
+
+                ( newState, newStream, Err e ) ->
+                    ( newState, newStream, Err e )
+        )
 
 
 {-| The block content up to the closing backticks, without the last
@@ -221,8 +262,8 @@ macros. Unless `ignoreIndentation`, every new line of the body gets the
 current indentation (list items, quotes, ...), so the result stays within
 the surrounding block.
 -}
-inject : Bool -> Call -> Parser Context ()
-inject ignoreIndentation call =
+inject : Bool -> ( String, Call ) -> Parser Context ()
+inject ignoreIndentation ( source, call ) =
     withState
         (\state ->
             let
@@ -233,39 +274,67 @@ inject ignoreIndentation call =
                 Just body ->
                     let
                         ( newState, values ) =
-                            List.foldl eval_parameter ( state, [] ) call.params
+                            List.foldl eval_parameter ( Context.countMacro 100 state, [] ) call.params
 
-                        code =
-                            (if ignoreIndentation || state.indentation == [] then
-                                body
+                        args =
+                            Array.fromList (List.reverse values)
 
-                             else
-                                body
-                                    |> String.lines
-                                    |> String.join
-                                        (state.indentation
-                                            |> String.concat
-                                            |> String.replace "?" ""
-                                            |> String.replace "*" ""
-                                            |> (++) "\n"
-                                        )
-                            )
-                                |> substitute (Array.fromList (List.reverse values))
-                                |> unguard
+                        charged =
+                            Context.countMacro (expandedLength args body) newState
                     in
-                    (if call.escape then
-                        toEscapeString code
+                    if Context.hasMacroBudget charged then
+                        let
+                            expansion =
+                                body
+                                    |> indent ignoreIndentation state.indentation
+                                    |> substitute args
+                                    |> unguard
+                                    |> escapeIf call.escape
+                        in
+                        expansion
+                            |> present
+                            |> prepend
+                            |> ignore (putState (Context.countMacro (String.length expansion) newState))
 
-                     else
-                        code
-                    )
-                        |> present
-                        |> prepend
-                        |> ignore (putState newState)
+                    else
+                        -- the call does not fit into the budget, it stays as
+                        -- text, failing would undo the count and every
+                        -- following macro would try again
+                        prepend source
+                            |> ignore (putState charged)
 
                 Nothing ->
                     fail "macro definition not found"
         )
+
+
+{-| Unless `ignoreIndentation`, every new line of the body gets the current
+indentation (list items, quotes, ...).
+-}
+indent : Bool -> List String -> String -> String
+indent ignoreIndentation indentation body =
+    if ignoreIndentation || indentation == [] then
+        body
+
+    else
+        body
+            |> String.lines
+            |> String.join
+                (indentation
+                    |> String.concat
+                    |> String.replace "?" ""
+                    |> String.replace "*" ""
+                    |> (++) "\n"
+                )
+
+
+escapeIf : Bool -> String -> String
+escapeIf isEscaped code =
+    if isEscaped then
+        toEscapeString code
+
+    else
+        code
 
 
 {-| Put the expansion in front of the remaining input. `modifyInput` would
@@ -332,15 +401,17 @@ get id def =
 
 {-| Expand the macros within a parameter, in order, since `@uid` counts up.
 The values are collected in reverse. Escaped `\@` stay guarded until the
-whole body is done.
+whole body is done. Parameters nested too deep, e.g. by `@aa: @aa(@aa)`, stay
+as they are, see `Context.nestedMacro`.
 -}
 eval_parameter : String -> ( Context, List String ) -> ( Context, List String )
 eval_parameter param ( state, values ) =
-    let
-        ( newState, value ) =
-            expand state (guard param)
-    in
-    ( newState, value :: values )
+    case Context.nestedMacro (\s -> expand s (guard param)) state of
+        Just ( newState, value ) ->
+            ( newState, value :: values )
+
+        Nothing ->
+            ( state, param :: values )
 
 
 {-| Replace `@0`, `@1`, ... and the escaped `@'0`, ... by the parameter
@@ -367,6 +438,26 @@ substitute values =
                 _ ->
                     m.match
         )
+
+
+{-| The length of `body` with the parameters substituted, without building it.
+-}
+expandedLength : Array String -> String -> Int
+expandedLength values body =
+    Regex.find parameterRef body
+        |> List.foldl
+            (\m sum ->
+                case m.submatches of
+                    [ _, Just i ] ->
+                        String.toInt i
+                            |> Maybe.andThen (\j -> Array.get j values)
+                            |> Maybe.map (String.length >> (+) sum)
+                            |> Maybe.withDefault sum
+
+                    _ ->
+                        sum
+            )
+            (String.length body)
 
 
 parameterRef : Regex.Regex
@@ -406,13 +497,20 @@ expand state str =
             ( state, str )
 
 
+{-| Text and macros alternate. The text comes first in every repetition, at
+the end of the input it fails before a macro is expanded. Otherwise the last
+macro was expanded twice (and once more on every level of `@aa: @aa(@aa)`),
+the first time was undone by the failure.
+-}
 expandAll : Parser Context String
 expandAll =
     macro
-        |> keep (or (regex "[^@]+") (string "@"))
-        |> many
+        |> keep
+            (or (regex "[^@]+") (string "@")
+                |> ignore macro
+                |> many
+            )
         |> map String.concat
-        |> ignore macro
 
 
 {-| `@@`: show the expanded macro in a gray code box. `<lia-keep>` is not
