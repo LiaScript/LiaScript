@@ -15,6 +15,7 @@ const defaultSettings: Lia.Settings = {
   decals: false,
   preferBrowserTTS: true,
   hideVideoComments: false,
+  tocDepth: 2,
   audio: { pitch: 1, rate: 1 },
 }
 
@@ -111,6 +112,7 @@ export const Settings = {
       | 'tooltip'
       | 'preferBrowserTTS'
       | 'hideVideoComments'
+      | 'tocDepth'
       | 'audio'
       | 'dir',
     value: any
@@ -204,6 +206,14 @@ export const Settings = {
   set hideVideoComments(value: boolean) {
     this.setter('hideVideoComments', value)
   },
+  get tocDepth(): number {
+    return this.data.tocDepth
+  },
+  set tocDepth(value: number) {
+    // Elm decodes an int, anything else would discard all stored settings
+    this.setter('tocDepth', parseInt(value as any) || 2)
+  },
+
   set audio(value: { rate: number; pitch: number }) {
     this.data.audio = value
     this.setter('audio', value)

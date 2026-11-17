@@ -10,6 +10,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (on, onClick)
 import Html.Keyed as Keyed
+import Html.Lazy
 import I18n.Translations as Trans exposing (Lang)
 import Json.Decode as JD
 import Lia.Chat.View as Chat
@@ -162,14 +163,14 @@ viewSlide modalIsActive screen model =
                     , settings = model.settings
                     , slide = model.section_active
                     , effects = section.effect_model
-                    , translated = model.langCodeOriginal /= model.langCode
+                    , translated = model.translations.old /= model.translations.new
                     }
                 ]
             , slideA11y
                 { lang = model.translation
                 , light = model.settings.light
                 , tooltips = model.settings.tooltips && (screen.width >= Const.tooltipBreakpoint)
-                , translations = { old = model.langCodeOriginal, new = model.langCode, name = model.langName }
+                , translations = model.translations
                 , mode = model.settings.mode
                 , formulas = model.definition.formulas
                 , media = model.media
@@ -251,14 +252,12 @@ viewPanes screen model =
                 |> Html.div [ Attr.class "lia-slide__container" ]
             )
             (Chat.view model.translation
-                model.settings.light
-                (initConfig screen model)
-                (if Sync_.isRoot model.sync then
-                    model.sync.peersHistory
-
-                 else
-                    model.sync.peers
-                )
+                model.translations
+                model.settings
+                model.sync
+                screen
+                model.definition.formulas
+                model.media
                 model.chat
                 |> Html.map UpdateChat
             )
@@ -270,7 +269,7 @@ initConfig : Screen -> Model -> Section -> Config sub
 initConfig screen model =
     Config.init
         model.translation
-        { old = model.langCodeOriginal, new = model.langCode, name = model.langName }
+        model.translations
         model.settings
         model.sync
         screen
@@ -291,10 +290,23 @@ showSection model screen ( id, section ) =
     if hidden && not persistent && section.error == Nothing then
         Markdown.viewHidden
 
+    else if hidden && persistent then
+        -- otherwise every visited section would be built again on every message
+        Html.Lazy.lazy8 viewPersistent model.translation model.translations model.settings model.sync screen model.definition.formulas model.media section
+
     else
         initConfig screen model section
             |> Markdown.view hidden persistent
             |> Html.map UpdateMarkdown
+
+
+{-| A hidden persistent section, its own id is its slide, as if it were active.
+-}
+viewPersistent : Lang -> { old : String, new : String, name : Maybe String } -> Settings -> Sync_.Settings -> Screen -> Dict String String -> Dict String ( Int, Int ) -> Section -> Html Msg
+viewPersistent lang translations settings sync screen formulas media section =
+    Config.init lang translations settings sync screen section.id (Just formulas) media section
+        |> Markdown.view True True
+        |> Html.map UpdateMarkdown
 
 
 {-| **@private:** used to display the text2speech output settings and spoken
@@ -674,7 +686,7 @@ slideTopBar screen model def progress =
                 [ [ Settings.menu "chat" Settings.menuChat
                   , Settings.menu "mode" Settings.menuMode
                   , Settings.menu1 "settings" Settings.menuSettings screen.width
-                  , Settings.menu2 "lang" Settings.menuTranslations model.langCode def
+                  , Settings.menu2 "lang" Settings.menuTranslations model.translations.new def
                   ]
                 , case model.settings.edit of
                     Nothing ->
@@ -777,6 +789,7 @@ always take precedence over the avatar.
 
 Embedded videos (YouTube, Vimeo, ...) are only placeholders, the player
 adapters in TTS.ts (`comment-media`) inject and control the iframes.
+
 -}
 viewVideoComment : { active : Bool, hide : Bool, avatar : Maybe String } -> Overlay.Model -> Effect.Model SubSection -> Html Msg
 viewVideoComment comments overlay effects =
@@ -959,7 +972,8 @@ showModal model =
                 |> modal model.translation False (syncCloseMsg model.sync) Nothing
 
         ( _, Just url, _ ) ->
-            modal model.translation True
+            modal model.translation
+                True
                 (Media ( "", Nothing, Nothing ))
                 Nothing
                 [ Html.figure
@@ -985,7 +999,8 @@ showModal model =
                 ]
 
         ( _, _, True ) ->
-            modal model.translation True
+            modal model.translation
+                True
                 (UpdateSettings (Settings_.Toggle Settings_.QRCode))
                 Nothing
                 [ Html.div

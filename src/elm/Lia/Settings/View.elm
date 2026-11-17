@@ -109,6 +109,8 @@ viewSettings lang tabbable width settings =
     , divider
     , viewEditorTheme grouping lang tabbable settings.editor
     , divider
+    , viewTocDepth grouping lang tabbable settings.tocDepth
+    , divider
     , viewSizing grouping lang tabbable settings.font_size
     , divider
     , viewFullscreen grouping lang tabbable settings.fullscreen
@@ -832,6 +834,32 @@ viewEditorTheme grouping lang tabbable theme =
         ]
 
 
+viewTocDepth : (List (Attribute Msg) -> List (Attribute Msg)) -> Lang -> Bool -> Int -> Html Msg
+viewTocDepth grouping lang tabbable depth =
+    Html.div []
+        [ Html.label
+            [ Attr.class "lia-label"
+            , Attr.style "display" "flex"
+            , Attr.style "align-items" "center"
+            , Attr.style "gap" "1rem"
+            , A11y_Aria.hidden (not tabbable)
+            ]
+            [ Html.text <| Trans.confTocDepth lang ++ ":"
+            , Html.select
+                (grouping
+                    [ Attr.class "lia-select"
+                    , Attr.style "width" "auto"
+                    , onInput ChangeTocDepth
+                    , A11y_Key.tabbable tabbable
+                    ]
+                )
+                (List.range 1 6
+                    |> List.map (\i -> option (String.fromInt depth) ( String.fromInt i, String.fromInt i ))
+                )
+            ]
+        ]
+
+
 option : String -> ( String, String ) -> Html Msg
 option current ( val, text ) =
     Html.option
@@ -1103,7 +1131,7 @@ menuShare url sync lang tabbable settings =
                 , tabbable = tabbable
                 , msg = Just (Toggle Sync)
                 }
-                (grouping [])
+                (grouping [Attr.style "width" "100%"])
                 [ Sync.title sync ]
 
         else

@@ -6,6 +6,7 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Keyed as Keyed
+import Html.Lazy
 import I18n.Translations as Trans exposing (Lang)
 import Lia.Chat.Model exposing (Model)
 import Lia.Chat.Update exposing (Msg(..))
@@ -14,11 +15,18 @@ import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Update as Markdown
 import Lia.Markdown.View as Markdown
 import Lia.Section exposing (Section)
+import Lia.Settings.Types exposing (Settings)
+import Lia.Sync.Types as Sync
 import Lia.Utils exposing (btnIcon, formatDate, noTranslate, viewIdenticon)
+import Session exposing (Screen)
 
 
-view : Lang -> Bool -> (Section -> Config Markdown.Msg) -> Dict String String -> Model -> Html Msg
-view lang lightMode config peers model =
+{-| The messages are only built again, when one of the arguments changes, not
+on every message of the course (or keystroke in the chat input), also not while
+the chat is hidden.
+-}
+view : Lang -> { old : String, new : String, name : Maybe String } -> Settings -> Sync.Settings -> Screen -> Dict String String -> Dict String ( Int, Int ) -> Model -> Html Msg
+view lang translations settings sync screen formulas media model =
     Html.div
         (noTranslate
             [ Attr.style "width" "100%"
@@ -29,26 +37,7 @@ view lang lightMode config peers model =
             , Attr.style "padding" "1rem"
             ]
         )
-        [ model.messages
-            |> Dict.toList
-            |> List.map (viewMessage lang config peers)
-            |> Keyed.node "article"
-                [ Attr.style "display" "flex"
-                , Attr.style "flex-direction" "column"
-                , Attr.style "justify-content" "flex-end"
-                , Attr.style "bottom" "0"
-                , A11y_Role.article
-                ]
-            |> List.singleton
-            |> Html.section
-                [ Attr.style "height" "100%"
-                , Attr.style "overflow" "auto"
-                , Attr.id "lia-chat-messages"
-
-                -- only new messages are read out
-                , A11y_Role.log
-                , A11y.label "Chat"
-                ]
+        [ Html.Lazy.lazy8 viewMessages lang translations settings sync screen formulas media model.messages
         , Html.div
             [ Attr.style "padding" "0.5rem"
             , Attr.style "height" "11.5rem"
@@ -85,7 +74,7 @@ view lang lightMode config peers model =
                 , Editor.label (Trans.chatMessage lang)
                 , Editor.theme <|
                     "cloud9_"
-                        ++ (if lightMode then
+                        ++ (if settings.light then
                                 "day"
 
                             else
@@ -95,6 +84,41 @@ view lang lightMode config peers model =
                 []
             ]
         ]
+
+
+viewMessages : Lang -> { old : String, new : String, name : Maybe String } -> Settings -> Sync.Settings -> Screen -> Dict String String -> Dict String ( Int, Int ) -> Dict String { section : Section, peer : String, verified : Bool } -> Html Msg
+viewMessages lang translations settings sync screen formulas media messages =
+    let
+        config =
+            Config.init lang translations settings sync screen 0 (Just formulas) media
+
+        peers =
+            if Sync.isRoot sync then
+                sync.peersHistory
+
+            else
+                sync.peers
+    in
+    messages
+        |> Dict.toList
+        |> List.map (viewMessage lang config peers)
+        |> Keyed.node "article"
+            [ Attr.style "display" "flex"
+            , Attr.style "flex-direction" "column"
+            , Attr.style "justify-content" "flex-end"
+            , Attr.style "bottom" "0"
+            , A11y_Role.article
+            ]
+        |> List.singleton
+        |> Html.section
+            [ Attr.style "height" "100%"
+            , Attr.style "overflow" "auto"
+            , Attr.id "lia-chat-messages"
+
+            -- only new messages are read out
+            , A11y_Role.log
+            , A11y.label "Chat"
+            ]
 
 
 viewMessage : Lang -> (Section -> Config Markdown.Msg) -> Dict String String -> ( String, { section : Section, peer : String, verified : Bool } ) -> ( String, Html Msg )

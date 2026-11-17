@@ -44,7 +44,7 @@ import Lia.Markdown.HTML.Attributes exposing (toURL)
 import Lia.Markdown.Inline.Parser exposing (comment, line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser as Macro
-import Lia.Parser.Context exposing (Context, init)
+import Lia.Parser.Context exposing (Context, init, limitMacros)
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Mode(..))
 
@@ -265,7 +265,7 @@ inlines defines str =
     case
         str
             |> String.replace "\n" " "
-            |> Combine.runParser line (init Nothing Nothing defines)
+            |> Combine.runParser line (init Nothing Nothing defines |> limitMacros 10000)
     of
         Ok ( _, _, rslt ) ->
             rslt

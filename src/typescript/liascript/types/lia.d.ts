@@ -36,6 +36,7 @@ export type Settings = {
   decals?: boolean
   preferBrowserTTS: boolean
   hideVideoComments: boolean
+  tocDepth?: number
   audio: {
     rate: number
     pitch: number
