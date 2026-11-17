@@ -97,7 +97,11 @@ export class Connector extends Base.Connector {
     }
 
     // Set course ID and title
-    this.courseId = config.courseId || window.location.href
+    // Without a course id, the page is the course. Not its href: LiaScript
+    // adds the course and the slide to it (?README.md#3), so after a reload the
+    // restore would ask the LRS for another activity and find nothing
+    this.courseId =
+      config.courseId || window.location.origin + window.location.pathname
     this.courseTitle =
       config.courseTitle || document.title || 'LiaScript Course'
 
