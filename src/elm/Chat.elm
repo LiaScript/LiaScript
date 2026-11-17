@@ -14,6 +14,7 @@ import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Keyed as Keyed
+import Html.Lazy
 import Http
 import I18n.Translations as Translations
 import Json.Decode as JD
@@ -371,18 +372,6 @@ style old new =
 
 view : Model -> Html Msg
 view model =
-    let
-        config =
-            Config.init
-                (Translations.getLnFromCode model.definition.language |> Maybe.withDefault Translations.En)
-                { old = model.definition.language, new = model.definition.language, name = Nothing }
-                model.settings
-                model.sync
-                model.screen
-                0
-                (Just model.definition.formulas)
-                Dict.empty
-    in
     -- ids are the positions within the chat (0, 1, 2, ...)
     model.chat.messages
         |> Dict.toList
@@ -393,11 +382,33 @@ view model =
                 ( key
                 , Dict.get id model.meta
                     |> Maybe.withDefault { name = "", icon = "", self = False, clock = "" }
-                    |> viewMessage (config section |> Config.setID id) section
-                    |> Html.map (Chat.UpdateMarkdown key >> UpdateChat)
+                    |> Html.Lazy.lazy7 viewEntry model.definition model.settings model.sync model.screen key section
                 )
             )
         |> Keyed.node "article" [ Attr.id "lia-chat-messages" ]
+
+
+{-| A message is only built again if it or one of the settings changed, not
+on every message (or keystroke).
+-}
+viewEntry : Definition -> Settings -> Sync.Settings -> Screen -> String -> Section -> Meta -> Html Msg
+viewEntry definition settings sync screen key section meta =
+    let
+        config =
+            Config.init
+                (Translations.getLnFromCode definition.language |> Maybe.withDefault Translations.en)
+                { old = definition.language, new = definition.language, name = Nothing }
+                settings
+                sync
+                screen
+                0
+                (Just definition.formulas)
+                Dict.empty
+                section
+                |> Config.setID (String.toInt key |> Maybe.withDefault 0)
+    in
+    viewMessage config section meta
+        |> Html.map (Chat.UpdateMarkdown key >> UpdateChat)
 
 
 viewMessage : Config.Config Markdown.Msg -> Section -> Meta -> Html Markdown.Msg

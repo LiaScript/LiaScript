@@ -30,6 +30,7 @@ import Combine
         ( Parser
         , andMap
         , andThen
+        , app
         , choice
         , fail
         , ignore
@@ -40,6 +41,7 @@ import Combine
         , modifyState
         , optional
         , or
+        , primitive
         , putState
         , regex
         , skip
@@ -58,8 +60,9 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (newlines, spaces1)
+import Lia.Parser.Helper exposing (newlines, peek, spaces1, startsWith)
 import Lia.Parser.Indentation as Indent
+import Regex
 
 
 {-| A block effect `{{...}}`, followed by a single block or by several blocks
@@ -92,13 +95,115 @@ multi blocks =
 -}
 inline : Parser Context Inline -> Parser Context (Effect Inline)
 inline inlines =
-    string "{"
-        |> keep definition
+    opening
         |> map setContent
-        |> ignore (string "}{")
-        |> andMap (manyTill inlines (string "}"))
+        |> andMap (manyTill (inner inlines) (string "}"))
         |> ignore reset_effect_number
         |> andMap effect_id
+
+
+opening : Parser Context (Effect x)
+opening =
+    string "{"
+        |> keep definition
+        |> ignore (string "}{")
+        |> ignore (peek (closing 0) (succeed ()) (fail "no closing }"))
+
+
+{-| Is there a `}` on the rest of the line, that closes this effect? Openings
+of other effects `{1}{` count as nested, code, formulas and escaped characters
+are skipped. Without this, every `{1}{` without a `}` in the line would be
+parsed with all the following ones as nested effects. More than 64 nested ones
+cannot be parsed.
+-}
+closing : Int -> String -> Bool
+closing depth str =
+    closingHelp depth str (Regex.findAtMost 64 token str)
+
+
+closingHelp : Int -> String -> List Regex.Match -> Bool
+closingHelp depth str matches =
+    case matches of
+        [] ->
+            False
+
+        m :: ms ->
+            case closingToken depth m.match of
+                Nothing ->
+                    m.match == "}"
+
+                Just d ->
+                    if List.isEmpty ms then
+                        -- only 64 tokens are searched at once, a direct
+                        -- self call, so that Elm turns it into a loop
+                        let
+                            rest =
+                                String.dropLeft (m.index + String.length m.match) str
+                        in
+                        closingHelp d rest (Regex.findAtMost 64 token rest)
+
+                    else
+                        closingHelp d str ms
+
+
+{-| The depth after a token, `Nothing` if the search ends here.
+-}
+closingToken : Int -> String -> Maybe Int
+closingToken depth match =
+    if match == "}" then
+        if depth == 0 then
+            Nothing
+
+        else
+            Just (depth - 1)
+
+    else if match == "\n" || depth >= 64 then
+        Nothing
+
+    else if startsWith "{" match then
+        Just (depth + 1)
+
+    else
+        Just depth
+
+
+token : Regex.Regex
+token =
+    "`(?:[^`\\n\\\\]|\\\\`|\\\\)*`|\\$[^\\n$]+\\$|\\\\[\\s\\S]|\\{[\\t \\dA-Za-z|!>-]*\\}\\{|[}\\n]"
+        |> Regex.fromString
+        |> Maybe.withDefault Regex.never
+
+
+{-| An effect `{1}{` directly within the content of an inline effect has to be
+parsed as an effect, otherwise the outer one fails too. As text, the `}` of
+`{1}{` would close the outer effect, and every inner effect that cannot be
+parsed (beyond the nesting limit or with its `}` within code) would be parsed
+again for every outer one.
+-}
+inner : Parser Context Inline -> Parser Context Inline
+inner inlines =
+    peek (startsWith "{")
+        (primitive
+            (\state stream ->
+                case app opening state stream of
+                    ( _, _, Ok _ ) ->
+                        app (inlines |> andThen closed) state stream
+
+                    _ ->
+                        app inlines state stream
+            )
+        )
+        inlines
+
+
+closed : Inline -> Parser Context Inline
+closed element =
+    case element of
+        EInline _ _ ->
+            succeed element
+
+        _ ->
+            fail "unclosed effect"
 
 
 setContent : Effect x -> List x -> Int -> Effect x

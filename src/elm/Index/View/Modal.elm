@@ -7,7 +7,7 @@ module Index.View.Modal exposing
 
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
-import I18n.Translations exposing (Lang(..))
+import I18n.Translations exposing (Lang, en)
 import Index.Model exposing (Modal(..))
 import Index.Update exposing (Msg(..))
 import Lia.Utils exposing (btn, modal)
@@ -15,7 +15,7 @@ import Lia.Utils exposing (btn, modal)
 
 files : Maybe String -> Html Msg
 files error =
-    modal En True
+    modal en True
         (Modal Nothing)
         Nothing
         [ Html.div
@@ -75,7 +75,7 @@ btn_files_import =
 
 directory : Maybe String -> Html Msg
 directory error =
-    modal En True
+    modal en True
         (Modal Nothing)
         Nothing
         [ Html.div

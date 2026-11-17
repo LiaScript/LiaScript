@@ -12,11 +12,13 @@ import Combine
         ( Parser
         , andMap
         , choice
+        , consumed
         , fail
         , ignore
         , keep
         , many
         , map
+        , maybe
         , regex
         , regexWith
         , string
@@ -62,17 +64,36 @@ are skipped as a whole, so that a `#` within them does not start a section.
 -}
 body : Parser Context String
 body =
-    [ regex "(?:[^#`<]+|[\\x0D\n]+|<!--[\\S\\s]{0,1000}?-->)" -- comment
+    parts True
+        |> ignore (maybe (string "<!--" |> keep (parts False)))
+        |> consumed
+
+
+{-| A comment ends at the first `-->`, however long it is. After a `<!--`
+without one there is none in the rest of the input, so no more comments are
+tried (`withComments`), otherwise every `<!--` would search the input up to its
+end.
+-}
+parts : Bool -> Parser Context (List String)
+parts withComments =
+    let
+        ( comment, lt ) =
+            if withComments then
+                ( "|<!--[\\S\\s]*?-->", "<(?!!--)" )
+
+            else
+                ( "", "<" )
+    in
+    [ regex ("(?:[^#`<]+|[\\x0D\n]+" ++ comment ++ ")")
     , regex "(`{3,})[\\S\\s]*?\\1" -- code_block or ascii art
     , regex "`.+?`" -- code_block or ascii art
     , regexWith { caseInsensitive = True, multiline = False } "<(?:area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)[ \t]*/?>"
-    , regex "(?:<([\\w+\\-]+)[\\S\\s]*?<[ \t]*/[ \t]*\\1[ \t]*>|`|<)"
+    , regex ("(?:<([\\w+\\-]+)(?=[\\s/>])[\\S\\s]*?<[ \t]*/[ \t]*\\1[ \t]*>|`|" ++ lt ++ ")")
     , regex "#+(\\w|[^\\u0000-\\u007F]|[ \t]*\n)"
     , withColumn notFirstColumn |> keep (string "#")
     ]
         |> choice
         |> many
-        |> map String.concat
 
 
 {-| A section with its title and the unparsed body.

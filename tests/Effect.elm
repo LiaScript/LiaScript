@@ -8,7 +8,7 @@ import Array
 import Dict
 import Expect
 import Html.Attributes as Attr
-import I18n.Translations exposing (Lang(..))
+import I18n.Translations exposing (Lang, en)
 import Lia.Markdown.Effect.Model as Model
 import Lia.Markdown.Effect.Types as Effect exposing (Class(..))
 import Lia.Markdown.Effect.View as View
@@ -102,7 +102,7 @@ config paused =
         , slide = 0
         , speaking = Nothing
         , paused = paused
-        , lang = En
+        , lang = en
         , theme = Nothing
         , light = True
         , tooltips = False

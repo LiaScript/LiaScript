@@ -26,6 +26,7 @@ fromModel model =
         , ( "decals", JE.bool model.decals )
         , ( "preferBrowserTTS", JE.bool model.tts.preferBrowser )
         , ( "hideVideoComments", JE.bool model.hideVideoComments )
+        , ( "tocDepth", JE.int model.tocDepth )
         , ( "audio"
           , JE.object
                 [ ( "pitch", maybeFloat model.audio.pitch )
@@ -67,7 +68,7 @@ toModel model =
     in
     JD.decodeValue
         (JD.succeed
-            (\toc mode theme light editor font_size sound lang tooltips decals preferBrowserTTS hideVideoComments audio ->
+            (\toc mode theme light editor font_size sound lang tooltips decals preferBrowserTTS hideVideoComments tocDepth audio ->
                 { model
                     | table_of_contents = toc
                     , mode = mode
@@ -81,6 +82,7 @@ toModel model =
                     , decals = decals
                     , tts = { tts | preferBrowser = preferBrowserTTS }
                     , hideVideoComments = hideVideoComments
+                    , tocDepth = tocDepth
                     , audio = audio
                 }
             )
@@ -96,6 +98,7 @@ toModel model =
             |> JDP.optional "decals" JD.bool False
             |> JDP.optional "preferBrowserTTS" JD.bool True
             |> JDP.optional "hideVideoComments" JD.bool False
+            |> JDP.optional "tocDepth" JD.int 2
             |> JDP.optional "audio"
                 (JD.succeed
                     (\pitch rate -> { pitch = pitch, rate = rate })
