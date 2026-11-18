@@ -1,0 +1,31 @@
+diff --git a/node_modules/@parcel/packager-js/lib/helpers.js b/node_modules/@parcel/packager-js/lib/helpers.js
+index d06ceed..ff6f399 100644
+--- a/node_modules/@parcel/packager-js/lib/helpers.js
++++ b/node_modules/@parcel/packager-js/lib/helpers.js
+@@ -167,7 +167,7 @@ const $parcel$devServer = (env, bundle, _usedHelpers, options) => {
+   return `var $parcel$devServer = null;\n`;
+ };
+ const $parcel$extendImportMap = env => {
+-  let defineImportMap = env.shouldScopeHoist ? 'parcelRequire.i ??= {}' : 'importMap';
++  let defineImportMap = env.shouldScopeHoist ? 'parcelRequire.i = parcelRequire.i || {}' : 'importMap';
+   return `
+ function $parcel$extendImportMap(map) {
+   Object.assign(${defineImportMap}, map);
+@@ -177,7 +177,7 @@ function $parcel$extendImportMap(map) {
+ const $parcel$import = (env, bundle, usedHelpers) => {
+   usedHelpers.add('$parcel$distDir');
+   let distDir = env.shouldScopeHoist ? '$parcel$distDir' : 'distDir';
+-  let importMap = env.shouldScopeHoist ? 'parcelRequire.i?.' : 'importMap';
++  let importMap = env.shouldScopeHoist ? '(parcelRequire.i || {})' : 'importMap';
+   return `
+ function $parcel$import(url) {
+   url = ${importMap}[url] || url;
+@@ -188,7 +188,7 @@ function $parcel$import(url) {
+ const $parcel$resolve = (env, bundle, usedHelpers) => {
+   let distDir = env.shouldScopeHoist ? '$parcel$distDir' : 'distDir';
+   let publicUrl = env.shouldScopeHoist ? '$parcel$publicUrl' : 'publicUrl';
+-  let importMap = env.shouldScopeHoist ? 'parcelRequire.i?.' : 'importMap';
++  let importMap = env.shouldScopeHoist ? '(parcelRequire.i || {})' : 'importMap';
+   if (env.context === 'react-server' || env.context === 'react-client') {
+     usedHelpers.add('$parcel$publicUrl');
+     return `

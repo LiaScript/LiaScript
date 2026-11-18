@@ -83,6 +83,8 @@ install:
 optimize:
 	sed -i "s/elm\/Main.elm/..\/elm.js/g" src/typescript/liascript/index.ts
 	npx elm-optimize-level-2 -O3 src/elm/Main.elm
+	# Parcel's legacy (nomodule) build passes `void 0` for `this`, see patches/@parcel+transformer-elm
+	sed -i 's/^}(this));$$/}(exports));/' elm.js && grep -q '^}(exports));$$' elm.js
 
 deoptimize:
 	sed -i "s/\.\.\/elm.js/elm\/Main\.elm/g" src/typescript/liascript/index.ts
