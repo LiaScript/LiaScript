@@ -689,8 +689,21 @@ start model =
         lia =
             model.lia
 
+        index_model =
+            lia.index_model
+
+        outline l =
+            ( l.settings.tocDepth, l.sections |> Array.toList |> List.map .indentation )
+
         return =
-            Lia.Script.load_first_slide session { lia | section_active = slide }
+            Lia.Script.load_first_slide session
+                { lia
+                    | section_active = slide
+
+                    -- the editor parses again on every change: collapse the table of
+                    -- contents anew, if the headings or `tocDepth` changed
+                    , index_model = { index_model | defaults = index_model.defaults && outline lia == outline model.lia_ }
+                }
     in
     ( { model
         | state = Running
